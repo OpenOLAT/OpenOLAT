@@ -29,7 +29,7 @@ import java.io.File;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
@@ -49,7 +49,7 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
 @Service
 public class HomePageConfigManagerImpl implements HomePageConfigManager {
 
-	private static final OLog log = Tracing.createLoggerFor(HomePageConfigManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(HomePageConfigManagerImpl.class);
 	
 	private static XStream homeConfigXStream = XStreamHelper.createXStreamInstance();
 	static {
@@ -155,6 +155,6 @@ public class HomePageConfigManagerImpl implements HomePageConfigManager {
 			VFSContainer homeContainer = VFSManager.olatRootContainer(home, null);
 			homeContainer.deleteSilently();
 		}
-		log.audit("Homepage-config file and homepage-dir deleted for identity=" + identity);
+		log.info(Tracing.M_AUDIT, "Homepage-config file and homepage-dir deleted for identity=" + identity);
 	}
 }

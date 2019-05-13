@@ -31,11 +31,11 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -54,7 +54,7 @@ import org.springframework.stereotype.Service;
 @Service("areaManager")
 public class BGAreaManagerImpl implements BGAreaManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(BGAreaManagerImpl.class); 
+	private static final Logger log = Tracing.createLoggerFor(BGAreaManagerImpl.class); 
 	
 	@Autowired
 	private DB dbInstance;
@@ -125,9 +125,9 @@ public class BGAreaManagerImpl implements BGAreaManager {
 					deleteAssessmentModeToAreaRelations(reloadArea);
 					// 3) delete area itself
 					dbInstance.deleteObject(reloadArea);
-					log.audit("Deleted Business Group Area", reloadArea.toString());
+					log.info(Tracing.M_AUDIT, "Deleted Business Group Area {}", reloadArea);
 				} else {
-					log.audit("Business Group Area was already deleted", area.toString());
+					log.info(Tracing.M_AUDIT, "Business Group Area was already deleted {}", area);
 				}
 			}
 		});
@@ -412,7 +412,7 @@ public class BGAreaManagerImpl implements BGAreaManager {
 	public BGArea createAndPersistBGArea(String areaName, String description, OLATResource resource) {
 		BGArea area = new BGAreaImpl(areaName, description, resource);
 		dbInstance.getCurrentEntityManager().persist(area);
-		log.audit("Created Business Group Area", area.toString());
+		log.info(Tracing.M_AUDIT, "Created Business Group Area {}", area);
 		// else no area created, name duplicate
 		return area;
 	}

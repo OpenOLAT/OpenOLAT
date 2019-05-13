@@ -19,10 +19,10 @@
  */
 package org.olat.core;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.test.OlatTestCase;
 
@@ -32,7 +32,7 @@ import org.olat.test.OlatTestCase;
  */
 public class CoreSpringFactoryTest extends OlatTestCase {
 	
-	private OLog log = Tracing.createLoggerFor(CoreSpringFactoryTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CoreSpringFactoryTest.class);
 	
 	@Test
 	public void testGetImpl() {

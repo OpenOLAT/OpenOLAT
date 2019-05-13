@@ -27,7 +27,7 @@ package org.olat.commons.calendar.ui;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
@@ -57,7 +57,7 @@ import org.olat.core.logging.activity.StringResourceableType;
  */
 public class CalendarLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(CalendarLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(CalendarLoggingAction.class);
 	
 	private static final ResourceableTypeList CALENDAR_READ_RESOURCES = new ResourceableTypeList().
 	// this one is a calendar in a calendar-node in a course

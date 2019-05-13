@@ -54,7 +54,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
@@ -134,7 +134,7 @@ public class UserCreateController extends BasicController  {
 
 class NewUserForm extends FormBasicController {
 	
-	private static final OLog log = Tracing.createLoggerFor(NewUserForm.class);
+	private static final Logger log = Tracing.createLoggerFor(NewUserForm.class);
 	
 	private static final String USER_PROPS_IDENTIFIER = NewUserForm.class.getCanonicalName();
 	private static final String FIELD_NEW1 = "passwordnew1";
@@ -366,7 +366,7 @@ class NewUserForm extends FormBasicController {
 		// Create user on database
 		Identity s = doCreateAndPersistIdentity();
 		if (s != null) {
-			log.audit(USER_CREATE_SUCCESS + s.getKey());
+			log.info(Tracing.M_AUDIT, USER_CREATE_SUCCESS + s.getKey());
 			fireEvent(ureq, new SingleIdentityChosenEvent(s));
 		} else {
 			// Could not save form, display error

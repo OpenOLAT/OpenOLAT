@@ -38,7 +38,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -62,7 +62,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class UserVOFactory {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserVOFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(UserVOFactory.class);
 	
 	private static final String[] keys = new String[] { "male", "female", "-" };
 	

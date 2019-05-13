@@ -42,8 +42,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLATRuntimeException;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.scorm.manager.ScormManager;
 import org.olat.modules.scorm.server.beans.LMSDataFormBean;
@@ -61,7 +62,10 @@ import ch.ethz.pfplms.scorm.api.ApiAdapter;
  *
  * @author guido
  */
-public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm.api.ApiAdapterInterface {
+public	class OLATApiAdapter implements ch.ethz.pfplms.scorm.api.ApiAdapterInterface {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATApiAdapter.class);
+	
 	private final ApiAdapter core; 
 
 	private Hashtable<String,String> olatScoCmi = new Hashtable<>();
@@ -158,7 +162,7 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 
 	private final void say (String s) {
 		
-			logDebug("core: "+s);
+			log.debug("core: "+s);
 		
 	}
 
@@ -203,7 +207,7 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 						key = strArr[i][0];
 						value = strArr[i][1];
 						olatScoCmi.put(key, value);
-						logDebug("passing cmi data to api adapter: "+key +": "+ value);
+						log.debug("passing cmi data to api adapter: "+key +": "+ value);
 		
 				}
 			}
@@ -356,7 +360,7 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 			odatahandler.updateCMIData(olatScoId);
 			return "true";
 		} catch (Exception e) {
-			logError("Error during commit", e);
+			log.error("Error during commit", e);
 			return "false";
 		}
 	}
@@ -386,7 +390,7 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 				success = item.archiveScoData();
 			}
 		} catch (Exception e) {
-			logError("Error at OLATApiAdapter.archiveScoData(): ", e);
+			log.error("Error at OLATApiAdapter.archiveScoData(): ", e);
 		}
 		return success;
 	}
@@ -505,7 +509,7 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 			say ("LMSCommit("+s+")="+rv);
 			return rv;
 		} catch (Exception e) {
-			logError("LMSCommit failed: " + s, e);
+			log.error("LMSCommit failed: " + s, e);
 			return "false";
 		}
 	}
@@ -523,7 +527,7 @@ public	class OLATApiAdapter extends LogDelegator implements ch.ethz.pfplms.scorm
 			core.reset();
 			return rv;
 		} catch (Exception e) {
-			logError("LMSFinish failed: " + s, e);
+			log.error("LMSFinish failed: " + s, e);
 			return "false";
 		}
 	}

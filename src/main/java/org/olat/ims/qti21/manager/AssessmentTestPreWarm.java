@@ -22,8 +22,8 @@ package org.olat.ims.qti21.manager;
 import java.io.File;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.PreWarm;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -43,7 +43,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AssessmentTestPreWarm implements PreWarm {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentTestPreWarm.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentTestPreWarm.class);
 
 	@Autowired
 	private QTI21Service qtiService;

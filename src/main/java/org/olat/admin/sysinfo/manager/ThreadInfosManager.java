@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.olat.admin.sysinfo.model.ThreadView;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.restapi.system.Sampler;
@@ -51,7 +51,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ThreadInfosManager implements Sampler {
 	
-	private static final OLog log = Tracing.createLoggerFor(ThreadInfosManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ThreadInfosManager.class);
 	
 	private final static NumberFormat percentFormat = NumberFormat.getPercentInstance(Locale.ENGLISH);
 	

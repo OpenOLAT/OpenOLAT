@@ -27,7 +27,7 @@ import java.util.Map;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nModule;
 import org.xml.sax.Attributes;
@@ -44,7 +44,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class OpenMeetingsLanguages extends DefaultHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenMeetingsLanguages.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenMeetingsLanguages.class);
 
 	private final Map<String, Integer> languageToId = new HashMap<>();
 	

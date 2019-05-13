@@ -30,7 +30,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.model.xml.QTI21ExplorerHandler;
 import org.olat.ims.qti21.model.xml.QTI21Infos;
@@ -46,7 +46,7 @@ import org.olat.ims.qti21.model.xml.QTI21Infos;
  */
 public class QTI21IMSManifestExplorerVisitor extends SimpleFileVisitor<Path> {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21IMSManifestExplorerVisitor.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21IMSManifestExplorerVisitor.class);
 	
 	private QTI21ExplorerHandler handler;
 	

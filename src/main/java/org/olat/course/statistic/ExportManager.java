@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
@@ -61,7 +61,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ExportManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(ExportManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ExportManager.class);
 
 
 	/**

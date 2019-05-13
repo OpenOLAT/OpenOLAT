@@ -31,7 +31,7 @@ import java.util.UUID;
 import javax.annotation.PostConstruct;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
 @Service
 class EvaluationFormStorage {
 	
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormStorage.class);
+	private static final Logger log = Tracing.createLoggerFor(EvaluationFormStorage.class);
 	
 	private static final String EVALUATION_FORMS_DIRECTORY = "evaluation_form";
 	private static final String RESPONSES_DIRECTORY = "responses";

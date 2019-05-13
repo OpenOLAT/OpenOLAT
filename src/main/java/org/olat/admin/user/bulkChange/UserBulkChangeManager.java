@@ -42,7 +42,7 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -74,7 +74,7 @@ import org.springframework.stereotype.Service;
 public class UserBulkChangeManager implements InitializingBean {
 	
 	private static VelocityEngine velocityEngine;
-	private static final OLog log = Tracing.createLoggerFor(UserBulkChangeManager.class);
+	private static final Logger log = Tracing.createLoggerFor(UserBulkChangeManager.class);
 
 	protected static final String CRED_IDENTIFYER = "password";
 	protected static final String LANG_IDENTIFYER = "language";
@@ -215,12 +215,12 @@ public class UserBulkChangeManager implements InitializingBean {
 					// user not anymore in security group, remove him
 					if (isInGroup && thisRoleAction.equals("remove")) {
 						organisationService.removeMember(identity, organisationRole);
-						log.audit("User::" + actingIdentity.getKey() + " removed system role::" + organisationRole + " from user::" + identity.getKey(), null);
+						log.info(Tracing.M_AUDIT, "User::" + actingIdentity.getKey() + " removed system role::" + organisationRole + " from user::" + identity.getKey());
 					}
 					// user not yet in security group, add him
 					if (!isInGroup && thisRoleAction.equals("add")) {
 						organisationService.addMember(identity, organisationRole);
-						log.audit("User::" + actingIdentity.getKey() + " added system role::" + organisationRole + " to user::" + identity.getKey(), null);
+						log.info(Tracing.M_AUDIT, "User::" + actingIdentity.getKey() + " added system role::" + organisationRole + " to user::" + identity.getKey());
 					}
 				}
 			}
@@ -236,7 +236,7 @@ public class UserBulkChangeManager implements InitializingBean {
 					sendLoginDeniedEmail(identity);
 				}
 				identity = securityManager.saveIdentityStatus(identity, status, actingIdentity);
-				log.audit("User::" + actingIdentity.getKey() + " changed account status for user::" + identity.getKey() + " from::" + oldStatusText + " to::" + newStatusText, null);
+				log.info(Tracing.M_AUDIT, "User::" + actingIdentity.getKey() + " changed account status for user::" + identity.getKey() + " from::" + oldStatusText + " to::" + newStatusText);
 			}
 
 			// persist changes:
@@ -248,7 +248,7 @@ public class UserBulkChangeManager implements InitializingBean {
 				userManager.updateUserFromIdentity(identity);
 				securityManager.deleteInvalidAuthenticationsByEmail(oldEmail);
 				changedIdentities.add(identity);
-				log.audit("User::" + actingIdentity.getKey() + " successfully changed account data for user::" + identity.getKey() + " in bulk change", null);
+				log.info(Tracing.M_AUDIT, "User::" + actingIdentity.getKey() + " successfully changed account data for user::" + identity.getKey() + " in bulk change");
 			}
 
 			// commit changes for this user

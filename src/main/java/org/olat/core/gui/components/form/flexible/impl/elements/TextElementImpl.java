@@ -43,7 +43,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -68,7 +68,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	
 	//inline stuff
 	protected String transientValue;//last submitted value, which may be good or wrong
-	private static final OLog log = Tracing.createLoggerFor(TextElementImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(TextElementImpl.class);
 	
 	/**
 	 * @param id A fix identifier for state-less behavior, must be unique or null

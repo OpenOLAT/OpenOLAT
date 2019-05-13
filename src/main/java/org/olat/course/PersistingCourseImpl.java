@@ -37,7 +37,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
@@ -105,7 +105,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	private String courseTitle = null;
 	/** courseTitleSyncObj is a final Object only used for synchronizing the courseTitle getter - see OLAT-5654 */
 	private final Object courseTitleSyncObj = new Object();
-	private static OLog log = Tracing.createLoggerFor(PersistingCourseImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(PersistingCourseImpl.class);
 	
 	//an PersistingCourseImpl instance could be readOnly if readAndWrite == false, or readAndWrite 
 	private boolean readAndWrite = false; //default readOnly

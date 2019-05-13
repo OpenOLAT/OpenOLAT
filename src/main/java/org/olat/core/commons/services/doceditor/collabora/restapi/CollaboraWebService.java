@@ -41,11 +41,11 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
 import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.user.UserManager;
@@ -65,7 +65,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Path("/collabora/wopi/files/{fileId}")
 public class CollaboraWebService {
 
-	private static final OLog log = Tracing.createLoggerFor(CollaboraWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(CollaboraWebService.class);
 	
 	@Autowired
 	private CollaboraModule collaboraModule;
@@ -217,7 +217,7 @@ public class CollaboraWebService {
 	}
 
 	private void logRequestHeaders(HttpHeaders httpHeaders) {
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			log.debug("WOPI Resquest headers:");
 			for (Entry<String, List<String>> entry : httpHeaders.getRequestHeaders().entrySet()) {
 				String name = entry.getKey();
@@ -228,7 +228,7 @@ public class CollaboraWebService {
 	}
 
 	private void logCheckFileInfoResponse(CheckFileInfoVO checkFileInfoVO) {
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				String json = mapper.writeValueAsString(checkFileInfoVO);
@@ -240,7 +240,7 @@ public class CollaboraWebService {
 	}
 
 	private void logPutFileResponse(PutFileVO putFileVO) {
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				String json = mapper.writeValueAsString(putFileVO);

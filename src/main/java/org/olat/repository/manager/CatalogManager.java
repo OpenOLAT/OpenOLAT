@@ -33,6 +33,7 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SecurityGroup;
@@ -47,7 +48,6 @@ import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -95,7 +95,7 @@ import org.springframework.stereotype.Service;
 @Service("catalogManager")
 public class CatalogManager implements UserDataDeletable, InitializingBean {
 	
-	private static final OLog log = Tracing.createLoggerFor(CatalogManager.class);
+	private static final Logger log = Tracing.createLoggerFor(CatalogManager.class);
 	
 	/**
 	 * Default value for the catalog root <code>CATALOGROOT</code>
@@ -323,7 +323,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @param ce
 	 */
 	public void deleteCatalogEntry(CatalogEntry ce) {
-		final boolean debug = log.isDebug();
+		final boolean debug = log.isDebugEnabled();
 		if(debug) log.debug("deleteCatalogEntry start... ce=" + ce);
 		
 		if (ce.getType() == CatalogEntry.TYPE_LEAF) {
@@ -558,7 +558,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 * @param newEntry
 	 */
 	public void addCatalogEntry(CatalogEntry parent, CatalogEntry newEntry) {
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		if(debug) log.debug("addCatalogEntry parent=" + parent);
 		newEntry.setParent(parent);
 		if(debug) log.debug("addCatalogEntry newEntry=" + newEntry);
@@ -654,7 +654,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	public void resourceableDeleted(RepositoryEntry repositoryEntry) {
 		// if a repository entry gets deleted, the referencing Catalog Entries gets
 		// retired to
-		if(log.isDebug()) log.debug("sourceableDeleted start... repositoryEntry=" + repositoryEntry);
+		if(log.isDebugEnabled()) log.debug("sourceableDeleted start... repositoryEntry=" + repositoryEntry);
 		List<CatalogEntry> references = getCatalogEntriesReferencing(repositoryEntry);
 		if (references != null && !references.isEmpty()) {
 			for (int i = 0; i < references.size(); i++) {
@@ -683,7 +683,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 				log.info("Delete user-data, add Administrator-identity as owner of catalogEntry=" + catalogEntry.getName());
 			}
 		}
-		if(log.isDebug()) log.debug("All owner entries in catalog deleted for identity=" + identity);
+		if(log.isDebugEnabled()) log.debug("All owner entries in catalog deleted for identity=" + identity);
 	}
 
 	/**

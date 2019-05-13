@@ -27,10 +27,10 @@ package org.olat.upgrade.model;
 
 import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.PersistentObject;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -50,7 +50,7 @@ import org.olat.resource.OLATResource;
 public class BusinessGroupUpgrade extends PersistentObject implements BusinessGroup {
 
 	private static final long serialVersionUID = -6977108696910447781L;
-	private static final OLog log = Tracing.createLoggerFor(BusinessGroupUpgrade.class);
+	private static final Logger log = Tracing.createLoggerFor(BusinessGroupUpgrade.class);
 	
 	private String description;
 	private String name;
@@ -318,7 +318,7 @@ public class BusinessGroupUpgrade extends PersistentObject implements BusinessGr
 		int oldMaxParticipants = getMaxParticipants()!=null ? getMaxParticipants() : 0;
 		this.maxParticipants = maxParticipants;
 		if(maxParticipantsChanged) {
-		  log.audit("Max participants value changed for group " + this + " was " + oldMaxParticipants + " changed to " + maxParticipants);
+		  log.info(Tracing.M_AUDIT, "Max participants value changed for group " + this + " was " + oldMaxParticipants + " changed to " + maxParticipants);
 		}
 	}
 

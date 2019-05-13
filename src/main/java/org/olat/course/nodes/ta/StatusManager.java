@@ -26,7 +26,6 @@
 package org.olat.course.nodes.ta;
 
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -39,7 +38,7 @@ import org.olat.properties.Property;
  * Initial Date:  24.04.2006 <br>
  * @author guretzki
  */
-public class StatusManager extends BasicManager {
+public class StatusManager {
 	private static StatusManager statusManager = new StatusManager();
 
 	// Name used to save user STATUS-FORM data in the properties table

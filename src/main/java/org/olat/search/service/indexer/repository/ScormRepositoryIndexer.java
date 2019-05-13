@@ -27,8 +27,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.dom4j.Element;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -54,26 +56,29 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author srosse
  */
 public class ScormRepositoryIndexer extends FolderIndexer {
-	public static Set<String> stopWords = new HashSet<String>();
+
+	private static final Logger log = Tracing.createLoggerFor(ScormRepositoryIndexer.class);
+	
+	public static Set<String> stopWords = new HashSet<>();
 	static {
 		stopWords.add("LOMv1.0");
 		stopWords.add("yes");
 		stopWords.add("NA");
 	}
-	public static final List<String> forbiddenExtensions = new ArrayList<String>();
+	public static final List<String> forbiddenExtensions = new ArrayList<>();
 	static {
 		forbiddenExtensions.add("LOMv1.0");
 		forbiddenExtensions.add(".xsd");
 		forbiddenExtensions.add(".js");
 	}
-	public static final Set<String> forbiddenFiles = new HashSet<String>();
+	public static final Set<String> forbiddenFiles = new HashSet<>();
 	static {
 		forbiddenFiles.add("imsmanifest.xml");
 	}
 	
 	
-	public final static String TYPE = "type.repository.entry.scorm";
-	public final static String ORES_TYPE_SCORM = ScormCPFileResource.TYPE_NAME;
+	public static final String TYPE = "type.repository.entry.scorm";
+	public static final String ORES_TYPE_SCORM = ScormCPFileResource.TYPE_NAME;
 	
 	public ScormRepositoryIndexer() {
 		// Repository types
@@ -91,7 +96,7 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 	 */
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter)
 	throws IOException,InterruptedException  {
-		if (isLogDebugEnabled()) logDebug("Index Scorm package...");
+		if (log.isDebugEnabled()) log.debug("Index Scorm package...");
 		
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
 		OLATResource ores = repositoryEntry.getOlatResource();
@@ -118,7 +123,7 @@ public class ScormRepositoryIndexer extends FolderIndexer {
 	private Document createManifestDocument(VFSLeaf fManifest, Element rootElement, SearchResourceContext resourceContext) {
 		IMSMetadataDocument document = new IMSMetadataDocument();
 		document.setResourceUrl(resourceContext.getResourceUrl());
-		if (isLogDebugEnabled()) logDebug("MM: URL=" + document.getResourceUrl());
+		if (log.isDebugEnabled()) log.debug("MM: URL=" + document.getResourceUrl());
 		document.setLastChange(new Date(fManifest.getLastModified()));
 		document.setDocumentType(resourceContext.getDocumentType());
 		if (StringHelper.containsNonWhitespace(resourceContext.getTitle())) {

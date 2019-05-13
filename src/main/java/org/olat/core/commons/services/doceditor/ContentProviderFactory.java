@@ -28,7 +28,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLDocument;
 import org.olat.core.util.openxml.OpenXMLDocumentWriter;
@@ -42,7 +42,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
  */
 public class ContentProviderFactory {
 	
-	private static final OLog log = Tracing.createLoggerFor(ContentProviderFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(ContentProviderFactory.class);
 	
 	private static final ContentProvider EMPTY = new EmptyContentProvider();
 	private static final ContentProvider DOCX = new DocxContentProvider();

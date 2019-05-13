@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -54,7 +54,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ScoreRuleSPI implements FilterRuleSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(ScoreRuleSPI.class);
+	private static final Logger log = Tracing.createLoggerFor(ScoreRuleSPI.class);
 	private static final double ROUND = 0.000001d;
 	
 	@Autowired

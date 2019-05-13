@@ -26,8 +26,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.cyberneko.html.parsers.SAXParser;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.io.LimitedContentWriter;
@@ -47,10 +47,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author srosse
  */
 public class NekoHTMLFilter implements Filter {
-	private static final OLog log = Tracing.createLoggerFor(NekoHTMLFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(NekoHTMLFilter.class);
 	
-	public static final Set<String> blockTags = new HashSet<String>();
-	public static final Set<String> toBeSkippedTags = new HashSet<String>();
+	public static final Set<String> blockTags = new HashSet<>();
+	public static final Set<String> toBeSkippedTags = new HashSet<>();
 	static {
 		blockTags.addAll(Arrays.asList("address","blockquote","br","dir","div","dl","fieldset","form","h1","h2","h3","h4","h5","h6","hr","noframes","noscript","ol","p","pre","table","ul","li"));
 		toBeSkippedTags.addAll(Arrays.asList("script","style"));

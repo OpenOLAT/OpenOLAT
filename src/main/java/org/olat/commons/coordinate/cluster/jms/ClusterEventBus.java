@@ -42,11 +42,11 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.Topic;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.cluster.ClusterConfig;
 import org.olat.core.util.event.AbstractEventBus;
@@ -63,7 +63,7 @@ import org.olat.core.util.resource.OresHelper;
  * @author Felix Jost
  */
 public class ClusterEventBus extends AbstractEventBus implements MessageListener, GenericEventListener {
-	private static final OLog log = Tracing.createLoggerFor(ClusterEventBus.class);
+	private static final Logger log = Tracing.createLoggerFor(ClusterEventBus.class);
 	//ores helper is limited to 50 character, so truncate it
 	static final OLATResourceable CLUSTER_CHANNEL = OresHelper.createOLATResourceableType(ClusterEventBus.class.getName().substring(0, 50));
 
@@ -78,13 +78,13 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	private long numOfSentMessages = 0;
 	
 	// stats
-	private List<String> msgsSent = new ArrayList<String>(); 
-	private List<String> msgsReceived = new ArrayList<String>(); 
+	private List<String> msgsSent = new ArrayList<>(); 
+	private List<String> msgsReceived = new ArrayList<>(); 
 	private int msgsSentCount = 0;
 	private int msgsReceivedCount = 0;
 	
 	// latest incoming info from other Nodes
-	private Map<Integer, NodeInfo> nodeInfos = new HashMap<Integer, NodeInfo>();
+	private Map<Integer, NodeInfo> nodeInfos = new HashMap<>();
 	
 	private int maxListSize = 10; // how many entries are kept in the outbound/inbound history. Just for administrative purposes
 	
@@ -140,7 +140,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 					try {
 						ClusterInfoEvent cie = new ClusterInfoEvent(clusterConfig, createBusListenerInfo());
 						fireEventToListenersOf(cie, CLUSTER_CHANNEL);
-						if (log.isDebug()) log.debug("sent via jms clusterInfoEvent with timestamp:"+cie.getCreated()+" from node:"+nodeId);
+						if (log.isDebugEnabled()) log.debug("sent via jms clusterInfoEvent with timestamp:"+cie.getCreated()+" from node:"+nodeId);
 					} catch (Exception e) {
 						// log error, but do not throw exception, but retry.
 						try {
@@ -251,7 +251,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		// store it for later access by the admin controller
 		String sentMsg = "sent msg: from node:" + nodeId + ", olat-id:" + msgId + ", ores:"	+ ores.getResourceableTypeName() + ":" + ores.getResourceableId()+", event:"+event;
 		addToSentScreen(sentMsg);
-		if (log.isDebug()) log.debug(sentMsg);
+		if (log.isDebugEnabled()) log.debug(sentMsg);
 	}
 
 	/**
@@ -327,7 +327,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			}
 			
 			addToReceivedScreen(recMsg);
-			if (log.isDebug()) log.debug(recMsg);
+			if (log.isDebugEnabled()) log.debug(recMsg);
 			
 			// message with destination and source both having this vm are ignored here, since they were already 
 			// "inline routed" when having been sent (direct call within the vm).

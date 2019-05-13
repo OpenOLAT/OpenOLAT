@@ -30,7 +30,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.system.vo.NotificationsStatus;
 import org.quartz.JobExecutionContext;
@@ -44,7 +44,7 @@ import org.quartz.SchedulerException;
  */
 public class NotificationsAdminWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(NotificationsAdminWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(NotificationsAdminWebService.class);
 	
 	private final JobKey notificationsJobKey = new JobKey("org.olat.notifications.job.enabled", Scheduler.DEFAULT_GROUP);
 	

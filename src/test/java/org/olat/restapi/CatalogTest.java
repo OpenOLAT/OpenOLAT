@@ -47,6 +47,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
@@ -56,7 +57,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseModule;
 import org.olat.repository.CatalogEntry;
@@ -88,7 +88,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CatalogTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(CatalogTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CatalogTest.class);
 	
 	@Autowired
 	private DB dbInstance;

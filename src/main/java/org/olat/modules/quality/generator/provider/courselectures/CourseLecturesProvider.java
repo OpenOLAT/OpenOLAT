@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
@@ -40,7 +41,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -79,7 +79,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CourseLecturesProvider implements QualityGeneratorProvider {
 
-	private static final OLog log = Tracing.createLoggerFor(CourseLecturesProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseLecturesProvider.class);
 
 	public static final String TYPE = "course-lecture";
 	public static final String CONFIG_KEY_DURATION_DAYS = "duration.days";
@@ -144,10 +144,10 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	}
 
 	private Long loadLectureBlockCount(QualityGenerator generator, SearchParameters searchParams) {
-		if(log.isDebug()) log.debug("Generator " + generator + " searches with " + searchParams);
+		if(log.isDebugEnabled()) log.debug("Generator " + generator + " searches with " + searchParams);
 		
 		Long count = providerDao.loadLectureBlockCount(searchParams);
-		if(log.isDebug()) log.debug("Generator " + generator + " found " + count + " entries");
+		if(log.isDebugEnabled()) log.debug("Generator " + generator + " found " + count + " entries");
 		return count;
 	}
 
@@ -180,10 +180,10 @@ public class CourseLecturesProvider implements QualityGeneratorProvider {
 	}
 
 	private List<LectureBlockInfo> loadLectureBlockInfo(QualityGenerator generator, SearchParameters searchParams) {
-		if(log.isDebug()) log.debug("Generator " + generator + " searches with " + searchParams);
+		if(log.isDebugEnabled()) log.debug("Generator " + generator + " searches with " + searchParams);
 		
 		List<LectureBlockInfo> blockInfos = providerDao.loadLectureBlockInfo(searchParams);
-		if(log.isDebug()) log.debug("Generator " + generator + " found " + blockInfos.size() + " entries");
+		if(log.isDebugEnabled()) log.debug("Generator " + generator + " found " + blockInfos.size() + " entries");
 		return blockInfos;
 	}
 	

@@ -1,10 +1,10 @@
-log4j.xml readme
+log4j2.xml readme
 
-log4j.xml in this directory is the default for lazy developers to have output on eclipse console.
+log4j2.xml in this directory is the default for lazy developers to have output on eclipse console.
 Overwrite it with -Dlog4j.configuration="file:/tmp/mylog4j.xml" (java system property) and specify 
 a path for your real logging configuration.
 
-Note that when you create a "real" log4j.xml file you should specify the log dir path and the log 
+Note that when you create a "real" log4j2.xml file you should specify the log dir path and the log 
 file name also in your olat.local.properties:
 log.dir
 log.filename

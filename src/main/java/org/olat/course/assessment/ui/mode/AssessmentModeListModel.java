@@ -22,12 +22,12 @@ package org.olat.course.assessment.ui.mode;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CorruptedCourseException;
@@ -48,7 +48,7 @@ import org.olat.course.nodes.CourseNode;
  */
 public class AssessmentModeListModel extends DefaultFlexiTableDataModel<AssessmentMode> implements SortableFlexiTableDataModel<AssessmentMode> {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentModeListModel.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentModeListModel.class);
 	
 	private final Translator translator;
 	private final AssessmentModeCoordinationService coordinationService;

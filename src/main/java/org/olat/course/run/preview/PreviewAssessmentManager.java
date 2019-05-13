@@ -35,7 +35,6 @@ import java.util.Map;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -53,15 +52,12 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
  *
  * @author Mike Stock
  */
-final class PreviewAssessmentManager extends BasicManager implements AssessmentManager {
-	private Map<String,Float> nodeScores = new HashMap<String,Float>();
-	private Map<String,Boolean> nodePassed = new HashMap<String,Boolean>();
-	private Map<String,Integer> nodeAttempts = new HashMap<String,Integer>();
-	private Map<String,Long> nodeAssessmentID = new HashMap<String,Long>();
+final class PreviewAssessmentManager implements AssessmentManager {
+	private Map<String,Float> nodeScores = new HashMap<>();
+	private Map<String,Boolean> nodePassed = new HashMap<>();
+	private Map<String,Integer> nodeAttempts = new HashMap<>();
+	private Map<String,Long> nodeAssessmentID = new HashMap<>();
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#saveNodeScore(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, java.lang.Float)
-	 */
 	private void saveNodeScore(CourseNode courseNode, Float score) {
 		nodeScores.put(courseNode.getIdent(), score);
 	}
@@ -101,17 +97,11 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 		return assessmentEntry;
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#saveNodeAttempts(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, java.lang.Integer)
-	 */
 	@Override
 	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Role by) {
 		nodeAttempts.put(courseNode.getIdent(), attempts);
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#saveNodeComment(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, java.lang.String)
-	 */
 	@Override
 	public void saveNodeComment(CourseNode courseNode, Identity identity, Identity assessedIdentity, String comment) {
 		throw new AssertException("Not implemented for preview.");
@@ -154,10 +144,10 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	@Override
 	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment, Role by) {
 		Integer attempts = nodeAttempts.get(courseNode.getIdent());
-		if (attempts == null) attempts = new Integer(0);
+		if (attempts == null) attempts = Integer.valueOf(0);
 		int iAttempts = attempts.intValue();
 		iAttempts++;
-		nodeAttempts.put(courseNode.getIdent(), new Integer(iAttempts));
+		nodeAttempts.put(courseNode.getIdent(), Integer.valueOf(iAttempts));
 	}
 	
 	/**
@@ -228,7 +218,7 @@ final class PreviewAssessmentManager extends BasicManager implements AssessmentM
 	@Override
 	public Integer getNodeAttempts(CourseNode courseNode, Identity identity) {
 		Integer attempts = nodeAttempts.get(courseNode.getIdent());
-		return (attempts == null ? new Integer(0) : attempts);
+		return (attempts == null ? Integer.valueOf(0) : attempts);
 	}
 
 	@Override

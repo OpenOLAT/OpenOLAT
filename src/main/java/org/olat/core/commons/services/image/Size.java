@@ -19,7 +19,7 @@
  */
 package org.olat.core.commons.services.image;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -30,7 +30,7 @@ import org.olat.core.util.StringHelper;
  */
 public class Size {
 	
-	private static final OLog log = Tracing.createLoggerFor(Size.class);
+	private static final Logger log = Tracing.createLoggerFor(Size.class);
 	
 	private final int width;
 	private final int height;

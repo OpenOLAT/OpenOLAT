@@ -34,7 +34,7 @@ import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.search.QueryException;
 import org.olat.search.SearchModule;
@@ -48,7 +48,7 @@ import org.olat.search.ServiceNotAvailableException;
  * @author Christian Guretzki
  */
 public class SearchServiceDisabled implements SearchService {
-	private static final OLog log = Tracing.createLoggerFor(SearchServiceDisabled.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchServiceDisabled.class);
 	
 	/**
 	 * [used by spring]

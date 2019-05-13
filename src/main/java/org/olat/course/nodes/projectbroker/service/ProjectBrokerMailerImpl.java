@@ -30,12 +30,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.mail.MailBundle;
@@ -90,7 +90,8 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 	private static final String KEY_REMOVE_PARTICIPANT_EMAIL_SUBJECT = "mail.remove.participant.subject";
 	private static final String KEY_REMOVE_PARTICIPANT_EMAIL_BODY    = "mail.remove.participant.body";
 	
-	private OLog log = Tracing.createLoggerFor(this.getClass()); 
+	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerMailerImpl.class);
+	
 	@Autowired
 	private MailManager mailManager;
 	@Autowired
@@ -202,7 +203,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		if(bundle != null) {
 			mailManager.sendMessage(bundle);
 		}
-		log.audit("ProjectBroker: sendEmail to identity.name=" + enrolledIdentity.getKey() + " , mailerResult.returnCode=" + result.getReturnCode());
+		log.info(Tracing.M_AUDIT, "ProjectBroker: sendEmail to identity.name=" + enrolledIdentity.getKey() + " , mailerResult.returnCode=" + result.getReturnCode());
 		return result;
 	}
 
@@ -220,7 +221,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		MailerResult result = new MailerResult();
 		MailBundle[] bundles = mailManager.makeMailBundles(context, group, enrolledMailTemplate, null, metaId, result);
 		result.append(mailManager.sendMessage(bundles));
-		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
+		log.info(Tracing.M_AUDIT, "ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
 		return result;
 	}
 
@@ -236,7 +237,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		MailerResult result = new MailerResult();
 		MailBundle[] bundles = mailManager.makeMailBundles(context, group, enrolledMailTemplate, null, null, result);
 		result.append(mailManager.sendMessage(bundles));
-		log.audit("ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
+		log.info(Tracing.M_AUDIT, "ProjectBroker: sendEmailToGroup: identities=" + identityNames.toString() + " , mailerResult.returnCode=" + result.getReturnCode());
 		return result;
 	}
 

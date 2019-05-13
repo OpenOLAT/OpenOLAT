@@ -36,7 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SimpleMessageServiceImpl implements SimpleMessageService {
 	
-	private static final OLog log = Tracing.createLoggerFor(SimpleMessageServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(SimpleMessageServiceImpl.class);
 	private static final Random rnd = new Random();
 	
 	@Autowired
@@ -110,7 +110,7 @@ public class SimpleMessageServiceImpl implements SimpleMessageService {
 		boolean allOk = spi.send(mLog.getMessageUuid(), text, telNumber);
 		mLog.setServerResponse(Boolean.toString(allOk));
 		messageLogDao.save(mLog);
-		log.audit("SMS send: " + allOk + " to " + recipient + " with number: " + telNumber);
+		log.info(Tracing.M_AUDIT, "SMS send: " + allOk + " to " + recipient + " with number: " + telNumber);
 	}
 
 	@Override

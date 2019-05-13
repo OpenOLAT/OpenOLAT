@@ -47,7 +47,7 @@ import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -136,7 +136,7 @@ import uk.ac.ed.ph.jqtiplus.value.Orientation;
  */
 public class QTI12To21Converter {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI12To21Converter.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI12To21Converter.class);
 	
 	private final Locale locale;
 	private final File unzippedDirRoot;

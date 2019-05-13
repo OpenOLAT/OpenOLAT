@@ -45,6 +45,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
@@ -56,7 +57,6 @@ import org.olat.core.commons.services.vfs.restapi.VFSWebServiceSecurityCallback;
 import org.olat.core.commons.services.vfs.restapi.VFSWebservice;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -93,7 +93,7 @@ import org.springframework.stereotype.Component;
 @Path("groups")
 public class LearningGroupWebService {
 	
-	private OLog log = Tracing.createLoggerFor(LearningGroupWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(LearningGroupWebService.class);
 	
 	private static final String VERSION = "1.0";
 	

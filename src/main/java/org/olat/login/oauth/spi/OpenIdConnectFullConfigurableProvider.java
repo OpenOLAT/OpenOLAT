@@ -21,7 +21,7 @@ package org.olat.login.oauth.spi;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthDisplayName;
@@ -42,7 +42,7 @@ import com.github.scribejava.core.oauth.OAuthService;
  */
 public class OpenIdConnectFullConfigurableProvider implements OAuthSPI, OAuthDisplayName {
 	
-	private static final OLog log = Tracing.createLoggerFor(Google2Provider.class);
+	private static final Logger log = Tracing.createLoggerFor(Google2Provider.class);
 
 	private final String name;
 	private final String displayName;

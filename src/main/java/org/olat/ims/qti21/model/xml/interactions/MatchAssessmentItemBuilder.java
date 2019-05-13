@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
@@ -83,7 +83,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public class MatchAssessmentItemBuilder extends AssessmentItemBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(MatchAssessmentItemBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(MatchAssessmentItemBuilder.class);
 
 	private String question;
 	private boolean shuffle;

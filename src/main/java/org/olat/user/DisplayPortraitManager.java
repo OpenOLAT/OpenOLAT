@@ -32,6 +32,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -42,7 +43,6 @@ import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Alexander Schneider
  */
 public class DisplayPortraitManager implements UserDataDeletable, UserDataExportable {
-	private static final OLog log = Tracing.createLoggerFor(DisplayPortraitManager.class);
+	private static final Logger log = Tracing.createLoggerFor(DisplayPortraitManager.class);
 	
 	private static final String LOGO_PREFIX_FILENAME = "logo";
 	private static final String LOGO_BIG_FILENAME = LOGO_PREFIX_FILENAME + "_big";

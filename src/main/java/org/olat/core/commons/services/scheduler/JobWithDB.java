@@ -19,8 +19,8 @@
  */
 package org.olat.core.commons.services.scheduler;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.quartz.JobExecutionContext;
@@ -46,7 +46,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
  */
 public abstract class JobWithDB extends QuartzJobBean {
 	// A logger instantiated for the immplementing class of this abstract class
-	protected final OLog log = Tracing.createLoggerFor(this.getClass());
+	protected final Logger log = Tracing.createLoggerFor(this.getClass());
 	
 	@Override
 	protected final void executeInternal(JobExecutionContext arg0)

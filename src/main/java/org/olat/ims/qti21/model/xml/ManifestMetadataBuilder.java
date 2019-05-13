@@ -37,7 +37,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.imscp.xml.manifest.ManifestMetadataType;
@@ -82,7 +82,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
  */
 public class ManifestMetadataBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(ManifestMetadataBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(ManifestMetadataBuilder.class);
 	
 	protected static final org.olat.oo.xml.manifest.ObjectFactory ooObjectFactory = new org.olat.oo.xml.manifest.ObjectFactory();
 	protected static final org.olat.imscp.xml.manifest.ObjectFactory cpObjectFactory = new org.olat.imscp.xml.manifest.ObjectFactory();

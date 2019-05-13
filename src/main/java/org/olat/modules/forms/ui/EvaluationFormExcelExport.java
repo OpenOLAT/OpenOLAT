@@ -31,7 +31,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -72,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EvaluationFormExcelExport {
 	
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormExcelExport.class);
+	private static final Logger log = Tracing.createLoggerFor(EvaluationFormExcelExport.class);
 
 	private final String fileName;
 	private final Form form;

@@ -28,12 +28,12 @@ package org.olat.search.service.document.file;
 import java.io.IOException;
 import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.DateTools;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSConstants;
@@ -62,7 +62,7 @@ import org.olat.search.service.SearchServiceImpl;
  */
 public class FileDocumentFactory {
 	
-	private static OLog log = Tracing.createLoggerFor(FileDocumentFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(FileDocumentFactory.class);
 
 	private static final String PDF_SUFFIX = "pdf";
 	private static final String EXCEL_SUFFIX = "xls";
@@ -142,7 +142,7 @@ public class FileDocumentFactory {
 			Document doc = null;
 			String fileName = leaf.getName();
 			String suffix = FileTypeDetector.getSuffix(leaf);
-			if (log.isDebug()) log.debug("suffix=" + suffix);
+			log.debug("suffix={}", suffix);
 			
 			if (PDF_SUFFIX.indexOf(suffix) >= 0) {
 				if(searchModule.getPdfFileEnabled()) {

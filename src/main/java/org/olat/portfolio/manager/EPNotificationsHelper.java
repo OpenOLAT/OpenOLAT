@@ -46,7 +46,7 @@ import org.olat.portfolio.ui.structel.view.EPChangelogController;
  */
 public class EPNotificationsHelper {
 
-//	private static OLog logger = Tracing.createLoggerFor(EPNotificationsHelper.class);
+//	private static final Logger logger = Tracing.createLoggerFor(EPNotificationsHelper.class);
 	private Translator translator;
 	private String rootBusinessPath;
 

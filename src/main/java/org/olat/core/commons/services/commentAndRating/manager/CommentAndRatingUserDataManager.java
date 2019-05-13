@@ -26,13 +26,13 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.commons.services.commentAndRating.model.UserRating;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
@@ -61,7 +61,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CommentAndRatingUserDataManager implements UserDataDeletable, UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(CommentAndRatingUserDataManager.class);
+	private static final Logger log = Tracing.createLoggerFor(CommentAndRatingUserDataManager.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -79,9 +79,9 @@ public class CommentAndRatingUserDataManager implements UserDataDeletable, UserD
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		int rows = userRatingsDao.deleteRatings(identity);
-		log.audit(rows + " rating deleted");
+		log.info(Tracing.M_AUDIT, rows + " rating deleted");
 		int comments = userCommentsDao.deleteAllComments(identity);
-		log.audit(comments + " rating erased");
+		log.info(Tracing.M_AUDIT, comments + " rating erased");
 	}
 
 	@Override

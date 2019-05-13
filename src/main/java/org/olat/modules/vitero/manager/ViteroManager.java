@@ -56,7 +56,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -150,7 +150,7 @@ import de.vitero.schema.user.Usertype;
 @Service
 public class ViteroManager implements UserDataDeletable {
 	
-	private static final OLog log = Tracing.createLoggerFor(ViteroManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ViteroManager.class);
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmm");
 	
 	private static final String VMS_PROVIDER = "VMS";

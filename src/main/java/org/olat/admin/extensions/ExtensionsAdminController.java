@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.SystemAdminMainController;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
@@ -37,9 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.control.navigation.SiteDefinition;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -56,7 +55,7 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
  * @author Christian Guretzki
  */
 public class ExtensionsAdminController extends BasicController {
-	private static OLog log = Tracing.createLoggerFor(ExtensionsAdminController.class);
+	private static final Logger log = Tracing.createLoggerFor(ExtensionsAdminController.class);
 		
 
 	private VelocityContainer content;
@@ -73,7 +72,6 @@ public class ExtensionsAdminController extends BasicController {
 		Map<ExtensionKey,Map<String, GenericBeanDefinition>> extensionList = new HashMap<>();
 		extensionList.put(new ExtensionKey("Extension", "ext"), getBeanDefListFor(Extension.class));
 		extensionList.put(new ExtensionKey("Sites definitions", "sitesdefs"), getBeanDefListFor(SiteDefinition.class));
-		extensionList.put(new ExtensionKey("Managers", "managers"), getBeanDefListFor(BasicManager.class));
 		extensionList.put(new ExtensionKey("Portlets", "portles"), getBeanDefListFor(Portlet.class));
 		extensionList.put(new ExtensionKey("Notification's handlers", "notifications"), getBeanDefListFor(NotificationsHandler.class));
 		extensionList.put(new ExtensionKey("Course node configuration", "nodeconfig"), getBeanDefListFor(CourseNodeConfiguration.class));
@@ -85,13 +83,13 @@ public class ExtensionsAdminController extends BasicController {
 
 
 	private Map<String, GenericBeanDefinition> getBeanDefListFor(Class<?> clazz) {
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		
 		ApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
 		XmlWebApplicationContext context = (XmlWebApplicationContext)applicationContext;
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
 
-		Map<String, GenericBeanDefinition> beanDefinitionList  = new HashMap<String, GenericBeanDefinition>();
+		Map<String, GenericBeanDefinition> beanDefinitionList  = new HashMap<>();
 		
 		String[] beanNames = beanFactory.getBeanNamesForType(clazz);
 		for (int i = 0; i < beanNames.length; i++) {

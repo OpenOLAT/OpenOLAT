@@ -29,7 +29,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -43,7 +43,7 @@ import org.olat.core.util.Util;
 public class TalkBackMapper implements Mapper, Serializable {
 
 	private static final long serialVersionUID = -8319259842325597955L;
-	private static final OLog log = Tracing.createLoggerFor(TalkBackMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(TalkBackMapper.class);
 	
 	private Translator trans;
 	private String themeBaseUri;
@@ -85,7 +85,7 @@ public class TalkBackMapper implements Mapper, Serializable {
 		}
 		sb.append("</div></body></html>");
 		
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			ServletUtil.printOutRequestParameters(request);
 			
 		}

@@ -22,13 +22,13 @@ package org.olat.modules.reminder.ui;
 import java.text.ParseException;
 import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -45,7 +45,7 @@ import org.olat.modules.reminder.rule.DateRuleSPI;
  *
  */
 public class DateRuleEditor extends RuleEditorFragment {
-	private static final OLog log = Tracing.createLoggerFor(DateRuleEditor.class);
+	private static final Logger log = Tracing.createLoggerFor(DateRuleEditor.class);
 	
 	private DateChooser afterEl;
 	

@@ -85,13 +85,13 @@ public class BriefcaseAdminController extends FormBasicController {
 		@Override
 		public void run() {
 			long start = System.currentTimeMillis();
-			logInfo("Start reset of thumbnails", null);
+			logInfo("Start reset of thumbnails");
 			
 			String metaRoot = FolderConfig.getCanonicalMetaRoot();
 			vfsRepositoryService.resetThumbnails(new File(metaRoot));
 			flc.contextPut("recalculating", Boolean.FALSE);
 			
-			logInfo("Finished reset of thumbnails in " + (System.currentTimeMillis() - start) + " (ms)", null);
+			logInfo("Finished reset of thumbnails in " + (System.currentTimeMillis() - start) + " (ms)");
 		}
 	}
 }

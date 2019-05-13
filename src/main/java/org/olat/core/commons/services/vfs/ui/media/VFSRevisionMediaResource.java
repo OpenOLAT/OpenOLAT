@@ -33,7 +33,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -48,7 +48,7 @@ import org.olat.core.util.vfs.VFSConstants;
 public class VFSRevisionMediaResource implements MediaResource {
 	
 	private static final String MIME_TYPE_OCTET_STREAM = "application/octet-stream";
-	private static final OLog log = Tracing.createLoggerFor(VFSRevisionMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSRevisionMediaResource.class);
 
 	private final VFSRevision revision;
 	private final VFSMetadata metadata;

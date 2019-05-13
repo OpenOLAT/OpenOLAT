@@ -26,7 +26,7 @@ package org.olat.commons.coordinate.cluster.jms;
 
 import java.io.Serializable;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.cluster.ClusterConfig;
 
@@ -41,7 +41,7 @@ import org.olat.core.util.cluster.ClusterConfig;
  */
 public class NodeInfo implements Serializable {
 	private static final long serialVersionUID = 4043790055849121385L;
-	private static OLog log = Tracing.createLoggerFor(NodeInfo.class);
+	private static final Logger log = Tracing.createLoggerFor(NodeInfo.class);
 	
 	// the id of this node
 	private final Integer nodeId;

@@ -21,8 +21,8 @@ package org.olat.admin.sysinfo;
 
 import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -77,48 +77,66 @@ public class ErrorLogLevelController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == myLoglevels) {
 			if (event.getCommand().equals(ACTION_SETLEVEL)) {
-				String level = ureq.getHttpReq().getParameter("level");
-				String logger = ureq.getHttpReq().getParameter("logger");
-				if (logger.equals(org.olat.core.logging.Tracing.class.getName())) {
-					getWindowControl().setError("log level of "+org.olat.core.logging.Tracing.class.getName()+" must not be changed!");
-					return;
-				}
-				Level l;
-				if (level.equals("debug")) l = Level.DEBUG;
-				else if (level.equals("info")) l = Level.INFO;
-				else if (level.equals("warn")) l = Level.WARN;
-				else l = Level.ERROR;
-				
-				Tracing.setLevelForLogger(l, logger);
-				getWindowControl().setInfo("Set logger " + logger + " to level " + level);
-				
+				doSetLevel(ureq);
 			} else if (event.getCommand().equals(ACTION_VIEWLOG)) {
-				String toBeViewed = ureq.getParameter(ACTION_VIEWLOG_PACKAGE);
-				if (toBeViewed == null) return; // should not happen
-				if (logViewerCtr != null)	logViewerCtr.dispose();
-				logViewerCtr = new LogRealTimeViewerController(ureq, getWindowControl(), toBeViewed, Level.ALL, true);
-				if (cmc != null)	cmc.dispose();
-				cmc = new CloseableModalController(getWindowControl(), getTranslator().translate("close"), logViewerCtr.getInitialComponent());
-				cmc.addControllerListener(this);
-				cmc.activate();
+				doViewLog(ureq);
 			}
-		} else if (source == resetloglevelsButton){
-			Tracing.setLevelForAllLoggers(Level.INFO);
-			getWindowControl().setInfo("All loglevels set to INFO");
+		} else if (source == resetloglevelsButton) {
+			doResetLogLevels();
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
-			cmc.dispose();
-			cmc = null;
-			if (logViewerCtr != null) {
-				logViewerCtr.dispose();
-				logViewerCtr = null;
-			}
+			cleanUp();
 		}
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(logViewerCtr);
+		removeAsListenerAndDispose(cmc);
+		logViewerCtr = null;
+		cmc = null;
+	}
+	
+	private void doViewLog(UserRequest ureq) {
+		String toBeViewed = ureq.getParameter(ACTION_VIEWLOG_PACKAGE);
+		if (toBeViewed == null) {
+			return; // should not happen
+		}
+		removeAsListenerAndDispose(logViewerCtr);
+		removeAsListenerAndDispose(cmc);
+
+		logViewerCtr = new LogRealTimeViewerController(ureq, getWindowControl(), toBeViewed, Level.ALL, false);
+		listenTo(logViewerCtr);
+		cmc = new CloseableModalController(getWindowControl(), "close", logViewerCtr.getInitialComponent(), true, toBeViewed);
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
+	private void doSetLevel(UserRequest ureq) {
+		String level = ureq.getParameter("level");
+		String logger = ureq.getParameter("logger");
+		if (logger.equals(org.olat.core.logging.Tracing.class.getName())) {
+			getWindowControl().setError("log level of "+org.olat.core.logging.Tracing.class.getName()+" must not be changed!");
+			return;
+		}
+		Level l;
+		switch(level) {
+			case "debug": l = Level.DEBUG; break;
+			case "info": l = Level.INFO; break;
+			case "warn": l = Level.WARN; break;
+			default: l = Level.ERROR; break;
+		}
+		Tracing.setLevelForLogger(l, logger);
+		getWindowControl().setInfo("Set logger " + logger + " to level " + level);
+		loadModel();
+	}
+	
+	private void doResetLogLevels() {
+		Tracing.resetLevelForAllLoggers();
+		getWindowControl().setInfo("Reload all log levels from configuration");
+		loadModel();
 	}
 }

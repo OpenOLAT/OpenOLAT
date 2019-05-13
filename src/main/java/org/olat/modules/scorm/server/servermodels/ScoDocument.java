@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.apache.logging.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.ISettingsHandler;
 
@@ -49,7 +49,7 @@ import uk.ac.reload.jdom.XMLDocument;
  * @author Paul Sharples
  */
 public class ScoDocument extends XMLDocument {
-	private OLog log = Tracing.createLoggerFor(ScoDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(ScoDocument.class);
 	
 	// var used to flag if the sco was "failed"
 	private boolean isFailed = false;

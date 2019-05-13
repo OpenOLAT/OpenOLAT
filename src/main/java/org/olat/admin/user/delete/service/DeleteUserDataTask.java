@@ -26,11 +26,11 @@ package org.olat.admin.user.delete.service;
 
 import java.io.File;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.taskexecutor.LowPriorityRunnable;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -58,7 +58,7 @@ import org.olat.resource.OLATResourceManager;
 public class DeleteUserDataTask implements LowPriorityRunnable {
 	private static final long serialVersionUID = 4278304131373256050L;
 
-	private static final OLog log = Tracing.createLoggerFor(DeleteUserDataTask.class);
+	private static final Logger log = Tracing.createLoggerFor(DeleteUserDataTask.class);
 
 	private final Long identityKey;
 	private final String newDeletedUserName;//it's the used username, not the one (let the name because of XStream)
@@ -113,7 +113,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 				File userDir = new File(nodeDir, identity.getKey().toString());
 				if(userDir.exists()) {
 					FileUtils.deleteDirsAndFiles(userDir, true, true); 
-					log.audit("User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+					log.info(Tracing.M_AUDIT, "User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
 				}
 			}
 		}
@@ -134,7 +134,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 					File userDir = new File(box, "person_" + identity.getKey());
 					if(userDir.exists()) {
 						FileUtils.deleteDirsAndFiles(userDir, true, true); 
-						log.audit("User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+						log.info(Tracing.M_AUDIT, "User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
 					}
 				}
 			}
@@ -149,7 +149,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 				File userDir = new File(nodeDir, "person_" + identity.getKey());
 				if(userDir.exists()) {
 					FileUtils.deleteDirsAndFiles(userDir, true, true); 
-					log.audit("User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+					log.info(Tracing.M_AUDIT, "User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
 				}
 			}
 		}
@@ -183,7 +183,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 							deleteUserDirectory(identity, projectDir);
 						}
 					} else {
-						log.warn("found dropbox or returnbox and node-type is NO Task- or ProjectBroker-Type courseId=" + courseDir.getName() + " nodeId=" + currentNodeId, null);
+						log.warn("found dropbox or returnbox and node-type is NO Task- or ProjectBroker-Type courseId=" + courseDir.getName() + " nodeId=" + currentNodeId);
 					}
 				}
 			}
@@ -198,7 +198,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 			if(resource != null) {
 				return CourseFactory.loadCourse(resId);
 			} else {
-				log.warn("course with resid=" + courseDir.getName() + " has a folder but no resource/repository entry", null);
+				log.warn("course with resid=" + courseDir.getName() + " has a folder but no resource/repository entry");
 			}
 		} catch (Exception e) {
 			log.error("could not load course with resid=" + courseDir.getName(), e);
@@ -220,7 +220,7 @@ public class DeleteUserDataTask implements LowPriorityRunnable {
 		if (userDir.exists()) {
 			// ok found a directory of a user => delete it
 			FileUtils.deleteDirsAndFiles(userDir, true, true); 
-			log.audit("User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
+			log.info(Tracing.M_AUDIT, "User-Deletion: identity=" + identity.getKey() +" : User file data deleted under dir=" + userDir.getAbsolutePath());
 		}
 	}
 	

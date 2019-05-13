@@ -44,7 +44,7 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -99,7 +99,7 @@ import org.olat.resource.OLATResource;
  */
 public class IQSELFCourseNode extends AbstractAccessableCourseNode implements SelfAssessableCourseNode, QTICourseNode {
 	private static final long serialVersionUID = -1929987728611139729L;
-	private static final OLog log = Tracing.createLoggerFor(IQSELFCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(IQSELFCourseNode.class);
 	private static final String PACKAGE_IQ = Util.getPackageName(IQRunController.class);
 	private static final String TYPE = "iqself";
 

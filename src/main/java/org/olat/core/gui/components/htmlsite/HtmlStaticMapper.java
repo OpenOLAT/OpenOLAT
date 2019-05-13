@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SimpleHtmlParser;
 import org.olat.core.util.vfs.VFSContainer;
@@ -40,7 +40,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
  */
 public class HtmlStaticMapper implements Mapper {
 	
-	private static final OLog log = Tracing.createLoggerFor(HtmlStaticMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(HtmlStaticMapper.class);
 	
 	private VFSContainer mapperRootContainer;
 	
@@ -53,7 +53,7 @@ public class HtmlStaticMapper implements Mapper {
 	}
 	
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		if(log.isDebug()) log.debug("CPComponent Mapper relPath=" + relPath);
+		if(log.isDebugEnabled()) log.debug("CPComponent Mapper relPath=" + relPath);
 		
 		VFSItem currentItem = mapperRootContainer.resolve(relPath);
 		if (currentItem == null || (currentItem instanceof VFSContainer)) {
@@ -61,7 +61,7 @@ public class HtmlStaticMapper implements Mapper {
 		}
 		VFSMediaResource vmr = new VFSMediaResource((VFSLeaf)currentItem);
 		String encoding = SimpleHtmlParser.extractHTMLCharset(((VFSLeaf)currentItem));
-		if(log.isDebug()) log.debug("CPComponent Mapper set encoding=" + encoding);
+		if(log.isDebugEnabled()) log.debug("CPComponent Mapper set encoding=" + encoding);
 		vmr.setEncoding(encoding);// 
 		return vmr;
 	}

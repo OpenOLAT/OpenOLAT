@@ -60,6 +60,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
@@ -173,7 +174,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		// log shows who entered which course, this can then be further used to jump
 		// to the courselog
-		logAudit("Entering course: [[["+courseTitle+"]]]", course.getResourceableId().toString());
+		getLogger().info(Tracing.M_AUDIT, "Entering course: [[[{}]]] {}", courseTitle, course.getResourceableId().toString());
 		
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setScrollTopOnClick(true);

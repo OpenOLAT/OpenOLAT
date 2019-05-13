@@ -30,6 +30,7 @@ package org.olat.core.gui.exception;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.csp.CSPModule;
 import org.olat.core.gui.UserRequest;
@@ -54,7 +55,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -69,7 +69,7 @@ import org.olat.core.util.i18n.I18nManager;
  * @author Felix Jost
  */
 public class ExceptionWindowController extends DefaultChiefController {
-	private static final OLog log = Tracing.createLoggerFor(ExceptionWindowController.class);
+	private static final Logger log = Tracing.createLoggerFor(ExceptionWindowController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(ExceptionWindowController.class);
 
 	private VelocityContainer msg;
@@ -178,9 +178,9 @@ public class ExceptionWindowController extends DefaultChiefController {
 			msg.contextPut("knownissuelink", kie.getJiraLink());
 		}
 		
-		// TODO: DB.getInstance().hasTransaction() TODO: log db transaction id if in
-		// transaction
-		long refNum = Tracing.logError("**RedScreen** "+o3e.getLogMsg() + " ::_::" + componentListenerInfo + " ::_::", o3e, o3e.getThrowingClazz());
+		Logger o3log = Tracing.createLoggerFor(o3e.getThrowingClazz());
+		String refNum = ureq.getUuid();
+		o3log.error("**RedScreen** "+o3e.getLogMsg() + " ::_::" + componentListenerInfo + " ::_::", o3e);
 		// only if debug
 		if (Settings.isDebuging()) {
 			msg.contextPut("debug", Boolean.TRUE);
@@ -267,19 +267,13 @@ public class ExceptionWindowController extends DefaultChiefController {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// nothing to do here
 	}
-
 }

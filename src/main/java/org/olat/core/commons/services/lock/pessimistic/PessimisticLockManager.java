@@ -31,7 +31,7 @@ import javax.persistence.LockModeType;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ import org.springframework.stereotype.Service;
 @Service("lockManager")
 public class PessimisticLockManager implements InitializingBean {
 	
-	private static final OLog log = Tracing.createLoggerFor(PessimisticLockManager.class);
+	private static final Logger log = Tracing.createLoggerFor(PessimisticLockManager.class);
 	
 
 	private final String ASSET_INSERT_LOCK = "SYS_plock_global";
@@ -111,7 +111,7 @@ public class PessimisticLockManager implements InitializingBean {
 	public PLock findOrPersistPLock(String asset) {
 		if (!initDone) throw new AssertException("init not called yet - make sure the ClusterModule is enabled in your olat.local.properties file");
 		
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		if (debug) {
 			log.debug("findOrPersistPLock START asset="+asset);
 		}

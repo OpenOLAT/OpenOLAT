@@ -21,7 +21,7 @@ package org.olat.course.statistic;
 
 import java.util.concurrent.TimeUnit;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.quartz.CronExpression;
@@ -38,7 +38,7 @@ import org.springframework.beans.factory.FactoryBean;
  */
 public class StatisticsCronGenerator implements FactoryBean<String> {
 	
-	private static final OLog log = Tracing.createLoggerFor(StatisticsCronGenerator.class);
+	private static final Logger log = Tracing.createLoggerFor(StatisticsCronGenerator.class);
 	
 	private int tomcatId;
 	private String cronExpression;
@@ -64,8 +64,7 @@ public class StatisticsCronGenerator implements FactoryBean<String> {
 				// was not empty, so someone tried to set someting here, let user know that it was garbage
 				log.warn("Configured cron expression is not valid::"
 						+ cronExpression
-						+ " check your search.indexing.cronjob.expression property",
-						null);
+						+ " check your search.indexing.cronjob.expression property");
 			}
 			this.cronExpression = null;
 		}

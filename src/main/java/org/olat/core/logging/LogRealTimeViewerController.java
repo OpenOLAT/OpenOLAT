@@ -19,26 +19,21 @@
  */
 package org.olat.core.logging;
 
-import static org.quartz.CronScheduleBuilder.cronSchedule;
-import static org.quartz.JobBuilder.newJob;
-import static org.quartz.TriggerBuilder.newTrigger;
-import static org.quartz.impl.matchers.KeyMatcher.keyEquals;
-
 import java.io.IOException;
-import java.io.StringWriter;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.log4j.Layout;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.WriterAppender;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.services.scheduler.DummyJob;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.appender.WriterAppender;
+import org.apache.logging.log4j.core.config.AppenderRef;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -46,16 +41,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.Formatter;
-import org.quartz.JobDetail;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
-import org.quartz.JobKey;
-import org.quartz.JobListener;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.quartz.Trigger;
-import org.quartz.TriggerKey;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -68,20 +53,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author gnaegi
  */
-public class LogRealTimeViewerController extends BasicController implements JobListener {
-	private static final String LOG_DISPLAYER_GROUP = "LogDisplayer_Group";
-	private static final Pattern logNoiseReducePattern = Pattern.compile("(.*) \\[.*%\\^(.*) .*%\\^(.*)");
-	private VelocityContainer logViewerVC;
-	private Logger log4JLogger;
-	private WriterAppender writerAppender;
-	private StringWriter writer;
-	private JobKey jobKey;
-	private TriggerKey triggerKey;
-	private Link updateLink, startLink, stopLink;
-	private boolean removeLogNoise;
+public class LogRealTimeViewerController extends BasicController {
+	private final Level level;
+	private String loggingPackage;
+	private boolean collectLog = true;
+	private final LogWriter writer = new LogWriter();
 	
-	@Autowired
-	private Scheduler scheduler;
+	private Link stopLink;
+	private Link startLink;
+	private Link clearLink;
+	private VelocityContainer logViewerVC;
 
 	/**
 	 * Constructor for creating a real time log viewer controller
@@ -94,185 +75,134 @@ public class LogRealTimeViewerController extends BasicController implements JobL
 	 *          change the log level on the packages itself, use the admin console
 	 *          to do this. This filters only the messages that are below this
 	 *          level
-	 * @param removeLogNoise true: remove a lot of brasato specific stuff that is
-	 *          normally not interesting; false: show log entries as they are
-	 *          logged. Example if set to true: <br>
-	 *          <code>2008-08-22 11:20:40 [QuartzScheduler_Worker-1] INFO  LDAPUserSynchronizerJob  - OLAT::INFO ^%^ I441 ^%^ org.olat.ldap ^%^ n/a ^%^ n/a ^%^ n/a ^%^ n/a ^%^ n/a ^%^ Starting LDAP user synchronize job</code>
-	 *          <br>will become<br>
-	 *          <code>2008-08-22 11:20:40 - n/a - Starting LDAP user synchronize job</code>
 	 */
-	public LogRealTimeViewerController(UserRequest ureq, WindowControl control, String loggingPackage, Level level, boolean removeLogNoise) {
+	public LogRealTimeViewerController(UserRequest ureq, WindowControl control, String loggingPackage, Level level, boolean withTitle) {
 		super(ureq, control);
-		this.removeLogNoise = removeLogNoise;
+		this.level = level;
+		this.loggingPackage = loggingPackage;
 		logViewerVC = createVelocityContainer("logviewer");
 		logViewerVC.contextPut("loggingPackage", loggingPackage);
-		// Create logger for requested package and add a string writer appender
-		log4JLogger = Logger.getLogger(loggingPackage);
-		writer = new StringWriter();
-		Layout layout = new PatternLayout("%d{HH:mm:ss} %-5p [%t]: %m%n");
-		writerAppender = new WriterAppender(layout, writer);
-		writerAppender.setThreshold(level);
-		log4JLogger.addAppender(writerAppender);
-		updateLogViewFromWriter();
-		// Add job to read from the string writer every second
-		try {
-			jobKey = new JobKey("Log_Displayer_Job_" + this.hashCode(), LOG_DISPLAYER_GROUP);
-			triggerKey = new TriggerKey("Log_Displayer_Trigger_" + this.hashCode(), LOG_DISPLAYER_GROUP);
-			
-			JobDetail jobDetail = newJob(DummyJob.class)
-					.withIdentity(jobKey)
-					.build();
-			
-			Trigger trigger = newTrigger()
-				    .withIdentity(triggerKey)
-				    .withSchedule(cronSchedule("* * * * * ?"))
-				    .build();
-			
-			// Schedule job now
-			scheduler.getListenerManager().addJobListener(this, keyEquals(jobKey));
-			scheduler.scheduleJob(jobDetail, trigger);
-		} catch (Exception e) {
-			logError("Can not parse log viewer cron expression", e);
-		}
-		// Add one second interval to update the log view every second
-		JSAndCSSComponent jsc = new JSAndCSSComponent("intervall", this.getClass(), 3000);
-		jsc.requireFullPageRefresh(); // interval not working otherwise
-		logViewerVC.put("updatecontrol", jsc);
+
+		// Add one second interval to update the log view every 5 seconds
+		logViewerVC.contextPut("log", writer);
+		logViewerVC.contextPut("withTitle", Boolean.valueOf(withTitle));
+		
 		// Add manual update link in case the automatic refresh does not work
-		updateLink = LinkFactory.createButtonSmall("logviewer.link.update", logViewerVC, this);
+		clearLink = LinkFactory.createButtonSmall("logviewer.link.clear", logViewerVC, this);
 		stopLink = LinkFactory.createButtonSmall("logviewer.link.stop", logViewerVC, this);
 		
 		putInitialPanel(logViewerVC);
+		updateConfiguration();
+	}
+	
+	private void updateConfiguration() {
+		final LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+		final Configuration config = ctx.getConfiguration();
+		LoggerConfig currentLoggerConfig = config.getLoggerConfig(loggingPackage);
+		List<AppenderRef> currentRefs = currentLoggerConfig.getAppenderRefs();
+
+		PatternLayout layout = PatternLayout.newBuilder()
+				.withPattern(PatternLayout.SIMPLE_CONVERSION_PATTERN)
+				.build();
+
+		WriterAppender appender = WriterAppender.newBuilder()
+				.setLayout(layout)
+				.setTarget(writer)
+				.setName("LogRealTimeApppender")
+				.build();
+		appender.start();
+		config.addAppender(appender);
+
+		AppenderRef ref = AppenderRef.createAppenderRef("LogRealTime", null, null);
+		List<AppenderRef> refList = new ArrayList<>();
+		refList.addAll(currentRefs);
+		refList.add(ref);
+		
+		AppenderRef[] refs = refList.toArray(new AppenderRef[refList.size()]);
+		LoggerConfig loggerConfig = LoggerConfig.createLogger(false, level, loggingPackage, "true", refs, null, config, null);
+		loggerConfig.addAppender(appender, level, null);
+		config.addLogger(loggingPackage, loggerConfig);
+		ctx.updateLoggers();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-		if (logViewerVC != null) { // don't clean up twice
-			Scheduler scheduler = (Scheduler) CoreSpringFactory.getBean("schedulerFactoryBean");
-			// remove scheduler job first
-			try {
-				scheduler.deleteJob(jobKey);
-				scheduler.getListenerManager().removeJobListener(jobKey.getName());
-			} catch (SchedulerException e) {
-				logError("Can not delete log viewer job", e);
-			}
-			// remove logger appender and release StringWriter
-			log4JLogger.removeAppender(writerAppender);
-			log4JLogger = null;
-			writerAppender.close();
-			writerAppender = null;
-			try {
-				writer.close();
-			} catch (IOException e) {
-				logError("Error while closing log viewer string writer", e);
-			}
-			synchronized(this) {
-				writer = null;
-				updateLink = null;
-				logViewerVC = null;
-			}
-		}
+		removeConfiguration();
+	}
+	
+	private void removeConfiguration() {
+		Tracing.resetLevelForAllLoggers();
 	}
 
-	//cluster_OK (it only snyc the disposed for logViewerVC)
-	private synchronized void updateLogViewFromWriter() {
-		if(logViewerVC == null) return;
-		
-		StringBuffer sb = writer.getBuffer();
-		String log = sb.toString();
-		if (removeLogNoise) {
-			Matcher m = logNoiseReducePattern.matcher(log);
-			log = m.replaceAll("$1 - $2 - $3");
-		}
-		logViewerVC.contextPut("log", Formatter.escWithBR(log));
-		// don't let the writer grow endlessly, reduce to half of size when larger than 100'000 characters (1.6MB)
-		if (sb.length() > 100000) {
-			int nextLineBreakAfterHalfPos = sb.indexOf("\n", sb.length() / 2);
-			sb.delete(0, nextLineBreakAfterHalfPos);
-		}
-	}
-
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == updateLink) {
-			updateLogViewFromWriter();
-		} else if (source == stopLink) {
+		if (source == stopLink) {
 			doStop();
 		} else if (source == startLink) {
 			doStart();
-		}		
+		} else if(source == clearLink) {
+			doClear();
+		}
 	}
 	
 	private void doStart() {
-		// update viewable links
+		collectLog = true;
 		logViewerVC.remove(startLink);
-		updateLink = LinkFactory.createButtonSmall("logviewer.link.update", logViewerVC, this);
 		stopLink = LinkFactory.createButtonSmall("logviewer.link.stop", logViewerVC, this);
-		// re-add appender to logger
-		log4JLogger.addAppender(writerAppender);
-		// resume trigger job
-		try {
-			Scheduler scheduler = (Scheduler) CoreSpringFactory.getBean("schedulerFactoryBean");
-			scheduler.resumeJob(jobKey);
-		} catch (SchedulerException e) {
-			logError("Can not resume log viewer job", e);
-		}
 	}
 	
 	private void doStop() {
 		// update viewable links
+		collectLog = false;
 		logViewerVC.remove(stopLink);
-		logViewerVC.remove(updateLink);
 		startLink = LinkFactory.createButtonSmall("logviewer.link.start", logViewerVC, this);
-		// remove logger appender
-		log4JLogger.removeAppender(writerAppender);
-		// pause log update trigger job
-		try {
-			Scheduler scheduler = (Scheduler) CoreSpringFactory.getBean("schedulerFactoryBean");
-			scheduler.pauseJob(jobKey);
-		} catch (SchedulerException e) {
-			logError("Can not pause log viewer job", e);
+	}
+	
+	private void doClear() {
+		writer.clear();
+	}
+	
+	public class LogWriter extends Writer {
+
+		private StringBuilder sb = new StringBuilder(100000);
+
+		@Override
+		public synchronized void write(char[] cbuf, int off, int len) throws IOException {
+			if(collectLog && len > 0) {
+				sb.append(cbuf, off, len);
+				logViewerVC.setDirty(true);
+			}
 		}
-	}
 
-	/**
-	 * @see org.quartz.JobListener#getName()
-	 */
-	@Override
-	public String getName() {
-		return jobKey.getName();
-	}
+		@Override
+		public void flush() throws IOException {
+			//
+		}
 
-	/**
-	 * @see org.quartz.JobListener#jobExecutionVetoed(org.quartz.JobExecutionContext)
-	 */
-	@Override
-	public void jobExecutionVetoed(JobExecutionContext arg0) {
-	// nothing to do, see jobWasExecuted()
-	}
-
-	/**
-	 * @see org.quartz.JobListener#jobToBeExecuted(org.quartz.JobExecutionContext)
-	 */
-	@Override
-	public void jobToBeExecuted(JobExecutionContext arg0) {
-	// nothing to do, see jobWasExecuted()
-	}
-
-	/**
-	 * @see org.quartz.JobListener#jobWasExecuted(org.quartz.JobExecutionContext,
-	 *      org.quartz.JobExecutionException)
-	 */
-	@Override
-	public void jobWasExecuted(JobExecutionContext arg0, JobExecutionException arg1) {
-		updateLogViewFromWriter();
+		@Override
+		public void close() throws IOException {
+			//
+		}
+		
+		public void clear() {
+			sb = new StringBuilder(100000);
+		}
+		
+		@Override
+		public String toString() {
+			String log;
+			synchronized(this) {
+				log = sb.toString();
+			}
+			// don't let the writer grow endlessly, reduce to half of size when larger than 100'000 characters (1.6MB)
+			if (log.length() > 100000) {
+				synchronized(this) {
+					int nextLineBreakAfterHalfPos = sb.indexOf("\n", sb.length() / 2);
+					String  cut = sb.substring(nextLineBreakAfterHalfPos);
+					sb = new StringBuilder(cut);
+				}
+			}
+			return Formatter.escWithBR(log).toString();
+		}
 	}
 }

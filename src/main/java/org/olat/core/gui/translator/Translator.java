@@ -28,7 +28,7 @@ package org.olat.core.gui.translator;
 
 import java.util.Locale;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 /**
  * @author Felix Jost
  */

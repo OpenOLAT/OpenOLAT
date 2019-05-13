@@ -26,7 +26,7 @@
 package org.olat.course.condition.interpreter;
 
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -37,7 +37,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * Description: A user is course coach if he/she is in at least one owner group of a learning group of the learning group context of the course
  */
 public class IsCourseCoachFunction extends AbstractFunction {
-	private static final OLog log = Tracing.createLoggerFor(IsCourseCoachFunction.class);
+	private static final Logger log = Tracing.createLoggerFor(IsCourseCoachFunction.class);
 	public static final String name = "isCourseCoach";
 	
 	/**
@@ -69,7 +69,7 @@ public class IsCourseCoachFunction extends AbstractFunction {
 		} else {
 			isCourseCoach = getUserCourseEnv().isCoach();
 		}
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 			log.debug("identity "+ident.getKey()+", coursecoach:"+isCourseCoach+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
 		}

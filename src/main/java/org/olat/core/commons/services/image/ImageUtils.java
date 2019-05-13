@@ -31,7 +31,7 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 
@@ -43,7 +43,7 @@ import org.olat.core.util.FileUtils;
  */
 public class ImageUtils {
 	
-	private static final OLog log = Tracing.createLoggerFor(ImageUtils.class);
+	private static final Logger log = Tracing.createLoggerFor(ImageUtils.class);
 	
 	public static Size getImageSize(File image) {
 		try(InputStream in = new FileInputStream(image);

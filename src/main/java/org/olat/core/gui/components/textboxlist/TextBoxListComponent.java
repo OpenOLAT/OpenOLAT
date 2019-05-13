@@ -42,7 +42,7 @@ import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
@@ -92,7 +92,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 
 	private boolean allowDuplicates = false;
 
-	private static final OLog logger = Tracing.createLoggerFor(TextBoxListComponent.class);
+	private static final Logger logger = Tracing.createLoggerFor(TextBoxListComponent.class);
 
 	/*
 	 * the autoCompletion map. Key-String in the map is the "caption",
@@ -159,7 +159,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 		// empty string is ok = empty text box
 		
 		String[] splitted = cmd.split(",");
-		List<String> cleanedItemValues = new ArrayList<String>();
+		List<String> cleanedItemValues = new ArrayList<>();
 		for (String item : splitted) {
 			if (!StringUtils.isBlank(item))
 				cleanedItemValues.add(item.trim());
@@ -168,7 +168,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 			removeDuplicates(cleanedItemValues);
 
 		// update our current items
-		currentItems = new HashMap<String, String>();
+		currentItems = new HashMap<>();
 		String caption = "";
 		for (String itemValue : cleanedItemValues) {
 			caption = getCaptionForKnownValue(itemValue);
@@ -179,7 +179,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 			}
 		}
 
-		if (logger.isDebug())
+		if (logger.isDebugEnabled())
 			logger.debug("doDispatchRequest --> firing textBoxListEvent with current items: " + cleanedItemValues);
 		fireEvent(ureq, new TextBoxListEvent(cleanedItemValues));	
 	}

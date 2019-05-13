@@ -22,7 +22,7 @@ package org.olat.basesecurity;
 import java.util.Arrays;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -39,7 +39,7 @@ public enum IdentityToIdentityRelationManagedFlag {
 	
 	private static BaseSecurityModule securityModule;
 	private IdentityToIdentityRelationManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(IdentityToIdentityRelationManagedFlag.class);
+	private static final Logger log = Tracing.createLoggerFor(IdentityToIdentityRelationManagedFlag.class);
 	public static final IdentityToIdentityRelationManagedFlag[] EMPTY_ARRAY = new IdentityToIdentityRelationManagedFlag[0];
 	
 	private IdentityToIdentityRelationManagedFlag() {

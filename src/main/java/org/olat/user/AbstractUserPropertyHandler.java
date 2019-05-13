@@ -30,11 +30,11 @@ import java.util.Locale;
 
 import javax.persistence.Column;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -47,7 +47,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author Carsten Weisse, Florian Gnägi
  */
 public abstract class AbstractUserPropertyHandler implements UserPropertyHandler {
-	private static final OLog log = Tracing.createLoggerFor(AbstractUserPropertyHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractUserPropertyHandler.class);
 	
 	private String name; 
 	private String group;
@@ -158,7 +158,7 @@ public abstract class AbstractUserPropertyHandler implements UserPropertyHandler
 				((UserImpl)user).setUserProperty(name, value);
 			}
 		} else {
-			log.warn("Set read-only value: " + name,  null);
+			log.warn("Set read-only value: " + name);
 		}
 	}
 

@@ -35,7 +35,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.ModifiedInfo;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SecurityGroupDAO implements UserDataDeletable {
 	
-	private static final OLog log = Tracing.createLoggerFor(SecurityGroupDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(SecurityGroupDAO.class);
 	
 	@Autowired
 	private DB dbInstance;

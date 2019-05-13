@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.core.commons.persistence.DB;
@@ -38,7 +39,6 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.Coordinator;
@@ -99,7 +99,7 @@ import org.springframework.stereotype.Service;
 @Service("epFrontendManager")
 public class EPFrontendManager implements UserDataDeletable, DeletableGroupData {
 	
-	private static final OLog log = Tracing.createLoggerFor(EPFrontendManager.class);
+	private static final Logger log = Tracing.createLoggerFor(EPFrontendManager.class);
 
 	@Autowired
 	private Coordinator coordinator;
@@ -1181,7 +1181,7 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 				assessmentService.updateAssessmentEntry(owner, courseEntry, courseNode.getIdent(), referenceEntry, AssessmentEntryStatus.inReview);
 			}
 			assessmentNotificationsHandler.markPublisherNews(owner, course.getResourceableId());
-			log.audit("Map " + map + " from " + owner.getKey() + " has been submitted.");
+			log.info(Tracing.M_AUDIT, "Map " + map + " from " + owner.getKey() + " has been submitted.");
 		}
 	}
 	

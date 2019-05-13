@@ -24,12 +24,12 @@
 */
 package org.olat.core.util.coordinate;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.properties.Property;
@@ -44,7 +44,7 @@ import org.olat.user.UserDataDeletable;
  */
 public class DBPersistentLockManager implements PersistentLockManager, UserDataDeletable {
 	
-	private static final OLog log = Tracing.createLoggerFor(DBPersistentLockManager.class);
+	private static final Logger log = Tracing.createLoggerFor(DBPersistentLockManager.class);
 	private static final String CATEGORY_PERSISTENTLOCK = "o_lock";
 	
 

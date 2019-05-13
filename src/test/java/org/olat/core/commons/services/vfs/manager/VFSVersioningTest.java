@@ -42,7 +42,7 @@ import org.olat.core.commons.services.vfs.VFSRevision;
 import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VFSVersioningTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSVersioningTest.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSVersioningTest.class);
 	
 	@Autowired
 	private DB dbInstance;

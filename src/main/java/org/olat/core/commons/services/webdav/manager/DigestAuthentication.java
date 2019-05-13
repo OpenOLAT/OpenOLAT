@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Map;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.http.Authorization;
 
@@ -37,7 +37,7 @@ import org.olat.core.util.http.Authorization;
  */
 public class DigestAuthentication {
 	
-	private static final OLog log = Tracing.createLoggerFor(DigestAuthentication.class);
+	private static final Logger log = Tracing.createLoggerFor(DigestAuthentication.class);
 	
 	private final String username;
 	private final String realm;

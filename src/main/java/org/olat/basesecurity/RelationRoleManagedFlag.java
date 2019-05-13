@@ -22,7 +22,7 @@ package org.olat.basesecurity;
 import java.util.Arrays;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -41,7 +41,7 @@ public enum RelationRoleManagedFlag {
 	
 	private static BaseSecurityModule securityModule;
 	private RelationRoleManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(RelationRoleManagedFlag.class);
+	private static final Logger log = Tracing.createLoggerFor(RelationRoleManagedFlag.class);
 	public static final RelationRoleManagedFlag[] EMPTY_ARRAY = new RelationRoleManagedFlag[0];
 	
 	private RelationRoleManagedFlag() {

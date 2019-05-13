@@ -36,7 +36,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerExecutor;
@@ -59,7 +59,7 @@ import org.springframework.stereotype.Service;
 @Service("userCourseInformationsManager")
 public class UserCourseInformationsManagerImpl implements UserCourseInformationsManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserCourseInformationsManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(UserCourseInformationsManagerImpl.class);
 
 	@Autowired
 	private DB dbInstance;

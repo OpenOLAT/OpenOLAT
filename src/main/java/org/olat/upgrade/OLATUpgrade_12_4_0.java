@@ -21,11 +21,13 @@ package org.olat.upgrade;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.QLicense;
@@ -39,6 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_12_4_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_12_4_0.class);
 
 	private static final int BATCH_SIZE = 500;
 	
@@ -79,9 +83,9 @@ public class OLATUpgrade_12_4_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_12_4_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_12_4_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_12_4_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_12_4_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

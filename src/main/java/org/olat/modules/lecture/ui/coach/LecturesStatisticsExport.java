@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
@@ -47,7 +47,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class LecturesStatisticsExport extends OpenXMLWorkbookResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(LecturesStatisticsExport.class);
+	private static final Logger log = Tracing.createLoggerFor(LecturesStatisticsExport.class);
 	
 	private final Translator translator;
 	private final boolean isAdministrativeUser;

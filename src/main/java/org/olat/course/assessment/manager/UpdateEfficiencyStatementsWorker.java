@@ -27,11 +27,11 @@ package org.olat.course.assessment.manager;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.course.assessment.EfficiencyStatementEvent;
@@ -43,7 +43,7 @@ import org.olat.repository.RepositoryManager;
  * A worker which updates the efficicency statements 
  */
 public class UpdateEfficiencyStatementsWorker implements Runnable {
-	private OLog log = Tracing.createLoggerFor(UpdateEfficiencyStatementsWorker.class);
+	private static final Logger log = Tracing.createLoggerFor(UpdateEfficiencyStatementsWorker.class);
 	private final OLATResourceable ores;
 	
 	/**

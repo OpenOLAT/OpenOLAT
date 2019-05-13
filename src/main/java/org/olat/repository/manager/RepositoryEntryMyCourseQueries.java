@@ -39,7 +39,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
@@ -75,7 +75,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepositoryEntryMyCourseQueries {
 	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryMyCourseQueries.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryMyCourseQueries.class);
 	
 	@Autowired
 	private DB dbInstance;

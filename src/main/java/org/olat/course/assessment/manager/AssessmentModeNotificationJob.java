@@ -19,9 +19,9 @@
  */
 package org.olat.course.assessment.manager;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -34,7 +34,7 @@ import org.quartz.JobExecutionException;
  */
 public class AssessmentModeNotificationJob extends JobWithDB {
 	
-	private static final OLog logger = Tracing.createLoggerFor(AssessmentModeNotificationJob.class);
+	private static final Logger logger = Tracing.createLoggerFor(AssessmentModeNotificationJob.class);
 
 	@Override
 	public void executeWithDB(JobExecutionContext context)

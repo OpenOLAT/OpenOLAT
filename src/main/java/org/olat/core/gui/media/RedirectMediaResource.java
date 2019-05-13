@@ -31,7 +31,7 @@ import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -39,7 +39,7 @@ import org.olat.core.logging.Tracing;
  */
 public class RedirectMediaResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(RedirectMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(RedirectMediaResource.class);
 
 	private final String redirectURL;
 

@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.impl.NekoHTMLScanner;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
@@ -65,7 +65,7 @@ import com.thoughtworks.xstream.core.util.Base64Encoder;
  */
 public class StringHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(StringHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(StringHelper.class);
 
 	private static final NumberFormat numFormatter;
 	private static final String WHITESPACE_REGEXP = "^\\s*$";

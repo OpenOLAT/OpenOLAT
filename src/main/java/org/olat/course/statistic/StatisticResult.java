@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.olat.core.gui.components.table.TableDataModel;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
@@ -46,7 +46,7 @@ import org.olat.course.nodes.CourseNode;
 /** work in progress **/
 public class StatisticResult implements TableDataModel {
 	
-	private static final OLog log = Tracing.createLoggerFor(StatisticResult.class);
+	private static final Logger log = Tracing.createLoggerFor(StatisticResult.class);
 
 	/** token representing the title cell in the total row - renderers must know how to render this **/
 	static final Object TOTAL_ROW_TITLE_CELL = new Object();

@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.QTI21Constants;
@@ -91,7 +91,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder implements ResponseIdentifierForFeedback {
 	
-	private static final OLog log = Tracing.createLoggerFor(HottextAssessmentItemBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(HottextAssessmentItemBuilder.class);
 	
 	private String question;
 	private Identifier responseIdentifier;

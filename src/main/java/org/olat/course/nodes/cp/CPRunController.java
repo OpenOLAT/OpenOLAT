@@ -28,6 +28,7 @@ package org.olat.course.nodes.cp;
 import java.io.File;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -45,7 +46,6 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -74,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class CPRunController extends BasicController implements ControllerEventListener, Activateable2 {
-	private static final OLog log = Tracing.createLoggerFor(CPRunController.class);
+	private static final Logger log = Tracing.createLoggerFor(CPRunController.class);
 
 	private ModuleConfiguration config;
 	private File cpRoot;
@@ -122,15 +122,15 @@ public class CPRunController extends BasicController implements ControllerEventL
 		BusinessControl bc = getWindowControl().getBusinessControl();
 		ContextEntry ce = bc.popLauncherContextEntry();
 		if ( ce != null ) { // a context path is left for me
-			if(log.isDebug()) log.debug("businesscontrol (for further jumps) would be:"+bc);
+			if(log.isDebugEnabled()) log.debug("businesscontrol (for further jumps) would be:"+bc);
 			OLATResourceable popOres = ce.getOLATResourceable();
-			if(log.isDebug()) log.debug("OLATResourceable=" + popOres);
+			if(log.isDebugEnabled()) log.debug("OLATResourceable=" + popOres);
 			String typeName = popOres.getResourceableTypeName();
 			// typeName format: 'path=/test1/test2/readme.txt'
 			// First remove prefix 'path='
 			String path = typeName.substring("path=".length());
 			if  (path.length() > 0) {
-			  if(log.isDebug()) log.debug("direct navigation to container-path=" + path);
+			  if(log.isDebugEnabled()) log.debug("direct navigation to container-path=" + path);
 			  this.nodecmd = path;
 			}
 		}

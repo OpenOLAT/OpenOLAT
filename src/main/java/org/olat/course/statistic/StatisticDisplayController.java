@@ -47,7 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -88,7 +88,7 @@ public class StatisticDisplayController extends BasicController {
 	}
 	
 	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(StatisticDisplayController.class);
+	private static final Logger log_ = Tracing.createLoggerFor(StatisticDisplayController.class);
 
 	private static final String CLICK_NODE_ACTION = "clicknodeaction";
 	

@@ -23,8 +23,8 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DialogElementsUserDataManager implements UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(DialogElementsUserDataManager.class);
+	private static final Logger log = Tracing.createLoggerFor(DialogElementsUserDataManager.class);
 
 	@Autowired
 	private DialogElementsManager dialogElementsManager;

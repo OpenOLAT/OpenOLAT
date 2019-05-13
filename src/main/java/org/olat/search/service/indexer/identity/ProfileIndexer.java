@@ -23,6 +23,8 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.id.Identity;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.IdentityDocument;
 import org.olat.search.service.indexer.AbstractHierarchicalIndexer;
@@ -38,6 +40,8 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class ProfileIndexer extends AbstractHierarchicalIndexer {
+
+	private static final Logger log = Tracing.createLoggerFor(ProfileIndexer.class);
 
 	/**
 	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
@@ -60,8 +64,8 @@ public class ProfileIndexer extends AbstractHierarchicalIndexer {
 			Document document = IdentityDocument.createDocument(parentResourceContext, identity);
 			indexWriter.addDocument(document);
 		} catch (Exception ex) {
-			logWarn("Exception while indexing profile for identity::" + parentObject.toString() + ". Skipping this user, try next one.", ex);
+			log.warn("Exception while indexing profile for identity::" + parentObject.toString() + ". Skipping this user, try next one.", ex);
 		}
-		if (isLogDebugEnabled()) logDebug("ProfileIndexer finished for user::" + parentObject.toString());
+		if (log.isDebugEnabled()) log.debug("ProfileIndexer finished for user::" + parentObject.toString());
 	}
 }

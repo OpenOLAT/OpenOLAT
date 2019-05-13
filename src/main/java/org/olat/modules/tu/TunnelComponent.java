@@ -53,7 +53,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SimpleHtmlParser;
 import org.olat.core.util.StringHelper;
@@ -65,7 +65,7 @@ import org.olat.modules.ModuleConfiguration;
  * @author Mike Stock Comment:
  */
 public class TunnelComponent extends AbstractComponent implements AsyncMediaResponsible {
-	private static final OLog log = Tracing.createLoggerFor(TunnelComponent.class);
+	private static final Logger log = Tracing.createLoggerFor(TunnelComponent.class);
 	private static final ComponentRenderer RENDERER = new TunnelRenderer();
 
 	private String proto;

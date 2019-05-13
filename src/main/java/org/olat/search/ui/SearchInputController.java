@@ -52,7 +52,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.event.EventBus;
@@ -81,7 +81,7 @@ import org.olat.search.service.searcher.SearchClient;
  */
 public class SearchInputController extends FormBasicController implements GenericEventListener {
 	
-	private static final OLog log = Tracing.createLoggerFor(SearchInputController.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchInputController.class);
 	
 	private static final String FUZZY_SEARCH = "~0.7";
 	private static final String CMD_DID_YOU_MEAN_LINK = "didYouMeanLink-";
@@ -495,7 +495,7 @@ public class SearchInputController extends FormBasicController implements Generi
 			}
 			return searchResults;
 		} catch (ParseException e) {
-			if(log.isDebug()) log.debug("Query cannot be parsed: " + query);
+			if(log.isDebugEnabled()) log.debug("Query cannot be parsed: " + query);
 			getWindowControl().setWarning(translate("invalid.search.query"));
 		} catch (QueryException e) {
 			getWindowControl().setWarning(translate("invalid.search.query.with.wildcard"));

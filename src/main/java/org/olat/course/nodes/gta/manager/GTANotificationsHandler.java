@@ -31,7 +31,7 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.gta.GTAManager;
@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class GTANotificationsHandler implements NotificationsHandler  {
 	
-	private static final OLog log = Tracing.createLoggerFor(GTANotificationsHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(GTANotificationsHandler.class);
 	protected static final String CSS_CLASS_ICON = "o_gta_icon";
 	
 	@Autowired

@@ -55,7 +55,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Formatter;
@@ -87,7 +87,7 @@ import com.thoughtworks.xstream.XStream;
 @Service("selfRegistrationManager")
 public class RegistrationManager implements UserDataDeletable, UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(RegistrationManager.class);
+	private static final Logger log = Tracing.createLoggerFor(RegistrationManager.class);
 	
 	private static final XStream xmlXStream = XStreamHelper.createXStreamInstance();
 	static {
@@ -304,7 +304,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		MimeMessage msg = mailManager.createMimeMessage(from, to, null, null, subject, decoratedBody, null, result);
 		mailManager.sendMessage(msg, result);
 		if (result.getReturnCode() != MailerResult.OK ) {
-			log.error("Could not send registration notification message, MailerResult was ::" + result.getReturnCode(), null);			
+			log.error("Could not send registration notification message, MailerResult was ::" + result.getReturnCode());			
 		}
 	}
 	

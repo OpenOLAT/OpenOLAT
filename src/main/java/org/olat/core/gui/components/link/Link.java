@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -48,7 +48,7 @@ import org.olat.core.logging.Tracing;
  * @author Alexander Schneider, Patrick Brunner
  */
 public class Link extends AbstractComponent {
-	private static final OLog log = Tracing.createLoggerFor(Link.class);
+	private static final Logger log = Tracing.createLoggerFor(Link.class);
 	//single renderer for all users, lazy creation upon first object creation of this class.
 	private static final ComponentRenderer RENDERER = new LinkRenderer();
 	
@@ -166,7 +166,7 @@ public class Link extends AbstractComponent {
 		this.presentation = presentation;
 		this.presentationBeforeCustomCSS = presentation;
 		
-		if(log.isDebug()){
+		if(log.isDebugEnabled()){
 			log.debug("***LINK_CREATED***" 
 					+ " name: " + getComponentName()  
 					+ " component: " + getComponentName() 
@@ -183,7 +183,7 @@ public class Link extends AbstractComponent {
 		setDirty(true);
 		String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
 		
-		if(log.isDebug()){
+		if(log.isDebugEnabled()){
 			log.debug("***LINK_CLICKED*** " 
 					+ " dispatchID: " + ureq.getComponentID()
 					+ " commandID: " + cmd);

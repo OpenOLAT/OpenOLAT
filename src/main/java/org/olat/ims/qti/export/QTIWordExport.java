@@ -33,11 +33,11 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.DocumentFactory;
 import org.dom4j.Element;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -69,7 +69,7 @@ import org.olat.ims.qti.editor.tree.AssessmentNode;
  */
 public class QTIWordExport implements MediaResource {
 	
-	private final static OLog log = Tracing.createLoggerFor(QTIWordExport.class);
+	private static final Logger log = Tracing.createLoggerFor(QTIWordExport.class);
 	
 	private String encoding;
 	private AssessmentNode rootNode;

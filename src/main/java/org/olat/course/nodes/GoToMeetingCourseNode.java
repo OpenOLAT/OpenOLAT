@@ -30,7 +30,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -57,7 +57,7 @@ import org.olat.repository.RepositoryEntry;
 public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = 8680935159748506305L;
-	private static final OLog log = Tracing.createLoggerFor(GoToMeetingCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(GoToMeetingCourseNode.class);
 
 	private static final String TYPE = "gotomeeting";
 

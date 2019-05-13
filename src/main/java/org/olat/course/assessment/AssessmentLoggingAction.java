@@ -28,7 +28,7 @@ package org.olat.course.assessment;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
@@ -56,7 +56,7 @@ import org.olat.core.logging.activity.StringResourceableType;
  */
 public class AssessmentLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentLoggingAction.class);
 
 	// note that these assessment logging actions can both be
 	// triggered by a user (when running a test) or a tutor (when assessing a user).

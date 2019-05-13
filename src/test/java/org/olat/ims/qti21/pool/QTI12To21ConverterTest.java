@@ -29,7 +29,7 @@ import java.util.UUID;
 import org.dom4j.Document;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -61,7 +61,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  */
 public class QTI12To21ConverterTest {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI12To21ConverterTest.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI12To21ConverterTest.class);
 	
 	@Test
 	public void convert() throws URISyntaxException, IOException, XmlResourceNotFoundException, ImsManifestException {

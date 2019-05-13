@@ -33,7 +33,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ILoggingResourceable;
 import org.olat.core.logging.activity.ILoggingResourceableType;
@@ -94,7 +94,7 @@ import org.olat.resource.OLATResource;
 public class LoggingResourceable implements ILoggingResourceable {
 
 	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(LoggingResourceable.class);
+	private static final Logger log_ = Tracing.createLoggerFor(LoggingResourceable.class);
 
 	/** the maximum number of bytes for the name field **/
 	public static final int MAX_NAME_LEN = 240;

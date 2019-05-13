@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.stats.Stats;
@@ -53,7 +54,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.Cacher;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -69,7 +69,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
  */
 public class AllCachesController extends BasicController {
 	
-	private static final OLog log = Tracing.createLoggerFor(AllCachesController.class);
+	private static final Logger log = Tracing.createLoggerFor(AllCachesController.class);
 	
 	private VelocityContainer myContent;
 	private TableController tableCtr;

@@ -22,7 +22,9 @@ package org.olat.upgrade;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -39,6 +41,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_11_0_6 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_11_0_6.class);
 	
 	private static final String RECERTIFICATION_DATE = "RECERTIFICATION DATE";
 	private static final String VERSION = "OLAT_11.0.6";
@@ -73,9 +77,9 @@ public class OLATUpgrade_11_0_6 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_11_0_6 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_11_0_6 successfully!");
 		} else {
-			log.audit("OLATUpgrade_11_0_6 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_11_0_6 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

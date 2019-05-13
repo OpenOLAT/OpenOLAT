@@ -19,9 +19,9 @@
  */
 package org.olat.modules.quality.analysis.manager;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -45,7 +45,7 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
  */
 public class AnalysisPresentationXStream {
 	
-	private static final OLog log = Tracing.createLoggerFor(AnalysisPresentationXStream.class);
+	private static final Logger log = Tracing.createLoggerFor(AnalysisPresentationXStream.class);
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {

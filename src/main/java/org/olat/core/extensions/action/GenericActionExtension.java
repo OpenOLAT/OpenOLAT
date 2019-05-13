@@ -35,7 +35,7 @@ import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -70,7 +70,7 @@ public class GenericActionExtension extends AbstractExtension implements ActionE
 	private String cssClass;
 	private String iconCssClass;
 	
-	protected final OLog log = Tracing.createLoggerFor(GenericActionExtension.class);
+	protected final Logger log = Tracing.createLoggerFor(GenericActionExtension.class);
 	
 	public GenericActionExtension() {
 		//only for instantiation by spring

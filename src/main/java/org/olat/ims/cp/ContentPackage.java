@@ -28,13 +28,13 @@ package org.olat.ims.cp;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.vfs.VFSContainer;
@@ -61,7 +61,7 @@ public class ContentPackage {
 	// Delegate
 	private CPCore cpcore;
 	private OLATResourceable ores;
-	private static final OLog log = Tracing.createLoggerFor(ContentPackage.class);
+	private static final Logger log = Tracing.createLoggerFor(ContentPackage.class);
 
 	// *** constructors ***
 

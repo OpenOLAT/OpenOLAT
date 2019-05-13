@@ -38,7 +38,7 @@ import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -77,7 +77,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerManagerImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -103,7 +103,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	 * @return List of projects for certain project-broker
 	 */
 	public List<Project> getProjectListBy(final Long projectBrokerId) {
-		final boolean debug = log.isDebug();
+		final boolean debug = log.isDebugEnabled();
 
 		long rstart = 0;
 		if(debug){
@@ -118,7 +118,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	
 		if(debug){
 			long rstop = System.currentTimeMillis();
-			log.debug("time to fetch project with projectbroker_id " + projectBrokerId + " :" + (rstop - rstart), null);
+			log.debug("time to fetch project with projectbroker_id " + projectBrokerId + " :" + (rstop - rstart));
 		}
 		return projectList;
 	}
@@ -162,7 +162,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 
 	@Override
 	public boolean enrollProjectParticipant(final Identity identity, final Project project, final ProjectBrokerModuleConfiguration moduleConfig, final int nbrSelectedProjects, final boolean isParticipantInAnyProject) {
-		final boolean debug = log.isDebug();
+		final boolean debug = log.isDebugEnabled();
 		
 		OLATResourceable projectOres = OresHelper.createOLATResourceableInstance(Project.class, project.getKey());
 		log.debug("enrollProjectParticipant: start identity=" + identity + "  project=" + project);
@@ -182,13 +182,13 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 						
 						if (moduleConfig.isAcceptSelectionManually() ) {
 							securityGroupDao.addIdentityToSecurityGroup(identity, reloadedProject.getCandidateGroup());
-							log.audit("ProjectBroker: Add as candidate identity=" + identity + " to project=" + reloadedProject);
+							log.info(Tracing.M_AUDIT, "ProjectBroker: Add as candidate identity=" + identity + " to project=" + reloadedProject);
 							if (debug) {
 								log.debug("ProjectBroker: Add as candidate reloadedProject=" + reloadedProject + "  CandidateGroup=" + reloadedProject.getCandidateGroup() );
 							}
 						} else {
 							businessGroupRelationDao.addRole(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name());
-							log.audit("ProjectBroker: Add as participant identity=" + identity + " to project=" + reloadedProject);
+							log.info(Tracing.M_AUDIT, "ProjectBroker: Add as participant identity=" + identity + " to project=" + reloadedProject);
 							if (debug) {
 								log.debug("ProjectBroker: Add as participant reloadedProject=" + reloadedProject + "  ParticipantGroup=" + reloadedProject.getProjectGroup() );
 							}
@@ -226,8 +226,8 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 					if (canBeCancelEnrollmentBy(identity, project, moduleConfig)) {
 						businessGroupRelationDao.removeRole(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name());
 						securityGroupDao.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-						log.audit("ProjectBroker: Remove (as participant or waitinglist) identity=" + identity + " from project=" + project);
-						if (log.isDebug()) {
+						log.info(Tracing.M_AUDIT, "ProjectBroker: Remove (as participant or waitinglist) identity=" + identity + " from project=" + project);
+						if (log.isDebugEnabled()) {
 							log.debug("ProjectBroker: Remove as participant reloadedProject=" + reloadedProject + "  ParticipantGroup=" + reloadedProject.getProjectGroup() + "  CandidateGroup=" + reloadedProject.getCandidateGroup());
 						}
 						if ( (reloadedProject.getMaxMembers() != Project.MAX_MEMBERS_UNLIMITED) && (reloadedProject.getSelectedPlaces() < reloadedProject.getMaxMembers()) ) {
@@ -371,7 +371,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 					for (Iterator<Identity> iterator2 = chosenIdentities.iterator(); iterator2.hasNext();) {
 						Identity identity = iterator2.next();
 						securityGroupDao.removeIdentityFromSecurityGroup(identity, project.getCandidateGroup());
-						log.audit("ProjectBroker: AutoSignOut: identity=" + identity + " from project=" + project);
+						log.info(Tracing.M_AUDIT, "ProjectBroker: AutoSignOut: identity=" + identity + " from project=" + project);
 					}
 				}
 			}
@@ -432,7 +432,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		for (Iterator<Project> iterator = deleteProjectList.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
 			deleteProject(project, true, courseEnvironment, courseNode);
-			log.audit("ProjectBroker: Deleted project=" + project );
+			log.info(Tracing.M_AUDIT, "ProjectBroker: Deleted project=" + project );
 		}
 		log.debug("All projects are deleted for ProjectBroker=" + projectBroker);
 		projectGroupManager.deleteAccountManagerGroup(courseEnvironment.getCoursePropertyManager(), courseNode);
@@ -440,7 +440,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		dbInstance.deleteObject(reloadedProjectBroker);
 		// invalide with removing from cache
 		projectCache.remove(projectBrokerId.toString());
-		log.audit("ProjectBroker: Deleted ProjectBroker=" + projectBroker);
+		log.info(Tracing.M_AUDIT, "ProjectBroker: Deleted ProjectBroker=" + projectBroker);
 	}
 
 	@Override

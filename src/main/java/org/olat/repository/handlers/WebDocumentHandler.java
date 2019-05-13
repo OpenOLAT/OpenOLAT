@@ -44,7 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -81,7 +81,7 @@ import org.olat.resource.OLATResourceManager;
  */
 public class WebDocumentHandler extends FileHandler {
 
-	private static final OLog log = Tracing.createLoggerFor(WebDocumentHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(WebDocumentHandler.class);
 	private final String supportedType;
 	private final WebDocumentCreateDelegate createDelegate;
 	private final WebDocumentEditDelegate editDelegate;

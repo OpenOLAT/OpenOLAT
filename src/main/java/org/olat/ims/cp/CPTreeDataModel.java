@@ -32,13 +32,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.gui.components.tree.DnDTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.cp.objects.CPItem;
 import org.olat.ims.cp.objects.CPOrganization;
@@ -57,7 +57,7 @@ import org.olat.ims.cp.objects.CPOrganization;
 public class CPTreeDataModel extends GenericTreeModel implements DnDTreeModel {
 
 	private static final long serialVersionUID = -6843143820668185636L;
-	private static final OLog log = Tracing.createLoggerFor(CPTreeDataModel.class);
+	private static final Logger log = Tracing.createLoggerFor(CPTreeDataModel.class);
 	
 	private final ContentPackage cp;
 	private Map<String, String> map;

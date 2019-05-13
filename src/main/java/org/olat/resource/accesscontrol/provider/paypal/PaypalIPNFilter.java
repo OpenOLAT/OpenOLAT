@@ -38,7 +38,7 @@ import javax.servlet.ServletResponse;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
 
@@ -53,7 +53,7 @@ import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
  */
 public class PaypalIPNFilter implements Filter {
 	
-	private static final OLog log = Tracing.createLoggerFor(PaypalIPNFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(PaypalIPNFilter.class);
 
 	@Override
 	public void init(FilterConfig config) {
@@ -122,7 +122,7 @@ public class PaypalIPNFilter implements Filter {
 				// log for investigation
 				paypalManager.updateTransactionByNotification(values, false);
 			} else {
-				log.error("Paypal IPN error: " + res + " with values: " + values, null);
+				log.error("Paypal IPN error: " + res + " with values: " + values);
 			}
 		} catch (Exception e) {
 			log.error("Paypal IPN unexpected error", e);

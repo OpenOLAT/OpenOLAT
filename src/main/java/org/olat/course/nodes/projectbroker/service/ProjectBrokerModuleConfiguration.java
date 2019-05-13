@@ -28,7 +28,7 @@ package org.olat.course.nodes.projectbroker.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.nodes.projectbroker.datamodel.CustomField;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
@@ -37,7 +37,7 @@ import org.olat.modules.ModuleConfiguration;
 
 
 public class ProjectBrokerModuleConfiguration {
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerModuleConfiguration.class);
 	
 	private static final String ACCEPT_SELECTION_MANUALLY  = "accept_selection_manually";
 	private static final String AUTO_SIGN_OUT              = "auto_sign_out";

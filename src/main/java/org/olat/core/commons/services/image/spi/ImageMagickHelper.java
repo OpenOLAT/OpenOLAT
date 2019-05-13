@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.thumbnail.FinalSize;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.NamedLeaf;
@@ -48,7 +48,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class ImageMagickHelper extends AbstractImageHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(ImageMagickHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(ImageMagickHelper.class);
 
 	@Override
 	public Size thumbnailPDF(VFSLeaf pdfFile, VFSLeaf thumbnailFile, int maxWidth, int maxHeight) {
@@ -116,7 +116,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	private final FinalSize generateThumbnail(File file, File thumbnailFile, boolean firstOnly,
 			int maxWidth, int maxHeight, boolean fill) {
 		if(file == null || thumbnailFile == null) {
-			log.error("Input file or output file for thumbnailing?" + file + " -> " + thumbnailFile, null);
+			log.error("Input file or output file for thumbnailing?" + file + " -> " + thumbnailFile);
 			return null;
 		}
 		
@@ -124,7 +124,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 			thumbnailFile.getParentFile().mkdirs();
 		}
 
-		List<String> cmds = new ArrayList<String>();
+		List<String> cmds = new ArrayList<>();
 		cmds.add("convert");
 		cmds.add("-verbose");
 		cmds.add("-auto-orient");
@@ -164,7 +164,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 	
 	private final FinalSize cropImageWithImageMagick(File file, File cropedFile, Crop cropSelection) {
 		if(file == null || cropedFile == null) {
-			log.error("Input file or output file for thumbnailing?" + file + " -> " + cropedFile, null);
+			log.error("Input file or output file for thumbnailing?" + file + " -> " + cropedFile);
 			return null;
 		}
 		
@@ -172,7 +172,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 			cropedFile.getParentFile().mkdirs();
 		}
 
-		List<String> cmds = new ArrayList<String>();
+		List<String> cmds = new ArrayList<>();
 		cmds.add("convert");
 		cmds.add("-verbose");
 		cmds.add("-crop");
@@ -233,7 +233,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 			//
 		}
 
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			log.debug("Error: " + errors.toString());
 			log.debug("Output: " + output.toString());
 		}
@@ -251,7 +251,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 			//
 		}
 		if(rv == null) {
-			log.warn("Could not generate thumbnail: "+thumbnailFile, null);
+			log.warn("Could not generate thumbnail: "+thumbnailFile);
 		}
 		return rv;
 	}
@@ -293,7 +293,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 				}
 			}
 		} catch (NumberFormatException e) {
-			log.error("Error parsing output: " + output, null);
+			log.error("Error parsing output: " + output);
 		}
 		return null;
 	}
@@ -309,8 +309,8 @@ public class ImageMagickHelper extends AbstractImageHelper {
 					return new FinalSize(width, height);
 				} catch (NumberFormatException e) {
 					//not a number, it's possible
-					if(log.isDebug()) {
-						log.debug("Not a size: " + chuck, null);
+					if(log.isDebugEnabled()) {
+						log.debug("Not a size: " + chuck);
 					}
 				}
 			}
@@ -343,7 +343,7 @@ public class ImageMagickHelper extends AbstractImageHelper {
 		@Override
 		public void run() {
 			try {
-				if(log.isDebug()) {
+				if(log.isDebugEnabled()) {
 					log.debug(cmd.toString());
 				}
 				

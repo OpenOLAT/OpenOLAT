@@ -55,7 +55,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -79,7 +79,7 @@ import org.olat.user.UserManager;
  */
 public class ListRenderer {
 	
-	private static final OLog log = Tracing.createLoggerFor(ListRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(ListRenderer.class);
 
 	/** Edit parameter identifier. */
 	public static final String PARAM_EDTID = "fcedt";

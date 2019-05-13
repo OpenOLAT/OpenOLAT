@@ -34,7 +34,7 @@ import org.olat.core.commons.services.tagging.model.TagImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
 @Service("taggingManager")
 public class TaggingManagerImpl implements TaggingManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(TaggingManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(TaggingManagerImpl.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -194,7 +194,7 @@ public class TaggingManagerImpl implements TaggingManager {
 		}
 		if (tag.length() > 128){
 			// truncate
-			log.warn("tag was too long, truncated to 128 chars. Original: " + tag, null);
+			log.warn("tag was too long, truncated to 128 chars. Original: " + tag);
 			tag = tag.substring(0, 125) + "...";
 		}
 		TagImpl t = new TagImpl();
@@ -241,7 +241,7 @@ public class TaggingManagerImpl implements TaggingManager {
 		}
 		
 		int tagsDeleted = query.executeUpdate();
-		log.audit("Deleted " + tagsDeleted + " tags of resource: " + ores.getResourceableTypeName() + " :: " + ores.getResourceableId());
+		log.info(Tracing.M_AUDIT, "Deleted " + tagsDeleted + " tags of resource: " + ores.getResourceableTypeName() + " :: " + ores.getResourceableId());
 	}
 
 	@Override

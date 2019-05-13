@@ -29,7 +29,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -50,7 +50,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SetupModule extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(SetupModule.class);
+	private static final Logger log = Tracing.createLoggerFor(SetupModule.class);
 
 	@Value("${user.generateTestUsers}")
 	private boolean hasTestUsers;

@@ -164,7 +164,7 @@ public class VideoTranscodingJob extends JobWithDB {
 		
 		Process process = null;
 		try {
-			if(log.isDebug()) {
+			if(log.isDebugEnabled()) {
 				log.debug(cmd.toString());
 			}
 			ProcessBuilder builder = new ProcessBuilder(cmd);

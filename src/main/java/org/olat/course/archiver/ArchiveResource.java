@@ -30,9 +30,9 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -48,7 +48,7 @@ import org.olat.course.nodes.CourseNode;
  */
 public class ArchiveResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(ArchiveResource.class);
+	private static final Logger log = Tracing.createLoggerFor(ArchiveResource.class);
 	
 	private static final String encoding = "UTF-8";
 	private final Locale locale;

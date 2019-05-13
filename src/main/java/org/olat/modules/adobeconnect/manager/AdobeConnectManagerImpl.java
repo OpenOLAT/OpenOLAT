@@ -35,10 +35,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
@@ -69,7 +69,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGroupData, UserDataDeletable {
 	
-	private static final OLog log = Tracing.createLoggerFor(AdobeConnectManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(AdobeConnectManagerImpl.class);
 	
 	protected static final String ACONNECT_PROVIDER = "ACONNECT";
 

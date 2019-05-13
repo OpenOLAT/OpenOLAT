@@ -30,7 +30,7 @@ import java.util.Map.Entry;
 
 import javax.imageio.ImageIO;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -56,7 +56,7 @@ import com.thoughtworks.xstream.XStream;
  */
 public class CustomConfigManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(CustomConfigManager.class);
+	private static final Logger log = Tracing.createLoggerFor(CustomConfigManager.class);
 	
 	private static final String IFRAME_CSS = "iframe.css";
 	private static final String MAIN_CSS = "main.css";

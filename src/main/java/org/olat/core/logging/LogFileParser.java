@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -46,14 +47,15 @@ import org.olat.core.util.vfs.VFSLeaf;
  * 
  * @author Sabina Jeger
  */
-public class LogFileParser extends LogDelegator {
+public class LogFileParser {
+
+	private static final Logger log = Tracing.createLoggerFor(LogFileParser.class);
+	
 	private static String logfilepathBase;
 	private static String filename;
 	private static final int linecount = 3; // we always get 4 lines
 	private static final String matchError = ".*" + Tracing.PREFIX + Tracing.ERROR + ".*";
 	private static final String matchWarn = ".*" + Tracing.PREFIX + Tracing.WARN + ".*" ;
-	private static OLog log;
-	
 
 	/**
 	 * [spring]
@@ -72,8 +74,7 @@ public class LogFileParser extends LogDelegator {
 			}
 		} else {
 			logfilepathBase = System.getProperty("java.io.tmpdir") + File.separator + "logs" + File.separator + filename;
-		}		
-		log = getLogger();
+		}
 	}
 	
 	/**

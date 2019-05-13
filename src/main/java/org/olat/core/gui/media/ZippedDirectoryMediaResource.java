@@ -32,7 +32,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -45,7 +45,7 @@ import org.olat.core.util.StringHelper;
  */
 public class ZippedDirectoryMediaResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(ZippedDirectoryMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(ZippedDirectoryMediaResource.class);
 	
 	private final String filename;
 	private final File unzipDir;

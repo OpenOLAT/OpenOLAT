@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.fileresource.SurveyFileResource;
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class QTIResourceTypeModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTIResourceTypeModule.class);
+	private static final Logger log = Tracing.createLoggerFor(QTIResourceTypeModule.class);
 	
 	private static final Map<Long,Boolean> onyxMap = new ConcurrentHashMap<>();
 	

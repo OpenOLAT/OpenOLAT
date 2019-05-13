@@ -40,7 +40,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -84,7 +84,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PFManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(PFManager.class);
+	private static final Logger log = Tracing.createLoggerFor(PFManager.class);
 	private static final VFSItemFilter attachmentExcludeFilter = new VFSSystemItemFilter();
 
 	public static final String FILENAME_PARTICIPANTFOLDER = "participantfolder";

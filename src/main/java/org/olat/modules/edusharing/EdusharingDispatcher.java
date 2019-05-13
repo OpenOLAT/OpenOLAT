@@ -35,6 +35,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.edu_sharing.webservices.authbyapp.AuthenticationException;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -42,7 +43,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -60,7 +60,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EdusharingDispatcher implements Dispatcher {
 	
-	private static final OLog log = Tracing.createLoggerFor(EdusharingDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(EdusharingDispatcher.class);
 	
 	private static final String EDUSHARING_PATH = "edusharing";
 	private static final String METADATA_PATH = "metadata";

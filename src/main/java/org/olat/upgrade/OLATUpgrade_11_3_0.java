@@ -25,8 +25,10 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Size;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -47,6 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_11_3_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_11_3_0.class);
 	
 	private static final String VIDEO_XML = "VIDEO XML";
 	private static final String VERSION = "OLAT_11.3.0";
@@ -81,9 +85,9 @@ public class OLATUpgrade_11_3_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_11_3_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_11_3_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_11_3_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_11_3_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

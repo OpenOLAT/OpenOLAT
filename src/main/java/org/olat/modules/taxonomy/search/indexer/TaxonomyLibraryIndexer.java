@@ -26,6 +26,8 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetenceTypes;
@@ -47,6 +49,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public abstract class TaxonomyLibraryIndexer extends AbstractHierarchicalIndexer implements InitializingBean {
+
+	private static final Logger log = Tracing.createLoggerFor(TaxonomyLibraryIndexer.class);
 	
 	@Autowired
 	protected TaxonomyService taxonomyService;
@@ -70,7 +74,7 @@ public abstract class TaxonomyLibraryIndexer extends AbstractHierarchicalIndexer
 			} catch(InterruptedException e) {
 				throw e;
 			} catch (Exception e) {
-				logError("", e);
+				log.error("", e);
 			}
 		}
 		
@@ -83,7 +87,7 @@ public abstract class TaxonomyLibraryIndexer extends AbstractHierarchicalIndexer
 				} catch(InterruptedException e) {
 					throw e;
 				} catch (Exception e) {
-					logError("", e);
+					log.error("", e);
 				}
 			}
 		}

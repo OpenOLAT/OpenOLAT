@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.DoubleAdder;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Constants;
@@ -93,7 +93,7 @@ import uk.ac.ed.ph.jqtiplus.value.StringValue;
  */
 public class FIBAssessmentItemBuilder extends AssessmentItemBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(FIBAssessmentItemBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(FIBAssessmentItemBuilder.class);
 
 	private String question;
 	private ScoreEvaluation scoreEvaluation;

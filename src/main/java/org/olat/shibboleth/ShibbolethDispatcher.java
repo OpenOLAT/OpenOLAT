@@ -53,7 +53,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
@@ -71,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ShibbolethDispatcher implements Dispatcher{
 
-	private static final OLog log = Tracing.createLoggerFor(ShibbolethDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(ShibbolethDispatcher.class);
 
 	/** Provider identifier */
 	public static final String PROVIDER_SHIB = "Shib";
@@ -154,7 +154,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 			//or authors copy-pasted links to the content.
 			//showing redscreens for non valid URL is wrong instead
 			//a 404 message must be shown -> e.g. robots correct their links.
-			if(log.isDebug()){
+			if(log.isDebugEnabled()){
 				log.debug("Bad Request "+req.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(req.getPathInfo(), resp);
@@ -219,7 +219,7 @@ public class ShibbolethDispatcher implements Dispatcher{
 			}
 		}
 
-		if(log.isDebug()){
+		if(log.isDebugEnabled()){
 			log.debug("Shib attribute Map: \n\n"+attributesMap.toString()+"\n\n");
 		}
 

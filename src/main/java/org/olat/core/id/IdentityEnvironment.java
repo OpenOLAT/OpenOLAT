@@ -31,7 +31,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.i18n.I18nModule;
 
 /**
@@ -39,7 +38,7 @@ import org.olat.core.util.i18n.I18nModule;
  * 
  * @author Felix Jost
  */
-public class IdentityEnvironment extends LogDelegator implements Serializable {
+public class IdentityEnvironment implements Serializable {
 	
 	private static final long serialVersionUID = -5813083210685147201L;
 	private Identity identity = null;

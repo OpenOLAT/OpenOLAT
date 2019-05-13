@@ -33,7 +33,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -46,7 +46,7 @@ import org.olat.core.logging.Tracing;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class OncePanel extends AbstractComponent implements ComponentCollection {
-	private static final OLog log = Tracing.createLoggerFor(OncePanel.class);
+	private static final Logger log = Tracing.createLoggerFor(OncePanel.class);
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
 
 	private boolean hideOnNextValidate;

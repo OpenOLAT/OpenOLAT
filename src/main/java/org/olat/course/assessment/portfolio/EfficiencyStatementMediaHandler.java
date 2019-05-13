@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -32,7 +33,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
@@ -69,7 +69,7 @@ import com.thoughtworks.xstream.XStream;
 @Service
 public class EfficiencyStatementMediaHandler extends AbstractMediaHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(EfficiencyStatementMediaHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(EfficiencyStatementMediaHandler.class);
 	private static final XStream myXStream = XStreamHelper.createXStreamInstance();
 	
 	public static final String EFF_MEDIA = "EfficiencyStatement";

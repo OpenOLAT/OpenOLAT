@@ -22,6 +22,7 @@ package org.olat.core.gui.components.stack;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentEventListener;
@@ -38,7 +39,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -50,7 +50,7 @@ import org.olat.core.util.Util;
  *
  */
 public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, BreadcrumbPanel, ComponentEventListener {
-	private static final OLog log = Tracing.createLoggerFor(BreadcrumbedStackedPanel.class);
+	private static final Logger log = Tracing.createLoggerFor(BreadcrumbedStackedPanel.class);
 	private static final ComponentRenderer RENDERER = new BreadcrumbedStackedPanelRenderer();
 	
 	protected final List<Link> stack = new ArrayList<>(3);

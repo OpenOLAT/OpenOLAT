@@ -35,7 +35,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -59,7 +59,7 @@ import org.olat.restapi.system.vo.StatusVO;
  */
 public class StatusWebservice {
 	
-	private static final OLog log = Tracing.createLoggerFor(StatusWebservice.class);
+	private static final Logger log = Tracing.createLoggerFor(StatusWebservice.class);
 
 	private static final String PING_REF = "REST-Ping";
 	private static final OLATResourceable PING_RESOURCE = OresHelper.createOLATResourceableInstance(PING_REF, 42l);

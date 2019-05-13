@@ -32,6 +32,7 @@ import java.io.Writer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.poi.poifs.eventfilesystem.POIFSReader;
 import org.apache.poi.poifs.eventfilesystem.POIFSReaderEvent;
@@ -39,7 +40,6 @@ import org.apache.poi.poifs.eventfilesystem.POIFSReaderListener;
 import org.apache.poi.poifs.filesystem.DocumentInputStream;
 import org.apache.poi.util.LittleEndian;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -51,7 +51,7 @@ import org.olat.search.service.SearchResourceContext;
  */
 public class PowerPointDocument extends FileDocument {
 	private static final long serialVersionUID = -6107766953370631805L;
-	private static final OLog log = Tracing.createLoggerFor(PowerPointDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(PowerPointDocument.class);
 
 	public final static String FILE_TYPE = "type.file.ppt";
 
@@ -64,13 +64,13 @@ public class PowerPointDocument extends FileDocument {
 	    powerPointDocument.init(leafResourceContext,leaf);
 	    powerPointDocument.setFileType(FILE_TYPE);
 		powerPointDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
-		if (log.isDebug()) log.debug(powerPointDocument.toString());
+		if (log.isDebugEnabled()) log.debug(powerPointDocument.toString());
 		return powerPointDocument.getLuceneDocument();
 	}
 
 	@Override
 	public FileContent readContent(VFSLeaf leaf) throws IOException,DocumentException {
-		if (log.isDebug()) log.debug("read PPT Content of leaf=" + leaf.getName());
+		if (log.isDebugEnabled()) log.debug("read PPT Content of leaf=" + leaf.getName());
 		try (BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
 				LimitedContentWriter oStream = new LimitedContentWriter(100000, FileDocumentFactory.getMaxFileSize())) {
 			extractText(bis, oStream);
@@ -117,7 +117,7 @@ public class PowerPointDocument extends FileDocument {
 				// Remove general Exception later, for now make it run 
 				log.warn("Can not read PPT content.", ex);
 			}
-			if (errorCounter > 0 && log.isDebug()) {
+			if (errorCounter > 0 && log.isDebugEnabled()) {
 				log.debug("Could not parse ppt properly. There were " + errorCounter + " IndexOutOfBoundsException");
 			}
 		}

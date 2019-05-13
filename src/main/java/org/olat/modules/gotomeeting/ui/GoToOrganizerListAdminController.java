@@ -251,7 +251,7 @@ public class GoToOrganizerListAdminController extends FormBasicController implem
 	
 	private void doRefresh(GoToOrganizer organizer) {
 		if(meetingMgr.refreshToken(organizer)) {
-			logAudit("GoToOrganizer refreshed: " + organizer, null);
+			logAudit("GoToOrganizer refreshed: " + organizer);
 			showInfo("token.refreshed");
 			updateModel();
 		} else {

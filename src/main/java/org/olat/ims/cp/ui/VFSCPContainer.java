@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.vfs.AbstractVirtualContainer;
@@ -51,7 +51,7 @@ import org.olat.ims.cp.ContentPackage;
  */
 public class VFSCPContainer extends AbstractVirtualContainer implements VFSContainer {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSCPContainer.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSCPContainer.class);
 	
 	private VFSSecurityCallback secCallback;
 	private final CPTreeDataModel treeModel;

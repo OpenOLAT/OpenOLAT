@@ -47,6 +47,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -58,7 +59,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -104,7 +104,7 @@ import org.springframework.stereotype.Component;
 @Path("repo/courses")
 public class CoursesWebService {
 
-	private static final OLog log = Tracing.createLoggerFor(CoursesWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(CoursesWebService.class);
 
 	private static final String VERSION = "1.0";
 	

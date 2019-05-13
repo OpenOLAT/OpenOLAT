@@ -43,7 +43,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.PathUtils;
@@ -58,7 +58,7 @@ import org.olat.core.util.StringHelper;
  */
 public class FileResource implements OLATResourceable {
 	
-	private static final OLog log = Tracing.createLoggerFor(FileResource.class);
+	private static final Logger log = Tracing.createLoggerFor(FileResource.class);
 
 	/**
 	 * Generic file resource type identifier.

@@ -29,7 +29,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
@@ -57,7 +57,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
 
 public class LibraryIndexer extends FolderIndexer {
 
-	private static final OLog log = Tracing.createLoggerFor(LibraryIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(LibraryIndexer.class);
 	private static final OLATResourceable TYPE = OresHelper.createOLATResourceableTypeWithoutCheck(LibrarySite.class.getSimpleName());
 	private boolean restrictAccessToOwnerGroup = false;
 	private String restrictAccessToRole = null;
@@ -73,7 +73,7 @@ public class LibraryIndexer extends FolderIndexer {
 
 		VFSContainer container = CoreSpringFactory.getImpl(LibraryManager.class).getSharedFolder();
 		if (container == null) return;
-		if (log.isDebug()) log.debug("Index Library Folder...");
+		if (log.isDebugEnabled()) log.debug("Index Library Folder...");
 
 		SearchResourceContext searchResourceContext = new SearchResourceContext(parentResourceContext);
 		searchResourceContext.setParentContextType(TYPE.getResourceableTypeName());

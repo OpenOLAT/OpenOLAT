@@ -38,7 +38,7 @@ import org.apache.lucene.document.Document;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.resource.OresHelper;
@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FileDocumentFactoryTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(FileDocumentFactoryTest.class);
+	private static final Logger log = Tracing.createLoggerFor(FileDocumentFactoryTest.class);
 
 	// variables for test fixture
 	

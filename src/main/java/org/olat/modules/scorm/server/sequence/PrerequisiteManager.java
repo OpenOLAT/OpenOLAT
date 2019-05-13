@@ -30,7 +30,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.ISettingsHandler;
 import org.olat.modules.scorm.server.servermodels.SequencerModel;
@@ -45,7 +45,7 @@ import bsh.Interpreter;
  * @author Paul Sharples
  */
 public class PrerequisiteManager {
-	private static final OLog log = Tracing.createLoggerFor(PrerequisiteManager.class);
+	private static final Logger log = Tracing.createLoggerFor(PrerequisiteManager.class);
 	
 	// A hashtable of all key (scoIDs) and values (status)
 	private Map<String,String> _prereqTable = new Hashtable<>();
@@ -202,7 +202,7 @@ public class PrerequisiteManager {
 			Object result = i.eval(prereq);
 			String a = result.toString();
 			boolean retVal = Boolean.valueOf(a).booleanValue();
-			if (log.isDebug()){
+			if (log.isDebugEnabled()){
 				log.debug("eval: " + prereq + " result was: " + retVal);
 			}
 			return retVal;

@@ -31,7 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.gotomeeting.model.GoToErrorG2T;
 import org.olat.modules.gotomeeting.model.GoToErrors;
@@ -50,7 +50,7 @@ import org.olat.modules.gotomeeting.model.GoToTrainingG2T;
  */
 public class GoToJsonUtil {
 	
-	private static final OLog log = Tracing.createLoggerFor(GoToJsonUtil.class);
+	private static final Logger log = Tracing.createLoggerFor(GoToJsonUtil.class);
     private static SimpleDateFormat gotoReadFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     private static SimpleDateFormat gotoReadRecordingFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
     private static DateFormat gotoPostFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");

@@ -49,7 +49,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -136,7 +136,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  */
 public class IQTESTCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode, QTICourseNode {
 	private static final long serialVersionUID = 5806292895738005387L;
-	private static final OLog log = Tracing.createLoggerFor(IQTESTCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(IQTESTCourseNode.class);
 	private static final String translatorStr = Util.getPackageName(IQEditController.class);
 	private static final String TYPE = "iqtest";
 

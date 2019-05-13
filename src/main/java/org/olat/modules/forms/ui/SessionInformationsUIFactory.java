@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;

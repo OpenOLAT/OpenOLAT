@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.login.oauth.OAuthConstants;
 import org.olat.login.oauth.OAuthSPI;
@@ -43,7 +43,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
  */
 public class GetToResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(GetToResource.class);
+	private static final Logger log = Tracing.createLoggerFor(GetToResource.class);
 	
 	private final HttpSession session;
 	private final GoToProvider provider;

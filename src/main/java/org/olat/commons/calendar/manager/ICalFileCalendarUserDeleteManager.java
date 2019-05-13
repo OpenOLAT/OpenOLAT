@@ -21,7 +21,7 @@ package org.olat.commons.calendar.manager;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +36,7 @@ import org.springframework.stereotype.Service;
 @Service("calendarUserDataDeleteManager")
 public class ICalFileCalendarUserDeleteManager implements UserDataDeletable {
 	
-	private static final OLog log = Tracing.createLoggerFor(ICalFileCalendarUserDeleteManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ICalFileCalendarUserDeleteManager.class);
 
 	@Autowired
 	private CalendarManager calendarManager;

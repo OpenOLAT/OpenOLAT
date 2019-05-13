@@ -27,9 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -57,7 +57,7 @@ import org.olat.user.UserManager;
  */
 public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbookResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(LectureBlockAuditLogExport.class);
+	private static final Logger log = Tracing.createLoggerFor(LectureBlockAuditLogExport.class);
 	
 	protected final Translator translator;
 	protected final Formatter formatter;

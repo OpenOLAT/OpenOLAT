@@ -19,7 +19,7 @@
  */
 package org.olat.core;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.core.env.PropertySource;
@@ -35,7 +35,7 @@ import org.springframework.web.context.ConfigurableWebApplicationContext;
  */
 public class CoreSpringInitializer implements ApplicationContextInitializer<ConfigurableWebApplicationContext> {
 	
-	private static final OLog log = Tracing.createLoggerFor(CoreSpringInitializer.class);
+	private static final Logger log = Tracing.createLoggerFor(CoreSpringInitializer.class);
 
 	@Override
 	public void initialize(ConfigurableWebApplicationContext ctx) {

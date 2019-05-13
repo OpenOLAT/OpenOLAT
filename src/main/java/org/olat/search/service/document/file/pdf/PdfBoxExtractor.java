@@ -26,7 +26,7 @@ import java.io.IOException;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.LimitedContentWriter;
@@ -43,7 +43,7 @@ import org.olat.search.service.document.file.FileDocumentFactory;
  */
 public class PdfBoxExtractor implements PdfExtractor {
 	
-	private static final OLog log = Tracing.createLoggerFor(PdfBoxExtractor.class);
+	private static final Logger log = Tracing.createLoggerFor(PdfBoxExtractor.class);
 	
 	@Override
 	public void extract(VFSLeaf document, File bufferFile)
@@ -65,12 +65,12 @@ public class PdfBoxExtractor implements PdfExtractor {
 	}
 	
 	private FileContent extractTextFromPdf(VFSLeaf leaf) throws IOException {
-		if (log.isDebug()) log.debug("readContent from pdf starts...");
+		if (log.isDebugEnabled()) log.debug("readContent from pdf starts...");
 		
 		try(BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
 				PDDocument document = PDDocument.load(bis)) {		
 			String title = getTitle(document);
-			if (log.isDebug()) log.debug("readContent PDDocument loaded");
+			if (log.isDebugEnabled()) log.debug("readContent PDDocument loaded");
 			PDFTextStripper stripper = new PDFTextStripper();
 			stripper.setSortByPosition(true);
 			stripper.setSuppressDuplicateOverlappingText(true);

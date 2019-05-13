@@ -21,7 +21,7 @@ package org.olat.core.util.filter.impl;
 
 import java.util.regex.Pattern;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
 
@@ -36,7 +36,7 @@ import org.olat.core.util.filter.Filter;
  * @author gnaegi
  */
 public class ConditionalHTMLCommentsFilter implements Filter {
-	private static final OLog log = Tracing.createLoggerFor(ConditionalHTMLCommentsFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(ConditionalHTMLCommentsFilter.class);
 	private static final Pattern conditionalCommentPattern = Pattern.compile("<!--\\[if.*?\\[endif\\]-->");
 	
 	/**

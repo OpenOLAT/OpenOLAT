@@ -29,12 +29,12 @@ package org.olat.ims.cp.objects;
 import java.util.Iterator;
 import java.util.Vector;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Element;
 import org.dom4j.Namespace;
 import org.dom4j.tree.DefaultAttribute;
 import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -53,7 +53,7 @@ import org.olat.ims.cp.CPCore;
  */
 public class CPManifest extends DefaultElement implements CPNode {
 	
-	private static final OLog log = Tracing.createLoggerFor(CPManifest.class);
+	private static final Logger log = Tracing.createLoggerFor(CPManifest.class);
 
 	private static final String DEFAULT_SCHEMALOC = "http://www.imsglobal.org/xsd/imscp_v1p1 imscp_v1p1.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 imsmd_v1p2p2.xsd";
 	private static final String DEFAULT_NMS = "http://www.imsglobal.org/xsd/imsmd_v1p2";

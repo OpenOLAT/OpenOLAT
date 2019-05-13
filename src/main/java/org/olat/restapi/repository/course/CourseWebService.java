@@ -46,6 +46,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
@@ -62,7 +63,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -120,7 +120,7 @@ import com.thoughtworks.xstream.XStream;
  */
 public class CourseWebService {
 
-	private static final OLog log = Tracing.createLoggerFor(CourseWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseWebService.class);
 	private static final XStream myXStream = XStreamHelper.createXStreamInstance();
 
 	
@@ -482,23 +482,23 @@ public class CourseWebService {
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if("closed".equals(newStatus)) {
 			repositoryService.closeRepositoryEntry(re, null, false);
-			log.audit("REST closing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST closing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("unclosed".equals(newStatus)) {
 			repositoryService.uncloseRepositoryEntry(re);
-			log.audit("REST unclosing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST unclosing course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
 			repositoryService.deleteSoftly(re, identity, true, false);
-			log.audit("REST deleting (soft) course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
 			repositoryService.restoreRepositoryEntry(re);
-			log.audit("REST restoring course: " + re.getDisplayname() + " [" + re.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST restoring course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		}
@@ -842,7 +842,7 @@ public class CourseWebService {
 		if(!hasBeenAuthor) {
 			//not an author already, add this identity to the security group "authors"
 			organisationService.addMember(author, OrganisationRoles.author);
-			log.audit("User::" + identity.getKey() + " added system role::" + OrganisationRoles.author + " to user::" + author.getKey() + " via addAuthor method in course REST API", null);
+			log.info(Tracing.M_AUDIT, "User::" + identity.getKey() + " added system role::" + OrganisationRoles.author + " to user::" + author.getKey() + " via addAuthor method in course REST API");
 		}
 		
 		//add the author as owner of the course
@@ -870,7 +870,7 @@ public class CourseWebService {
 			if(!hasBeenAuthor) {
 				//not an author already, add this identity to the security group "authors"
 				organisationService.addMember(author, OrganisationRoles.author);
-				log.audit("User::" + identity.getKey() + " added system role::" + OrganisationRoles.author + " to user::" + author.getKey() + " via addAuthor method in course REST API", null);
+				log.info(Tracing.M_AUDIT, "User::" + identity.getKey() + " added system role::" + OrganisationRoles.author + " to user::" + author.getKey() + " via addAuthor method in course REST API");
 			}
 		}
 		

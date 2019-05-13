@@ -41,13 +41,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -65,7 +65,7 @@ import org.olat.core.util.servlets.URLEncoder;
  */
 public class BusinessControlFactory {
 	
-	private static final OLog log = Tracing.createLoggerFor(BusinessControlFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(BusinessControlFactory.class);
 	
 	private static final BusinessControlFactory INSTANCE = new BusinessControlFactory();
 	final BusinessControl EMPTY; // for performance
@@ -272,7 +272,7 @@ public class BusinessControlFactory {
 	}
 
 	public List<ContextEntry> cloneContextEntries(final List<ContextEntry> ces) {
-		final List<ContextEntry> clones = new ArrayList<ContextEntry>(ces.size());
+		final List<ContextEntry> clones = new ArrayList<>(ces.size());
 		for(ContextEntry ce:ces) {
 			OLATResourceable clone = OresHelper.clone(ce.getOLATResourceable());
 			clones.add(new MyContextEntry(clone));

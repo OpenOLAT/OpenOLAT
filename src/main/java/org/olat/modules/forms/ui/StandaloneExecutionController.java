@@ -28,7 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -48,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class StandaloneExecutionController extends BasicController implements Controller {
 
-	private static final OLog log = Tracing.createLoggerFor(StandaloneExecutionController.class);
+	private static final Logger log = Tracing.createLoggerFor(StandaloneExecutionController.class);
 	
 	public static final String PARTICIPATION_IDENTIFIER = "evaluation-form-participation-identifier";
 	

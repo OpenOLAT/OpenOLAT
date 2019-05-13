@@ -42,7 +42,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.ObjectCloner;
@@ -96,7 +96,7 @@ import org.olat.user.UserManager;
  */
 public class PublishProcess {
 	
-	private static final OLog log = Tracing.createLoggerFor(PublishProcess.class);
+	private static final Logger log = Tracing.createLoggerFor(PublishProcess.class);
 	
 	private static final String PACKAGE = Util.getPackageName(PublishProcess.class);
 	private final Translator translator;

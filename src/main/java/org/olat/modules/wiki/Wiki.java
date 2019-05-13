@@ -43,7 +43,7 @@ import org.jamwiki.utils.Utilities;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -80,7 +80,7 @@ public class Wiki implements WikiContainer, Serializable {
 	protected static final String NEW_PAGE = "O_new_page";
 	private String IMAGE_NAMESPACE = "Image:";
 	private String MEDIA_NAMESPACE = "Media:";
-	private static final OLog log = Tracing.createLoggerFor(Wiki.class);
+	private static final Logger log = Tracing.createLoggerFor(Wiki.class);
 	
 	protected Wiki(VFSContainer wikiRootContainer) {
 		if(wikiRootContainer == null) throw new AssertException("null values are not allowed for the wiki constructor!");
@@ -178,7 +178,7 @@ public class Wiki implements WikiContainer, Serializable {
 	 */
 	@Override
 	public boolean pageExists(String pageId) {
-		if( log.isDebug() ) {
+		if( log.isDebugEnabled() ) {
 			boolean exists = wikiPages.containsKey(pageId);
 			log.debug("\n\nChecking for existence of page with id in this wiki: "+ pageId +" located in: "+pageContainer);
 			log.debug("Does page exists?: "+ exists);
@@ -221,7 +221,7 @@ public class Wiki implements WikiContainer, Serializable {
 		WikiPage v1 = loadVersion(page, version1);
 		WikiPage v2 = loadVersion(page, version2);
 		
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			log.debug("comparing wiki page versions: " + version1 + " <--> " + version2);
 			log.debug("version 1:\n" + v1.toString());
 			log.debug("version 2:\n" + v2.toString());
@@ -327,7 +327,7 @@ public class Wiki implements WikiContainer, Serializable {
 		for (WikiPage page:pages) {
 			if (!page.getPageName().startsWith("O_")) {
 				sb.append("* ");
-				if(log.isDebug()) sb.append(page.getPageId()).append("  -->  ");
+				if(log.isDebugEnabled()) sb.append(page.getPageId()).append("  -->  ");
 				sb.append("[[")
 				  .append(page.getPageName())
 				  .append("]]\n");
@@ -385,7 +385,7 @@ public class Wiki implements WikiContainer, Serializable {
 	 */
 	@Override
 	public String generatePageId(String pageName) {
-		if(log.isDebug()) log.debug("Generating page id from page name: "+pageName +" to id: "+WikiManager.generatePageId(pageName));
+		if(log.isDebugEnabled()) log.debug("Generating page id from page name: "+pageName +" to id: "+WikiManager.generatePageId(pageName));
 		return WikiManager.generatePageId(pageName);
 	}
 

@@ -36,7 +36,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.IStatisticManager;
@@ -58,7 +58,7 @@ import org.olat.course.statistic.TotalAwareColumnDescriptor;
 public class WeeklyStatisticManager implements IStatisticManager {
 
 	/** the logging object used in this class **/
-	private static final OLog log = Tracing.createLoggerFor(WeeklyStatisticManager.class);
+	private static final Logger log = Tracing.createLoggerFor(WeeklyStatisticManager.class);
 	private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-ww");
 	
 	@Override

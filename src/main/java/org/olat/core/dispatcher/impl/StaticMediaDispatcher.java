@@ -21,7 +21,6 @@ package org.olat.core.dispatcher.impl;
 
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
@@ -43,7 +42,7 @@ import org.olat.core.util.WebappHelper;
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
-public class StaticMediaDispatcher extends LogDelegator {
+public class StaticMediaDispatcher {
 	public static String STATIC_DIR_NAME = "/static";
 	public static String NOVERSION = "_noversion_";
 	private static String mapperPath;

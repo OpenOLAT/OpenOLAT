@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -43,7 +43,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class WorkThreadInformations {
 	
-	private static OLog log = Tracing.createLoggerFor(WorkThreadInformations.class);
+	private static final Logger log = Tracing.createLoggerFor(WorkThreadInformations.class);
 	
 	private static final Map<String,String> works = new HashMap<String,String>();
 	private static final List<String> longRunningTasks = new ArrayList<String>();

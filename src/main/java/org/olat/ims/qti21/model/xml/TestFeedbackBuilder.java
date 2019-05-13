@@ -23,7 +23,7 @@ import java.io.StringReader;
 import java.util.List;
 
 import org.cyberneko.html.parsers.SAXParser;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -57,7 +57,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public class TestFeedbackBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(TestFeedbackBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(TestFeedbackBuilder.class);
 	
 	private final TestFeedback testFeedback;
 	private final AssessmentTest assessmentTest;

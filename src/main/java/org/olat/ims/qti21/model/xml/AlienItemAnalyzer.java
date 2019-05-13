@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -47,7 +47,7 @@ import uk.ac.ed.ph.jqtiplus.utils.QueryUtils;
  */
 public class AlienItemAnalyzer {
 	
-	private static final OLog log = Tracing.createLoggerFor(AlienItemAnalyzer.class);
+	private static final Logger log = Tracing.createLoggerFor(AlienItemAnalyzer.class);
 	
 	private final AssessmentItem item;
 	

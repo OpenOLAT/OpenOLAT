@@ -44,7 +44,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -74,7 +74,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserDataExportServiceImpl implements UserDataExportService {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserDataExportServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(UserDataExportServiceImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -128,7 +128,7 @@ public class UserDataExportServiceImpl implements UserDataExportService {
 	}
 	
 	private void deleteExport(UserDataExport dataExport) {
-		log.audit("Delete user data export: " + dataExport.getIdentity().getKey());
+		log.info(Tracing.M_AUDIT, "Delete user data export: " + dataExport.getIdentity().getKey());
 		dbInstance.commitAndCloseSession();
 		File archiveDirectory = getArchiveDirectory(dataExport);
 		FileUtils.deleteDirsAndFiles(archiveDirectory, true, true);

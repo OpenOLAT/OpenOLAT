@@ -32,7 +32,7 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -46,7 +46,7 @@ import org.olat.core.util.StringHelper;
  */
 public class TinyDispatcher implements Dispatcher {
 	
-	private static final OLog log = Tracing.createLoggerFor(TinyDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(TinyDispatcher.class);
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse httpResponse) {

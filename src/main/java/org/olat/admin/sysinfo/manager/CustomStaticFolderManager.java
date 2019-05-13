@@ -21,9 +21,9 @@ package org.olat.admin.sysinfo.manager;
 
 import java.io.File;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -41,7 +41,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomStaticFolderManager implements InitializingBean, WebDAVProvider {
 
-	private static final OLog log = Tracing.createLoggerFor(CustomStaticFolderManager.class);
+	private static final Logger log = Tracing.createLoggerFor(CustomStaticFolderManager.class);
 	public static final String STATIC_FOLDER = "/customizing/static/";
 
 	private static final String MOUNT_POINT = "customizing";

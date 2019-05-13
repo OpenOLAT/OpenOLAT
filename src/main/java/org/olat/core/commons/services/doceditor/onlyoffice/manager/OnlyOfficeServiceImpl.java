@@ -46,7 +46,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSConstants;
@@ -74,7 +74,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 
-	private static final OLog log = Tracing.createLoggerFor(OnlyOfficeServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeServiceImpl.class);
 	
 	private static final String LOCK_APP_NAME = "onlyoffice";
 	private static final DateFormat LAST_MODIFIED = new SimpleDateFormat("yyyyMMddHHmmSS");

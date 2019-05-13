@@ -31,7 +31,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.modules.fo.Forum;
@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ForumArchiveManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(ForumArchiveManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ForumArchiveManager.class);
 	
 	@Autowired
 	private ForumManager forumManager;

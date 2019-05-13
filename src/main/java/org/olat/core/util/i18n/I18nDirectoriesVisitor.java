@@ -23,7 +23,7 @@ import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileVisitor;
 
@@ -36,7 +36,7 @@ import org.olat.core.util.FileVisitor;
  * @author gnaegi
  */
 class I18nDirectoriesVisitor implements FileVisitor {
-	private static final OLog log = Tracing.createLoggerFor(I18nDirectoriesVisitor.class);
+	private static final Logger log = Tracing.createLoggerFor(I18nDirectoriesVisitor.class);
 	private String basePath;
 	private List<String> bundles = new LinkedList<String>();
 	private final List<String> referenceLangKeys;

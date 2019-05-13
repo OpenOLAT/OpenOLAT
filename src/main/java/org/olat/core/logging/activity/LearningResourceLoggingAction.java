@@ -28,7 +28,7 @@ package org.olat.core.logging.activity;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -47,7 +47,7 @@ import org.olat.core.logging.Tracing;
  */
 public class LearningResourceLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(LearningResourceLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(LearningResourceLoggingAction.class);
 
 	private static final ResourceableTypeList LEARNING_RESOURCE_OPEN_CLOSE_LIST = 
 		new ResourceableTypeList().

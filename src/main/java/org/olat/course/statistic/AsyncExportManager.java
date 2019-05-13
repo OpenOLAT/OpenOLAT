@@ -29,12 +29,12 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AsyncExportManager {
 
-	private static final OLog log = Tracing.createLoggerFor(AsyncExportManager.class);
+	private static final Logger log = Tracing.createLoggerFor(AsyncExportManager.class);
 
 	private static final int concurrentExportsPerNode = 2;
 

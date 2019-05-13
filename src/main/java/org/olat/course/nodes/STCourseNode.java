@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -49,7 +50,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -108,6 +108,8 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class STCourseNode extends AbstractAccessableCourseNode implements CalculatedAssessableCourseNode {
+	
+	private static final Logger log = Tracing.createLoggerFor(STCourseNode.class);
 
 	private static final long serialVersionUID = -7460670977531082040L;
 	private static final String TYPE = "st";
@@ -808,9 +810,9 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		List<ConditionExpression> retVal;
 		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
 		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList<ConditionExpression>(parentsConditions);
+			retVal = new ArrayList<>(parentsConditions);
 		} else {
-			retVal = new ArrayList<ConditionExpression>();
+			retVal = new ArrayList<>();
 		}
 		// init passedExpression and scoreExpression
 		getScoreCalculator();
@@ -851,21 +853,15 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	public String getDisplayOption() {
 		// if nothing other defined, view content only, when a structure node
 		// contains an html-file.
-		OLog logger = Tracing.createLoggerFor(this.getClass());
 		ModuleConfiguration config = getModuleConfiguration();
 		String thisConf = super.getDisplayOption(false);
 		if (thisConf == null
 				&& config.get(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE).equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE)) {
-			if (logger.isDebug()) {
-				logger.debug("no displayOption set, use default (content)", thisConf);
-			}
+			log.debug("no displayOption set, use default (content) {}",  thisConf);
+
 			return CourseNode.DISPLAY_OPTS_CONTENT;
 		}
-		if (logger.isDebug()) {
-			logger.debug("there is a config set, use it: " + thisConf);
-		}
+		log.debug("there is a config set, use it: {}",  thisConf);
 		return super.getDisplayOption();
 	}
-
-	
 }

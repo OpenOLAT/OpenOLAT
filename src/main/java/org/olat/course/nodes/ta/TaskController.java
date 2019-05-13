@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -52,7 +53,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
@@ -83,7 +83,7 @@ import org.olat.properties.Property;
 
 public class TaskController extends BasicController {
 	
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final Logger log = Tracing.createLoggerFor(TaskController.class);
 	
 	private static final String ACTION_PREVIEW = "ta.preview";
 	private static final String ACTION_SELECT = "seltask";

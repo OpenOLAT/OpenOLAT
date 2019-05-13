@@ -27,7 +27,7 @@ import java.io.IOException;
 
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.resource.Resourceable;
@@ -51,7 +51,7 @@ import com.thoughtworks.xstream.converters.ConversionException;
 @Service("historyManager")
 public class HistoryManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(HistoryManager.class);
+	private static final Logger log = Tracing.createLoggerFor(HistoryManager.class);
 	
 	private static XStream historyReadStream = XStreamHelper.createXStreamInstance();
 	private static XStream historyWriteStream = XStreamHelper.createXStreamInstance();

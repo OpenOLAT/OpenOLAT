@@ -40,7 +40,7 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
@@ -63,7 +63,7 @@ import com.dumbster.smtp.SimpleSmtpServer;
 	"classpath:/org/olat/_spring/mainContext.xml"
 })
 public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
-	private static final OLog log = Tracing.createLoggerFor(OlatTestCase.class);
+	private static final Logger log = Tracing.createLoggerFor(OlatTestCase.class);
 	
 	private static boolean postgresqlConfigured = false;
 	private static boolean oracleConfigured = false;

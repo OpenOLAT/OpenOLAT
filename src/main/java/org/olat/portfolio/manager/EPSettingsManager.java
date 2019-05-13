@@ -25,8 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.portfolio.model.EPFilterSettings;
@@ -47,7 +48,9 @@ import com.thoughtworks.xstream.XStream;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 @Service("epSettingsManager")
-public class EPSettingsManager extends BasicManager {
+public class EPSettingsManager {
+
+	private static final Logger log = Tracing.createLoggerFor(EPSettingsManager.class);
 
 	private static final String EPORTFOLIO_ARTEFACTS_ATTRIBUTES = "eportfolio-artAttrib";
 	private static final String EPORTFOLIO_FILTER_SETTINGS = "eportfolio-filterSettings";
@@ -67,8 +70,7 @@ public class EPSettingsManager extends BasicManager {
 		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_ATTRIBUTES);
 		TreeMap<String, Boolean> disConfig;
 		if (p == null) {
-			disConfig = new TreeMap<String, Boolean>();
-			// TODO: epf: maybe there is a better way to get the default set of
+			disConfig = new TreeMap<>();
 			// attributes from an artefact ?!
 			disConfig.put("artefact.author", true);
 			disConfig.put("artefact.description", false);
@@ -101,7 +103,7 @@ public class EPSettingsManager extends BasicManager {
 	@SuppressWarnings("unchecked")
 	public List<EPFilterSettings> getSavedFilterSettings(Identity ident){
 		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_FILTER_SETTINGS);
-		List<EPFilterSettings> result = new ArrayList<EPFilterSettings>();
+		List<EPFilterSettings> result = new ArrayList<>();
 		if (p == null) {
 			result.add(new EPFilterSettings());
 		} else {
@@ -111,7 +113,7 @@ public class EPSettingsManager extends BasicManager {
 				result = (List<EPFilterSettings>) xStream.fromXML(p.getTextValue());
 			} catch (Exception e) {
 				//it's not a live critical part
-				logWarn("Cannot read filter settings", e);
+				log.warn("Cannot read filter settings", e);
 			}
 		}
 		return result;		
@@ -148,8 +150,7 @@ public class EPSettingsManager extends BasicManager {
 	public String getUsersPreferedArtefactViewMode(Identity ident, String context){
 		Property p = propertyManager.findProperty(ident, null, null, EPORTFOLIO_CATEGORY, EPORTFOLIO_ARTEFACTS_VIEWMODE + "." + context);
 		if (p != null) {
-			String preferedMode = p.getStringValue();
-			return preferedMode;
+			return p.getStringValue();
 		}
 		return null;		
 	}

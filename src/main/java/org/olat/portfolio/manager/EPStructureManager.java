@@ -32,6 +32,7 @@ import java.util.Set;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.ObjectNotFoundException;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
@@ -49,7 +50,6 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -96,7 +96,7 @@ public class EPStructureManager {
 	public static final String STRUCTURE_ELEMENT_TYPE_NAME = "EPStructureElement";
 	
 	public static final OLATResourceable ORES_MAPOWNER = OresHelper.lookupType(EPStructureManager.class, "EPOwner");
-	public static final OLog log = Tracing.createLoggerFor(EPStructureManager.class);
+	public static final Logger log = Tracing.createLoggerFor(EPStructureManager.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -1294,7 +1294,7 @@ public class EPStructureManager {
 		EPStructureElement childSourceEl = (EPStructureElement)refLink.getChild();
 		EPStructureElement clonedChildEl = instantiateClone(refLink.getChild());
 		if(clonedChildEl == null) {
-			log.warn("Attempt to clone an unsupported structure type: " + refLink.getChild(), null);
+			log.warn("Attempt to clone an unsupported structure type: " + refLink.getChild());
 		} else {
 			OLATResource resource = resourceManager.createOLATResourceInstance(clonedChildEl.getClass());
 			clonedChildEl.setOlatResource(resource);

@@ -40,7 +40,7 @@ import org.olat.core.gui.control.navigation.SiteSecurityCallback;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
@@ -70,7 +70,7 @@ public class LibraryDispatcher  implements Dispatcher {
 	private static final String GUEST = "guest";
 	private static final String TRUE = "true";
 	
-	private static final OLog log = Tracing.createLoggerFor(LibraryDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(LibraryDispatcher.class);
 	
 	private static final String DEFAULT_BEAN_ID = "frentixsites_library";
 	
@@ -91,7 +91,7 @@ public class LibraryDispatcher  implements Dispatcher {
 			//or authors copy-pasted links to the content.
 			//showing redscreens for non valid URL is wrong instead
 			//a 404 message must be shown -> e.g. robots correct their links.
-			if(log.isDebug()){
+			if(log.isDebugEnabled()){
 				log.debug("Bad Request "+request.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);

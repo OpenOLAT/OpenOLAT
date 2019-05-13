@@ -62,7 +62,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
@@ -86,7 +86,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ForumTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(ForumTest.class);
+	private static final Logger log = Tracing.createLoggerFor(ForumTest.class);
 	
 	private static Forum forum;
 	private static Message m1, m2, m3, m4 ,m5;

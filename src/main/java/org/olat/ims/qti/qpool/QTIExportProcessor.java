@@ -41,7 +41,7 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -66,7 +66,7 @@ import org.xml.sax.InputSource;
  */
 public class QTIExportProcessor {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTIExportProcessor.class);
+	private static final Logger log = Tracing.createLoggerFor(QTIExportProcessor.class);
 
 	private final QPoolFileStorage qpoolFileStorage;
 	

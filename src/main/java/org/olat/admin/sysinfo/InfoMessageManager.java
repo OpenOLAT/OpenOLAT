@@ -31,7 +31,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
@@ -51,7 +50,7 @@ import org.olat.properties.PropertyManager;
  * Initial Date:  12.08.2008 <br>
  * @author guido
  */
-public class InfoMessageManager extends BasicManager implements GenericEventListener{
+public class InfoMessageManager implements GenericEventListener{
 	
 	private static final String INFO_MSG = "InfoMsg";
 	private static final String INFO_MSG_NODE_ONLY = "InfoMsgNode-";

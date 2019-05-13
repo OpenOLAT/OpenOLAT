@@ -30,7 +30,7 @@ import org.olat.core.commons.modules.glossary.GlossaryItemManager;
 import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -73,7 +73,7 @@ import org.springframework.stereotype.Service;
 @Service("glossaryManager")
 public class GlossaryManagerImpl implements GlossaryManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(GlossaryManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(GlossaryManagerImpl.class);
 	
 	private static final String EXPORT_FOLDER_NAME = "glossary";
 	

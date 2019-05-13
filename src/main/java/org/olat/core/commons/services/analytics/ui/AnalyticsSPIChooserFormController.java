@@ -105,9 +105,9 @@ public class AnalyticsSPIChooserFormController extends FormBasicController {
 				}
 				analyticsModule.setAnalyticsProvider(spi);
 				if (spi == null) {
-					logAudit("Analytics module has been disabled", null);
+					logAudit("Analytics module has been disabled");
 				} else {
-					logAudit("Analytics provider changed to " + spi.getName(), spi.getId());										
+					logAudit("Analytics provider changed to " + spi.getName() + "[" + spi.getId() + "]");										
 				}
 				fireEvent(ureq, Event.DONE_EVENT);		
 			}

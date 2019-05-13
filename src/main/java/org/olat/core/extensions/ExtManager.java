@@ -34,9 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.extensions.action.GenericActionExtension;
-import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 
@@ -47,7 +48,9 @@ import org.olat.core.util.StringHelper;
  * @author Felix
  * @author guido
  */
-public class ExtManager extends LogDelegator {
+public class ExtManager {
+
+	private static final Logger log = Tracing.createLoggerFor(ExtManager.class);
 	
 	private static ExtManager instance;
 	private long timeOfExtensionStartup;
@@ -143,12 +146,12 @@ public class ExtManager extends LogDelegator {
 	}
 	
 	private ArrayList<Extension> initExtentions() {
-		logInfo("****** start loading extensions *********");
-		Map<Integer, Extension> orderKeys = new HashMap<Integer, Extension>();
-		idExtensionlookup = new HashMap<Long, Extension>();
-		navKeyGAExtensionlookup = new HashMap<ExtensionPointKeyPair, GenericActionExtension>();
+		log.info("****** start loading extensions *********");
+		Map<Integer, Extension> orderKeys = new HashMap<>();
+		idExtensionlookup = new HashMap<>();
+		navKeyGAExtensionlookup = new HashMap<>();
 		
-		ArrayList<Extension> extensionsList = new ArrayList<Extension>();
+		ArrayList<Extension> extensionsList = new ArrayList<>();
 		Map<String, Extension> extensionMap = CoreSpringFactory.getBeansOfType(Extension.class);
 		Collection<Extension> extensionValues = extensionMap.values();
 
@@ -156,26 +159,26 @@ public class ExtManager extends LogDelegator {
 		int count_duplid = 0;
 		AtomicInteger count_duplnavkey = new AtomicInteger(0);
 		
-		boolean debug = isLogDebugEnabled();
+		boolean debug = log.isDebugEnabled();
 		
 		// first build ordered list
 		for (Extension extension : extensionValues) {
 			if (!extension.isEnabled()) {
 				count_disabled++;
-				logDebug("* Disabled Extension got loaded :: " + extension + ".  Check that you don't use it or that extension returns null for getExtensionFor() when disabled, resp. overwrite isEnabled().",null);
+				log.debug("* Disabled Extension got loaded :: " + extension + ".  Check that you don't use it or that extension returns null for getExtensionFor() when disabled, resp. overwrite isEnabled().");
 			}
 			int orderKey = extension.getOrder();
 			
 			if(orderKey == 0){
 				//not configured via spring (order not set)
-				logDebug("Extension-Configuration Warning: Order-value was not set for extension=" + extension + ", set order-value to config positionioning of extension...",null);
+				log.debug("Extension-Configuration Warning: Order-value was not set for extension=" + extension + ", set order-value to config positionioning of extension...");
 				if(extension instanceof AbstractExtension){
 					((AbstractExtension)extension).setOrder(100000);
 				}
 			}
 			if (orderKeys.containsKey(orderKey)) {
 				Extension occupant = orderKeys.get(orderKey);
-				if(debug) logDebug("Extension-Configuration Problem: Dublicate order-value ("+extension.getOrder()+") for extension=" + extension + ", orderKey already occupied by "+occupant,null);
+				if(debug) log.debug("Extension-Configuration Problem: Dublicate order-value ("+extension.getOrder()+") for extension=" + extension + ", orderKey already occupied by "+occupant);
 			} else {
 				orderKeys.put(orderKey, extension);
 			}
@@ -183,7 +186,7 @@ public class ExtManager extends LogDelegator {
 			Long uid = CodeHelper.getUniqueIDFromString(extension.getUniqueExtensionID());
 			if(idExtensionlookup.containsKey(uid)){
 					count_duplid++;
-					logWarn("Devel-Info :: duplicate unique id generated for extensions :: "+uid+" [ ["+idExtensionlookup.get(uid)+"]  and ["+extension+"] ]",null);
+					log.warn("Devel-Info :: duplicate unique id generated for extensions :: "+uid+" [ ["+idExtensionlookup.get(uid)+"]  and ["+extension+"] ]");
 			}else{
 				extensionsList.add(extension);
 				idExtensionlookup.put(uid, extension);
@@ -205,16 +208,16 @@ public class ExtManager extends LogDelegator {
 					}
 				}
 			}
-			if(debug) logDebug("Created unique-id "+uid+" for extension:: "+extension);
+			if(debug) log.debug("Created unique-id "+uid+" for extension:: "+extension);
 		}
-		logInfo("Devel-Info :: initExtensions done. :: "+count_disabled+" disabled Extensions, "+count_duplid+" extensions with duplicate ids, "+count_duplnavkey+ " extensions with duplicate navigationKeys");
+		log.info("Devel-Info :: initExtensions done. :: "+count_disabled+" disabled Extensions, "+count_duplid+" extensions with duplicate ids, "+count_duplnavkey+ " extensions with duplicate navigationKeys");
 		Collections.sort(extensionsList);
 		return extensionsList;
 	}
 	
 	private void append(ExtensionPointKeyPair key, GenericActionExtension gAE, AtomicInteger countDuplicate) {
 		if (navKeyGAExtensionlookup.containsKey(key)) {
-			logInfo("Devel-Info :: duplicate navigation-key for extension :: " + key.navigationKey, null);
+			log.info("Devel-Info :: duplicate navigation-key for extension :: " + key.navigationKey);
 			countDuplicate.incrementAndGet();
 		} else {
 			navKeyGAExtensionlookup.put(key, gAE);

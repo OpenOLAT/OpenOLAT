@@ -31,7 +31,7 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("UsrPropHandlerCfgFactory")
 public class UsrPropHandlerCfgFactory extends AbstractSpringModule {
-	private static final OLog log = Tracing.createLoggerFor(UsrPropHandlerCfgFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(UsrPropHandlerCfgFactory.class);
 	private static final String PROP_HNDLCFG_PREFIX = "handlerconfig_";
 
 	@Autowired(required=false) @Qualifier("propertyHandlerControllerMap")

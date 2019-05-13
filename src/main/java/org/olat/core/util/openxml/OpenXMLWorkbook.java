@@ -32,7 +32,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
@@ -50,7 +50,7 @@ import org.olat.core.util.openxml.workbookstyle.Font;
  */
 public class OpenXMLWorkbook implements Closeable {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenXMLWorkbook.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenXMLWorkbook.class);
 	
 
 	public static final String SCHEMA_RELATIONSHIPS = "http://schemas.openxmlformats.org/package/2006/relationships";

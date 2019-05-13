@@ -22,7 +22,7 @@ package org.olat.course.db.interpreter;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.condition.interpreter.AbstractFunction;
 import org.olat.course.condition.interpreter.ArgumentParseException;
@@ -42,7 +42,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class GetUserCourseDBFunction extends AbstractFunction {
 	
-	private static OLog log = Tracing.createLoggerFor(GetUserCourseDBFunction.class);
+	private static final Logger log = Tracing.createLoggerFor(GetUserCourseDBFunction.class);
 
 	public static final String name = "getUserCourseDBValue";
 

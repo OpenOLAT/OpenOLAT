@@ -51,7 +51,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.CourseLoggingAction;
@@ -75,7 +75,7 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  */
 public class SinglePageController extends BasicController implements CloneableController, Activateable2 {
 
-	private static final OLog log = Tracing.createLoggerFor(SinglePageController.class);
+	private static final Logger log = Tracing.createLoggerFor(SinglePageController.class);
 	
 	private static final String GOTO_NID = "GOTO_NID: ";
 	private static final String COMMAND_EDIT = "command.edit";

@@ -26,7 +26,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRef;
@@ -44,7 +44,7 @@ import org.springframework.stereotype.Service;
 @Service
 class QualityContextToOrganisationDAO {
 
-	private static final OLog log = Tracing.createLoggerFor(QualityContextToOrganisationDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(QualityContextToOrganisationDAO.class);
 	
 	@Autowired
 	private DB dbInstance;

@@ -28,7 +28,9 @@ package org.olat.search.service.indexer.repository;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
+import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.WikiResource;
 import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiManager;
@@ -44,11 +46,14 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class WikiRepositoryIndexer extends DefaultIndexer {
+
+	private static final Logger log = Tracing.createLoggerFor(WikiRepositoryIndexer.class);
+	
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttypes and lucene has problems with '_' 
-	public final static String TYPE = "type.repository.entry.wiki";
+	public static final String TYPE = "type.repository.entry.wiki";
 
-	public final static String ORES_TYPE_WIKI = WikiResource.TYPE_NAME;
+	public static final String ORES_TYPE_WIKI = WikiResource.TYPE_NAME;
 
 	@Override
 	public String getSupportedTypeName() {	
@@ -61,7 +66,7 @@ public class WikiRepositoryIndexer extends DefaultIndexer {
 	@Override
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
-		if (isLogDebugEnabled()) logDebug("Analyse Wiki RepositoryEntry...");
+		if (log.isDebugEnabled()) log.debug("Analyse Wiki RepositoryEntry...");
 		String repoEntryName = "*name not available*";
 		try {
 			repoEntryName = repositoryEntry.getDisplayname();
@@ -76,11 +81,11 @@ public class WikiRepositoryIndexer extends DefaultIndexer {
 					Document document = WikiPageDocument.createDocument(wikiContext, wikiPage);
 					indexWriter.addDocument(document);
 				} catch (Exception e) {
-					logError("Error indexing wiki page:" + repoEntryName + " " + (wikiPage == null ? "null" : wikiPage.getPageName()), e);
+					log.error("Error indexing wiki page:" + repoEntryName + " " + (wikiPage == null ? "null" : wikiPage.getPageName()), e);
 				}
 			}
 		} catch (Exception e) {
-			logError("Error indexing wiki:" + repoEntryName, e);
+			log.error("Error indexing wiki:" + repoEntryName, e);
 		}
 	}
 }

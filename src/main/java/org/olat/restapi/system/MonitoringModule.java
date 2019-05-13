@@ -23,7 +23,7 @@ import java.io.File;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service;
 @Service("monitoringModule")
 public class MonitoringModule extends AbstractSpringModule implements ConfigOnOff {
 	
-	private static final OLog log = Tracing.createLoggerFor(MonitoringModule.class);
+	private static final Logger log = Tracing.createLoggerFor(MonitoringModule.class);
 
 	private static final String ENABLED = "monitoring.enabled";
 	private static final String MONITORED_PROBES = "probes";

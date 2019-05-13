@@ -37,7 +37,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.export.CourseEnvironmentMapper;
@@ -69,7 +69,7 @@ import org.olat.resource.OLATResourceManager;
  */
 public class PersistingCourseGroupManager implements CourseGroupManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(PersistingCourseGroupManager.class);
+	private static final Logger log = Tracing.createLoggerFor(PersistingCourseGroupManager.class);
 
 	private static final String LEARNINGGROUPEXPORT_XML = "learninggroupexport.xml";
 	private static final String RIGHTGROUPEXPORT_XML = "rightgroupexport.xml";
@@ -321,7 +321,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 			for(BGArea area:areas) {
 				areaManager.deleteBGArea(area);
 			}
-			log.audit("Deleting course groupmanagement for " + re.toString());
+			log.info(Tracing.M_AUDIT, "Deleting course groupmanagement for " + re.toString());
 		}
 	}
 

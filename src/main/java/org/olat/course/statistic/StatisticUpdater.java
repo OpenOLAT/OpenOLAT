@@ -26,7 +26,7 @@ package org.olat.course.statistic;
 
 import java.util.Date;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -57,7 +57,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class StatisticUpdater implements IStatisticUpdater {
 
 	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(StatisticUpdater.class);
+	private static final Logger log_ = Tracing.createLoggerFor(StatisticUpdater.class);
 
 	/** the jdbcTemplate is used to allow access to other than the default database and 
 	 * allow raw sql code

@@ -27,12 +27,12 @@ package org.olat.commons.coordinate.cluster.lock;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SignOnOffEvent;
 import org.olat.core.util.UserSession;
@@ -59,7 +59,7 @@ import org.olat.core.util.resource.OresHelper;
 // Must be abstract because Spring configuration of method 'getPersistentLockManager' :
 // to avoid circular reference method lookup is used for dependecy injection of persistent lock manager
 public class ClusterLocker implements Locker, GenericEventListener {
-	private static final OLog log = Tracing.createLoggerFor(ClusterLocker.class);
+	private static final Logger log = Tracing.createLoggerFor(ClusterLocker.class);
 
 	private Syncer syncer;
 	private EventBus eventBus;

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -43,7 +44,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -65,7 +65,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 	implements FilterableFlexiTableModel, SortableFlexiTableDataModel<CheckListAssessmentRow>,
 	    ExportableFlexiTableDataModel {
 	
-	private static final OLog log = Tracing.createLoggerFor(CheckListAssessmentDataModel.class);
+	private static final Logger log = Tracing.createLoggerFor(CheckListAssessmentDataModel.class);
 	
 	public static final int USER_PROPS_OFFSET = 500;
 	public static final int CHECKBOX_OFFSET = 5000;

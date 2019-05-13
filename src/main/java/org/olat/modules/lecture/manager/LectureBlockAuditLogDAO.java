@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -53,7 +53,7 @@ import com.thoughtworks.xstream.XStream;
 @Service
 public class LectureBlockAuditLogDAO {
 	
-	private static final OLog log = Tracing.createLoggerFor(LectureBlockAuditLogDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(LectureBlockAuditLogDAO.class);
 	
 	@Autowired
 	private DB dbInstance;

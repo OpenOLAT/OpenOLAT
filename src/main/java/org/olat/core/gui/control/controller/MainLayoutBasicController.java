@@ -67,8 +67,8 @@ public abstract class MainLayoutBasicController extends BasicController implemen
 	@Override
 	public CustomCSS getCustomCSS() {
 		if (isLogDebugEnabled()) {
-			if (customCSS == null) logDebug("No custom CSS set for this main layout", null);
-			else logDebug("Custom CSS set for this main layout, pointing to URL::" + customCSS.getCSSURL(), null);	
+			if (customCSS == null) logDebug("No custom CSS set for this main layout");
+			else logDebug("Custom CSS set for this main layout, pointing to URL::" + customCSS.getCSSURL());	
 		}
 		return customCSS;
 	}
@@ -76,8 +76,8 @@ public abstract class MainLayoutBasicController extends BasicController implemen
 	@Override
 	public void setCustomCSS(CustomCSS newCustomCSS) {
 		if (isLogDebugEnabled()) {
-			if (newCustomCSS == null) logDebug("Setting emtpy custom CSS for this main layout", null);
-			else logDebug("Setting custom CSS for this main layout, pointing to URL::" + newCustomCSS.getCSSURL(), null);	
+			if (newCustomCSS == null) logDebug("Setting emtpy custom CSS for this main layout");
+			else logDebug("Setting custom CSS for this main layout, pointing to URL::" + newCustomCSS.getCSSURL());	
 		}
 		// cleanup if one already exists
 		if (customCSS != null && customCSS != newCustomCSS) {

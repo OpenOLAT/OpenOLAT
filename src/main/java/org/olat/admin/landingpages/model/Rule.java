@@ -21,7 +21,7 @@ package org.olat.admin.landingpages.model;
 
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -34,7 +34,7 @@ import org.olat.core.util.UserSession;
  */
 public class Rule {
 	
-	private static final OLog log = Tracing.createLoggerFor(Rule.class);
+	private static final Logger log = Tracing.createLoggerFor(Rule.class);
 	
 	private String role;
 	private String userAttributeKey;

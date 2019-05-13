@@ -32,7 +32,7 @@ import org.olat.core.commons.services.notifications.ui.NotificationNewsControlle
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -55,7 +55,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 public class NotificationHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(NotificationHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(NotificationHelper.class);
 	private static CacheWrapper<Long,String> userPropertiesCache;
 	
 	static {

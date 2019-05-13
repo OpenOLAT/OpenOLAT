@@ -34,8 +34,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.model.KalendarEvent;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -45,7 +45,7 @@ import net.fortuna.ical4j.model.WeekDayList;
 import net.fortuna.ical4j.model.property.ExDate;
 
 public class CalendarUtils {
-	private static final OLog log = Tracing.createLoggerFor(CalendarUtils.class);
+	private static final Logger log = Tracing.createLoggerFor(CalendarUtils.class);
 	private static final SimpleDateFormat ical4jDateFormatter = new SimpleDateFormat("yyyyMMdd");
 	private static final SimpleDateFormat ical4jDateTimeFormatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 	private static final SimpleDateFormat occurenceDateTimeFormat = new SimpleDateFormat("yyyyMMdd'T'HHmmss");

@@ -39,15 +39,18 @@ import org.apache.velocity.exception.MethodInvocationException;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.LogDelegator;
 import org.olat.core.logging.OLATRuntimeException;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 
 /**
  * Initial Date: 01.12.2003
  * @author Mike Stock
  */
-public class VelocityHelper extends LogDelegator {
+public class VelocityHelper {
+
+	private static final Logger log = Tracing.createLoggerFor(VelocityHelper.class);
 	private static final VelocityHelper INSTANCE = new VelocityHelper();
 
 	private VelocityEngine ve;
@@ -113,7 +116,7 @@ public class VelocityHelper extends LogDelegator {
 	private void merge(String template, Context c, Writer wOut, String theme) {
 		try {
 			Template vtemplate = null;
-			if (isLogDebugEnabled()) logDebug("Merging template::" + template + " for theme::" + theme, null);
+			if (log.isDebugEnabled()) log.debug("Merging template::" + template + " for theme::" + theme);
 
 			if (theme != null) {
 				// try the theme first, if resource not found exception, fallback to normal resource.

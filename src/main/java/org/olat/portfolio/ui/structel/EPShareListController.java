@@ -451,7 +451,7 @@ public class EPShareListController extends FormBasicController {
 	 */
 	protected void secureListBox() {
 		if(isLogDebugEnabled())
-			logDebug(" 'securing' ListBox -->  updating policyWrappers with field values...",null);
+			logDebug(" 'securing' ListBox -->  updating policyWrappers with field values...");
 			
 		for(EPSharePolicyWrapper policyWrapper:policyWrappers) {
 			if(policyWrapper.getUserListBox() != null) {

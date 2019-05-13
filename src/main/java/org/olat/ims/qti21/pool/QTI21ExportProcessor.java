@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.DoubleAdder;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.ZipUtil;
@@ -67,7 +67,7 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
  */
 public class QTI21ExportProcessor {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21ExportProcessor.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21ExportProcessor.class);
 	
 	private final Locale locale;
 	private final QTI21Service qtiService;

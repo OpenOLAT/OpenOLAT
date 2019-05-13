@@ -298,7 +298,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 				if ("JSESSIONID".equals(cookie.getName())) {
 					String redirectedButInvalidSessionId = cookie.getValue();
 					redirectedButInvalidSessionId = redirectedButInvalidSessionId.substring(0, redirectedButInvalidSessionId.length()-2) + nodeIdStr;
-					logInfo("redirecting session to node "+nodeIdStr+", new sessionid="+redirectedButInvalidSessionId, null);
+					logInfo("redirecting session to node "+nodeIdStr+", new sessionid="+redirectedButInvalidSessionId);
 					cookie.setValue(redirectedButInvalidSessionId);
 					replaceCookie(ureq.getHttpReq(), ureq.getHttpResp(), cookie);
 

@@ -28,6 +28,7 @@ package org.olat.course.nodes.en;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
@@ -46,7 +47,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -80,7 +80,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ENRunController extends BasicController implements GenericEventListener {
 
-	private static final OLog log = Tracing.createLoggerFor(ENRunController.class);
+	private static final Logger log = Tracing.createLoggerFor(ENRunController.class);
 
 	private static final String CMD_VISIT_CARD = "cmd.visit.card";
 	private static final String CMD_ENROLL_IN_GROUP = "cmd.enroll.in.group";
@@ -202,7 +202,7 @@ public class ENRunController extends BasicController implements GenericEventList
 					BusinessGroup choosenGroup = businessGroupService.loadBusinessGroup(choosenGroupKey);
 					addLoggingResourceable(LoggingResourceable.wrap(choosenGroup));
 
-					if(log.isDebug()) {
+					if(log.isDebugEnabled()) {
 						log.debug("CMD_ENROLL_IN_GROUP ureq.getComponentID()=" + ureq.getComponentID() + "  ureq.getComponentTimestamp()=" + ureq.getComponentTimestamp());
 					}
 

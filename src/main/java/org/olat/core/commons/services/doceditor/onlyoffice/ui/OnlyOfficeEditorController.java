@@ -32,7 +32,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OnlyOfficeEditorController extends BasicController {
 
-	private static final OLog log = Tracing.createLoggerFor(OnlyOfficeEditorController.class);
+	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeEditorController.class);
 	
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;

@@ -41,7 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.registration.RegistrationManager;
@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserBulkChangePasswordController extends BasicController {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserBulkChangePasswordController.class);
+	private static final Logger log = Tracing.createLoggerFor(UserBulkChangePasswordController.class);
 	
 	private ChangePasswordForm changePasswordForm;
 	private final OLATAuthManager olatAuthenticationSpi;

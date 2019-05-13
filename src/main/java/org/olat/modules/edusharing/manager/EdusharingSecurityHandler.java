@@ -31,8 +31,8 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.edusharing.EdusharingSecurityService;
 import org.olat.modules.edusharing.EdusharingSignature;
@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EdusharingSecurityHandler implements SOAPHandler<SOAPMessageContext> {
 
-	private static final OLog log = Tracing.createLoggerFor(EdusharingSecurityHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(EdusharingSecurityHandler.class);
 	
 	@Autowired
 	private EdusharingSecurityService edusharingSecurityService;
@@ -68,7 +68,7 @@ public class EdusharingSecurityHandler implements SOAPHandler<SOAPMessageContext
 				EdusharingSignature signature = edusharingSecurityService.createSignature();
 				
 				SOAPMessage message = context.getMessage();
-				if (log.isDebug()) log.debug("Edusharing saop message (unsigned): " + toXml(message));
+				if (log.isDebugEnabled()) log.debug("Edusharing saop message (unsigned): " + toXml(message));
 				
 				SOAPEnvelope envelope = message.getSOAPPart().getEnvelope();
 				if (envelope.getHeader() == null) {
@@ -82,7 +82,7 @@ public class EdusharingSecurityHandler implements SOAPHandler<SOAPMessageContext
 				header.addChildElement("signed", "es").setValue(signature.getSigned());
 				header.addChildElement("signature", "es").setValue(signature.getSignature());
 				
-				if (log.isDebug()) log.debug("Edusharing saop message (signed): " + toXml(message));
+				if (log.isDebugEnabled()) log.debug("Edusharing saop message (signed): " + toXml(message));
 			} catch (Exception e) {
 				log.error("", e);
 			}

@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,6 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.group.BusinessGroup;
@@ -66,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BGRightManagerTest extends OlatTestCase {
 
-	private static OLog log = Tracing.createLoggerFor(BGRightManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(BGRightManagerTest.class);
 	private Identity id1, id2, id3, id4;
 
 	@Autowired

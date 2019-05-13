@@ -78,7 +78,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -131,7 +131,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class WikiMainController extends BasicController implements CloneableController, Activateable2 {
 
-	private static final OLog log = Tracing.createLoggerFor(WikiMainController.class);
+	private static final Logger log = Tracing.createLoggerFor(WikiMainController.class);
 
 	private TabbedPane tabs;
 	private WikiPage selectedPage;
@@ -1088,7 +1088,7 @@ public class WikiMainController extends BasicController implements CloneableCont
 		for (Iterator<MediaFileElement> iter = toDelete.iterator(); iter.hasNext();) {
 			VFSContainer mediaFolder = WikiManager.getInstance().getMediaFolder(ores);
 			MediaFileElement element = iter.next();
-			if (log.isDebug())
+			if (log.isDebugEnabled())
 				log.debug("deleting media file: " + element.getFilename());
 			if (!element.getFilename().endsWith(METADATA_SUFFIX)) {
 				VFSLeaf file = (VFSLeaf) mediaFolder.resolve(element.getFilename());

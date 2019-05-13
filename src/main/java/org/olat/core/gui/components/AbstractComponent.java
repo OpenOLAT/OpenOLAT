@@ -30,13 +30,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.CodeHelper;
@@ -48,7 +48,7 @@ import org.olat.core.util.CodeHelper;
  */
 public abstract class AbstractComponent implements Component {
 
-	private static final OLog log_ = Tracing.createLoggerFor(AbstractComponent.class);
+	private static final Logger log_ = Tracing.createLoggerFor(AbstractComponent.class);
 
 	private boolean spanReplaceable = false;
 

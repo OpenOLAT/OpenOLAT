@@ -29,7 +29,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.webdav.servlets.ConcurrentDateFormat;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.JavaIOItem;
 import org.olat.core.util.vfs.VFSConstants;
@@ -44,7 +44,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class VFSResource implements WebResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSResource.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSResource.class);
 	
 	private final VFSItem item;
 	private final String path;

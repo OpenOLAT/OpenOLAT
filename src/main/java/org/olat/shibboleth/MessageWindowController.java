@@ -41,7 +41,7 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Lavinia Dumitrescu
  */
 public class MessageWindowController extends DefaultChiefController {
-	private static final OLog log = Tracing.createLoggerFor(MessageWindowController.class);
+	private static final Logger log = Tracing.createLoggerFor(MessageWindowController.class);
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(MessageWindowController.class);
 
 	@Autowired

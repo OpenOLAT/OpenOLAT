@@ -26,9 +26,9 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import org.apache.logging.log4j.Logger;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.vfs.VFSManager;
@@ -59,7 +59,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class OWASPAntiSamyXSSFilter implements Filter {
 	
-	private static final OLog log = Tracing.createLoggerFor(OWASPAntiSamyXSSFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(OWASPAntiSamyXSSFilter.class);
 
 	//to be found in /_resources
 	private static final String POLICY_FILE = "antisamy-tinymce.xml";
@@ -117,7 +117,7 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 	@Override
     public String filter(String original) {
         if (original == null) {
-            if (log.isDebug()) log.debug("  Filter-Input was null, is this intended?", null);
+            log.debug("Filter-Input was null, is this intended?");
             return null;
         }
         String output = getCleanHTML(original);
@@ -126,11 +126,11 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 		} else {
 			String errMsg = getOrPrintErrorMessages();
 			if (!errMsg.equals("")) {
-				log.warn(" Filter applied! => message from filter, check if this should not be allowed: " + errMsg, null);
-				log.info(" Original Input: \n" + original, null);
-				log.info(" Filter Result: \n" +  output, null);
+				log.warn(" Filter applied! => message from filter, check if this should not be allowed: " + errMsg);
+				log.info(" Original Input: \n" + original);
+				log.info(" Filter Result: \n" +  output);
 			} else {
-				log.debug(" Filter result doesn't match input! / no message from filter! maybe only some formatting differences.", null);
+				log.debug(" Filter result doesn't match input! / no message from filter! maybe only some formatting differences.");
 			}
 		}
 		return output;

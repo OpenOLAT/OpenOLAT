@@ -23,6 +23,7 @@ import static org.olat.core.commons.services.doceditor.collabora.CollaboraServic
 import static org.olat.core.commons.services.doceditor.collabora.ui.CollaboraUIFactory.validateIsMandatory;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraRefreshDiscoveryEvent;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
@@ -41,7 +42,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -55,7 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CollaboraAdminController extends FormBasicController {
 
-	private static final OLog log = Tracing.createLoggerFor(CollaboraAdminController.class);
+	private static final Logger log = Tracing.createLoggerFor(CollaboraAdminController.class);
 
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
 	

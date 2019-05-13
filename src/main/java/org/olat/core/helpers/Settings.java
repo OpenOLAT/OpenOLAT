@@ -37,8 +37,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -58,12 +58,12 @@ public class Settings {
 
 	private static boolean debug = false;
 	private static String htmlEditorContentCssClassPrefixes;
-	private static List<Pattern> ajaxBlacklistPatterns = new ArrayList<Pattern>();
+	private static List<Pattern> ajaxBlacklistPatterns = new ArrayList<>();
 	private static boolean jUnitTest;
 	private static String applicationName;
 	private static String version;
 	private static String buildIdentifier;
-	private static OLog log = Tracing.createLoggerFor(Settings.class);
+	private static final Logger log = Tracing.createLoggerFor(Settings.class);
 
 	private static int nodeId;
 	private static String clusterMode;

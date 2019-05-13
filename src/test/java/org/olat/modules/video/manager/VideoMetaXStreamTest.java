@@ -26,7 +26,7 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoMeta;
@@ -43,7 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VideoMetaXStreamTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(VideoMetaXStreamTest.class);
+	private static final Logger log = Tracing.createLoggerFor(VideoMetaXStreamTest.class);
 	
 	@Autowired
 	private DB dbInstance;

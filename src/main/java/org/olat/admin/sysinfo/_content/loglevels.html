@@ -16,7 +16,7 @@
 					#foreach( $part in $logger.name.split("[^a-zA-Z0-9_-]"))#if ($package != "")#set ($package="${package}.${part}").#else#set ($package=$part)#end<a $r.hrefAndOnclick("viewlog",false,false,"p",${package}) style="display:inline">$part</a>#end
 					</div>
 				</td>
-				<td>$logger.getEffectiveLevel()</td>
+				<td>$logger.getLevel()</td>
 				<td><a $r.hrefAndOnclick("setlevel",false,false,"logger",$logger.name,"level","error")>Error</a></td>
 				<td><a $r.hrefAndOnclick("setlevel",false,false,"logger",$logger.name,"level","warn")>Warn</a></td>
 				<td><a $r.hrefAndOnclick("setlevel",false,false,"logger",$logger.name,"level","info")>Info</a></td>

@@ -50,7 +50,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
@@ -112,7 +112,7 @@ import org.springframework.stereotype.Service;
 public class QualityServiceImpl
 		implements QualityService, RepositoryEntryDataDeletable, OrganisationDataDeletable, CurriculumDataDeletable, SessionStatusHandler {
 
-	private static final OLog log = Tracing.createLoggerFor(QualityServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(QualityServiceImpl.class);
 	
 	private static final String REPORT_MEMBER_ROLE = "member";
 

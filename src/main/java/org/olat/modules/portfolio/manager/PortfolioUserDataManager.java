@@ -32,7 +32,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
@@ -63,7 +63,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PortfolioUserDataManager implements DeletableGroupData, UserDataDeletable, UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(PortfolioUserDataManager.class);
+	private static final Logger log = Tracing.createLoggerFor(PortfolioUserDataManager.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -116,7 +116,7 @@ public class PortfolioUserDataManager implements DeletableGroupData, UserDataDel
 		List<Media> medias = mediaDao.load(identity);
 		for(Media media:medias) {
 			if(mediaDao.isUsed(media)) {
-				log.audit("Cannot delete media because used: " + media.getKey());
+				log.info(Tracing.M_AUDIT, "Cannot delete media because used: {}", media.getKey());
 			} else {
 				portfolioService.deleteMedia(media);
 			}

@@ -33,7 +33,7 @@ import org.apache.velocity.exception.ParseErrorException;
 import org.apache.velocity.exception.ResourceNotFoundException;
 import org.olat.core.configuration.PreWarm;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class VelocityTemplatesPreWarm implements PreWarm {
-	private static final OLog log = Tracing.createLoggerFor(VelocityTemplatesPreWarm.class);
+	private static final Logger log = Tracing.createLoggerFor(VelocityTemplatesPreWarm.class);
 
 	@Override
 	public void run() {

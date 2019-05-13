@@ -28,7 +28,7 @@ package org.olat.core.commons.modules.bc;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
@@ -56,7 +56,7 @@ import org.olat.core.logging.activity.StringResourceableType;
  */
 public class FolderLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(FolderLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(FolderLoggingAction.class);
 	
 	public static final ILoggingAction FILE_CREATE = new FolderLoggingAction(
 			ActionType.tracking, CrudAction.create, ActionVerb.add,

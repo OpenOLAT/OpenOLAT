@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -51,7 +51,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class HTMLZippedMediaResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(HTMLZippedMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(HTMLZippedMediaResource.class);
 	
 	private final String filename;
 	private final File documentsDir;

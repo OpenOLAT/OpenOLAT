@@ -46,7 +46,7 @@ import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -106,7 +106,7 @@ import org.springframework.stereotype.Service;
 @Service
 class QualityMailing {
 
-	private static final OLog log = Tracing.createLoggerFor(QualityMailing.class);
+	private static final Logger log = Tracing.createLoggerFor(QualityMailing.class);
 	
 	private static final SimpleDateFormat FILE_DATE_PREFIX = new SimpleDateFormat("yyyyMMdd");
 	private static final Collection<QualityDataCollectionStatus> STATUS_FILTER = Arrays.asList(

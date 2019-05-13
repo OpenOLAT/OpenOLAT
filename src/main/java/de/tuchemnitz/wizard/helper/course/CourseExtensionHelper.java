@@ -32,7 +32,7 @@
 
 package de.tuchemnitz.wizard.helper.course;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -45,6 +45,9 @@ import org.olat.course.tree.CourseEditorTreeModel;
  * Helpful methods for course extension with new elements.
  */
 public class CourseExtensionHelper {
+	
+	private static final Logger log = Tracing.createLoggerFor(CourseExtensionHelper.class);
+	
 	/**
 	 * Creates an enrollment course node and appends it to the course. (not
 	 * persisted yet)
@@ -132,8 +135,7 @@ public class CourseExtensionHelper {
 		course.getEditorTreeModel().addCourseNode(node, rootNode);
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
-		OLog log = Tracing.createLoggerFor(CourseExtensionHelper.class);
-		if(log.isDebug()) log.debug("Created new course node: " + nodeConfig.getAlias());
+		if(log.isDebugEnabled()) log.debug("Created new course node: " + nodeConfig.getAlias());
 		return node;
 	}
 }

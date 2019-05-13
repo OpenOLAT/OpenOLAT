@@ -26,9 +26,9 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -65,7 +65,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 public class BigAssessmentGatlingPackageBuilder {
 	
 	private static final SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd-HHmmss");
-	private static final OLog log = Tracing.createLoggerFor(BigAssessmentGatlingPackageBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(BigAssessmentGatlingPackageBuilder.class);
 	private static final QtiSerializer qtiSerializer = new QtiSerializer(new JqtiExtensionManager());
 	
 	private int numOfSections = 15;

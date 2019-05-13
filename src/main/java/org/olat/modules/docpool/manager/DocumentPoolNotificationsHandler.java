@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.modules.bc.FileInfo;
 import org.olat.core.commons.modules.bc.FolderManager;
@@ -42,7 +43,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -69,7 +69,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DocumentPoolNotificationsHandler implements NotificationsHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(DocumentPoolNotificationsHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(DocumentPoolNotificationsHandler.class);
 	public static final String TYPE_NAME = "DocumentPool";
 	
 	@Autowired

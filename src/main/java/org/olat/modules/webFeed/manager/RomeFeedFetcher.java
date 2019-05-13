@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.webFeed.Enclosure;
@@ -56,7 +56,7 @@ import com.rometools.rome.io.XmlReader;
 @Service
 public class RomeFeedFetcher implements ExternalFeedFetcher {
 
-	private static final OLog log = Tracing.createLoggerFor(RomeFeedFetcher.class);
+	private static final Logger log = Tracing.createLoggerFor(RomeFeedFetcher.class);
 
 	private final SyndFeedInput syndFeedInput;
 

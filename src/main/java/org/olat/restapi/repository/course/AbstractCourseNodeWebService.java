@@ -32,12 +32,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -58,7 +58,7 @@ import org.olat.restapi.support.vo.CourseNodeVO;
 
 public abstract class AbstractCourseNodeWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(AbstractCourseNodeWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractCourseNodeWebService.class);
 	
 	private static final String CONDITION_ID_ACCESS = "accessability";
 	private static final String CONDITION_ID_VISIBILITY = "visibility";

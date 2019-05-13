@@ -26,9 +26,6 @@
 
 package org.olat.core.logging.activity;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -43,7 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StackedBusinessControl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
@@ -84,7 +81,7 @@ import org.olat.core.util.session.UserSessionManager;
 public class UserActivityLoggerImpl implements IUserActivityLogger {
 
 	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(UserActivityLoggerImpl.class);
+	private static final Logger log_ = Tracing.createLoggerFor(UserActivityLoggerImpl.class);
 	
 	/** the key with which the last LoggingObject is stored in the session - used for simpleDuration calculation only **/
 	public static final String USESS_KEY_USER_ACTIVITY_LOGGING_LAST_LOG = "USER_ACTIVITY_LOGGING_LAST_LOG";
@@ -588,7 +585,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 	@Override
 	public void log(ILoggingAction loggingAction, Class<?> callingClass, ILoggingResourceable... lriOrNull) {
 		Long logStart = null;
-		if (log_.isDebug()) {
+		if (log_.isDebugEnabled()) {
 			logStart = System.currentTimeMillis();
 		}
 		final ActionType actionType = stickyActionType_!=null ? stickyActionType_ : loggingAction.getResourceActionType();
@@ -650,12 +647,9 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 				ILoggingResourceable lr = it.next();
 				// we want this info as too much actionTypes are non-admin and log-entry will then be without value not containing targetIdent!, see FXOLAT-104
 				if (lr.getResourceableType()==StringResourceableType.targetIdentity && lr.getId().equals(identityKeyStr)) {
-					if (log_.isDebug()) {
+					if (log_.isDebugEnabled()) {
 						// complain
-						final Writer strackTraceAsStringWriter = new StringWriter();
-						final PrintWriter printWriter = new PrintWriter(strackTraceAsStringWriter);
-						(new Exception("OLAT-4955 debug stacktrac")).printStackTrace(printWriter);
-						log_.debug("OLAT-4955: Not storing targetIdentity for non-admin logging actions. A non-admin logging action wanted to store a user other than the one from the session: action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug(), strackTraceAsStringWriter.toString());
+						log_.debug("OLAT-4955: Not storing targetIdentity for non-admin logging actions. A non-admin logging action wanted to store a user other than the one from the session: action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug(), new Exception("OLAT-4955 debug stacktrac"));
 					}
 					// remove targetIdentity (fxdiff: only if same as executing identity!)
 					it.remove();
@@ -740,7 +734,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		} else {
 			DBFactory.getInstance().saveObject(logObj);
 		}
-		if (log_.isDebug()) {
+		if (log_.isDebugEnabled()) {
 			Long logEnd = System.currentTimeMillis();
 			log_.debug("log duration = " + (logEnd - logStart));
 		}

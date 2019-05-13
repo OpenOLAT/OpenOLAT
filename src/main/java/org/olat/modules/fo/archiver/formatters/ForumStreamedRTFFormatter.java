@@ -43,7 +43,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -64,7 +64,7 @@ import org.olat.modules.fo.manager.ForumManager;
  */
 public class ForumStreamedRTFFormatter extends ForumFormatter {
 	
-	private static final OLog log = Tracing.createLoggerFor(ForumStreamedRTFFormatter.class);
+	private static final Logger log = Tracing.createLoggerFor(ForumStreamedRTFFormatter.class);
 
 	private ZipOutputStream exportStream;
 	

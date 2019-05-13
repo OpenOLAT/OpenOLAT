@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.model.Kalendar;
@@ -39,7 +40,6 @@ import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -68,7 +68,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CalendarNotificationHandler implements NotificationsHandler {
 
-	private static final OLog log = Tracing.createLoggerFor(CalendarNotificationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(CalendarNotificationHandler.class);
 	private static final String CSS_CLASS_CALENDAR_ICON = "o_calendar_icon";
 	
 	@Autowired
@@ -141,7 +141,7 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 					for (KalendarEvent kalendarEvent : calEvents) {
 						if (showEvent(compareDate, kalendarEvent)) {
 							log.debug("found a KalendarEvent: " + kalendarEvent.getSubject() + " with time: " + kalendarEvent.getBegin()
-									+ " modified before: " + compareDate.toString(), null);
+									+ " modified before: " + compareDate.toString());
 							// found a modified event in this calendar
 							Date modDate = null;
 							if(kalendarEvent.getLastModified() > 0) {
@@ -191,12 +191,12 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 			if(CalendarController.ACTION_CALENDAR_GROUP.equals(p.getSubidentifier())) {
 				BusinessGroup bg = businessGroupDao.load(p.getResId());
 				if(bg == null) {
-					log.info("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey());
 					notificationsManager.deactivate(p);
 				}
 			} else if (CalendarController.ACTION_CALENDAR_COURSE.equals(p.getSubidentifier())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					log.info("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey());
 					notificationsManager.deactivate(p);
 				}
 			}

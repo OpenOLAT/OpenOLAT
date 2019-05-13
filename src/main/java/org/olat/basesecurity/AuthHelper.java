@@ -36,6 +36,7 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
@@ -53,7 +54,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.OlatLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -105,7 +105,7 @@ public class AuthHelper {
 	private static boolean loginBlocked = false;
 	private static int maxSessions = MAX_SESSION_NO_LIMIT;
 
-	private static OLog log = Tracing.createLoggerFor(AuthHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(AuthHelper.class);
 
 	/**
 	 * Used by DMZDispatcher to do regular logins and by ShibbolethDispatcher
@@ -297,7 +297,7 @@ public class AuthHelper {
 		if (identity == null) return LOGIN_FAILED;
 		//test if a user may not logon, since he/she is in the PERMISSION_LOGON
 		if (!BaseSecurityManager.getInstance().isIdentityVisible(identity)) {
-			log.audit("was denied login");
+			log.info(Tracing.M_AUDIT, "was denied login");
 			return LOGIN_DENIED;
 		}
 		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
@@ -316,7 +316,7 @@ public class AuthHelper {
 		if ( (loginBlocked && !usess.getRoles().isAdministrator() && !usess.getRoles().isSystemAdmin())
 				|| ( ((maxSessions != MAX_SESSION_NO_LIMIT) && (sessionManager.getUserSessionsCnt() >= maxSessions))
 						&& !usess.getRoles().isAdministrator() && !usess.getRoles().isSystemAdmin())) {
-			log.audit("Login was blocked for identity=" + usess.getIdentity().getKey() + ", loginBlocked=" + loginBlocked + " NbrOfSessions=" + sessionManager.getUserSessionsCnt());
+			log.info(Tracing.M_AUDIT, "Login was blocked for identity=" + usess.getIdentity().getKey() + ", loginBlocked=" + loginBlocked + " NbrOfSessions=" + sessionManager.getUserSessionsCnt());
 			sessionManager.signOffAndClear(usess);
 			return LOGIN_NOTAVAILABLE;
 		}
@@ -407,7 +407,7 @@ public class AuthHelper {
 			cookie.setMaxAge(0);
 			cookie.setPath("/");
 			ureq.getHttpResp().addCookie(cookie);
-			if(log.isDebug()) {
+			if(log.isDebugEnabled()) {
 				log.info("AuthHelper - shibsession cookie deleted");
 			}
 		}

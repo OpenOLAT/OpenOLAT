@@ -54,7 +54,7 @@ import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.vfs.QuotaExceededException;
@@ -140,7 +140,7 @@ public class WebDAVDispatcherImpl
     extends DefaultDispatcher implements WebDAVDispatcher, Dispatcher {
 
     private static final long serialVersionUID = 1L;
-    private static final OLog log = Tracing.createLoggerFor(WebDAVDispatcherImpl.class);
+    private static final Logger log = Tracing.createLoggerFor(WebDAVDispatcherImpl.class);
 
 
     // -------------------------------------------------------------- Constants
@@ -300,7 +300,7 @@ public class WebDAVDispatcherImpl
 
         final String method = req.getMethod();
 
-        if (log.isDebug()) {
+        if (log.isDebugEnabled()) {
             log.debug("[" + method + "] " + path);
         }
         
@@ -1033,7 +1033,7 @@ public class WebDAVDispatcherImpl
             }
         }
         
-        if(log.isDebug()) {
+        if(log.isDebugEnabled()) {
         	log.debug("Lock the ressource: " + path + " with depth:" + lock.getDepth());
         }
 
@@ -1431,7 +1431,7 @@ public class WebDAVDispatcherImpl
         }
 
         // Checking resource locks
-        if(log.isDebug()) {
+        if(log.isDebugEnabled()) {
         	log.debug("Unlock the ressource: " + path);
         }
 
@@ -1516,7 +1516,7 @@ public class WebDAVDispatcherImpl
         
         UserSession usess = webDAVManager.getUserSession(req);
         boolean locked = lockManager.isLocked(resource, ifHeader + lockTokenHeader, usess.getIdentity());
-        if(locked && log.isDebug()) {
+        if(locked && log.isDebugEnabled()) {
         	log.debug("Ressource is locked: " + req.getPathInfo());
         }
         return locked;
@@ -1549,7 +1549,7 @@ public class WebDAVDispatcherImpl
             }
         }
 
-        if (log.isDebug()) log.debug("Dest path :" + destinationPath);
+        if (log.isDebugEnabled()) log.debug("Dest path :" + destinationPath);
 
         // Check destination path to protect special subdirectories
         if (isSpecialPath(destinationPath)) {
@@ -1693,7 +1693,7 @@ public class WebDAVDispatcherImpl
     private boolean copyResource(HttpServletRequest req, Hashtable<String,Integer> errorList,
             String source, String dest, boolean moved) {
 
-        if (log.isDebug()) log.debug("Copy: " + source + " To: " + dest);
+        if (log.isDebugEnabled()) log.debug("Copy: " + source + " To: " + dest);
         
         WebResourceRoot resources = getResources(req);
         WebResource sourceResource = resources.getResource(source);
@@ -1845,7 +1845,7 @@ public class WebDAVDispatcherImpl
                                   String path,
                                   Map<String,Integer> errorList) {
 
-        if (log.isDebug()) log.debug("Delete:" + path);
+        if (log.isDebugEnabled()) log.debug("Delete:" + path);
 
         // Prevent deletion of special subdirectories
         if (isSpecialPath(path)) {

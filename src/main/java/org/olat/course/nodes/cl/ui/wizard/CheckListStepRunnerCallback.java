@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.UserRequest;
@@ -33,7 +34,6 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -66,7 +66,7 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class CheckListStepRunnerCallback implements StepRunnerCallback {
 	
-	private static final OLog log = Tracing.createLoggerFor(CheckListStepRunnerCallback.class);
+	private static final Logger log = Tracing.createLoggerFor(CheckListStepRunnerCallback.class);
 	
 	private final OLATResourceable courseOres;
 	

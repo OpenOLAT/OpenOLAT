@@ -30,7 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -53,7 +53,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class EssayAssessmentItemBuilder extends LobAssessmentItemBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(EssayAssessmentItemBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(EssayAssessmentItemBuilder.class);
 
 	private ExtendedTextInteraction extendedTextInteraction;
 	

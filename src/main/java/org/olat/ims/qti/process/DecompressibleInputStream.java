@@ -25,7 +25,7 @@ import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.io.ObjectStreamClass;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -37,7 +37,7 @@ import org.olat.core.logging.Tracing;
  */
 public class DecompressibleInputStream extends ObjectInputStream {
 	
-	private static final OLog log = Tracing.createLoggerFor(DecompressibleInputStream.class);
+	private static final Logger log = Tracing.createLoggerFor(DecompressibleInputStream.class);
 
     public DecompressibleInputStream(InputStream in) throws IOException {
         super(in);

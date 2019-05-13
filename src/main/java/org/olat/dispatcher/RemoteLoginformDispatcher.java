@@ -41,7 +41,7 @@ import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
@@ -90,7 +90,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 	private static final String METHOD_POST = "POST";
 	private static final String PARAM_USERNAME = "username";
 	private static final String PARAM_PASSWORD = "pwd";
-	private static final OLog log = Tracing.createLoggerFor(RemoteLoginformDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(RemoteLoginformDispatcher.class);
 	
 	private UserDeletionManager userDeletionManager;
 	

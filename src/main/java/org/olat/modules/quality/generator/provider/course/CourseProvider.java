@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
@@ -42,7 +43,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -81,7 +81,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CourseProvider implements QualityGeneratorProvider {
 
-	private static final OLog log = Tracing.createLoggerFor(CourseProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseProvider.class);
 	
 	public static final String CONFIG_KEY_TRIGGER = "trigger.type";
 	public static final String CONFIG_KEY_TRIGGER_BEGIN = "due.date.begin.type";
@@ -331,10 +331,10 @@ public class CourseProvider implements QualityGeneratorProvider {
 	}
 
 	private List<RepositoryEntry> loadCourses(QualityGenerator generator, SearchParameters seachParameters) {
-		if(log.isDebug()) log.debug("Generator " + generator + " searches with " + seachParameters);
+		if(log.isDebugEnabled()) log.debug("Generator " + generator + " searches with " + seachParameters);
 		
 		List<RepositoryEntry> courses = providerDao.loadCourses(seachParameters);
-		if(log.isDebug()) log.debug("Generator " + generator + " found " + courses.size() + " entries");
+		if(log.isDebugEnabled()) log.debug("Generator " + generator + " found " + courses.size() + " entries");
 		return courses;
 	}
 	

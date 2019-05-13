@@ -37,7 +37,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class NewUsersNotificationHandler implements NotificationsHandler {
-	private static final OLog log = Tracing.createLoggerFor(NewUsersNotificationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(NewUsersNotificationHandler.class);
 
 	@Autowired
 	private BaseSecurity securityManager;

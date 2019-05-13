@@ -26,7 +26,7 @@ package org.olat.course.statistic;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
@@ -40,7 +40,7 @@ import org.olat.core.logging.activity.StringResourceableType;
 
 public class StatisticLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(StatisticLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(StatisticLoggingAction.class);
 
 	public static final ILoggingAction VIEW_NODE_STATISTIC = 
 		new StatisticLoggingAction(ActionType.admin, CrudAction.retrieve, ActionVerb.view, ActionObject.statistic).

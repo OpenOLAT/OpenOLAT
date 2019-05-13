@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
 import org.olat.basesecurity.BaseSecurity;
@@ -53,7 +54,6 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.DBRuntimeException;
 import org.olat.core.logging.KnownIssueException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -131,7 +131,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("businessGroupService")
 public class BusinessGroupServiceImpl implements BusinessGroupService {
-	private final OLog log = Tracing.createLoggerFor(BusinessGroupServiceImpl.class);
+	private final Logger log = Tracing.createLoggerFor(BusinessGroupServiceImpl.class);
 
 	@Autowired
 	private BGAreaManager areaManager;
@@ -713,7 +713,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	@Override
 	public void deleteBusinessGroup(BusinessGroup group) {
 		try{
-			log.audit("Start deleting Business Group", group.toString());
+			log.info(Tracing.M_AUDIT, "Start deleting Business Group {}", group);
 			
 			OLATResourceableJustBeforeDeletedEvent delEv = new OLATResourceableJustBeforeDeletedEvent(group);
 			// notify all (currently running) BusinessGroupXXXcontrollers
@@ -729,7 +729,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			// 0) Loop over all deletableGroupData
 			Map<String,DeletableGroupData> deleteListeners = CoreSpringFactory.getBeansOfType(DeletableGroupData.class);
 			for (DeletableGroupData deleteListener : deleteListeners.values()) {
-				if(log.isDebug()) {
+				if(log.isDebugEnabled()) {
 					log.debug("deleteBusinessGroup: call deleteListener=" + deleteListener);
 				}
 				deleteListener.deleteGroupDataFor(group);
@@ -756,7 +756,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			
 			dbInstance.commit();
 	
-			log.audit("Deleted Business Group", group.toString());
+			log.info(Tracing.M_AUDIT, "Deleted Business Group {}", group);
 			//notify
 			BusinessGroupDeletedEvent event = new BusinessGroupDeletedEvent(BusinessGroupDeletedEvent.RESOURCE_DELETED_EVENT, memberKeys, entryKeys);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
@@ -867,7 +867,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 					if(reservation != null) {
 						BusinessGroupMailing.sendEmail(ureqIdentity, identityToAdd, group, MailType.addCoach, mailing);
 						// logging
-						log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getKey() + "' to group with key " + group.getKey());
+						log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getKey() + "' to group with key " + group.getKey());
 					}
 				}
 			} else {
@@ -890,7 +890,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToAdd));
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getKey() + "' to group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getKey() + "' to group with key " + group.getKey());
 	}
 	
 	private boolean addParticipant(Identity ureqIdentity, Roles ureqRoles, Identity identityToAdd, BusinessGroup group,
@@ -947,7 +947,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_ADDED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToAdd));
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getKey() + "' to group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identityToAdd.getKey() + "' to group with key " + group.getKey());
 		// send notification mail in your controller!
 	}
 
@@ -1020,7 +1020,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			}
 			// do logging
 			ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_PARTICIPANT_REMOVED, getClass(), LoggingResourceable.wrap(identity), LoggingResourceable.wrap(group));
-			log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey() + "' from group with key " + group.getKey());
+			log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey() + "' from group with key " + group.getKey());
 			// Check if a waiting-list with auto-close-ranks is configurated
 			if ( group.getWaitingListEnabled().booleanValue() && group.getAutoCloseRanksEnabled().booleanValue() ) {
 				// even when doOnlyPostRemovingStuff is set to true we really transfer the first Identity here
@@ -1256,7 +1256,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_TO_WAITING_LIST_ADDED, getClass(), LoggingResourceable.wrap(identity));
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey() + "' to group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey() + "' to group with key " + group.getKey());
 		// send mail
 		BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.addToWaitingList, mailing);
 	}
@@ -1300,7 +1300,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		// do logging
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_FROM_WAITING_LIST_REMOVED, getClass(), LoggingResourceable.wrap(identity));
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey() + "' from group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey() + "' from group with key " + group.getKey());
 		// send mail
 		BusinessGroupMailing.sendEmail(ureqIdentity, identity, group, MailType.removeToWaitingList, mailing);
 	}
@@ -1401,10 +1401,10 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 				log.info("doEnroll - setIsEnrolled ", identity.getKey().toString());
 			}
 		} else {
-			if (log.isDebug()) log.debug("doEnroll as participant beginTransaction");
+			log.debug("doEnroll as participant beginTransaction");
 			addParticipant(ureqIdentity, ureqRoles, identity, reloadedGroup, mailing, events);
 			enrollStatus.setEnrolled(GroupRoles.participant);						
-			if (log.isDebug()) log.debug("doEnroll as participant committed");
+			log.debug("doEnroll as participant committed");
 		}
 
 		dbInstance.commit();
@@ -1491,7 +1491,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 		}
 		
 		// do logging
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identiy '" + identityToRemove.getKey() + "' from group with key " + group.getKey());
+		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identiy '" + identityToRemove.getKey() + "' from group with key " + group.getKey());
 		ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_OWNER_REMOVED, getClass(), LoggingResourceable.wrap(group), LoggingResourceable.wrap(identityToRemove));
 	}
 	

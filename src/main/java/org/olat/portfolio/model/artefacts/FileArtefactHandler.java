@@ -26,7 +26,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSConstants;
@@ -55,7 +55,7 @@ import org.olat.search.service.document.file.FileDocumentFactory;
  */
 public class FileArtefactHandler extends EPAbstractHandler<FileArtefact> {
 	
-	private static final OLog log = Tracing.createLoggerFor(FileArtefactHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(FileArtefactHandler.class);
 
 	@Override
 	public FileArtefact createArtefact() {

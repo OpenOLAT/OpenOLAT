@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.ims.qti21.model.xml.ResponseIdentifierForFeedback;
@@ -52,7 +52,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public abstract class SimpleChoiceAssessmentItemBuilder extends ChoiceAssessmentItemBuilder implements ResponseIdentifierForFeedback {
 	
-	private static final OLog log = Tracing.createLoggerFor(SimpleChoiceAssessmentItemBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(SimpleChoiceAssessmentItemBuilder.class);
 
 	protected int maxChoices;
 	protected int minChoices;

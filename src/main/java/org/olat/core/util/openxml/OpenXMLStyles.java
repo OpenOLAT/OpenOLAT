@@ -23,7 +23,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -31,7 +31,7 @@ import org.w3c.dom.Node;
 
 public class OpenXMLStyles {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenXMLStyles.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenXMLStyles.class);
 	
 	private final Document document;
 	private final Element stylesElement;

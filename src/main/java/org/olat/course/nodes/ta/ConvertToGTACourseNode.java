@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -33,7 +34,6 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFileFilter;
@@ -76,7 +76,7 @@ import org.olat.properties.Property;
  */
 public class ConvertToGTACourseNode {
 	
-	private static final OLog log = Tracing.createLoggerFor(ConvertToGTACourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(ConvertToGTACourseNode.class);
 	
 	private final GTAManager gtaManager;
 	private final BaseSecurity securityManager;

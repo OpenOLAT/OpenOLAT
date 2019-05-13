@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.io.ShieldInputStream;
@@ -54,7 +54,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  */
 public class WordOOXMLDocument extends FileDocument {
 	private static final long serialVersionUID = 2322994231200065526L;
-	private static final OLog log = Tracing.createLoggerFor(WordOOXMLDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(WordOOXMLDocument.class);
 
 	public final static String WORD_FILE_TYPE = "type.file.word";
 	private static final String HEADER = "word/header";
@@ -68,7 +68,7 @@ public class WordOOXMLDocument extends FileDocument {
 		officeDocument.setFileType(WORD_FILE_TYPE);
 		officeDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			log.debug(officeDocument.toString());
 		}
 		return officeDocument.getLuceneDocument();

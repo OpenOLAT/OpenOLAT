@@ -32,7 +32,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -47,7 +47,7 @@ import org.olat.search.service.spell.SearchSpellChecker;
  */
 public class Index {
 	
-	private static OLog log = Tracing.createLoggerFor(Index.class);
+	private static final Logger log = Tracing.createLoggerFor(Index.class);
 	
 	private String indexPath;
 	private String tempIndexPath;
@@ -126,7 +126,7 @@ public class Index {
 		if (!indexDir.exists()) {
 		  indexDir.mkdirs();
 		}
-		if (log.isDebug())  log.debug("Copy new generated Index from '" + tempIndexPath + "/main" + "' to '" + indexPath + "'");
+		if (log.isDebugEnabled())  log.debug("Copy new generated Index from '" + tempIndexPath + "/main" + "' to '" + indexPath + "'");
 		// Delete existing index files
 		File tempIndexDir = new File(tempIndexPath);
 		FileUtils.deleteDirsAndFiles(indexDir, true, false);

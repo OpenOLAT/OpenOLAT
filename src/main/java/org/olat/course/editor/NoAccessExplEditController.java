@@ -107,7 +107,7 @@ public class NoAccessExplEditController extends BasicController {
 				noAccessExplanation = noAccessExplanationController.getNoAccessExplanation();
 			
 				if (isLogDebugEnabled()){
-					logDebug("New noAccessExplanation is: " + noAccessExplanation, null);
+					logDebug("New noAccessExplanation is: " + noAccessExplanation);
 				}
 
 				// Inform all listeners about the changed condition

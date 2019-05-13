@@ -19,7 +19,8 @@
  */
 package org.olat.search.service.indexer;
 
-import org.olat.core.logging.LogDelegator;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.quartz.CronExpression;
 import org.springframework.beans.factory.FactoryBean;
@@ -32,8 +33,9 @@ import org.springframework.beans.factory.FactoryBean;
  * Initial Date:  8 sept. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff FXOLAT-221: start indexer at different times for each instance
-public class IndexCronGenerator extends LogDelegator implements FactoryBean<String> {
+public class IndexCronGenerator implements FactoryBean<String> {
+
+	private static final Logger log = Tracing.createLoggerFor(IndexCronGenerator.class);
 	
 	private int tomcatId;
 	private String enabled;
@@ -65,10 +67,9 @@ public class IndexCronGenerator extends LogDelegator implements FactoryBean<Stri
 		} else {
 			if (StringHelper.containsNonWhitespace(cronExpression) && isCronEnabled()) {
 				// was not empty, so someone tried to set someting here, let user know that it was garbage
-				logWarn("Configured cron expression is not valid::"
+				log.warn("Configured cron expression is not valid::"
 						+ cronExpression
-						+ " check your search.indexing.cronjob.expression property",
-						null);
+						+ " check your search.indexing.cronjob.expression property");
 			}
 			this.cronExpression = null;
 		}

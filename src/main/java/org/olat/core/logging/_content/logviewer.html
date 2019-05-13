@@ -1,26 +1,22 @@
 <div id="o_logviewer">
 	<div class="o_button_group o_button_group_right">
-	#if ($r.available("logviewer.link.update"))		
-		$r.render("logviewer.link.update")
-	#end
 	#if ($r.available("logviewer.link.start"))		
 		$r.render("logviewer.link.start")
 	#end
 	#if ($r.available("logviewer.link.stop"))		
 		$r.render("logviewer.link.stop")
 	#end
+	$r.render("logviewer.link.clear")
 	</div>
+	#if($r.isTrue($withTitle))
 	<h4 class="o_logviewer_package">$loggingPackage</h4>
-	<div id="o_logviewer_log" class="o_scrollbox">
-		<div class="xsmall">
-		#if ($r.available("logviewer.link.update"))		
-			$log
-		#end
-		</div>
-	</div>	
-	<script type="text/javascript">
+	#end
+	<div id="o_logviewer_log">
+		<div class="xsmall">$log</div>
+	</div>
+	<script>
 	/* <![CDATA[ */
-		jQuery(function(){
+		jQuery(function() {
 			var logger = jQuery('#o_logviewer_log');
 			logger.scrollTop=logger.scrollHeight;
 		});

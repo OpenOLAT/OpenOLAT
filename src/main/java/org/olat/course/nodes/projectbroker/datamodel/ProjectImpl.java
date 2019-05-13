@@ -38,7 +38,7 @@ import org.olat.commons.lifecycle.LifeCycleManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -52,7 +52,7 @@ import org.olat.resource.accesscontrol.manager.ACReservationDAO;
 
 public class ProjectImpl extends PersistentObject implements Project {
 
-	private static final OLog log = Tracing.createLoggerFor(ProjectImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(ProjectImpl.class);
 	
 	private static final long serialVersionUID = 1L;
 
@@ -295,13 +295,13 @@ public class ProjectImpl extends PersistentObject implements Project {
 			lifeCycleManager.markTimestampFor(projectEvent.getStartDate(), projectEvent.getEventType().toString(), EVENT_START);
 		} else {
 			lifeCycleManager.deleteTimestampFor(projectEvent.getEventType().toString(), EVENT_START);
-			log.debug("delete timestamp for " + projectEvent.getEventType().toString(), EVENT_START);
+			log.debug(EVENT_START + " delete timestamp for " + projectEvent.getEventType());
 		}
 		if (projectEvent.getEndDate() != null) {
 			lifeCycleManager.markTimestampFor(projectEvent.getEndDate(), projectEvent.getEventType().toString(), EVENT_END);
 		} else {
 			lifeCycleManager.deleteTimestampFor(projectEvent.getEventType().toString(), EVENT_END);
-			log.debug("delete timestamp for " + projectEvent.getEventType().toString(), EVENT_END);
+			log.debug(EVENT_END + "delete timestamp for " + projectEvent.getEventType());
 		}
 
 	}

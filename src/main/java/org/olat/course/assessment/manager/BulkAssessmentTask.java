@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -44,7 +45,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -108,7 +108,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequential {
 
 	private static final long serialVersionUID = 4614724183354689151L;
-	private static final OLog log = Tracing.createLoggerFor(BulkAssessmentTask.class);
+	private static final Logger log = Tracing.createLoggerFor(BulkAssessmentTask.class);
 	
 	private OLATResourceable courseRes;
 	private String courseNodeIdent;
@@ -152,7 +152,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 	public void run() {
 		final List<BulkAssessmentFeedback> feedbacks = new ArrayList<>();
 		try {
-			log.audit("Start process bulk assessment");
+			log.info(Tracing.M_AUDIT, "Start process bulk assessment");
 
 			LoggingResourceable[] infos = new LoggingResourceable[2];
 			if(task != null && task.getCreator() != null) {
@@ -167,7 +167,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			}	
 
 			doProcess(feedbacks);
-			log.audit("End process bulk assessment");
+			log.info(Tracing.M_AUDIT, "End process bulk assessment");
 			cleanup();
 
 			ThreadLocalUserActivityLogger.log(AssessmentLoggingAction.ASSESSMENT_BULK, getClass(), infos);
@@ -223,7 +223,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 	
 	private void sendFeedback(List<BulkAssessmentFeedback> feedbacks) {
 		if(task == null) {
-			log.error("Haven't a task to know creator and modifiers of the task", null);
+			log.error("Haven't a task to know creator and modifiers of the task");
 			return;
 		}
 		

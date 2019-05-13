@@ -59,7 +59,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -92,7 +92,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GroupFoldersTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(GroupFoldersTest.class);
+	private static final Logger log = Tracing.createLoggerFor(GroupFoldersTest.class);
 	
 	private Identity owner1, owner2, part1, part2;
 	private BusinessGroup g1, g2;

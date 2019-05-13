@@ -49,7 +49,7 @@ import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -67,7 +67,7 @@ import org.olat.user.UserManager;
 
 public class QTI12ResultsExportMediaResource implements MediaResource {
 
-	private static final OLog log = Tracing.createLoggerFor(QTI12ResultsExportMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI12ResultsExportMediaResource.class);
 	
 	private static final String DATA = "userdata/";
 	private static final String SEP = File.separator;

@@ -35,7 +35,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
@@ -44,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class InstitutionPortletRunController extends BasicController {
 	
-	private static final OLog log = Tracing.createLoggerFor(InstitutionPortletRunController.class);
+	private static final Logger log = Tracing.createLoggerFor(InstitutionPortletRunController.class);
 	
 	private VelocityContainer portletVC;
 	private List<String> polyLinks;

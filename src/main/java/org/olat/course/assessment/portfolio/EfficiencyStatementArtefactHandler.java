@@ -20,12 +20,12 @@
 
 package org.olat.course.assessment.portfolio;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -49,7 +49,7 @@ import com.thoughtworks.xstream.XStream;
  */
 public class EfficiencyStatementArtefactHandler extends EPAbstractHandler<EfficiencyStatementArtefact> {
 
-	private static final OLog log = Tracing.createLoggerFor(EfficiencyStatementArtefactHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(EfficiencyStatementArtefactHandler.class);
 	
 	private final XStream myXStream = XStreamHelper.createXStreamInstance();
 	

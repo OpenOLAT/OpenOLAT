@@ -23,11 +23,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.eu.ingwar.tools.arquillian.extension.suite.annotations.ArquillianSuiteDeployment;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.test.ArquillianDeployments;
 
@@ -42,7 +42,7 @@ import com.dumbster.smtp.SimpleSmtpServer;
 @ArquillianSuiteDeployment
 public class Deployments {
 	
-	private static final OLog log = Tracing.createLoggerFor(Deployments.class);
+	private static final Logger log = Tracing.createLoggerFor(Deployments.class);
 
 	private static SimpleSmtpServer dumbster;
 	static {

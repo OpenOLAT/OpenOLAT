@@ -29,11 +29,11 @@ import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.ExternalLink;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientFactory;
@@ -50,11 +50,11 @@ import org.olat.core.util.httpclient.HttpClientFactory;
  *
  */
 public class ConfluenceHelper {
-	private static final OLog logger = Tracing.createLoggerFor(ConfluenceHelper.class);
+	private static final Logger logger = Tracing.createLoggerFor(ConfluenceHelper.class);
 
-	private static final Map<String, String> spaces = new ConcurrentHashMap<String, String>();
-	private static final Map<String, String> translatedPages = new ConcurrentHashMap<String, String>();
-	private static final Map<String, Date> translatTrials = new ConcurrentHashMap<String, Date>();
+	private static final Map<String, String> spaces = new ConcurrentHashMap<>();
+	private static final Map<String, String> translatedPages = new ConcurrentHashMap<>();
+	private static final Map<String, Date> translatTrials = new ConcurrentHashMap<>();
 
 	private static final String confluenceBaseUrl = "https://confluence.openolat.org";
 	private static final String confluenceDisplayUrl = confluenceBaseUrl + "/display";

@@ -21,12 +21,14 @@ package org.olat.upgrade;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
 import org.olat.properties.Property;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,6 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_12_4_1 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_12_4_1.class);
 	
 	private static final String VERSION = "OLAT_12.4.1";
 	private static final String MIGRATE_AGE_POLICY = "MIGRATE CHANGE PASSWORD";
@@ -75,9 +79,9 @@ public class OLATUpgrade_12_4_1 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_12_4_1 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_12_4_1 successfully!");
 		} else {
-			log.audit("OLATUpgrade_12_4_1 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_12_4_1 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

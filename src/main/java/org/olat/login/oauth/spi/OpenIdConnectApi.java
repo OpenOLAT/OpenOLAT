@@ -24,7 +24,7 @@ import java.util.UUID;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.login.oauth.OAuthLoginModule;
 
@@ -45,7 +45,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
  */
 public class OpenIdConnectApi extends DefaultApi20 {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenIdConnectApi.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenIdConnectApi.class);
 	
 	private final OpenIdConnectProvider provider;
 	

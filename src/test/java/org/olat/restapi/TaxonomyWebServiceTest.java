@@ -41,7 +41,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyCompetence;
@@ -70,7 +70,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class TaxonomyWebServiceTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(TaxonomyWebServiceTest.class);
+	private static final Logger log = Tracing.createLoggerFor(TaxonomyWebServiceTest.class);
 	
 	@Autowired
 	private DB dbInstance;

@@ -28,7 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -43,7 +43,7 @@ import org.olat.core.logging.Tracing;
  * @author gnaegi
  */
 public class UserNameAndPasswordSyntaxCheckerWithRegexp extends UserNameAndPasswordSyntaxChecker {
-	private static final OLog log = Tracing.createLoggerFor(UserNameAndPasswordSyntaxCheckerWithEmail.class);
+	private static final Logger log = Tracing.createLoggerFor(UserNameAndPasswordSyntaxCheckerWithEmail.class);
 	// precompiled patterns with default values
 	private Pattern passwordPattern = Pattern.compile("^\\p{Graph}{4,128}$");
 	private Pattern usernamePattern = Pattern.compile("[0-9a-z\\.\\-_@]{3,32}");

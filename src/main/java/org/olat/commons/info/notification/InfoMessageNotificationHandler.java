@@ -38,7 +38,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -61,7 +61,7 @@ import org.springframework.stereotype.Service;
 @Service("org.olat.commons.info.notification.InfoMessageNotificationHandler")
 public class InfoMessageNotificationHandler implements NotificationsHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(InfoMessageNotificationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(InfoMessageNotificationHandler.class);
 
 	private static final String CSS_CLASS_ICON = "o_infomsg_icon";
 	

@@ -32,6 +32,7 @@ import java.util.Locale;
 
 import javax.servlet.http.Cookie;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -40,7 +41,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -64,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class ShibbolethAuthenticationController extends AuthenticationController {
 	
-	private static OLog log = Tracing.createLoggerFor(ShibbolethAuthenticationController.class);
+	private static final Logger log = Tracing.createLoggerFor(ShibbolethAuthenticationController.class);
 	
 	protected static final String IDP_HOMESITE_COOKIE = "idpsite-presel";
 	protected static final String SHIB_MOBILE = "shibbolet-mobile";
@@ -166,7 +166,7 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		Cookie cookie = null;
 		if (cookies != null) {
 			for (int i = 0; i < cookies.length; i++) {
-				if (log.isDebug()) {
+				if (log.isDebugEnabled()) {
 					log.debug("found cookie with name: " + cookies[i].getName() + " and value: " + cookies[i].getValue());
 				}
 				if (cookies[i].getName().equals(IDP_HOMESITE_COOKIE)) {

@@ -36,7 +36,7 @@ import java.util.List;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("searchModule")
 public class SearchModule extends AbstractSpringModule {
-	private static final OLog log = Tracing.createLoggerFor(SearchModule.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchModule.class);
 	
 	// Definitions config parameter names in module-config
 	public static final String CONF_SEARCH_SERVICE = "searchService";

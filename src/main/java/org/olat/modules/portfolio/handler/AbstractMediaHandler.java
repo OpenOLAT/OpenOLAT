@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.DefaultGlobalSettings;
 import org.olat.core.gui.UserRequest;
@@ -42,7 +43,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -72,7 +72,7 @@ import org.olat.modules.portfolio.ui.MediaMetadataController;
  */
 public abstract class AbstractMediaHandler implements MediaHandler, PageElementHandler {
 
-	private static final OLog log = Tracing.createLoggerFor(AbstractMediaHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractMediaHandler.class);
 	
 	protected static final PortfolioStorage dataStorage = new PortfolioStorage();
 	

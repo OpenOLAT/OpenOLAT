@@ -37,7 +37,7 @@ import java.util.List;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -56,7 +56,7 @@ import org.olat.ims.qti.process.QTIHelper;
  */
 public class SurveyFileResource extends FileResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(SurveyFileResource.class);
+	private static final Logger log = Tracing.createLoggerFor(SurveyFileResource.class);
 	private static final String QTI_FILE = "qti.xml";
 	
 	/**

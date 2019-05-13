@@ -36,7 +36,7 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.manager.LicenseCleaner;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -53,7 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VFSRepositoryServiceTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSRepositoryServiceTest.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSRepositoryServiceTest.class);
 	private static final String VFS_TEST_DIR = "/vfsrepotest";
 	
 	@Autowired

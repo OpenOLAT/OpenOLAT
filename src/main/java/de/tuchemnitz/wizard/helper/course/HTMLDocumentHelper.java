@@ -35,7 +35,7 @@ package de.tuchemnitz.wizard.helper.course;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -44,7 +44,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 
 public final class HTMLDocumentHelper {
-	private static final OLog log = Tracing.createLoggerFor(HTMLDocumentHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(HTMLDocumentHelper.class);
 	public static String ENCODING = "utf-8";
 
 	/**

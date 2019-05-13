@@ -22,7 +22,7 @@ package org.olat.modules.taxonomy;
 import java.util.Arrays;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -47,7 +47,7 @@ public enum TaxonomyLevelTypeManagedFlag {
 	 delete(all);
 	
 	private TaxonomyLevelTypeManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(TaxonomyLevelTypeManagedFlag.class);
+	private static final Logger log = Tracing.createLoggerFor(TaxonomyLevelTypeManagedFlag.class);
 	public static final TaxonomyLevelTypeManagedFlag[] EMPTY_ARRAY = new TaxonomyLevelTypeManagedFlag[0];
 	
 	private static TaxonomyModule taxonomyModule;

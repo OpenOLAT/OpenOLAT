@@ -40,7 +40,7 @@ import org.olat.core.commons.services.vfs.manager.VFSMetadataDAO;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -84,7 +84,7 @@ import org.springframework.stereotype.Service;
 @Service("libraryManager")
 public class LibraryManagerImpl implements LibraryManager, InitializingBean, GenericEventListener {
 	
-	private static final OLog log = Tracing.createLoggerFor(LibraryManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(LibraryManagerImpl.class);
 	
 	private static final String RES_NAME = OresHelper.calculateTypeName(LibrarySite.class);
 	private static final OLATResourceable IDENTITY_EVENT_CHANNEL = OresHelper.lookupType(Identity.class);

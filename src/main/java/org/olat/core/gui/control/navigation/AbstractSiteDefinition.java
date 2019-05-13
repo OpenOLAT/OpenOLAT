@@ -26,11 +26,11 @@
 
 package org.olat.core.gui.control.navigation;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractConfigOnOff;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -39,7 +39,7 @@ import org.olat.core.util.StringHelper;
  */
 public abstract class AbstractSiteDefinition extends AbstractConfigOnOff implements SiteDefinition {
 	
-	private static final OLog log = Tracing.createLoggerFor(AbstractSiteDefinition.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractSiteDefinition.class);
 	
 	private int order;
 	private String defaultSiteSecurityCallbackBeanId;

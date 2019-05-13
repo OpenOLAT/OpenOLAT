@@ -32,7 +32,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -58,7 +58,7 @@ public class SimpleHtmlParser {
 	private static final String CHARSET = "charset=";
 	private static final String ISO_8859_1 = "ISO-8859-1";
 
-	private static final OLog log = Tracing.createLoggerFor(SimpleHtmlParser.class);
+	private static final Logger log = Tracing.createLoggerFor(SimpleHtmlParser.class);
 	
 	private String htmlDocType;
 	private String xhtmlNamespaces;
@@ -148,7 +148,7 @@ public class SimpleHtmlParser {
 		if (spos == -1) {
 			// This is not valid HTML - assume whole file is the content
 			htmlContent = cont;
-			if (log.isDebug()) log.debug("Could not detect proper HTML content, no HTML tag found.", cont);
+			if (log.isDebugEnabled()) log.debug("Could not detect proper HTML content, no HTML tag found." + cont);
 			return; 
 		}
 		
@@ -159,7 +159,7 @@ public class SimpleHtmlParser {
 		if (bodypos == -1) {
 			// This is not valid HTML - assume whole file is the content
 			htmlContent = cont;
-			if (log.isDebug()) log.debug("Could not detect proper HTML content, no BODY tag found.", cont);
+			if (log.isDebugEnabled()) log.debug("Could not detect proper HTML content, no BODY tag found." + cont);
 			return; 
 		}
 		
@@ -255,14 +255,14 @@ public class SimpleHtmlParser {
 		}
 		validHtml = true;
 		
-		if (log.isDebug()) {			
-			log.debug("original content::", cont);
-			log.debug("xhtmlNamespaces::", xhtmlNamespaces);
-			log.debug("charsetName::", charsetName);
-			log.debug("htmlHead::", htmlHead);
-			log.debug("jsOnLoad::", jsOnLoad);
-			log.debug("bodyTag::", bodyTag);
-			log.debug("htmlContent::", htmlContent);
+		if (log.isDebugEnabled()) {			
+			log.debug("original content::" + cont);
+			log.debug("xhtmlNamespaces::" + xhtmlNamespaces);
+			log.debug("charsetName::" + charsetName);
+			log.debug("htmlHead::" + htmlHead);
+			log.debug("jsOnLoad::" + jsOnLoad);
+			log.debug("bodyTag::" + bodyTag);
+			log.debug("htmlContent::" + htmlContent);
 		}
 	}
 

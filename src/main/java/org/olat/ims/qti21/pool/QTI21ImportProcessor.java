@@ -43,7 +43,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.core.util.StringHelper;
@@ -90,7 +90,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  */
 public class QTI21ImportProcessor {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21ImportProcessor.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21ImportProcessor.class);
 	
 	private final Identity owner;
 	private final Locale defaultLocale;

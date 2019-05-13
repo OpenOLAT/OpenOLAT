@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -31,7 +32,6 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.ui.MailContextResolver;
@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
 @Service("mailBoxExtension")
 public class MailBoxExtension implements MailContextResolver, InitializingBean {
 	
-	private static final OLog log = Tracing.createLoggerFor(MailBoxExtension.class);
+	private static final Logger log = Tracing.createLoggerFor(MailBoxExtension.class);
 
 	@Autowired
 	private RepositoryManager repositoryManager;

@@ -59,7 +59,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -179,7 +179,7 @@ import uk.ac.ed.ph.qtiworks.mathassess.MathAssessExtensionPackage;
 @Service
 public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, InitializingBean, DisposableBean {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21ServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21ServiceImpl.class);
 	
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
@@ -459,7 +459,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry) {
-		log.audit("Delete author assessment sessions for test: " + testEntry);
+		log.info(Tracing.M_AUDIT, "Delete author assessment sessions for test: " + testEntry);
 		List<AssessmentTestSession> sessions = testSessionDao.getAuthorAssessmentTestSession(testEntry);
 		for(AssessmentTestSession session:sessions) {
 			File fileStorage = testSessionDao.getSessionStorage(session);
@@ -1223,7 +1223,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	
 	private void recordOutcomeVariable(AssessmentTestSession candidateSession, OutcomeVariable outcomeVariable, Map<Identifier,String> outcomes) {
 		if(outcomeVariable.getCardinality() == null) {
-			log.error("Error outcome variable without cardinlaity: " + outcomeVariable, null);
+			log.error("Error outcome variable without cardinlaity: " + outcomeVariable);
 			return;
 		}
 		
@@ -1231,7 +1231,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 		try {
 			Value computedValue = outcomeVariable.getComputedValue();
 			if (QtiConstants.VARIABLE_DURATION_IDENTIFIER.equals(identifier)) {
-				log.audit(candidateSession.getKey() + " :: " + outcomeVariable.getIdentifier() + " - " + stringifyQtiValue(computedValue));
+				log.info(Tracing.M_AUDIT, candidateSession.getKey() + " :: " + outcomeVariable.getIdentifier() + " - " + stringifyQtiValue(computedValue));
 			} else if (QTI21Constants.SCORE_IDENTIFIER.equals(identifier)) {
 				if (computedValue instanceof NumberValue) {
 					double score = ((NumberValue) computedValue).doubleValue();
@@ -1247,7 +1247,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 			outcomes.put(identifier, stringifyQtiValue(computedValue));
 		} catch (Exception e) {
 			log.error("Error recording outcome variable: " + identifier, e);
-			log.error("Error recording outcome variable: " + outcomeVariable, null);
+			log.error("Error recording outcome variable: " + outcomeVariable);
 		}
 	}
     

@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -68,7 +69,6 @@ import org.olat.core.gui.control.winmgr.JSCommand;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.CourseLoggingAction;
@@ -188,7 +188,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	private final OLATResourceable ores;
 	private RepositoryEntry repoEntry;
 	
-	private static final OLog log = Tracing.createLoggerFor(EditorMainController.class);
+	private static final Logger log = Tracing.createLoggerFor(EditorMainController.class);
 	private final static String RELEASE_LOCK_AT_CATCH_EXCEPTION = "Must release course lock since an exception occured in " + EditorMainController.class;
 	
 	@Autowired

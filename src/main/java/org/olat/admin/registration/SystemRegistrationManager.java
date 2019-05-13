@@ -52,7 +52,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.httpclient.HttpClientFactory;
@@ -86,7 +86,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SystemRegistrationManager implements InitializingBean {
 	
-	private static final OLog log = Tracing.createLoggerFor(SystemRegistrationManager.class);
+	private static final Logger log = Tracing.createLoggerFor(SystemRegistrationManager.class);
 
 	private static final String SCHEDULER_NAME = "system.registration";
 	private static final String TRIGGER = "system_registration_trigger";
@@ -206,17 +206,17 @@ public class SystemRegistrationManager implements InitializingBean {
 			HttpResponse response = client.execute(method);
 			int status = response.getStatusLine().getStatusCode();
 			if(status == HttpStatus.SC_CREATED) {
-				log.info("Successfully registered OLAT installation on openolat.org server, thank you for your support!", null);
+				log.info("Successfully registered OLAT installation on openolat.org server, thank you for your support!");
 				String registrationKey = EntityUtils.toString(response.getEntity());
 				registrationModule.setSecretKey(registrationKey);
 			} else if (status == HttpStatus.SC_NOT_MODIFIED || status == HttpStatus.SC_OK || status == HttpStatus.SC_CREATED) {
-				log.info("Successfully registered OLAT installation on openolat.org server, thank you for your support!", null);
+				log.info("Successfully registered OLAT installation on openolat.org server, thank you for your support!");
 			} else if (status == HttpStatus.SC_NOT_FOUND) {
-				log.error("Registration server not found: " + response.getStatusLine().toString(), null);
+				log.error("Registration server not found: " + response.getStatusLine().toString());
 			} else if(status == HttpStatus.SC_NO_CONTENT){
-				log.info(EntityUtils.toString(response.getEntity()), response.getStatusLine().toString());
+				log.info(response.getStatusLine().toString() + " " + EntityUtils.toString(response.getEntity()));
 			} else {
-				log.error("Unexpected HTTP Status: " + response.getStatusLine().toString() + " during registration call", null);
+				log.error("Unexpected HTTP Status: " + response.getStatusLine().toString() + " during registration call");
 			}
 		} catch (Exception e) {
 			log.error("Unexpected exception during registration call", e);
@@ -321,6 +321,6 @@ public class SystemRegistrationManager implements InitializingBean {
 		} catch (Exception e) {
 			log.error("Illegal cron expression for system registration", e);
 		}
-		log.info("Registration background job successfully started: "+cronExpression, null);
+		log.info("Registration background job successfully started: "+cronExpression);
 	}
 }

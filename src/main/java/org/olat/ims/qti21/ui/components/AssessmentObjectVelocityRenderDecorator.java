@@ -29,13 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -103,7 +103,7 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
  */
 public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecorator {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentObjectVelocityRenderDecorator.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentObjectVelocityRenderDecorator.class);
 
 	private final URLBuilder ubu;
 	private final AssessmentRenderer renderer;

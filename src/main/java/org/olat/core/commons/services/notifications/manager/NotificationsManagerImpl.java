@@ -74,7 +74,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -107,7 +107,7 @@ import org.springframework.beans.factory.InitializingBean;
  */
 public class NotificationsManagerImpl extends NotificationsManager
 implements UserDataDeletable, UserDataExportable, GenericEventListener, InitializingBean {
-	private static final OLog log = Tracing.createLoggerFor(NotificationsManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(NotificationsManagerImpl.class);
 
 	private static final int PUB_STATE_OK = 0;
 	private static final int PUB_STATE_NOT_OK = 1;
@@ -371,7 +371,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	
 	@Override
 	public void notifyAllSubscribersByEmail() {
-		log.audit("starting notification cronjob to send email", null);
+		log.info(Tracing.M_AUDIT, "starting notification cronjob to send email");
 		WorkThreadInformations.setLongRunningTask("sendNotifications");
 		
 		int counter = 0;
@@ -397,7 +397,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		
 		// done, purge last entry
 		WorkThreadInformations.unsetLongRunningTask("sendNotifications");
-		log.audit("end notification cronjob to send email", null);
+		log.info(Tracing.M_AUDIT, "end notification cronjob to send email");
 	}
 	
 	private void processSubscribersByEmail(Identity ident) {
@@ -467,7 +467,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	private void notifySubscribersByEmail(Subscriber latestSub, List<SubscriptionItem> items, List<Subscriber> subsToUpdate, Translator translator, long start, boolean veto) {
 		if(veto) {
 			if(latestSub != null) {
-				log.audit(latestSub.getIdentity().getKey() + " already received notification email within prefs interval");
+				log.info(Tracing.M_AUDIT, latestSub.getIdentity().getKey() + " already received notification email within prefs interval");
 			}
 		} else if (items.size() > 0) {
 			Identity curIdent = latestSub.getIdentity();
@@ -485,9 +485,9 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			  
 				StringBuilder mailLog = new StringBuilder();
 				mailLog.append("Notifications mailed for ").append(curIdent.getKey()).append(' ').append(items.size()).append(' ').append((System.currentTimeMillis() - start)).append("ms");
-				log.audit(mailLog.toString());
+				log.info(Tracing.M_AUDIT, mailLog.toString());
 			} else {
-				log.audit("Error sending notification email to : " + curIdent.getKey());
+				log.info(Tracing.M_AUDIT, "Error sending notification email to : " + curIdent.getKey());
 			}
 		}
 		//collecting the SubscriptionItem can potentially make a lot of DB calls
@@ -526,7 +526,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 	@Override
 	public String getUserIntervalOrDefault(Identity ident){
 		if(ident == null || ident.getUser() == null || ident.getUser().getPreferences() == null) {
-			log.warn("Identity " + (ident == null ? "NULL" : ident.getKey()) + " has no preferences invalid", null);
+			log.warn("Identity " + (ident == null ? "NULL" : ident.getKey()) + " has no preferences invalid");
 			return getDefaultNotificationInterval();
 		}
 		
@@ -534,7 +534,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		if (!StringHelper.containsNonWhitespace(userInterval)) userInterval = getDefaultNotificationInterval();
 		List<String> avIntvls = getEnabledNotificationIntervals();
 		if (!avIntvls.contains(userInterval)) {
-			log.warn("Identity " + ident.getKey() + " has an invalid notification-interval (not found in config): " + userInterval, null);
+			log.warn("Identity " + ident.getKey() + " has an invalid notification-interval (not found in config): " + userInterval);
 			userInterval = getDefaultNotificationInterval();
 		}
 		return userInterval;
@@ -1103,7 +1103,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			if (s != null) {
 				deleteSubscriber(s);
 			} else {
-				log.warn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+				log.warn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier());
 			}
 		}
 		dbInstance.commit();
@@ -1120,7 +1120,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 				if (s != null) {
 					deleteSubscriber(s);
 				} else {
-					log.warn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier(), null);
+					log.warn("could not unsubscribe " + identity.getKey() + " from publisher:" + p.getResName() + ","	+ p.getResId() + "," + p.getSubidentifier());
 				}
 			}
 		}
@@ -1137,7 +1137,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		if (foundSub != null) {
 			deleteSubscriber(foundSub);
 		} else {
-			log.warn("could not unsubscribe " + s.getIdentity().getKey() + " from publisher:" + s.getPublisher().getResName() + ","	+ s.getPublisher().getResId() + "," + s.getPublisher().getSubidentifier(), null);
+			log.warn("could not unsubscribe " + s.getIdentity().getKey() + " from publisher:" + s.getPublisher().getResName() + ","	+ s.getPublisher().getResId() + "," + s.getPublisher().getSubidentifier());
 		}
 	}
 
@@ -1263,7 +1263,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		if (latestEmailed == null) throw new AssertException("compareDate may not be null, use a date from history");
 		
 		try {
-			boolean debug = log.isDebug();
+			boolean debug = log.isDebugEnabled();
 			
 			SubscriptionItem si = null;
 			Publisher pub = subscriber.getPublisher();
@@ -1271,7 +1271,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			if(debug) log.debug("create subscription with handler: " + notifHandler.getClass().getName());
 			// do not create subscription item when deleted
 			if (isPublisherValid(pub) && notifHandler != null) {
-				if(debug) log.debug("NotifHandler: " + notifHandler.getClass().getName() + " compareDate: " + latestEmailed.toString() + " now: " + new Date().toString(), null);
+				if(debug) log.debug("NotifHandler: " + notifHandler.getClass().getName() + " compareDate: " + latestEmailed.toString() + " now: " + new Date().toString());
 				SubscriptionInfo subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, latestEmailed);
 				if (subsInfo.hasNews()) {
 					si = createSubscriptionItem(subsInfo, subscriber, locale, mimeTypeTitle, mimeTypeContent);
@@ -1343,7 +1343,7 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 		for (Subscriber subscriber:subscribers) {
 			deleteSubscriber(subscriber);
 		}
-		log.debug("All notification-subscribers deleted for identity=" + identity, null);
+		log.debug("All notification-subscribers deleted for identity=" + identity);
 	}
 
 	@Override

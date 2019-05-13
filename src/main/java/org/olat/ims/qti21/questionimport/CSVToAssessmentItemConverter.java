@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -67,7 +67,7 @@ import uk.ac.ed.ph.jqtiplus.value.DirectedPairValue;
  */
 public class CSVToAssessmentItemConverter {
 	
-	private static final OLog log = Tracing.createLoggerFor(CSVToAssessmentItemConverter.class);
+	private static final Logger log = Tracing.createLoggerFor(CSVToAssessmentItemConverter.class);
 	private static final String[] BLOCK_MARKERS = new String[] { "<p", "<P", "<div", "<DIV", "<ul", "<UL", "<ol", "<OL" };
 
 	private int currentLine;

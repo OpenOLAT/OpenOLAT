@@ -23,6 +23,7 @@ import java.io.InputStream;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
@@ -36,7 +37,6 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -60,7 +60,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CollaboraServiceImpl implements CollaboraService, GenericEventListener {
 
-	private static final OLog log = Tracing.createLoggerFor(CollaboraServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(CollaboraServiceImpl.class);
 	
 	private static final String LOCK_APP = "collabora";
 

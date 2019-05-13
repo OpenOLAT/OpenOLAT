@@ -28,7 +28,7 @@ package org.olat.modules.fo;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
@@ -55,7 +55,7 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  */
 public class ForumLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(ForumLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(ForumLoggingAction.class);
 
 	public static final ILoggingAction FORUM_MESSAGE_LIST = 
 		new ForumLoggingAction(ActionType.tracking, CrudAction.retrieve, ActionVerb.view, ActionObject.forumthread).setTypeList(

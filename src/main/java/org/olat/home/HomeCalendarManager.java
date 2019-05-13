@@ -48,7 +48,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.course.CorruptedCourseException;
@@ -78,7 +78,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class HomeCalendarManager implements PersonalCalendarManager, UserDataDeletable, UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(HomeCalendarManager.class);
+	private static final Logger log = Tracing.createLoggerFor(HomeCalendarManager.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -271,10 +271,10 @@ public class HomeCalendarManager implements PersonalCalendarManager, UserDataDel
 					}
 				} catch (CorruptedCourseException e) {
 					OLATResource olatResource = courseEntry.getOlatResource();
-					log.error("Corrupted course: " + olatResource.getResourceableTypeName() + " :: " + courseResourceableID, null);
+					log.error("Corrupted course: " + olatResource.getResourceableTypeName() + " :: " + courseResourceableID);
 				} catch (Exception e) {
 					OLATResource olatResource = courseEntry.getOlatResource();
-					log.error("Cannor read calendar of course: " + olatResource.getResourceableTypeName() + " :: " + courseResourceableID, null);
+					log.error("Cannor read calendar of course: " + olatResource.getResourceableTypeName() + " :: " + courseResourceableID);
 				}
 			}
 		}

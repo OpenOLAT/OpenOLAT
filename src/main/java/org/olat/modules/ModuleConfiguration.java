@@ -33,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -45,7 +45,7 @@ import org.olat.core.util.StringHelper;
  */
 public class ModuleConfiguration implements Serializable {
 
-	private static final OLog log = Tracing.createLoggerFor(ModuleConfiguration.class);
+	private static final Logger log = Tracing.createLoggerFor(ModuleConfiguration.class);
 	private static final long serialVersionUID = 5997068149344924126L;
 
 	/**

@@ -45,7 +45,7 @@ import org.olat.commons.info.model.InfoMessageImpl;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -79,7 +79,7 @@ import org.springframework.stereotype.Service;
 public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManager {
 
 	private final DateFormat formater = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
-	private static final OLog log = Tracing.createLoggerFor(InfoMessageFrontendManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(InfoMessageFrontendManagerImpl.class);
 	
 	@Autowired
 	private MailManager mailManager;

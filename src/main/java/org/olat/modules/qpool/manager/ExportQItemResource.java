@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QPoolService;
@@ -44,7 +44,7 @@ import org.olat.modules.qpool.QuestionItemShort;
  */
 public class ExportQItemResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(ExportQItemResource.class);
+	private static final Logger log = Tracing.createLoggerFor(ExportQItemResource.class);
 	
 	private String encoding;
 	private final Locale locale;

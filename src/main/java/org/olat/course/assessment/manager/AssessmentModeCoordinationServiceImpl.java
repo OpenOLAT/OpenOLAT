@@ -27,10 +27,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.control.Event;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -62,7 +62,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoordinationService, GenericEventListener, InitializingBean {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentModeCoordinationServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentModeCoordinationServiceImpl.class);
 	
 	@Autowired
 	private DB dbInstance;

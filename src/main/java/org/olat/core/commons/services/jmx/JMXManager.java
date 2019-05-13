@@ -36,7 +36,7 @@ import javax.management.MBeanServer;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -49,7 +49,7 @@ import org.olat.core.logging.Tracing;
  */
 public class JMXManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(JMXManager.class);
+	private static final Logger log = Tracing.createLoggerFor(JMXManager.class);
 
 	private MBeanServer mBeanServer;
 

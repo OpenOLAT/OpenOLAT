@@ -43,7 +43,7 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -105,7 +105,7 @@ import org.springframework.stereotype.Service;
 @Service("qpoolService")
 public class QuestionPoolServiceImpl implements QPoolService {
 	
-	private static final OLog log = Tracing.createLoggerFor(QuestionPoolServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(QuestionPoolServiceImpl.class);
 	
 	private static final int MAX_NUMBER_DOCS = 990;
 	

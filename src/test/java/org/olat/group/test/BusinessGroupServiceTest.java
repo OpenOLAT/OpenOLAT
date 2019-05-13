@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -51,7 +52,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailModule;
@@ -81,7 +81,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BusinessGroupServiceTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(BusinessGroupServiceTest.class);
+	private static final Logger log = Tracing.createLoggerFor(BusinessGroupServiceTest.class);
 	private static boolean initialize = false;
 	
 	@Autowired

@@ -23,6 +23,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.NamedGroupImpl;
 import org.olat.basesecurity.OrganisationRoles;
@@ -34,6 +35,7 @@ import org.olat.core.gui.control.navigation.SiteConfiguration;
 import org.olat.core.gui.control.navigation.SiteDefinitions;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -69,6 +71,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_13_0_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_13_0_0.class);
 	
 	private static final String VERSION = "OLAT_13.0.0";
 	private static final String MIGRATE_ROLE = "MIGRATE ROLE";
@@ -139,9 +143,9 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_13_0_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_13_0_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_13_0_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_13_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

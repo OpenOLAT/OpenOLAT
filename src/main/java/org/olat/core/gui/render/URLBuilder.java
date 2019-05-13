@@ -37,7 +37,7 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -47,7 +47,7 @@ import org.olat.core.util.StringHelper;
  */
 public class URLBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(URLBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(URLBuilder.class);
 	
 	private static final Pattern p1 = Pattern.compile("\\+");
 	private static final Pattern p2 = Pattern.compile("%2F");

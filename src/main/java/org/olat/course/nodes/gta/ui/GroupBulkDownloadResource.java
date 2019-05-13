@@ -36,7 +36,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.Formatter;
@@ -60,7 +60,7 @@ import org.olat.group.BusinessGroupService;
  */
 public class GroupBulkDownloadResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(GroupBulkDownloadResource.class);
+	private static final Logger log = Tracing.createLoggerFor(GroupBulkDownloadResource.class);
 	private static final String encoding = "UTF-8";
 	
 	private final Locale locale;

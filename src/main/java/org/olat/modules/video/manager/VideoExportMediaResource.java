@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -53,7 +53,7 @@ import org.olat.core.util.vfs.VFSContainer;
  */
 public class VideoExportMediaResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(VideoExportMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(VideoExportMediaResource.class);
 	private final VFSContainer baseContainer;
 	private final String title;
 	

@@ -39,7 +39,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.nodes.gta.rule.AssignTaskRuleSPI;
 import org.olat.modules.reminder.Reminder;
@@ -70,7 +70,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class RemindersWebServiceTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(RemindersWebServiceTest.class);
+	private static final Logger log = Tracing.createLoggerFor(RemindersWebServiceTest.class);
 
 	@Autowired
 	private DB dbInstance;

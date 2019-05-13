@@ -38,7 +38,7 @@ import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailSPI;
 import org.olat.core.commons.services.video.spi.FLVParser;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WorkThreadInformations;
@@ -56,7 +56,7 @@ import org.springframework.stereotype.Service;
 @Service("movieService")
 public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(MovieServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(MovieServiceImpl.class);
 
 	private static final List<String> extensions = new ArrayList<>();
 	private static final List<String> fourCCs = new ArrayList<>();

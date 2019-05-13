@@ -50,7 +50,7 @@ import org.olat.core.commons.services.text.TextService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
@@ -89,7 +89,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class ForumManager {
-	private static final OLog log = Tracing.createLoggerFor(ForumManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ForumManager.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -890,8 +890,8 @@ public class ForumManager {
 			markingService.getMarkManager().deleteMarks(ores, m.getKey().toString());
 		}
 		
-		if(log.isDebug()){
-			log.debug("Deleting message ", m.getKey().toString());
+		if(log.isDebugEnabled()){
+			log.debug("Deleting message: " + m.getKey());
 		}
 	}
 

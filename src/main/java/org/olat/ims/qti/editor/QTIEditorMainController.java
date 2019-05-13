@@ -797,7 +797,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				QTIChangeLogMessage clm = new QTIChangeLogMessage(changeLog, chngMsgFrom.hasInformLearners());
 				qtiPackage.commitChangelog(clm);
 				StringBuilder traceMsg = new StringBuilder(chngMsgFrom.hasInformLearners() ? "Visible for ALL \n" : "Visible for GROUP only \n");
-				logAudit(traceMsg.append(changeLog).toString(), null);
+				logAudit(traceMsg.append(changeLog).toString());
 				// save, remove locks and tmp files
 				saveAndExit(ureq);
 			}

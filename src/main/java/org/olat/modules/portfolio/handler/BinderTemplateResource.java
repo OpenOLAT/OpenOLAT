@@ -27,7 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.fileresource.types.FileResource;
@@ -45,7 +45,7 @@ import org.olat.repository.RepositoryEntryImportExport.RepositoryEntryImport;
  */
 public class BinderTemplateResource extends FileResource  {
 	
-	private static final OLog log = Tracing.createLoggerFor(BinderTemplateResource.class);
+	private static final Logger log = Tracing.createLoggerFor(BinderTemplateResource.class);
 	
 	public static final String TYPE_NAME = "BinderTemplate";
 	public static final String BINDER_XML = "binder.xml";

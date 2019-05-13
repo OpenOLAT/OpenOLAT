@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.DoubleAdder;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.xml.interactions.FIBAssessmentItemBuilder;
@@ -68,7 +68,7 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
  */
 public class CorrectResponsesUtil {
 	
-	private static final OLog log = Tracing.createLoggerFor(CorrectResponsesUtil.class);
+	private static final Logger log = Tracing.createLoggerFor(CorrectResponsesUtil.class);
 	
 	/**
 	 * Remove the leading and trailing [ ] if exists.

@@ -30,9 +30,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Element;
 import org.dom4j.Node;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.parser.ItemParser;
@@ -44,7 +44,7 @@ import org.olat.ims.qti.editor.beecom.parser.ParserManager;
  */
 public class ChoiceQuestion extends Question implements QTIObject {
 
-	private static final OLog log = Tracing.createLoggerFor(ChoiceQuestion.class);
+	private static final Logger log = Tracing.createLoggerFor(ChoiceQuestion.class);
 
 	private static ParserManager parserManager = new ParserManager();
 

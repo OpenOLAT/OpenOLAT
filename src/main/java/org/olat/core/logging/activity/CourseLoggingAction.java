@@ -28,7 +28,7 @@ package org.olat.core.logging.activity;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 
@@ -48,7 +48,7 @@ import org.olat.core.logging.Tracing;
  */
 public class CourseLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(CourseLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseLoggingAction.class);
 
 	public static final ILoggingAction COURSE_BROWSE_GOTO_NODE = 
 		new CourseLoggingAction(ActionType.statistic, CrudAction.retrieve, ActionVerb.open, ActionObject.gotonode);

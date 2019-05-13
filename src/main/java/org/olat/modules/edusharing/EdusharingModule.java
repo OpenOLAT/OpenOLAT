@@ -23,9 +23,9 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EdusharingModule extends AbstractSpringModule implements ConfigOnOff {
 
-	private static final OLog log = Tracing.createLoggerFor(EdusharingModule.class);
+	private static final Logger log = Tracing.createLoggerFor(EdusharingModule.class);
 
 	private static final String EDUSHARING_ENABLED = "edusharing.enabled";
 	private static final String EDUSHARING_BASE_URL = "edusharing.url";

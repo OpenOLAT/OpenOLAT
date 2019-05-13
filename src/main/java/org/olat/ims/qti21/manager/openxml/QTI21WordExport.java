@@ -42,7 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -128,7 +128,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public class QTI21WordExport implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTIWordExport.class);
+	private static final Logger log = Tracing.createLoggerFor(QTIWordExport.class);
 	
 	private String encoding;
 	private ResolvedAssessmentTest resolvedAssessmentTest;

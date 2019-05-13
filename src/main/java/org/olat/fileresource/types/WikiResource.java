@@ -32,7 +32,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.modules.wiki.WikiManager;
@@ -47,7 +47,7 @@ import org.olat.modules.wiki.WikiPage;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class WikiResource extends FileResource {
-	private static final OLog log = Tracing.createLoggerFor(WikiResource.class);
+	private static final Logger log = Tracing.createLoggerFor(WikiResource.class);
 
 	public static final String TYPE_NAME = "FileResource.WIKI";
 	public static final String INDEX_FILENAME = WikiManager.generatePageId(WikiPage.WIKI_INDEX_PAGE) + "." + WikiManager.WIKI_FILE_SUFFIX;

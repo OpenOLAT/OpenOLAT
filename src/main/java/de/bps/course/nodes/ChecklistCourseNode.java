@@ -28,6 +28,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -35,7 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
@@ -89,7 +89,7 @@ import de.bps.olat.modules.cl.CheckpointMode;
  */
 public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = -8978938639489414749L;
-	private static final OLog log = Tracing.createLoggerFor(ChecklistCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(ChecklistCourseNode.class);
 	private static final String TYPE = "cl";
 	public static final String CONF_COURSE_ID = "cl_course_id";
 	public static final String CONF_COURSE_NODE_ID = "cl_course_node_id";

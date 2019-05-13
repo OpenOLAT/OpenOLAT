@@ -26,7 +26,7 @@ package org.olat.course.statistic;
 
 import java.util.Date;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -40,7 +40,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class MySQLTempStatTableDropper implements IStatisticUpdater {
 
 	/** the logging object used in this class **/
-	private static final OLog log = Tracing.createLoggerFor(MySQLTempStatTableDropper.class);
+	private static final Logger log = Tracing.createLoggerFor(MySQLTempStatTableDropper.class);
 
 	/** the jdbcTemplate is used to allow access to other than the default database and 
 	 * allow raw sql code

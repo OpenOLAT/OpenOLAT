@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -61,7 +61,7 @@ import com.thoughtworks.xstream.XStream;
 @Service("olatsites")
 public class SiteDefinitions extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(SiteDefinitions.class);
+	private static final Logger log = Tracing.createLoggerFor(SiteDefinitions.class);
 
 	private Map<String,SiteDefinition> siteDefMap;
 	private Map<String,SiteConfiguration> siteConfigMap = new ConcurrentHashMap<>();

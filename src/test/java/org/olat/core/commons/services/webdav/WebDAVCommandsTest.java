@@ -46,7 +46,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
@@ -75,7 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class WebDAVCommandsTest extends WebDAVTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(WebDAVCommandsTest.class);
+	private static final Logger log = Tracing.createLoggerFor(WebDAVCommandsTest.class);
 	
 	@Autowired
 	private DB dbInstance;

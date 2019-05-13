@@ -26,7 +26,6 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.olat.core.manager.BasicManager;
 import org.olat.modules.scorm.ISettingsHandler;
 
 /**
@@ -39,7 +38,7 @@ import org.olat.modules.scorm.ISettingsHandler;
  * 
  * @author Paul Sharples
  */
-public class SequenceManager extends BasicManager {
+public class SequenceManager {
 
 	protected static final String COURSE_COMPLETED = "course_completed";
 	/**
@@ -68,10 +67,6 @@ public class SequenceManager extends BasicManager {
 	private PrerequisiteManager _prereqManager;
 	private ISettingsHandler settings;
 
-	/**
-	 * The actual name of the package
-	 */
-	// protected String _packageName;
 	/**
 	 * Default constructor
 	 * 

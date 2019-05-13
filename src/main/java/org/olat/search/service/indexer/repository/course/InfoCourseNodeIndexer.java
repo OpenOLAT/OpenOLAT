@@ -28,11 +28,11 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageManager;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
@@ -52,7 +52,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class InfoCourseNodeIndexer extends DefaultIndexer  implements CourseNodeIndexer {
-	private static final OLog log = Tracing.createLoggerFor(InfoCourseNodeIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(InfoCourseNodeIndexer.class);
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public final static String TYPE = "type.course.node.info.message";

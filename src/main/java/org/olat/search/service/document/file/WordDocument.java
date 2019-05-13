@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.util.Iterator;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.poi.hwpf.HWPFOldDocument;
 import org.apache.poi.hwpf.OldWordFileFormatException;
@@ -40,7 +41,6 @@ import org.apache.poi.poifs.filesystem.DocumentEntry;
 import org.apache.poi.poifs.filesystem.Entry;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -53,7 +53,7 @@ import org.olat.search.service.SearchResourceContext;
  */
 public class WordDocument extends FileDocument {
 	private static final long serialVersionUID = 1827194935338994490L;
-	private static final OLog log = Tracing.createLoggerFor(WordDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(WordDocument.class);
 
 	public final static String FILE_TYPE = "type.file.word";
 
@@ -67,7 +67,7 @@ public class WordDocument extends FileDocument {
 		wordDocument.init(leafResourceContext, leaf);
 		wordDocument.setFileType(FILE_TYPE);
 		wordDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
-		if (log.isDebug())
+		if (log.isDebugEnabled())
 			log.debug(wordDocument.toString());
 		return wordDocument.getLuceneDocument();
 	}

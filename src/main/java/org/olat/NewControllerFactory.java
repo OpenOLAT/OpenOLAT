@@ -49,7 +49,7 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.TabContext;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -68,10 +68,10 @@ import org.olat.repository.RepositoryManager;
  * @author Felix Jost
  */
 public class NewControllerFactory {
-	private static final OLog log = Tracing.createLoggerFor(NewControllerFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(NewControllerFactory.class);
 	private static NewControllerFactory INSTANCE = new NewControllerFactory();
 	// map of controller creators, setted by Spring configuration
-	private Map<String, ContextEntryControllerCreator> contextEntryControllerCreators = new HashMap<String, ContextEntryControllerCreator>();
+	private Map<String, ContextEntryControllerCreator> contextEntryControllerCreators = new HashMap<>();
 
 	/**
 	 * Get an instance of the new controller factory
@@ -109,7 +109,7 @@ public class NewControllerFactory {
 		contextEntryControllerCreators.put(key, controllerCreator);
 		// Add config logging to console
 		log.debug("Adding context entry controller creator for key::" + key + " and value::" + controllerCreator.getClass().getCanonicalName() 
-				+ (oldCreator == null ? "" : " replaceing existing controller creator ::" + oldCreator.getClass().getCanonicalName()), null);
+				+ (oldCreator == null ? "" : " replaceing existing controller creator ::" + oldCreator.getClass().getCanonicalName()));
 	}
 
 	/**
@@ -188,12 +188,11 @@ public class NewControllerFactory {
 			}
 		}
 
-		// was brasato:: DTabs dts = wControl.getDTabs();
 		UserSession usess = ureq.getUserSession();
 		Window window = Windows.getWindows(usess).getWindow(ureq);
 
 		if (window == null) {
-			log.debug("Found no window for jumpin => take WindowBackOffice", null);
+			log.debug("Found no window for jumpin => take WindowBackOffice");
 			window = wControl.getWindowBackOffice().getWindow();
 		}
 		DTabs dts = window.getDTabs();
@@ -202,7 +201,7 @@ public class NewControllerFactory {
 		// String firstTypeId = ClassToId.getInstance().lookup() BusinessGroup
 		ContextEntryControllerCreator typeHandler = getContextEntryControllerCreator(firstType);
 		if (typeHandler == null) {
-			log.warn("Cannot found an handler for context entry: " + mainCe, null);
+			log.warn("Cannot found an handler for context entry: " + mainCe);
 			return false;//simply return and don't throw a red screen
 		}
 		if (!typeHandler.validateContextEntryAndShowError(mainCe, ureq, wControl)){
@@ -210,11 +209,11 @@ public class NewControllerFactory {
 			return false;
 		}
 		
-		List<ContextEntry> entries = new ArrayList<ContextEntry>(5);
+		List<ContextEntry> entries = new ArrayList<>(5);
 		while(bc.hasContextEntry()) {
 			entries.add(bc.popLauncherContextEntry());
 		}
-		List<ContextEntry> ces = new ArrayList<ContextEntry>(entries.size() + 1);
+		List<ContextEntry> ces = new ArrayList<>(entries.size() + 1);
 		ces.add(mainCe);
 		if(entries.size() > 0) {
 			ces.addAll(entries);

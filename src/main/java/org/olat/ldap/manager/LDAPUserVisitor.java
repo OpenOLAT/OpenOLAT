@@ -29,7 +29,7 @@ import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.SearchResult;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ldap.LDAPSyncConfiguration;
@@ -43,7 +43,7 @@ import org.olat.ldap.model.LDAPUser;
  */
 public class LDAPUserVisitor implements LDAPVisitor {
 	
-	private static final OLog log = Tracing.createLoggerFor(LDAPUserVisitor.class);
+	private static final Logger log = Tracing.createLoggerFor(LDAPUserVisitor.class);
 	
 	private final LDAPSyncConfiguration syncConfiguration;
 	private final List<LDAPUser> ldapUserList = new ArrayList<>();

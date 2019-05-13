@@ -75,10 +75,10 @@ public class ContactController extends BasicController implements GenericEventLi
 				} else {
 					logInfo("Initialize impressum email with standard support address::" + contactEmail
 							+ " You can configure a specific impressum email in the property 'contact.to.address' in olatdata/system/configuration/"
-							+ this.getClass().getName() + ".properties", null);
+							+ this.getClass().getName() + ".properties");
 				}
 			} else {
-				logInfo("Initialize impressum email with address::" + contactEmail, null);
+				logInfo("Initialize impressum email with address::" + contactEmail);
 			}
 		}
 

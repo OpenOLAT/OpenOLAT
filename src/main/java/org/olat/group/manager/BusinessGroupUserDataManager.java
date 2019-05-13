@@ -27,9 +27,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class BusinessGroupUserDataManager implements UserDataDeletable, UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(BusinessGroupUserDataManager.class);
+	private static final Logger log = Tracing.createLoggerFor(BusinessGroupUserDataManager.class);
 	
 	@Autowired
 	private BusinessGroupDAO businessGroupDao;

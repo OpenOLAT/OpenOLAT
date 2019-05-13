@@ -30,13 +30,13 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.io.ShieldOutputStream;
@@ -68,7 +68,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class CheckListExcelExport {
 	
-	private static final OLog log = Tracing.createLoggerFor(CheckListExcelExport.class);
+	private static final Logger log = Tracing.createLoggerFor(CheckListExcelExport.class);
 
 	private Translator translator;
 	private final ICourse course;

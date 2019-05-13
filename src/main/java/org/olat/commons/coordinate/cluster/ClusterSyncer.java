@@ -24,11 +24,11 @@
 */
 package org.olat.commons.coordinate.cluster;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.lock.pessimistic.PessimisticLockManager;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.Syncer;
 import org.olat.core.util.coordinate.SyncerCallback;
@@ -45,9 +45,9 @@ import org.olat.core.util.resource.OresHelper;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class ClusterSyncer implements Syncer {
-	private static final OLog log = Tracing.createLoggerFor(ClusterSyncer.class);
+	private static final Logger log = Tracing.createLoggerFor(ClusterSyncer.class);
 	private int executionTimeThreshold = 3000; // warn if the execution takes longer than three seconds
-	private final ThreadLocal<ThreadLocalClusterSyncer> data = new ThreadLocal<ThreadLocalClusterSyncer>();
+	private final ThreadLocal<ThreadLocalClusterSyncer> data = new ThreadLocal<>();
 	private PessimisticLockManager pessimisticLockManager;
 	private DB dbInstance;
 	
@@ -74,7 +74,7 @@ public class ClusterSyncer implements Syncer {
 		// cluster:::: measure throughput with/without this sync
 		// : maybe also measure if with a n-Semaphore (at most n concurrent accesses) throughput incs or decs
 		long start = 0;
-		boolean isDebug = log.isDebug();
+		boolean isDebug = log.isDebugEnabled();
 		if (isDebug) start = System.currentTimeMillis();
 	
 

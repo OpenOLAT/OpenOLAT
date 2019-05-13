@@ -41,7 +41,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
@@ -137,7 +137,7 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
 @Service
 public class PortfolioServiceImpl implements PortfolioService {
 	
-	private static final OLog log = Tracing.createLoggerFor(PortfolioServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(PortfolioServiceImpl.class);
 	
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {

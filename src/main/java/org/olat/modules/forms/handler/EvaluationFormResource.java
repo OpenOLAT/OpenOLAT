@@ -27,7 +27,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.core.util.xml.XStreamHelper;
@@ -44,7 +44,7 @@ import org.olat.modules.forms.model.xml.FormXStream;
  */
 public class EvaluationFormResource extends FileResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormResource.class);
+	private static final Logger log = Tracing.createLoggerFor(EvaluationFormResource.class);
 	
 	public static final String TYPE_NAME = "FileResource.FORM";
 	public static final String FORM_XML_FILE = "form.xml";

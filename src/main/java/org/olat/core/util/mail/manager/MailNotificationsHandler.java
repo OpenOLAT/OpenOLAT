@@ -33,7 +33,8 @@ import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.LogDelegator;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailManager;
@@ -52,7 +53,9 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service("mailNotificationsHandler")
-public class MailNotificationsHandler extends LogDelegator implements NotificationsHandler  {
+public class MailNotificationsHandler implements NotificationsHandler  {
+
+	private static final Logger log = Tracing.createLoggerFor(MailNotificationsHandler.class);
 	
 	@Autowired
 	private MailModule mailModule;
@@ -98,7 +101,7 @@ public class MailNotificationsHandler extends LogDelegator implements Notificati
 					}
 				}
 			} catch(Exception ex) {
-				logError("", ex);
+				log.error("", ex);
 			}
 		}
 		

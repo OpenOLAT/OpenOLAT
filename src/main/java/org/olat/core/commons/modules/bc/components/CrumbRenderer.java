@@ -29,9 +29,9 @@ package org.olat.core.commons.modules.bc.components;
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -42,7 +42,7 @@ import org.olat.core.util.StringHelper;
  */
 public class CrumbRenderer {
 	
-	private static final OLog log = Tracing.createLoggerFor(CrumbRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(CrumbRenderer.class);
 	
 	/**
 	 * Return a path-like html fragment for the given briefcase path.

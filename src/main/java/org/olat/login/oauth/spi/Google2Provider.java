@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
@@ -52,7 +52,7 @@ import com.github.scribejava.core.oauth.OAuthService;
 @Service
 public class Google2Provider implements OAuthSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(Google2Provider.class);
+	private static final Logger log = Tracing.createLoggerFor(Google2Provider.class);
 	
 	private static final String SCOPES = "https://www.googleapis.com/auth/plus.me https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
 

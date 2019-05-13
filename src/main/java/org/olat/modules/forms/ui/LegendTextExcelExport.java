@@ -25,7 +25,7 @@ import java.util.Date;
 
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -45,7 +45,7 @@ import org.olat.modules.forms.ui.model.SessionText;
  */
 public class LegendTextExcelExport {
 	
-	private static final OLog log = Tracing.createLoggerFor(LegendTextExcelExport.class);
+	private static final Logger log = Tracing.createLoggerFor(LegendTextExcelExport.class);
 
 	private final LegendTextDataSource dataSource;
 	private final ReportHelper reportHelper;

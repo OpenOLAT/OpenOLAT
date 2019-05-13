@@ -37,7 +37,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.render.velocity.VelocityHelper;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -47,7 +47,7 @@ import org.olat.core.logging.Tracing;
  */
 public class VelocityContainerRenderer implements ComponentRenderer {
 	
-	private static final OLog log = Tracing.createLoggerFor(VelocityContainerRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(VelocityContainerRenderer.class);
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,

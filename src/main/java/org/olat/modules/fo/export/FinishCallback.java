@@ -31,7 +31,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
@@ -53,7 +53,7 @@ import org.olat.modules.fo.manager.ForumManager;
  */
 public class FinishCallback implements StepRunnerCallback {
 	
-	private static final OLog log = Tracing.createLoggerFor(FinishCallback.class);
+	private static final Logger log = Tracing.createLoggerFor(FinishCallback.class);
 	
 	private final ForumManager forumManager;
 	private final MailManager mailService;
@@ -107,7 +107,7 @@ public class FinishCallback implements StepRunnerCallback {
 			return success = result.isSuccessful();
 
 		} catch (Exception e) {
-			log.error(null, e);
+			log.error("", e);
 			return success;
 		}
 	}

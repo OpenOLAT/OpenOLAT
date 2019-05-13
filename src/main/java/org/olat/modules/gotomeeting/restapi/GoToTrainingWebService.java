@@ -34,7 +34,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GoToTrainingWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(GoToTrainingWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(GoToTrainingWebService.class);
 	
 	private final String subIdentifier;
 	private final RepositoryEntry entry;

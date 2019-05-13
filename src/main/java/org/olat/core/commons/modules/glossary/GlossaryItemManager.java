@@ -33,7 +33,7 @@ import java.util.Properties;
 import org.olat.core.gui.control.generic.textmarker.TextMarker;
 import org.olat.core.gui.control.generic.textmarker.TextMarkerManager;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -65,7 +65,7 @@ import com.thoughtworks.xstream.io.xml.XppDriver;
 @Service
 public class GlossaryItemManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(GlossaryItemManager.class);
+	private static final Logger log = Tracing.createLoggerFor(GlossaryItemManager.class);
 	
 	private static final String OLD_GLOSSARY_FILENAME = "glossary.textmarker.xml";
 	private static final String GLOSSARY_FILENAME = "glossary.xml";
@@ -151,7 +151,7 @@ public class GlossaryItemManager {
 	protected void upgradeAndDeleteOldGlossary(VFSContainer folderContainingGlossary, VFSLeaf textMarkerFile) {
 		// check if a new glossary exists, warn
 		if (folderContainingGlossary.resolve(GLOSSARY_FILENAME) != null) {
-			log.error("Upgrading Glossary in " + folderContainingGlossary.toString() + ": There is already a new glossary-file. There can't be an old and a new version in the same directory!", null);
+			log.error("Upgrading Glossary in " + folderContainingGlossary.toString() + ": There is already a new glossary-file. There can't be an old and a new version in the same directory!");
 		} else { // upgrade it
 			List<TextMarker> textMarkerList = textMarkerManager.loadTextMarkerList(textMarkerFile);
 			Collections.sort(textMarkerList);
@@ -243,15 +243,15 @@ public class GlossaryItemManager {
 		//try to load from cache
 		List<GlossaryItem> glossaryItemList = glossaryCache.get(glossaryKey);
 		if (glossaryItemList != null){
-			if (log.isDebug()){
-				log.debug("Loading glossary from cache.", null);
+			if (log.isDebugEnabled()){
+				log.debug("Loading glossary from cache.");
 			}
 			return glossaryItemList;
 		}
 		
 		return glossaryCache.computeIfAbsent(glossaryKey, key -> {
-			if (log.isDebug()){
-				log.debug("Loading glossary from filesystem. Glossary folder: " + glossaryFolder, null);
+			if (log.isDebugEnabled()){
+				log.debug("Loading glossary from filesystem. Glossary folder: " + glossaryFolder);
 			}
 			return loadGlossaryItemListFromFile(getGlossaryFile(glossaryFolder));
 		});
@@ -283,7 +283,7 @@ public class GlossaryItemManager {
 			ArrayList<GlossaryItem> glossItemsFromFile = (ArrayList<GlossaryItem>) glossObj;
 			glossaryItemList.addAll(glossItemsFromFile);
 		} else {
-			log.error("The Glossary-XML-File " + glossaryFile.toString() + " seems not to be correct!", null);
+			log.error("The Glossary-XML-File " + glossaryFile.toString() + " seems not to be correct!");
 		}
 
 		Collections.sort(glossaryItemList);

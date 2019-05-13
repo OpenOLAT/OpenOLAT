@@ -51,7 +51,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.util.bandwidth.SlowBandWidthSimulator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -61,7 +61,7 @@ import org.olat.core.util.session.UserSessionManager;
  * @author Felix Jost
  */
 public class ServletUtil {
-	private static final OLog log = Tracing.createLoggerFor(ServletUtil.class);
+	private static final Logger log = Tracing.createLoggerFor(ServletUtil.class);
 	
 	public static final long CACHE_NO_CACHE = 0l;
 	public static final long CACHE_ONE_HOUR = 60l * 60l;
@@ -99,7 +99,7 @@ public class ServletUtil {
 	 * @param mr
 	 */
 	public static void serveResource(HttpServletRequest httpReq, HttpServletResponse httpResp, MediaResource mr) {
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		try {
 			Long lastModified = mr.getLastModified();
 			if (lastModified != null) {
@@ -158,7 +158,7 @@ public class ServletUtil {
 	}
 	
 	private static void serveFullResource(HttpServletRequest httpReq, HttpServletResponse httpResp,  MediaResource mr) {
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		
 		InputStream in = null;
 		OutputStream out = null;
@@ -232,7 +232,7 @@ public class ServletUtil {
 			FileUtils.closeSafely(out);
 			String className = e.getClass().getSimpleName();
 			if("ClientAbortException".equals(className)) {
-				if(log.isDebug()) {//video generate a lot of these errors
+				if(log.isDebugEnabled()) {//video generate a lot of these errors
 					log.warn("client browser probably abort when serving media resource", e);
 				}
 			} else {
@@ -464,7 +464,7 @@ public class ServletUtil {
 		setStringResourceHeaders(response);
 
 		// log the response headers prior to sending the output
-		boolean isDebug = log.isDebug();
+		boolean isDebug = log.isDebugEnabled();
 		
 		if (isDebug) {
 			log.debug("\nResponse headers (some)\ncontent type:" + response.getContentType() + "\ncharacterencoding:"
@@ -522,7 +522,7 @@ public class ServletUtil {
 		setStringResourceHeaders(response);
 
 		// log the response headers prior to sending the output
-		boolean isDebug = log.isDebug();
+		boolean isDebug = log.isDebugEnabled();
 		if (isDebug) {
 			log.debug("\nResponse headers (some)\ncontent type:" + response.getContentType() + "\ncharacterencoding:"
 					+ response.getCharacterEncoding() + "\nlocale:" + response.getLocale());

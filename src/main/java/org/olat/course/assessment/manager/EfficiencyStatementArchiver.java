@@ -33,10 +33,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -57,7 +57,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class EfficiencyStatementArchiver {
 	
-	private static final OLog log = Tracing.createLoggerFor(EfficiencyStatementArchiver.class);
+	private static final Logger log = Tracing.createLoggerFor(EfficiencyStatementArchiver.class);
 	
 	private final Translator translator;
 	private final List<UserPropertyHandler> userPropertyHandler;

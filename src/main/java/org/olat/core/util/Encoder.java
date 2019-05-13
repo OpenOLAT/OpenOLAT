@@ -39,7 +39,7 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 
@@ -52,7 +52,7 @@ import org.olat.core.logging.Tracing;
  */
 public class Encoder {
 	
-	private static final OLog log = Tracing.createLoggerFor(Encoder.class);
+	private static final Logger log = Tracing.createLoggerFor(Encoder.class);
 	
 	public enum Algorithm {
 		/**

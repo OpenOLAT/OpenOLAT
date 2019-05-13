@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -35,7 +36,6 @@ import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -54,7 +54,7 @@ import org.olat.user.UserManager;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class DatePropertyHandler extends AbstractUserPropertyHandler {
-	private static final OLog log = Tracing.createLoggerFor(DatePropertyHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(DatePropertyHandler.class);
 	
 	/**
 	 * Format internal values as yyyyMMdd string e.g. "19751210".

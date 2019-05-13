@@ -53,7 +53,7 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -85,7 +85,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserManagerImpl extends UserManager implements UserDataDeletable, UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(UserManagerImpl.class);
 	
   // used to save user data in the properties table 
   private static final String CHARSET = "charset";
@@ -185,7 +185,7 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 			String email = emails.get(i).toLowerCase();
 			if (!MailHelper.isValidEmailAddress(email)) {
 				emails.remove(i);
-				log.warn("Invalid email address: " + email, null);
+				log.warn("Invalid email address: " + email);
 			}
 			else {
 				emails.set(i, email);

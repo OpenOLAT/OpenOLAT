@@ -63,7 +63,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
@@ -95,7 +95,7 @@ import org.quartz.SchedulerException;
  * @author Christian Guretzki
  */
 public class SearchServiceImpl implements SearchService, GenericEventListener {
-	private static final OLog log = Tracing.createLoggerFor(SearchServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchServiceImpl.class);
 	
 	private final JobKey indexerJobKey = new JobKey("org.olat.search.job.enabled", Scheduler.DEFAULT_GROUP);
 	

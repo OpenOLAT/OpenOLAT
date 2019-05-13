@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -38,7 +38,7 @@ import org.olat.core.logging.Tracing;
  */
 public class RestRegistrationServiceImpl implements RestRegistrationService {
 	
-	private OLog log = Tracing.createLoggerFor(RestRegistrationServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(RestRegistrationServiceImpl.class);
 
 	private final Set<Object> singletons = new HashSet<>();
 	private final Set<Class<?>> classes = new HashSet<>();

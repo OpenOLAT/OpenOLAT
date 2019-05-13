@@ -627,7 +627,7 @@ public class VideoDisplayController extends BasicController {
 						}							
 					} catch (NumberFormatException e) {
 						// ignore, do nothing
-						logDebug("Error parsing the users preferred resolution from url::" + src, null);
+						logDebug("Error parsing the users preferred resolution from url::" + src);
 					}
 				}
 			}

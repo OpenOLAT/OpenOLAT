@@ -22,7 +22,7 @@ package org.olat.course.condition.interpreter;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.editor.CourseEditorEnv;
@@ -35,7 +35,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class EvalUserPropertyFunction extends AbstractFunction {
 
-	private static final OLog log = Tracing.createLoggerFor(EvalUserPropertyFunction.class);
+	private static final Logger log = Tracing.createLoggerFor(EvalUserPropertyFunction.class);
 
 	// user must have exactly this expression in one of the values of given property
 	public static final int FUNCTION_TYPE_HAS_PROPERTY = 0;
@@ -167,7 +167,7 @@ public class EvalUserPropertyFunction extends AbstractFunction {
 		String userValue = user.getPropertyOrIdentityEnvAttribute(propName, null);
 
 		boolean match = false;
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		if (debug) {
 			log.debug("value    : " + userValue);
 			log.debug("searchValue: " + searchValue);

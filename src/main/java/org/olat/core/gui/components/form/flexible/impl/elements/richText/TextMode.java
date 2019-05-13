@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.cyberneko.html.parsers.SAXParser;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.xml.sax.Attributes;
@@ -44,7 +44,7 @@ public enum TextMode {
 	multiLine,
 	formatted;
 
-	private static final OLog log = Tracing.createLoggerFor(TextMode.class);
+	private static final Logger log = Tracing.createLoggerFor(TextMode.class);
 	
 	public static TextMode guess(String text) {
 		if(StringHelper.containsNonWhitespace(text)) {

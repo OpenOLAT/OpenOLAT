@@ -39,7 +39,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -48,7 +48,7 @@ import org.olat.core.util.vfs.util.ContainerAndFile;
 
 public class VFSManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSManager.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSManager.class);
 	
 	/**
 	 * The method create an instance of VFSLeaf
@@ -223,7 +223,7 @@ public class VFSManager {
 	public static VFSContainer resolveOrCreateContainerFromPath(VFSContainer baseContainer, String relContainerPath) {		
 		VFSContainer resultContainer = baseContainer;
 		if (!VFSConstants.YES.equals(baseContainer.canWrite())) {
-			log.error("Could not create relPath::" + relContainerPath + ", base container::" + getRealPath(baseContainer) + " not writable", null);
+			log.error("Could not create relPath::" + relContainerPath + ", base container::" + getRealPath(baseContainer) + " not writable");
 			resultContainer = null;
 		} else if (StringHelper.containsNonWhitespace(relContainerPath)){
 			// Try to resolve given rel path from current container
@@ -238,7 +238,7 @@ public class VFSManager {
 						if (resolvedPath == null) {
 							resultContainer = resultContainer.createChildContainer(segment);
 							if (resultContainer == null) {
-								log.error("Could not create container with name::" + segment + " in relPath::" + relContainerPath + " in base container::" + getRealPath(baseContainer), null);
+								log.error("Could not create container with name::" + segment + " in relPath::" + relContainerPath + " in base container::" + getRealPath(baseContainer));
 								break;
 							}						
 						} else {
@@ -246,7 +246,7 @@ public class VFSManager {
 								resultContainer = (VFSContainer) resolvedPath;							
 							} else {
 								resultContainer = null;
-								log.error("Could not create container with name::" + segment + " in relPath::" + relContainerPath + ", a file with this name exists (but not a directory) in base container::" + getRealPath(baseContainer), null);
+								log.error("Could not create container with name::" + segment + " in relPath::" + relContainerPath + ", a file with this name exists (but not a directory) in base container::" + getRealPath(baseContainer));
 								break;
 							}
 						}
@@ -258,7 +258,7 @@ public class VFSManager {
 					resultContainer = (VFSContainer) resolvedPath;
 				} else {
 					resultContainer = null;
-					log.error("Could not create relPath::" + relContainerPath + ", a file with this name exists (but not a directory) in base container::" + getRealPath(baseContainer), null);
+					log.error("Could not create relPath::" + relContainerPath + ", a file with this name exists (but not a directory) in base container::" + getRealPath(baseContainer));
 				}
 				
 			}
@@ -308,14 +308,14 @@ public class VFSManager {
 				if (resolvedFile == null) {
 					leaf = parent.createChildLeaf(fileName);
 					if (leaf == null) {
-						log.error("Could not create leaf with relPath::" + relFilePath + " in base container::" + getRealPath(baseContainer), null);
+						log.error("Could not create leaf with relPath::" + relFilePath + " in base container::" + getRealPath(baseContainer));
 					}
 				} else {
 					if (resolvedFile instanceof VFSLeaf) {
 						leaf = (VFSLeaf) resolvedFile;
 					} else {
 						leaf = null;
-						log.error("Could not create relPath::" + relFilePath + ", a directory with this name exists (but not a file) in base container::" + getRealPath(baseContainer), null);
+						log.error("Could not create relPath::" + relFilePath + ", a directory with this name exists (but not a file) in base container::" + getRealPath(baseContainer));
 					}
 				}
 				return leaf;			
@@ -735,7 +735,7 @@ public class VFSManager {
 		} else {
 			// source or target is null
 			successful = false;
-			if (log.isDebug()) log.debug("Either the source or the target is null. Content of leaf cannot be copied.");
+			if (log.isDebugEnabled()) log.debug("Either the source or the target is null. Content of leaf cannot be copied.");
 		}
 		return successful;
 	}
@@ -813,7 +813,7 @@ public class VFSManager {
 		} else {
 			// source or target is null
 			successful = false;
-			if (log.isDebug()) log.debug("Either the source or the target is null. Content of leaf cannot be copied.");
+			if (log.isDebugEnabled()) log.debug("Either the source or the target is null. Content of leaf cannot be copied.");
 		}
 		return successful;
 	}
@@ -833,7 +833,7 @@ public class VFSManager {
 		} else {
 			// source or target is null
 			successful = false;
-			if (log.isDebug()) log.debug("Either the source or the target is null. Content of leaf cannot be copied.");
+			if (log.isDebugEnabled()) log.debug("Either the source or the target is null. Content of leaf cannot be copied.");
 		}
 		return successful;
 	}

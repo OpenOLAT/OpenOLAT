@@ -29,7 +29,7 @@ import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecuritySer
 import org.olat.core.commons.services.doceditor.onlyoffice.model.CallbackImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.DocumentImpl;
 import org.olat.core.commons.services.doceditor.onlyoffice.model.EditorConfigImpl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,7 +52,7 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService {
 
-	private static final OLog log = Tracing.createLoggerFor(OnlyOfficeSecurityServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeSecurityServiceImpl.class);
 	
 	private static ObjectMapper mapper = new ObjectMapper()
 			.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -87,7 +87,7 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 				.parseClaimsJws(jwtToken)
 				.getBody();
 		
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			log.debug("JWT claims for ONLYOFFICE callback:");
 			for (Entry<String, Object> entry : body.entrySet()) {
 				log.debug("  JWT claim " + entry.getKey() + ": " + entry.getValue());
@@ -97,7 +97,7 @@ public class OnlyOfficeSecurityServiceImpl implements OnlyOfficeSecurityService 
 		Object payload = body.get("payload");
 		Callback callback = mapper.convertValue(payload, CallbackImpl.class);
 		
-		if (log.isDebug()) log.debug("Converted callback: " + callback);
+		if (log.isDebugEnabled()) log.debug("Converted callback: " + callback);
 		return callback;
 	}
 

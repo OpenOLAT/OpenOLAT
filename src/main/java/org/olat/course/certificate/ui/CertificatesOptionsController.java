@@ -29,6 +29,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -55,7 +56,6 @@ import org.olat.core.gui.media.StreamedMediaResource;
 import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -489,7 +489,7 @@ public class CertificatesOptionsController extends FormBasicController {
 	}
 	
 	private static class PreviewMediaResource implements MediaResource {
-		private static final OLog log = Tracing.createLoggerFor(PreviewMediaResource.class);
+		private static final Logger log = Tracing.createLoggerFor(PreviewMediaResource.class);
 		private File preview;
 		
 		public PreviewMediaResource(File preview) {

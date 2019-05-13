@@ -24,9 +24,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.dom4j.Element;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -47,7 +47,7 @@ public class IMSMetadataDocument extends OlatDocument {
 
 	private static final long serialVersionUID = 7056634173187546351L;
 	private static Set<String> stopWords = new HashSet<String>();
-	private static final OLog log = Tracing.createLoggerFor(IMSMetadataDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(IMSMetadataDocument.class);
 	
 	static {
 		stopWords.add("LOMv1.0");
@@ -58,7 +58,7 @@ public class IMSMetadataDocument extends OlatDocument {
 	public static Document createDocument(SearchResourceContext searchResourceContext, VFSLeaf fManifest) {
 		IMSMetadataDocument document = new IMSMetadataDocument();
 		document.setResourceUrl(searchResourceContext.getResourceUrl());
-		if (log.isDebug()) log.debug("MM: URL=" + document.getResourceUrl());
+		if (log.isDebugEnabled()) log.debug("MM: URL=" + document.getResourceUrl());
 		document.setLastChange(new Date(fManifest.getLastModified()));
 		document.setDocumentType(searchResourceContext.getDocumentType());
 		if (StringHelper.containsNonWhitespace(searchResourceContext.getTitle())) {

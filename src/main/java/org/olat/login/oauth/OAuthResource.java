@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 import com.github.scribejava.core.model.OAuth1RequestToken;
@@ -44,7 +44,7 @@ import com.github.scribejava.core.oauth.OAuthService;
  */
 public class OAuthResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(OAuthResource.class);
+	private static final Logger log = Tracing.createLoggerFor(OAuthResource.class);
 	
 	private final HttpSession session;
 	private final OAuthSPI provider;

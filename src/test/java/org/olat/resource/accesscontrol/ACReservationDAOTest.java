@@ -24,12 +24,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.manager.ACReservationDAO;
@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ACReservationDAOTest extends OlatTestCase  {
 	
-	private final OLog log = Tracing.createLoggerFor(ACReservationDAOTest.class);
+	private final Logger log = Tracing.createLoggerFor(ACReservationDAOTest.class);
 	
 	@Autowired
 	private Scheduler scheduler;

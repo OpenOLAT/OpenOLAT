@@ -27,7 +27,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.instantMessaging.manager.InstantMessagePreferencesDAO;
 import org.olat.instantMessaging.model.ImPreferencesImpl;
@@ -44,7 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InstantMessagePreferencesDAOTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(InstantMessagePreferencesDAOTest.class);
+	private static final Logger log = Tracing.createLoggerFor(InstantMessagePreferencesDAOTest.class);
 	private static int NUM_OF_THREADS = 20;
 	
 	@Autowired

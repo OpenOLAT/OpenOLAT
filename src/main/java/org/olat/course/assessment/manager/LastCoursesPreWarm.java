@@ -22,7 +22,7 @@ package org.olat.course.assessment.manager;
 import java.util.List;
 
 import org.olat.core.configuration.PreWarm;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.course.CourseFactory;
@@ -40,7 +40,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class LastCoursesPreWarm implements PreWarm {
 	
-	private static final OLog log = Tracing.createLoggerFor(LastCoursesPreWarm.class);
+	private static final Logger log = Tracing.createLoggerFor(LastCoursesPreWarm.class);
 	
 	@Autowired
 	private RepositoryEntryDAO repositoryEntryDao;

@@ -23,7 +23,7 @@ package org.olat.search.service.document.file;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 
@@ -38,7 +38,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class FileTypeDetector {
 
-	private static final OLog log = Tracing.createLoggerFor(FileDocumentFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(FileDocumentFactory.class);
 	
 	private static final String ZIP = "PK\003\004";
 	
@@ -47,7 +47,7 @@ public class FileTypeDetector {
 		String fileName = leaf.getName();
 		int dotpos = fileName.lastIndexOf('.');
 		if (dotpos < 0 || dotpos == fileName.length() - 1) {
-			if (log.isDebug()) log.debug("I cannot detect the document suffix (marked with '.').");
+			if (log.isDebugEnabled()) log.debug("I cannot detect the document suffix (marked with '.').");
 			throw new DocumentNotImplementedException("I cannot detect the document suffix (marked with '.') for " + fileName);
 		}
 		String suffix = fileName.substring(dotpos+1).toLowerCase();

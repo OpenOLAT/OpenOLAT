@@ -29,12 +29,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSItem;
@@ -58,7 +58,7 @@ public class CPManagerTest extends OlatTestCase {
 
 	private static final String ITEM_ID = "this_is_a_great_inital_item_identifier";
 	private static final String PAGE_TITLE = "fancy page";
-	private static final OLog log = Tracing.createLoggerFor(CPManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CPManagerTest.class);
 	
 	@Autowired
 	private CPManager cpManager;

@@ -23,10 +23,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AutomaticLifecycleService {
 	
-	private static final OLog log = Tracing.createLoggerFor(AutomaticLifecycleService.class);
+	private static final Logger log = Tracing.createLoggerFor(AutomaticLifecycleService.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -72,7 +72,7 @@ public class AutomaticLifecycleService {
 				try {
 					boolean closeManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close);
 					if(!closeManaged) {
-						log.audit("Automatic closing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
+						log.info(Tracing.M_AUDIT, "Automatic closing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 						repositoryService.closeRepositoryEntry(entry, null, false);
 						dbInstance.commit();
 					}
@@ -113,7 +113,7 @@ public class AutomaticLifecycleService {
 				try {
 					boolean deleteManaged = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.delete);
 					if(!deleteManaged) {
-						log.audit("Automatic deleting (soft) course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
+						log.info(Tracing.M_AUDIT, "Automatic deleting (soft) course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 						repositoryService.deleteSoftly(entry, null, true, false);
 						dbInstance.commit();
 					}

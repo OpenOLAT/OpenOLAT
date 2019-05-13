@@ -39,13 +39,13 @@ import org.olat.core.gui.control.controller.BasicController;
  */
 public class ErrorAdminController extends BasicController {
 
-	private final Link errorsLink, logLevelLink, requestLogLink;
+	private final Link errorsLink;
+	private final Link logLevelLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	
 	private ErrorSearchController searchCtrl;
 	private ErrorLogLevelController logLevelCtrl;
-	private RequestLoglevelController requestLogLevelCtrl;
 	
 	public ErrorAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -57,8 +57,6 @@ public class ErrorAdminController extends BasicController {
 		segmentView.addSegment(errorsLink, true);
 		logLevelLink = LinkFactory.createLink("loglevels", mainVC, this);
 		segmentView.addSegment(logLevelLink, false);
-		requestLogLink = LinkFactory.createLink("requestloglevel.title", mainVC, this);
-		segmentView.addSegment(requestLogLink, false);
 		
 		mainVC.put("segments", segmentView);
 		doErrorList(ureq);
@@ -81,8 +79,6 @@ public class ErrorAdminController extends BasicController {
 					doErrorList(ureq);
 				} else if(clickedLink == logLevelLink) {
 					doLogLevel(ureq);
-				} else if(clickedLink == requestLogLink) {
-					doRequestLog(ureq);
 				}
 			}
 		}
@@ -103,13 +99,4 @@ public class ErrorAdminController extends BasicController {
 		}
 		mainVC.put("segmentCmp", searchCtrl.getInitialComponent());
 	}
-	
-	private void doRequestLog(UserRequest ureq) {
-		if(requestLogLevelCtrl == null) {
-			requestLogLevelCtrl = new RequestLoglevelController(ureq, getWindowControl());
-			listenTo(requestLogLevelCtrl);
-		}
-		mainVC.put("segmentCmp", requestLogLevelCtrl.getInitialComponent());
-	}
-
 }

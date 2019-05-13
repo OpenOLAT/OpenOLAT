@@ -21,7 +21,9 @@ package org.olat.upgrade;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.forms.model.jpa.EvaluationFormSurveyImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,6 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_13_0_0_beta7 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_13_0_0_beta7.class);
 	
 	private static final String VERSION = "OLAT_13.0.0.beta7";
 	private static final String MIGRATE_SURVEY_MATH_PATH = "MIGRATE SURVEY SERIES";
@@ -64,9 +68,9 @@ public class OLATUpgrade_13_0_0_beta7 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_13_0_0_beta7 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_13_0_0_beta7 successfully!");
 		} else {
-			log.audit("OLATUpgrade_13_0_0_beta7 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_13_0_0_beta7 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

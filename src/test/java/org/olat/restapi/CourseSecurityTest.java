@@ -39,6 +39,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,7 +48,6 @@ import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -68,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CourseSecurityTest extends OlatJerseyTestCase {
 
-	private static final OLog log = Tracing.createLoggerFor(CourseTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseTest.class);
 	
 	private Identity admin, id1, auth1, auth2;
 	private ICourse course;

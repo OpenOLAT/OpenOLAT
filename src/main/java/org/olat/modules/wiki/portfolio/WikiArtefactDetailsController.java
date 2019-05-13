@@ -35,7 +35,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -52,7 +52,7 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
  */
 public class WikiArtefactDetailsController extends BasicController {
 	
-	private static final OLog log = Tracing.createLoggerFor(WikiArtefactDetailsController.class);
+	private static final Logger log = Tracing.createLoggerFor(WikiArtefactDetailsController.class);
 
 	private final VelocityContainer vC;
 

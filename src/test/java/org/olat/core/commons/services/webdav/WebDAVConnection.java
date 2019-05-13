@@ -48,7 +48,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -64,7 +64,7 @@ import org.olat.core.logging.Tracing;
  */
 public class WebDAVConnection implements Closeable {
 	
-	private static final OLog log = Tracing.createLoggerFor(WebDAVConnection.class);
+	private static final Logger log = Tracing.createLoggerFor(WebDAVConnection.class);
 	
 	private final int port;
 	private final String host;

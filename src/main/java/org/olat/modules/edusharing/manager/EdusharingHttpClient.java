@@ -30,7 +30,7 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.edusharing.EdusharingException;
@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service;
 @Service
 class EdusharingHttpClient {
 	
-	private static final OLog log = Tracing.createLoggerFor(EdusharingHttpClient.class);
+	private static final Logger log = Tracing.createLoggerFor(EdusharingHttpClient.class);
 	
 	private static final int TIMEOUT_5000_MILLIS = 5000;
 	private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()
@@ -78,7 +78,7 @@ class EdusharingHttpClient {
 			if (statusCode == 200) {
 				Properties props = new Properties();
 				props.loadFromXML(httpResponse.getEntity().getContent());
-				if (log.isDebug()) log.debug("edu-sharing metadata imported: " + props.toString());
+				if (log.isDebugEnabled()) log.debug("edu-sharing metadata imported: " + props.toString());
 				return new EdusharingPropertiesImpl(props);
 			}
 			logUnsuccessful(httpResponse, url);

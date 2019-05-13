@@ -35,10 +35,10 @@ import java.util.List;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.IStatisticManager;
@@ -55,7 +55,7 @@ import org.olat.course.statistic.TotalAwareColumnDescriptor;
  */
 public class DailyStatisticManager implements IStatisticManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(DailyStatisticManager.class);
+	private static final Logger log = Tracing.createLoggerFor(DailyStatisticManager.class);
 
 	/** the SimpleDateFormat with which the column headers will be created formatted by the database, 
 	 * so change this in coordination with any db changes if you really need to 

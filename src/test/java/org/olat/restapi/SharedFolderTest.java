@@ -44,7 +44,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -67,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SharedFolderTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(SharedFolderTest.class);
+	private static final Logger log = Tracing.createLoggerFor(SharedFolderTest.class);
 	
 	@Autowired
 	private DB dbInstance;

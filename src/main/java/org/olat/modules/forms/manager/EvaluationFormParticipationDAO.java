@@ -28,7 +28,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
 @Service
 class EvaluationFormParticipationDAO {
 
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormParticipationDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(EvaluationFormParticipationDAO.class);
 
 	@Autowired
 	private DB dbInstance;

@@ -33,10 +33,12 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
@@ -75,6 +77,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_12_0_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_12_0_0.class);
 
 	private static final int BATCH_SIZE = 50;
 	
@@ -125,9 +129,9 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_12_0_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_12_0_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_12_0_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_12_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -240,7 +244,7 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 					}
 				}
 				counter += courses.size();
-				log.audit("Last modifications migration processed: " + courses.size() + ", total courses processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Last modifications migration processed: " + courses.size() + ", total courses processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(courses.size() == BATCH_SIZE);
 			

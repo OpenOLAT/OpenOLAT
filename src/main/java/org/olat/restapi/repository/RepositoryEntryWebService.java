@@ -54,6 +54,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
@@ -67,7 +68,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -121,7 +121,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryWebService {
 
-  private static final OLog log = Tracing.createLoggerFor(RepositoryEntryWebService.class);
+  private static final Logger log = Tracing.createLoggerFor(RepositoryEntryWebService.class);
 
 	public static final CacheControl cc = new CacheControl();
 	static {
@@ -718,7 +718,7 @@ public class RepositoryEntryWebService {
 				}
 				frm.unzipFileResource(re.getOlatResource());
 			}
-			log.audit("Resource: " + re.getOlatResource() + " replaced by " + identity.getKey());
+			log.info(Tracing.M_AUDIT, "Resource: " + re.getOlatResource() + " replaced by " + identity.getKey());
 			return re;
 		}
 
@@ -784,23 +784,23 @@ public class RepositoryEntryWebService {
 		
 		if("closed".equals(newStatus)) {
 			repositoryService.closeRepositoryEntry(entry, null, false);
-			log.audit("REST closing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST closing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CLOSE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("unclosed".equals(newStatus)) {
 			repositoryService.uncloseRepositoryEntry(entry);
-			log.audit("REST unclosing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST unclosing course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_UPDATE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
 			repositoryService.deleteSoftly(entry, identity, true, false);
-			log.audit("REST deleting (soft) course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
 			repositoryService.restoreRepositoryEntry(entry);
-			log.audit("REST restoring course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
+			log.info(Tracing.M_AUDIT, "REST restoring course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		}

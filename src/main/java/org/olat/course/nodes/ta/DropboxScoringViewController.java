@@ -28,6 +28,7 @@ package org.olat.course.nodes.ta;
 import java.io.File;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -56,7 +57,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailBundle;
@@ -93,7 +93,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class DropboxScoringViewController extends BasicController {
 
-	private static final OLog log = Tracing.createLoggerFor(DropboxScoringViewController.class);
+	private static final Logger log = Tracing.createLoggerFor(DropboxScoringViewController.class);
 	
 	protected CourseNode node;
 	protected UserCourseEnvironment userCourseEnv;	

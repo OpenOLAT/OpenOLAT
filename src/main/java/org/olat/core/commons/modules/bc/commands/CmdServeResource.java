@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderLoggingAction;
 import org.olat.core.commons.modules.bc.FolderManager;
@@ -44,7 +45,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -58,7 +58,7 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 
 public class CmdServeResource implements FolderCommand {
 	
-	private static final OLog log = Tracing.createLoggerFor(CmdServeResource.class);
+	private static final Logger log = Tracing.createLoggerFor(CmdServeResource.class);
 
 	private static final String DEFAULT_ENCODING = "iso-8859-1";
 	private static final Pattern PATTERN_ENCTYPE = Pattern.compile("<meta.*charset=([^\"]*)\"", Pattern.CASE_INSENSITIVE);

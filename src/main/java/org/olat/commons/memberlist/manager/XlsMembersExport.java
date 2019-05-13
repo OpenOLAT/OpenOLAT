@@ -31,7 +31,7 @@ import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -47,7 +47,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class XlsMembersExport {
 	
-	private static final OLog log = Tracing.createLoggerFor(XlsMembersExport.class);
+	private static final Logger log = Tracing.createLoggerFor(XlsMembersExport.class);
 
 
 	public MediaResource export(List<Identity> rows, Map<Identity, StringBuilder> members, Map<Long,CurriculumMemberInfos> curriculumInfos,

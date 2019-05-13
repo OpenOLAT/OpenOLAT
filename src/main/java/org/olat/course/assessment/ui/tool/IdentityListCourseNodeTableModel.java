@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.CertificateLight;
@@ -49,7 +49,7 @@ import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel<AssessedIdentityElementRow>
 	implements SortableFlexiTableDataModel<AssessedIdentityElementRow>, FilterableFlexiTableModel {
 	
-	private static final OLog log = Tracing.createLoggerFor(IdentityListCourseNodeTableModel.class);
+	private static final Logger log = Tracing.createLoggerFor(IdentityListCourseNodeTableModel.class);
 
 	private final Locale locale;
 	

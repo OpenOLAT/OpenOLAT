@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.EventBus;
@@ -53,7 +53,7 @@ import org.olat.test.OlatTestCase;
  */
 public class JMSTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(JMSTest.class);
+	private static final Logger log = Tracing.createLoggerFor(JMSTest.class);
 
 
 	@Test
@@ -72,7 +72,7 @@ public class JMSTest extends OlatTestCase {
 			bus.registerFor(new GenericEventListener() {
 				@Override
 				public void event(Event event) {
-					log.audit("Event received: " + event);
+					log.info(Tracing.M_AUDIT, "Event received: " + event);
 					doneSignal.countDown();
 				}
 			}, id, ores);

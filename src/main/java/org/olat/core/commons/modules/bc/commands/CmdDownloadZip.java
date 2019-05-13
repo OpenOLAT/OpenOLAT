@@ -28,6 +28,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
@@ -38,7 +39,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
@@ -56,7 +56,7 @@ import org.olat.core.util.vfs.VFSManager;
  */
 public class CmdDownloadZip implements FolderCommand {
 	
-	private static final OLog log = Tracing.createLoggerFor(CmdDownloadZip.class);
+	private static final Logger log = Tracing.createLoggerFor(CmdDownloadZip.class);
 
 	private int status = FolderCommandStatus.STATUS_SUCCESS;
 

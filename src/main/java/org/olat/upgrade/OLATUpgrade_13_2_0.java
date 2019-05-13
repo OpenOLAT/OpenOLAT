@@ -26,7 +26,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
 import org.olat.upgrade.model.CurriculumElementPos;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -37,6 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_13_2_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_13_2_0.class);
 	
 	private static final String VERSION = "OLAT_13.2.0";
 	private static final String UPDATE_CURRICULUM_CHILDREN = "UPDATE CURRICULUM CHILDREN";
@@ -69,9 +73,9 @@ public class OLATUpgrade_13_2_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_13_2_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_13_2_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_13_2_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_13_2_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

@@ -52,7 +52,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.search.QueryException;
 import org.olat.search.SearchResults;
@@ -70,7 +70,7 @@ import org.olat.search.ServiceNotAvailableException;
  */
 public class SearchClientProxy implements SearchClient {
 	
-	private static final OLog log = Tracing.createLoggerFor(SearchClientProxy.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchClientProxy.class);
 	
 	protected static final String JMS_RESPONSE_STATUS_PROPERTY_NAME = "response_status";
 	protected static final String JMS_RESPONSE_STATUS_OK = "ok";
@@ -159,7 +159,7 @@ public class SearchClientProxy implements SearchClient {
 	@Override
 	public SearchResults doSearch(String queryString, List<String> condQueries, Identity identity, Roles roles, Locale locale,
 			int firstResult, int maxResults, boolean doHighlighting) throws ServiceNotAvailableException, ParseException, QueryException {
-		boolean isDebug = log.isDebug();
+		boolean isDebug = log.isDebugEnabled();
 		if(isDebug){
 			log.debug("STARTqueryString=" + queryString);
 		}
@@ -270,7 +270,7 @@ public class SearchClientProxy implements SearchClient {
 	
 	private Message doSearchRequest(Session session, Message message) throws JMSException {
 		Destination replyQueue = acquireTempQueue(session);
-		if(log.isDebug()){
+		if(log.isDebugEnabled()){
 			log.debug("doSearchRequest replyQueue=" + replyQueue);
 		}
 		try{
@@ -283,7 +283,7 @@ public class SearchClientProxy implements SearchClient {
 			MessageProducer producer = session.createProducer(searchQueue_);
 			producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 			producer.setTimeToLive(timeToLive_);
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("Sending search request message with correlationId="+correlationId);
 			}
 			producer.send(message);
@@ -298,7 +298,7 @@ public class SearchClientProxy implements SearchClient {
 					log.info("Timeout in search. Remaining time zero or negative.");
 					break;
 				}
-				if (log.isDebug()) {
+				if (log.isDebugEnabled()) {
 					log.debug("doSearchRequest: call receive with timeout=" + diff);
 				}
 				returnedMessage = responseConsumer.receive(diff);
@@ -316,7 +316,7 @@ public class SearchClientProxy implements SearchClient {
 				}
 			}
 			responseConsumer.close();
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("doSearchRequest: returnedMessage=" + returnedMessage);
 			}
 			return returnedMessage;

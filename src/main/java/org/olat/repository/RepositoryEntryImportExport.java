@@ -48,7 +48,7 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -74,7 +74,7 @@ import com.thoughtworks.xstream.XStream;
  */
 public class RepositoryEntryImportExport {
 	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryImportExport.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryImportExport.class);
 
 	private static final String CONTENT_FILE = "repo.zip";
 	public static final String PROPERTIES_FILE = "repo.xml";

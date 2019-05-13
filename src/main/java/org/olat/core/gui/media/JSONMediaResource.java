@@ -26,7 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -39,7 +39,7 @@ import org.olat.core.logging.Tracing;
  * @author mkuendig
  */
 public class JSONMediaResource extends DefaultMediaResource {
-	private static final OLog log = Tracing.createLoggerFor(JSONMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(JSONMediaResource.class);
 	
 	private String encoding = "";
 	private JSONArray jsonArray;

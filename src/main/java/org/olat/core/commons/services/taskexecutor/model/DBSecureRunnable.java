@@ -19,8 +19,8 @@
  */
 package org.olat.core.commons.services.taskexecutor.model;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -29,7 +29,7 @@ import org.olat.core.logging.Tracing;
  */
 public class DBSecureRunnable implements Runnable {
 	
-	private static final OLog log = Tracing.createLoggerFor(DBSecureRunnable.class);
+	private static final Logger log = Tracing.createLoggerFor(DBSecureRunnable.class);
 	private final Runnable task;
 	
 	public DBSecureRunnable(Runnable task) {

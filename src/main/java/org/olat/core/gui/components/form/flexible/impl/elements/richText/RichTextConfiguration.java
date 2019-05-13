@@ -43,7 +43,7 @@ import org.olat.core.gui.themes.Theme;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
@@ -74,7 +74,7 @@ import org.olat.modules.edusharing.EdusharingProvider;
  * @author gnaegi
  */
 public class RichTextConfiguration implements Disposable {
-	private static final OLog log = Tracing.createLoggerFor(RichTextConfiguration.class); 
+	private static final Logger log = Tracing.createLoggerFor(RichTextConfiguration.class); 
 	private static final String MODE = "mode";
 	private static final String MODE_VALUE_EXACT = "exact";
 	private static final String ELEMENTS = "elements";

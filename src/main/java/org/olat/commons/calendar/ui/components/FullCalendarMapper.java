@@ -37,7 +37,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -49,7 +49,7 @@ import org.olat.core.util.StringHelper;
  */
 public class FullCalendarMapper implements Mapper {
 	
-	private static final OLog log = Tracing.createLoggerFor(FullCalendarMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(FullCalendarMapper.class);
 	private static final DateFormat formatDate = new SimpleDateFormat("yyyy-MM-dd");
 	private static final DateFormat formatDateTime = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	

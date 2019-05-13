@@ -64,7 +64,7 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.Cacher;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -78,7 +78,7 @@ import net.fortuna.ical4j.model.ValidationException;
 
 public class ICalFileCalendarManagerTest extends OlatTestCase {
 
-	private static final OLog log = Tracing.createLoggerFor(ICalFileCalendarManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(ICalFileCalendarManagerTest.class);
 	
 	@Autowired
 	private ICalFileCalendarManager calendarManager;

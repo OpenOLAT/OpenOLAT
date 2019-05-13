@@ -22,7 +22,7 @@ package org.olat.ims.qti21.manager;
 import java.util.Collections;
 import java.util.Map;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.manager.extensions.MaximaOperator;
 
@@ -51,7 +51,7 @@ import uk.ac.ed.ph.snuggletex.utilities.StylesheetCache;
  */
 public class OpenOLATExtensionPackage implements JqtiExtensionPackage<OpenOLATExtensionPackage> {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenOLATExtensionPackage.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenOLATExtensionPackage.class);
 	
     private final ThreadLocal<QtiMaximaProcess> sessionThreadLocal;
 
@@ -62,7 +62,7 @@ public class OpenOLATExtensionPackage implements JqtiExtensionPackage<OpenOLATEx
         snuggleStylesheetCache = new XsltStylesheetCacheAdapter(xsltStylesheetCache);
         
         /* Create ThreadLocal for communicating with maxima */
-        this.sessionThreadLocal = new ThreadLocal<QtiMaximaProcess>();
+        this.sessionThreadLocal = new ThreadLocal<>();
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class OpenOLATExtensionPackage implements JqtiExtensionPackage<OpenOLATEx
 
     @Override
     public void lifecycleEvent(final Object source, final JqtiLifecycleEventType eventType) {
-        //log.debug("Received lifecycle event {}" + eventType);
+        log.debug("Received lifecycle event {}", eventType);
         switch (eventType) {
             case MANAGER_INITIALISED:
                 startMaximaPool();

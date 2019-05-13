@@ -35,7 +35,7 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -46,7 +46,7 @@ import org.olat.core.logging.Tracing;
  * @author Felix Jost
  */
 public class SimpleStackedPanel extends AbstractComponent implements StackedPanel {
-	private static final OLog log = Tracing.createLoggerFor(SimpleStackedPanel.class);
+	private static final Logger log = Tracing.createLoggerFor(SimpleStackedPanel.class);
 	private static final ComponentRenderer RENDERER = new PanelRenderer();
 
 	private Component curContent;

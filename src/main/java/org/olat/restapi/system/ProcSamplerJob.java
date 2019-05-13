@@ -35,7 +35,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.system.MonitoringService.Statistics;
@@ -59,7 +59,7 @@ import net.fortuna.ical4j.util.TimeZones;
  */
 public class ProcSamplerJob extends QuartzJobBean {
 
-	private static final OLog log = Tracing.createLoggerFor(ProcSamplerJob.class);
+	private static final Logger log = Tracing.createLoggerFor(ProcSamplerJob.class);
 	private final Random random = new Random();
 
 	@Override

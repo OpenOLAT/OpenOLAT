@@ -27,7 +27,7 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -38,7 +38,7 @@ import org.olat.core.logging.Tracing;
  */
 public class ListPanel extends AbstractComponent implements ComponentCollection {
 	
-	private static final OLog log = Tracing.createLoggerFor(ListPanel.class);
+	private static final Logger log = Tracing.createLoggerFor(ListPanel.class);
 	
 	private static final ComponentRenderer RENDERER = new ListPanelRenderer();
 	private final List<Component> content = new ArrayList<>(3);

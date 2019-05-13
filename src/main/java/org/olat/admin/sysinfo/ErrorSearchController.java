@@ -30,9 +30,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.helpers.Settings;
 import org.olat.core.logging.LogFileParser;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
 /**
@@ -61,12 +59,7 @@ public class ErrorSearchController extends FormBasicController {
 		formLayout.add(fieldsCont);
 		formLayout.add("fields", fieldsCont);
 		
-		Long errCount = Tracing.getErrorCount();
 		String lastError = "-";
-		if (errCount > 0) {
-			String nodeId = StringHelper.containsNonWhitespace(Settings.getNodeInfo()) ? Settings.getNodeInfo() : "N1";
-			lastError = nodeId + "-E" + errCount;
-		}
 		uifactory.addStaticTextElement("error.last", lastError, fieldsCont);
 		errorNumberEl = uifactory.addTextElement("error.number", "error.number", 32, "", fieldsCont);
 		dateChooserEl = uifactory.addDateChooser("error.date", "error.date", null, fieldsCont);

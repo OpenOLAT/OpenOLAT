@@ -35,7 +35,7 @@ import org.dom4j.Document;
 import org.dom4j.DocumentType;
 import org.dom4j.io.SAXReader;
 import org.dom4j.io.SAXValidator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -55,7 +55,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ItemFileResourceValidator {
 	
-	private static final OLog log = Tracing.createLoggerFor(ItemFileResourceValidator.class);
+	private static final Logger log = Tracing.createLoggerFor(ItemFileResourceValidator.class);
 
 	public boolean validate(String filename, File file) {
 		if(file == null || !file.exists()) return false;

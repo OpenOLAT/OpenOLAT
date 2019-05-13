@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -38,7 +39,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -85,7 +85,7 @@ import org.olat.resource.references.ReferenceManager;
 // Loads of parameters are unused
 public class BinderTemplateHandler implements RepositoryHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(BinderTemplateHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(BinderTemplateHandler.class);
 
 	@Override
 	public boolean supportCreate() {

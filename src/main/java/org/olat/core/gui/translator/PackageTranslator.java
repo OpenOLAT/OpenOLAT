@@ -31,11 +31,11 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Locale;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -45,7 +45,7 @@ import org.olat.core.util.i18n.I18nModule;
  */
 public class PackageTranslator implements Translator {
 	
-	private static final OLog log = Tracing.createLoggerFor(PackageTranslator.class);
+	private static final Logger log = Tracing.createLoggerFor(PackageTranslator.class);
 	
 	private Translator fallBackTranslator;
 	private final String packageName;

@@ -34,12 +34,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -87,7 +87,7 @@ import com.thoughtworks.xstream.XStream;
 @Service
 public class EfficiencyStatementManager implements UserDataDeletable, UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(EfficiencyStatementManager.class);
+	private static final Logger log = Tracing.createLoggerFor(EfficiencyStatementManager.class);
 
 	public static final String KEY_ASSESSMENT_NODES = "assessmentNodes";
 	public static final String KEY_COURSE_TITLE = "courseTitle";
@@ -202,7 +202,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 			}
 		}
 		
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		UserEfficiencyStatementImpl efficiencyProperty = getUserEfficiencyStatementFull(repoEntry, assessedIdentity);
 		if (assessmentNodes != null) {				
 			if (efficiencyProperty == null) {
@@ -738,7 +738,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	public void updateEfficiencyStatements(final RepositoryEntry courseEntry, List<Identity> identities) {
 		if (identities.size() > 0) {
 			final ICourse course = CourseFactory.loadCourse(courseEntry);
-			log.audit("Updating efficiency statements for course::" + course.getResourceableId() + ", this might produce temporary heavy load on the CPU");
+			log.info(Tracing.M_AUDIT, "Updating efficiency statements for course::" + course.getResourceableId() + ", this might produce temporary heavy load on the CPU");
 
 			// preload cache to speed up things
 			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();		
@@ -799,7 +799,7 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 					.setParameter("identityKey", identity.getKey())
 					.executeUpdate();
 			
-			if(log.isDebug()) log.debug(numOfDeletedStatements + " efficiency statements deleted for identity=" + identity);
+			if(log.isDebugEnabled()) log.debug(numOfDeletedStatements + " efficiency statements deleted for identity=" + identity);
 		} catch (Exception e) {
 			log.error("deleteUserData(EfficiencyStatements): " + identity, e);
 		}

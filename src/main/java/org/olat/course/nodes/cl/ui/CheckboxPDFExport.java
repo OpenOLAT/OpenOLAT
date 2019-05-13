@@ -26,11 +26,11 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.util.Matrix;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.pdf.PdfDocument;
@@ -46,7 +46,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class CheckboxPDFExport extends PdfDocument implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(CheckboxPDFExport.class);
+	private static final Logger log = Tracing.createLoggerFor(CheckboxPDFExport.class);
 	
 	private final String filename;
 	private String courseTitle;

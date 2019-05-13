@@ -25,9 +25,9 @@ import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.io.LimitedContentWriter;
@@ -51,7 +51,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  */
 public class OpenDocument extends FileDocument {
 	private static final long serialVersionUID = 7285894180135411850L;
-	private static final OLog log = Tracing.createLoggerFor(OpenDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenDocument.class);
 	
 	public final static String TEXT_FILE_TYPE = "type.file.odt";
 	public final static String SPEADSHEET_FILE_TYPE = "type.file.ods";
@@ -76,7 +76,7 @@ public class OpenDocument extends FileDocument {
 		}
 		openDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 
-		if (log.isDebug()) log.debug(openDocument.toString());
+		if (log.isDebugEnabled()) log.debug(openDocument.toString());
 		return openDocument.getLuceneDocument();
 	}
 

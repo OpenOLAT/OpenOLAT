@@ -26,7 +26,7 @@
 package org.olat.course.condition.interpreter;
 
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -40,7 +40,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author gnaegi
  */
 public class IsCourseAdministratorFunction extends AbstractFunction {
-	private static final OLog log = Tracing.createLoggerFor(IsCourseAdministratorFunction.class);
+	private static final Logger log = Tracing.createLoggerFor(IsCourseAdministratorFunction.class);
 	public static final String name = "isCourseAdministrator";
 
 	/**
@@ -74,7 +74,7 @@ public class IsCourseAdministratorFunction extends AbstractFunction {
 		} else {
 			isCourseAdmin = getUserCourseEnv().isAdmin();
 		}
-		if(log.isDebug()) {
+		if(log.isDebugEnabled()) {
 			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 			log.debug("identity "+ident.getKey()+", courseadministrator:"+isCourseAdmin+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
 		}

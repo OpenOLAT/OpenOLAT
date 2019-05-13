@@ -46,7 +46,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -92,7 +92,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class ScormCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
-	private static final OLog log = Tracing.createLoggerFor(ScormCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(ScormCourseNode.class);
 	private static final long serialVersionUID = 2970594874787761801L;
 	private static final String TYPE = "scorm";
 	private static final int CURRENT_CONFIG_VERSION = 5;

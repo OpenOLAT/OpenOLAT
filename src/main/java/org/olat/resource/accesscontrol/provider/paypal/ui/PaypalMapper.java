@@ -31,7 +31,7 @@ import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
@@ -48,7 +48,7 @@ import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
  */
 public class PaypalMapper implements Mapper {
 	
-	private static final OLog log = Tracing.createLoggerFor(PaypalMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(PaypalMapper.class);
 	
 	private final String businessPath;
 	private final PaypalManager paypalManager;

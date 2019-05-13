@@ -23,7 +23,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.MergeSource;
@@ -46,7 +46,7 @@ import org.olat.resource.OLATResource;
  */
 public class MergedCourseContainer extends MergeSource {
 	
-	private static final OLog log = Tracing.createLoggerFor(MergedCourseContainer.class);
+	private static final Logger log = Tracing.createLoggerFor(MergedCourseContainer.class);
 	
 	private final Long courseId;
 	private boolean courseReadOnly = false;

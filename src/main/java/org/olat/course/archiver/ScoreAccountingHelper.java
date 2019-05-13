@@ -49,7 +49,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -88,7 +88,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class ScoreAccountingHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(ScoreAccountingHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(ScoreAccountingHelper.class);
 	
 	public static void createCourseResultsOverview(List<Identity> identities, List<AssessableCourseNode> nodes, ICourse course, Locale locale, ZipOutputStream zout) {
 		try(OutputStream out = new ShieldOutputStream(zout)) {

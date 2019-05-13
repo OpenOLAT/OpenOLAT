@@ -59,7 +59,7 @@ import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -77,7 +77,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class ImageHelperImpl extends AbstractImageHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(ImageHelperImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(ImageHelperImpl.class);
 	
 	private static final String OUTPUT_FORMAT = "jpeg";
 
@@ -414,7 +414,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 				reader.dispose();
 			}
 		} else {
-			log.error("No reader found for given format: " + suffix, null);
+			log.error("No reader found for given format: " + suffix);
 		}
 		return null;
 	}
@@ -452,7 +452,7 @@ public class ImageHelperImpl extends AbstractImageHelper {
 				reader.dispose();
 			}
 		} else {
-			log.error("No reader found for given format: " + suffix, null);
+			log.error("No reader found for given format: " + suffix);
 		}
 		return null;
 	}

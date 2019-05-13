@@ -45,7 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -77,7 +77,7 @@ import org.olat.repository.RepositoryManager;
  */
 public class WikiPageChangeOrCreateNotificationHandler implements NotificationsHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(WikiPageChangeOrCreateNotificationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(WikiPageChangeOrCreateNotificationHandler.class);
 
 	private static final String CSS_CLASS_WIKI_PAGE_CHANGED_ICON = "o_wiki_icon";
 	protected String businessControlString;
@@ -97,10 +97,10 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 		final Date latestNews = p.getLatestNewsDate();
 		Long resId = p.getResId();
 		SubscriptionInfo si;
-		final boolean debug = log.isDebug();
+		final boolean debug = log.isDebugEnabled();
 		
 		// there could be news for me, investigate deeper
-		if(debug) log.debug("compareDate=" + compareDate + " ; latestNews=" + latestNews, null);
+		if(debug) log.debug("compareDate=" + compareDate + " ; latestNews=" + latestNews);
 		try {
 			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
 				OLATResourceable ores = null;
@@ -123,12 +123,12 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 					ModuleConfiguration config = ((WikiCourseNode)courseNode).getModuleConfiguration();
 					RepositoryEntry re = WikiEditController.getWikiRepoReference(config, true);
 					resId = re.getOlatResource().getResourceableId();
-					if(debug)  log.debug("resId=" + resId, null);
+					if(debug)  log.debug("resId=" + resId);
 					ores = OresHelper.createOLATResourceableInstance(WikiResource.TYPE_NAME, resId);
 					businessControlString = p.getBusinessPath() + "[path=";
 				} else {
 					// resName = 'BusinessGroup' or 'FileResource.WIKI'
-					if(debug) log.debug("p.getResName()=" + p.getResName(), null);
+					if(debug) log.debug("p.getResName()=" + p.getResName());
 					ores = OresHelper.createOLATResourceableInstance(p.getResName(), resId);
 					businessControlString = p.getBusinessPath() + "[path=";
 				}
@@ -146,7 +146,7 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 					
 					// do only show entries newer then the ones already seen
 					Date modDate = new Date(element.getModificationTime());
-					if(debug) log.debug("modDate=" + modDate + " ; compareDate=" + compareDate, null);
+					if(debug) log.debug("modDate=" + modDate + " ; compareDate=" + compareDate);
 					if (modDate.after(compareDate)) {
 						if((element.getPageName().startsWith("O_") || element.getPageName().startsWith(WikiPage.WIKI_MENU_PAGE))
 								&& (element.getModifyAuthor() <= 0)) {
@@ -221,17 +221,17 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 			if("BusinessGroup".equals(p.getResName())) {
 				BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(p.getResId());
 				if(bg == null) {
-					log.info("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey());
 					NotificationsManager.getInstance().deactivate(p);
 				}
 			} else if ("CourseModule".equals(p.getResName())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					log.info("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey());
 					NotificationsManager.getInstance().deactivate(p);
 				}
 			} else {
 				if(!NotificationsUpgradeHelper.checkOLATResourceable(p)) {
-					log.info("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey());
 					NotificationsManager.getInstance().deactivate(p);
 				}
 			}

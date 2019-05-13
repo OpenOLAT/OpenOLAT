@@ -26,7 +26,7 @@ import java.util.List;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -45,7 +45,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EvaluationFormsModule extends AbstractSpringModule implements ConfigOnOff {
 
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormsModule.class);
+	private static final Logger log = Tracing.createLoggerFor(EvaluationFormsModule.class);
 
 	public static final String FORMS_ENABLED = "forms.enabled";
 	

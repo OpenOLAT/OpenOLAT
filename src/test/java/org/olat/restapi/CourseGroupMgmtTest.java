@@ -49,13 +49,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -81,7 +81,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(CourseGroupMgmtTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseGroupMgmtTest.class);
 	
 	private Identity id1, id2;
 	private BusinessGroup g1, g2;

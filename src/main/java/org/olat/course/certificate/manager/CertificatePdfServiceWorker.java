@@ -35,13 +35,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -63,7 +63,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class CertificatePdfServiceWorker {
-	private static final OLog log = Tracing
+	private static final Logger log = Tracing
 			.createLoggerFor(CertificatePDFFormWorker.class);
 	
 	private final Float score;

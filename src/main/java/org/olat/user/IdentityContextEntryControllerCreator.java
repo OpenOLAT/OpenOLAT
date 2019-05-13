@@ -21,6 +21,7 @@ package org.olat.user;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -32,7 +33,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.id.context.TabContext;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.home.HomeSite;
@@ -49,7 +49,7 @@ import org.olat.home.HomeSite;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class IdentityContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
-	private static final OLog log = Tracing.createLoggerFor(IdentityContextEntryControllerCreator.class);
+	private static final Logger log = Tracing.createLoggerFor(IdentityContextEntryControllerCreator.class);
 
 	private Identity identity;
 	

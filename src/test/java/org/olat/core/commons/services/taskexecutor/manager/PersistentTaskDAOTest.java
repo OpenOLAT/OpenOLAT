@@ -34,7 +34,7 @@ import org.olat.core.commons.services.taskexecutor.TaskStatus;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -51,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PersistentTaskDAOTest extends OlatTestCase  {
 	
-	private static final OLog log = Tracing.createLoggerFor(PersistentTaskDAOTest.class);
+	private static final Logger log = Tracing.createLoggerFor(PersistentTaskDAOTest.class);
 	
 	@Autowired
 	private DB dbInstance;

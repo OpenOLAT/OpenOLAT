@@ -32,7 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.AbstractTextElement;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -53,7 +53,7 @@ import org.olat.core.util.filter.FilterFactory;
 public class RichTextElementImpl extends AbstractTextElement implements
 		RichTextElement, Disposable {
 	
-	private static final OLog log = Tracing.createLoggerFor(RichTextElementImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(RichTextElementImpl.class);
 	private final RichTextElementComponent component;
 	private RichTextConfiguration configuration;
 	private TextMode renderingMode;

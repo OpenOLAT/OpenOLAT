@@ -27,10 +27,10 @@ package org.olat.course.condition.interpreter;
 
 import java.text.ParseException;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.condition.Condition;
@@ -60,7 +60,7 @@ import de.bps.course.condition.interpreter.score.GetOnyxTestOutcomeNumFunction;
  * Comment:
  */
 public class ConditionInterpreter {
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final Logger log = Tracing.createLoggerFor(ConditionInterpreter.class);
 
 	/** static Integer(1) object */
 	public static final Integer INT_TRUE = Integer.valueOf(1);

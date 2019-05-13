@@ -31,7 +31,7 @@ import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -46,7 +46,7 @@ import org.olat.modules.webFeed.ui.FeedMainController;
 */
 public class FeedNotifications {
 	
-	private static final OLog log = Tracing.createLoggerFor(FeedNotifications.class);
+	private static final Logger log = Tracing.createLoggerFor(FeedNotifications.class);
 	
 	private final Date compareDate;
 	private final Subscriber subscriber;

@@ -74,7 +74,7 @@ OTHER LICENSES AFFECTED BY THIS DISTRIBUTION
 This product uses software based on the Apache Software License like
 * Tomcat (Apache Software License, Version 2.0) [http://tomcat.apache.org]
 * Velocity (Apache Software License, Version 2.0) [http://velocity.apache.org]
-* Log4J (Apache Software License, Version 2.0) [http://logging.apache.org/log4j]
+* Log4J 2 (Apache Software License, Version 2.0) [https://logging.apache.org/log4j/2.x/]
 * cglib (Apache Software License, Version 2.0) [http://cglib.sourceforge.net]
 * CyberNeko HTML Parser (Apache 2 License) [http://nekohtml.sourceforge.net/index.html]
 * Quartz job scheduler from the OpenSymphony project (Apache 2 license) [http://www.opensymphony.com/quartz]

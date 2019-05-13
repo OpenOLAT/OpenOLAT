@@ -29,7 +29,7 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.editor.CourseEditorEnv;
@@ -43,7 +43,7 @@ import org.olat.group.BusinessGroupService;
  */
 public class InLearningGroupFunction extends AbstractFunction {
 	
-	private static final OLog log = Tracing.createLoggerFor(InLearningGroupFunction.class);
+	private static final Logger log = Tracing.createLoggerFor(InLearningGroupFunction.class);
 	
 	public final String name;
 

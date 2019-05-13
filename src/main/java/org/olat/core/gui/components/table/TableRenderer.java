@@ -38,7 +38,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -50,7 +50,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 
 	protected static final String TABLE_MULTISELECT_GROUP = "tb_ms";
 	
-	private static final OLog log = Tracing.createLoggerFor(TableRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(TableRenderer.class);
 
 	/**
 	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
@@ -60,7 +60,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 	public void render(final Renderer renderer, final StringOutput target, final Component source, final URLBuilder ubu, final Translator translator, final RenderResult renderResult,
 			final String[] args) {
 		long start = 0;
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			start = System.currentTimeMillis();
 		}
 		assert (source instanceof Table);
@@ -110,7 +110,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 	         .append("</form>");
 		appendViewportResizeJsFix(target, source, rows, usePageing);
 		
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			long duration = System.currentTimeMillis() - start;
 			log.debug("Perf-Test: render takes " + duration);
 		}
@@ -236,7 +236,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 			int startRowId, int endRowId) {
 		target.append("<tbody>");
 		long startRowLoop = 0;
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			startRowLoop = System.currentTimeMillis();
 		}
 		for (int i = startRowId; i < endRowId; i++) {
@@ -258,7 +258,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 			appendSingleDataRow(renderer, target, ubu, table, iframePostEnabled, cols, i, currentPosInModel, isMark);
 			target.append("</tr>");
 		}
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			long durationRowLoop = System.currentTimeMillis() - startRowLoop;
 			log.debug("Perf-Test: render.durationRowLoop takes " + durationRowLoop);
 		}

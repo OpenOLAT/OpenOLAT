@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarUtils;
@@ -43,7 +44,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.mail.MailPackage;
@@ -103,7 +103,7 @@ import org.springframework.stereotype.Service;
 @Service("acService")
 public class ACFrontendManager implements ACService, UserDataExportable {
 
-	private static final OLog log = Tracing.createLoggerFor(ACFrontendManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ACFrontendManager.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -369,13 +369,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 	@Override
 	public AccessResult accessResource(Identity identity, OfferAccess link, Object argument) {
 		if(link == null || link.getOffer() == null || link.getMethod() == null) {
-			log.audit("Access refused (no offer) to: " + link + " for " + identity);
+			log.info(Tracing.M_AUDIT, "Access refused (no offer) to: " + link + " for " + identity);
 			return new AccessResult(false);
 		}
 
 		AccessMethodHandler handler = accessModule.getAccessMethodHandler(link.getMethod().getType());
 		if(handler == null) {
-			log.audit("Access refused (no handler method) to: " + link + " for " + identity);
+			log.info(Tracing.M_AUDIT, "Access refused (no handler method) to: " + link + " for " + identity);
 			return new AccessResult(false);
 		}
 
@@ -385,13 +385,13 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 				AccessTransaction transaction = transactionManager.createTransaction(order, order.getParts().get(0), link.getMethod());
 				transactionManager.save(transaction);
 				dbInstance.commit();
-				log.audit("Access granted to: " + link + " for " + identity);
+				log.info(Tracing.M_AUDIT, "Access granted to: " + link + " for " + identity);
 				return new AccessResult(true);
 			} else {
-				log.audit("Access error to: " + link + " for " + identity);
+				log.info(Tracing.M_AUDIT, "Access error to: " + link + " for " + identity);
 			}
 		} else {
-			log.audit("Access refused to: " + link + " for " + identity);
+			log.info(Tracing.M_AUDIT, "Access refused to: " + link + " for " + identity);
 		}
 		return new AccessResult(false);
 	}
@@ -472,7 +472,7 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 		Date oneHourTimeout = cal.getTime();
 		List<ResourceReservation> oldReservations = reservationDao.loadExpiredReservation(oneHourTimeout);
 		for(ResourceReservation reservation:oldReservations) {
-			log.audit("Remove reservation:" + reservation);
+			log.info(Tracing.M_AUDIT, "Remove reservation:" + reservation);
 			reservationDao.deleteReservation(reservation);
 		}
 	}

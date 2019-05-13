@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.ShortName;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -51,7 +52,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 
@@ -114,7 +114,7 @@ public class TableController extends BasicController {
 
 	private static final String VC_VAR_HAS_TABLE_SEARCH = "hasTableSearch";
 
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final Logger log = Tracing.createLoggerFor(TableController.class);
 	
 	private static final String CMD_FILTER = "cmd.filter.";
 	private static final String CMD_FILTER_NOFILTER = "cmd.filter.nofilter";

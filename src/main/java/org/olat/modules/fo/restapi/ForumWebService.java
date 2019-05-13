@@ -64,7 +64,7 @@ import org.olat.core.commons.services.vfs.restapi.VFSStreamingOutput;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -96,7 +96,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ForumWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(ForumWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(ForumWebService.class);
 	
 	public static final CacheControl cc = new CacheControl();
 	static {

@@ -29,9 +29,9 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Hashtable;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSItem;
@@ -53,7 +53,7 @@ import com.thoughtworks.xstream.security.ExplicitTypePermission;
 @Service
 public class CourseConfigManagerImpl implements CourseConfigManager {
 
-	private static final OLog log = Tracing.createLoggerFor(CourseConfigManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseConfigManagerImpl.class);
 	
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 	static {

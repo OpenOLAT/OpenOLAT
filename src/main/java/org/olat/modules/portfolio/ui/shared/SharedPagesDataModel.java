@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.portfolio.PageStatus;
@@ -45,7 +45,7 @@ import org.olat.modules.portfolio.PageStatus;
 public class SharedPagesDataModel extends DefaultFlexiTableDataModel<SharedPageRow>
 	implements SortableFlexiTableDataModel<SharedPageRow>, FilterableFlexiTableModel {
 	
-	private static final OLog log = Tracing.createLoggerFor(SharedPagesDataModel.class);
+	private static final Logger log = Tracing.createLoggerFor(SharedPagesDataModel.class);
 	
 	private final Locale locale;
 	private List<SharedPageRow> backups;

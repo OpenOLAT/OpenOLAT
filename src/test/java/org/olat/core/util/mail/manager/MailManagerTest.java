@@ -41,7 +41,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.ContactList;
@@ -63,7 +63,7 @@ import com.dumbster.smtp.SmtpMessage;
  *
  */
 public class MailManagerTest extends OlatTestCase {
-	private static final OLog log = Tracing.createLoggerFor(MailManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(MailManagerTest.class);
 
 	@Autowired
 	private MailManager mailManager;

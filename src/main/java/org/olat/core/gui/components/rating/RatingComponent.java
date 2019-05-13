@@ -28,7 +28,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 
@@ -44,7 +44,7 @@ import org.olat.core.logging.Tracing;
  * @author gnaegi
  */
 public class RatingComponent extends AbstractComponent {
-	private static final OLog log = Tracing.createLoggerFor(RatingComponent.class);
+	private static final Logger log = Tracing.createLoggerFor(RatingComponent.class);
 	private static final ComponentRenderer RENDERER = new RatingRenderer();
 	private List<String> ratingLabels;
 	private boolean translateRatingLabels;

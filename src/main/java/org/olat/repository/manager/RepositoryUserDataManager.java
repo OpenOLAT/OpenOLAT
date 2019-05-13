@@ -34,7 +34,7 @@ import java.util.Locale;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
@@ -62,7 +62,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class RepositoryUserDataManager implements UserDataDeletable, UserDataExportable {
 
-	private static final OLog log = Tracing.createLoggerFor(RepositoryUserDataManager.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryUserDataManager.class);
 
 	public static final String SEND_DELETE_EMAIL_ACTION = "sendDeleteEmail";
 

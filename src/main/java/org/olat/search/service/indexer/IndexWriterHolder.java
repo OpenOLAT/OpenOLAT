@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.Directory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 
@@ -36,7 +36,7 @@ import org.olat.core.util.CodeHelper;
  *
  */
 public class IndexWriterHolder {
-	private static final OLog log = Tracing.createLoggerFor(IndexWriterHolder.class);
+	private static final Logger log = Tracing.createLoggerFor(IndexWriterHolder.class);
 	
 	private Directory indexPath;
 	private JmsIndexer indexer;

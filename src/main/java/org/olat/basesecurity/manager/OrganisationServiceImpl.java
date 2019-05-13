@@ -50,7 +50,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +65,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OrganisationServiceImpl implements OrganisationService, InitializingBean {
 	
-	private static final OLog log = Tracing.createLoggerFor(OrganisationServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(OrganisationServiceImpl.class);
 	
 	@Autowired
 	private DB dbInstance;

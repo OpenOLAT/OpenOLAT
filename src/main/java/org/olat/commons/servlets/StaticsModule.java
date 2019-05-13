@@ -30,7 +30,7 @@ import java.util.Map;
 
 import org.olat.commons.servlets.pathhandlers.PathHandler;
 import org.olat.core.configuration.Initializable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -43,7 +43,7 @@ import org.olat.core.logging.Tracing;
  * 
  */
 public class StaticsModule implements Initializable {
-	private static final OLog log = Tracing.createLoggerFor(StaticsModule.class);
+	private static final Logger log = Tracing.createLoggerFor(StaticsModule.class);
 	private static Map<String,PathHandler> handlers = new HashMap<>(5);	
 	
 	/**

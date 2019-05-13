@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TextServiceTest extends OlatTestCase {
 
-	private static final OLog log = Tracing.createLoggerFor(TextServiceTest.class);
+	private static final Logger log = Tracing.createLoggerFor(TextServiceTest.class);
 	
 	@Autowired
 	private TextService textService;

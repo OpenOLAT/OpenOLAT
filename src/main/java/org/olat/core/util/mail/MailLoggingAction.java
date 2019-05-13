@@ -27,7 +27,7 @@ package org.olat.core.util.mail;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
@@ -56,7 +56,7 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  */
 public class MailLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(MailLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(MailLoggingAction.class);
 
 	private static final ResourceableTypeList MAIL_RESOURCES = new ResourceableTypeList().
 	// this one is a mail formular in a contact-node in a course

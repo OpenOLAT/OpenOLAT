@@ -23,7 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.commons.io.FilenameUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -43,7 +43,7 @@ public enum VideoFormat {
 	vimeo("video/vimeo"),
 	panopto("video/mp4");
 
-	private static final OLog log = Tracing.createLoggerFor(VideoFormat.class);
+	private static final Logger log = Tracing.createLoggerFor(VideoFormat.class);
 	
 	private final String mimeType;
 	

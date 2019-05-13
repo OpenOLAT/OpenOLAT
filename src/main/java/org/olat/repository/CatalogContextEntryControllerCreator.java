@@ -23,6 +23,7 @@ package org.olat.repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -34,7 +35,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.ContextEntryControllerCreator;
 import org.olat.core.id.context.DefaultContextEntryControllerCreator;
 import org.olat.core.id.context.TabContext;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.site.CatalogSite;
@@ -50,7 +50,7 @@ import org.olat.repository.site.MyCoursesSite;
  */
 public class CatalogContextEntryControllerCreator extends DefaultContextEntryControllerCreator {
 	
-	private static final OLog log = Tracing.createLoggerFor(CatalogContextEntryControllerCreator.class);
+	private static final Logger log = Tracing.createLoggerFor(CatalogContextEntryControllerCreator.class);
 	
 	private final RepositoryModule repositoryModule;
 	

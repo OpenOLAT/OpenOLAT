@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.manager.CalendarUserConfigurationDAO;
 import org.olat.commons.calendar.manager.ImportedCalendarDAO;
@@ -35,6 +36,7 @@ import org.olat.commons.calendar.model.ImportedToCalendar;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.properties.Property;
@@ -51,6 +53,8 @@ import com.thoughtworks.xstream.XStream;
  *
  */
 public class OLATUpgrade_10_4_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_10_4_0.class);
 	
 	private static final int BATCH_SIZE = 1000;
 	private static final String CALENDAR_TOKENS = "Calendar tokens";
@@ -109,9 +113,9 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_10_4_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_10_4_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_10_4_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_10_4_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -186,7 +190,7 @@ public class OLATUpgrade_10_4_0 extends OLATUpgrade {
 					}
 				}
 				counter += properties.size();
-				log.audit("Calendar GUI properties processed: " + properties.size() + ", total processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Calendar GUI properties processed: " + properties.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(properties.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(CALENDAR_USER_CONFIGS, true);

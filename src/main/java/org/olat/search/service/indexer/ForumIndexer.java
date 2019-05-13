@@ -31,6 +31,8 @@ import java.util.List;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.Message;
 import org.olat.modules.fo.manager.ForumManager;
@@ -42,10 +44,13 @@ import org.olat.search.service.document.ForumMessageDocument;
  * @author Christian Guretzki
  */
 public abstract class ForumIndexer extends AbstractHierarchicalIndexer {
+
+	private static final Logger log = Tracing.createLoggerFor(ForumIndexer.class);
 		
-	public void doIndexAllMessages(SearchResourceContext parentResourceContext, Forum forum, OlatFullIndexer indexWriter) throws IOException,InterruptedException {
+	public void doIndexAllMessages(SearchResourceContext parentResourceContext, Forum forum, OlatFullIndexer indexWriter)
+	throws IOException,InterruptedException {
 		if (forum == null) {
-			logWarn("tried to index a forum that could not be found! skipping. context: " + parentResourceContext.getResourceUrl(), null);
+			log.warn("tried to index a forum that could not be found! skipping. context: " + parentResourceContext.getResourceUrl());
 			return;
 		}
 		// loop over all messages of a forum

@@ -21,7 +21,7 @@ package org.olat.user.manager;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.taskexecutor.LowPriorityRunnable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.user.UserDataExportService;
 
@@ -35,7 +35,7 @@ public class UserDataExportTask implements LowPriorityRunnable {
 
 	private static final long serialVersionUID = 6931074116105090545L;
 
-	private static final OLog log = Tracing.createLoggerFor(UserDataExportTask.class);
+	private static final Logger log = Tracing.createLoggerFor(UserDataExportTask.class);
 	
 	private final Long exportKey;
 	

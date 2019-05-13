@@ -34,7 +34,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -52,7 +52,7 @@ import org.olat.properties.PropertyManager;
 class StatisticUpdateManagerImpl implements StatisticUpdateManager, GenericEventListener {
 	
 	/** the logging object used in this class **/
-	static final OLog log_ = Tracing.createLoggerFor(StatisticUpdateManagerImpl.class);
+	static final Logger log_ = Tracing.createLoggerFor(StatisticUpdateManagerImpl.class);
 
 	/** the category used for statistics properties (in the o_properties table) **/
 	private static final String STATISTICS_PROPERTIES_CATEGORY = "STATISTICS_PROPERTIES";

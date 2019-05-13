@@ -35,6 +35,8 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
 import org.olat.modules.fo.Forum;
@@ -53,6 +55,8 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class GroupForumIndexer extends ForumIndexer{
+
+	private static final Logger log = Tracing.createLoggerFor(GroupForumIndexer.class);
 
 	//Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
@@ -85,8 +89,8 @@ public class GroupForumIndexer extends ForumIndexer{
 			forumSearchResourceContext.setParentContextType(GroupDocument.TYPE);
 			forumSearchResourceContext.setParentContextName(businessGroup.getName());
 			if (forum == null) { // fxdiff: FXOLAT-104 warn about missing forums
-				logError("found a forum-key " + forumKey + " for businessgroup " + businessGroup.getName() + " [" + businessGroup.getKey() + "] to index a forum that could not be " +
-						"found by key! skip indexing, check if forum should still be enabled. context: " + forumSearchResourceContext.getResourceUrl(), null);
+				log.error("found a forum-key " + forumKey + " for businessgroup " + businessGroup.getName() + " [" + businessGroup.getKey() + "] to index a forum that could not be " +
+						"found by key! skip indexing, check if forum should still be enabled. context: " + forumSearchResourceContext.getResourceUrl());
 				return;
 			}
 		  doIndexAllMessages(forumSearchResourceContext, forum, indexWriter );

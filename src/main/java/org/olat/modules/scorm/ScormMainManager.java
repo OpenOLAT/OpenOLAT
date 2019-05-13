@@ -33,7 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -51,7 +51,7 @@ public class ScormMainManager {
 	
 	public static final String PACKAGE_CONFIG_FILE_NAME = "ScormPackageConfig.xml";
 	
-	private static final OLog log = Tracing.createLoggerFor(ScormMainManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ScormMainManager.class);
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
 		configXstream.alias("packageConfig", ScormPackageConfig.class);

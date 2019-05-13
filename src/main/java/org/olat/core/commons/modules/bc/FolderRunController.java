@@ -31,6 +31,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.linkchooser.CustomLinkTreeModel;
 import org.olat.core.commons.modules.bc.commands.CmdCreateFile;
@@ -65,7 +66,6 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
@@ -99,7 +99,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FolderRunController extends BasicController implements Activateable2 {
 
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final Logger log = Tracing.createLoggerFor(FolderRunController.class);
 	
 	public static final String ACTION_PRE = ".action";
 	public static final String FORM_ACTION = "action";
@@ -315,9 +315,9 @@ public class FolderRunController extends BasicController implements Activateable
 		// jump to either the forum or the folder if the business-launch-path says so.
 		ContextEntry ce = bc.popLauncherContextEntry();
 		if ( ce != null ) { // a context path is left for me						
-			if (log.isDebug()) log.debug("businesscontrol (for further jumps) would be:"+bc);
+			if (log.isDebugEnabled()) log.debug("businesscontrol (for further jumps) would be:"+bc);
 			OLATResourceable ores = ce.getOLATResourceable();			
-			if (log.isDebug()) log.debug("OLATResourceable=" + ores);
+			if (log.isDebugEnabled()) log.debug("OLATResourceable=" + ores);
 			String typeName = ores.getResourceableTypeName();
 			// typeName format: 'path=/test1/test2/readme.txt'
 			// First remove prefix 'path='

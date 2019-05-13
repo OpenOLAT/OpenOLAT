@@ -19,8 +19,10 @@
  */
 package org.olat.upgrade;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
 import org.olat.course.statistic.StatisticUpdateManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -31,6 +33,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_12_5_17 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_12_5_17.class);
 	
 
 	private static final String VERSION = "OLAT_12.5.17";
@@ -64,9 +68,9 @@ public class OLATUpgrade_12_5_17 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_12_5_17 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_12_5_17 successfully!");
 		} else {
-			log.audit("OLATUpgrade_12_5_17 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_12_5_17 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

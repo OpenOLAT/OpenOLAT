@@ -29,7 +29,7 @@ import java.util.Set;
 import org.olat.core.commons.services.webdav.manager.WebDAVMergeSource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.SharedFolderFileResource;
@@ -46,7 +46,7 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
  */
 public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 	
-	private static final OLog log = Tracing.createLoggerFor(SharedFolderWebDAVMergeSource.class);
+	private static final Logger log = Tracing.createLoggerFor(SharedFolderWebDAVMergeSource.class);
 
 	private final List<String> publiclyReadableFolders;
 	
@@ -100,7 +100,7 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 						// add folder (which is a repo entry) to root container if not present
 						addReadonlyFolder(entry, sfm, addedEntries, containers);
 					} else {
-						log.warn("Access denied on entry::" + entry.getKey(), null);
+						log.warn("Access denied on entry::" + entry.getKey());
 					}
 				}
 			}

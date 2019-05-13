@@ -31,7 +31,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -43,7 +43,7 @@ import org.olat.core.util.StringHelper;
  */
 public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 	
-	private static final OLog log = Tracing.createLoggerFor(StaticFlexiCellRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(StaticFlexiCellRenderer.class);
 
 	private String label;
 	private String action;

@@ -26,9 +26,9 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.io.ShieldInputStream;
@@ -52,7 +52,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  */
 public class ExcelOOXMLDocument extends FileDocument {
 	private static final long serialVersionUID = 2322994231200065526L;
-	private static final OLog log = Tracing.createLoggerFor(ExcelOOXMLDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(ExcelOOXMLDocument.class);
 
 	private static final String SHEET = "xl/worksheets/sheet";
 	public final static String EXCEL_FILE_TYPE = "type.file.excel";
@@ -64,7 +64,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 		officeDocument.setFileType(EXCEL_FILE_TYPE);
 		officeDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
 	
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			log.debug(officeDocument.toString());
 		}
 		return officeDocument.getLuceneDocument();

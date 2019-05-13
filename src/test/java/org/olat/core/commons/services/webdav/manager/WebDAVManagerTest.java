@@ -35,7 +35,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -52,7 +52,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
  */
 public class WebDAVManagerTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(WebDAVManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(WebDAVManagerTest.class);
 
 	@Autowired
 	private DB dbInstance;

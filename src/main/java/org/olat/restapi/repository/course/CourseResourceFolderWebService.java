@@ -47,12 +47,12 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -94,7 +94,7 @@ import org.springframework.stereotype.Component;
 @Path("repo/courses/{courseId}/resourcefolders")
 public class CourseResourceFolderWebService {
 
-	private static final OLog log = Tracing.createLoggerFor(CourseResourceFolderWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseResourceFolderWebService.class);
 
 	private static final String VERSION  = "1.0";
 

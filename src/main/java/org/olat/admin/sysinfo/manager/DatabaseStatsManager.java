@@ -26,10 +26,10 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanServer;
 import javax.management.ObjectName;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.sysinfo.model.DatabaseConnectionVO;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.jmx.JMXManager;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +42,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DatabaseStatsManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(DatabaseStatsManager.class);
+	private static final Logger log = Tracing.createLoggerFor(DatabaseStatsManager.class);
 	
 	
 	public DatabaseConnectionVO getConnectionInfos() {
@@ -53,7 +53,7 @@ public class DatabaseStatsManager {
 			JMXManager jmxManager = CoreSpringFactory.getImpl(JMXManager.class);
 			MBeanServer mBeanServer = jmxManager.getMBeanServer();
 			boolean found = searchHikariDataSources(mBeanServer, vo) || searchTomcatDataSources(mBeanServer, vo) || searchC3P0DataSources(mBeanServer, vo);
-			if(log.isDebug()) {
+			if(log.isDebugEnabled()) {
 				log.debug("MBean for datasource found: " + found);
 			}	
 		} catch (Exception e) {

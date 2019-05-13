@@ -33,12 +33,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.PreWarm;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CorruptedCourseException;
 import org.olat.repository.RepositoryEntry;
@@ -54,7 +54,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  */
 public class CourseNodeFactory implements PreWarm {
 	
-	private static final OLog log = Tracing.createLoggerFor(CourseNodeFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseNodeFactory.class);
 
 	private static CourseNodeFactory INSTANCE;
 	private Map<String, CourseNodeConfiguration> allCourseNodeConfigurations;
@@ -84,9 +84,9 @@ public class CourseNodeFactory implements PreWarm {
 	 * @return the list of enabled aliases
 	 */
 	public List<String> getRegisteredCourseNodeAliases() {
-		List<CourseNodeConfiguration> configList = new ArrayList<CourseNodeConfiguration>(getAllCourseNodeConfigurations().values());
+		List<CourseNodeConfiguration> configList = new ArrayList<>(getAllCourseNodeConfigurations().values());
 		Collections.sort(configList, new OrderComparator());
-		List<String> alias = new ArrayList<String>(configList.size());
+		List<String> alias = new ArrayList<>(configList.size());
 		for(CourseNodeConfiguration config:configList) {
 			if(config.isEnabled()) {
 				alias.add(config.getAlias());

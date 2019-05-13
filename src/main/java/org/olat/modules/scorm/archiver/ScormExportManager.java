@@ -24,7 +24,7 @@ import java.util.List;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -56,7 +56,7 @@ public class ScormExportManager {
 	private static final String OBJECTIVES = "objectives.";
 	private static final String CMI_COUNT = "_count";
 	
-	private static final OLog logger = Tracing.createLoggerFor(ScormExportManager.class);
+	private static final Logger logger = Tracing.createLoggerFor(ScormExportManager.class);
 	
 	private static final ScormExportManager instance = new ScormExportManager();
 	
@@ -135,7 +135,7 @@ public class ScormExportManager {
 					document.loadDocument(((LocalFileImpl)file).getBasefile());
 				}
 				else {
-					logger.warn("Cannot use this type of VSFItem to load a SCO Datamodel: " + file.getClass().getName(), null);
+					logger.warn("Cannot use this type of VSFItem to load a SCO Datamodel: " + file.getClass().getName());
 					continue;
 				}
 

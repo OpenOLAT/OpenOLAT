@@ -22,7 +22,7 @@ package org.olat.ims.qti21.ui.statistics;
 import java.io.OutputStream;
 import java.util.Locale;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
@@ -35,7 +35,7 @@ import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
  */
 public class QTI21StatisticsResource extends OpenXMLWorkbookResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21StatisticsResource.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21StatisticsResource.class);
 	
 	private final Locale locale;
 	private final QTI21StatisticResourceResult resourceResult;

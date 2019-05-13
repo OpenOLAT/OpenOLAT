@@ -27,10 +27,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.TransformerException;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
@@ -47,7 +47,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class CheckedPDFExport extends PdfDocument implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(CheckedPDFExport.class);
+	private static final Logger log = Tracing.createLoggerFor(CheckedPDFExport.class);
 	
 	private final String filename;
 	private String courseTitle;

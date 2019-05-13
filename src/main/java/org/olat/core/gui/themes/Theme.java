@@ -29,7 +29,7 @@ import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.GUISettings;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 
@@ -42,7 +42,7 @@ import org.olat.core.util.WebappHelper;
  */
 public class Theme {
 
-	private static final OLog log = Tracing.createLoggerFor(Theme.class);
+	private static final Logger log = Tracing.createLoggerFor(Theme.class);
 	
 	public static final String DEFAULTTHEME = "light";
 	private static final String CUSTOM_JS_FILENAME = "theme.js";

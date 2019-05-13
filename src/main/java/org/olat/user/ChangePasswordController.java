@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.SimpleMessageController;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
 import org.olat.ldap.LDAPError;
@@ -156,7 +157,7 @@ public class ChangePasswordController extends BasicController implements Support
 					String newPwd = chPwdForm.getNewPasswordValue();
 					if(olatAuthenticationSpi.changePassword(ureq.getIdentity(), provenIdent, newPwd)) {			
 						fireEvent(ureq, Event.DONE_EVENT);
-						getLogger().audit("Changed password for identity:" + provenIdent.getKey());
+						getLogger().info(Tracing.M_AUDIT, "Changed password for identity:" + provenIdent.getKey());
 						showInfo("password.successful");
 					} else {
 						showError("password.failed");

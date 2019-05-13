@@ -26,7 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
@@ -49,7 +49,7 @@ import com.github.scribejava.core.utils.OAuthEncoder;
  */
 public class TequilaApi extends DefaultApi20 {
 	
-	private static final OLog log = Tracing.createLoggerFor(TequilaApi.class);
+	private static final Logger log = Tracing.createLoggerFor(TequilaApi.class);
 	
 	private final String endPoint;
 	

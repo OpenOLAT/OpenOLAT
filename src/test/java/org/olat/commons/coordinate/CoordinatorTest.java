@@ -35,6 +35,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
@@ -43,7 +44,6 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class CoordinatorTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(CoordinatorTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CoordinatorTest.class);
 
 	
 	@Autowired

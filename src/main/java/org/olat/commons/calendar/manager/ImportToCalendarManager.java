@@ -40,7 +40,7 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -64,7 +64,7 @@ import org.springframework.stereotype.Service;
 public class ImportToCalendarManager {
 
 	private AtomicInteger counter = new AtomicInteger(0);
-	private static final OLog log = Tracing.createLoggerFor(ImportToCalendarManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ImportToCalendarManager.class);
 
 	@Autowired
 	private BaseSecurity securityManager;
@@ -83,7 +83,7 @@ public class ImportToCalendarManager {
 	 */
 	public boolean updateCalendarIn() {
 		List<ImportedToCalendar> importedToCalendars = importedToCalendarDao.getImportedToCalendars();
-		log.audit("Begin to update " + importedToCalendars.size() + " calendars.");
+		log.info(Tracing.M_AUDIT, "Begin to update " + importedToCalendars.size() + " calendars.");
 		
 		//make a full check only every 10 runs
 		boolean check = counter.incrementAndGet() % 10 == 0;
@@ -97,15 +97,15 @@ public class ImportToCalendarManager {
 				try(InputStream in = new URL(importUrl).openStream()) {
 					Kalendar cal = calendarManager.getCalendar(type, id);
 					if(calendarManager.synchronizeCalendarFrom(in, importUrl, cal)) {
-						log.audit("Updated successfully calendar: " + type + " / " + id);
+						log.info(Tracing.M_AUDIT, "Updated successfully calendar: " + type + " / " + id);
 					} else {
-						log.audit("Failed to update calendar: " + type + " / " + id);
+						log.info(Tracing.M_AUDIT, "Failed to update calendar: " + type + " / " + id);
 					}
 				} catch(Exception ex) {
 					log.warn("Cannot synchronize calendar (" + importedToCalendar.getKey() + ") from url: " + importUrl, ex);
 				}
 			} else {
-				log.audit("Delete imported calendar because of missing resource: " + type + " " + id + " with URL: " + importUrl);
+				log.info(Tracing.M_AUDIT, "Delete imported calendar because of missing resource: " + type + " " + id + " with URL: " + importUrl);
 				deleteImportedCalendars(type, id);
 			}
 			

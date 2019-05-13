@@ -40,7 +40,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -81,7 +81,7 @@ import org.olat.resource.references.ReferenceManager;
  */
 // Loads of parameters are unused
 public class PortfolioHandler implements RepositoryHandler {
-	private static final OLog log = Tracing.createLoggerFor(PortfolioHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(PortfolioHandler.class);
 	
 	@Override
 	public boolean supportCreate() {

@@ -88,7 +88,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -102,7 +102,7 @@ import org.olat.core.util.component.ComponentVisitor;
  */
 public class Window extends AbstractComponent implements CustomCSSDelegate {
 	
-	private static final OLog log = Tracing.createLoggerFor(Window.class);
+	private static final Logger log = Tracing.createLoggerFor(Window.class);
 	private static final DispatchResult NO_DISPATCHRESULT = new DispatchResult(false, false, false);
 	
 	private static final String LOG_SEPARATOR = "^$^";
@@ -331,7 +331,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		boolean incTimestamp = false;//!GUIInterna.isLoadPerformanceMode();
 		
 		MediaResource mr = null;
-		final boolean isDebugLog = log.isDebug();
+		final boolean isDebugLog = log.isDebugEnabled();
 		StringBuilder debugMsg = null;
 		long debug_start = 0;
 		if (isDebugLog) {
@@ -937,7 +937,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		// more accurately, the synchronized is needed when other classes than window call this method.
 		synchronized(this) {
 			Command com = null;
-			boolean isDebugLog = log.isDebug();
+			boolean isDebugLog = log.isDebugEnabled();
 			StringBuilder debugMsg = null;
 			long start = 0;
 			if (isDebugLog) {

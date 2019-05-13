@@ -27,7 +27,7 @@ import java.util.Locale;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -52,7 +52,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class PFUserDataManager implements UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(PFUserDataManager.class);
+	private static final Logger log = Tracing.createLoggerFor(PFUserDataManager.class);
 	
 	@Autowired
 	private DB dbInstance;

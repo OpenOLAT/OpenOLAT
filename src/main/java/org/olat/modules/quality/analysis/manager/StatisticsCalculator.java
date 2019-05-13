@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.RubricRating;
@@ -59,7 +59,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class StatisticsCalculator {
 
-	private static final OLog log = Tracing.createLoggerFor(StatisticsCalculator.class);
+	private static final Logger log = Tracing.createLoggerFor(StatisticsCalculator.class);
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;

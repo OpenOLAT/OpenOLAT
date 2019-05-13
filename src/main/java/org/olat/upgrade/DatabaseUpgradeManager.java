@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -57,7 +57,7 @@ import org.springframework.core.io.Resource;
  */
 public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 	
-	private static final OLog log = Tracing.createLoggerFor(DatabaseUpgradeManager.class);
+	private static final Logger log = Tracing.createLoggerFor(DatabaseUpgradeManager.class);
 
 	private String dbVendor;
 	private boolean autoUpgradeDatabase = true;
@@ -125,10 +125,10 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 			rs.close();
 			
 			if(!hasTable) {
-				log.audit("+------------------------------------------------------------------------------+");
-				log.audit("+ Setup database: starting...                                                  +");
-				log.audit("+ If it fails, do it manually by applying the content of the setupDatabase.sql.+");
-				log.audit("+------------------------------------------------------------------------------+");
+				log.info(Tracing.M_AUDIT, "+------------------------------------------------------------------------------+");
+				log.info(Tracing.M_AUDIT, "+ Setup database: starting...                                                  +");
+				log.info(Tracing.M_AUDIT, "+ If it fails, do it manually by applying the content of the setupDatabase.sql.+");
+				log.info(Tracing.M_AUDIT, "+------------------------------------------------------------------------------+");
 				loadAndExecuteSqlStatements(statement, "setupDatabase.sql", dialect);
 			}
 		} catch (SQLException e) {
@@ -150,12 +150,12 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 		try(Connection connection=getDataSource().getConnection();
 				Statement statement = connection.createStatement()) {
 			
-			log.audit("+--------------------------------------------------------------+");
-			log.audit("+ ... Pure database upgrade: starting alter DB statements ...  +");
-			log.audit("+ If it fails, do it manually by applying the content of the alter_X_to_Y.sql files.+");
-			log.audit("+ For each file you upgraded to add an entry like this to the [pathToOlat]/olatdata/system/installed_database_upgrades.xml: +");
-			log.audit("+ <entry><string>Database update</string><boolean>true</boolean></entry>+");
-			log.audit("+--------------------------------------------------------------+");
+			log.info(Tracing.M_AUDIT, "+--------------------------------------------------------------+");
+			log.info(Tracing.M_AUDIT, "+ ... Pure database upgrade: starting alter DB statements ...  +");
+			log.info(Tracing.M_AUDIT, "+ If it fails, do it manually by applying the content of the alter_X_to_Y.sql files.+");
+			log.info(Tracing.M_AUDIT, "+ For each file you upgraded to add an entry like this to the [pathToOlat]/olatdata/system/installed_database_upgrades.xml: +");
+			log.info(Tracing.M_AUDIT, "+ <entry><string>Database update</string><boolean>true</boolean></entry>+");
+			log.info(Tracing.M_AUDIT, "+--------------------------------------------------------------+");
 			
 			Iterator<OLATUpgrade> iter = upgrades.iterator();
 			OLATUpgrade upgrade = null;
@@ -173,7 +173,7 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 						loadAndExecuteSqlStatements(statement, alterDbStatementsFilename, dialect);
 						uhd.setBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE, true);
 						setUpgradesHistory(uhd, upgrade.getVersion());
-						log.audit("Successfully executed alter DB statements for Version::" + upgrade.getVersion());
+						log.info(Tracing.M_AUDIT, "Successfully executed alter DB statements for Version::" + upgrade.getVersion());
 					}
 				}
 			}

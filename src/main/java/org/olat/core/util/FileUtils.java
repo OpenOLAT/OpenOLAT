@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
 
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -65,7 +65,7 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
  */
 public class FileUtils {
 
-	private static final OLog log = Tracing.createLoggerFor(FileUtils.class);
+	private static final Logger log = Tracing.createLoggerFor(FileUtils.class);
 	
 	// the following is for cleaning up file I/O stuff ... so it works fine on NFS
 	public static final int BSIZE = 8*1024;
@@ -941,7 +941,7 @@ public class FileUtils {
 		int c;
 		long tot = 0;
 		long s = 0;
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		if(debug) {
 			s = System.nanoTime();
 		}

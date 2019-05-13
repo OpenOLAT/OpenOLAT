@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
@@ -53,7 +53,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class DrawingAssessmentItemBuilder extends LobAssessmentItemBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(DrawingAssessmentItemBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(DrawingAssessmentItemBuilder.class);
 
 	private DrawingInteraction drawingInteraction;
 	

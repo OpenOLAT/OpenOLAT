@@ -22,23 +22,20 @@ package org.olat.core.util.i18n.devtools;
 import java.io.File;
 import java.util.Locale;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.FileVisitor;
 import org.olat.core.util.i18n.I18nManager;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for MoveLanguagesVisitor
- * 
  * <P>
  * Initial Date: 19.11.2008 <br>
  * 
  * @author Roman Haag, frentix GmbH, roman.haag@frentix.com
  */
 public class MoveLanguagesVisitor implements FileVisitor {
-	private OLog log = Tracing.createLoggerFor(MoveLanguagesVisitor.class);
+	private static final Logger log = Tracing.createLoggerFor(MoveLanguagesVisitor.class);
 	private String basePath;
 	private File targetDir;
 	private Locale moveLanguage;
@@ -57,9 +54,7 @@ public class MoveLanguagesVisitor implements FileVisitor {
 		this.doMoveNoCopy = doMoveNoCopy;
 	}
 
-	/**
-	 * @see org.olat.core.util.FileVisitor#visit(java.io.File)
-	 */
+	@Override
 	public void visit(File file) {
 		if (file.isFile()) { // regular file
 			String toBeChechedkFilName = file.getName();

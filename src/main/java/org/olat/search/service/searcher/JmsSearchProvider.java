@@ -51,7 +51,7 @@ import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.search.QueryException;
 import org.olat.search.SearchResults;
@@ -69,7 +69,7 @@ import org.olat.search.ServiceNotAvailableException;
  */
 public class JmsSearchProvider implements MessageListener {
 	
-	private static final OLog log = Tracing.createLoggerFor(JmsSearchProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(JmsSearchProvider.class);
 	private SearchService searchService;
 	private ConnectionFactory connectionFactory;
 	private Connection connection;
@@ -159,7 +159,7 @@ public class JmsSearchProvider implements MessageListener {
 		
 	@Override
 	public void onMessage(Message message) {
-		if ( log.isDebug() ) {
+		if ( log.isDebugEnabled() ) {
 			log.debug("onMessage, message=" + message);
 		}
 		try{
@@ -212,7 +212,7 @@ public class JmsSearchProvider implements MessageListener {
 	}
 
 	void onSearchMessage(SearchRequest searchRequest, String correlationID, Destination replyTo) {
-		if ( log.isDebug() ) {
+		if ( log.isDebugEnabled() ) {
 			log.debug("onSearchMessage, correlationID=" + correlationID + " , replyTo=" + replyTo + " , searchRequest=" + searchRequest);
 		}
 		Session searchSession = null;
@@ -222,7 +222,7 @@ public class JmsSearchProvider implements MessageListener {
 			SearchResults searchResults = doSearch(searchRequest.getQueryString(), searchRequest.getCondQueries(),
 					identity, searchRequest.getRoles(), searchRequest.getLocale(),
 					searchRequest.getFirstResult(), searchRequest.getMaxResults(), searchRequest.isDoHighlighting());
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("searchResults: " + searchResults.size());
 			}
 			if (searchResults != null) {
@@ -231,7 +231,7 @@ public class JmsSearchProvider implements MessageListener {
 				responseMessage.setJMSCorrelationID(correlationID);
 				responseMessage.setStringProperty(SearchClientProxy.JMS_RESPONSE_STATUS_PROPERTY_NAME, SearchClientProxy.JMS_RESPONSE_STATUS_OK);
 				MessageProducer producer = searchSession.createProducer(replyTo);
-				if ( log.isDebug() ) {
+				if ( log.isDebugEnabled() ) {
 					log.debug("onSearchMessage, send ResponseMessage=" + responseMessage + " to replyTo=" + replyTo);
 				}
 				producer.send(responseMessage);
@@ -263,7 +263,7 @@ public class JmsSearchProvider implements MessageListener {
 			responseMessage.setJMSCorrelationID(correlationID);
 			responseMessage.setStringProperty(SearchClientProxy.JMS_RESPONSE_STATUS_PROPERTY_NAME, jmsResponseStatus);
 			MessageProducer producer = sendSession.createProducer(replyTo);
-			if ( log.isDebug() ) {
+			if ( log.isDebugEnabled() ) {
 				log.debug("onSearchMessage, send ResponseMessage=" + responseMessage + " to replyTo=" + replyTo);
 			}
 			producer.send(responseMessage);

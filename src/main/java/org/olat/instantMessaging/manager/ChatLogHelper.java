@@ -31,12 +31,12 @@ import java.util.Locale;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.io.IOUtils;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -61,7 +61,7 @@ import com.thoughtworks.xstream.XStream;
  */
 @Service
 public class ChatLogHelper {
-	private static final OLog log = Tracing.createLoggerFor(ChatLogHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(ChatLogHelper.class);
 	
 	private XStream logXStream;
 	private static final int BATCH_SIZE = 100;

@@ -393,7 +393,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	}
 	
 	private void doAppealAudit(LectureBlockAndRollCall row, String message) {
-		logAudit("Appeal send for lecture block: " + row.getLectureBlockTitle() + " (" + row.getLectureBlockRef().getKey() + ")", null);
+		logAudit("Appeal send for lecture block: " + row.getLectureBlockTitle() + " (" + row.getLectureBlockRef().getKey() + ")");
 		
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row.getLectureBlockRef());
 		LectureBlockRollCall rollCall = lectureService.getRollCall(row.getRollCallRef());

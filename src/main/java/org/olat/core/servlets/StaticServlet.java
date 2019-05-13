@@ -36,7 +36,7 @@ import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -51,7 +51,7 @@ import org.olat.core.util.WebappHelper;
 public class StaticServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -2430002903299685192L;
-	private static final OLog log = Tracing.createLoggerFor(StaticServlet.class);
+	private static final Logger log = Tracing.createLoggerFor(StaticServlet.class);
 	private final long CACHE_DURATION_IN_SECOND = 60 * 60 * 24 * 8; // 8 days
 	private final long CACHE_DURATION_IN_MS = CACHE_DURATION_IN_SECOND  * 1000;
 
@@ -171,7 +171,7 @@ public class StaticServlet extends HttpServlet {
 					}
 				}
 				// log as error, file exists but wrongly mapped
-				log.warn("File exists but not mapped using version - use StaticMediaDispatch methods to create URL of static files! invalid URI::" + request.getRequestURI(), null);			
+				log.warn("File exists but not mapped using version - use StaticMediaDispatch methods to create URL of static files! invalid URI::" + request.getRequestURI());			
 			}
 		}
 		

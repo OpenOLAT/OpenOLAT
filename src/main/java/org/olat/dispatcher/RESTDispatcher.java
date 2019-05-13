@@ -45,7 +45,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
@@ -79,7 +79,7 @@ import org.olat.restapi.security.RestSecurityHelper;
  */
 public class RESTDispatcher implements Dispatcher {
 	
-	private static final OLog log = Tracing.createLoggerFor(RESTDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(RESTDispatcher.class);
 	
 	private LoginModule loginModule;
 	private RestSecurityBean restSecurityBean;
@@ -141,7 +141,7 @@ public class RESTDispatcher implements Dispatcher {
 			return;
 		}
 		String businessPath = BusinessControlFactory.getInstance().formatFromSplittedURI(split);
-		if(log.isDebug()) {
+		if(log.isDebugEnabled()) {
 			log.debug("REQUEST URI: " + origUri);
 			log.debug("REQUEST PREFIX " + restPart);
 			log.debug("calc buspath " + businessPath);
@@ -179,7 +179,7 @@ public class RESTDispatcher implements Dispatcher {
 			//or authors copy-pasted links to the content.
 			//showing redscreens for non valid URL is wrong instead
 			//a 404 message must be shown -> e.g. robots correct their links.
-			if(log.isDebug()){
+			if(log.isDebugEnabled()){
 				log.debug("Bad Request "+request.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
@@ -192,7 +192,7 @@ public class RESTDispatcher implements Dispatcher {
 			// Lookup identity that is associated with this token
 			Identity restIdentity = restSecurityBean.getIdentity(xOlatToken);			
 			// 
-			if(log.isDebug()) {
+			if(log.isDebugEnabled()) {
 				if (restIdentity == null)
 					log.debug("Found SSO token " + RestSecurityHelper.SEC_TOKEN + " in url, but token is not bound to an identity");
 				else

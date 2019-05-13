@@ -28,6 +28,7 @@ package org.olat.search.service.document;
 import java.util.Date;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.jamwiki.DataHandler;
 import org.jamwiki.model.Topic;
@@ -39,7 +40,6 @@ import org.jamwiki.parser.jflex.JFlexParser;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.wiki.WikiPage;
@@ -53,7 +53,7 @@ import org.olat.search.service.SearchResourceContext;
 public class WikiPageDocument extends OlatDocument {
 
 	private static final long serialVersionUID = -1210392466207248182L;
-	private static final OLog log = Tracing.createLoggerFor(WikiPageDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(WikiPageDocument.class);
 	private static final DummyDataHandler DUMMY_DATA_HANDLER = new DummyDataHandler();
 	
 
@@ -81,7 +81,7 @@ public class WikiPageDocument extends OlatDocument {
 		wikiPageDocument.setParentContextType(searchResourceContext.getParentContextType());
 		wikiPageDocument.setParentContextName(searchResourceContext.getParentContextName());
 		
-		if (log.isDebug()) log.debug(wikiPageDocument.toString());
+		if (log.isDebugEnabled()) log.debug(wikiPageDocument.toString());
 		return wikiPageDocument.getLuceneDocument();
 	}
 	

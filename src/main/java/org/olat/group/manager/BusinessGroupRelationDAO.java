@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -37,7 +38,6 @@ import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.manager.AssessmentModeDAO;
@@ -62,7 +62,7 @@ import org.springframework.stereotype.Service;
 @Service("businessGroupRelationDao")
 public class BusinessGroupRelationDAO {
 	
-	private static final OLog log = Tracing.createLoggerFor(BusinessGroupRelationDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(BusinessGroupRelationDAO.class);
 
 	@Autowired
 	private DB dbInstance;

@@ -25,7 +25,7 @@ package org.olat.modules.scorm.server.beans;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.ISettingsHandler;
 import org.olat.modules.scorm.manager.ScormManager;
@@ -41,7 +41,7 @@ import org.olat.modules.scorm.server.servermodels.SequencerModel;
  */
 public class LMSDataHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(LMSDataHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(LMSDataHandler.class);
 	
 	protected ScormManager theCourse;
 
@@ -252,7 +252,7 @@ public class LMSDataHandler {
 			} else {
 				cmiComponents[i][1] = "";
 			}
-			if (log.isDebug()){
+			if (log.isDebugEnabled()){
 				log.debug("name: " + cmiComponents[i][0] + "   value:" + cmiComponents[i][1]);
 			}
 		}

@@ -35,7 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityGeneratorProviderReferenceable;
@@ -65,7 +65,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class QualityGeneratorServiceImpl implements QualityGeneratorService {
 
-	private static final OLog log = Tracing.createLoggerFor(QualityGeneratorServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(QualityGeneratorServiceImpl.class);
 	
 	@Autowired
 	private QualityGeneratorDAO generatorDao;

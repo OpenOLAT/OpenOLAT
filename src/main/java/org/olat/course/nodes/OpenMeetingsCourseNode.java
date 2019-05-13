@@ -28,7 +28,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -58,7 +58,7 @@ import org.olat.repository.RepositoryEntry;
 public class OpenMeetingsCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = 8680935159748506305L;
-	private static final OLog log = Tracing.createLoggerFor(OpenMeetingsCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenMeetingsCourseNode.class);
 
 	private static final String TYPE = "openmeetings";
 

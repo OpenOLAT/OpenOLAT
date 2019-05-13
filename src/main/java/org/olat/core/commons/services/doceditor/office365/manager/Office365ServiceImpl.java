@@ -45,7 +45,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.control.Event;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -70,7 +70,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class Office365ServiceImpl implements Office365Service, GenericEventListener {
 
-	private static final OLog log = Tracing.createLoggerFor(Office365ServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(Office365ServiceImpl.class);
 
 	private static final String LOCK_APP = "office365";
 	

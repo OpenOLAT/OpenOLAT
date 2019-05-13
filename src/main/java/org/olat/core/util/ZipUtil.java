@@ -55,7 +55,7 @@ import org.olat.core.commons.services.vfs.manager.MetaInfoReader;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.io.ShieldOutputStream;
@@ -83,7 +83,7 @@ public class ZipUtil {
 
 	private static final String DIR_NAME__MACOSX = "__MACOSX/";
 	
-	private static final OLog log = Tracing.createLoggerFor(ZipUtil.class);
+	private static final Logger log = Tracing.createLoggerFor(ZipUtil.class);
 	
 	public static String concat(String dirName, String name) {
 		if(StringHelper.containsNonWhitespace(dirName)) {
@@ -212,7 +212,7 @@ public class ZipUtil {
 							// create subdirs
 							createIn = getAllSubdirs(targetDir, name.substring(0, dirSepIndex), identity, true);
 							if (createIn == null) {
-								if (log.isDebug()) log.debug("Error creating directory structure for zip entry: "
+								if (log.isDebugEnabled()) log.debug("Error creating directory structure for zip entry: "
 										+ oEntr.getName());
 								return false;
 							}
@@ -339,7 +339,7 @@ public class ZipUtil {
 							// create subdirs
 							createIn = getAllSubdirs(targetDir, name.substring(0, dirSepIndex), identity, true);
 							if (createIn == null) {
-								if (log.isDebug()) log.debug("Error creating directory structure for zip entry: "
+								if (log.isDebugEnabled()) log.debug("Error creating directory structure for zip entry: "
 										+ oEntr.getName());
 								return false;
 							}

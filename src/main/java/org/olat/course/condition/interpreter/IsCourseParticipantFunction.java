@@ -22,7 +22,7 @@
 package org.olat.course.condition.interpreter;
 
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -38,7 +38,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class IsCourseParticipantFunction extends AbstractFunction {
-	private static final OLog log = Tracing.createLoggerFor(IsCourseParticipantFunction.class);
+	private static final Logger log = Tracing.createLoggerFor(IsCourseParticipantFunction.class);
 	
 	public static final String name = "isCourseParticipant";
 	
@@ -72,7 +72,7 @@ public class IsCourseParticipantFunction extends AbstractFunction {
 		} else {
 			isParticipant = getUserCourseEnv().isParticipant();
 		}
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			Identity ident = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 			log.debug("identity "+ident.getKey()+", coursecoach:"+isParticipant+", in course "+getUserCourseEnv().getCourseEnvironment().getCourseResourceableId());
 		}

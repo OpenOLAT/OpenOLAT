@@ -122,7 +122,7 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 				for (String deleteLangPack : deleteLangPackSelection.getSelectedKeys()) {
 					File file = new File(I18nModule.LANG_PACKS_DIRECTORY, deleteLangPack);
 					if (file.exists()) file.delete();
-					logAudit("Deleted language pack::" + deleteLangPack, null);
+					logAudit("Deleted language pack::" + deleteLangPack);
 				}
 				// Reset i18n system
 				i18nModule.reInitializeAndFlushCache();

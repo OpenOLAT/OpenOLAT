@@ -45,7 +45,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -117,7 +117,7 @@ import org.springframework.stereotype.Service;
 @Service("repositoryService")
 public class RepositoryServiceImpl implements RepositoryService, OrganisationDataDeletable {
 
-	private static final OLog log = Tracing.createLoggerFor(RepositoryServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryServiceImpl.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -495,7 +495,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	public ErrorList deletePermanently(RepositoryEntryRef entryRef, Identity identity, Roles roles, Locale locale) {
 		ErrorList errors = new ErrorList();
 
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 
 		// invoke handler delete callback
 		RepositoryEntry entry = repositoryEntryDAO.loadByKey(entryRef.getKey());

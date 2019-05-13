@@ -21,8 +21,8 @@ package org.olat.group;
 
 import java.util.Arrays;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -49,7 +49,7 @@ public enum BusinessGroupManagedFlag {
 	
 	
 	private BusinessGroupManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(BusinessGroupManagedFlag.class);
+	private static final Logger log = Tracing.createLoggerFor(BusinessGroupManagedFlag.class);
 	public static final BusinessGroupManagedFlag[] EMPTY_ARRAY = new BusinessGroupManagedFlag[0];
 	private static BusinessGroupModule groupModule;
 	

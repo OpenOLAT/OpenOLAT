@@ -65,7 +65,7 @@ import org.olat.core.commons.services.notifications.restapi.vo.PublisherVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionInfoVO;
 import org.olat.core.commons.services.notifications.restapi.vo.SubscriptionListItemVO;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
@@ -102,7 +102,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class NotificationsTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(NotificationsTest.class);
+	private static final Logger log = Tracing.createLoggerFor(NotificationsTest.class);
 
 	private static Identity id3;
 	private static Identity userSubscriberId;

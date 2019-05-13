@@ -41,7 +41,7 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -63,7 +63,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UserModule extends AbstractSpringModule {
 
-	private static OLog log = Tracing.createLoggerFor(UserModule.class);
+	private static final Logger log = Tracing.createLoggerFor(UserModule.class);
 	
 	private static final String USER_EMAIL_MANDATORY = "userEmailMandatory";
 	private static final String USER_EMAIL_UNIQUE = "userEmailUnique";
@@ -202,7 +202,7 @@ public class UserModule extends AbstractSpringModule {
 		login = login.toLowerCase();
 		for (String regexp: getLoginBlacklist()) {
 			if (login.matches(regexp)) {
-				log.audit("Blacklist entry match for login '" + login + "' with regexp '" + regexp + "'.");
+				log.info(Tracing.M_AUDIT, "Blacklist entry match for login '" + login + "' with regexp '" + regexp + "'.");
 				return true;
 			}
 		}

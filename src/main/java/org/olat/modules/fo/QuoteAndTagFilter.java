@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.StringReader;
 
 import org.cyberneko.html.parsers.DOMParser;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
 
 public class QuoteAndTagFilter implements Filter {
 	
-	private static final OLog log = Tracing.createLoggerFor(QuoteAndTagFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(QuoteAndTagFilter.class);
 
 	/**
 	 * @see org.olat.core.util.filter.Filter#filter(java.lang.String)

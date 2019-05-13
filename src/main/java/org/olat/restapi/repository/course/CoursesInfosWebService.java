@@ -42,13 +42,13 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
@@ -86,7 +86,7 @@ import org.springframework.stereotype.Component;
 @Path("repo/courses/infos")
 public class CoursesInfosWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(CoursesInfosWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(CoursesInfosWebService.class);
 	
 	/**
 	 * Get courses informations viewable by the authenticated user
@@ -210,8 +210,8 @@ public class CoursesInfosWebService {
 		if(result.isAccessible()) {
 			try {
 				final ICourse course = CourseFactory.loadCourse(entry);
-				final List<FolderVO> folders = new ArrayList<FolderVO>();
-				final List<ForumVO> forums = new ArrayList<ForumVO>();
+				final List<FolderVO> folders = new ArrayList<>();
+				final List<ForumVO> forums = new ArrayList<>();
 				final IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
 
 				new CourseTreeVisitor(course, ienv).visit(new Visitor() {

@@ -43,7 +43,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -62,7 +62,7 @@ import org.springframework.stereotype.Component;
 @Path("users/{username}/auth")
 public class UserAuthenticationWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserAuthenticationWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(UserAuthenticationWebService.class);
 	
 	private static final String VERSION = "1.0";
 	
@@ -169,7 +169,7 @@ public class UserAuthenticationWebService {
 		if(authentication == null) {
 			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
-		log.audit("New authentication created for " + authUsername + " with provider " + provider);
+		log.info(Tracing.M_AUDIT, "New authentication created for " + authUsername + " with provider " + provider);
 		AuthenticationVO savedAuth = ObjectFactory.get(authentication, true);
 		return Response.ok(savedAuth).build();
 	}

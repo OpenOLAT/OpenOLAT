@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.lucene.document.Document;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -50,7 +50,7 @@ import org.olat.search.service.indexer.repository.course.CourseNodeIndexer;
  */
 public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements CourseNodeIndexer {
 
-	private static final OLog log = Tracing.createLoggerFor(FeedRepositoryIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(FeedRepositoryIndexer.class);
 
 	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, Object parentObject, OlatFullIndexer indexer)
@@ -76,7 +76,7 @@ public abstract class FeedCourseNodeIndexer extends DefaultIndexer implements Co
 			String repoEntryName = "*name not available*";
 			try {
 				repoEntryName = repositoryEntry.getDisplayname();
-				if (log.isDebug()) {
+				if (log.isDebugEnabled()) {
 					log.info("Indexing: " + repoEntryName);
 				}
 				Feed feed = FeedManager.getInstance().loadFeed(repositoryEntry.getOlatResource());

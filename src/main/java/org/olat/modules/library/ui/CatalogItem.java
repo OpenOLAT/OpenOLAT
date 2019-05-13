@@ -24,13 +24,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsAndRatingsController;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.library.LibraryManager;
@@ -45,7 +45,7 @@ import org.olat.modules.library.LibraryManager;
  * @author gwassmann
  */
 public class CatalogItem {
-	private static final OLog log = Tracing.createLoggerFor(CatalogItem.class);
+	private static final Logger log = Tracing.createLoggerFor(CatalogItem.class);
 	
 	private final VFSMetadata metadata;
 	

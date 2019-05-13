@@ -27,7 +27,7 @@ import java.util.List;
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.CoreSpringFactory;
@@ -71,10 +71,8 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	private Link syncStartLink;
 	private Link deletStartLink;
 	private StepsMainRunController deleteStepController;
-	private boolean hasIdentitiesToDelete;
 	private boolean hasIdentitiesToDeleteAfterRun;
 	private Integer amountUsersToDelete;
-	private List<Identity> identitiesToDelete;
 	private LDAPLoginManager ldapLoginManager;
 
 	private UserSearchController userSearchCtrl;
@@ -94,9 +92,6 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 		updateLastSyncDateInVC();
 		// Create start LDAP sync link
 		syncStartLink = LinkFactory.createButton("sync.button.start", ldapAdminVC, this);
-		// sync one user only
-//		syncOneUserLink = LinkFactory.createButton("one.user.sync.button.start", ldapAdminVC, this);
-		
 		// remove olat-fallback authentications for ldap-users, see FXOLAT-284
 		if (ldapLoginModule.isCacheLDAPPwdAsOLATPwdOnLogin()){
 			removeFallBackAuthsLink = LinkFactory.createButton("remove.fallback.auth", ldapAdminVC, this);
@@ -104,19 +99,15 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 		// Create start delete User link
 		deletStartLink = LinkFactory.createButton("delete.button.start", ldapAdminVC, this);
 		// Create real-time log viewer
-		LogRealTimeViewerController logViewController = new LogRealTimeViewerController(ureq, control, "org.olat.ldap", Level.DEBUG, true);
+		LogRealTimeViewerController logViewController = new LogRealTimeViewerController(ureq, control, "org.olat.ldap", Level.DEBUG, false);
 		listenTo(logViewController);
 		ldapAdminVC.put("logViewController", logViewController.getInitialComponent());
-		//
-		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, LDAPLoginManager.ldapSyncLockOres);
 		
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, null, LDAPLoginManager.ldapSyncLockOres);
 		
 		putInitialPanel(ldapAdminVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		// Controller autodisposed by basic controller
@@ -168,7 +159,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 					return;
 				}
 				// get deleted users
-				identitiesToDelete = ldapLoginManager.getIdentitysDeletedInLdap(ctx);
+				List<Identity> identitiesToDelete = ldapLoginManager.getIdentitysDeletedInLdap(ctx);
 				try {
 					ctx.close();
 				} catch (NamingException e) {
@@ -184,6 +175,7 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 					}
 				}
 				
+				boolean hasIdentitiesToDelete;
 				if (identitiesToDelete != null && identitiesToDelete.size() != 0) {
 					hasIdentitiesToDelete = true;
 					/*
@@ -275,10 +267,10 @@ public class LDAPAdminController extends BasicController implements GenericEvent
 	void syncTaskFinished(boolean success, LDAPError errors) {
 		if (success) {
 			showWarning("admin.synchronize.finished.success");
-			logInfo("LDAP user synchronize job finished successfully", null);
+			logInfo("LDAP user synchronize job finished successfully");
 		} else {
 			showError("admin.synchronize.finished.failure", errors.get());
-			logInfo("LDAP user synchronize job finished with errors::" + errors.get(), null);
+			logInfo("LDAP user synchronize job finished with errors::" + errors.get());
 		}
 		// re-enable start link
 		syncStartLink.setEnabled(true);

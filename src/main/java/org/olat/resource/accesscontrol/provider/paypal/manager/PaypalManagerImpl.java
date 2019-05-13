@@ -37,7 +37,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
@@ -104,7 +104,7 @@ import com.paypal.svcs.types.common.ResponseEnvelope;
 @Service("paypalManager")
 public class PaypalManagerImpl  implements PaypalManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(PaypalManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(PaypalManagerImpl.class);
 	
 	private static final String X_PAYPAL_SECURITY_USERID = "acct1.UserName";
 	private static final String X_PAYPAL_SECURITY_PASSWORD = "acct1.Password";
@@ -323,11 +323,11 @@ public class PaypalManagerImpl  implements PaypalManager {
 		PaypalTransaction trx = loadTransactionByUUID(uuid);
 		
 		if(uuid.equals(trx.getSecureSuccessUUID())) {
-			log.audit("Paypal transaction success: " + trx);
+			log.info(Tracing.M_AUDIT, "Paypal transaction success: " + trx);
 			completeTransaction(trx, null);
 		} else if (uuid.equals(trx.getSecureCancelUUID())) {
 			//cancel -> return to the access panel
-			log.audit("Paypal transaction canceled by user: " + trx);
+			log.info(Tracing.M_AUDIT, "Paypal transaction canceled by user: " + trx);
 			cancelTransaction(trx);
 		}
 	}
@@ -350,11 +350,11 @@ public class PaypalManagerImpl  implements PaypalManager {
 			if(trx != null) {
 				completeTransaction(trx, values);
 			} else {
-				log.error("Paypal IPN Transaction not found: " + values, null);
+				log.error("Paypal IPN Transaction not found: " + values);
 			}
 		} else {
 			String invoiceId = values.get("transaction[0].invoiceId");
-			log.error("Paypal IPN Transaction not verified: " + invoiceId + " raw values: " + values, null);
+			log.error("Paypal IPN Transaction not verified: " + invoiceId + " raw values: " + values);
 		}
 	}
 	
@@ -377,7 +377,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 					ResourceReservation reservation = acService.getReservation(identity, resource);
 					if(reservation != null) {
 						acService.removeReservation(identity, identity, reservation);
-						log.audit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
+						log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: " + reservation + " to " + identity);
 					}
 				}
 			}
@@ -439,18 +439,18 @@ public class PaypalManagerImpl  implements PaypalManager {
 					transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 					for(OrderLine line:part.getOrderLines()) {
 						acService.denyAccesToResource(identity, line.getOffer());
-						log.audit("Paypal payed access revoked for: " + buildLogMessage(line, method) + " to " + identity, null);
+						log.info(Tracing.M_AUDIT, "Paypal payed access revoked for: " + buildLogMessage(line, method) + " to " + identity);
 
 						ResourceReservation reservation = reservationDao.loadReservation(identity, line.getOffer().getResource());
 						if(reservation != null) {
 							acService.removeReservation(identity, identity, reservation);
-							log.audit("Remove reservation after cancellation for: " + reservation + " to " + identity, null);
+							log.info(Tracing.M_AUDIT, "Remove reservation after cancellation for: " + reservation + " to " + identity);
 						}
 					}
 				}
 			}
 		} else {
-			log.error("Order not in sync with PaypalTransaction", null);
+			log.error("Order not in sync with PaypalTransaction");
 		}
 	}
 	
@@ -473,17 +473,17 @@ public class PaypalManagerImpl  implements PaypalManager {
 					transaction = transactionManager.save(transaction);
 					for(OrderLine line:part.getOrderLines()) {
 						if(acService.allowAccesToResource(identity, line.getOffer())) {
-							log.audit("Paypal payed access granted for: " + buildLogMessage(line, method) + " to " + identity, null);
+							log.info(Tracing.M_AUDIT, "Paypal payed access granted for: " + buildLogMessage(line, method) + " to " + identity);
 							transaction = transactionManager.update(transaction, AccessTransactionStatus.SUCCESS);
 						} else {
-							log.error("Paypal payed access refused for: " + buildLogMessage(line, method) + " to " + identity, null);
+							log.error("Paypal payed access refused for: " + buildLogMessage(line, method) + " to " + identity);
 							transaction = transactionManager.update(transaction, AccessTransactionStatus.ERROR);
 						}
 					}
 				}
 			}
 		} else {
-			log.error("Order not in sync with PaypalTransaction", null);
+			log.error("Order not in sync with PaypalTransaction");
 		}
 	}
 	
@@ -720,7 +720,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 		try {
 			AdaptivePaymentsService ap = new AdaptivePaymentsService(getAccountProperties());
 			payResp = ap.pay(payRequest);
-			log.audit("Paypal send PayRequest: " + (payResp == null ? "no response" : payResp.getPayKey() + "/" + payResp.getPaymentExecStatus()));
+			log.info(Tracing.M_AUDIT, "Paypal send PayRequest: " + (payResp == null ? "no response" : payResp.getPayKey() + "/" + payResp.getPaymentExecStatus()));
 			return payResp;
 		} catch (SSLConfigurationException e) {
 			log.error("Paypal error", e);

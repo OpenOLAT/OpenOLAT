@@ -74,7 +74,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.w3c.dom.Document;
@@ -92,7 +92,7 @@ import org.xml.sax.SAXException;
  */
 public class XMLDigitalSignatureUtil {
 	
-	private static final OLog log = Tracing.createLoggerFor(XMLDigitalSignatureUtil.class);
+	private static final Logger log = Tracing.createLoggerFor(XMLDigitalSignatureUtil.class);
 	
 	/**
 	 * Validate a XML file with a XML Digital Signature saved in an extenral file.

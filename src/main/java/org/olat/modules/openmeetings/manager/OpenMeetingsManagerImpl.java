@@ -47,7 +47,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -76,7 +76,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDeletable, DeletableGroupData {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenMeetingsManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenMeetingsManagerImpl.class);
 	
 	@Autowired
 	private OpenMeetingsDAO openMeetingsDao;
@@ -409,7 +409,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 
 			RoomServicePortType roomWs = getRoomWebService();
 			//OpenMeetings doc: false = close, true = open
-			log.audit("Room state changed (true = close, false = open): " + status);
+			log.info(Tracing.M_AUDIT, "Room state changed (true = close, false = open): " + status);
 			responseCode = roomWs.closeRoom(adminSID, room.getRoomId(), status);
 			if(responseCode < 0) {
 				throw new OpenMeetingsException(responseCode);
@@ -490,7 +490,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 					room.isAudioOnly(), false, true);
 			if(returned >= 0) {
 				room.setRoomId(returned);
-				log.audit("Room created");
+				log.info(Tracing.M_AUDIT, "Room created");
 				OpenMeetingsRoomReference ref = openMeetingsDao.createReference(group, ores, subIdentifier, room);
 				room.setReference(ref);
 				return room;
@@ -524,7 +524,7 @@ public class OpenMeetingsManagerImpl implements OpenMeetingsManager, UserDataDel
 					room.getName(), room.getType(), room.getComment(), room.getSize(), false, false, false, 0, room.isModerated(), 
 					false, room.isAudioOnly(), false, false, false, false, false, false, false);
 			if(returned >= 0) {
-				log.audit("Room updated");
+				log.info(Tracing.M_AUDIT, "Room updated");
 				openMeetingsDao.updateReference(group, ores, subIdentifier, room);
 				return room;
 			}

@@ -66,7 +66,7 @@ import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -118,7 +118,7 @@ import net.fortuna.ical4j.model.property.XProperty;
 @Service
 public class ICalFileCalendarManager implements CalendarManager, InitializingBean {
 
-	private static final OLog log = Tracing.createLoggerFor(ICalFileCalendarManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ICalFileCalendarManager.class);
 
 	private File fStorageBase;
 	// o_clusterOK by:cg 
@@ -254,7 +254,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	 */
 	@Override
 	public Calendar readCalendar(String type, String calendarID) {
-		if(log.isDebug()) {
+		if(log.isDebugEnabled()) {
 			log.debug("readCalendar from file, type=" + type + "  calendarID=" + calendarID);
 		}
 		

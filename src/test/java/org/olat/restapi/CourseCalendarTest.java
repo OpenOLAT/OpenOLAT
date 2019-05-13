@@ -49,6 +49,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -60,7 +61,6 @@ import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -82,7 +82,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CourseCalendarTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(CourseCalendarTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseCalendarTest.class);
 	
 	private Identity auth1;
 	private ICourse course1;

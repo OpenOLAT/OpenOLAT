@@ -29,7 +29,7 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.search.model.AbstractOlatDocument;
@@ -42,7 +42,7 @@ import org.olat.search.model.AbstractOlatDocument;
  */
 class GetDocumentByCallable implements Callable<Document> {
 	
-	private static final OLog log = Tracing.createLoggerFor(GetDocumentByCallable.class);
+	private static final Logger log = Tracing.createLoggerFor(GetDocumentByCallable.class);
 	
 	/**
 	 * To prevent flooding the logs with errors during a re-index

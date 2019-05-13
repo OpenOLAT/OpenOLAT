@@ -30,7 +30,7 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -83,17 +83,16 @@ import org.olat.core.logging.Tracing;
  */
 public class ThreadLocalUserActivityLogger {
 
-	private static final OLog log_ = Tracing.createLoggerFor(ThreadLocalUserActivityLogger.class);
+	private static final Logger log_ = Tracing.createLoggerFor(ThreadLocalUserActivityLogger.class);
 
 	/** THE ThreadLocal IUserActivityLogger - initialized by ThreadLocalUserActivityLoggerInstaller **/
-	final static ThreadLocal<IUserActivityLogger> userActivityLogger_ = 
-		new ThreadLocal<IUserActivityLogger>();
+	static final  ThreadLocal<IUserActivityLogger> userActivityLogger_ = new ThreadLocal<>();
 
 	/** package protected getter for the ThreadLocal userActivityLogger - assumes initialized and complains if not ! **/
 	static IUserActivityLogger getUserActivityLogger() {
 		IUserActivityLogger logger = userActivityLogger_.get();
 		if (logger==null) {
-			if(log_.isDebug()) {//only generate this exception in debug
+			if(log_.isDebugEnabled()) {//only generate this exception in debug
 				log_.warn("No UserActivityLogger set! Reinitializing now.", new Exception("stacktrace"));
 			}
 			return new UserActivityLoggerImpl();

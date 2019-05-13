@@ -27,7 +27,9 @@ package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -46,16 +48,18 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeIndexer {
+	
+	private static final Logger log = Tracing.createLoggerFor(BCCourseNodeIndexer.class);
 
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene have problems with '_' 
 	public static final String TYPE = "type.course.node.bc";
 
-	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.BCCourseNode";
+	private static final String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.BCCourseNode";
 	
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		if (isLogDebugEnabled()) logDebug("Index Briefcase..." );
+		log.debug("Index Briefcase..." );
 		
 		BCCourseNode bcNode = (BCCourseNode)courseNode;
 		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, bcNode, TYPE);

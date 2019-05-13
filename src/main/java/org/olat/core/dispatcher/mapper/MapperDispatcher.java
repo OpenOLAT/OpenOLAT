@@ -37,7 +37,8 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.logging.LogDelegator;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
 
@@ -56,7 +57,9 @@ import org.olat.core.util.session.UserSessionManager;
  * @author Felix Jost
  * @author Florian Gnägi, <a href="http://www.frentix.com">frentix GmbH</a>
  */
-public class MapperDispatcher extends LogDelegator implements Dispatcher {
+public class MapperDispatcher implements Dispatcher {
+
+	private static final Logger log = Tracing.createLoggerFor(MapperDispatcher.class);
 	
 	public MapperDispatcher() {
 		//
@@ -93,14 +96,14 @@ public class MapperDispatcher extends LogDelegator implements Dispatcher {
 			//an anonymous mapper?
 			m = CoreSpringFactory.getImpl(MapperService.class).getMapperById(null, smappath);
 			if(m == null) {
-				logWarn("Call to mapped resource, but mapper does not exist for path::" + smappath, null);
+				log.warn("Call to mapped resource, but mapper does not exist for path::" + smappath);
 				DispatcherModule.sendNotFound(pathInfo, hres);
 				return;
 			}
 		}
 		String mod = slashPos > 0 ? subInfo.substring(slashPos) : "";
 		if (mod.indexOf("..") != -1) {
-			logWarn("Illegal mapper path::" + mod + " contains '..'", null);
+			log.warn("Illegal mapper path::" + mod + " contains '..'");
 			DispatcherModule.sendForbidden(pathInfo, hres);
 			return;
 		}

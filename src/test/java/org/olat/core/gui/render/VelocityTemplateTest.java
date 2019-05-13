@@ -33,7 +33,7 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.gui.render.velocity.VelocityModule;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.SystemFileFilter;
 
@@ -45,7 +45,7 @@ import org.olat.core.util.io.SystemFileFilter;
  *
  */
 public class VelocityTemplateTest {
-	private static final OLog log = Tracing.createLoggerFor(VelocityTemplateTest.class);
+	private static final Logger log = Tracing.createLoggerFor(VelocityTemplateTest.class);
 
 	public static final String MAIN_JAVA = "src/main/java";
 	

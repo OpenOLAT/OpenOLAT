@@ -23,13 +23,13 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.user.AbstractUserPropertyHandler;
 import org.olat.user.UserManager;
@@ -49,7 +49,7 @@ import org.olat.user.propertyhandlers.ui.UsrPropHandlerCfgFactory;
  */
 public class YearPropertyHandler extends AbstractUserPropertyHandler {
 
-	OLog logger = Tracing.createLoggerFor(getClass());
+	private static final Logger logger = Tracing.createLoggerFor(YearPropertyHandler.class);
 
 	public static final String PROP_FROM = "yph.from";
 	public static final String PROP_TO = "yph.to";

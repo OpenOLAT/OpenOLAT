@@ -41,7 +41,7 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Disposable;
 import org.olat.core.gui.render.ValidationResult;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -57,7 +57,7 @@ import org.olat.core.util.vfs.VFSMediaMapper;
  */
 public class ImageComponent extends AbstractComponent implements Disposable {
 	private static final ComponentRenderer RENDERER = new ImageRenderer();
-	private static final OLog log = Tracing.createLoggerFor(ImageComponent.class);
+	private static final Logger log = Tracing.createLoggerFor(ImageComponent.class);
 	
 	private VFSLeaf media;
 	private String mimeType;

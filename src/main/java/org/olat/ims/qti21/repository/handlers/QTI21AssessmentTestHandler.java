@@ -45,7 +45,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.PathUtils;
@@ -105,7 +105,7 @@ import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 @Service
 public class QTI21AssessmentTestHandler extends FileHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21AssessmentTestHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21AssessmentTestHandler.class);
 	
 	@Autowired
 	private DB dbInstance;

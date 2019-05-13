@@ -40,7 +40,7 @@ import org.dom4j.io.XMLWriter;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XMLParser;
@@ -57,7 +57,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class TextMarkerManagerImpl implements TextMarkerManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(TextMarkerManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(TextMarkerManagerImpl.class);
 	public static final String XML_ROOT_ELEMENT = "textMarkerList";
 	public static final String XML_VERSION_ATTRIBUTE = "version";
 	public static final int VERSION = 1;

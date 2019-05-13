@@ -43,7 +43,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 
@@ -57,7 +57,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
  * @author Felix Jost
  */
 public class LocalFileImpl extends LocalImpl implements VFSLeaf {
-	private static final OLog log = Tracing.createLoggerFor(LocalFileImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(LocalFileImpl.class);
 
 	private LocalFileImpl() {
 		super(null, null);

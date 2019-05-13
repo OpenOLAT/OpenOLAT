@@ -50,7 +50,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.PathUtils;
@@ -96,7 +96,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EvaluationFormHandler implements RepositoryHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(EvaluationFormHandler.class);
 
 	@Autowired
 	private DB dbInstance;

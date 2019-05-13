@@ -34,7 +34,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -50,7 +50,7 @@ import org.olat.group.BusinessGroupService;
  * @author Christian Guretzki
  */
 public class ProjectBrokerExportGenerator {
-	private static OLog log = Tracing.createLoggerFor(ProjectBrokerExportGenerator.class);
+	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerExportGenerator.class);
   
   private static final String END_OF_LINE = "\t\n";
   private static final String TABLE_DELIMITER = "\t";

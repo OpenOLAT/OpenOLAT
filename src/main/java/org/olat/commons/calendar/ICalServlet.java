@@ -50,7 +50,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -93,7 +93,7 @@ import net.fortuna.ical4j.util.Strings;
 public class ICalServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -155266285395912535L;
-	private static final OLog log = Tracing.createLoggerFor(ICalServlet.class);
+	private static final Logger log = Tracing.createLoggerFor(ICalServlet.class);
 	
 	private static final int TTL_MINUTES = 15;
 	private static final ConcurrentMap<String,VTimeZone> outlookVTimeZones = new ConcurrentHashMap<>();
@@ -115,12 +115,12 @@ public class ICalServlet extends HttpServlet {
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		Tracing.setUreq(req);
+		Tracing.setHttpRequest(req);
 		try {
 			super.service(req, resp);
 		} finally {
 			//consume the userrequest.
-			Tracing.setUreq(null);
+			Tracing.clearHttpRequest();
 			I18nManager.remove18nInfoFromThread();
 			DBFactory.getInstance().commitAndCloseSession();
 		}
@@ -133,7 +133,7 @@ public class ICalServlet extends HttpServlet {
 		try {
 			//log need a session before the response is committed
 			request.getSession();
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("doGet pathInfo=" + requestUrl);
 			}
 			if ((requestUrl == null) || (requestUrl.equals(""))) {

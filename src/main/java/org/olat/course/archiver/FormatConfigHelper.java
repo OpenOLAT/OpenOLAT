@@ -20,7 +20,7 @@
 package org.olat.course.archiver;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
@@ -38,7 +38,7 @@ import com.thoughtworks.xstream.XStream;
 public class FormatConfigHelper {
 	
 	private static final String QTI_EXPORT_ITEM_FORMAT_CONFIG = "QTIExportItemFormatConfig";
-	private static final OLog log = Tracing.createLoggerFor(FormatConfigHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(FormatConfigHelper.class);
 	
 	private static XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {

@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service;
 @Service
 class QualityContextDAO {
 
-	private static final OLog log = Tracing.createLoggerFor(QualityContextDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(QualityContextDAO.class);
 
 	@Autowired
 	private DB dbInstance;

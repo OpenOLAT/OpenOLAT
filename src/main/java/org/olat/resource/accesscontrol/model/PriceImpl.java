@@ -25,7 +25,7 @@ import java.math.RoundingMode;
 
 import javax.persistence.Embeddable;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.resource.accesscontrol.Price;
 
@@ -42,7 +42,7 @@ import org.olat.resource.accesscontrol.Price;
 public class PriceImpl implements Price, Serializable {
 	
 	private static final long serialVersionUID = -757711036712675302L;
-	private static final OLog log = Tracing.createLoggerFor(PriceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(PriceImpl.class);
 	
 	private BigDecimal amount;
 	private String currencyCode;

@@ -74,7 +74,7 @@ import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -104,7 +104,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEventListener, InitializingBean {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSRepositoryServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSRepositoryServiceImpl.class);
 	private final OLATResourceable fileSizeSubscription = OresHelper.createOLATResourceableType("UpdateFileSizeAsync");
 	private static final String CANONICAL_ROOT_REL_PATH = "/";
 	

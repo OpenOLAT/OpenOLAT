@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 import javax.persistence.FlushModeType;
 import javax.persistence.Query;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -41,7 +42,6 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.UserEfficiencyStatement;
@@ -70,7 +70,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CoachingDAO {
 	
-	private static final OLog log = Tracing.createLoggerFor(CoachingDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(CoachingDAO.class);
 
 	@Autowired
 	private DB dbInstance;

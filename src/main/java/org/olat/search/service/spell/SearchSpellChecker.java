@@ -45,7 +45,7 @@ import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.search.SearchModule;
@@ -57,7 +57,7 @@ import org.olat.search.model.OlatDocument;
  * @author Christian Guretzki
  */
 public class SearchSpellChecker {
-	private static OLog log = Tracing.createLoggerFor(SearchSpellChecker.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchSpellChecker.class);
 		
 	private static final String CONTENT_PATH = "_content";
 	private static final String TITLE_PATH = "_title";
@@ -143,7 +143,7 @@ public class SearchSpellChecker {
 			try {
 				log.info("Start generating Spell-Index...");
 				long startSpellIndexTime = 0;
-				if (log.isDebug()) startSpellIndexTime = System.currentTimeMillis();
+				if (log.isDebugEnabled()) startSpellIndexTime = System.currentTimeMillis();
 				
 				Directory indexDir = FSDirectory.open(new File(indexPath).toPath());
 				indexReader = DirectoryReader.open(indexDir);
@@ -220,7 +220,7 @@ public class SearchSpellChecker {
 
 				spellChecker = new SpellChecker(spellIndexDirectory);
 				spellChecker.setAccuracy(0.7f);
-				if (log.isDebug())
+				if (log.isDebugEnabled())
 					log.debug("SpellIndex created in "
 							+ (System.currentTimeMillis() - startSpellIndexTime)
 							+ "ms");

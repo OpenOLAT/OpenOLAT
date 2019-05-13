@@ -28,6 +28,7 @@ import javax.xml.ws.handler.Handler;
 import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.handler.PortInfo;
 
+import org.apache.logging.log4j.Logger;
 import org.edu_sharing.webservices.authbyapp.AuthByApp;
 import org.edu_sharing.webservices.authbyapp.AuthByAppService;
 import org.edu_sharing.webservices.authbyapp.AuthenticationException;
@@ -37,7 +38,6 @@ import org.edu_sharing.webservices.usage2.Usage2;
 import org.edu_sharing.webservices.usage2.Usage2Exception_Exception;
 import org.edu_sharing.webservices.usage2.Usage2Service;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.edusharing.CreateUsageParameter;
 import org.olat.modules.edusharing.DeleteUsageParameter;
@@ -54,7 +54,7 @@ import org.springframework.stereotype.Service;
 @Service
 class EdusharingSoapClient {
 
-	private static final OLog log = Tracing.createLoggerFor(EdusharingSoapClient.class);
+	private static final Logger log = Tracing.createLoggerFor(EdusharingSoapClient.class);
 	
 	@Autowired
 	private EdusharingModule edusharingModule;
@@ -69,7 +69,7 @@ class EdusharingSoapClient {
 		AuthByApp service = getAuthByAppService();
 		List<KeyValue> ssoData = userFactory.getSSOData(identity);
 		AuthenticationResult result = service.authenticateByTrustedApp(edusharingModule.getAppId(), ssoData);
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			String logResult = new StringBuilder()
 					.append("AuthenticationResult [")
 					.append("username: ").append(result.getUsername())

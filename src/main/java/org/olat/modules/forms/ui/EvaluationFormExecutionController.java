@@ -40,7 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -75,7 +75,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EvaluationFormExecutionController extends FormBasicController implements ValidatingController {
 
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormExecutionController.class);
+	private static final Logger log = Tracing.createLoggerFor(EvaluationFormExecutionController.class);
 
 	private final Map<String, EvaluationFormElementHandler> handlerMap = new HashMap<>();
 	private final List<ExecutionFragment> fragments = new ArrayList<>();

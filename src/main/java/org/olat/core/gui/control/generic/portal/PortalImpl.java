@@ -46,7 +46,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ObjectCloner;
 import org.olat.core.util.Util;
@@ -62,7 +62,7 @@ import org.olat.core.util.prefs.Preferences;
  * @author gnaegi
  */
 public class PortalImpl extends DefaultController implements Portal, ControllerEventListener {
-	private static OLog log = Tracing.createLoggerFor(PortalImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(PortalImpl.class);
 	
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(PortalImpl.class);
 

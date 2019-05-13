@@ -51,6 +51,7 @@ import javax.jms.QueueSession;
 import javax.jms.Session;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.app.VelocityEngine;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
@@ -76,7 +77,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -146,7 +146,7 @@ import uk.ac.reload.diva.util.ZipUtils;
 public class CertificatesManagerImpl implements CertificatesManager, MessageListener,
 		InitializingBean, DisposableBean, UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(CertificatesManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(CertificatesManagerImpl.class);
 
 	private VelocityEngine velocityEngine;
 	

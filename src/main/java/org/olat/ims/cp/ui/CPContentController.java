@@ -134,7 +134,7 @@ public class CPContentController extends BasicController {
 		currentPage = new CPPage(nodeID, cp);
 
 		String filePath = cpManager.getPageByItemId(cp, currentPage.getIdentifier());
-		logInfo("I display the page with id: " + currentPage.getIdentifier(), null);
+		logInfo("I display the page with id: " + currentPage.getIdentifier());
 
 		VFSItem f = cp.getRootDir().resolve(filePath);
 		if (filePath == null) {

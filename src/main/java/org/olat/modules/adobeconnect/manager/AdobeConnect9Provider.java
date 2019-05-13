@@ -30,9 +30,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 	
-	private static final OLog log = Tracing.createLoggerFor(AdobeConnect9Provider.class);
+	private static final Logger log = Tracing.createLoggerFor(AdobeConnect9Provider.class);
 
 	@Override
 	public String getId() {

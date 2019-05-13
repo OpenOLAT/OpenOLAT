@@ -43,7 +43,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -69,7 +69,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 @RunWith(Parameterized.class)
 public class OnyxToQtiWorksAssessementTestsTest {
 	
-	private static final OLog log = Tracing.createLoggerFor(OnyxToQtiWorksAssessementTestsTest.class);
+	private static final Logger log = Tracing.createLoggerFor(OnyxToQtiWorksAssessementTestsTest.class);
 	
 	@Parameters
     public static Collection<Object[]> data() {

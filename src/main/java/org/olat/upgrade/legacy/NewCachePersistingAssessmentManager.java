@@ -41,7 +41,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -111,7 +111,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class NewCachePersistingAssessmentManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(NewCachePersistingAssessmentManager.class);
+	private static final Logger log = Tracing.createLoggerFor(NewCachePersistingAssessmentManager.class);
 	
 	public static final String SCORE = "SCORE";
 	public static final String PASSED = "PASSED";

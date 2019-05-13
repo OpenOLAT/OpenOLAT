@@ -45,7 +45,7 @@ import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.SessionInfo;
@@ -68,7 +68,7 @@ import org.olat.restapi.RestModule;
  */
 public class RestApiLoginFilter implements Filter {
 
-	private static OLog log = Tracing.createLoggerFor(RestApiLoginFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(RestApiLoginFilter.class);
 
 	private static final String BASIC_AUTH_REALM = "OLAT Rest API";
 	public static final String SYSTEM_MARKER = UUID.randomUUID().toString();
@@ -111,7 +111,7 @@ public class RestApiLoginFilter implements Filter {
 				}
 
 				// initialize tracing with request, this allows debugging information as IP, User-Agent.
-				Tracing.setUreq(httpRequest);
+				Tracing.setHttpRequest(httpRequest);
 				I18nManager.attachI18nInfoToThread(httpRequest);
 				ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(httpRequest);
 
@@ -149,7 +149,7 @@ public class RestApiLoginFilter implements Filter {
 			} finally {
 				ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 				I18nManager.remove18nInfoFromThread();
-				Tracing.setUreq(null);
+				Tracing.clearHttpRequest();
 				DBFactory.getInstance().commitAndCloseSession();
 			}
 		} else {

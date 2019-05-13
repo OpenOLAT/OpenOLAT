@@ -22,6 +22,7 @@ package org.olat.ims.qti21.ui.components;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
 import org.olat.core.gui.render.RenderResult;
@@ -30,7 +31,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -66,7 +66,7 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
  */
 public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRenderer {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentItemComponentRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentItemComponentRenderer.class);
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,

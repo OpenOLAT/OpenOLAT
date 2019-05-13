@@ -28,10 +28,10 @@ package org.olat.resource;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -47,7 +47,7 @@ import org.olat.course.CourseModule;
  */
 public class OLATResourceManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(OLATResourceManager.class);
+	private static final Logger log = Tracing.createLoggerFor(OLATResourceManager.class);
 	
 	private static OLATResourceManager INSTANCE;
 	private DB dbInstance;

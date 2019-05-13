@@ -19,19 +19,19 @@
  */
 package org.olat.commons.calendar;
 
-import net.fortuna.ical4j.model.TimeZone;
-import net.fortuna.ical4j.model.TimeZoneRegistry;
-import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
-import net.fortuna.ical4j.util.CompatibilityHints;
-
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import net.fortuna.ical4j.model.TimeZone;
+import net.fortuna.ical4j.model.TimeZoneRegistry;
+import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
+import net.fortuna.ical4j.util.CompatibilityHints;
 
 /**
  * 
@@ -45,7 +45,7 @@ import org.springframework.stereotype.Service;
 @Service("calendarModule")
 public class CalendarModule extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(CalendarModule.class);
+	private static final Logger log = Tracing.createLoggerFor(CalendarModule.class);
 	
 	private static final String CALENDAR_ENABLED = "calendar.enable";
 	private static final String CALENDAR_PERSONAL_ENABLED = "calendar.personal.enabled";

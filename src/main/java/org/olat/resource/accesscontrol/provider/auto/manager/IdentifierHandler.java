@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.accesscontrol.provider.auto.IdentifierKey;
@@ -43,7 +43,7 @@ import org.springframework.stereotype.Component;
 @Component
 class IdentifierHandler {
 
-	private static final OLog log = Tracing.createLoggerFor(IdentifierHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(IdentifierHandler.class);
 
 	@Autowired
     private Collection<IdentifierKeyHandler> loadedHandlers;

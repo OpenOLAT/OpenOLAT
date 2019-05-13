@@ -51,7 +51,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -80,7 +80,7 @@ import org.springframework.stereotype.Service;
 @Service("userDeletionManager")
 public class UserDeletionManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserDeletionManager.class);
+	private static final Logger log = Tracing.createLoggerFor(UserDeletionManager.class);
 
 	/** Default value for last-login duration in month. */
 	private static final int DEFAULT_LAST_LOGIN_DURATION = 24;
@@ -146,14 +146,14 @@ public class UserDeletionManager {
 				if (result.getReturnCode() != MailerResult.OK) {
 					buf.append(pT.translate("email.error.send.failed", new String[] {identity.getUser().getProperty(UserConstants.EMAIL, null), identity.getName()} )).append("\n");
 				}
-				log.audit("User-Deletion: Delete-email send to identity=" + identity.getKey() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
+				log.info(Tracing.M_AUDIT, "User-Deletion: Delete-email send to identity=" + identity.getKey() + " with email=" + identity.getUser().getProperty(UserConstants.EMAIL, null));
 				markSendEmailEvent(identity);
 			}
 		} else {
 			// no template => User decides to sending no delete-email, mark only in lifecycle table 'sendEmail'
 			for (Iterator<Identity> iter = selectedIdentities.iterator(); iter.hasNext();) {
 				Identity identity = iter.next();
-				log.audit("User-Deletion: Move in 'Email sent' section without sending email, identity=" + identity.getKey());
+				log.info(Tracing.M_AUDIT, "User-Deletion: Move in 'Email sent' section without sending email, identity=" + identity.getKey());
 				markSendEmailEvent(identity);
 			}
 		}
@@ -331,7 +331,7 @@ public class UserDeletionManager {
 		log.info("Data of identity deleted and state of identity::" + identity.getKey() + " changed to 'deleted'");
 
 		dbInstance.commit();
-		log.audit("User-Deletion: Deleted identity::" + identity.getKey());
+		log.info(Tracing.M_AUDIT, "User-Deletion: Deleted identity::" + identity.getKey());
 		return true;
 	}	
 
@@ -343,7 +343,7 @@ public class UserDeletionManager {
 		securityManager.setIdentityLastLogin(identity);
 		LifeCycleManager lifeCycleManagerForIdenitiy = LifeCycleManager.createInstanceFor(identity);
 		if (lifeCycleManagerForIdenitiy.hasLifeCycleEntry(SEND_DELETE_EMAIL_ACTION)) {
-			log.audit("User-Deletion: Remove from delete-list identity=" + identity);
+			log.info(Tracing.M_AUDIT, "User-Deletion: Remove from delete-list identity=" + identity);
 			lifeCycleManagerForIdenitiy.deleteTimestampFor(SEND_DELETE_EMAIL_ACTION);
 		}
 		return identity;

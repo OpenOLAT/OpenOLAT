@@ -31,10 +31,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Element;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.ims.cp.CPCore;
@@ -51,7 +51,7 @@ import org.olat.ims.cp.CPCore;
  */
 public class CPItem extends DefaultElement implements CPNode {
 
-	private static final OLog log = Tracing.createLoggerFor(CPItem.class);
+	private static final Logger log = Tracing.createLoggerFor(CPItem.class);
 
 	private String identifier;
 	private String identifierRef;

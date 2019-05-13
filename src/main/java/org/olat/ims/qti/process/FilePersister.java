@@ -44,7 +44,7 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -54,7 +54,7 @@ import org.olat.ims.resources.IMSEntityResolver;
 /**
  */
 public class FilePersister implements Persister {
-	private static OLog log = Tracing.createLoggerFor(FilePersister.class);
+	private static final Logger log = Tracing.createLoggerFor(FilePersister.class);
 	
 	private static final String QTI_SER = "qtiser";
 	private static final String RES_REPORTING = "resreporting";
@@ -105,7 +105,7 @@ public class FilePersister implements Persister {
 		OutputStream os = null;
 		try {
 			long start = -1;
-			boolean debugOn = log.isDebug();
+			boolean debugOn = log.isDebugEnabled();
 			if (debugOn) {
 				start = System.currentTimeMillis();
 			}

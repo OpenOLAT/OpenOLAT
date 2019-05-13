@@ -48,7 +48,7 @@ import org.apache.xmpbox.schema.AdobePDFSchema;
 import org.apache.xmpbox.schema.DublinCoreSchema;
 import org.apache.xmpbox.schema.XMPBasicSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -64,7 +64,7 @@ import org.olat.core.util.StringHelper;
  */
 public class PdfDocument {
 	
-	private static final OLog log = Tracing.createLoggerFor(PdfDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(PdfDocument.class);
 	
 	protected PDFont font = PDType1Font.HELVETICA;
 	protected PDFont fontBold = PDType1Font.HELVETICA_BOLD;

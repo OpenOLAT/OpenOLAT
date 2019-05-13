@@ -21,7 +21,7 @@ package org.olat.ims.qti21;
 
 import java.util.List;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.model.ParentPartItemRefs;
 
@@ -51,7 +51,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class AssessmentTestHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentTestHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentTestHelper.class);
 	
 	
 	public static ParentPartItemRefs getParentSection(TestPlanNodeKey itemKey,

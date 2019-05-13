@@ -26,7 +26,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.xml.XStreamHelper;
@@ -42,7 +42,7 @@ import com.thoughtworks.xstream.XStream;
  */
 public class BinderXStream {
 	
-	private static final OLog log = Tracing.createLoggerFor(BinderXStream.class);
+	private static final Logger log = Tracing.createLoggerFor(BinderXStream.class);
 	private static final XStream myStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	
 	public static final Binder copy(Binder binder) {

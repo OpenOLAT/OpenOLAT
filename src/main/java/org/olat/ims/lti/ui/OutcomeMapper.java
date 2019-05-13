@@ -33,7 +33,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
@@ -49,7 +49,7 @@ import org.olat.resource.OLATResource;
  */
 public class OutcomeMapper implements Mapper, Serializable {
 	private static final long serialVersionUID = 7954337449619783210L;
-	private static final OLog log = Tracing.createLoggerFor(OutcomeMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(OutcomeMapper.class);
 
 	private static final String READ_RESULT_REQUEST = "readResultRequest";
 	private static final String DELETE_RESULT_REQUEST = "deleteResultRequest";
@@ -83,7 +83,7 @@ public class OutcomeMapper implements Mapper, Serializable {
 		reconnectUserSession(request);
 
 		String contentType = request.getContentType();
-		log.audit("LTI outcome for: " + identityKey);
+		log.info(Tracing.M_AUDIT, "LTI outcome for: " + identityKey);
 		// test on equals of content type, done the same way later on in IMSPOXRequest code 
 		if (contentType != null && contentType.equals("application/xml") ) {
 			String xmlResponse = doPostXml(request);
@@ -145,12 +145,12 @@ public class OutcomeMapper implements Mapper, Serializable {
 				Map<String,Object> theMap = new TreeMap<String,Object>();
 				theMap.put("/replaceResultRequest", "");
 				String theXml = XMLMap.getXMLFragment(theMap, true);
-				if (log.isDebug()) {
+				if (log.isDebugEnabled()) {
 					log.debug("replace-result message successfull with score::" + scoreString);
 				}
 				return pox.getResponseSuccess("Update result",theXml);
 			} else {
-				if (log.isDebug()) {
+				if (log.isDebugEnabled()) {
 					log.debug("replace-result message failed with score::" + scoreString);
 				}
 				return pox.getResponseFailure("Update result failed", null);
@@ -160,12 +160,12 @@ public class OutcomeMapper implements Mapper, Serializable {
 				Map<String,Object> theMap = new TreeMap<String,Object>();
 				theMap.put("/deleteResultRequest", "");
 				String theXml = XMLMap.getXMLFragment(theMap, true);
-				if (log.isDebug()) {
+				if (log.isDebugEnabled()) {
 					log.debug("delete-result message successfull");
 				}
 				return pox.getResponseSuccess("Result deleted",theXml);
 			} else {
-				if (log.isDebug()) {
+				if (log.isDebugEnabled()) {
 					log.debug("delete-result message failed");
 				}
 				return pox.getResponseFailure("Delete result failed", null);

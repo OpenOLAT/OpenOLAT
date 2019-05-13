@@ -35,7 +35,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.gui.control.Event;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
@@ -64,7 +64,7 @@ public abstract class UpgradeManager implements Initializable, GenericEventListe
 	
 	protected final XStream upgradesXStream = XStreamHelper.createXStreamInstance();
 	
-	private static final OLog log = Tracing.createLoggerFor(UpgradeManager.class);
+	private static final Logger log = Tracing.createLoggerFor(UpgradeManager.class);
 	
 	protected String INSTALLED_UPGRADES_XML = "installed_upgrades.xml";
 	public static final String SYSTEM_DIR = "system";

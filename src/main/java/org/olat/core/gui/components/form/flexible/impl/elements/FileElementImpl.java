@@ -51,7 +51,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -84,7 +84,7 @@ import org.olat.core.util.vfs.VFSManager;
 public class FileElementImpl extends FormItemImpl
 		implements FileElement, FormItemCollection, ControllerEventListener, Disposable {
 
-	private static final OLog log = Tracing.createLoggerFor(FileElementImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(FileElementImpl.class);
 
 	private final FileElementComponent component;
 	private ImageFormItem previewEl;
@@ -540,13 +540,13 @@ public class FileElementImpl extends FormItemImpl
 				} else {
 					log.error("Error after copying content from temp file, cannot copy file::"
 							+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - "
-							+ (targetFile == null ? "NULL" : targetFile), null);
+							+ (targetFile == null ? "NULL" : targetFile));
 				}
 
 				if (targetLeaf == null) {
 					log.error("Error after copying content from temp file, cannot resolve copied file::"
 							+ (tempUploadFile == null ? "NULL" : tempUploadFile) + " - "
-							+ (targetFile == null ? "NULL" : targetFile), null);
+							+ (targetFile == null ? "NULL" : targetFile));
 				}
 			} else {
 				// Copy stream in case the destination is a non-local container
@@ -565,7 +565,7 @@ public class FileElementImpl extends FormItemImpl
 					targetLeaf = leaf;
 				}
 			}
-		} else if (log.isDebug()) {
+		} else if (log.isDebugEnabled()) {
 			log.debug("Error while copying content from temp file, no temp file::"
 					+ (tempUploadFile == null ? "NULL" : tempUploadFile.getAbsolutePath()));
 		}

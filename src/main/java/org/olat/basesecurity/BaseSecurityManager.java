@@ -44,6 +44,7 @@ import javax.persistence.LockModeType;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.events.NewIdentityCreatedEvent;
 import org.olat.basesecurity.manager.AuthenticationHistoryDAO;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -60,7 +61,6 @@ import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
@@ -87,7 +87,7 @@ import org.springframework.stereotype.Service;
 @Service("baseSecurityManager")
 public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	
-	private static final OLog log = Tracing.createLoggerFor(BaseSecurityManager.class);
+	private static final Logger log = Tracing.createLoggerFor(BaseSecurityManager.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -280,12 +280,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		if (!hasBeen && isNow) {
 			// user not yet in security group, add him
 			organisationService.addMember(organisation, updatedIdentity, role);
-			log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " added system role::" + role.name() + " to user::" + updatedIdentity.getKey(), null);
+			log.info(Tracing.M_AUDIT, "User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " added system role::" + role.name() + " to user::" + updatedIdentity.getKey());
 		} else if (hasBeen && !isNow) {
 			// user not anymore in security group, remove him
 			boolean deleted = organisationService.removeMember(organisation, updatedIdentity, role, true);
 			if(deleted) {
-				log.audit("User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " removed system role::" + role.name() + " from user::" + updatedIdentity.getKey(), null);
+				log.info(Tracing.M_AUDIT, "User::" + (actingIdentity == null ? "unkown" : actingIdentity.getKey()) + " removed system role::" + role.name() + " from user::" + updatedIdentity.getKey());
 			}
 		}
 	}
@@ -390,10 +390,10 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 			// when no password is used the provider must be set to null to not generate
 			// an OLAT authentication token. See method doku.
 			ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, null, null);
-			log.audit("Create an identity without authentication (login=" + loginName + ")");
+			log.info(Tracing.M_AUDIT, "Create an identity without authentication (login=" + loginName + ")");
  		} else {
 			ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, BaseSecurityModule.getDefaultAuthProviderIdentifier(), loginName, pwd);
-			log.audit("Create an identity with " + BaseSecurityModule.getDefaultAuthProviderIdentifier() + " authentication (login=" + loginName + ")");
+			log.info(Tracing.M_AUDIT, "Create an identity with " + BaseSecurityModule.getDefaultAuthProviderIdentifier() + " authentication (login=" + loginName + ")");
 		}
 
 		// Add user to the default organization as user
@@ -419,7 +419,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	@Override
 	public Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername, User newUser) {
 		Identity ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, provider, authusername, null);
-		log.audit("Create an identity with " + provider + " authentication (login=" + loginName + ",authusername=" + authusername + ")");
+		log.info(Tracing.M_AUDIT, "Create an identity with " + provider + " authentication (login=" + loginName + ",authusername=" + authusername + ")");
 		// Add user to the default organization as user
 		organisationService.addMember(ident, OrganisationRoles.user);
 		return ident;
@@ -833,7 +833,7 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 		dbInstance.getCurrentEntityManager().persist(auth);
 		updateAuthenticationHistory(auth, ident);
 		dbInstance.commit();
-		log.audit("Create " + provider + " authentication (login=" + ident.getKey() + ",authusername=" + authUserName + ")");
+		log.info(Tracing.M_AUDIT, "Create " + provider + " authentication (login=" + ident.getKey() + ",authusername=" + authUserName + ")");
 		return auth;
 	}
 	

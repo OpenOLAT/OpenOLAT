@@ -25,9 +25,9 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -57,7 +57,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AutoAccessManagerImpl implements AutoAccessManager, UserDataDeletable {
 
-	private static final OLog log = Tracing.createLoggerFor(AutoAccessManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(AutoAccessManagerImpl.class);
 
 	@Autowired
 	private IdentifierHandler identifierHandler;

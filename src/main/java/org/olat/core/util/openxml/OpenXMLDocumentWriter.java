@@ -32,7 +32,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLDocument.HeaderReference;
 import org.olat.core.util.openxml.OpenXMLDocument.ListParagraph;
@@ -50,7 +50,7 @@ import org.w3c.dom.NodeList;
  */
 public class OpenXMLDocumentWriter {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenXMLDocumentWriter.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenXMLDocumentWriter.class);
 	
 	public static final String SCHEMA_CONTENT_TYPES = "http://schemas.openxmlformats.org/package/2006/content-types";
 	public static final String SCHEMA_CORE_PROPERTIES = "http://schemas.openxmlformats.org/package/2006/metadata/core-properties";

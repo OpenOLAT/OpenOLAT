@@ -29,7 +29,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -53,7 +53,7 @@ import org.olat.user.UserManager;
  */
 public class LecturesBlocksEntryExport extends OpenXMLWorkbookResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(LecturesBlocksEntryExport.class);
+	private static final Logger log = Tracing.createLoggerFor(LecturesBlocksEntryExport.class);
 	
 	private final Formatter formatter;
 	private final RepositoryEntry entry;

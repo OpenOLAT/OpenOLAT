@@ -52,7 +52,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -86,7 +86,7 @@ import de.bps.course.nodes.CourseNodePasswordManagerImpl;
  * @author Felix Jost
  */
 public class NavigationHandler implements Disposable {
-	private static final OLog log = Tracing.createLoggerFor(NavigationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(NavigationHandler.class);
 
 	private final UserCourseEnvironment userCourseEnv;
 	private final boolean previewMode;
@@ -214,7 +214,7 @@ public class NavigationHandler implements Disposable {
 				}
 				subTreeModel = subTree.getTreeModel();
 			}
-			if (log.isDebug()){
+			if (log.isDebugEnabled()){
 				log.debug("delegating to handler: treeNodeId = " + treeNodeId);
 			}
 
@@ -332,7 +332,7 @@ public class NavigationHandler implements Disposable {
 	private NodeClickedRef doEvaluateJumpTo(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			ControllerEventListener listeningController, String nodecmd, String nodeSubCmd, Controller currentNodeController) {
 		NodeClickedRef nclr;
-		if (log.isDebug()){
+		if (log.isDebugEnabled()){
 			log.debug("evaluateJumpTo courseNode = " + courseNode.getIdent() + ", " + courseNode.getShortName());
 		}
 

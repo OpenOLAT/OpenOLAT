@@ -27,9 +27,9 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 import net.fortuna.ical4j.data.CalendarBuilder;
@@ -53,7 +53,7 @@ import net.fortuna.ical4j.util.CompatibilityHints;
  */
 public class CalendarImportTest {
 
-	private static final OLog log = Tracing.createLoggerFor(CalendarImportTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CalendarImportTest.class);
 	
 	@Test
 	public void testImportMonthFromOutlook() throws IOException, ParserException {

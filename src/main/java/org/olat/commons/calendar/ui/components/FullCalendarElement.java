@@ -38,7 +38,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
@@ -52,7 +52,7 @@ import org.olat.core.util.ValidationStatus;
  */
 public class FullCalendarElement extends FormItemImpl {
 	
-	private static final OLog log = Tracing.createLoggerFor(FullCalendarElement.class);
+	private static final Logger log = Tracing.createLoggerFor(FullCalendarElement.class);
 
 	private final FullCalendarComponent component;
 

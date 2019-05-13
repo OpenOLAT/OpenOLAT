@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.test.JunitTestHelper;
@@ -40,7 +40,7 @@ import org.openqa.selenium.WebElement;
  */
 public class ImportLecturesBlocksWizard {
 	
-	private static final OLog log = Tracing.createLoggerFor(ImportLecturesBlocksWizard.class);
+	private static final Logger log = Tracing.createLoggerFor(ImportLecturesBlocksWizard.class);
 	
 	private final WebDriver browser;
 	

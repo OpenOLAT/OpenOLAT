@@ -21,7 +21,7 @@ package org.olat.core.commons.services.license.ui;
 
 import java.util.Locale;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseHandler;

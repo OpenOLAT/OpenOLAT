@@ -27,7 +27,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.portfolio.PageStatus;
 import org.olat.modules.portfolio.PageUserStatus;
@@ -43,7 +43,7 @@ import org.olat.modules.portfolio.ui.shared.SharedPageRow;
  */
 public class SharedPageStatusCellRenderer implements FlexiCellRenderer {
 	
-	private static final OLog log = Tracing.createLoggerFor(SharedPageStatusCellRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(SharedPageStatusCellRenderer.class);
 	
 	private final Translator translator;
 	

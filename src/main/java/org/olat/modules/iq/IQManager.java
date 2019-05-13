@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -51,7 +52,6 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -94,7 +94,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class IQManager implements UserDataDeletable {
 	
-	private OLog log = Tracing.createLoggerFor(IQManager.class);
+	private static final Logger log = Tracing.createLoggerFor(IQManager.class);
 	
 
 	private DB dbInstance;
@@ -443,12 +443,12 @@ public class IQManager implements UserDataDeletable {
 	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		FilePersister.deleteUserData(identity);
-		log.audit("Delete all qti.ser data and qti-resreporting data for identity=" + identity.getKey());
+		log.info(Tracing.M_AUDIT, "Delete all qti.ser data and qti-resreporting data for identity=" + identity.getKey());
 		
 		File userTempQtiEditorDir = new File(QTIEditorPackageImpl.getQTIEditorBaseDir(), identity.getName());
 		if (userTempQtiEditorDir.exists()) {
 			FileUtils.deleteDirsAndFiles(userTempQtiEditorDir, true, true); 
-			log.audit("User-Deletion: identity=" + identity.getKey() + " : QTI editor temp files deleted under dir=" + userTempQtiEditorDir.getAbsolutePath());
+			log.info(Tracing.M_AUDIT, "User-Deletion: identity=" + identity.getKey() + " : QTI editor temp files deleted under dir=" + userTempQtiEditorDir.getAbsolutePath());
 		}
 	}
 	

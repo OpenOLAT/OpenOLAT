@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -44,6 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_10_3_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_10_3_0.class);
 	
 	private static final int BATCH_SIZE = 50;
 	private static final String TASK_EXPORT_FOLDER = "Clean export folder";
@@ -80,9 +84,9 @@ public class OLATUpgrade_10_3_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_10_3_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_10_3_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_10_3_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_10_3_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -102,7 +106,7 @@ public class OLATUpgrade_10_3_0 extends OLATUpgrade {
 					processExportFolder(course); 
 				}
 				counter += courses.size();
-				log.audit("Course export folder processed: " + courses.size() + ", total processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Course export folder processed: " + courses.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(courses.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(TASK_EXPORT_FOLDER, true);

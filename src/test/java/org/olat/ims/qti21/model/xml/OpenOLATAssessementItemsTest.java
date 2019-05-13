@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.ImsQTI21Resource.PathResourceLocator;
 import org.xml.sax.SAXException;
@@ -57,7 +57,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 @RunWith(Parameterized.class)
 public class OpenOLATAssessementItemsTest {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenOLATAssessementItemsTest.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenOLATAssessementItemsTest.class);
 	
 	@Parameters
     public static Collection<Object[]> data() {

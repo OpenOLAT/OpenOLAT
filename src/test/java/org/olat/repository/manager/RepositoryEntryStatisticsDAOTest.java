@@ -39,7 +39,7 @@ import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryEntryStatisticsDAOTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryStatisticsDAOTest.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryStatisticsDAOTest.class);
 	
 	@Autowired
 	private DB dbInstance;

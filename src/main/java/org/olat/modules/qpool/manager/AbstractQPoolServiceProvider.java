@@ -33,12 +33,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexableField;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -65,7 +65,7 @@ import org.olat.search.service.document.file.FileDocumentFactory;
  */
 public abstract class AbstractQPoolServiceProvider implements QPoolSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(AbstractQPoolServiceProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractQPoolServiceProvider.class);
 	
 	public abstract QPoolFileStorage getFileStorage();
 	

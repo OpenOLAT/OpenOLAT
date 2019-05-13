@@ -46,7 +46,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SignOnOffEvent;
 import org.olat.core.util.coordinate.LockEntry;
@@ -66,7 +66,7 @@ public class LockTest extends OlatTestCase {
 	private static final int MAX_COUNT = 30; //at least 2
 	private static final int MAX_USERS_MORE = 100; //20; //100;
 	
-	private static OLog log = Tracing.createLoggerFor(LockTest.class);
+	private static final Logger log = Tracing.createLoggerFor(LockTest.class);
 	
 	@Autowired
 	private DB dbInstance;

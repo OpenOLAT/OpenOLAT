@@ -1654,7 +1654,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			// display error and do logging
 			getWindowControl().setError(translate("error.invalid.group"));
 			logAudit("User tried to launch a group but user is not owner or participant "
-					+ "of group or group doesn't exist. Hacker attack or group has been changed or deleted. group key :: " + groupKey, null);
+					+ "of group or group doesn't exist. Hacker attack or group has been changed or deleted. group key :: " + groupKey);
 			// refresh toolbox that contained wrong group
 			reloadGroupMemberships(reSecurity);
 		}

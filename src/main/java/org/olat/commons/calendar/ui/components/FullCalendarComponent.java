@@ -37,7 +37,7 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -48,7 +48,7 @@ import org.olat.core.logging.Tracing;
  */
 public class FullCalendarComponent extends AbstractComponent {
 	
-	private static final OLog log = Tracing.createLoggerFor(FullCalendarComponent.class);
+	private static final Logger log = Tracing.createLoggerFor(FullCalendarComponent.class);
 	private static final FullCalendarComponentRenderer RENDERER = new FullCalendarComponentRenderer();
 	private static final SimpleDateFormat occurenceDateFormat = new SimpleDateFormat("yyyyMMdd'T'hhmmss");
 	

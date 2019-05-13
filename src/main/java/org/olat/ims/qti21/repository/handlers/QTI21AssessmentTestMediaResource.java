@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
@@ -44,7 +44,7 @@ import org.olat.repository.RepositoryManager;
  */
 public class QTI21AssessmentTestMediaResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21AssessmentTestMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21AssessmentTestMediaResource.class);
 	
 	private final OLATResourceable resource;
 	

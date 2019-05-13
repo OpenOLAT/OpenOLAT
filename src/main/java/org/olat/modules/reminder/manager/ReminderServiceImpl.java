@@ -37,7 +37,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -77,7 +77,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReminderServiceImpl implements ReminderService {
 	
-	private static final OLog log = Tracing.createLoggerFor(ReminderServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(ReminderServiceImpl.class);
 	
 	
 	@Autowired

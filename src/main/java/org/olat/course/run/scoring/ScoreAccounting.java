@@ -34,7 +34,7 @@ import java.util.Map;
 import org.hibernate.LazyInitializationException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
@@ -63,7 +63,7 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
  */
 public class ScoreAccounting {
 	
-	private static final OLog log = Tracing.createLoggerFor(ScoreAccounting.class);
+	private static final Logger log = Tracing.createLoggerFor(ScoreAccounting.class);
 
 	private boolean error;
 	private final UserCourseEnvironment userCourseEnvironment;
@@ -437,7 +437,7 @@ public class ScoreAccounting {
 		AssessableCourseNode acn = (AssessableCourseNode) foundNode;
 		ScoreEvaluation se = evalCourseNode(acn);
 		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-			log.error("could not evaluate node '" + acn.getShortTitle() + "' (" + acn.getClass().getName() + "," + childId + ")", null);
+			log.error("could not evaluate node '" + acn.getShortTitle() + "' (" + acn.getClass().getName() + "," + childId + ")");
 			return Boolean.FALSE;
 		}
 		// check if the results are visible

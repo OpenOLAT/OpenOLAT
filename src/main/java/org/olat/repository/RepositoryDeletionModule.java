@@ -31,7 +31,7 @@ import java.util.Date;
 
 import org.olat.basesecurity.manager.IdentityDAO;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("deletionModule")
 public class RepositoryDeletionModule implements InitializingBean {
-	private static final OLog log = Tracing.createLoggerFor(RepositoryDeletionModule.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryDeletionModule.class);
 	private static final String CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME = "deleteEmailResponseToUserName";
 	private static final String DEFAULT_ADMIN_USERNAME = "administrator";
 	
@@ -71,12 +71,12 @@ public class RepositoryDeletionModule implements InitializingBean {
 			if (identity != null) {
 				emailResponseTo = identity.getUser().getEmail();
 			} else {
-				log.warn("Could not find:  " + CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME + " with name: " + emailResponseTo, null);
+				log.warn("Could not find:  " + CONF_DELETE_EMAIL_RESPONSE_TO_USER_NAME + " with name: " + emailResponseTo);
 				emailResponseTo = WebappHelper.getMailConfig("mailFrom");
 			}
 		}
 		
-		if(log.isDebug()) {
+		if(log.isDebugEnabled()) {
 			log.debug("archiveRootPath=" + archiveRootPath);
 		}
 	}

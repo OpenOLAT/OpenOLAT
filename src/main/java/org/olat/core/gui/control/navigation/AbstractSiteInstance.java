@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.control.navigation;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.gui.UserRequest;
@@ -26,7 +27,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.site.ui.ForbiddenCourseSiteController;
@@ -41,7 +41,7 @@ import org.olat.course.site.ui.ForbiddenCourseSiteController;
  */
 public abstract class AbstractSiteInstance implements SiteInstance {
 	
-	private static final OLog log = Tracing.createLoggerFor(AbstractSiteDefinition.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractSiteDefinition.class);
 	private final SiteDefinition siteDef;
 	
 	public AbstractSiteInstance(SiteDefinition siteDef) {

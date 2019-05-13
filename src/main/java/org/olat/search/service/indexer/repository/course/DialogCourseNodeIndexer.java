@@ -28,6 +28,7 @@ package org.olat.search.service.indexer.repository.course;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
@@ -35,6 +36,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -61,12 +63,15 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNodeIndexer {
+	
+	private static final Logger log = Tracing.createLoggerFor(DialogCourseNodeIndexer.class);
+	
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
-	public final static String TYPE_MESSAGE = "type.course.node.dialog.forum.message";
-	public final static String TYPE_FILE    = "type.course.node.dialog.file";
+	public static final String TYPE_MESSAGE = "type.course.node.dialog.forum.message";
+	public static final String TYPE_FILE    = "type.course.node.dialog.file";
 
-	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.DialogCourseNode";
+	private static final String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.DialogCourseNode";
 	
 	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, Object parentObject, OlatFullIndexer indexer)
@@ -104,7 +109,7 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 		DialogElementsManager dialogElmsMgr = CoreSpringFactory.getImpl(DialogElementsManager.class);
 		VFSContainer dialogContainer = dialogElmsMgr.getDialogContainer(element);
 		VFSLeaf leaf = (VFSLeaf) dialogContainer.getItems(new VFSLeafFilter()).get(0);
-		if (isLogDebugEnabled()) logDebug("Analyse VFSLeaf=" + leaf.getName());
+		if (log.isDebugEnabled()) log.debug("Analyse VFSLeaf=" + leaf.getName());
 		try {
 			if (CoreSpringFactory.getImpl(FileDocumentFactory.class).isFileSupported(leaf)) {
 				leafResourceContext.setFilePath(element.getFilename());
@@ -113,16 +118,16 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 				Document document = CoreSpringFactory.getImpl(FileDocumentFactory.class).createDocument(leafResourceContext, leaf);
 				indexWriter.addDocument(document);
 			} else {
-				if (isLogDebugEnabled()) logDebug("Documenttype not supported. file=" + leaf.getName());
+				if (log.isDebugEnabled()) log.debug("Documenttype not supported. file=" + leaf.getName());
 			}
 		} catch (DocumentAccessException e) {
-			if (isLogDebugEnabled()) logDebug("Can not access document." + e.getMessage());
+			if (log.isDebugEnabled()) log.debug("Can not access document." + e.getMessage());
 		} catch (IOException ioEx) {
-			logWarn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
+			log.warn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (InterruptedException iex) {
 			throw new InterruptedException(iex.getMessage());
 		} catch (Exception ex) {
-			logWarn("Exception: Can not index leaf=" + leaf.getName(), ex);
+			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
 		}
 	}
 
@@ -151,7 +156,7 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 		}
 		
 		OLATResourceable ores = ce.getOLATResourceable();
-		if(isLogDebugEnabled()) logDebug("OLATResourceable=" + ores);
+		if(log.isDebugEnabled()) log.debug("OLATResourceable=" + ores);
 		if (ores.getResourceableTypeName().startsWith("path=")) {
 			// => it is a file element, typeName format: 'path=/test1/test2/readme.txt'
 			return true;
@@ -171,7 +176,7 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 			}		
 			return true;
 		} else {
-			logWarn("In DialogCourseNode unkown OLATResourceable=" + ores, null);
+			log.warn("In DialogCourseNode unkown OLATResourceable=" + ores);
 			return false;
 		}
 	}

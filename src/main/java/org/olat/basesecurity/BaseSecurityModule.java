@@ -25,12 +25,12 @@
 
 package org.olat.basesecurity;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 @Service("baseSecurityModule")
 public class BaseSecurityModule extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(BaseSecurityModule.class);
+	private static final Logger log = Tracing.createLoggerFor(BaseSecurityModule.class);
 	
 	private static final OrganisationRoles[] privacyRoles = new OrganisationRoles[]{
 			OrganisationRoles.user, OrganisationRoles.author,

@@ -33,7 +33,7 @@ import javax.persistence.TypedQuery;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 
@@ -44,7 +44,7 @@ import org.olat.core.util.Encoder;
  */
 public class LifeCycleManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(LifeCycleManager.class);
+	private static final Logger log = Tracing.createLoggerFor(LifeCycleManager.class);
 
 	private Long persistentRef;
 	private String persistentTypeName;

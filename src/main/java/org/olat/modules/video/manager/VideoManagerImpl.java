@@ -56,7 +56,7 @@ import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -110,7 +110,7 @@ import org.springframework.stereotype.Service;
 @Service("videoManager")
 public class VideoManagerImpl implements VideoManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(VideoManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(VideoManagerImpl.class);
 	
 	private static final String CR = System.lineSeparator();
 	private static final String ENCODING = "utf-8";

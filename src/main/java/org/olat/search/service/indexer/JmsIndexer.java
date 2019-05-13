@@ -54,7 +54,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
@@ -68,7 +68,7 @@ import org.olat.search.model.AbstractOlatDocument;
  */
 public class JmsIndexer implements MessageListener, LifeFullIndexer, ConfigOnOff {
 	private static final int INDEX_MERGE_FACTOR = 1000;
-	private static final OLog log = Tracing.createLoggerFor(JmsIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(JmsIndexer.class);
 	
 	private Queue jmsQueue;
 	private Session indexerSession;

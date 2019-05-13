@@ -24,7 +24,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.XlsFlexiTableExporter;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -39,7 +39,7 @@ import org.olat.modules.lecture.ui.ParticipantListDataModel.ParticipantsCols;
  */
 public class ParticipantListExport extends XlsFlexiTableExporter {
 	
-	private static final OLog log = Tracing.createLoggerFor(ParticipantListExport.class);
+	private static final Logger log = Tracing.createLoggerFor(ParticipantListExport.class);
 
 	@Override
 	protected void createCell(FlexiTableComponent ftC, FlexiColumnModel cd, Row dataRow, int row, int col,

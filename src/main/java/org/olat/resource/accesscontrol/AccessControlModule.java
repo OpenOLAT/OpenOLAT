@@ -24,10 +24,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -52,7 +52,7 @@ import org.springframework.stereotype.Service;
 @Service("acModule")
 public class AccessControlModule extends AbstractSpringModule implements ConfigOnOff {
 
-	private static final OLog log = Tracing.createLoggerFor(AccessControlModule.class);
+	private static final Logger log = Tracing.createLoggerFor(AccessControlModule.class);
 
 	public static final String AC_ENABLED = "resource.accesscontrol.enabled";
 	public static final String AC_HOME_ENABLED = "resource.accesscontrol.home.overview";

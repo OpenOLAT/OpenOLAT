@@ -31,7 +31,7 @@ import org.apache.lucene.search.TopDocs;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.search.EmptySearchResults;
 import org.olat.search.SearchResults;
@@ -46,7 +46,7 @@ import org.olat.search.service.searcher.SearchResultsImpl;
  */
 class SearchCallable implements Callable<SearchResults> {
 	
-	private static final OLog log = Tracing.createLoggerFor(SearchCallable.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchCallable.class);
 	
 	private final Locale locale;
 	private final String queryString;
@@ -75,7 +75,7 @@ class SearchCallable implements Callable<SearchResults> {
 	public SearchResults call() throws ParseException {
 		IndexSearcher searcher = null;
 		try {
-			boolean debug = log.isDebug();
+			boolean debug = log.isDebugEnabled();
 			
 			if (!searchService.existIndex()) {
 				log.warn("Index does not exist, can't search for queryString: "+queryString);

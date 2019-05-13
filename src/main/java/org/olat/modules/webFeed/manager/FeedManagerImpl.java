@@ -43,7 +43,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.FileUtils;
@@ -97,7 +97,7 @@ import com.rometools.rome.feed.synd.SyndFeed;
  */
 public class FeedManagerImpl extends FeedManager {
 
-	private static final OLog log = Tracing.createLoggerFor(FeedManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(FeedManagerImpl.class);
 
 	// 10 minutes
 	private static final int EXTERNAL_FEED_ACTUALIZATION_MILLIS = 10*60*1000;
@@ -644,7 +644,7 @@ public class FeedManagerImpl extends FeedManager {
 				mediaResource = new VFSMediaResource((VFSLeaf) item);
 			}
 		} catch (NullPointerException e) {
-			log.debug("Media resource could not be created from file: ", fileName);
+			log.debug("Media resource could not be created from file: " + fileName);
 		}
 		return mediaResource;
 	}
@@ -668,7 +668,7 @@ public class FeedManagerImpl extends FeedManager {
 				mediaResource = (VFSLeaf) item;
 			}
 		} catch (NullPointerException e) {
-			log.debug("Media resource could not be created from file: ", fileName);
+			log.debug("Media resource could not be created from file: " + fileName);
 		}
 		return mediaResource;
 	}

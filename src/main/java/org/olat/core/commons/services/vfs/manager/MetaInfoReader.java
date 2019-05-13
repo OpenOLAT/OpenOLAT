@@ -40,7 +40,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -58,7 +58,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class MetaInfoReader {
 
-	private static final OLog log = Tracing.createLoggerFor(MetaInfoReader.class);
+	private static final Logger log = Tracing.createLoggerFor(MetaInfoReader.class);
   
 	private static SAXParser saxParser;
 	static {

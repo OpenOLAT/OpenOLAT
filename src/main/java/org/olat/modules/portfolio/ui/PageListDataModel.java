@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
@@ -45,7 +45,7 @@ import org.olat.modules.portfolio.ui.model.PortfolioElementRow;
 public class PageListDataModel extends DefaultFlexiTableDataModel<PortfolioElementRow>
 	implements SortableFlexiTableDataModel<PortfolioElementRow> {
 	
-	private static final OLog log = Tracing.createLoggerFor(PageListDataModel.class);
+	private static final Logger log = Tracing.createLoggerFor(PageListDataModel.class);
 	
 	private boolean flat;
 	private final Locale locale;

@@ -26,7 +26,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
@@ -46,7 +46,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 //@Service
 public class RepositoryEntryLifeIndexer implements LifeIndexer {
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryLifeIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryLifeIndexer.class);
 	private static final int BATCH_SIZE = 100;
 	
 	@Autowired

@@ -32,7 +32,7 @@ import java.io.Writer;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
@@ -41,7 +41,7 @@ import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
  */
 public class StringOutput extends Writer {
 	
-	private static final OLog log = Tracing.createLoggerFor(StringOutput.class);
+	private static final Logger log = Tracing.createLoggerFor(StringOutput.class);
 
 	private final StringBuilder sb;
 

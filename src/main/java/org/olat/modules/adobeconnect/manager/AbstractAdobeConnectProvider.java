@@ -36,7 +36,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
@@ -63,7 +63,7 @@ import org.w3c.dom.NodeList;
  */
 public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(AbstractAdobeConnectProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractAdobeConnectProvider.class);
 
 	private static final String PREFIX = "olat-";
 	public static final String COOKIE = "BREEZESESSION=";

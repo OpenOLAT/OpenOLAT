@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -34,7 +35,6 @@ import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
@@ -51,7 +51,7 @@ import org.springframework.stereotype.Service;
 @Service("certificationNotificationHandler")
 public class CertificationNotificationHandler implements NotificationsHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(CertificationNotificationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(CertificationNotificationHandler.class);
 	
 	@Autowired
 	private UserManager userManager;

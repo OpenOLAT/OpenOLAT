@@ -28,8 +28,8 @@ import java.util.List;
 
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.ims.qti21.QTI21Constants;
@@ -71,7 +71,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
  */
 public abstract class AssessmentItemBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentItemBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentItemBuilder.class);
 
 	protected final AssessmentItem assessmentItem;
 	protected final QtiSerializer qtiSerializer;

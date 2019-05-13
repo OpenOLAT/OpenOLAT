@@ -28,7 +28,7 @@ package org.olat.ims.qti21;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
@@ -47,7 +47,7 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  */
 public class QTI21LoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21LoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21LoggingAction.class);
 
 	// the following is a user clicking within a test
 	public static final ILoggingAction QTI_START_IN_COURSE = 

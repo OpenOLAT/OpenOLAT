@@ -39,7 +39,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -97,7 +97,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  */
 public class PortfolioCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
 	
-	private static final OLog log = Tracing.createLoggerFor(PortfolioCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(PortfolioCourseNode.class);
 	private static final int CURRENT_CONFIG_VERSION = 2;
 	
 	public static final String EDIT_CONDITION_ID = "editportfolio";

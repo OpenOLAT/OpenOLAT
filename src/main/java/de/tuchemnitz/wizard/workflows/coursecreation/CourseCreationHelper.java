@@ -36,13 +36,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -91,7 +91,7 @@ import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfigu
  */
 public class CourseCreationHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(CourseCreationHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseCreationHelper.class);
 
 	private CourseCreationConfiguration courseConfig;
 	private final Translator translator;

@@ -39,7 +39,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -92,7 +92,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
 @Service("qtiPoolServiceProvider")
 public class QTIQPoolServiceProvider implements QPoolSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTIQPoolServiceProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(QTIQPoolServiceProvider.class);
 	
 	public static final String QTI_12_OO_TEST = "OpenOLAT Test";
 

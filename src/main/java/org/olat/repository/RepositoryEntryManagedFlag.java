@@ -22,7 +22,7 @@ package org.olat.repository;
 import java.util.Arrays;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -65,7 +65,7 @@ public enum RepositoryEntryManagedFlag {
 	
 
 	private RepositoryEntryManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryManagedFlag.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryManagedFlag.class);
 	public static final RepositoryEntryManagedFlag[] EMPTY_ARRAY = new RepositoryEntryManagedFlag[0];
 	
 	private static RepositoryModule repositoryModule;

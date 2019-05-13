@@ -24,9 +24,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.QualityDataCollection;
 import org.olat.modules.quality.QualityService;
 import org.olat.registration.RegistrationManager;
@@ -40,6 +42,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_13_0_0_beta1 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_13_0_0_beta1.class);
 	
 	private static final String VERSION = "OLAT_13.0.0.beta1";
 	private static final String MIGRATE_QUALITY_DATA_COLLECTION_TO_ORGANISATION = "MIGRATE QUALITY DATA COLLECTION TO ORGANISATION";
@@ -80,9 +84,9 @@ public class OLATUpgrade_13_0_0_beta1 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_13_0_0_beta successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_13_0_0_beta successfully!");
 		} else {
-			log.audit("OLATUpgrade_13_0_0_beta not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_13_0_0_beta not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

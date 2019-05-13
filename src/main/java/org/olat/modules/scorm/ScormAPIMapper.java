@@ -44,7 +44,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
@@ -67,7 +67,7 @@ import org.olat.user.UserManager;
 public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 
 	private static final long serialVersionUID = -144400398761676983L;
-	private static final OLog log = Tracing.createLoggerFor(ScormAPIMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(ScormAPIMapper.class);
 	
 	private transient Identity identity;
 	private transient OLATApiAdapter scormAdapter;
@@ -227,11 +227,11 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			CoreSpringFactory.getImpl(AssessmentNotificationsHandler.class).markPublisherNews(identity, courseId);
 		}
 
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
 					+ olatSahsId + " occured, passed: " + passed
 					+ ", all lesson status now = " + lessonStatusProp.toString();
-			log.debug(msg, null);
+			log.debug(msg);
 		}
 	}
 	
@@ -292,11 +292,11 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			CoreSpringFactory.getImpl(AssessmentNotificationsHandler.class).markPublisherNews(identity, courseId);
 		}
 
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			String msg = "for scorm node:" + scormNode.getIdent() + " (" + scormNode.getShortTitle() + ") a lmsCommit for scoId "
 					+ olatSahsId + " occured, total sum = " + score + ", cutvalue =" + cutval + ", passed: " + passed
 					+ ", all scores now = " + scoProperties.toString();
-			log.debug(msg, null);
+			log.debug(msg);
 		}
 	}
 
@@ -307,7 +307,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		String apiCallParamOne = request.getParameter("apiCallParamOne");
 		String apiCallParamTwo = request.getParameter("apiCallParamTwo");
 		
-		if(log.isDebug()) {
+		if(log.isDebugEnabled()) {
 			log.debug("scorm api request by user:"+ identity.getName() +": " + apiCall + "('" + apiCallParamOne + "' , '" + apiCallParamTwo + "')");
 		}
 

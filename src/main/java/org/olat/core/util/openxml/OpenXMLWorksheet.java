@@ -30,7 +30,7 @@ import java.util.zip.ZipOutputStream;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.workbookstyle.CellStyle;
 
@@ -42,7 +42,7 @@ import org.olat.core.util.openxml.workbookstyle.CellStyle;
  */
 public class OpenXMLWorksheet {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenXMLWorksheet.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenXMLWorksheet.class);
 	
 	static private char[] COLUMNS;
 	static {

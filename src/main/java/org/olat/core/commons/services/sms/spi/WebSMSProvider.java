@@ -38,7 +38,7 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -56,7 +56,7 @@ import org.springframework.stereotype.Service;
 @Service("messagesSpiWebSMS")
 public class WebSMSProvider extends AbstractSpringModule implements MessagesSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(WebSMSProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(WebSMSProvider.class);
 	private final BasicCredentialsProvider provider = new BasicCredentialsProvider();
 	
 	private static final String NAME = "websms.username";

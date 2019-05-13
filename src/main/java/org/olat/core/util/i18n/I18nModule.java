@@ -41,7 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
@@ -68,7 +68,7 @@ import org.springframework.stereotype.Service;
 @Service("i18nModule")
 public class I18nModule extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(I18nModule.class);
+	private static final Logger log = Tracing.createLoggerFor(I18nModule.class);
 	
 	// Some general variables
 	public static final String LOCAL_STRINGS_FILE_PREFIX = "LocalStrings_";
@@ -190,7 +190,7 @@ public class I18nModule extends AbstractSpringModule {
 		if(isTransToolEnabled()) {
 			String sourcePath = WebappHelper.getSourcePath();
 			if(!StringHelper.containsNonWhitespace(sourcePath) || !(new File(sourcePath).exists())) {
-				log.error("Path to source wrong, translation tool may not work as expected: " + sourcePath, null);
+				log.error("Path to source wrong, translation tool may not work as expected: " + sourcePath);
 			}
 		}
 	}
@@ -209,11 +209,11 @@ public class I18nModule extends AbstractSpringModule {
 		}
 
 		// Set caching configuration of local strings
-		log.info("Localization caching set to: " + cachingEnabled, null);
+		log.info("Localization caching set to: " + cachingEnabled);
 
 		// Set how the list of available availableLanguages will be shown
 		// (drop-down[true] or in one line[false])
-		log.info("Configuring 'dropDownListEnabled = " + languageDropDownListEnabled + "'", null);
+		log.info("Configuring 'dropDownListEnabled = " + languageDropDownListEnabled + "'");
 
 		// Set additional source path to load languages from and to store
 		// languages when using the translation tool. Init the values even when transtool is not configured for development mode		
@@ -234,8 +234,8 @@ public class I18nModule extends AbstractSpringModule {
 			} else {
 				// disable, pathes not configured properly
 				translationToolEnabled = false;
-				log.warn("Translation configuration enabled but invalid translation tool source path defined. Disabling translation tool. Fix your configuration in spring config of i18Module", null);
-				log.warn(" transToolApplicationSrcPath::" + transToolApplicationSrcPath + " transToolApplicationI18nSrcPath::" + transToolApplicationOptSrcPath, null);
+				log.warn("Translation configuration enabled but invalid translation tool source path defined. Disabling translation tool. Fix your configuration in spring config of i18Module");
+				log.warn(" transToolApplicationSrcPath::" + transToolApplicationSrcPath + " transToolApplicationI18nSrcPath::" + transToolApplicationOptSrcPath);
 			}
 		}
 
@@ -250,7 +250,7 @@ public class I18nModule extends AbstractSpringModule {
 		doInitLanguageConfiguration();
 
 		log.info("Configured i18nModule with default language::" + getDefaultLocale().toString() + " and the reference languages '"
-				+ referenceLanguages + "' and the following enabled languages: " + enabledLanguagesKeys.toString(), null);
+				+ referenceLanguages + "' and the following enabled languages: " + enabledLanguagesKeys.toString());
 	}
 
 	@Override
@@ -277,10 +277,10 @@ public class I18nModule extends AbstractSpringModule {
 					if (availableLanguages.contains(languageCode)) {
 						String path = "";
 						if (transToolApplicationOptLanguagesSrcDir != null) path = transToolApplicationOptLanguagesSrcDir.getAbsolutePath();
-						log.debug("Skipping duplicate or previously loaded language::" + languageCode + " found in " +path , null);
+						log.debug("Skipping duplicate or previously loaded language::" + languageCode + " found in " +path );
 						continue;
 					}
-					log.debug("Detected translatable language " + languageCode + " in " + transToolApplicationLanguagesDir.getAbsolutePath(), null);
+					log.debug("Detected translatable language " + languageCode + " in " + transToolApplicationLanguagesDir.getAbsolutePath());
 					availableLanguages.add(languageCode);
 					translatableLanguages.add(languageCode);
 					translatableLangAppBaseDirLookup.put(languageCode, transToolApplicationLanguagesDir);
@@ -291,10 +291,10 @@ public class I18nModule extends AbstractSpringModule {
 		if (isTransToolEnabled()) {
 			for (String languageCode : searchForAvailableLanguages(transToolApplicationOptLanguagesSrcDir)) {
 				if (availableLanguages.contains(languageCode)) {
-					log.debug("Skipping duplicate or previously loaded language::" + languageCode + " found in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
+					log.debug("Skipping duplicate or previously loaded language::" + languageCode + " found in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath());
 					continue;
 				}
-				log.debug("Detected translatable language " + languageCode + " in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath(), null);
+				log.debug("Detected translatable language " + languageCode + " in " + transToolApplicationOptLanguagesSrcDir.getAbsolutePath());
 				availableLanguages.add(languageCode);
 				translatableLanguages.add(languageCode);
 				translatableLangAppBaseDirLookup.put(languageCode, transToolApplicationOptLanguagesSrcDir);
@@ -307,10 +307,10 @@ public class I18nModule extends AbstractSpringModule {
 			File libDir = new File(WebappHelper.getBuildOutputFolderRoot());
 			for (String languageCode : searchForAvailableLanguages(libDir)) {
 				if (availableLanguages.contains(languageCode)) {
-					log.debug("Skipping duplicate or previously loaded  language::" + languageCode + " found in " + libDir.getAbsolutePath(), null);
+					log.debug("Skipping duplicate or previously loaded  language::" + languageCode + " found in " + libDir.getAbsolutePath());
 					continue;
 				}
-				log.debug("Detected non-translatable language " + languageCode + " in " + libDir.getAbsolutePath(), null);
+				log.debug("Detected non-translatable language " + languageCode + " in " + libDir.getAbsolutePath());
 				availableLanguages.add(languageCode);
 				// don't add to translatable languages nor to source lookup maps - those
 				// langs are read only
@@ -322,10 +322,10 @@ public class I18nModule extends AbstractSpringModule {
 			for (String languageCode : enabledLanguages) {
 				if (availableLanguages.contains(languageCode)) {
 					log.warn("Skipping duplicate or previously loaded  language::" + languageCode + " found in "
-							+ LANG_PACKS_DIRECTORY.getAbsolutePath(), null);
+							+ LANG_PACKS_DIRECTORY.getAbsolutePath());
 					continue;
 				}
-				log.debug("Force non-translatable language " + languageCode + " defined from enabledLanguages.", null);
+				log.debug("Force non-translatable language " + languageCode + " defined from enabledLanguages.");
 				availableLanguages.add(languageCode);
 			}
 		}
@@ -334,10 +334,10 @@ public class I18nModule extends AbstractSpringModule {
 		for (String languageCode : searchForAvailableLanguages(LANG_PACKS_DIRECTORY)) {
 			if (availableLanguages.contains(languageCode)) {
 				log.warn("Skipping duplicate or previously loaded  language::" + languageCode + " found in "
-						+ LANG_PACKS_DIRECTORY.getAbsolutePath(), null);
+						+ LANG_PACKS_DIRECTORY.getAbsolutePath());
 				continue;
 			}
-			log.debug("Detected non-translatable language " + languageCode + " in " + LANG_PACKS_DIRECTORY.getAbsolutePath(), null);
+			log.debug("Detected non-translatable language " + languageCode + " in " + LANG_PACKS_DIRECTORY.getAbsolutePath());
 			availableLanguages.add(languageCode);
 			// don't add to translatable languages nor to source lookup maps - those
 			// langs are read only
@@ -348,14 +348,13 @@ public class I18nModule extends AbstractSpringModule {
 		// Proceed with some sanity checks
 		if (availableLanguages.size() == 0 || !availableLanguages.contains(Locale.ENGLISH.toString())) { throw new OLATRuntimeException(
 			"Did not find any language files, not even 'en'! At least 'en' must be available.", null); }
-		List<String> toRemoveLangs = new ArrayList<String>();
+		List<String> toRemoveLangs = new ArrayList<>();
 		//
 		// Build list of all locales and the overlay locales if available
 		for (String langKey : availableLanguages) {
 			Locale locale = createLocale(langKey);
 			if (locale == null) {
-				log.error("Could not create locale for lang::" + langKey + ", skipping language and remove it from list of available languages",
-						null);
+				log.error("Could not create locale for lang::" + langKey + ", skipping language and remove it from list of available languages");
 				toRemoveLangs.add(langKey);
 				continue;
 			}
@@ -371,7 +370,7 @@ public class I18nModule extends AbstractSpringModule {
 				// same as overlayLocale.toString(), this would add '_' for each element
 				String overlayKey = getLocaleKey(overlayLocale);
 				if (overlayLocale == null) {
-					log.error("Could not create overlay locale for lang::" + langKey + " (" + overlayKey + "), skipping language", null);
+					log.error("Could not create overlay locale for lang::" + langKey + " (" + overlayKey + "), skipping language");
 					continue;
 				}
 				// Don't add same overlay twice
@@ -397,11 +396,11 @@ public class I18nModule extends AbstractSpringModule {
 
 		// Check if translation tool reference languages are available
 		if (isTransToolEnabled() && transToolReferenceLanguages.size() == 0) {
-			log.error("Did not find the fallback language configuration in the configuration, using language::en instead", null);
+			log.error("Did not find the fallback language configuration in the configuration, using language::en instead");
 		} else {
 			for (String langKey : transToolReferenceLanguages) {
 				if (!allLocales.containsKey(langKey)) {
-					log.error("The configured fallback language::" + langKey + " does not exist. Using language::en instead", null);
+					log.error("The configured fallback language::" + langKey + " does not exist. Using language::en instead");
 				}
 			}
 		}
@@ -428,7 +427,7 @@ public class I18nModule extends AbstractSpringModule {
 			for (String langFileName : langFiles) {
 				String lang = langFileName.substring(I18nModule.LOCAL_STRINGS_FILE_PREFIX.length(), langFileName.lastIndexOf("."));
 				foundLanguages.add(lang);
-				log.debug("Adding lang::" + lang + " from filename::" + langFileName + " from dir::" + i18nDir.getAbsolutePath(), null);
+				log.debug("Adding lang::" + lang + " from filename::" + langFileName + " from dir::" + i18nDir.getAbsolutePath());
 			}
 		}
 		return foundLanguages;
@@ -555,16 +554,15 @@ public class I18nModule extends AbstractSpringModule {
 		String defaultLanguageKey = getStringPropertyValue(CONFIG_DEFAULT_LANG, false);
 		Locale newDefaultLocale = allLocales.get(defaultLanguageKey);
 		if (newDefaultLocale == null) {
-			log.error("Could not set default locale to value::" + defaultLanguageKey + " - no such language found. Using fallback locale instead",
-					null);
+			log.error("Could not set default locale to value::" + defaultLanguageKey + " - no such language found. Using fallback locale instead");
 			newDefaultLocale = allLocales.get(transToolReferenceLanguages.get(0));
 		} else if (!availableLanguages.contains(newDefaultLocale.toString())) {
 			log.error("Did not find the default language::" + newDefaultLocale.toString()
-					+ " in the available availableLanguages files! Using fallback locale instead", null);
+					+ " in the available availableLanguages files! Using fallback locale instead");
 			newDefaultLocale = allLocales.get(transToolReferenceLanguages.get(0));
 		}
 		defaultLocale = newDefaultLocale;
-		log.info("Setting default locale::" + newDefaultLocale.toString(), null);
+		log.info("Setting default locale::" + newDefaultLocale.toString());
 
 		// Enabling configured languages (a subset of the available languages)
 		String[] enabledLanguages;
@@ -581,13 +579,12 @@ public class I18nModule extends AbstractSpringModule {
 				enabledLanguagesKeys.add(langKey);
 			} // else skip this entry
 		}
-		log.info("Enabling languages::" + enabledLanguagesConfig, null);
+		log.info("Enabling languages::" + enabledLanguagesConfig);
 		// Make sure that the configured default language is enabled
 		if (!enabledLanguagesKeys.contains(getDefaultLocale().toString())) {
 			String defLang = getDefaultLocale().toString();
 			enabledLanguagesKeys.add(defLang);
-			log.warn("The configured default language::" + defLang + " is not in the list of enabled languages. Enabling language::" + defLang,
-					null);
+			log.warn("The configured default language::" + defLang + " is not in the list of enabled languages. Enabling language::" + defLang);
 		}
 	}
 

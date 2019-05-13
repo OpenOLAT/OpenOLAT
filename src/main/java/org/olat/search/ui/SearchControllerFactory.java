@@ -31,7 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.BusinessControl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
@@ -59,7 +59,7 @@ import org.olat.user.UserManager;
  */
 public class SearchControllerFactory implements SearchServiceUIFactory {
 	
-	private static final OLog log = Tracing.createLoggerFor(SearchControllerFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchControllerFactory.class);
 	
 	@Override
 	public SearchInputController createInputController(UserRequest ureq, WindowControl wControl, DisplayOption displayOption, Form mainForm) {

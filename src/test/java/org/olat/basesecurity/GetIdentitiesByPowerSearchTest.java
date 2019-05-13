@@ -43,7 +43,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -57,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(GetIdentitiesByPowerSearchTest.class);
+	private static final Logger log = Tracing.createLoggerFor(GetIdentitiesByPowerSearchTest.class);
 	
 	@Autowired
 	private DB dbInstance;

@@ -33,7 +33,7 @@ import java.util.List;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -54,7 +54,7 @@ import org.olat.resource.OLATResource;
  */
 public class ImsRepositoryResolver implements Resolver {
 	
-	private static final OLog log = Tracing.createLoggerFor(ImsRepositoryResolver.class);
+	private static final Logger log = Tracing.createLoggerFor(ImsRepositoryResolver.class);
 
 	public static final String QTI_FILE = "qti.xml";
 	public static final String QTI_FIB_AUTOCOMPLETE_JS_FILE = "media/fibautocompl.js";

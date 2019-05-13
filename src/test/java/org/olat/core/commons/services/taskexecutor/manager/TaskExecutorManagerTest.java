@@ -29,7 +29,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.taskexecutor.LongRunnable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TaskExecutorManagerTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(TaskExecutorManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(TaskExecutorManagerTest.class);
 	
 	@Autowired
 	private DB dbInstance;

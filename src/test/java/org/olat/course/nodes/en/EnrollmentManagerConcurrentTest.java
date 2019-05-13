@@ -38,6 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -60,7 +61,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -98,7 +98,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EnrollmentManagerConcurrentTest extends OlatTestCase implements WindowControl {
 	//
-	private static OLog log = Tracing.createLoggerFor(EnrollmentManagerConcurrentTest.class);
+	private static final Logger log = Tracing.createLoggerFor(EnrollmentManagerConcurrentTest.class);
 	/*
 	 * ::Test Setup::
 	 */

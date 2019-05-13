@@ -33,7 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 
@@ -47,7 +47,7 @@ import org.olat.core.util.PathUtils;
  */
 public class GlossaryResource extends FileResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(GlossaryResource.class);
+	private static final Logger log = Tracing.createLoggerFor(GlossaryResource.class);
 
 	// type identifyer
 	public static final String TYPE_NAME = "FileResource.GLOSSARY";

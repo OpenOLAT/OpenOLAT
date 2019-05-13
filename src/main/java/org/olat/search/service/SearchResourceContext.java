@@ -31,7 +31,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.CourseNode;
@@ -42,7 +42,7 @@ import org.olat.modules.fo.Message;
  * @author Christian Guretzki
  */
 public class SearchResourceContext {
-	private static final OLog log = Tracing.createLoggerFor(SearchResourceContext.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchResourceContext.class);
 	
 	/** Workaround for forum message. Forum-Message is currently no OLATResourcable. */
 	public static final String MESSAGE_RESOURCE_TYPE = "Message";
@@ -138,7 +138,7 @@ public class SearchResourceContext {
 	 * @param courseNode
 	 */
 	public void setBusinessControlFor(CourseNode courseNode) {
-		if (log.isDebug()) log.debug("Course-node-ID=" + courseNode.getIdent());
+		if (log.isDebugEnabled()) log.debug("Course-node-ID=" + courseNode.getIdent());
 		setBusinessControlFor(OresHelper.createOLATResourceableInstance(CourseNode.class, Long.valueOf(courseNode.getIdent())));
   }
 

@@ -55,6 +55,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
@@ -62,7 +63,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
@@ -95,7 +95,7 @@ import org.springframework.stereotype.Component;
 @Path("repo/entries")
 public class RepositoryEntriesWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntriesWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntriesWebService.class);
 	private static final String VERSION = "1.0";
 	
 	@Autowired

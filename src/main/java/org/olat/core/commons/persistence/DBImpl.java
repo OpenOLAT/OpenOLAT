@@ -39,6 +39,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.RollbackException;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -49,7 +50,6 @@ import org.olat.core.configuration.Destroyable;
 import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 
@@ -62,7 +62,7 @@ import org.olat.core.logging.Tracing;
  * @author Christian Guretzki
  */
 public class DBImpl implements DB, Destroyable {
-	private static final OLog log = Tracing.createLoggerFor(DBImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(DBImpl.class);
 	private static final int MAX_DB_ACCESS_COUNT = 500;
 	private static DBImpl INSTANCE;
 	
@@ -282,7 +282,7 @@ public class DBImpl implements DB, Destroyable {
 	
 	private void updateDataStatistics(Object logObject) {
 		if (getData().getAccessCounter() > MAX_DB_ACCESS_COUNT) {
-			log.warn("beginTransaction bulk-change, too many db access for one transaction, could be a performance problem (add closeSession/createSession in loop) logObject=" + logObject, null);
+			log.warn("beginTransaction bulk-change, too many db access for one transaction, could be a performance problem (add closeSession/createSession in loop) logObject=" + logObject);
 			getData().resetAccessCounter();
 		} else {
   			getData().incrementAccessCounter();
@@ -340,7 +340,7 @@ public class DBImpl implements DB, Destroyable {
 		try {
 			Object relaoded = em.merge(object);
 			em.remove(relaoded);
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("delete (trans "+trx.hashCode()+") class "+object.getClass().getName()+" = "+object.toString());	
 			}
 		} catch (HibernateException e) { // we have some error
@@ -513,15 +513,15 @@ public class DBImpl implements DB, Destroyable {
 	 */
 	@Override
 	public void commit() {
-		boolean debug = log.isDebug();
-		if (debug) log.debug("commit start...", null);
+		boolean debug = log.isDebugEnabled();
+		if (debug) log.debug("commit start...");
 		try {
 			if (hasTransaction() && !isError()) {
-				if (debug) log.debug("has Transaction and is in Transaction => commit", null);
+				if (debug) log.debug("has Transaction and is in Transaction => commit");
 				getData().incrementCommitCounter();
 				if (debug) {
 					if ((maxCommitCounter != 0) && (getData().getCommitCounter() > maxCommitCounter) ) {
-						log.info("Call too many commit in a db-session, commitCounter=" + getData().getCommitCounter() +"; could be a performance problem" , null);
+						log.info("Call too many commit in a db-session, commitCounter=" + getData().getCommitCounter() +"; could be a performance problem");
 					}
 				}
 				
@@ -530,14 +530,14 @@ public class DBImpl implements DB, Destroyable {
 					trx.commit();
 				}
 
-				if (debug) log.debug("Commit DONE hasTransaction()=" + hasTransaction(), null);
+				if (debug) log.debug("Commit DONE hasTransaction()=" + hasTransaction());
 			} else if(hasTransaction() && isError()) {
 				EntityTransaction trx = getCurrentEntityManager().getTransaction();
 				if(trx != null && trx.isActive()) {
 					throw new DBRuntimeException("Try to commit a transaction in error status");
 				}
 			} else {
-				if (debug) log.debug("Call commit without starting transaction", null );
+				if (debug) log.debug("Call commit without starting transaction");
 			}
 		} catch (Error er) {
 			log.error("Uncaught Error in DBImpl.commit.", er);
@@ -579,7 +579,7 @@ public class DBImpl implements DB, Destroyable {
 	 */
 	@Override
 	public void rollback() {
-		if (log.isDebug()) log.debug("rollback start...", null);
+		if (log.isDebugEnabled()) log.debug("rollback start...");
 		try {
 			// see closeSession() and OLAT-4318: more robustness with commit/rollback/close, therefore
 			// we check if the connection is open at this stage at all

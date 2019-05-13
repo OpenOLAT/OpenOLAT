@@ -58,7 +58,7 @@ import org.apache.lucene.index.LogMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.olat.core.commons.persistence.DBFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.search.SearchModule;
@@ -74,7 +74,7 @@ import org.olat.search.service.SearchResourceContext;
  */
 public class OlatFullIndexer {
 	
-	private static final OLog log = Tracing.createLoggerFor(OlatFullIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(OlatFullIndexer.class);
 	private static final int INDEX_MERGE_FACTOR = 1000;
 	private static final int MAX_WAITING_COUNT = 600;// = 10Min
 	private static final IndexerThreadFactory indexWriterThreadFactory = new IndexerThreadFactory("writer");
@@ -197,7 +197,7 @@ public class OlatFullIndexer {
 	 */
 	public void stopIndexing() {
 		stopIndexing = true;
-		if (log.isDebug()) log.debug("stop current indexing when");
+		if (log.isDebugEnabled()) log.debug("stop current indexing when");
 	}
 	
 	

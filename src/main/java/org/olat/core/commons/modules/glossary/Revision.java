@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -40,7 +40,7 @@ import org.olat.core.util.StringHelper;
  */
 public class Revision {
 	
-	private static final OLog log = Tracing.createLoggerFor(Revision.class);
+	private static final Logger log = Tracing.createLoggerFor(Revision.class);
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("d MMM yyyy", Locale.ENGLISH);
 	
 	private Author author;

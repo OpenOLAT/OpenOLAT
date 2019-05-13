@@ -30,7 +30,7 @@ import java.util.List;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -54,7 +54,7 @@ import org.springframework.stereotype.Service;
 @Service("portfolioModule")
 public class PortfolioModule extends AbstractSpringModule implements ConfigOnOff {
 	
-	private static final OLog log = Tracing.createLoggerFor(PortfolioModule.class);
+	private static final Logger log = Tracing.createLoggerFor(PortfolioModule.class);
 	
 
 	@Value("${portfolio.enabled:false}")
@@ -191,7 +191,7 @@ public class PortfolioModule extends AbstractSpringModule implements ConfigOnOff
 				return handler;
 			}
 		}
-		log.warn("Either tried to get a disabled handler or could not return a handler for artefact-type: " + type, null);
+		log.warn("Either tried to get a disabled handler or could not return a handler for artefact-type: " + type);
 		return null;
 	}
 	

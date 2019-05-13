@@ -47,7 +47,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -67,7 +67,7 @@ import org.olat.search.service.indexer.Indexer;
 public class SearchResultsImpl implements SearchResults {
 
 	private static final long serialVersionUID = 3950063141792217522L;
-	private static final OLog log = Tracing.createLoggerFor(SearchResultsImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchResultsImpl.class);
 	
 	private static final String HIGHLIGHT_PRE_TAG  = "<span class=\"o_search_result_highlight\">"; 
 	private static final String HIGHLIGHT_POST_TAG = "</span>";

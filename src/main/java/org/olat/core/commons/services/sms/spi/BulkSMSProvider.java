@@ -28,6 +28,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.olat.core.commons.services.sms.MessagesSPI;
 import org.olat.core.commons.services.sms.SimpleMessageException;
@@ -36,7 +37,6 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -53,7 +53,7 @@ import org.springframework.stereotype.Service;
 @Service("messagesSpiBulkSMS")
 public class BulkSMSProvider extends AbstractSpringModule implements MessagesSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(BulkSMSProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(BulkSMSProvider.class);
 	
 	private static final String TOKEN_ID = "bulksms.token.id";
 	private static final String TOKEN_SECRET = "bulksms.token.secret";

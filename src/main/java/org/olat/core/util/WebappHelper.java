@@ -43,7 +43,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.configuration.Initializable;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -61,7 +61,7 @@ import org.springframework.web.context.ServletContextAware;
  */
 public class WebappHelper implements Initializable, Destroyable, ServletContextAware {
 	
-	private static final OLog log = Tracing.createLoggerFor(WebappHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(WebappHelper.class);
 	private static int nodeId;
 	private static final String bootId = UUID.randomUUID().toString();
 	private static String fullPathToSrc;

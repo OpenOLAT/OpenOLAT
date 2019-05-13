@@ -19,7 +19,9 @@
  */
 package org.olat.upgrade;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.tools.UserToolsModule;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.home.HomeMainController;
 import org.olat.modules.portfolio.PortfolioV2Module;
@@ -33,6 +35,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_11_0_2 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_11_0_2.class);
 	
 	private static final String PORTFOLIO_SETTINGS = "PORTFOLIO v2 USER TOOL";
 	private static final String VERSION = "OLAT_11.0.2";
@@ -69,9 +73,9 @@ public class OLATUpgrade_11_0_2 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_11_0_2 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_11_0_2 successfully!");
 		} else {
-			log.audit("OLATUpgrade_11_0_2 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_11_0_2 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

@@ -30,7 +30,7 @@ import org.olat.core.commons.services.doceditor.office365.Office365Module;
 import org.olat.core.commons.services.doceditor.office365.Office365Service;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -48,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HeadersFilter implements Filter {
 	
-	private static final OLog log = Tracing.createLoggerFor(HeadersFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(HeadersFilter.class);
 	
 	@Autowired
 	private CSPModule securityModule;

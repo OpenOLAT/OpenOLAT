@@ -45,7 +45,7 @@ import org.olat.core.commons.services.taskexecutor.model.PersistentTask;
 import org.olat.core.commons.services.taskexecutor.model.PersistentTaskRunnable;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.resource.OLATResource;
 import org.quartz.JobKey;
@@ -65,7 +65,7 @@ import org.quartz.SchedulerException;
  * @author srosse, stephane.rosse@frentix.com, http://www.frnetix.com
  */
 public class TaskExecutorManagerImpl implements TaskExecutorManager {
-	private static final OLog log = Tracing.createLoggerFor(TaskExecutorManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(TaskExecutorManagerImpl.class);
 	private final ExecutorService taskExecutor;
 	private final ExecutorService sequentialTaskExecutor;
 	private final ExecutorService lowPriorityTaskExecutor;
@@ -148,7 +148,7 @@ public class TaskExecutorManagerImpl implements TaskExecutorManager {
 				taskExecutor.submit(safetask);
 			}
 		} else {
-			log.error("taskExecutor is not initialized (taskExecutor=null). Do not call 'runTask' before TaskExecutorModule is initialized.", null);
+			log.error("taskExecutor is not initialized (taskExecutor=null). Do not call 'runTask' before TaskExecutorModule is initialized.");
 			throw new AssertException("taskExecutor is not initialized");
 		}
 	}

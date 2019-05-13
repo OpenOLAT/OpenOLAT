@@ -23,13 +23,13 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.PriceMethod;
@@ -43,7 +43,7 @@ import org.olat.repository.ui.catalog.CatalogEntryRow;
  */
 public class ACRenderer implements FlexiCellRenderer {
 	
-	private static final OLog log = Tracing.createLoggerFor(ACRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(ACRenderer.class);
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object val,

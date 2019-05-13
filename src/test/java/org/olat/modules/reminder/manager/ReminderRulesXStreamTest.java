@@ -24,7 +24,7 @@ import java.io.InputStream;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.reminder.model.ImportExportReminders;
 import org.olat.modules.reminder.model.ReminderRules;
@@ -37,7 +37,7 @@ import org.olat.modules.reminder.model.ReminderRules;
  */
 public class ReminderRulesXStreamTest {
 	
-	private static final OLog log = Tracing.createLoggerFor(ReminderRulesXStreamTest.class);
+	private static final Logger log = Tracing.createLoggerFor(ReminderRulesXStreamTest.class);
 	
 	@Test
 	public void readReminderRulesXml() {

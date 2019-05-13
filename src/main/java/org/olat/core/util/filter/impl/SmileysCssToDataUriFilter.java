@@ -21,7 +21,7 @@ package org.olat.core.util.filter.impl;
 
 import java.util.regex.Pattern;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
 
@@ -34,7 +34,7 @@ import org.olat.core.util.filter.Filter;
  * @author gnaegi
  */
 public class SmileysCssToDataUriFilter implements Filter {	
-	private static final OLog log = Tracing.createLoggerFor(SmileysCssToDataUriFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(SmileysCssToDataUriFilter.class);
 
 	private static final Pattern smile = Pattern.compile("<img class=\"o_emoticons_smile\" src=\"/?+[^/]*/?+raw/_noversion_/images/transparent.gif\" alt=\"\" />");
 	private static final Pattern sad = Pattern.compile("<img class=\"o_emoticons_sad\" src=\"/?+[^/]*/?+raw/_noversion_/images/transparent.gif\" alt=\"\" />");

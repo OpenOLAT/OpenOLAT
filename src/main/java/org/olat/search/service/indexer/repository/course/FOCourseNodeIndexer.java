@@ -27,13 +27,13 @@ package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -54,7 +54,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndexer {
-	private static final OLog log = Tracing.createLoggerFor(FOCourseNodeIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(FOCourseNodeIndexer.class);
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public static final String TYPE = "type.course.node.forum.message";
@@ -112,7 +112,7 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 	 * @throws IOException
 	 */
 	private void doIndexForum(SearchResourceContext parentResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		if (log.isDebug()) log.debug("Index Course Forum...");
+		if (log.isDebugEnabled()) log.debug("Index Course Forum...");
 		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 

@@ -19,7 +19,7 @@
  */
 package org.olat.ims.qti21.manager.extensions;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.manager.OpenOLATExtensionPackage;
 
@@ -57,7 +57,7 @@ import uk.ac.ed.ph.qtiworks.mathassess.value.ReturnTypeType;
  */
 public class MaximaOperator extends CustomOperator<OpenOLATExtensionPackage>  {
 	
-	private final static OLog log = Tracing.createLoggerFor(MaximaOperator.class);
+	private static final Logger log = Tracing.createLoggerFor(MaximaOperator.class);
 
 	private static final long serialVersionUID = -5085928825187250511L;
 

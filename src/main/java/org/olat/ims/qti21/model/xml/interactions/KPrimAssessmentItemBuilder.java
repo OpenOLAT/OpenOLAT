@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.QTI21QuestionType;
@@ -81,7 +81,7 @@ import uk.ac.ed.ph.jqtiplus.value.SingleValue;
  */
 public class KPrimAssessmentItemBuilder extends AssessmentItemBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(KPrimAssessmentItemBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(KPrimAssessmentItemBuilder.class);
 
 	private boolean shuffle;
 	private String question;

@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.ui.components.AssessmentObjectComponentRenderer.RenderingRequest;
 
@@ -58,7 +58,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
 public class AssessmentTestComponent extends AssessmentObjectComponent  {
 	
 	private static final AssessmentTestComponentRenderer VELOCITY_RENDERER = new AssessmentTestComponentRenderer();
-	private static final OLog log = Tracing.createLoggerFor(AssessmentTestComponent.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentTestComponent.class);
 	
 	private TestSessionController testSessionController;
 	private ResolvedAssessmentTest resolvedAssessmentTest;

@@ -41,7 +41,7 @@ import org.junit.Test;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.xml.XMLParser;
 import org.olat.ims.qti.QTIResult;
@@ -73,7 +73,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author mkuendig, srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class QTIStatisticsManagerLargeTest extends OlatTestCase {
-	private static OLog log = Tracing.createLoggerFor(QTIStatisticsManagerLargeTest.class);
+	private static final Logger log = Tracing.createLoggerFor(QTIStatisticsManagerLargeTest.class);
 
 	private static boolean isInitialized = false;
 	private static Long olatResource ;

@@ -35,7 +35,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.statistic.IStatisticManager;
@@ -52,7 +52,7 @@ import org.olat.course.statistic.TotalAwareColumnDescriptor;
 public class HourOfDayStatisticManager implements IStatisticManager {
 
 	/** the logging object used in this class **/
-	private static final OLog log = Tracing.createLoggerFor(HourOfDayStatisticManager.class);
+	private static final Logger log = Tracing.createLoggerFor(HourOfDayStatisticManager.class);
 
 	@Override
 	public StatisticResult generateStatisticResult(UserRequest ureq, ICourse course, long courseRepositoryEntryKey) {

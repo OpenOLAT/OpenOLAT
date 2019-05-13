@@ -30,6 +30,8 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -43,8 +45,10 @@ import org.olat.search.service.document.file.FileDocumentFactory;
  */
 public abstract class LeafIndexer extends AbstractHierarchicalIndexer {
 
+	private static final Logger log = Tracing.createLoggerFor(LeafIndexer.class);
+
 	protected void doIndexVFSLeafByMySelf(SearchResourceContext leafResourceContext, VFSLeaf leaf, OlatFullIndexer indexWriter, String filePath) throws InterruptedException {
-		if (isLogDebugEnabled()) logDebug("Analyse VFSLeaf=" + leaf.getName());
+		if (log.isDebugEnabled()) log.debug("Analyse VFSLeaf=" + leaf.getName());
 		try {
 			FileDocumentFactory documentFactory = CoreSpringFactory.getImpl(FileDocumentFactory.class);
 			if (documentFactory.isFileSupported(leaf)) {
@@ -59,16 +63,16 @@ public abstract class LeafIndexer extends AbstractHierarchicalIndexer {
 				Document document = documentFactory.createDocument(leafResourceContext, leaf);
 				indexWriter.addDocument(document);
 			} else {
-				if (isLogDebugEnabled()) logDebug("Documenttype not supported. file=" + leaf.getName());
+				if (log.isDebugEnabled()) log.debug("Documenttype not supported. file=" + leaf.getName());
 			}
 		} catch (DocumentAccessException e) {
-			if (isLogDebugEnabled()) logDebug("Can not access document." + e.getMessage());
+			if (log.isDebugEnabled()) log.debug("Can not access document." + e.getMessage());
 		} catch (IOException ioEx) {
-			logWarn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
+			log.warn("IOException: Can not index leaf=" + leaf.getName(), ioEx);
 		} catch (InterruptedException iex) {
 			throw new InterruptedException(iex.getMessage());
 		} catch (Exception ex) {
-			logWarn("Exception: Can not index leaf=" + leaf.getName(), ex);
+			log.warn("Exception: Can not index leaf=" + leaf.getName(), ex);
 		}
 	}
 	

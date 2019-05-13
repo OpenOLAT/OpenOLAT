@@ -29,6 +29,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -39,7 +40,6 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -69,6 +69,8 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class CPCourseNode extends AbstractAccessableCourseNode {
+	
+	private static final Logger log = Tracing.createLoggerFor(CPCourseNode.class);
 
 	private static final long serialVersionUID = -4317662219173515498L;
 	private static final String TYPE = "cp";
@@ -255,8 +257,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 			// else node is up-to-date - nothing to do
 		}
 		if (config.getConfigurationVersion() != CURRENTVERSION) {
-			OLog logger = Tracing.createLoggerFor(CPCourseNode.class);
-			logger.error("CP course node version not updated to lastest version::" + CURRENTVERSION + ", was::" + config.getConfigurationVersion() + ". Check the code, programming error.");
+			log.error("CP course node version not updated to lastest version::" + CURRENTVERSION + ", was::" + config.getConfigurationVersion() + ". Check the code, programming error.");
 		}
 	}
 

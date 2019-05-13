@@ -43,7 +43,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -53,7 +53,7 @@ import org.olat.core.util.StringHelper;
  *
  */
 public class LinkRenderer extends DefaultComponentRenderer {
-	private static final OLog log = Tracing.createLoggerFor(LinkRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(LinkRenderer.class);
 	private static final Pattern singleQuote = Pattern.compile("\'");
 	private static final Pattern doubleQutoe = Pattern.compile("\"");
 

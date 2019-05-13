@@ -30,7 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class PdfControllerResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(PdfControllerResource.class);
+	private static final Logger log = Tracing.createLoggerFor(PdfControllerResource.class);
 	
 	private final String label;
 	private final Identity identity;

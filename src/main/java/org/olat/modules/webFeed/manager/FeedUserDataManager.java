@@ -37,7 +37,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.velocity.VelocityRenderDecorator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -61,7 +61,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class FeedUserDataManager implements UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(FeedUserDataManager.class);
+	private static final Logger log = Tracing.createLoggerFor(FeedUserDataManager.class);
 	
 	@Autowired
 	private DB dbInstance;

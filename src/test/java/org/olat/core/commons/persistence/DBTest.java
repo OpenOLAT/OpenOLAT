@@ -37,11 +37,11 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -57,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class DBTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(DBTest.class);
+	private static final Logger log = Tracing.createLoggerFor(DBTest.class);
 	
 	@Autowired
 	private DBImpl dbInstance;

@@ -19,7 +19,7 @@
  */
 package org.olat.modules.reminder.model;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -30,7 +30,7 @@ import org.olat.core.logging.Tracing;
  */
 public class SendTime {
 	
-	private static final OLog log = Tracing.createLoggerFor(SendTime.class);
+	private static final Logger log = Tracing.createLoggerFor(SendTime.class);
 	
 	private final int hour;
 	private final int minute;

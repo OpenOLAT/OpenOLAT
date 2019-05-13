@@ -47,7 +47,7 @@ import org.apache.commons.io.IOUtils;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.commons.services.image.ImageUtils;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.ShieldInputStream;
@@ -75,7 +75,7 @@ import fmath.conversion.ConvertFromMathMLToWord;
  */
 public class OpenXMLDocument {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenXMLDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenXMLDocument.class);
 	
 	private final int DPI = 72;
 	

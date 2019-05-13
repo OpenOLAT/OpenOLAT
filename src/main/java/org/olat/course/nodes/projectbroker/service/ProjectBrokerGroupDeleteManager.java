@@ -26,7 +26,7 @@ package org.olat.course.nodes.projectbroker.service;
 
 import java.util.List;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OLATResourceableDeletedEvent;
@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 @Service(value="projectBrokerGroupDeleteManager")
 public class ProjectBrokerGroupDeleteManager implements DeletableGroupData {
 
-	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerGroupDeleteManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerGroupDeleteManager.class);
 
 	@Autowired
 	private ProjectBrokerManager projectBrokerManager;

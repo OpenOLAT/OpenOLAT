@@ -38,6 +38,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +47,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
@@ -75,7 +75,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(CurriculumsWebServiceTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CurriculumsWebServiceTest.class);
 	
 	@Autowired
 	private DB dbInstance;

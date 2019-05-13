@@ -155,7 +155,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 				allUsersStruct = ePFMgr.getStructureElementsForUser(getIdentity(), ElementType.DEFAULT_MAP);
 		}
 		if (isLogDebugEnabled()) {
-			logDebug("got all structures to see at: ", String.valueOf(System.currentTimeMillis()));
+			logDebug("got all structures to see at: " + System.currentTimeMillis());
 		}
 		return allUsersStruct;
 	}
@@ -167,11 +167,11 @@ public class EPMultipleMapController extends BasicController implements Activate
 	private void initOrUpdateMaps(UserRequest ureq) {		
 		if (isLogDebugEnabled()) {
 			start = System.currentTimeMillis();
-			logDebug("start loading map overview at : ", String.valueOf(start));
+			logDebug("start loading map overview at : " + start);
 		}
 		
 		List<PortfolioStructure> allUsersStruct = getUsersStructsToDisplay();
-		userMaps = new ArrayList<PortfolioStructureMap>();
+		userMaps = new ArrayList<>();
 		if (allUsersStruct.isEmpty()) {
 			vC.contextPut("noMaps", true);
 			return;
@@ -188,10 +188,10 @@ public class EPMultipleMapController extends BasicController implements Activate
 			
 			int additionalPage = ((elementCount % ITEMS_PER_PAGE) > 0)?1:0;
 			int pageCount = (elementCount/ITEMS_PER_PAGE) + additionalPage;
-			List<Component> pagingLinks = new ArrayList<Component>();
+			List<Component> pagingLinks = new ArrayList<>();
 			for(int i = 1; i < pageCount+1; i++){
 				Link pageLink = LinkFactory.createCustomLink(PAGING_LINK_PREFIX+i, "switchPage", String.valueOf(i), Link.NONTRANSLATED, vC, this);
-				pageLink.setUserObject(new Integer(i));
+				pageLink.setUserObject(Integer.valueOf(i));
 				pagingLinks.add(pageLink);
 				if(i == currentPageNum){
 					pageLink.setEnabled(false);
@@ -208,13 +208,13 @@ public class EPMultipleMapController extends BasicController implements Activate
 
 		//now display the maps
 		
-		List<String> artAmount = new ArrayList<String>(userMaps.size());
-		List<Integer> childAmount = new ArrayList<Integer>(userMaps.size());
-		List<String> mapStyles = new ArrayList<String>(userMaps.size());
-		List<Date> deadLines = new ArrayList<Date>(userMaps.size());
-		List<String> restriStats = new ArrayList<String>(userMaps.size());
-		List<String> owners = new ArrayList<String>(userMaps.size());
-		List<String> amounts = new ArrayList<String>(userMaps.size());
+		List<String> artAmount = new ArrayList<>(userMaps.size());
+		List<Integer> childAmount = new ArrayList<>(userMaps.size());
+		List<String> mapStyles = new ArrayList<>(userMaps.size());
+		List<Date> deadLines = new ArrayList<>(userMaps.size());
+		List<String> restriStats = new ArrayList<>(userMaps.size());
+		List<String> owners = new ArrayList<>(userMaps.size());
+		List<String> amounts = new ArrayList<>(userMaps.size());
 		
  		int i = 1;
 		for (PortfolioStructure portfolioStructure : allUsersStruct) {
@@ -266,7 +266,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 					}
 				}
 				if (isLogDebugEnabled()) {
-					logDebug("  in loop : got share state at: ", String.valueOf(System.currentTimeMillis()));
+					logDebug("  in loop : got share state at: " + System.currentTimeMillis());
 				}
 				
 				// get deadline + link to course
@@ -284,7 +284,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 						vC.contextPut("courseLink" + i, url);
 					}
 					if (isLogDebugEnabled()) {
-						logDebug("  in loop : looked up course at : ", String.valueOf(System.currentTimeMillis()));
+						logDebug("  in loop : looked up course at : " + System.currentTimeMillis());
 					}
 					// get some stats about the restrictions if available
 					String[] stats = ePFMgr.getRestrictionStatisticsOfMap(structMap);
@@ -303,7 +303,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 						restriStats.add(null);
 					}
 					if (isLogDebugEnabled()) {
-						logDebug("  in loop : calculated restriction statistics at : ", String.valueOf(System.currentTimeMillis()));
+						logDebug("  in loop : calculated restriction statistics at : " + System.currentTimeMillis());
 					}											
 				} else {
 					deadLines.add(null);
@@ -323,7 +323,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 				
 				mapStyles.add(ePFMgr.getValidStyleName(map));
 				if (isLogDebugEnabled()) {
-					logDebug("  in loop : got map details (artefact-amount, child-struct-amount, style) at : ", String.valueOf(System.currentTimeMillis()));
+					logDebug("  in loop : got map details (artefact-amount, child-struct-amount, style) at : " + System.currentTimeMillis());
 				}
 				i++;
 			}
@@ -338,8 +338,8 @@ public class EPMultipleMapController extends BasicController implements Activate
 		vC.contextPut("userMaps", userMaps);
 		if (isLogDebugEnabled()) {
 			long now = System.currentTimeMillis();
-			logDebug("finished processing all maps at : ", String.valueOf(now));
-			logDebug("Total processing time for " + (i-1) + " maps was : ", String.valueOf(now-start));
+			logDebug("finished processing all maps at : " + now);
+			logDebug("Total processing time for " + (i-1) + " maps was : " + (now-start));
 		}
 	}
 
@@ -373,7 +373,7 @@ public class EPMultipleMapController extends BasicController implements Activate
 			} else if (srcLink.getComponentName().startsWith(DELETE_LINK_PREFIX)) {
 				deleteMap(ureq, selMap);
 			} else if (srcLink.getComponentName().startsWith(COPY_LINK_PREFIX)) {
-				List<String> buttonLabels = new ArrayList<String>();
+				List<String> buttonLabels = new ArrayList<>();
 				String introKey = "copy.map.intro";
 				if (ePFMgr.isMapOwner(getIdentity(), selMap)){
 					buttonLabels.add(translate("copy.with.artefacts"));
@@ -420,7 +420,6 @@ public class EPMultipleMapController extends BasicController implements Activate
 
 		String title = translate("map.share");
 		shareBox = new CloseableModalController(getWindowControl(), "close", shareListController.getInitialComponent(), true, title);
-		//shareBox.setInitialWindowSize(800, 600);
 		listenTo(shareBox);
 		shareBox.activate();
 	}

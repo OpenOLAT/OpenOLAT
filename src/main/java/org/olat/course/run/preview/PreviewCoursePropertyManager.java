@@ -34,7 +34,6 @@ import java.util.Map;
 
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.group.BusinessGroup;
@@ -46,12 +45,12 @@ import org.olat.properties.PropertyManager;
  *
  * @author Mike Stock
  */
-final class PreviewCoursePropertyManager extends BasicManager implements CoursePropertyManager {
+final class PreviewCoursePropertyManager implements CoursePropertyManager {
 
 	/**
 	 * Hashmap contains hasmaps
 	 */
-	private Map<String,List<Property>> properties = new HashMap<String,List<Property>>();
+	private Map<String,List<Property>> properties = new HashMap<>();
 	
 	/**
 	 * Creates a new course proprerty manager that stores properties per instance.
@@ -60,9 +59,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		//
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#createCourseNodePropertyInstance(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String, java.lang.Float, java.lang.Long, java.lang.String, java.lang.String)
-	 */
+	@Override
 	public Property createCourseNodePropertyInstance(CourseNode node, Identity identity, BusinessGroup group, String name, Float floatValue,
 			Long longValue, String stringValue, String textValue) {
 		Property p = PropertyManager.getInstance().createProperty();
@@ -77,9 +74,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		return p;
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#deleteProperty(org.olat.properties.Property)
-	 */
+	@Override
 	public void deleteProperty(Property p) {
 		List<Property> propertyList = getListOfProperties(p);
 		for (int i=0; i < propertyList.size(); i++) {
@@ -94,9 +89,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		}
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#saveProperty(org.olat.properties.Property)
-	 */
+	@Override
 	public void saveProperty(Property p) {
 		List<Property> propertyList = getListOfProperties(p);
 		// since this is a save (only done once after creation) we
@@ -104,16 +97,12 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		propertyList.add(p);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#updateProperty(org.olat.properties.Property)
-	 */
+	@Override
 	public void updateProperty(Property p) {
 		throw new AssertException("Not implemented for preview.");
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#listCourseNodeProperties(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String)
-	 */
+	@Override
 	public List<Property> listCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		throw new AssertException("Not implemented for preview.");
 	}
@@ -123,14 +112,11 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		return 0;
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#findCourseNodeProperties(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String)
-	 */
 	@Override
 	public List<Property> findCourseNodeProperties(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		List<Property> propertiesList = properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), (identity == null ? 0l : identity.getKey()), grp, name));
 		if (propertiesList == null) {
-			propertiesList = new ArrayList<Property>();
+			propertiesList = new ArrayList<>();
 		}
 		return propertiesList;
 	}
@@ -141,9 +127,6 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		return  (propertyList == null || propertyList.isEmpty()) ? null : propertyList.get(0);
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#findCourseNodeProperty(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.group.BusinessGroup, java.lang.String)
-	 */
 	@Override
 	public Property findCourseNodeProperty(CourseNode node, Identity identity, BusinessGroup grp, String name) {
 		List<Property> propertyList = properties.get(buildPropertyHashKey(buildCourseNodePropertyCategory(node), (identity == null ? 0l : identity.getKey()), grp, name));
@@ -156,9 +139,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		return Collections.emptyList();
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#deleteNodeProperties(org.olat.course.nodes.CourseNode, java.lang.String)
-	 */
+	@Override
 	public void deleteNodeProperties(CourseNode courseNode, String name) {
 		String category = buildCourseNodePropertyCategory(courseNode);
 		Object[] keys = properties.keySet().toArray();
@@ -183,7 +164,7 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
 		// get the list of properties for this key...
 		List<Property> propertyList = properties.get(propertyKey);
 		if (propertyList == null) {
-			propertyList = new ArrayList<Property>();
+			propertyList = new ArrayList<>();
 			properties.put(propertyKey, propertyList);
 		}
 		return propertyList;
@@ -201,25 +182,18 @@ final class PreviewCoursePropertyManager extends BasicManager implements CourseP
     String type = (node.getType().length() > 4 ? node.getType().substring(0,4) : node.getType());
     return ("NID:" + type + "::" + node.getIdent());
 	}
-	
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#getAnonymizedUserName(org.olat.core.id.Identity)
-	 */
+	@Override
 	public String getAnonymizedUserName(Identity identity) {
 		throw new AssertException("Not implemented for preview.");
 	}
-	
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#deleteAllCourseProperties()
-	 */
+
+	@Override
 	public void deleteAllCourseProperties() {
 		throw new AssertException("Not implemented for preview.");
 	}
 
-	/**
-	 * @see org.olat.course.properties.CoursePropertyManager#getAllIdentitiesWithCourseAssessmentData()
-	 */
+	@Override
 	public List<Identity> getAllIdentitiesWithCourseAssessmentData(Collection<Identity> excludeIdentities) {
 		throw new AssertException("Not implemented for preview.");
 	}

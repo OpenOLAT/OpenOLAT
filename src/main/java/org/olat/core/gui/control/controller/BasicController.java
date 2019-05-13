@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.dispatcher.mapper.MapperService;
@@ -48,7 +49,6 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
@@ -70,7 +70,7 @@ public abstract class BasicController extends DefaultController {
 	private final Identity identity;
 	private Translator translator;
 	private Translator fallbackTranslator;
-	private OLog logger;
+	private final Logger logger;
 
 	private List<MapperKey> mapperKeys;
 	private List<Controller> childControllers;
@@ -86,11 +86,13 @@ public abstract class BasicController extends DefaultController {
 	protected BasicController(UserRequest ureq, WindowControl wControl) {
 		super(wControl);
 		setLocale(ureq.getLocale());
-		this.identity = ureq.getIdentity();
-		this.translator = Util.createPackageTranslator(this.getClass(), getLocale());
-		this.fallbackTranslator = null;
-		this.velocity_root = Util.getPackageVelocityRoot(this.getClass());
-		this.logger = Tracing.createLoggerFor(this.getClass());
+		identity = ureq.getIdentity();
+		
+		Class<?> cl = this.getClass();
+		translator = Util.createPackageTranslator(cl, getLocale());
+		fallbackTranslator = null;
+		velocity_root = Util.getPackageVelocityRoot(cl);
+		logger = Tracing.createLoggerFor(cl);
 	}
 	
 	/**
@@ -109,16 +111,16 @@ public abstract class BasicController extends DefaultController {
 			Translator fallBackTranslator) {
 		super(wControl);
 		setLocale(ureq.getLocale());
-		this.identity = ureq.getIdentity();
+		identity = ureq.getIdentity();
 		if (fallBackTranslator == null) {
-			throw new AssertException(
-					"please provide a fall translator if using this constructor!!");
+			throw new AssertException("please provide a fall translator if using this constructor!!");
 		}
-		this.fallbackTranslator = fallBackTranslator;
-		this.translator = Util.createPackageTranslator(this.getClass(), getLocale(),
-				fallBackTranslator);
-		this.velocity_root = Util.getPackageVelocityRoot(this.getClass());
-		this.logger = Tracing.createLoggerFor(this.getClass());
+
+		Class<?> cl = this.getClass();
+		fallbackTranslator = fallBackTranslator;
+		translator = Util.createPackageTranslator(cl, getLocale(), fallBackTranslator);
+		velocity_root = Util.getPackageVelocityRoot(cl);
+		logger = Tracing.createLoggerFor(cl);
 	}
 
 	@Override
@@ -221,7 +223,7 @@ public abstract class BasicController extends DefaultController {
 	 */
 	protected String registerCacheableMapper(UserRequest ureq, String cacheableMapperID, Mapper m, int expirationTime) {
 		if (mapperKeys == null) {
-			mapperKeys = new ArrayList<MapperKey>(2);
+			mapperKeys = new ArrayList<>(2);
 		}
 		MapperKey mapperBaseKey;
 		UserSession usess = ureq == null ? null : ureq.getUserSession();
@@ -634,8 +636,8 @@ public abstract class BasicController extends DefaultController {
 	 * 
 	 * @return logger
 	 */
-	protected OLog getLogger() {
-		return this.logger;
+	protected Logger getLogger() {
+		return logger;
 	}
 
 	/**
@@ -686,17 +688,15 @@ public abstract class BasicController extends DefaultController {
 	 * in conjunction with isLogDebug():
 	 * <code>
 	 * if (isLogDebugEnabled()) {
-	 *    logDebug("my relevant debugging info", myUserObject);
+	 *    logDebug("my relevant debugging info");
 	 * }
 	 * </code>
 	 * 
 	 * @param logMsg
 	 *            Human readable log message
-	 * @param userObj
-	 *            A user object with additional information or NULL
 	 */
-	protected void logDebug(String logMsg, String userObj) {
-		getLogger().debug(logMsg, userObj);
+	protected void logDebug(String logMsg) {
+		getLogger().debug(logMsg);
 	}
 
 	/**
@@ -704,7 +704,7 @@ public abstract class BasicController extends DefaultController {
 	 * @return true: debug level enabled; false: debug level not enabled
 	 */
 	protected boolean isLogDebugEnabled() {
-		return getLogger().isDebug();
+		return getLogger().isDebugEnabled();
 	}
 
 	/**
@@ -717,11 +717,9 @@ public abstract class BasicController extends DefaultController {
 	 * 
 	 * @param logMsg
 	 *            Human readable log message
-	 * @param userObj
-	 *            A user object with additional information or NULL
 	 */
-	protected void logInfo(String logMsg, String userObject) {
-		getLogger().info(logMsg, userObject);
+	protected void logInfo(String logMsg) {
+		getLogger().info(logMsg);
 	}
 
 	/**
@@ -731,8 +729,12 @@ public abstract class BasicController extends DefaultController {
 	 * @param userObj
 	 *            A user object with additional information or NULL
 	 */
-	protected void logAudit(String logMsg, String userObj) {
-		getLogger().audit(logMsg, userObj);
+	protected void logAudit(String logMsg, Object userObj) {
+		getLogger().info(Tracing.M_AUDIT, logMsg, userObj);
+	}
+	
+	protected void logAudit(String logMsg) {
+		getLogger().info(Tracing.M_AUDIT, logMsg);
 	}
 
 }

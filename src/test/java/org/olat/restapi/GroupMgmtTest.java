@@ -63,7 +63,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
@@ -102,7 +102,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class GroupMgmtTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(GroupMgmtTest.class);
+	private static final Logger log = Tracing.createLoggerFor(GroupMgmtTest.class);
 	
 	private Identity owner1, owner2, owner3, part1, part2, part3;
 	private BusinessGroup g1, g2;

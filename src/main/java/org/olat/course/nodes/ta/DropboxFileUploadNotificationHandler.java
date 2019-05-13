@@ -25,9 +25,9 @@
 
 package org.olat.course.nodes.ta;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
@@ -43,7 +43,7 @@ import org.olat.course.run.environment.CourseEnvironment;
  * @author christian guretzki
  */
 public class DropboxFileUploadNotificationHandler extends AbstractTaskNotificationHandler implements NotificationsHandler {
-	private static final OLog log = Tracing.createLoggerFor(DropboxFileUploadNotificationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(DropboxFileUploadNotificationHandler.class);
 	
 	private static final String CSS_CLASS_DROPBOX_ICON = "o_dropbox_icon";
 
@@ -67,7 +67,7 @@ public class DropboxFileUploadNotificationHandler extends AbstractTaskNotificati
 		return "dropbox.notifications.entry";
 	}
 	
-	protected OLog getLogger() {
+	protected Logger getLogger() {
 		return log;
 	}
 

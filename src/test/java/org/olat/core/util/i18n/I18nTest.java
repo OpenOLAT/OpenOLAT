@@ -40,6 +40,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -49,7 +50,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -72,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class I18nTest extends OlatTestCase { 
 	
-	private OLog log = Tracing.createLoggerFor(I18nTest.class);
+	private static final Logger log = Tracing.createLoggerFor(I18nTest.class);
 	
 	@Autowired
 	private I18nManager i18nMgr;
@@ -342,7 +342,7 @@ public class I18nTest extends OlatTestCase {
 		long start = System.currentTimeMillis();
 		List<String> foundBundles = i18nModule.searchForBundleNamesContainingI18nFiles();
 		long end = System.currentTimeMillis();
-		log.info("Searching for " + foundBundles.size() + " bundles on OLAT source path took me " + (end-start) + "ms", "testSearchForBundleNamesContainingI18nFiles");
+		log.info("Searching for " + foundBundles.size() + " bundles on OLAT source path took me " + (end-start) + "ms");
 		// Must contain packages from core
 		assertTrue(foundBundles.contains("org.olat.core"));
 		assertTrue(foundBundles.contains("org.olat.core.gui.control"));
@@ -629,13 +629,13 @@ public class I18nTest extends OlatTestCase {
 		long start = System.currentTimeMillis();
 		List<I18nItem> foundTransItems = i18nMgr.findI18nItemsByKeySearch("menu", testLocale, testLocale, null, true);
 		long end = System.currentTimeMillis();
-		log.info("Searching for term 'menu' took me " + (end-start) + "ms, found " + foundTransItems.size() + " item", "testFindInKeys");
+		log.info("Searching for term 'menu' took me " + (end-start) + "ms, found " + foundTransItems.size() + " item");
 		// in values speedtest
 		start = System.currentTimeMillis();
 		foundTransItems = i18nMgr.findI18nItemsByValueSearch("OLAT", testLocale, testLocale, null, true);
 		int uppercaseSize = foundTransItems.size();
 		end = System.currentTimeMillis();
-		log.info("Searching for term 'OLAT' took me " + (end-start) + "ms, found " + foundTransItems.size() + " item", "testFindInKeys");
+		log.info("Searching for term 'OLAT' took me " + (end-start) + "ms, found " + foundTransItems.size() + " item");
 		// uppercase and lowercase must find the same values
 		foundTransItems = i18nMgr.findI18nItemsByValueSearch("olat", testLocale, testLocale, null, true);
 		assertEquals(uppercaseSize, foundTransItems.size());		

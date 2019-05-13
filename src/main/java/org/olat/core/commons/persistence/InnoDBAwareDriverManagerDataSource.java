@@ -29,7 +29,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.olat.core.configuration.Initializable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -44,7 +44,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
  * @author guido
  */
 public class InnoDBAwareDriverManagerDataSource extends DriverManagerDataSource implements Initializable {
-	private static final OLog log = Tracing.createLoggerFor(InnoDBAwareDriverManagerDataSource.class);
+	private static final Logger log = Tracing.createLoggerFor(InnoDBAwareDriverManagerDataSource.class);
 	private String dbVendor;
 	
 	/**
@@ -63,21 +63,21 @@ public class InnoDBAwareDriverManagerDataSource extends DriverManagerDataSource 
 		
 		Statement statement = null;
 		try {
-			log.audit("Checking whether mysql tables support transactions based on innoDB tab...");
+			log.info(Tracing.M_AUDIT, "Checking whether mysql tables support transactions based on innoDB tab...");
 			statement  = this.getConnection().createStatement();
 			statement.execute("show create table o_plock;");
 			ResultSet result = statement.getResultSet();
 			result.first();
 			String createTableCommand = result.getString("Create Table");
 			if (createTableCommand.contains("InnoDB")) {
-				log.audit("Your mysql tables look like they support transactions, fine!");
+				log.info(Tracing.M_AUDIT, "Your mysql tables look like they support transactions, fine!");
 			} else {
 				throw new StartupException("Your tables do not support transactions based on innoDB tables. Check your database server and enable innoDB engine! Your table currently runs: "+createTableCommand);
 			}
 			
 		} catch (SQLException e) {
 			if (e.getMessage().contains("doesn't exist")) {
-				log.audit("o_plock table does not yet exist, will check transaction support on next startup");
+				log.info(Tracing.M_AUDIT, "o_plock table does not yet exist, will check transaction support on next startup");
 			} else {
 				throw new StartupException("Could not execute db statement.", e);
 			}

@@ -20,7 +20,7 @@
 package org.olat.course.condition.interpreter;
 
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -34,7 +34,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  *
  */
 public class Sleep extends AbstractFunction {
-	private static final OLog log = Tracing.createLoggerFor(Sleep.class);
+	private static final Logger log = Tracing.createLoggerFor(Sleep.class);
 	
 	public static final String name = "sleep";
 

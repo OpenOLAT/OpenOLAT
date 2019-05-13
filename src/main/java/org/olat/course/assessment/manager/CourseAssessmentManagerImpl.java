@@ -30,12 +30,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -83,7 +83,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  */
 public class CourseAssessmentManagerImpl implements AssessmentManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(CourseAssessmentManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseAssessmentManagerImpl.class);
 	
 	public static final String ASSESSMENT_DOCS_DIR = "assessmentdocs";
 	

@@ -24,7 +24,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.mail.MailModule;
 import org.olat.modules.qpool.QuestionPoolModule;
@@ -44,6 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_12_2_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_12_2_0.class);
 
 	private static final int BATCH_SIZE = 500;
 	
@@ -95,9 +99,9 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_12_2_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_12_2_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_12_2_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_12_2_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -161,7 +165,7 @@ public class OLATUpgrade_12_2_0 extends OLATUpgrade {
 				processQuestionTaxonomyLevel(taxonomy, question);
 			}
 			counter += questions.size();
-			log.audit("Taxonomy level migration processed: " + questions.size() + ", total questions processed (" + counter + ")");
+			log.info(Tracing.M_AUDIT, "Taxonomy level migration processed: " + questions.size() + ", total questions processed (" + counter + ")");
 			dbInstance.commitAndCloseSession();
 		} while(questions.size() == BATCH_SIZE);
 	}

@@ -44,7 +44,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -96,7 +96,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QTICourseNode {
 
 	private static final long serialVersionUID = 1672009454920536416L;
-	private static final OLog log = Tracing.createLoggerFor(IQSURVCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(IQSURVCourseNode.class);
 
 	private static final String TYPE = "iqsurv";
 	/** category that is used to persist the node properties */

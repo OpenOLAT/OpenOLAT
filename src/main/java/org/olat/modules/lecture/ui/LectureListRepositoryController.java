@@ -409,7 +409,7 @@ public class LectureListRepositoryController extends FormBasicController {
 		LectureBlock lectureBlock = row.getLectureBlock();
 		lectureService.deleteLectureBlock(lectureBlock);
 		showInfo("lecture.deleted");
-		logAudit("Lecture block deleted: " + lectureBlock, null);
+		logAudit("Lecture block deleted: " + lectureBlock);
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_DELETED, getClass(),
 				CoreLoggingResourceable.wrap(lectureBlock, OlatResourceableType.lectureBlock, lectureBlock.getTitle()));
 		
@@ -418,7 +418,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	private void doDelete(List<LectureBlock> blocks) {
 		for(LectureBlock block:blocks) {
 			lectureService.deleteLectureBlock(block);
-			logAudit("Lecture block deleted: " + block, null);
+			logAudit("Lecture block deleted: " + block);
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LECTURE_BLOCK_DELETED, getClass(),
 					CoreLoggingResourceable.wrap(block, OlatResourceableType.lectureBlock, block.getTitle()));
 		}

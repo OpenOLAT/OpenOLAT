@@ -46,7 +46,7 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -119,7 +119,7 @@ import com.thoughtworks.xstream.XStream;
 @Service
 public class GTAManagerImpl implements GTAManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(GTAManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(GTAManagerImpl.class);
 	
 	private static final XStream taskDefinitionsXstream = XStreamHelper.createXStreamInstance();
 	
@@ -1724,11 +1724,11 @@ public class GTAManagerImpl implements GTAManager {
 		String taskName = taskToString(assignedTask);
 		String msg = step + " of " + taskName + ": " + operation;
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			log.audit(msg + " to business group: " + assessedGroup.getName(), null);
+			log.info(Tracing.M_AUDIT, msg + " to business group: " + assessedGroup.getName());
 			courseEnv.getAuditManager()
 				.appendToUserNodeLog(cNode, actor, assessedGroup, msg, by);
 		} else {
-			log.audit(msg, null);
+			log.info(Tracing.M_AUDIT, msg);
 			courseEnv.getAuditManager()
 				.appendToUserNodeLog(cNode, actor, assessedIdentity, msg, by);
 		}
@@ -1743,11 +1743,11 @@ public class GTAManagerImpl implements GTAManager {
 		String taskName = taskToString(assignedTask);
 		String msg = step + " of " + taskName + ": " + operation + " " + file;
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			log.audit(msg + " to business group: " + assessedGroup.getName(), null);
+			log.info(Tracing.M_AUDIT, msg + " to business group: " + assessedGroup.getName());
 			courseEnv.getAuditManager()
 				.appendToUserNodeLog(cNode, actor, assessedGroup, msg, by);
 		} else {
-			log.audit(msg, null);
+			log.info(Tracing.M_AUDIT, msg);
 			courseEnv.getAuditManager()
 				.appendToUserNodeLog(cNode, actor, assessedIdentity, msg, by);
 		}

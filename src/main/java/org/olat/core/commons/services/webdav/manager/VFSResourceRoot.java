@@ -38,7 +38,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaExceededException;
@@ -59,7 +59,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
  */
 public class VFSResourceRoot implements WebResourceRoot  {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSResourceRoot.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSResourceRoot.class);
 	private static final int BUFFER_SIZE = 2048;
 	
 	private final Identity identity;

@@ -29,9 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.core.manager.BasicManager;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -48,12 +47,12 @@ import org.olat.modules.scorm.server.servermodels.SequencerModel;
  * Initial Date:  13 august 2009 <br>
  * @author srosse
  */
-public class ScormAssessmentManager extends BasicManager {
+public class ScormAssessmentManager {
 	
 	public static final String RELOAD_SETTINGS_FILE = "reload-settings.xml";
 	
 	private static final ScormAssessmentManager instance = new ScormAssessmentManager();
-	private static final OLog logger = Tracing.createLoggerFor(ScormAssessmentManager.class);
+	private static final Logger logger = Tracing.createLoggerFor(ScormAssessmentManager.class);
 	
 	public static ScormAssessmentManager getInstance() {
 		return instance;
@@ -98,7 +97,7 @@ public class ScormAssessmentManager extends BasicManager {
 	 * @return
 	 */
 	public Map<Date, List<CmiData>> visitScoDatasMultiResults(String username, CourseEnvironment courseEnv, ScormCourseNode node) {
-		Map<Date, List<CmiData>> cmiDataObjects = new HashMap<Date, List<CmiData>>();
+		Map<Date, List<CmiData>> cmiDataObjects = new HashMap<>();
 		VFSContainer scoContainer = ScormDirectoryHelper.getScoDirectory(username, courseEnv, node);
 		if(scoContainer == null) {
 			return null;
@@ -125,14 +124,14 @@ public class ScormAssessmentManager extends BasicManager {
 	 * @return
 	 */
 	private List<CmiData> collectData(VFSItem scoFile) {
-		List<CmiData> datas = new ArrayList<CmiData>();
+		List<CmiData> datas = new ArrayList<>();
 		ScoDocument document = new ScoDocument(null);
 		try {
 			if(scoFile instanceof LocalFileImpl) {
 				document.loadDocument(((LocalFileImpl)scoFile).getBasefile());
 			}
 			else {
-				logger.warn("Cannot use this type of VSFItem to load a SCO Datamodel: " + scoFile.getClass().getName(), null);
+				logger.warn("Cannot use this type of VSFItem to load a SCO Datamodel: " + scoFile.getClass().getName());
 				return null;
 			}
 			

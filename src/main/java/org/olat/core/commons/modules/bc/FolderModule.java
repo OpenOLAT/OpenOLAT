@@ -31,7 +31,7 @@ import java.nio.file.Path;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class FolderModule extends AbstractSpringModule {	
 	
-	private static final OLog log = Tracing.createLoggerFor(FolderModule.class);
+	private static final Logger log = Tracing.createLoggerFor(FolderModule.class);
 
 	private static final String CONFIG_FORCE_DOWNLOAD = "forceDownload";
 	

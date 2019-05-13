@@ -22,7 +22,7 @@ package org.olat.modules.qpool.manager;
 import java.util.List;
 
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -50,7 +50,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class QuestionPoolUserDataDeletable implements UserDataDeletable {
 
-	private static final OLog log = Tracing.createLoggerFor(QuestionPoolUserDataDeletable.class);
+	private static final Logger log = Tracing.createLoggerFor(QuestionPoolUserDataDeletable.class);
 
 	@Autowired
 	private QuestionPoolModule qpoolModule;

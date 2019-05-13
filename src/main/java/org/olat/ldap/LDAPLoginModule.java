@@ -32,7 +32,7 @@ import java.util.Date;
 import java.util.Enumeration;
 
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -147,7 +147,7 @@ public class LDAPLoginModule extends AbstractSpringModule {
 	// User LDAP attributes to be synced and a map with the mandatory attributes
 
 
-	private static final OLog log = Tracing.createLoggerFor(LDAPLoginModule.class);
+	private static final Logger log = Tracing.createLoggerFor(LDAPLoginModule.class);
 	
 	@Autowired
 	private Scheduler scheduler;

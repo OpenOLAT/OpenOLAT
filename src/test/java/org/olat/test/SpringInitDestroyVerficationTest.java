@@ -34,7 +34,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.olat.core.configuration.Destroyable;
 import org.olat.core.configuration.Initializable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -52,7 +52,7 @@ import org.springframework.web.context.support.XmlWebApplicationContext;
  */
 public class SpringInitDestroyVerficationTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(SpringInitDestroyVerficationTest.class);
+	private static final Logger log = Tracing.createLoggerFor(SpringInitDestroyVerficationTest.class);
 	
 	@Test
 	public void testInitMethodCalls() {

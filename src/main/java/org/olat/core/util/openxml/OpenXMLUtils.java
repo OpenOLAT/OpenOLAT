@@ -43,7 +43,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.ShieldOutputStream;
@@ -61,7 +61,7 @@ import org.xml.sax.SAXException;
  */
 public class OpenXMLUtils {
 	
-	private static final OLog log = Tracing.createLoggerFor(OpenXMLUtils.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenXMLUtils.class);
 
 	public static final double emusPerInch = 914400.0d;
 	public static final double emusPerCm = 360000.0d;

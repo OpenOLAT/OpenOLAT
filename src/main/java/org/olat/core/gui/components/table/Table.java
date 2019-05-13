@@ -41,7 +41,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
@@ -59,7 +59,7 @@ public class Table extends AbstractComponent {
 	private static final int NO_ROW_SELECTED = -1;
 	private static final int DEFAULT_RESULTS_PER_PAGE = 20;
 	private static final int INITIAL_COLUMNSIZE = 5;
-	private static final OLog log = Tracing.createLoggerFor(Table.class);
+	private static final Logger log = Tracing.createLoggerFor(Table.class);
 	private static final ComponentRenderer RENDERER = new TableRenderer();
 	
 	/**
@@ -522,7 +522,7 @@ public class Table extends AbstractComponent {
 				currentSortingCd.sortingAboutToStart();
 				Collections.sort(sorter, new TableComparator(currentSortingCd, sortAscending));
 			} else {
-				log.error("Sort column not found:" + sortColumn + " in columns: " + columnOrder, null);
+				log.error("Sort column not found:" + sortColumn + " in columns: " + columnOrder);
 			}
 		}
 	}

@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -51,7 +52,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
@@ -88,7 +88,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AssessmentNotificationsHandler implements NotificationsHandler {
-	private static final OLog log = Tracing.createLoggerFor(AssessmentNotificationsHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentNotificationsHandler.class);
 	
 	private static final String CSS_CLASS_USER_ICON = "o_icon_user";
 
@@ -384,7 +384,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	private void checkPublisher(Publisher p) {
 		try {
 			if(!NotificationsUpgradeHelper.checkCourse(p)) {
-				log.info("deactivating publisher with key; " + p.getKey(), null);
+				log.info("deactivating publisher with key; " + p.getKey());
 				notificationsManager.deactivate(p);
 			}
 		} catch (Exception e) {

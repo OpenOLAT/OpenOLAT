@@ -23,7 +23,7 @@ import java.util.Arrays;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -46,7 +46,7 @@ public enum OrganisationManagedFlag {
 	 members(all);
 	
 	private OrganisationManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(OrganisationManagedFlag.class);
+	private static final Logger log = Tracing.createLoggerFor(OrganisationManagedFlag.class);
 	public static final OrganisationManagedFlag[] EMPTY_ARRAY = new OrganisationManagedFlag[0];
 	
 	private static OrganisationModule organisationModule;

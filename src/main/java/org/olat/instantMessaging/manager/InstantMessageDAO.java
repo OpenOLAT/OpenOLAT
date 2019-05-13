@@ -29,7 +29,7 @@ import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.instantMessaging.InstantMessage;
 import org.olat.instantMessaging.InstantMessageNotification;
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class InstantMessageDAO {
 	
-	private static final OLog log = Tracing.createLoggerFor(InstantMessageDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(InstantMessageDAO.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -107,7 +107,7 @@ public class InstantMessageDAO {
 				.setParameter("resname", ores.getResourceableTypeName())
 				.executeUpdate();
 		if(count > 0) {
-			log.audit(count + " IM messages delete for resource: " + ores);
+			log.info(Tracing.M_AUDIT, count + " IM messages delete for resource: " + ores);
 		}
 		return count;
 	}
@@ -118,7 +118,7 @@ public class InstantMessageDAO {
 				.setParameter("identityKey", identity.getKey())
 				.executeUpdate();
 		if(count > 0) {
-			log.audit(count + " IM messages delete for identity: " + identity.getKey());
+			log.info(Tracing.M_AUDIT, count + " IM messages delete for identity: " + identity.getKey());
 		}
 		return count;
 	}

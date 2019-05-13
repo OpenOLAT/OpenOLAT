@@ -38,7 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -48,7 +48,7 @@ import org.olat.core.logging.Tracing;
  */
 public class HttpRequestMediaResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(HttpRequestMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(HttpRequestMediaResource.class);
 
 	private final HttpResponse response;
 

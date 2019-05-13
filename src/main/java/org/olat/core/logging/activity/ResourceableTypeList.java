@@ -30,7 +30,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -59,7 +59,7 @@ import org.olat.core.logging.Tracing;
  * @author Stefan
  */
 public class ResourceableTypeList {
-	private OLog logger = Tracing.createLoggerFor(this.getClass());
+	private static final Logger logger = Tracing.createLoggerFor(ResourceableTypeList.class);
 	
 	/** list of mandatory ILoggingResourceableTypes **/
 	private List<ILoggingResourceableType> mandatory_;

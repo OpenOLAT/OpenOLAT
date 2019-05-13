@@ -28,7 +28,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.lti.LTIManager;
 import org.olat.modules.card2brain.Card2BrainManager;
@@ -48,7 +48,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class Card2BrainManagerImpl implements Card2BrainManager {
 
-	private static final OLog log = Tracing.createLoggerFor(Card2BrainManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(Card2BrainManagerImpl.class);
 
 	@Autowired
 	private Card2BrainModule card2brainModule;

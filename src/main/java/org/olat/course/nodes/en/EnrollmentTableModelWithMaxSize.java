@@ -32,7 +32,7 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
 import org.olat.core.gui.components.table.TableDataModelWithMarkableRows;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -45,7 +45,7 @@ import org.olat.core.logging.Tracing;
  * @author gnaegi
  */
 public class EnrollmentTableModelWithMaxSize extends DefaultTableDataModel<EnrollmentRow> implements TableDataModelWithMarkableRows<EnrollmentRow>  {
-	private static final OLog log = Tracing.createLoggerFor(EnrollmentTableModelWithMaxSize.class);
+	private static final Logger log = Tracing.createLoggerFor(EnrollmentTableModelWithMaxSize.class);
 	
 	private static final int COLUMN_COUNT = 7;
 

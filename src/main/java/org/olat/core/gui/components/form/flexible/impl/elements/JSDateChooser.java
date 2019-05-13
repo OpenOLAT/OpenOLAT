@@ -34,7 +34,7 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -49,7 +49,7 @@ import org.olat.core.util.ValidationStatusImpl;
  */
 public class JSDateChooser extends TextElementImpl implements DateChooser {
 
-	private static final OLog log = Tracing.createLoggerFor(JSDateChooser.class);
+	private static final Logger log = Tracing.createLoggerFor(JSDateChooser.class);
 	/**
 	 * the java script date chooser
 	 */

@@ -19,7 +19,7 @@
  */
 package org.olat.modules.portfolio;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
@@ -36,7 +36,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class BinderConfiguration {
 	
-	private static final OLog log = Tracing.createLoggerFor(BinderConfiguration.class);
+	private static final Logger log = Tracing.createLoggerFor(BinderConfiguration.class);
 	
 	private final boolean withScore;
 	private final boolean withPassed;

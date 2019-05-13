@@ -29,6 +29,8 @@ import java.io.IOException;
 
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.GlossaryResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.search.service.SearchResourceContext;
@@ -41,6 +43,8 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Florian Gnägi, frentix GmbH, http://www.frentix.com
  */
 public class GlossaryRepositoryIndexer extends DefaultIndexer {
+
+	private static final Logger log = Tracing.createLoggerFor(GlossaryRepositoryIndexer.class);
 
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttypes and
@@ -59,7 +63,7 @@ public class GlossaryRepositoryIndexer extends DefaultIndexer {
 	public void doIndex(SearchResourceContext resourceContext, Object parentObject, OlatFullIndexer indexWriter) throws IOException,
 			InterruptedException {
 		RepositoryEntry repositoryEntry = (RepositoryEntry) parentObject;
-		if(isLogDebugEnabled()) logDebug("Analyse Glosary RepositoryEntry...");
+		if(log.isDebugEnabled()) log.debug("Analyse Glosary RepositoryEntry...");
 		try {
 			resourceContext.setDocumentType(TYPE);
 			resourceContext.setTitle(repositoryEntry.getDisplayname());
@@ -69,7 +73,7 @@ public class GlossaryRepositoryIndexer extends DefaultIndexer {
 				indexWriter.addDocument(document);
 			}
 		} catch (NullPointerException nex) {
-			logWarn("NullPointerException in GlossaryRepositoryIndexer.doIndex.", nex);
+			log.warn("NullPointerException in GlossaryRepositoryIndexer.doIndex.", nex);
 		}
 	}
 }

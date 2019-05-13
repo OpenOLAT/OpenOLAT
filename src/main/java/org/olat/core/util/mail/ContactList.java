@@ -36,9 +36,9 @@ import java.util.Map;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -59,7 +59,7 @@ import org.olat.core.util.StringHelper;
 
 public class ContactList {
 	
-	private static final OLog log = Tracing.createLoggerFor(ContactList.class);
+	private static final Logger log = Tracing.createLoggerFor(ContactList.class);
 	
 	private String name;
 	private String description;
@@ -307,7 +307,7 @@ public class ContactList {
 
 	private void setName(String nameP) {
 		if (!StringHelper.containsNoneOfCoDouSemi(nameP)){
-			log.warn("Contact list name \"" + nameP + "\" doesn't match "+ StringHelper.ALL_WITHOUT_COMMA_2POINT_STRPNT, null);
+			log.warn("Contact list name \"" + nameP + "\" doesn't match "+ StringHelper.ALL_WITHOUT_COMMA_2POINT_STRPNT);
 			//replace bad chars with bad char in rfc compliant comments
 			nameP = nameP.replaceAll(":","¦");
 			nameP = nameP.replaceAll(";","_");

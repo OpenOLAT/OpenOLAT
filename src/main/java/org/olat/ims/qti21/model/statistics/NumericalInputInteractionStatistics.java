@@ -19,7 +19,7 @@
  */
 package org.olat.ims.qti21.model.statistics;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.ToleranceMode;
@@ -33,7 +33,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 public class NumericalInputInteractionStatistics extends AbstractTextEntryInteractionStatistics {
 	
-	private static final OLog log = Tracing.createLoggerFor(NumericalInputInteractionStatistics.class);
+	private static final Logger log = Tracing.createLoggerFor(NumericalInputInteractionStatistics.class);
 	
 	private Double correctFloatResponse;
 	private ToleranceMode toleranceMode;

@@ -50,7 +50,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.id.context.HistoryPointImpl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -71,7 +71,7 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
  */
 public class UserSession implements HttpSessionBindingListener, GenericEventListener, Serializable  {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserSession.class);	
+	private static final Logger log = Tracing.createLoggerFor(UserSession.class);	
 	private static final long serialVersionUID = 1975177605776990868L;
 
 	// the environment (identity, locale, ..) of the identity
@@ -442,7 +442,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 
 	@Override
 	public void valueBound(HttpSessionBindingEvent be) {
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			log.debug("Opened UserSession:" + toString());
 		}
 	}
@@ -459,7 +459,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 			// (no user was authenticated yet but a tomcat session was created)
 			Identity ident = identityEnvironment.getIdentity();
 			CoreSpringFactory.getImpl(UserSessionManager.class).signOffAndClear(this);
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("Closed UserSession: identity = " + (ident == null ? "n/a" : ident.getKey()));
 			}
 			//we do not have a request in the null case (app. server triggered) and user not yet logged in

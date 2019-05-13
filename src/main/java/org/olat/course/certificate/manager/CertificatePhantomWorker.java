@@ -37,11 +37,11 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -59,7 +59,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  *
  */
 public class CertificatePhantomWorker {
-	private static final OLog log = Tracing
+	private static final Logger log = Tracing
 			.createLoggerFor(CertificatePDFFormWorker.class);
 	
 	private final Float score;
@@ -344,7 +344,7 @@ public class CertificatePhantomWorker {
 		@Override
 		public void run() {
 			try {
-				if(log.isDebug()) {
+				if(log.isDebugEnabled()) {
 					log.debug(cmd.toString());
 				}
 				
@@ -391,7 +391,7 @@ public class CertificatePhantomWorker {
 				//
 			}
 			
-			if(log.isDebug()) {
+			if(log.isDebugEnabled()) {
 				log.debug("Error: " + errors.toString());
 				log.debug("Output: " + output.toString());
 			}

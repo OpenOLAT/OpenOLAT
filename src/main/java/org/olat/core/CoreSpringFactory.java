@@ -35,9 +35,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletContext;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -62,12 +62,12 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware {
 	
-	private static final OLog log = Tracing.createLoggerFor(CoreSpringFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(CoreSpringFactory.class);
 	
 	// Access servletContext only for spring beans admin-functions
 	public static ServletContext servletContext;
 	private static DefaultListableBeanFactory beanFactory;
-	private static Map<Class<?>, String> idToBeans = new ConcurrentHashMap<Class<?>, String>();
+	private static Map<Class<?>, String> idToBeans = new ConcurrentHashMap<>();
 	
 	/**
 	 * [used by spring only]
@@ -99,8 +99,7 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	}
 	
 	public static String resolveProperty(String name) {
-		String rv = beanFactory.resolveEmbeddedValue("${" + name + "}");
-		return rv;
+		return beanFactory.resolveEmbeddedValue("${" + name + "}");
 	}
 	
 	public static void autowireObject(Object bean) {

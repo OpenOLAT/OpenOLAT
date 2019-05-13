@@ -22,7 +22,7 @@ package org.olat.modules.reminder.rule;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -44,7 +44,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DateRuleSPI implements RuleSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(DateRuleSPI.class);
+	private static final Logger log = Tracing.createLoggerFor(DateRuleSPI.class);
 	
 	public static final String AFTER = ">";
 

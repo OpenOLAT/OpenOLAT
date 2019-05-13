@@ -30,7 +30,7 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -48,7 +48,7 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class GlobalStickyMessage implements GenericEventListener, Initializable{
 
-	private static final OLog log = Tracing.createLoggerFor(GlobalStickyMessage.class);
+	private static final Logger log = Tracing.createLoggerFor(GlobalStickyMessage.class);
 	private static String maintenanceMessageGlobal = null;
 	private static GlobalStickyMessage INSTANCE = null;
 	private static String maintenanceMessagePerNode = null;
@@ -147,7 +147,7 @@ public class GlobalStickyMessage implements GenericEventListener, Initializable{
 		}else{
 			maintenanceMessagePerNode  = message;
 		}
-		log.audit("Setting new maintenance message::" + maintenanceMessageGlobal);
+		log.info(Tracing.M_AUDIT, "Setting new maintenance message::" + maintenanceMessageGlobal);
 		ChiefControllerMessageEvent mme = new ChiefControllerMessageEvent();
 		if(message != null ){
 			//create CHANGE_EVENT, and change message to something new

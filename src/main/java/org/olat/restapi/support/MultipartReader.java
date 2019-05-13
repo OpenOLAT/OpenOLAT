@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -40,7 +40,7 @@ import org.olat.core.util.WebappHelper;
  */
 public class MultipartReader {
 
-	private static final OLog log = Tracing.createLoggerFor(MultipartReader.class);
+	private static final Logger log = Tracing.createLoggerFor(MultipartReader.class);
 
 	private String filename;
 	private String contentType;

@@ -24,10 +24,10 @@ import java.io.InputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.adobeconnect.AdobeConnectManager;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
@@ -41,7 +41,7 @@ import org.olat.modules.adobeconnect.model.AdobeConnectSco;
  */
 public class AdobeConnectContentRedirectResource implements MediaResource  {
 
-	private static final OLog log = Tracing.createLoggerFor(AdobeConnectContentRedirectResource.class);
+	private static final Logger log = Tracing.createLoggerFor(AdobeConnectContentRedirectResource.class);
 
 	private final Identity identity;
 	private final AdobeConnectSco sco;

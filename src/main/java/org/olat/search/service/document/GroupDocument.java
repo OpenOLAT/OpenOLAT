@@ -25,9 +25,9 @@
 
 package org.olat.search.service.document;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.group.BusinessGroup;
@@ -41,7 +41,7 @@ import org.olat.search.service.SearchResourceContext;
 public class GroupDocument extends OlatDocument {
 
 	private static final long serialVersionUID = 7177532567808727224L;
-	private static final OLog log = Tracing.createLoggerFor(GroupDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(GroupDocument.class);
 
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
@@ -62,7 +62,7 @@ public class GroupDocument extends OlatDocument {
 		groupDocument.setTitle(businessGroup.getName());
 		groupDocument.setDescription(FilterFactory.getHtmlTagsFilter().filter(businessGroup.getDescription()));
 
-		if (log.isDebug()) log.debug(groupDocument.toString());
+		if (log.isDebugEnabled()) log.debug(groupDocument.toString());
 		return groupDocument.getLuceneDocument();
 	}
 

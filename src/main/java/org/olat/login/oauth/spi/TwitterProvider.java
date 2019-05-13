@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
@@ -52,7 +52,7 @@ import com.github.scribejava.core.oauth.OAuthService;
 @Service
 public class TwitterProvider implements OAuthSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(TwitterProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(TwitterProvider.class);
 
 	@Autowired
 	private OAuthLoginModule oauthModule;

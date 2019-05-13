@@ -33,7 +33,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.imscp.xml.manifest.FileType;
@@ -60,7 +60,7 @@ import org.olat.imsmd.xml.manifest.TechnicalType;
  */
 public class ManifestBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(ManifestBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(ManifestBuilder.class);
 	
 	protected static final org.olat.oo.xml.manifest.ObjectFactory ooObjectFactory = new org.olat.oo.xml.manifest.ObjectFactory();
 	protected static final org.olat.imscp.xml.manifest.ObjectFactory cpObjectFactory = new org.olat.imscp.xml.manifest.ObjectFactory();

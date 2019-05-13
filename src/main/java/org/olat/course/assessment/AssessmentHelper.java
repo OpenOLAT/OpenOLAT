@@ -35,12 +35,12 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
@@ -75,7 +75,7 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class AssessmentHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentHelper.class);
 	
 	public static final String KEY_TYPE = "type";
 	public static final String KEY_IDENTIFYER = "identifyer";
@@ -132,7 +132,7 @@ public class AssessmentHelper {
 				uce = createAndInitUserCourseEnvironment(identity, course);
 				// add to cache for later usage
 				localUserCourseEnvironmentCache.put(identity.getKey(), uce);
-				if (log.isDebug()){
+				if (log.isDebugEnabled()){
 					log.debug("localUserCourseEnvironmentCache hit failed, adding course environment for user::" + identity.getKey());
 				}
 			}

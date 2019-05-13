@@ -40,7 +40,7 @@ import org.olat.basesecurity.IdentityShort;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -83,7 +83,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class InstantMessagingServiceImpl implements InstantMessagingService, DeletableGroupData, UserDataDeletable, UserDataExportable {
 	
-	private static final OLog log = Tracing.createLoggerFor(InstantMessagingServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(InstantMessagingServiceImpl.class);
 	
 	@Autowired
 	private RosterDAO rosterDao;

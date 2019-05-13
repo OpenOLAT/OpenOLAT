@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -44,7 +44,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class EvalAttributeFunction extends AbstractFunction {
 	
-	private static final OLog log = Tracing.createLoggerFor(EvalAttributeFunction.class);
+	private static final Logger log = Tracing.createLoggerFor(EvalAttributeFunction.class);
 	
 	/***************************************************************
 	 * Function types                                              *
@@ -116,7 +116,7 @@ public class EvalAttributeFunction extends AbstractFunction {
 			String[] b = multiValueSeparatorValue.split(values);								// split on ;
 			if (a == null || (a.length == 1 && a[0] == "")) return false;				// empty array?
 			if (b == null || (b.length == 1 && b[0] == "")) return false;				// empty array?
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("a: " + Arrays.toString(a));
 				log.debug("b: " + Arrays.toString(b));
 			}
@@ -204,7 +204,7 @@ public class EvalAttributeFunction extends AbstractFunction {
 		String value = attributes.get(attName);
 		
 		boolean match = false;
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		if (debug) {
 			log.debug("value    : " + value);
 			log.debug("attrValue: " + attValue);

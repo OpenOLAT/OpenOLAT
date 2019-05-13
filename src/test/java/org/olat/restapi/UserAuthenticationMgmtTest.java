@@ -56,7 +56,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.login.auth.OLATAuthManager;
@@ -80,7 +80,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserAuthenticationMgmtTest.class);
+	private static final Logger log = Tracing.createLoggerFor(UserAuthenticationMgmtTest.class);
 	
 	@Autowired
 	private DB dbInstance;

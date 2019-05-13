@@ -21,7 +21,7 @@ package org.olat.core.commons.services.doceditor.office365.manager;
 
 import java.net.URI;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +34,7 @@ import org.springframework.stereotype.Service;
 @Service
 class UrlParser {
 
-	private static final OLog log = Tracing.createLoggerFor(UrlParser.class);
+	private static final Logger log = Tracing.createLoggerFor(UrlParser.class);
 	
 	private static final String LANGUAGE_PARAMETER = "UI_LLCC";
 

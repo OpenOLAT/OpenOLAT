@@ -48,7 +48,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -88,7 +88,7 @@ import org.olat.resource.OLATResourceManager;
  */
 public class WikiManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(WikiManager.class);
+	private static final Logger log = Tracing.createLoggerFor(WikiManager.class);
 
 	public static final String VIEW_COUNT = "view.count";
 	public static final String MODIFY_AUTHOR = "modify.author";
@@ -343,7 +343,7 @@ public class WikiManager {
 	
 	void createFolders(OLATResourceable ores) {
 		long start = 0;
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			start = System.currentTimeMillis();
 		}
 		VFSContainer rootContainer = getWikiRootContainer(ores);
@@ -394,9 +394,9 @@ public class WikiManager {
 				saveWikiPageProperties(ores, page);
 			}
 		}
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			long end = System.currentTimeMillis();
-			log.debug("creating folders and move files and updating properties to default values took: (milliseconds)"+(end-start), null);
+			log.debug("creating folders and move files and updating properties to default values took: (milliseconds)"+(end-start));
 		}
 	}
 
@@ -419,7 +419,7 @@ public class WikiManager {
 		return wikiCache.computeIfAbsent(wikiKey, key -> {
 			long start = 0;
 			// wiki not in cache load form filesystem
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("wiki not in cache. Loading wiki from filesystem. Ores: " + ores.getResourceableId());
 				start = System.currentTimeMillis();
 			}
@@ -486,7 +486,7 @@ public class WikiManager {
 			wiki.addPage(recentChangesPage);
 			wiki.addPage(a2zPage);
 
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				long stop = System.currentTimeMillis();
 				log.debug("loading of wiki from filessystem took (ms) " + (stop - start));
 			}
@@ -596,7 +596,7 @@ public class WikiManager {
 				}
 			}
 		}
-		log.audit("Deleted wiki page with name: " + page.getPageName() + " from resourcable id: "+ ores.getResourceableId());
+		log.info(Tracing.M_AUDIT, "Deleted wiki page with name: " + page.getPageName() + " from resourcable id: "+ ores.getResourceableId());
 		if (wikiCache!=null) {
 			wikiCache.update(OresHelper.createStringRepresenting(ores), getOrLoadWiki(ores));
 		}
@@ -711,8 +711,8 @@ public class WikiManager {
 	 */
 	public LocalFolderImpl getWikiRootContainer(OLATResourceable ores) {
 		// Check if Resource is a BusinessGroup, because BusinessGroup-wiki's are stored at a different place
-		if(log.isDebug()){
-			log.debug("calculating wiki root container with ores id: "+ores.getResourceableId()+" and resourcable type name: "+ores.getResourceableTypeName(), null);
+		if(log.isDebugEnabled()){
+			log.debug("calculating wiki root container with ores id: "+ores.getResourceableId()+" and resourcable type name: "+ores.getResourceableTypeName());
 		}
 		if (isGroupContextWiki(ores)) {
 			// Group Wiki

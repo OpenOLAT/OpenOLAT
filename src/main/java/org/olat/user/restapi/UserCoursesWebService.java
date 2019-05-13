@@ -36,7 +36,7 @@ import javax.ws.rs.core.Response;
 
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class UserCoursesWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserCoursesWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(UserCoursesWebService.class);
 	
 	private final Identity identity;
 	

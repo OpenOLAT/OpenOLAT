@@ -31,10 +31,10 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -61,7 +61,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class EdubaseManagerImpl implements EdubaseManager {
 
-	private static final OLog log = Tracing.createLoggerFor(EdubaseManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(EdubaseManagerImpl.class);
 
 	private static final String USER_ID_CONCAT = "#";
 	private static final int TIMEOUT_5000_MILLIS = 5000;

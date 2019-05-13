@@ -44,7 +44,7 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *  
  */
 public class OLATResourceManagerTest extends OlatTestCase {
-	private static final OLog log = Tracing.createLoggerFor(OLATResourceManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(OLATResourceManagerTest.class);
 
 	@Autowired
 	private DB dbInstance;

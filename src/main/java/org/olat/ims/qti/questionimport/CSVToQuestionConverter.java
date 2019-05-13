@@ -23,8 +23,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
@@ -50,7 +50,7 @@ import org.olat.ims.qti.editor.beecom.objects.Response;
  */
 public class CSVToQuestionConverter {
 	
-	private static final OLog log = Tracing.createLoggerFor(CSVToQuestionConverter.class);
+	private static final Logger log = Tracing.createLoggerFor(CSVToQuestionConverter.class);
 
 	private ItemAndMetadata currentItem;
 	private final List<ItemAndMetadata> items = new ArrayList<>();

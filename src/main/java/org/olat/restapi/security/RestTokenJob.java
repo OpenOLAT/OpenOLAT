@@ -21,6 +21,7 @@ package org.olat.restapi.security;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
 import org.quartz.JobExecutionContext;
 
 /**
@@ -41,7 +42,7 @@ public class RestTokenJob extends JobWithDB {
 			log.info("Starting checking deadline of maps job");
 			RestSecurityBean securityBean = CoreSpringFactory.getImpl(RestSecurityBean.class);
 			int numOfDeletedToken = securityBean.removeTooOldRestToken();
-			log.audit("Delete " + numOfDeletedToken + " REST tokens older than a month");
+			log.info(Tracing.M_AUDIT, "Delete " + numOfDeletedToken + " REST tokens older than a month");
 		} catch (Exception e) {
 			// ups, something went completely wrong! We log this but continue next time
 			log.error("Error while removing too old tokens", e);

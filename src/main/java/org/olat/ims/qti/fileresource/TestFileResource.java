@@ -40,7 +40,7 @@ import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.Node;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -65,7 +65,7 @@ import org.olat.resource.OLATResource;
  * @author Mike Stock
  */
 public class TestFileResource extends FileResource {
-	private static final OLog log = Tracing.createLoggerFor(TestFileResource.class);
+	private static final Logger log = Tracing.createLoggerFor(TestFileResource.class);
 	private static final String QTI_FILE = "qti.xml";
 
 	/**

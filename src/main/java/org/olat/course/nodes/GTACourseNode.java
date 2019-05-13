@@ -48,7 +48,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
@@ -107,7 +107,7 @@ import org.olat.user.UserManager;
  */
 public class GTACourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
 	
-	private static final OLog log = Tracing.createLoggerFor(GTACourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(GTACourseNode.class);
 	private static final String PACKAGE_GTA = Util.getPackageName(GTAEditController.class);
 
 	private static final long serialVersionUID = 1L;

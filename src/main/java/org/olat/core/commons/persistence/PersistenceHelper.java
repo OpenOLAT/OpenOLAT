@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.olat.core.id.Persistable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -50,7 +50,7 @@ import org.olat.core.util.filter.FilterFactory;
  */
 public class PersistenceHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(PersistenceHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(PersistenceHelper.class);
 	private static boolean charCountNativeUTF8 = true;
 	
 	/**

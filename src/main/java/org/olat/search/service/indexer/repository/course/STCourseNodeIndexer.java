@@ -27,8 +27,8 @@ package org.olat.search.service.indexer.repository.course;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -46,7 +46,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class STCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexer {
-	private static final OLog log = Tracing.createLoggerFor(STCourseNodeIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(STCourseNodeIndexer.class);
 	
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
@@ -63,7 +63,7 @@ public class STCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 	@Override
 	public void doIndex(SearchResourceContext repositoryResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter)
 	throws IOException,InterruptedException {
-		if (log.isDebug()) log.debug("Index StructureNode...");
+		if (log.isDebugEnabled()) log.debug("Index StructureNode...");
 		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(repositoryResourceContext, courseNode, TYPE);
 		Document document = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
 		indexWriter.addDocument(document);

@@ -44,7 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.controller.BlankController;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
@@ -53,7 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class FileEditorController extends BasicController {
 
-	private static final OLog log = Tracing.createLoggerFor(FileEditorController.class);
+	private static final Logger log = Tracing.createLoggerFor(FileEditorController.class);
 
 	private Controller editCtrl;
 

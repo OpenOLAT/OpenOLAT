@@ -29,12 +29,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -55,7 +55,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class BusinessGroupImportExport {
 	
-	private static final OLog log = Tracing.createLoggerFor(BusinessGroupImportExport.class);
+	private static final Logger log = Tracing.createLoggerFor(BusinessGroupImportExport.class);
 
 	private final GroupXStream xstream = new GroupXStream();
 
@@ -301,7 +301,7 @@ public class BusinessGroupImportExport {
 						if (area != null) {
 							areaManager.addBGToBGArea(newGroup, area);
 						} else {
-							log.error("Area not found", null);
+							log.error("Area not found");
 						}
 					}
 				}

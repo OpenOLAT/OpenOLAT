@@ -27,7 +27,7 @@ package org.olat.core.commons.services.commentAndRating;
 
 import java.lang.reflect.Field;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
@@ -40,7 +40,7 @@ import org.olat.core.logging.activity.ResourceableTypeList;
 
 public class CommentAndRatingLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(CommentAndRatingLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(CommentAndRatingLoggingAction.class);
 	
 	private static final ResourceableTypeList COMMENT_RATING_RESOURCES = new ResourceableTypeList().
 	addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.feedItem)

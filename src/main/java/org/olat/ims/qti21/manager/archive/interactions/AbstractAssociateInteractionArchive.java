@@ -21,7 +21,7 @@ package org.olat.ims.qti21.manager.archive.interactions;
 
 import java.util.List;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
@@ -42,7 +42,7 @@ import uk.ac.ed.ph.jqtiplus.types.Identifier;
  */
 abstract class AbstractAssociateInteractionArchive extends DefaultInteractionArchive {
 	
-	private static final OLog log = Tracing.createLoggerFor(AbstractAssociateInteractionArchive.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractAssociateInteractionArchive.class);
 
 	@Override
 	public int writeHeader1(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {

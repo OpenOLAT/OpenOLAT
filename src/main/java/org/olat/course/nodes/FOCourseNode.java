@@ -45,7 +45,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.Util;
@@ -90,7 +90,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class FOCourseNode extends AbstractAccessableCourseNode {
 	
-	private static final OLog log = Tracing.createLoggerFor(FOCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(FOCourseNode.class);
 
 	private static final long serialVersionUID = 2281715263255594865L;
 	private static final String PACKAGE_FO = Util.getPackageName(FOCourseNodeRunController.class);

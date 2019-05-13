@@ -39,7 +39,7 @@ import org.olat.core.gui.components.Window;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.UserSession;
@@ -58,7 +58,7 @@ import org.springframework.stereotype.Service;
 @Service("pdfDeliveryBean")
 public class PdfDeliveryDispatcher implements Dispatcher {
 	
-	private static final OLog log = Tracing.createLoggerFor(PdfDeliveryDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(PdfDeliveryDispatcher.class);
 	
 	@Autowired
 	private PdfModule pdfModule;

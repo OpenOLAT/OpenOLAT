@@ -27,7 +27,7 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -50,7 +50,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class VideoModule extends AbstractSpringModule {
 
-	private static final OLog log = Tracing.createLoggerFor(VideoModule.class);
+	private static final Logger log = Tracing.createLoggerFor(VideoModule.class);
 	
 	private static final String VIDEO_ENABLED = "video.enabled";
 	private static final String VIDEOCOURSENODE_ENABLED = "video.coursenode.enabled";

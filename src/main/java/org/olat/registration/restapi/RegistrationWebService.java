@@ -39,10 +39,10 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nModule;
@@ -72,7 +72,7 @@ import org.springframework.stereotype.Component;
 @Path("registration")
 public class RegistrationWebService {
 	
-	private OLog log = Tracing.createLoggerFor(RegistrationWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(RegistrationWebService.class);
 
 	private static final String SEPARATOR = "____________________________________________________________________\n";
 	

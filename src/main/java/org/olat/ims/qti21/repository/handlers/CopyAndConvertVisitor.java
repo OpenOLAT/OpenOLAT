@@ -43,8 +43,8 @@ import javax.xml.stream.FactoryConfigurationError;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -89,7 +89,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  */
 class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 	
-	private static final OLog log = Tracing.createLoggerFor(CopyAndConvertVisitor.class);
+	private static final Logger log = Tracing.createLoggerFor(CopyAndConvertVisitor.class);
 	
 	private final Path source;
 	private final Path destDir;

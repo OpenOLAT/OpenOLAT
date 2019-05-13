@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.dom4j.XPath;
@@ -44,7 +45,6 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -59,12 +59,12 @@ public class CPManifestTreeModel extends GenericTreeModel {
 
 	private static final long serialVersionUID = 9216107936843069562L;
 	private Element rootElement;
-	private final Map<String,String>	nsuris = new HashMap<String,String>(2);
-	private final Map<String,TreeNode> hrefToTreeNode = new HashMap<String,TreeNode>();
+	private final Map<String,String>	nsuris = new HashMap<>(2);
+	private final Map<String,TreeNode> hrefToTreeNode = new HashMap<>();
 	private Map<String,String> resources; // keys: resource att 'identifier'; values: resource att 'href'
-	private final List<TreeNode> treeNodes = new ArrayList<TreeNode>();
+	private final List<TreeNode> treeNodes = new ArrayList<>();
 	private final String identPrefix;
-	private final OLog log = Tracing.createLoggerFor(this.getClass());
+	private final Logger log = Tracing.createLoggerFor(this.getClass());
 
 	/**
 	 * Constructor of the content packaging tree model

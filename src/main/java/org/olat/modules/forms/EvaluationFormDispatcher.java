@@ -41,7 +41,7 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -59,7 +59,7 @@ import org.olat.modules.forms.ui.StandaloneExecutionCreator;
  */
 public class EvaluationFormDispatcher implements Dispatcher {
 
-	private static final OLog log = Tracing.createLoggerFor(EvaluationFormDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(EvaluationFormDispatcher.class);
 	
 	private static final String SURVEY_PATH = "survey";
 	

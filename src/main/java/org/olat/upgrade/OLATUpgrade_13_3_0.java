@@ -25,10 +25,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.manager.VFSRepositoryServiceImpl;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.library.LibraryModule;
 import org.olat.properties.Property;
@@ -44,6 +46,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_13_3_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_13_3_0.class);
 	
 	private static final String VERSION = "OLAT_13.3.0";
 	private static final String MOVE_REPO_IMAGES = "MOVE REPO IMAGES";
@@ -91,9 +95,9 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_13_3_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_13_3_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_13_3_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_13_3_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

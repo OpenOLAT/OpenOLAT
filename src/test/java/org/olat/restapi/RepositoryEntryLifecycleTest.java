@@ -40,7 +40,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -59,7 +59,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class RepositoryEntryLifecycleTest extends OlatJerseyTestCase  {
 	
-	private static OLog log = Tracing.createLoggerFor(RepositoryEntryLifecycleTest.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryLifecycleTest.class);
 	
 	@Autowired
 	private RepositoryEntryLifecycleDAO reLifeCycleDao;

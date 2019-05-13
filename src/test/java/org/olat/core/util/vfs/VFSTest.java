@@ -28,7 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.test.OlatTestCase;
@@ -43,7 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class VFSTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSTest.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSTest.class);
 	
 	private static final String VFS_TEST_DIR = "/vfstest";
 	

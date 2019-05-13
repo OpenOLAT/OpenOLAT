@@ -23,7 +23,7 @@ import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
 @Service("repositoryModule")
 public class RepositoryModule extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryModule.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryModule.class);
 
 	private static final String MANAGED_REPOENTRY_ENABLED = "managedRepositoryEntries";
 	private static final String CATALOG_SITE_ENABLED = "site.catalog.enable";

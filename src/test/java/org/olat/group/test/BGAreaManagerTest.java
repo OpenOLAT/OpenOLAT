@@ -38,6 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +46,6 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -64,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BGAreaManagerTest extends OlatTestCase {
 
-	private static OLog log = Tracing.createLoggerFor(BGAreaManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(BGAreaManagerTest.class);
 
 	private OLATResource c1, c2;
 	

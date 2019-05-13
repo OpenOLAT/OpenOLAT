@@ -22,7 +22,7 @@ package org.olat.ims.qti.questionimport;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -33,7 +33,7 @@ import org.olat.core.logging.Tracing;
  */
 public class ItemsPackage {
 	
-	private static final OLog log = Tracing.createLoggerFor(ItemsPackage.class);
+	private static final Logger log = Tracing.createLoggerFor(ItemsPackage.class);
 	
 	private List<ItemAndMetadata> items;
 

@@ -36,7 +36,7 @@ import io.undertow.servlet.api.DeploymentManager;
 import javax.servlet.ServletException;
 
 import org.junit.BeforeClass;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.servlets.OpenOLATServlet;
 import org.olat.test.OlatTestCase;
@@ -51,7 +51,7 @@ import org.olat.test.OlatTestCase;
  * @author srosse, stephane.rosse@frentix.com
  */
 public abstract class WebDAVTestCase extends OlatTestCase {
-	private static final OLog log = Tracing.createLoggerFor(WebDAVTestCase.class);
+	private static final Logger log = Tracing.createLoggerFor(WebDAVTestCase.class);
 
 	public final static int PORT = 9997;
 	public final static String HOST = "localhost";

@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.control.generic.clone;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -34,7 +35,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.creator.ControllerCreator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -43,7 +43,7 @@ import org.olat.core.logging.Tracing;
  * @author Felix Jost
  */
 public class CloneController extends BasicController{
-	OLog log = Tracing.createLoggerFor(CloneController.class);
+	private static final Logger log = Tracing.createLoggerFor(CloneController.class);
 
 	private static final String CMD_CLONE = "cl";
 	private VelocityContainer mainVC;

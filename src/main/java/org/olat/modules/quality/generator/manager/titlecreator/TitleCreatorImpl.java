@@ -35,7 +35,7 @@ import javax.annotation.PostConstruct;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.quality.generator.TitleCreator;
 import org.olat.modules.quality.generator.TitleCreatorHandler;
@@ -51,7 +51,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class TitleCreatorImpl implements TitleCreator {
 	
-	private static final OLog log = Tracing.createLoggerFor(TitleCreatorImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(TitleCreatorImpl.class);
 
 	private static final String PREFIX = "$";
 

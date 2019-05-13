@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDDocumentCatalog;
 import org.apache.pdfbox.pdmodel.interactive.form.PDAcroForm;
@@ -37,7 +38,6 @@ import org.apache.pdfbox.pdmodel.interactive.form.PDField;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -58,7 +58,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class CertificatePDFFormWorker {
 
-	private static final OLog log = Tracing
+	private static final Logger log = Tracing
 			.createLoggerFor(CertificatePDFFormWorker.class);
 	
 	private final Float score;

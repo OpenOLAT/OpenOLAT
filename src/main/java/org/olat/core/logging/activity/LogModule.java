@@ -27,7 +27,7 @@ package org.olat.core.logging.activity;
 
 import java.util.List;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -36,7 +36,7 @@ import org.olat.core.logging.Tracing;
  */
 public class LogModule {
 	
-	static final OLog log = Tracing.createLoggerFor(LogModule.class);
+	static final Logger log = Tracing.createLoggerFor(LogModule.class);
 	/**
 	 * Anonymous logging is disabled by default.
 	 */

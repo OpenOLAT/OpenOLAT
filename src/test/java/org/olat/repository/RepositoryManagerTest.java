@@ -49,7 +49,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -74,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class RepositoryManagerTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryManagerTest.class);
 
 	@Autowired
 	private DB dbInstance;

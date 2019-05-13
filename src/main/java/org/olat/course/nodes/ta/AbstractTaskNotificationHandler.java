@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.core.commons.modules.bc.FileInfo;
 import org.olat.core.commons.modules.bc.FolderManager;
@@ -50,7 +51,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -63,7 +63,7 @@ import org.olat.repository.RepositoryManager;
  */
 public abstract class AbstractTaskNotificationHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(AbstractTaskNotificationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractTaskNotificationHandler.class);
 
 	/**
 	 * @see org.olat.core.commons.services.notifications.NotificationsHandler#createSubscriptionInfo(org.olat.core.commons.services.notifications.Subscriber,
@@ -80,9 +80,9 @@ public abstract class AbstractTaskNotificationHandler {
 			if (NotificationsManager.getInstance().isPublisherValid(p) && compareDate.before(latestNews)) {
 				String folderRoot = p.getData();
 				
-				boolean logDebug = log.isDebug();
+				boolean logDebug = log.isDebugEnabled();
 				if (logDebug){
-					log.debug("folderRoot=", folderRoot);
+					log.debug("folderRoot=" + folderRoot);
 				}
 				final List<FileInfo> fInfos = FolderManager.getFileInfos(folderRoot, compareDate);
 				final Translator translator = Util.createPackageTranslator(AbstractTaskNotificationHandler.class, locale);
@@ -103,7 +103,7 @@ public abstract class AbstractTaskNotificationHandler {
 					FileInfo fi = it_infos.next();
 					VFSMetadata metaInfo = fi.getMetaInfo();
 					String filePath = fi.getRelPath();
-					if(logDebug) log.debug("filePath=", filePath);
+					if(logDebug) log.debug("filePath=" + filePath);
 					String fullUserName = getUserNameFromFilePath(metaInfo, filePath);
 							
 					Date modDate = fi.getLastModified();
@@ -150,7 +150,7 @@ public abstract class AbstractTaskNotificationHandler {
 			}
 			return "";
 		} catch (Exception e) {
-			log.warn("Can not extract user from path=" + filePath, null);
+			log.warn("Can not extract user from path=" + filePath);
 			return "";
 		}
 	}
@@ -158,7 +158,7 @@ public abstract class AbstractTaskNotificationHandler {
 	private boolean checkPublisher(Publisher p) {
 		try {
 			if ("CourseModule".equals(p.getResName()) && !NotificationsUpgradeHelper.checkCourse(p)) {
-				log.info("deactivating publisher with key; " + p.getKey(), null);
+				log.info("deactivating publisher with key; " + p.getKey());
 				NotificationsManager.getInstance().deactivate(p);
 				return false;
 			}

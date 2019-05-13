@@ -25,10 +25,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.edusharing.CreateUsageParameter;
@@ -65,7 +65,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class EdusharingServiceImpl implements EdusharingService, RepositoryEntryDataDeletable {
 	
-	private static final OLog log = Tracing.createLoggerFor(EdusharingServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(EdusharingServiceImpl.class);
 	
 	@Autowired
 	private EdusharingModule edusharingModule;

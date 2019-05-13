@@ -21,9 +21,9 @@ package org.olat.commons.calendar;
 
 import java.util.Arrays;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -46,7 +46,7 @@ public enum CalendarManagedFlag {
 	;
 	
 	private CalendarManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(CalendarManagedFlag.class);
+	private static final Logger log = Tracing.createLoggerFor(CalendarManagedFlag.class);
 	public static final CalendarManagedFlag[] EMPTY_ARRAY = new CalendarManagedFlag[0];
 	
 	private static CalendarModule calendarModule;

@@ -33,7 +33,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.HistoryPoint;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -55,7 +55,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
  */
 public class GetGoOAuthDispatcher implements Dispatcher {
 	
-	private static final OLog log = Tracing.createLoggerFor(GetGoOAuthDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(GetGoOAuthDispatcher.class);
 	
 	@Autowired
 	private GoToMeetingManager goToMeetingManager;
@@ -70,7 +70,7 @@ public class GetGoOAuthDispatcher implements Dispatcher {
 			//upon creation URL is checked for 
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 		} catch(NumberFormatException nfe) {
-			if(log.isDebug()){
+			if(log.isDebugEnabled()){
 				log.debug("Bad Request "+request.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);

@@ -33,7 +33,7 @@ import org.jamwiki.model.WikiFile;
 import org.jamwiki.utils.InterWikiHandler;
 import org.jamwiki.utils.PseudoTopicHandler;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.wiki.Wiki;
 import org.olat.modules.wiki.WikiManager;
@@ -48,7 +48,7 @@ import org.springframework.util.StringUtils;
  */
 public class OlatWikiDataHandler implements DataHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(OlatWikiDataHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(OlatWikiDataHandler.class);
 
 	private OLATResourceable ores;
 	private String imageUri;
@@ -78,7 +78,7 @@ public class OlatWikiDataHandler implements DataHandler {
 		} catch (UnsupportedEncodingException e) {
 			//
 		}
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			log.debug("page name not normalized: " + topicName);
 			log.debug("page name normalized: " + FilterUtil.normalizeWikiLink(topicName));
 			try {

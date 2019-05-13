@@ -33,6 +33,7 @@ import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.commons.calendar.CalendarManager;
@@ -56,7 +57,6 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
@@ -237,7 +237,7 @@ public class CollaborationTools implements Serializable {
 	private Hashtable<String, Boolean> cacheToolStates;
 	private final BusinessGroup ores;
 	
-	private static OLog log = Tracing.createLoggerFor(CollaborationTools.class);
+	private static final Logger log = Tracing.createLoggerFor(CollaborationTools.class);
 	private transient CoordinatorManager coordinatorManager;
 
 	/**
@@ -357,7 +357,7 @@ public class CollaborationTools implements Serializable {
 						// First call of forum, create new forum and save
 						aforum = fom.addAForum();
 						forumKey = aforum.getKey();
-						if (log.isDebug()) {
+						if (log.isDebugEnabled()) {
 							log.debug("created new forum in collab tools: foid::" + forumKey.longValue() + " for ores::"
 									+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
 						}
@@ -369,7 +369,7 @@ public class CollaborationTools implements Serializable {
 						aforum = fom.loadForum(forumKey);
 						if (aforum == null) { throw new AssertException("Unable to load forum with key " + forumKey.longValue() + " for ores "
 								+ ores.getResourceableTypeName() + " with key " + ores.getResourceableId()); }
-						if (log.isDebug()) {
+						if (log.isDebugEnabled()) {
 							log.debug("loading forum in collab tools from properties: foid::" + forumKey.longValue() + " for ores::"
 									+ ores.getResourceableTypeName() + "/" + ores.getResourceableId());
 						}

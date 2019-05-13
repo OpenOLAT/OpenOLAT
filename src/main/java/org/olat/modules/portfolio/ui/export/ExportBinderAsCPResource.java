@@ -63,7 +63,7 @@ import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -118,7 +118,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ExportBinderAsCPResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(ExportBinderAsCPResource.class);
+	private static final Logger log = Tracing.createLoggerFor(ExportBinderAsCPResource.class);
 	
 	private static final String SCHEMA_LOCATIONS = "http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p2.xsd";
 	private static final org.olat.imscp.xml.manifest.ObjectFactory cpObjectFactory = new org.olat.imscp.xml.manifest.ObjectFactory();

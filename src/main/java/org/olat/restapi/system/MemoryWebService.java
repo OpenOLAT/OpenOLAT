@@ -33,7 +33,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WorkThreadInformations;
@@ -52,7 +52,7 @@ import org.olat.restapi.system.vo.MemoryVO;
  */
 public class MemoryWebService implements Sampler {
 	
-	private static final OLog log = Tracing.createLoggerFor(MemoryWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(MemoryWebService.class);
 	
 	private List<MemorySampleVO> memorySamples = new ArrayList<MemorySampleVO>(100);
 	

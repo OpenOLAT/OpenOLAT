@@ -42,7 +42,7 @@ import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.modules.vitero.ViteroModule;
@@ -64,7 +64,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ViteroBookingWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(ViteroBookingWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(ViteroBookingWebService.class);
 	
 	private final String subIdentifier;
 	private final OLATResourceable ores;

@@ -86,8 +86,8 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 
 	public GenericMainController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		nodesToAppend = new ArrayList<GenericTreeNode>();
-		nodesToPrepend = new ArrayList<GenericTreeNode>();
+		nodesToAppend = new ArrayList<>();
+		nodesToPrepend = new ArrayList<>();
 		className = this.getClass().getName();
 	}
 
@@ -208,7 +208,7 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 		ExtManager extm = ExtManager.getInstance();
 		int j = 0;
 		GenericTreeNode gtnChild;
-		Map<GenericTreeNode, String> subMenuNodes = new LinkedHashMap<GenericTreeNode, String>();
+		Map<GenericTreeNode, String> subMenuNodes = new LinkedHashMap<>();
 		for (Extension anExt : extm.getExtensions()) {
 			// check for sites
 			ActionExtension ae = (ActionExtension) anExt.getExtensionFor(className, ureq);
@@ -249,7 +249,7 @@ public abstract class GenericMainController extends MainLayoutBasicController {
 
 					j++;
 				}else{
-					logInfo("found disabled GenericActionExtension for "+className+" ", ae.toString());
+					logInfo("found disabled GenericActionExtension for " + className);
 				}
 			}
 		}// loop over extensions

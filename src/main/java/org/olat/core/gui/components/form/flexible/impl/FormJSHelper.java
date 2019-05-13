@@ -34,7 +34,7 @@ import org.json.JSONObject;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -47,7 +47,7 @@ import org.olat.core.logging.Tracing;
  */
 public class FormJSHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(FormJSHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(FormJSHelper.class);
 
 	private static final String[] EXTJSACTIONS = { "dblclick", "click", "change" };
 

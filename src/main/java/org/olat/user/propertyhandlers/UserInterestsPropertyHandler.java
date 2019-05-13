@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
@@ -58,7 +58,7 @@ import com.thoughtworks.xstream.XStream;
  * @author twuersch, frentix GmbH, http://www.frentix.com
  */
 public class UserInterestsPropertyHandler extends AbstractUserPropertyHandler {
-	private static final OLog log = Tracing.createLoggerFor(UserInterestsPropertyHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(UserInterestsPropertyHandler.class);
 
 	public static final String PACKAGE_UINTERESTS = "com.frentix.olat.user";
 	

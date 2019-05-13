@@ -21,8 +21,8 @@ package org.olat.modules.curriculum;
 
 import java.util.Arrays;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -43,7 +43,7 @@ public enum CurriculumManagedFlag {
 	 members(all);
 	
 	private CurriculumManagedFlag[] parents;
-	private static final OLog log = Tracing.createLoggerFor(CurriculumManagedFlag.class);
+	private static final Logger log = Tracing.createLoggerFor(CurriculumManagedFlag.class);
 	public static final CurriculumManagedFlag[] EMPTY_ARRAY = new CurriculumManagedFlag[0];
 	
 	private static CurriculumModule curriculumModule;

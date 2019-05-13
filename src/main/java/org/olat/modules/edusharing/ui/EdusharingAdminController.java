@@ -26,6 +26,7 @@ import static org.olat.modules.edusharing.ui.EdusharingUIFactory.validateIsManda
 
 import java.security.KeyPair;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,7 +44,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.edusharing.EdusharingDispatcher;
 import org.olat.modules.edusharing.EdusharingModule;
@@ -61,7 +61,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EdusharingAdminController extends FormBasicController {
 
-	private static final OLog log = Tracing.createLoggerFor(EdusharingAdminController.class);
+	private static final Logger log = Tracing.createLoggerFor(EdusharingAdminController.class);
 
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
 	

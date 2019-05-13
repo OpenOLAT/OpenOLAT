@@ -44,7 +44,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -82,7 +82,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 public class WikiCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = -5800975339569440113L;
 
-	private static final OLog log = Tracing.createLoggerFor(WikiCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(WikiCourseNode.class);
 
 	public static final String TYPE = "wiki";
 	private Condition preConditionEdit;

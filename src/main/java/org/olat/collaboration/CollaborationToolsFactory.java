@@ -27,11 +27,11 @@ package org.olat.collaboration;
 
 import java.util.ArrayList;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.cache.CacheWrapper;
@@ -55,7 +55,7 @@ import org.olat.portfolio.PortfolioModule;
  * @author guido
  */
 public class CollaborationToolsFactory {
-	private static final OLog log = Tracing.createLoggerFor(CollaborationToolsFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(CollaborationToolsFactory.class);
 	private static CollaborationToolsFactory instance;
 	private CacheWrapper<String,CollaborationTools> cache;
 	private CoordinatorManager coordinatorManager;
@@ -144,7 +144,7 @@ public class CollaborationToolsFactory {
 		if (ores == null) throw new AssertException("Null is not allowed here, you have to provide an existing ores here!");
 		
 		final String cacheKey = Long.toString(ores.getResourceableId().longValue());
-		boolean debug = log.isDebug();
+		boolean debug = log.isDebugEnabled();
 		//sync operation cluster wide
 
 		CollaborationTools collabTools = cache.get(cacheKey);

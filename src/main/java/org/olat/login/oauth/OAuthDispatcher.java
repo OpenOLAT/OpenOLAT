@@ -41,7 +41,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
@@ -73,7 +73,7 @@ import com.github.scribejava.core.oauth.OAuthService;
  */
 public class OAuthDispatcher implements Dispatcher {
 	
-	private static final OLog log = Tracing.createLoggerFor(OAuthDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(OAuthDispatcher.class);
 
 	
 	@Autowired
@@ -93,7 +93,7 @@ public class OAuthDispatcher implements Dispatcher {
 			//upon creation URL is checked for 
 			ureq = new UserRequestImpl(uriPrefix, request, response);
 		} catch(NumberFormatException nfe) {
-			if(log.isDebug()){
+			if(log.isDebugEnabled()){
 				log.debug("Bad Request "+request.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);
@@ -120,7 +120,7 @@ public class OAuthDispatcher implements Dispatcher {
 
 			Token accessToken;
 			if(provider == null) {
-				log.audit("OAuth Login failed, no provider in request");
+				log.info(Tracing.M_AUDIT, "OAuth Login failed, no provider in request");
 				DispatcherModule.redirectToDefaultDispatcher(response);
 				return;
 			} else if(provider.isImplicitWorkflow()) {

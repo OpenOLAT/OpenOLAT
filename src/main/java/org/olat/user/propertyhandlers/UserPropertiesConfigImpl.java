@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.user.UserPropertiesConfig;
 
@@ -42,7 +42,7 @@ import org.olat.user.UserPropertiesConfig;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class UserPropertiesConfigImpl implements UserPropertiesConfig {
-	private static final OLog log = Tracing.createLoggerFor(UserPropertiesConfigImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(UserPropertiesConfigImpl.class);
 	public static final String PACKAGE = UserPropertiesConfigImpl.class.getPackage().getName(); 
 
 	
@@ -98,8 +98,8 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 	@Override
 	public UserPropertyHandler getPropertyHandler(String handlerName) {
 		UserPropertyHandler handler =  userPropertyNameLookupMap.get(handlerName);
-		if (handler == null && log.isDebug()) {
-			log.debug("UserPropertyHander for handlerName::" + handlerName + " not found, check your configuration.", null);
+		if (handler == null && log.isDebugEnabled()) {
+			log.debug("UserPropertyHander for handlerName::" + handlerName + " not found, check your configuration.");
 		}
 		return handler;
 	}
@@ -162,7 +162,7 @@ public class UserPropertiesConfigImpl implements UserPropertiesConfig {
 			currentUsageConfig = userPropertyUsageContexts.get("default");
 			log.warn(
 					"Could not find user property usage configuration for usageIdentifyer::" + usageIdentifyer
-							+ ", please check yout olat_userconfig.xml file. Using default configuration instead.", null);
+							+ ", please check yout olat_userconfig.xml file. Using default configuration instead.");
 			if (currentUsageConfig == null) {
 				throw new OLATRuntimeException("Missing default user property usage configuration in olat_userconfig.xml", null);
 			}

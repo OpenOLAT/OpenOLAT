@@ -34,12 +34,12 @@ import java.io.OutputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -75,7 +75,7 @@ import com.thoughtworks.xstream.XStream;
 @Service("org.olat.ims.cp.CPManager")
 public class CPManagerImpl implements CPManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(CPManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(CPManagerImpl.class);
 
 	public static final String PACKAGE_CONFIG_FILE_NAME = "CPPackageConfig.xml";
 
@@ -144,7 +144,7 @@ public class CPManagerImpl implements CPManager {
 		} else {
 			cp = new ContentPackage(null, directory, ores);
 			cp.setLastError("Exception reading XML for IMS CP: IMS-Manifest not found in " + directory.getName());
-			log.error("IMS manifiest xml couldn't be found in dir " + directory.getName() + ". Ores: " + ores.getResourceableId(), null);
+			log.error("IMS manifiest xml couldn't be found in dir " + directory.getName() + ". Ores: " + ores.getResourceableId());
 			throw new OLATRuntimeException(CPManagerImpl.class, "The imsmanifest.xml file was not found.", new IOException());
 		}
 		return cp;
@@ -155,7 +155,7 @@ public class CPManagerImpl implements CPManager {
 		// copy template cp to new repo-location
 		if (copyTemplCP(ores)) {
 			File cpRoot = FileResourceManager.getInstance().unzipFileResource(ores);
-			if(log.isDebug()) {
+			if(log.isDebugEnabled()) {
 				log.debug("createNewCP: cpRoot=" + cpRoot);
 				log.debug("createNewCP: cpRoot.getAbsolutePath()=" + cpRoot.getAbsolutePath());
 			}
@@ -180,7 +180,7 @@ public class CPManagerImpl implements CPManager {
 			return cp;
 
 		} else {
-			log.error("CP couldn't be created. Error when copying template. Ores: " + ores.getResourceableId(), null);
+			log.error("CP couldn't be created. Error when copying template. Ores: " + ores.getResourceableId());
 			throw new OLATRuntimeException("ERROR while creating new empty cp. an error occured while trying to copy template CP", null);
 		}
 	}
@@ -348,10 +348,10 @@ public class CPManagerImpl implements CPManager {
 			if (f.exists() && root.exists()) {
 				FileUtils.copyFileToDir(f, root, "copy imscp template");
 			} else {
-				log.error("cp template was not copied. Source:  " + url + " Target: " + root.getAbsolutePath(), null);
+				log.error("cp template was not copied. Source:  " + url + " Target: " + root.getAbsolutePath());
 			}
 		} catch (URISyntaxException e) {
-			log.error("Bad url syntax when copying cp template. url: " + url + " Ores:" + ores.getResourceableId(), null);
+			log.error("Bad url syntax when copying cp template. url: " + url + " Ores:" + ores.getResourceableId());
 			return false;
 		}
 

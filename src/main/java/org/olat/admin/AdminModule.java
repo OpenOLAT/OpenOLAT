@@ -28,6 +28,7 @@ package org.olat.admin;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.site.AdminSite;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
@@ -38,7 +39,6 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.User;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.session.UserSessionManager;
@@ -60,7 +60,7 @@ import org.springframework.stereotype.Service;
 @Service("adminModule")
 public class AdminModule extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(AdminModule.class);
+	private static final Logger log = Tracing.createLoggerFor(AdminModule.class);
 
 	private static final String CONFIG_LOGIN_BLOCKED = "loginBlocked";
 	/** Category for system properties **/
@@ -120,7 +120,7 @@ public class AdminModule extends AbstractSpringModule {
 	private boolean checkToken(HttpServletRequest request, String tokenPropertyName) {
 		String submittedToken = request.getParameter("token");
 		if (submittedToken == null) {
-			log.audit("Trying to set maintenance message without using a token. Remote address::" + request.getRemoteAddr());
+			log.info(Tracing.M_AUDIT, "Trying to set maintenance message without using a token. Remote address::" + request.getRemoteAddr());
 			return false;
 		}
 		// get token and compare
@@ -130,7 +130,7 @@ public class AdminModule extends AbstractSpringModule {
 		if (token.equals(submittedToken)) { // limit access to token
 			return true;
 		}
-		log.audit("Trying to set maintenance message using a wrong token. Remote address::" + request.getRemoteAddr());
+		log.info(Tracing.M_AUDIT, "Trying to set maintenance message using a wrong token. Remote address::" + request.getRemoteAddr());
 		return false;
 	}
 	
@@ -139,7 +139,7 @@ public class AdminModule extends AbstractSpringModule {
 	 * @param newLoginBlocked
 	 */
 	public void setLoginBlocked(boolean newLoginBlocked, boolean persist) {
-		log.audit("Session administration: Set login-blocked=" + newLoginBlocked);
+		log.info(Tracing.M_AUDIT, "Session administration: Set login-blocked=" + newLoginBlocked);
 		AuthHelper.setLoginBlocked(newLoginBlocked);
 		setBooleanProperty(CONFIG_LOGIN_BLOCKED, newLoginBlocked, persist);
 	}
@@ -157,7 +157,7 @@ public class AdminModule extends AbstractSpringModule {
 	 * @param rejectDMZRequests
 	 */
 	public void setRejectDMZRequests(boolean rejectDMZRequests) {
-		log.audit("Session administration: Set rejectDMZRequests=" + rejectDMZRequests);
+		log.info(Tracing.M_AUDIT, "Session administration: Set rejectDMZRequests=" + rejectDMZRequests);
 		AuthHelper.setRejectDMZRequests(rejectDMZRequests);
 	}
 
@@ -175,7 +175,7 @@ public class AdminModule extends AbstractSpringModule {
 	 * @param maxSession
 	 */
 	public void setMaxSessions(int maxSession) {
-		log.audit("Session administration: Set maxSession=" + maxSession);
+		log.info(Tracing.M_AUDIT, "Session administration: Set maxSession={}", maxSession);
 		AuthHelper.setMaxSessions(maxSession);
 	}
 
@@ -184,7 +184,7 @@ public class AdminModule extends AbstractSpringModule {
 	 * @param sessionTimeout
 	 */
 	public void setSessionTimeoutDepr(int sessionTimeout) {
-		log.audit("Session administration: Set session-timeout=" + sessionTimeout);
+		log.info(Tracing.M_AUDIT, "Session administration: Set session-timeout={}", sessionTimeout);
 		//in seconds
 		CoreSpringFactory.getImpl(UserSessionManager.class).setGlobalSessionTimeout(sessionTimeout);
 	}

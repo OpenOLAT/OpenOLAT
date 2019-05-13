@@ -292,7 +292,7 @@ public class LTIRunController extends BasicController {
 			hash = Encoder.md5hash(data);
 		}
 		if (isLogDebugEnabled()) {
-			logDebug("Create accept hash::" + hash + " for data::" + data, null);
+			logDebug("Create accept hash::" + hash + " for data::" + data);
 		}
 		return hash;
 	}

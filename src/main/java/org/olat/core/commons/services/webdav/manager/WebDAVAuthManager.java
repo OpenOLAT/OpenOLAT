@@ -30,7 +30,7 @@ import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
@@ -62,7 +62,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	public static final String PROVIDER_HA1_EMAIL = "HA1-E";
 	public static final String PROVIDER_HA1_INSTITUTIONAL_EMAIL = "HA1-I";
 	
-	private static final OLog log = Tracing.createLoggerFor(WebDAVAuthManager.class);
+	private static final Logger log = Tracing.createLoggerFor(WebDAVAuthManager.class);
 
 	@Autowired
 	private DB dbInstance;
@@ -103,7 +103,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 					String verity = Encoder.md5hash(ver);
 					if(verity.equals(response)) {
 						return authentication.getIdentity();
-					} else if(log.isDebug()) {
+					} else if(log.isDebugEnabled()) {
 						// don't log as error, happens all the time with certain clients, e.g. Microsoft-WebDAV-MiniRedir
 						log.debug("Verity::" + verity + " doesn't equals response::" + response);
 					}
@@ -211,7 +211,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				dbInstance.commit();
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 				securityManager.createAndPersistAuthentication(reloadedIdentity, provider, authUsername, password, loginModule.getDefaultHashAlgorithm());
-				log.audit(doer.getKey() + " created new WebDAV authentication for identity: " + identity.getKey() + " (" + authUsername + ")");
+				log.info(Tracing.M_AUDIT, doer.getKey() + " created new WebDAV authentication for identity: " + identity.getKey() + " (" + authUsername + ")");
 			} catch (DBRuntimeException e) {
 				log.error("Cannot create webdav password with provider " + provider + " for identity:" + identity, e);
 				dbInstance.commit();
@@ -220,7 +220,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 			try {
 				dbInstance.commit();
 				securityManager.updateCredentials(authentication, password, loginModule.getDefaultHashAlgorithm());
-				log.audit(doer.getKey() + " set new WebDAV password for identity: " + identity.getKey() + " (" + authUsername + ")");
+				log.info(Tracing.M_AUDIT, doer.getKey() + " set new WebDAV password for identity: " + identity.getKey() + " (" + authUsername + ")");
 			} catch (Exception e) {
 				log.error("Cannot update webdav password with provider " + provider + " for identity:" + identity, e);
 				dbInstance.commit();
@@ -275,7 +275,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				dbInstance.commit();
 				Identity reloadedIdentity = securityManager.loadIdentityByKey(identity.getKey());
 				securityManager.createAndPersistAuthentication(reloadedIdentity, provider, authUsername, digestToken, Encoder.Algorithm.md5_iso_8859_1);
-				log.audit(doer.getKey() + " created new WebDAV (HA1) authentication for identity: " + identity.getKey() + " (" + authUsername + ")");
+				log.info(Tracing.M_AUDIT, doer.getKey() + " created new WebDAV (HA1) authentication for identity: " + identity.getKey() + " (" + authUsername + ")");
 			} catch(DBRuntimeException e) {
 				log.error("Cannot create digest password with provider " + provider + " for identity:" + identity, e);
 				dbInstance.commit();
@@ -288,7 +288,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 					authHa1.setAuthusername(authUsername);
 					authHa1.setAlgorithm(Encoder.Algorithm.md5_iso_8859_1.name());
 					securityManager.updateAuthentication(authHa1);
-					log.audit(doer.getKey() + " set new WebDAV (HA1) password for identity: " + identity.getKey() + " (" + authUsername + ")");
+					log.info(Tracing.M_AUDIT, doer.getKey() + " set new WebDAV (HA1) password for identity: " + identity.getKey() + " (" + authUsername + ")");
 				} catch (DBRuntimeException e) {
 					log.error("Cannot update digest password with provider " + provider + " for identity:" + identity, e);
 					dbInstance.commit();

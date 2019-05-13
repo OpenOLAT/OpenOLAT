@@ -50,7 +50,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
@@ -74,7 +74,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class ProjectBrokerManagerTest extends OlatTestCase {
-	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerManagerTest.class);
 
 	private static Identity id1;
 	private static Identity id2;

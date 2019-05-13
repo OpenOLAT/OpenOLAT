@@ -44,12 +44,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -100,7 +100,7 @@ import org.springframework.stereotype.Component;
 @Path("repo/courses/{courseId}/assessments")
 public class CourseAssessmentWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(CourseAssessmentWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseAssessmentWebService.class);
 	
 	private static final String VERSION  = "1.0";
 	

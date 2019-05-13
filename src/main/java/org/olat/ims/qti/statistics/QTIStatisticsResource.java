@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.olat.basesecurity.Group;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -62,7 +62,7 @@ import org.olat.ims.qti.export.helper.QTIObjectTreeBuilder;
  */
 public class QTIStatisticsResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTIStatisticsResource.class);
+	private static final Logger log = Tracing.createLoggerFor(QTIStatisticsResource.class);
 	private static final String encoding = "UTF-8";
 	
 	private final Locale locale;

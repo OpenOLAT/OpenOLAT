@@ -46,13 +46,13 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -67,7 +67,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(CoursesResourcesFoldersTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CoursesResourcesFoldersTest.class);
 
 	private static ICourse course1;
 	private static Identity admin;

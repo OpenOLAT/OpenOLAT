@@ -39,8 +39,9 @@ import java.util.zip.ZipEntry;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 
@@ -52,7 +53,10 @@ import org.olat.core.util.WebappHelper;
  * 
  * @author Felix Jost
  */
-public class ClasspathMediaResource extends LogDelegator implements MediaResource {
+public class ClasspathMediaResource implements MediaResource {
+	
+	private static final Logger log = Tracing.createLoggerFor(ClasspathMediaResource.class);
+	
 	private final String location;
 	private Long lastModified;
 	private Long size;
@@ -111,7 +115,7 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 							// Get last modified and file size form jar entry
 							ZipEntry entry = jar.getEntry(relPath);
 							if (entry == null) {
-								logWarn("jar resource at location '"+location+"' and package " + packageName + " was not found, could not resolve entry relPath::" + relPath, null);
+								log.warn("jar resource at location '"+location+"' and package " + packageName + " was not found, could not resolve entry relPath::" + relPath);
 							} else {
 								size = new Long(entry.getSize());
 								// Last modified of jar - getTime on jar entry is not stable
@@ -121,7 +125,7 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 								cachedJarResourceLastModified.put(fileName, lastModified);
 							}
 						} catch (IOException e) {
-							logWarn("jar resource at location '"+location+"' and package " + packageName + " was not found!", e);
+							log.warn("jar resource at location '"+location+"' and package " + packageName + " was not found!", e);
 						}
 					}					
 				} else {
@@ -141,15 +145,15 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 					url = null;
 				}
 			}			
-			if (isLogDebugEnabled()) {
-				logDebug("resource found at URL::" + this.url
+			if (log.isDebugEnabled()) {
+				log.debug("resource found at URL::" + this.url
 						+ " for package::" + packageName + " and location::"
 						+ location + ", filesize::" + size + " lastModified::"
-						+ lastModified, null);
+						+ lastModified);
 			}
 		} else {
 			// resource was not found
-			logWarn("resource at location '"+location+"' and package " + packageName + " was not found!", null);
+			log.warn("resource at location '"+location+"' and package " + packageName + " was not found!");
 		}
 	}
 	
@@ -184,9 +188,9 @@ public class ClasspathMediaResource extends LogDelegator implements MediaResourc
 			is = url.openStream();
 		} catch (UnknownHostException host) {
 			//catch host exception here which can occur when brasato.src is wrongly configured
-			logWarn("cannot get inputstream for url:"+url.toExternalForm()+"Unknown host which starts with windows path like \"C\" points to a wrong configured brasato.src in the olat.properties file", null);
+			log.warn("cannot get inputstream for url:"+url.toExternalForm()+"Unknown host which starts with windows path like \"C\" points to a wrong configured brasato.src in the olat.properties file");
 		} catch (IOException e) {
-			logWarn("cannot get inputstream for url:"+url.toExternalForm(), null);
+			log.warn("cannot get inputstream for url:"+url.toExternalForm());
 		}
 		return is;
 	}

@@ -38,7 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.filter.FilterFactory;
@@ -51,7 +51,7 @@ import org.olat.ims.qti.editor.beecom.objects.Item;
  * @author mike
  */
 public class ItemPreviewController extends DefaultController implements ControllerEventListener {
-	private static final OLog log = Tracing.createLoggerFor(ItemPreviewController.class);
+	private static final Logger log = Tracing.createLoggerFor(ItemPreviewController.class);
 	private static final String VC_ROOT = Util.getPackageVelocityRoot(ItemPreviewController.class);
 
 	private VelocityContainer main;

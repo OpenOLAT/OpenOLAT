@@ -19,9 +19,9 @@
  */
 package org.olat.search.service.document;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.commons.info.InfoMessage;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.search.model.OlatDocument;
 import org.olat.search.service.SearchResourceContext;
@@ -29,7 +29,7 @@ import org.olat.search.service.SearchResourceContext;
 public class InfoMessageDocument extends OlatDocument {
 
 	private static final long serialVersionUID = 4632827059160372302L;
-	private static final OLog log = Tracing.createLoggerFor(InfoMessageDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(InfoMessageDocument.class);
 
   //Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
@@ -58,7 +58,7 @@ public class InfoMessageDocument extends OlatDocument {
 		messageDocument.setParentContextType(searchResourceContext.getParentContextType());
 		messageDocument.setParentContextName(searchResourceContext.getParentContextName());
 
-		if (log.isDebug()) log.debug(messageDocument.toString());
+		if (log.isDebugEnabled()) log.debug(messageDocument.toString());
 		return messageDocument.getLuceneDocument();
 	}
 }

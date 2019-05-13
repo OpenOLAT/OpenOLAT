@@ -22,6 +22,8 @@ package org.olat.modules.webFeed.search.indexer;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -42,10 +44,8 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  */
 public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 
-	/**
-	 * @see org.olat.search.service.indexer.Indexer#doIndex(org.olat.search.service.SearchResourceContext,
-	 *      java.lang.Object, org.olat.search.service.indexer.OlatFullIndexer)
-	 */
+	private static final Logger log = Tracing.createLoggerFor(FeedRepositoryIndexer.class);
+
 	@Override
 	public void doIndex(SearchResourceContext searchResourceContext, Object parentObject, OlatFullIndexer indexer) throws IOException,
 			InterruptedException {
@@ -54,15 +54,15 @@ public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 		String repoEntryName = "*name not available*";
 		try {
 			repoEntryName = repositoryEntry.getDisplayname();
-			if (isLogDebugEnabled()) {
-				logDebug("Indexing: " + repoEntryName);
+			if (log.isDebugEnabled()) {
+				log.debug("Indexing: " + repoEntryName);
 			}
 			Feed feed = FeedManager.getInstance().loadFeed(repositoryEntry.getOlatResource());
 			if(feed != null) {
 				// Only index items. Feed itself is indexed by RepositoryEntryIndexer.
 				List<Item> publishedItems = FeedManager.getInstance().loadPublishedItems(feed);
-				if (isLogDebugEnabled()) {
-					logDebug("PublishedItems size=" + publishedItems.size());
+				if (log.isDebugEnabled()) {
+					log.debug("PublishedItems size=" + publishedItems.size());
 				}
 				for (Item item : publishedItems) {
 					SearchResourceContext feedContext = new SearchResourceContext(searchResourceContext);
@@ -72,15 +72,9 @@ public abstract class FeedRepositoryIndexer extends DefaultIndexer {
 				}
 			}
 		} catch (NullPointerException e) {
-			logError("Error indexing feed:" + repoEntryName, e);
+			log.error("Error indexing feed:" + repoEntryName, e);
 		}
 	}
-
-	/**
-	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
-	 */
-	@Override
-	public abstract String getSupportedTypeName();
 
 	/**
 	 * @return The I18n key representing the document type

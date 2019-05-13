@@ -75,25 +75,7 @@
 		<listener-class>org.olat.core.dispatcher.mapper.MapperSessionListener</listener-class>
 	</listener>
     
-  <!-- 4. Servlets -->
-  <servlet>
-    <servlet-name>log4j-init</servlet-name>
-    <servlet-class>org.olat.core.servlets.Log4JInitServlet</servlet-class>
-
-    <init-param>
-      <param-name>log4j-init-file</param-name>
-      <param-value>log4j.xml</param-value>
-      
-      <!-- this is the default for lazy developers to have output on eclipse console.
-		Overwrite it with -Dlog4j.configuration="file:/tmp/mylog4j.xml" (java system property) and specifie a path for your logging config.
-		See olat3/conf for an example file  -->
-      
-    </init-param>
-
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-    
-    
+    <!-- 4. Servlets -->
 	<!-- OLAT servlet -->
 	<servlet>
 		<servlet-name>openolatservlet</servlet-name>
@@ -115,12 +97,6 @@
         <servlet-class>
             org.apache.cxf.transport.servlet.CXFServlet
         </servlet-class>
-        <!--  
-        		<init-param>
-			<param-name>javax.ws.rs.Application</param-name>
-			<param-value>org.olat.restapi.support.OlatRestApplication</param-value>
-		</init-param>
-		-->
         <load-on-startup>1</load-on-startup>
         	<multipart-config>
 			<file-size-threshold>10240</file-size-threshold>

@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.admin.quota.QuotaConstants;
@@ -55,7 +56,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailBundle;
@@ -105,7 +105,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class TACourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {	
 	
-	private OLog log = Tracing.createLoggerFor(this.getClass()); 
+	private static final Logger log = Tracing.createLoggerFor(TACourseNodeEditController.class); 
 	
 	public static final String PANE_TAB_CONF_SCORING = "pane.tab.conf.scoring";
 
@@ -273,13 +273,9 @@ public class TACourseNodeEditController extends ActivateableTabbableDefaultContr
 		return new TaskFolderCallback(false, folderQuota); // do not look task folder
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {		
-		if (log.isDebug()) log.debug("event source=" + source + " " + event.toString());		
+		if (log.isDebugEnabled()) log.debug("event source=" + source + " " + event.toString());		
 		if (source == btfButton){
 			// check if there are already assigned tasks
 			CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);

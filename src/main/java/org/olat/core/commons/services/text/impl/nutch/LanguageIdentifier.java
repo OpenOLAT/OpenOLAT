@@ -28,10 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.olat.core.commons.services.text.impl.nutch.NGramProfile;
-import org.olat.core.logging.OLog;
-import org.olat.core.logging.Tracing;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.text.impl.nutch.NGramProfile.NGramEntry;
+import org.olat.core.logging.Tracing;
 
 
 /**
@@ -46,13 +45,13 @@ import org.olat.core.commons.services.text.impl.nutch.NGramProfile.NGramEntry;
  */
 public class LanguageIdentifier {
   
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static final Logger log = Tracing.createLoggerFor(LanguageIdentifier.class);
  
-	private final static int DEFAULT_ANALYSIS_LENGTH = 0;    // 0 means full content
+	private static final int DEFAULT_ANALYSIS_LENGTH = 0;    // 0 means full content
   
-  private List<NGramProfile> languages = new ArrayList<NGramProfile>();
+  private List<NGramProfile> languages = new ArrayList<>();
 
-  private List<String> supportedLanguages = new ArrayList<String>();
+  private List<String> supportedLanguages = new ArrayList<>();
 
   /** Minimum size of NGrams */
   private int minLength = NGramProfile.DEFAULT_MIN_NGRAM_LENGTH;
@@ -64,7 +63,7 @@ public class LanguageIdentifier {
   private int analyzeLength = DEFAULT_ANALYSIS_LENGTH;
   
   /** A global index of ngrams of all supported languages */
-  private Map<CharSequence, NGramEntry[]> ngramsIdx = new HashMap<CharSequence, NGramEntry[]>();
+  private Map<CharSequence, NGramEntry[]> ngramsIdx = new HashMap<>();
 
 
 

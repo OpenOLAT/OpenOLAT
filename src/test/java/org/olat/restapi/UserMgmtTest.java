@@ -75,7 +75,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.nodes.INode;
@@ -137,7 +137,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class UserMgmtTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserMgmtTest.class);
+	private static final Logger log = Tracing.createLoggerFor(UserMgmtTest.class);
 	
 	private static Identity owner1, id1, id2, id3;
 	private static BusinessGroup g1, g2, g3, g4;

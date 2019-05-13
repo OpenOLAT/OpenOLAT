@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.batik.css.parser.ParseException;
 import org.apache.batik.css.parser.Parser;
+import org.apache.logging.log4j.Logger;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -41,7 +42,6 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -65,7 +65,7 @@ import org.xml.sax.InputSource;
  */
 public class CPPrintMapper implements Mapper {
 	
-	private static final OLog log = Tracing.createLoggerFor(CPPrintMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(CPPrintMapper.class);
 	
 	private static final String DEFAULT_ENCODING = "iso-8859-1";
 	private static final String UNICODE_ENCODING = "unicode";

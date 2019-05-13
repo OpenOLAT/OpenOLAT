@@ -30,7 +30,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	
-	private static final OLog log = Tracing.createLoggerFor(ViteroModule.class);
+	private static final Logger log = Tracing.createLoggerFor(ViteroModule.class);
 	
 	private static final String ENABLED = "vc.vitero.enabled";
 	private static final String PROTOCOL = "protocol";

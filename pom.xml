@@ -68,6 +68,7 @@
 		<apache.cxf>3.3.1</apache.cxf>
 		<apache.pdfbox>2.0.15</apache.pdfbox>
 		<apache.poi>4.1.0</apache.poi>
+		<apache.log4j>2.11.2</apache.log4j>
 		<jackson.version>2.9.8</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.5</org.postgresql.version>
@@ -386,9 +387,9 @@
 			</activation>
 			<dependencies>
 				<dependency>
-					<groupId>log4j</groupId>
-					<artifactId>log4j</artifactId>
-					<version>1.2.17</version>
+					<groupId>org.apache.logging.log4j</groupId>
+					<artifactId>log4j-core</artifactId>
+					<version>${apache.log4j}</version>
 				</dependency>
 				<!-- Apache CXF for tomcat -->
 				<dependency>
@@ -1209,7 +1210,7 @@
 					values -->
 				<filtering>false</filtering>
 				<excludes>
-					<exclude>log4j.xml</exclude>
+					<exclude>log4j2.xml</exclude>
 				</excludes>
 			</resource>
 		</resources>
@@ -2120,25 +2121,30 @@
 			<version>1.7.25</version>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.7.25</version>
+			<groupId>org.apache.logging.log4j</groupId>
+    		<artifactId>log4j-api</artifactId>
+			<version>${apache.log4j}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jul-to-slf4j</artifactId>
-			<version>1.7.25</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-jul</artifactId>
+			<version>${apache.log4j}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${apache.log4j}</version>
 		</dependency>
 		<!-- Replace commons-logging -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>jcl-over-slf4j</artifactId>
-			<version>1.7.25</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-jcl</artifactId>
+			<version>${apache.log4j}</version>
 		</dependency>
 		<dependency>
-			<groupId>log4j</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.17</version>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${apache.log4j}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -2441,7 +2447,7 @@
 			<exclusions>
 				<exclusion><!-- use jlc-over-slfj because we still use log4j version 1.2 -->
 					<groupId>org.springframework</groupId>
-					<artifactId>spring-jlc</artifactId>
+					<artifactId>spring-jcl</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

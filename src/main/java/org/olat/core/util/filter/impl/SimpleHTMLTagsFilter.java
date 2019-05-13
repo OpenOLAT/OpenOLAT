@@ -22,8 +22,8 @@ package org.olat.core.util.filter.impl;
 import java.io.IOException;
 import java.io.StringReader;
 
+import org.apache.logging.log4j.Logger;
 import org.cyberneko.html.parsers.SAXParser;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
@@ -52,7 +52,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author gnaegi
  */
 public class SimpleHTMLTagsFilter implements Filter {
-	private static final OLog log = Tracing.createLoggerFor(SimpleHTMLTagsFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(SimpleHTMLTagsFilter.class);
 
 	@Override
 	public String filter(String original) {

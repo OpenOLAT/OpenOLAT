@@ -44,7 +44,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -74,7 +74,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("org.olat.core.util.vfs.QuotaManager")
 public class QuotaManagerImpl implements QuotaManager, InitializingBean {
-	private static final OLog log = Tracing.createLoggerFor(QuotaManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(QuotaManagerImpl.class);
 
 	private static final String QUOTA_CATEGORY = "quot";
 	private OLATResource quotaResource;

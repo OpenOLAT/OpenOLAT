@@ -32,11 +32,11 @@
 
 package de.tuchemnitz.wizard.workflows.coursecreation;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.mail.MailBundle;
@@ -56,7 +56,7 @@ import de.tuchemnitz.wizard.workflows.coursecreation.model.CourseCreationConfigu
  */
 public class CourseCreationMailHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(CourseCreationMailHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseCreationMailHelper.class);
 
 	/**
 	 * Get the success info message.

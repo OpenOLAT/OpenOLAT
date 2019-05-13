@@ -42,7 +42,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import org.apache.http.HttpEntity;
 import org.junit.Before;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.security.RestApiLoginFilter;
@@ -71,7 +71,7 @@ import io.undertow.servlet.api.DeploymentManager;
  */
 public abstract class OlatJerseyTestCase extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(OlatJerseyTestCase.class);
+	private static final Logger log = Tracing.createLoggerFor(OlatJerseyTestCase.class);
 	
 	protected static final JsonFactory jsonFactory = new JsonFactory();
 	

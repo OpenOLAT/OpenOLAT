@@ -162,7 +162,7 @@ class I18nConfigSubNewLangController extends FormBasicController {
 		boolean success = I18nManager.getInstance().createNewLanguage(localeKey, translatedInEnglish, translatedInLanguage, authors);
 		if (success) {
 			// wow, everything worked fine
-			logAudit("Created new language::" + localeKey, null);
+			logAudit("Created new language::" + localeKey);
 			// Since 6.2 workflow is that when creating a new language the users
 			// language is changed to this new language and the user gets
 			// redirect to the login screen. 

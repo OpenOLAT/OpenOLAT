@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -35,7 +35,7 @@ import org.olat.core.logging.Tracing;
  */
 public class FileStorage {
 	
-	private static final OLog log = Tracing.createLoggerFor(FileStorage.class);
+	private static final Logger log = Tracing.createLoggerFor(FileStorage.class);
 
 	private VFSContainer rootContainer;
 	

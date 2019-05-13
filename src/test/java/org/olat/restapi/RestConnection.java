@@ -61,7 +61,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -82,7 +82,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class RestConnection {
 	
-	private static final OLog log = Tracing.createLoggerFor(RestConnection.class);
+	private static final Logger log = Tracing.createLoggerFor(RestConnection.class);
 	
 	private int PORT = 9998;
 	private String HOST = "localhost";

@@ -30,11 +30,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Element;
 import org.dom4j.tree.DefaultDocument;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.cp.objects.CPDependency;
@@ -60,7 +60,7 @@ import org.olat.modules.wiki.WikiToCPExport;
  */
 public class CPCore {
 	
-	private static final OLog log = Tracing.createLoggerFor(CPCore.class);
+	private static final Logger log = Tracing.createLoggerFor(CPCore.class);
 
 	/**
 	 * The CP Manifest name

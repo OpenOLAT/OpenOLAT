@@ -30,10 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.logging.activity.UserActivityLoggerImpl;
@@ -47,11 +47,11 @@ public abstract class AbstractEventBus implements EventBus {
 
 	private final Map<String, EventAgency> infocenter;
 	private final Map<String, EventAgency> typeInfocenter;
-	private final OLog log = Tracing.createLoggerFor(this.getClass());
+	private final Logger log = Tracing.createLoggerFor(this.getClass());
 
 	public AbstractEventBus() {
-		infocenter = new HashMap<String, EventAgency>();
-		typeInfocenter = new HashMap<String, EventAgency>();
+		infocenter = new HashMap<>();
+		typeInfocenter = new HashMap<>();
 	}
 
 	@Override
@@ -161,7 +161,7 @@ public abstract class AbstractEventBus implements EventBus {
 						}, UserActivityLoggerImpl.newLoggerForEventBus(dCtrl));
 					}
 				} else if(listener != null) {
-					if(log.isDebug()){
+					if(log.isDebugEnabled()){
 						log.debug("fireEvent: Non-Controller: "+listener);
 					}
 					//is there a need to differ the events sent on one VM and in cluster mode?

@@ -41,7 +41,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.portfolio.model.restriction.CollectRestriction;
@@ -66,7 +66,7 @@ import com.thoughtworks.xstream.XStream;
  */
 public class EPXStreamHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(EPXStreamHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(EPXStreamHandler.class);
 
 	private static final XStream myStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	private static Templates filterArtefactsTemplates;

@@ -44,7 +44,7 @@ import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeService;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -62,7 +62,7 @@ import org.springframework.stereotype.Service;
 @Path("/onlyoffice/files/{fileId}")
 public class OnlyOfficeWebService {
 
-	private static final OLog log = Tracing.createLoggerFor(OnlyOfficeWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeWebService.class);
 	
 	@Autowired
 	private OnlyOfficeModule onlyOfficeModule;
@@ -103,7 +103,7 @@ public class OnlyOfficeWebService {
 			log.debug("Error while converting JWT token to callback. File ID: " + fileId);
 			return Response.serverError().status(Status.BAD_REQUEST).build();
 		}
-		if (log.isDebug()) log.debug("Callback: " + callback);
+		if (log.isDebugEnabled()) log.debug("Callback: " + callback);
 		
 		CallbackResponseVO responseVO;
 		CallbackStatus status = CallbackStatus.valueOf(callback.getStatus());
@@ -225,7 +225,7 @@ public class OnlyOfficeWebService {
 	}
 
 	private void logRequestHeaders(HttpHeaders httpHeaders) {
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			log.debug("REST Resquest headers:");
 			for (Entry<String, List<String>> entry : httpHeaders.getRequestHeaders().entrySet()) {
 				String name = entry.getKey();

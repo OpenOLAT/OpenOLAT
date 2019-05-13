@@ -103,7 +103,7 @@ public class HelloWorldController extends BasicController {
 		if (source == link) {
 			// OK, we have to say hello... do so.
 			// logging writes a message to the olat.log file
-			logInfo("Someone asked us to say hello... so we do.", null);
+			logInfo("Someone asked us to say hello... so we do.");
 			// we say hello to the and display the userName which is part of the
 			// user identity and stored in the user session
 			String fullName = userManager.getUserDisplayName(getIdentity());

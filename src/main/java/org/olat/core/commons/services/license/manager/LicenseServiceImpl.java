@@ -31,7 +31,7 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.model.LicenseImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
 @Service
 class LicenseServiceImpl implements LicenseService {
 
-	private static final OLog log = Tracing.createLoggerFor(LicenseServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(LicenseServiceImpl.class);
 
 	@Autowired
 	private LicenseModule licenseModule;

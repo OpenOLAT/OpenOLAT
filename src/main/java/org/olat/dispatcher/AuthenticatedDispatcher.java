@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
@@ -53,7 +54,6 @@ import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.HistoryPoint;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.StringHelper;
@@ -61,7 +61,6 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.session.UserSessionManager;
-import org.olat.core.util.threadlog.UserBasedLogLevelManager;
 import org.olat.login.LoginModule;
 
 /**
@@ -70,7 +69,7 @@ import org.olat.login.LoginModule;
  * @author Mike Stock
  */
 public class AuthenticatedDispatcher implements Dispatcher {
-	private static final OLog log = Tracing.createLoggerFor(AuthenticatedDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(AuthenticatedDispatcher.class);
 	
 	protected static final String AUTHDISPATCHER_BUSINESSPATH = "AuthDispatcher:businessPath";
 	
@@ -80,7 +79,6 @@ public class AuthenticatedDispatcher implements Dispatcher {
 	protected static final String TRUE = "true";
 	/** forces secure http connection to access olat if set to true **/
 	private boolean forceSecureAccessOnly = false;
-	private UserBasedLogLevelManager userBasedLogLevelManager = UserBasedLogLevelManager.getInstance();
 	
 	public AuthenticatedDispatcher(boolean forceSecureAccessOnly) {
 		this.forceSecureAccessOnly = forceSecureAccessOnly;
@@ -110,12 +108,11 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			//or authors copy-pasted links to the content.
 			//showing redscreens for non valid URL is wrong instead
 			//a 404 message must be shown -> e.g. robots correct their links.
-			if(log.isDebug()){
-				log.debug("Bad Request "+request.getPathInfo());
-			}
+			log.debug("Bad Request {}", request.getPathInfo());
 		}
 		
 		boolean auth = usess.isAuthenticated();
+		Tracing.setUserSession(usess);
 		if (!auth) {
 			String guestAccess = ureq.getParameter(GUEST);
 			if (guestAccess == null || !CoreSpringFactory.getImpl(LoginModule.class).isGuestLoginEnabled()) {
@@ -177,9 +174,6 @@ public class AuthenticatedDispatcher implements Dispatcher {
 				return;
 			}
 			
-			if (userBasedLogLevelManager != null) {
-				userBasedLogLevelManager.activateUsernameBasedLogLevel(sessionInfo.getLogin());
-			}
 			sessionInfo.setLastClickTime();
 			
 			String businessPath = (String) usess.removeEntryFromNonClearedStore(AUTHDISPATCHER_BUSINESSPATH);
@@ -211,10 +205,6 @@ public class AuthenticatedDispatcher implements Dispatcher {
 			msgcc.getWindow().dispatchRequest(ureq, true);
 			// do not dispatch (render only), since this is a new Window created as
 			// a result of another window's click.
-		} finally {
-			if (userBasedLogLevelManager != null) {
-				userBasedLogLevelManager.deactivateUsernameBasedLogLevel();
-			}
 		}
 	}
 	

@@ -26,7 +26,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriter;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemFull;
@@ -44,7 +44,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("questionItemIndexer")
 public class QuestionItemIndexer implements LifeIndexer {
-	private static final OLog log = Tracing.createLoggerFor(QuestionItemIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(QuestionItemIndexer.class);
 	private static final int BATCH_SIZE = 100;
 	
 	@Autowired

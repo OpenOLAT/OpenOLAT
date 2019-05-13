@@ -1475,7 +1475,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			assessmentChanged(ureq);
 		}
 		
-		logAudit(removed + " " + deleted + " removed item ref", null);
+		logAudit(removed + " " + deleted + " removed item ref");
 	}
 	
 	private void doDeleteAssessmentSection(UserRequest ureq, AssessmentSection assessmentSection) {

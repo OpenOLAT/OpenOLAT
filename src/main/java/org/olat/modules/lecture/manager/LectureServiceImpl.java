@@ -48,7 +48,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -116,7 +116,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class LectureServiceImpl implements LectureService, UserDataDeletable, DeletableGroupData {
-	private static final OLog log = Tracing.createLoggerFor(LectureServiceImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(LectureServiceImpl.class);
 	private static final CalendarManagedFlag[] CAL_MANAGED_FLAGS = new CalendarManagedFlag[] { CalendarManagedFlag.all };
 
 	@Autowired
@@ -796,7 +796,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 				MailerResult result = sendMail("lecture.autoclose.notification.subject", "lecture.autoclose.notification.body",
 						owner, teachers, lectureBlock);
 				if(result.getReturnCode() == MailerResult.OK) {
-					log.audit("Notification of lecture auto-close: " + lectureBlock.getKey() + " in course: " + entry.getKey());
+					log.info(Tracing.M_AUDIT, "Notification of lecture auto-close: " + lectureBlock.getKey() + " in course: " + entry.getKey());
 				} else {
 					log.error("Notification of lecture auto-close cannot be send: " + lectureBlock.getKey() + " in course: " + entry.getKey());
 				}

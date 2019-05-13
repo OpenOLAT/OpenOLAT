@@ -25,7 +25,7 @@ import java.io.InputStream;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.version.VersionsFileImpl;
 import org.olat.test.OlatTestCase;
@@ -38,7 +38,7 @@ import org.olat.test.OlatTestCase;
  */
 public class VFSXStreamTest extends OlatTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSXStreamTest.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSXStreamTest.class);
 	
 	@Test
 	public void readOldVersions() throws IOException {

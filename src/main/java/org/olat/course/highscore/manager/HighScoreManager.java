@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.highscore.model.HighScoreRankingResults;
 import org.olat.course.highscore.ui.HighScoreTableEntry;
@@ -43,7 +43,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class HighScoreManager {
 
-	private static final OLog log = Tracing.createLoggerFor(HighScoreManager.class);
+	private static final Logger log = Tracing.createLoggerFor(HighScoreManager.class);
 	
 	@Autowired
 	private UserManager userManager;
@@ -104,7 +104,7 @@ public class HighScoreManager {
 				.collect(Collectors.toList()));
 		
 		if (ownIdMembers.size() > 0) {
-			log.audit("2nd Highscore Table established");
+			log.info(Tracing.M_AUDIT, "2nd Highscore Table established");
 		}
 		
 		return new HighScoreRankingResults(allScores, ownTableEntry);

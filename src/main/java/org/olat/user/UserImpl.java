@@ -51,7 +51,7 @@ import org.olat.core.id.Persistable;
 import org.olat.core.id.Preferences;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -77,7 +77,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class UserImpl implements Persistable, User {
 
 	private static final long serialVersionUID = -2872102058369727753L;
-	private static final OLog log = Tracing.createLoggerFor(UserImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(UserImpl.class);
 
 	@Id
 	@GeneratedValue(generator = "system-uuid")

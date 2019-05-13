@@ -50,7 +50,7 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -67,7 +67,7 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
  * @author Mike Stock
  */
 public class FolderComponent extends AbstractComponent {
-	private static final OLog log = Tracing.createLoggerFor(FolderComponent.class);
+	private static final Logger log = Tracing.createLoggerFor(FolderComponent.class);
  	private static final ComponentRenderer RENDERER = new FolderComponentRenderer();
  	
 	public static final String SORT_NAME = "name";

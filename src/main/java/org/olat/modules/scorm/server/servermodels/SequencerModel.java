@@ -35,7 +35,7 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Parent;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.scorm.ISettingsHandler;
 
@@ -48,7 +48,7 @@ import uk.ac.reload.jdom.XMLDocument;
  * @author Paul Sharples
 */
 public class SequencerModel extends XMLDocument {
-	private static final OLog log = Tracing.createLoggerFor(SequencerModel.class);
+	private static final Logger log = Tracing.createLoggerFor(SequencerModel.class);
 	
 	protected static final String ROOT_NODE_NAME = "navigation";
 	protected static final String ORG_NODE = "organization";
@@ -285,7 +285,7 @@ public class SequencerModel extends XMLDocument {
 				Element anItemToDelete = itemsToRemove.next();
 				Parent parent = anItemToDelete.getParent();
 				if (parent != null) {
-					log.warn("item no longer exists so remove " + anItemToDelete.getAttributeValue(ITEM_IDENTIFIER), null);
+					log.warn("item no longer exists so remove " + anItemToDelete.getAttributeValue(ITEM_IDENTIFIER));
 					parent.removeContent(anItemToDelete);
 				}
 			}

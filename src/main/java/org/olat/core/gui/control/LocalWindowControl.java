@@ -30,7 +30,7 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 import org.olat.core.gui.control.info.WindowControlInfo;
 import org.olat.core.id.context.BusinessControl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -39,7 +39,7 @@ import org.olat.core.logging.Tracing;
  * @author Felix Jost
  */
 public class LocalWindowControl implements WindowControl {
-	private static final OLog log = Tracing.createLoggerFor(LocalWindowControl.class);
+	private static final Logger log = Tracing.createLoggerFor(LocalWindowControl.class);
 	private final WindowControl origWControl;
 	private int localHeight = 0;
 	//private final Controller controller;

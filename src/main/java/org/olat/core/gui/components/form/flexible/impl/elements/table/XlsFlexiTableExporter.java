@@ -32,7 +32,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -50,7 +50,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
  *
  */
 public class XlsFlexiTableExporter implements FlexiTableExporter {
-	private static final OLog log = Tracing.createLoggerFor(XlsFlexiTableExporter.class);
+	private static final Logger log = Tracing.createLoggerFor(XlsFlexiTableExporter.class);
 	private static final URLBuilder ubu = new EmptyURLBuilder();
 	
 	@Override

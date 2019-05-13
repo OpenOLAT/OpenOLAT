@@ -19,12 +19,13 @@
  */
 package org.olat.core.gui.control.generic.ajax.autocompletion;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.LogDelegator;
+import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -37,7 +38,10 @@ import org.olat.core.logging.LogDelegator;
  * 
  * @author gnaegi
  */
-public class AutoCompleterListReceiver extends LogDelegator implements ListReceiver {
+public class AutoCompleterListReceiver implements ListReceiver {
+	
+	private static final Logger log = Tracing.createLoggerFor(AutoCompleterListReceiver.class);
+	
 	private static final String VALUE = "value";
 	private static final String CSS_CLASS = "cssClass";
 	private static final String CSS_CLASS_EMPTY = "";
@@ -80,8 +84,8 @@ public class AutoCompleterListReceiver extends LogDelegator implements ListRecei
 		if (key == null) {
 			throw new AssertException("Can not add entry with displayText::" + displayText + " with a NULL key!");
 		}
-		if (isLogDebugEnabled()) {
-			logDebug("Add entry with key::" + key+ ", displayKey::" + displayKey + ", displayText::" + displayText + ", iconCssClass::" + iconCssClass);
+		if (log.isDebugEnabled()) {
+			log.debug("Add entry with key::" + key+ ", displayKey::" + displayKey + ", displayText::" + displayText + ", iconCssClass::" + iconCssClass);
 		}
 		try {
 			JSONObject object = new JSONObject();
@@ -108,7 +112,7 @@ public class AutoCompleterListReceiver extends LogDelegator implements ListRecei
 
 		} catch (JSONException e) {
 			// do nothing, only log error to logfile
-			logError("Could not add entry with key::" + key+ ", displayKey::" + displayKey + ", displayText::" + displayText + ", iconCssClass::" + iconCssClass, e);
+			log.error("Could not add entry with key::" + key+ ", displayKey::" + displayKey + ", displayText::" + displayText + ", iconCssClass::" + iconCssClass, e);
 		}
 
 	}

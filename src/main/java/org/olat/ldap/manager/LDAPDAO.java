@@ -39,7 +39,7 @@ import javax.naming.ldap.LdapContext;
 import javax.naming.ldap.PagedResultsControl;
 import javax.naming.ldap.PagedResultsResponseControl;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ldap.LDAPConstants;
@@ -61,7 +61,7 @@ import net.fortuna.ical4j.util.TimeZones;
 @Service
 public class LDAPDAO {
 	
-	private static final OLog log = Tracing.createLoggerFor(LDAPDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(LDAPDAO.class);
 	
 	private static final int PAGE_SIZE = 50;
 	private static final TimeZone UTC_TIME_ZONE;
@@ -146,7 +146,7 @@ public class LDAPDAO {
 		} catch (SizeLimitExceededException e) {
 			log.error("SizeLimitExceededException after "
 							+ counter
-							+ " records when getting all users from LDAP, reconfigure your LDAP server, hints: http://www.ldapbrowser.com/forum/viewtopic.php?t=14", null);
+							+ " records when getting all users from LDAP, reconfigure your LDAP server, hints: http://www.ldapbrowser.com/forum/viewtopic.php?t=14");
 		} catch (NamingException e) {
 			log.error("NamingException when trying to search from LDAP using ldapBase::" + ldapBase + " on row::" + counter, e);
 		} catch (Exception e) {
@@ -277,7 +277,7 @@ public class LDAPDAO {
 	 */
 
 	public List<LDAPUser> getUserAttributesModifiedSince(Date syncTime, LdapContext ctx) {
-		final boolean debug = log.isDebug();
+		final boolean debug = log.isDebugEnabled();
 		String userFilter = syncConfiguration.getLdapUserFilter();
 		StringBuilder filter = new StringBuilder();
 		if (syncTime == null) {

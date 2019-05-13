@@ -25,10 +25,12 @@ import java.util.List;
 
 import javax.persistence.PersistenceException;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Policy;
 import org.olat.basesecurity.PolicyImpl;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
 import org.olat.group.right.BGRightManager;
 import org.olat.group.right.BGRightsRole;
 import org.olat.upgrade.model.BusinessGroupUpgrade;
@@ -41,6 +43,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_10_0_3 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_10_0_3.class);
 	
 	private static final int BATCH_SIZE = 50;
 	private static final String TASK_BUSINESS_GROUPS = "Upgrade rights groups";
@@ -88,9 +92,9 @@ public class OLATUpgrade_10_0_3 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_10_0_3 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_10_0_3 successfully!");
 		} else {
-			log.audit("OLATUpgrade_10_0_3 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_10_0_3 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -105,7 +109,7 @@ public class OLATUpgrade_10_0_3 extends OLATUpgrade {
 					processRightGroup(businessGroup); 
 				}
 				counter += businessGroups.size();
-				log.audit("Rights groups processed: " + businessGroups.size() + ", total processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Rights groups processed: " + businessGroups.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(businessGroups.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(TASK_BUSINESS_GROUPS, true);

@@ -24,7 +24,7 @@ import java.io.OutputStream;
 
 import javax.ws.rs.core.StreamingOutput;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -38,7 +38,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class VFSStreamingOutput implements StreamingOutput {
 	
-	private static final OLog log = Tracing.createLoggerFor(VFSStreamingOutput.class);
+	private static final Logger log = Tracing.createLoggerFor(VFSStreamingOutput.class);
 	
 	private final VFSLeaf leaf;
 	

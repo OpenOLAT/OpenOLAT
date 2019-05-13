@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -44,7 +44,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 class XMLScanner extends DefaultHandler {
 	
-	private static final OLog log = Tracing.createLoggerFor(XMLScanner.class);
+	private static final Logger log = Tracing.createLoggerFor(XMLScanner.class);
 	
 	private static SAXParser saxParser;
 	static {

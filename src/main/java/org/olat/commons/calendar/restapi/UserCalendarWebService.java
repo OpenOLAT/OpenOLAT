@@ -56,7 +56,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
@@ -89,7 +89,7 @@ import org.springframework.stereotype.Component;
 @Path("users/{identityKey}/calendars")
 public class UserCalendarWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserCalendarWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(UserCalendarWebService.class);
 	
 	@Autowired
 	private ACService acManager;

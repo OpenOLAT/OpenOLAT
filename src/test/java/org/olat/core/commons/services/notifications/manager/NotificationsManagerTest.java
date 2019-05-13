@@ -51,7 +51,7 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -68,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 public class NotificationsManagerTest extends OlatTestCase {
-	private static OLog log = Tracing.createLoggerFor(NotificationsManagerTest.class);
+	private static final Logger log = Tracing.createLoggerFor(NotificationsManagerTest.class);
 	
 	@Autowired
 	private NotificationsManager notificationManager;

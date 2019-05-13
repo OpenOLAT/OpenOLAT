@@ -158,7 +158,7 @@ class I18nConfigSubDeleteLangController extends FormBasicController {
 				// Yes case, delete now
 				for (String deleteLang : deleteLangSelection.getSelectedKeys()) {
 					i18nMgr.deleteLanguage(deleteLang, true);
-					logAudit("Deleted language::" + deleteLang, null);
+					logAudit("Deleted language::" + deleteLang);
 				}
 				// wow, everything worked fine
 				showInfo("configuration.management.delete.success", deleteLangSelection.getSelectedKeys().toString());

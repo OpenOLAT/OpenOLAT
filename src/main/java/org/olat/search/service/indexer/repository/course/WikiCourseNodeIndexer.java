@@ -27,8 +27,8 @@ package org.olat.search.service.indexer.repository.course;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
@@ -47,7 +47,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class WikiCourseNodeIndexer extends AbstractHierarchicalIndexer implements CourseNodeIndexer {
-	private static final OLog log = Tracing.createLoggerFor(WikiCourseNodeIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(WikiCourseNodeIndexer.class);
 
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to search for certain documenttype and lucene have problems with '_' 

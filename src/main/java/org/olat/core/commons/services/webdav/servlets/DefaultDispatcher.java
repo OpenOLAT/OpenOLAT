@@ -38,7 +38,7 @@ import javax.servlet.ServletResponseWrapper;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.servlets.URLEncoder;
 
@@ -90,7 +90,7 @@ import org.olat.core.util.servlets.URLEncoder;
 public abstract class DefaultDispatcher implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    private static final OLog log = Tracing.createLoggerFor(DefaultDispatcher.class);
+    private static final Logger log = Tracing.createLoggerFor(DefaultDispatcher.class);
 
     // ----------------------------------------------------- Instance Variables
 
@@ -286,7 +286,7 @@ public abstract class DefaultDispatcher implements Serializable {
         throws IOException, ServletException {
 
         boolean serveContent = content;
-        boolean debug = log.isDebug();
+        boolean debug = log.isDebugEnabled();
 
         // Identify the requested resource path
         String path = getRelativePath(request);
@@ -1202,7 +1202,7 @@ public abstract class DefaultDispatcher implements Serializable {
                                   ServletOutputStream ostream,
                                   long start, long end) {
 
-        if (log.isDebug()) {
+        if (log.isDebugEnabled()) {
             log.debug("Serving bytes:" + start + "-" + end);
         }
 

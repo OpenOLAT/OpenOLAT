@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.core.commons.services.text.impl.nutch.NGramProfile;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 
@@ -52,7 +52,7 @@ import org.olat.core.logging.Tracing;
  */
 public class NGramProfile {
 
-  public static final OLog log = Tracing.createLoggerFor(NGramProfile.class);
+  public static final Logger log = Tracing.createLoggerFor(NGramProfile.class);
 
   /** The minimum length allowed for a ngram. */
   final static int ABSOLUTE_MIN_NGRAM_LENGTH = 1;

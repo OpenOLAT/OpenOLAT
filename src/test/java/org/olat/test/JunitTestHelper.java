@@ -45,7 +45,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -77,7 +77,7 @@ import org.olat.user.UserManager;
  */
 public class JunitTestHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(JunitTestHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(JunitTestHelper.class);
 	
 	public static final String PWD = "A6B7C8";
 

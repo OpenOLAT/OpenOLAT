@@ -30,10 +30,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.control.Event;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -61,7 +61,7 @@ import org.springframework.stereotype.Service;
 @Service("assessmentModule")
 public class AssessmentModule extends AbstractSpringModule implements GenericEventListener {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentModule.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentModule.class);
 
 	private List<Long> upcomingWork;
 	

@@ -32,9 +32,9 @@ import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.image.ImageHelperSPI;
 import org.olat.core.commons.services.image.Size;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -47,7 +47,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public abstract class AbstractImageHelper implements ImageHelperSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(AbstractImageHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(AbstractImageHelper.class);
 
 	@Override
 	public Size getSize(VFSLeaf image, String suffix) {

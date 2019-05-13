@@ -21,8 +21,8 @@ package org.olat.modules.edubase;
 
 import java.lang.reflect.Field;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingLoggingAction;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionObject;
 import org.olat.core.logging.activity.ActionType;
@@ -41,7 +41,7 @@ import org.olat.core.logging.activity.ResourceableTypeList;
  */
 public class EdubaseLoggingAction extends BaseLoggingAction {
 	
-	private static final OLog log = Tracing.createLoggerFor(EdubaseLoggingAction.class);
+	private static final Logger log = Tracing.createLoggerFor(EdubaseLoggingAction.class);
 
 	private static final ResourceableTypeList EDUBASE_RESOURCES = new ResourceableTypeList().
 			addMandatory(OlatResourceableType.course, OlatResourceableType.node, OlatResourceableType.edubase);

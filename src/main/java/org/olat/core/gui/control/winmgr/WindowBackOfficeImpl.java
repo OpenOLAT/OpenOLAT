@@ -59,7 +59,7 @@ import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.render.intercept.debug.GuiDebugDispatcherController;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.i18n.I18nManager;
@@ -76,7 +76,7 @@ import org.olat.core.util.i18n.ui.InlineTranslationInterceptHandlerController;
  */
 public class WindowBackOfficeImpl implements WindowBackOffice {
 	
-	private static final OLog log = Tracing.createLoggerFor(WindowBackOfficeImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(WindowBackOfficeImpl.class);
 
 	private final WindowManagerImpl winmgrImpl;
 	private final Window window;

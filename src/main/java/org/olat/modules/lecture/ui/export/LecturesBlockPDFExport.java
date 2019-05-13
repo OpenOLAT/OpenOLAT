@@ -41,7 +41,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -58,7 +58,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class LecturesBlockPDFExport extends PdfDocument implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(LecturesBlockPDFExport.class);
+	private static final Logger log = Tracing.createLoggerFor(LecturesBlockPDFExport.class);
 	
 	private String teacher;
 	private int numOfLectures;

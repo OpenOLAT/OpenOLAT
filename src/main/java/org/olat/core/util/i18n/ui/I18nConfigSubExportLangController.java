@@ -125,7 +125,7 @@ class I18nConfigSubExportLangController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> toExport = exportLangSelection.getSelectedKeys();
-		logDebug("Following languages selected for export::" + toExport.toString(), null);
+		logDebug("Following languages selected for export::" + toExport.toString());
 		if (toExport.size() == 0) {
 			// should not happen since button disabled
 			return;
@@ -139,7 +139,7 @@ class I18nConfigSubExportLangController extends FormBasicController {
 			// file system automatically after delivery
 			NamedFileMediaResource mediaResource = new NamedFileMediaResource(exportFile, fileName,
 					"language download for olatcore webapp framework", true);
-			logDebug("Exporting tmp file::" + exportFile.getAbsolutePath() + " as fileName::" + fileName, null);
+			logDebug("Exporting tmp file::" + exportFile.getAbsolutePath() + " as fileName::" + fileName);
 
 			// TODO open in new window (click invalid)
 			ureq.getDispatchResult().setResultingMediaResource(mediaResource);

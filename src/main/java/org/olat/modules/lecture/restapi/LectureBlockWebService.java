@@ -36,7 +36,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.Group;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class LectureBlockWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(LectureBlockWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(LectureBlockWebService.class);
 	
 	private final RepositoryEntry entry;
 	private final LectureBlock lectureBlock;
@@ -126,7 +126,7 @@ public class LectureBlockWebService {
 	@DELETE
 	public Response deleteLectureBlock() {
 		lectureService.deleteLectureBlock(lectureBlock);
-		log.audit("Lecture block deleted: " + lectureBlock);
+		log.info(Tracing.M_AUDIT, "Lecture block deleted: " + lectureBlock);
 		return Response.ok().build();
 	}
 

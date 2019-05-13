@@ -20,7 +20,7 @@
 package org.olat.shibboleth.handler;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.springframework.stereotype.Component;
@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class SpringShibbolethAttributeHandlerFactory implements ShibbolethAttributeHandlerFactory {
 
-	private static final OLog log = Tracing.createLoggerFor(SpringShibbolethAttributeHandlerFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(SpringShibbolethAttributeHandlerFactory.class);
 
 	private static final String DEFAULT_HANDLER_NAME = "DoNothing";
 

@@ -23,7 +23,7 @@ import java.util.UUID;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 import com.github.scribejava.apis.openid.OpenIdJsonTokenExtractor;
@@ -43,7 +43,7 @@ import com.github.scribejava.core.oauth.OAuth20Service;
  */
 public class OpenIdConnectFullConfigurableApi extends DefaultApi20 {
 
-	private static final OLog log = Tracing.createLoggerFor(OpenIdConnectFullConfigurableApi.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenIdConnectFullConfigurableApi.class);
 	
 	private final OpenIdConnectFullConfigurableProvider provider;
 	

@@ -40,7 +40,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -62,7 +62,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("translationDevManager")
 public class TranslationDevManager {
-	private static final OLog log = Tracing.createLoggerFor(TranslationDevManager.class);
+	private static final Logger log = Tracing.createLoggerFor(TranslationDevManager.class);
 
 	private StringBuffer logText = new StringBuffer();
 	

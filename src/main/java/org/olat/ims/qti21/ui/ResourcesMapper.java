@@ -30,7 +30,7 @@ import org.olat.core.gui.media.FileMediaResource;
 import org.olat.core.gui.media.ForbiddenMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -43,7 +43,7 @@ import org.olat.core.util.StringHelper;
  */
 public class ResourcesMapper implements Mapper {
 	
-	private static final OLog log = Tracing.createLoggerFor(ResourcesMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(ResourcesMapper.class);
 	
 	private final URI assessmentObjectUri;
 	private final File submissionDirectory;

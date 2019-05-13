@@ -35,7 +35,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -52,7 +52,7 @@ import org.olat.core.util.vfs.VFSContainer;
  */
 class GlossaryDefinitionMapper implements Mapper {
 	
-	private static final OLog log = Tracing.createLoggerFor(GlossaryDefinitionMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(GlossaryDefinitionMapper.class);
 	
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
@@ -64,12 +64,12 @@ class GlossaryDefinitionMapper implements Mapper {
 				+ GlossaryMarkupItemController.INTERNAL_FOLDER_NAME;
 		File glossaryFolderFile = new File(glossaryFolderString);
 		if (!glossaryFolderFile.isDirectory()) {
-			log.warn("GlossaryDefinition delivery failed; path to glossaryFolder not existing: " + relPath, null);
+			log.warn("GlossaryDefinition delivery failed; path to glossaryFolder not existing: " + relPath);
 			return new NotFoundMediaResource();
 		}
 		VFSContainer glossaryFolder = new LocalFolderImpl(glossaryFolderFile);
 		if (!gIM.isFolderContainingGlossary(glossaryFolder)) {
-			log.warn("GlossaryDefinition delivery failed; glossaryFolder doesn't contain a valid Glossary: " + glossaryFolder, null);
+			log.warn("GlossaryDefinition delivery failed; glossaryFolder doesn't contain a valid Glossary: " + glossaryFolder);
 			return new NotFoundMediaResource();
 		}
 
@@ -118,7 +118,7 @@ class GlossaryDefinitionMapper implements Mapper {
 		resource.setData(sb.toString());
 		resource.setEncoding("utf-8");
 
-		if (log.isDebug()) log.debug("loaded definition for " + glossaryMainTerm, null);
+		if (log.isDebugEnabled()) log.debug("loaded definition for " + glossaryMainTerm);
 		return resource;
 	}
 	

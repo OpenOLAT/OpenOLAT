@@ -33,7 +33,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -78,7 +78,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  */
 public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	
-	private static final OLog log = Tracing.createLoggerFor(SurveyCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(SurveyCourseNode.class);
 
 	private static final long serialVersionUID = 905046067514602922L;
 

@@ -88,7 +88,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
@@ -138,7 +138,7 @@ import com.sun.mail.smtp.SMTPMessage;
 @Service("mailManager")
 public class MailManagerImpl implements MailManager, InitializingBean  {
 	
-	private static final OLog log = Tracing.createLoggerFor(MailManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(MailManagerImpl.class);
 
 	public static final String MAIL_TEMPLATE_FOLDER = "/customizing/mail/";
 	
@@ -853,7 +853,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			if (result) {
 				mailerResult.setReturnCode(MailerResult.OK);
 			} else {
-				log.warn("can't send email from user template with no reason", null);
+				log.warn("can't send email from user template with no reason");
 				mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
 			}
 		} catch (ParseErrorException e) {
@@ -987,13 +987,13 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			mail.setMetaId(metaId);
 			String subject = content.getSubject();
 			if(subject != null && subject.length() > 500) {
-				log.warn("Cut a too long subkect in name. Size: " + subject.length(), null);
+				log.warn("Cut a too long subkect in name. Size: " + subject.length());
 				subject = subject.substring(0, 500);
 			}
 			mail.setSubject(subject);
 			String body = content.getBody();
 			if(body != null && body.length() > 16777210) {
-				log.warn("Cut a too long body in mail. Size: " + body.length(), null);
+				log.warn("Cut a too long body in mail. Size: " + body.length());
 				body = body.substring(0, 16000000);
 			}
 			mail.setBody(body);
@@ -1004,7 +1004,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				if(ores != null) {
 					String resName = ores.getResourceableTypeName();
 					if(resName != null && resName.length() > 50) {
-						log.warn("Cut a too long resourceable type name in mail context: " + resName, null);
+						log.warn("Cut a too long resourceable type name in mail context: " + resName);
 						resName = resName.substring(0, 49);
 					}
 					mail.getContext().setResName(ores.getResourceableTypeName());
@@ -1013,14 +1013,14 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				
 				String resSubPath = context.getResSubPath();
 				if(resSubPath != null && resSubPath.length() > 2000) {
-					log.warn("Cut a too long resSubPath in mail context: " + resSubPath, null);
+					log.warn("Cut a too long resSubPath in mail context: " + resSubPath);
 					resSubPath = resSubPath.substring(0, 2000);
 				}
 				mail.getContext().setResSubPath(resSubPath);
 				
 				String businessPath = context.getBusinessPath();
 				if(businessPath != null && businessPath.length() > 2000) {
-					log.warn("Cut a too long resSubPath in mail context: " + businessPath, null);
+					log.warn("Cut a too long resSubPath in mail context: " + businessPath);
 					businessPath = businessPath.substring(0, 2000);
 				}
 				mail.getContext().setBusinessPath(businessPath);
@@ -1303,7 +1303,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 				// fxdiff: change from/replyto, see FXOLAT-74 . if no from is set, use default sysadmin-address (adminemail).
 				from = createAddress(WebappHelper.getMailConfig("mailReplyTo"));
 				if(from == null) {
-					log.error("MailConfigError: mailReplyTo is not set", null);
+					log.error("MailConfigError: mailReplyTo is not set");
 				}
 			}
 
@@ -1552,7 +1552,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 					if (attachment == null || attachment.getSize()  <= 0) {
 						result.setReturnCode(MailerResult.ATTACHMENT_INVALID);
 						log.error("Tried to send mail wit attachment that does not exist::"
-								+ (attachment == null ? null : attachment.getName()), null);
+								+ (attachment == null ? null : attachment.getName()));
 						return msg;
 					}
 					BodyPart messageBodyPart = new MimeBodyPart();
@@ -1639,7 +1639,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			p.put("mail.smtp.auth", "true");
 			mailSession = Session.getDefaultInstance(p, smtpAuth); 
 		}
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			// enable mail session debugging on console
 			mailSession.setDebug(true);
 		}
@@ -1733,7 +1733,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 					if (attachmentFile == null || !attachmentFile.exists()) {
 						result.setReturnCode(MailerResult.ATTACHMENT_INVALID);
 						log.error("Tried to send mail wit attachment that does not exist::"
-								+ (attachmentFile == null ? null : attachmentFile.getAbsolutePath()), null);
+								+ (attachmentFile == null ? null : attachmentFile.getAbsolutePath()));
 						return msg;
 					}
 					BodyPart filePart = new MimeBodyPart();

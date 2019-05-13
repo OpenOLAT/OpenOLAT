@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -57,7 +58,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -132,7 +132,7 @@ import de.tuchemnitz.wizard.workflows.coursecreation.steps.CcStep00;
 public class CourseHandler implements RepositoryHandler {
 
 	public static final String EDITOR_XML = "editortreemodel.xml";
-	private static final OLog log = Tracing.createLoggerFor(CourseHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseHandler.class);
 	
 	@Override
 	public boolean supportCreate() {
@@ -150,7 +150,7 @@ public class CourseHandler implements RepositoryHandler {
 
 		String shortDisplayname = Formatter.truncateOnly(displayname, 25);
 		ICourse course = CourseFactory.createCourse(re, shortDisplayname, displayname, "");
-		log.audit("Course created: " + course.getCourseTitle());
+		log.info(Tracing.M_AUDIT, "Course created: {}", course.getCourseTitle());
 		return re;
 	}
 	
@@ -565,7 +565,7 @@ public class CourseHandler implements RepositoryHandler {
 		} else if(item instanceof VFSContainer) {
 			mediaContainer = (VFSContainer)item;
 		} else {
-			log.error("media folder is not a container", null);
+			log.error("media folder is not a container");
 			mediaContainer = null;
 		}
 		return mediaContainer;

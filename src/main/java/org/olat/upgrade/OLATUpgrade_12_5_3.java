@@ -22,7 +22,9 @@ package org.olat.upgrade;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.manager.FeedManager;
@@ -37,6 +39,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_12_5_3 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_12_5_3.class);
 	
 	private static final String VERSION = "OLAT_12.5.3";
 	private static final String MIGRATE_WEB_FEED = "MIGRATE WEB FEED";
@@ -71,9 +75,9 @@ public class OLATUpgrade_12_5_3 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_12_5_3 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_12_5_3 successfully!");
 		} else {
-			log.audit("OLATUpgrade_12_5_3 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_12_5_3 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

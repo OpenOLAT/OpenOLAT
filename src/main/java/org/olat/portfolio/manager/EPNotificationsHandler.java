@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -32,7 +33,6 @@ import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.portfolio.model.structel.EPMapShort;
@@ -51,7 +51,7 @@ import org.olat.portfolio.model.structel.EPStructuredMap;
  */
 public class EPNotificationsHandler implements NotificationsHandler {
 
-	private static OLog logger = Tracing.createLoggerFor(EPNotificationsHandler.class);
+	private static final Logger logger = Tracing.createLoggerFor(EPNotificationsHandler.class);
 
 	public static final String TYPENNAME = EPStructuredMap.class.getSimpleName();
 
@@ -72,7 +72,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 
 			si = new SubscriptionInfo(subscriber.getKey(), publisher.getType(), getTitleItemForMap(amap), null);
 
-			List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>(0);
+			List<SubscriptionListItem> allItems = new ArrayList<>(0);
 			// get subscriptionListItems according to map type
 			if ("EPDefaultMap".equals(resName) || "EPStructuredMapTemplate".equals(resName)) {
 				allItems = helper.getAllSubscrItemsDefault(compareDate, amap);
@@ -109,8 +109,7 @@ public class EPNotificationsHandler implements NotificationsHandler {
 	 */
 	private TitleItem getTitleItemForPublisher(Publisher p) {
 		Long resId = p.getResId();
-		if (logger.isDebug())
-			logger.debug("loading map with resourceableid: " + resId);
+		logger.debug("loading map with resourceableid: {}", resId);
 
 		EPFrontendManager epMgr = CoreSpringFactory.getImpl(EPFrontendManager.class);
 		EPMapShort map = epMgr.loadMapShortByResourceId(resId);

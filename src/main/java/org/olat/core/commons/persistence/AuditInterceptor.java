@@ -31,10 +31,10 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.type.Type;
 import org.olat.core.id.CreateInfo;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -44,7 +44,7 @@ import org.olat.core.logging.Tracing;
 public class AuditInterceptor extends EmptyInterceptor {
 
 	private static final long serialVersionUID = 7210083323938075881L;
-	private final OLog log = Tracing.createLoggerFor(AuditInterceptor.class);
+	private final Logger log = Tracing.createLoggerFor(AuditInterceptor.class);
 
 	private int updates;
 	private int creates;
@@ -55,7 +55,7 @@ public class AuditInterceptor extends EmptyInterceptor {
 	@Override
 	public boolean onFlushDirty(Object entity, Serializable id, Object[] currentState, Object[] previousState,
 			String[] propertyNames, Type[] types) {
-		if (log.isDebug())
+		if (log.isDebugEnabled())
 			log.debug("\nflush:" + entity + "\npre:"
 					+ (previousState == null ? "-" : Arrays.asList(previousState).toString()) + "\ncur:"
 					+ (currentState == null ? "-" : Arrays.asList(currentState).toString()));
@@ -96,7 +96,7 @@ public class AuditInterceptor extends EmptyInterceptor {
 	 */
 	@SuppressWarnings("rawtypes")
 	public void postFlush(Iterator entities) {
-		if (log.isDebug()){
+		if (log.isDebugEnabled()){
 			log.debug("AuditInterceptor - Creations: " + creates + ", Updates: " + updates);
 		}
 	}

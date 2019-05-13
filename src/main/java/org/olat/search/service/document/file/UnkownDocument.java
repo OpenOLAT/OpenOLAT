@@ -26,18 +26,18 @@ package org.olat.search.service.document.file;
 
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 
 public class UnkownDocument extends FileDocument {
 	private static final long serialVersionUID = 7032285703715695914L;
-	private final static OLog log = Tracing.createLoggerFor(UnkownDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(UnkownDocument.class);
 
-	public final static String UNKOWN_TYPE = "type.file.unkown";
+	public static final String UNKOWN_TYPE = "type.file.unkown";
 	
 	public static Document createDocument(SearchResourceContext leafResourceContext, VFSLeaf leaf)
 	throws IOException, DocumentException, DocumentAccessException {
@@ -45,7 +45,7 @@ public class UnkownDocument extends FileDocument {
 		openDocument.init(leafResourceContext, leaf);
 		openDocument.setFileType(UNKOWN_TYPE);
 		openDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
-		if (log.isDebug()) log.debug(openDocument.toString());
+		if (log.isDebugEnabled()) log.debug(openDocument.toString());
 		return openDocument.getLuceneDocument();
 	}
 

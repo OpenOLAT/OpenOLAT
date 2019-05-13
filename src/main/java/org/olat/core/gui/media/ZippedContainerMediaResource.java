@@ -25,7 +25,7 @@ import java.io.OutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ZipUtil;
@@ -39,7 +39,7 @@ import org.olat.core.util.vfs.VFSContainer;
  */
 public class ZippedContainerMediaResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(ZippedContainerMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(ZippedContainerMediaResource.class);
 	
 	private final String filename;
 	private final VFSContainer unzipContainer;

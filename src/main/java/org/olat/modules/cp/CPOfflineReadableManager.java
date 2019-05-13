@@ -38,6 +38,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
@@ -46,7 +47,6 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.render.velocity.VelocityModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
@@ -70,7 +70,7 @@ import org.olat.fileresource.FileResourceManager;
 public class CPOfflineReadableManager {
 	private static CPOfflineReadableManager instance = new CPOfflineReadableManager();
 
-	private static final OLog log = Tracing.createLoggerFor(CPOfflineReadableManager.class);
+	private static final Logger log = Tracing.createLoggerFor(CPOfflineReadableManager.class);
 	
 	private static final String DIRNAME_CPOFFLINEMENUMAT = "cp_offline_menu_mat";
 	private static final String FILENAME_START = "_START_.html";

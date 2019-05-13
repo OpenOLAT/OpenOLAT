@@ -36,7 +36,7 @@ import org.olat.core.gui.media.DefaultMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -67,7 +67,7 @@ public class QTIArchiver {
 	
 	public static final String TEST_USER_PROPERTIES = QTIExportFormatterCSVType1.class.getName();
 	
-	private static final OLog log = Tracing.createLoggerFor(QTIArchiver.class);
+	private static final Logger log = Tracing.createLoggerFor(QTIArchiver.class);
 
 	private CourseNode courseNode;
 	private AssessmentNodeData data;

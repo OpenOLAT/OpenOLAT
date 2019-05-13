@@ -23,7 +23,7 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.model.LicenseImpl;
 import org.olat.core.commons.services.license.model.LicenseTypeImpl;
 import org.olat.core.commons.services.license.model.ResourceLicenseImpl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
@@ -40,7 +40,7 @@ import com.thoughtworks.xstream.XStream;
 @Component
 class LicenseXStreamHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(LicenseXStreamHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(LicenseXStreamHelper.class);
 	
 	private static final XStream licenseXStream = XStreamHelper.createXStreamInstanceForDBObjects();
 	static {

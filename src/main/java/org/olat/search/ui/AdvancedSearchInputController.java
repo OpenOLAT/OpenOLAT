@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
@@ -49,7 +50,6 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
@@ -76,7 +76,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AdvancedSearchInputController extends FormBasicController {
 	
-	private static final OLog log = Tracing.createLoggerFor(AdvancedSearchInputController.class);
+	private static final Logger log = Tracing.createLoggerFor(AdvancedSearchInputController.class);
 	
 	private DateFormat format = new SimpleDateFormat("yyyyMMdd");
 	
@@ -286,7 +286,7 @@ public class AdvancedSearchInputController extends FormBasicController {
 		if (metadataQuery != null && StringHelper.containsNonWhitespace(metadataQuery.getValue())) {
 			appendAnd(queries, metadataType.getSelectedKey(), ":(", metadataQuery.getValue(), ") ");
 		}
-		if (log.isDebug()) log.debug("Advanced query=" + queries);
+		if (log.isDebugEnabled()) log.debug("Advanced query=" + queries);
 		return queries;
 	}
 

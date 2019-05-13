@@ -22,6 +22,7 @@ package org.olat.course.config.ui;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -40,7 +41,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -84,7 +84,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CourseOptionsController extends FormBasicController {
-	private static final OLog log = Tracing.createLoggerFor(CourseOptionsController.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseOptionsController.class);
 	private static final String COMMAND_REMOVE = "command.glossary.remove";
 	private static final String COMMAND_ADD = "command.glossary.add";
 	

@@ -26,9 +26,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class EdusharingFilter implements Filter {
 	
-	private static final OLog log = Tracing.createLoggerFor(EdusharingFilter.class);
+	private static final Logger log = Tracing.createLoggerFor(EdusharingFilter.class);
 	
 	private final Identity identity;
 	private final EdusharingProvider provider;

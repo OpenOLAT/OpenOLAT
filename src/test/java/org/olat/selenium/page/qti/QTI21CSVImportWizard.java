@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.test.JunitTestHelper;
@@ -41,7 +41,7 @@ import org.openqa.selenium.WebElement;
  */
 public class QTI21CSVImportWizard {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21CSVImportWizard.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21CSVImportWizard.class);
 	
 	public static final By nextBy = By.className("o_wizard_button_next");
 	public static final By finishBy = By.className("o_wizard_button_finish");

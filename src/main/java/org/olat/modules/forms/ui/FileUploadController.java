@@ -33,7 +33,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FileUploadController extends FormBasicController implements EvaluationFormResponseController {
 
-	private static final OLog log = Tracing.createLoggerFor(FileUploadController.class);
+	private static final Logger log = Tracing.createLoggerFor(FileUploadController.class);
 
 	private FileElement fileEl;
 	

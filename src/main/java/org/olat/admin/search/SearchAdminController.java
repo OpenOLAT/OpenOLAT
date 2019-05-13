@@ -25,7 +25,7 @@
 
 package org.olat.admin.search;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -90,7 +90,7 @@ public class SearchAdminController extends BasicController {
 	
 		myContent.put("searchAdminForm", searchAdminForm.getInitialComponent());
 		
-		LogRealTimeViewerController logViewController = new LogRealTimeViewerController(ureq, wControl, "org.olat.search", Level.DEBUG, true);
+		LogRealTimeViewerController logViewController = new LogRealTimeViewerController(ureq, wControl, "org.olat.search", Level.DEBUG, false);
 		listenTo(logViewController);
 		myContent.put("logViewController", logViewController.getInitialComponent());
 
@@ -142,11 +142,11 @@ public class SearchAdminController extends BasicController {
 	
 	private void doStartIndexer() {
 		SearchServiceFactory.getService().startIndexing();
-		logInfo("Indexing started via Admin", SearchAdminController.class.getName());
+		logInfo("Indexing started via Admin");
 	}
 	
 	private void doStopIndexer() {
 		SearchServiceFactory.getService().stopIndexing();
-		logInfo("Indexing started via Admin", SearchAdminController.class.getName());
+		logInfo("Indexing started via Admin");
 	}
 }

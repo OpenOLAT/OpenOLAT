@@ -21,7 +21,7 @@ package org.olat.resource.accesscontrol.ui;
 
 import java.math.BigDecimal;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.resource.accesscontrol.Price;
 
@@ -35,7 +35,7 @@ import org.olat.resource.accesscontrol.Price;
  * @author srosse, stephane.rosse@frentix.com, htttp://www.frentix.com
  */
 public class PriceFormat {
-	private static final OLog log = Tracing.createLoggerFor(PriceFormat.class);
+	private static final Logger log = Tracing.createLoggerFor(PriceFormat.class);
 
 
 	//private static final String[] tests = new String[]{"1'000.00", "1'000,00","1,000,-","1,000.-","1.000","1000","1000.00","1000,00","1000.-","1000,-"};

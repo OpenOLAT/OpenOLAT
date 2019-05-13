@@ -24,7 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.video.VideoMeta;
@@ -39,7 +39,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class VideoHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(VideoHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(VideoHelper.class);
 	private static final SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss");
 	static {
 		displayDateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));

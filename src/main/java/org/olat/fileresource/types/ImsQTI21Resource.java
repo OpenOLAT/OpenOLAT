@@ -35,7 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.ims.qti21.QTI21ContentPackage;
@@ -57,7 +57,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
  */
 public class ImsQTI21Resource extends FileResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(ImsQTI21Resource.class);
+	private static final Logger log = Tracing.createLoggerFor(ImsQTI21Resource.class);
 	private static final String IMS_MANIFEST = "imsmanifest.xml";
 	
 	/**

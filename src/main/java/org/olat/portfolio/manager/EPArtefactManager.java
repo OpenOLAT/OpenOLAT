@@ -34,6 +34,7 @@ import java.util.UUID;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.tagging.manager.TaggingManager;
@@ -41,7 +42,7 @@ import org.olat.core.commons.services.tagging.model.Tag;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.manager.BasicManager;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -68,7 +69,9 @@ import org.springframework.stereotype.Service;
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
 @Service("epArtefactManager")
-public class EPArtefactManager extends BasicManager {
+public class EPArtefactManager {
+
+	private static final Logger log = Tracing.createLoggerFor(EPArtefactManager.class);
 
 	private static final String ARTEFACT_FULLTEXT_ON_FS = "ARTEFACT_FULLTEXT_ON_FS";
 
@@ -175,7 +178,7 @@ public class EPArtefactManager extends BasicManager {
 			} else if (artefactsItem instanceof VFSContainer) {
 				artefactsRoot = (VFSContainer) artefactsItem;
 			} else {
-				logError("The root folder for artefact is a file and not a folder", null);
+				log.error("The root folder for artefact is a file and not a folder");
 			}
 		}
 		return artefactsRoot;
@@ -291,7 +294,7 @@ public class EPArtefactManager extends BasicManager {
 					artefact.setFulltextContent(ARTEFACT_FULLTEXT_ON_FS);
 					dbInstance.updateObject(artefact);
 				} catch (Exception e) {
-					logError("could not really save the fulltext content of an artefact", e);
+					log.error("could not really save the fulltext content of an artefact", e);
 					return false;
 				}
 			}	else {
@@ -353,7 +356,7 @@ public class EPArtefactManager extends BasicManager {
 			}
 		}
 		long duration = System.currentTimeMillis() - start;
-		if (isLogDebugEnabled()) logDebug("filtering took " + duration + "ms");
+		if (log.isDebugEnabled()) log.debug("filtering took " + duration + "ms");
 		return filteredArtefactList;
 	}
 
@@ -538,7 +541,7 @@ public class EPArtefactManager extends BasicManager {
 		taggingManager.deleteTags(artefactOres, null, null);
 
 		dbInstance.deleteObject(artefact);
-		logInfo("Deleted artefact " + artefact.getTitle() + " with key: " + artefact.getKey());
+		log.info("Deleted artefact " + artefact.getTitle() + " with key: " + artefact.getKey());
 	}
 
 	protected VFSContainer getArtefactContainer(AbstractArtefact artefact) {
@@ -551,7 +554,7 @@ public class EPArtefactManager extends BasicManager {
 		} else if (item instanceof VFSContainer) {
 			container = (VFSContainer) item;
 		} else {
-			logError("Cannot create a container for artefact: " + artefact, null);
+			log.error("Cannot create a container for artefact: " + artefact);
 		}
 		return container;
 	}

@@ -54,7 +54,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
@@ -184,7 +184,7 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 
 	private Condition conditionTask, conditionDrop, conditionReturnbox, conditionScoring, conditionSolution;
 
-	private static final OLog log = Tracing.createLoggerFor(TACourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(TACourseNode.class);
 
 	/**
 	 * Default constructor.

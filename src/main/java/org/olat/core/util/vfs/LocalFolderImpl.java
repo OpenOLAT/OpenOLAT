@@ -43,7 +43,7 @@ import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
@@ -61,7 +61,7 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
  * @author Felix Jost
  */
 public class LocalFolderImpl extends LocalImpl implements VFSContainer {
-	private static final OLog log = Tracing.createLoggerFor(LocalFolderImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(LocalFolderImpl.class);
 
 	private VFSItemFilter defaultFilter;
 	

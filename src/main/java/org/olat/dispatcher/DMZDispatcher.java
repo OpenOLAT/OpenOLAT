@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.Dispatcher;
@@ -49,7 +50,6 @@ import org.olat.core.gui.control.ChiefControllerCreator;
 import org.olat.core.gui.exception.MsgFactory;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -65,7 +65,7 @@ import org.olat.login.oauth.OAuthSPI;
  * @author Mike Stock
  */
 public class DMZDispatcher implements Dispatcher {
-	private static final OLog log = Tracing.createLoggerFor(DMZDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(DMZDispatcher.class);
 	
 	public static final String DMZDISPATCHER_BUSINESSPATH =  "DMZDispatcher:businessPath";
 	
@@ -158,7 +158,7 @@ public class DMZDispatcher implements Dispatcher {
 			// or authors copy-pasted links to the content.
 			// showing redscreens for non valid URL is wrong instead
 			// a 404 message must be shown -> e.g. robots correct their links.
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("Bad Request " + request.getPathInfo());
 			}
 			DispatcherModule.sendBadRequest(request.getPathInfo(), response);

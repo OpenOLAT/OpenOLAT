@@ -24,7 +24,7 @@ import java.io.File;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -38,7 +38,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class ImageFormItem extends FormItemImpl {
 	
-	private static final OLog log = Tracing.createLoggerFor(ImageFormItem.class);
+	private static final Logger log = Tracing.createLoggerFor(ImageFormItem.class);
 
 	private final ImageComponent imageComponent;
 	

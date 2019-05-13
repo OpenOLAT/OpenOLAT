@@ -27,7 +27,7 @@ package org.olat.core.logging.activity;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.RunnableWithException;
 import org.olat.core.util.UserSession;
@@ -47,7 +47,7 @@ import org.olat.core.util.UserSession;
  */
 public class ThreadLocalUserActivityLoggerInstaller {
 
-	private static final OLog log_ = Tracing.createLoggerFor(ThreadLocalUserActivityLoggerInstaller.class);
+	private static final Logger log_ = Tracing.createLoggerFor(ThreadLocalUserActivityLoggerInstaller.class);
 
 	/**
 	 * Run the given runnable (which allows an Exception to be thrown) with
@@ -108,7 +108,7 @@ public class ThreadLocalUserActivityLoggerInstaller {
 			runnable.run();
 		} finally {
 			// make sure to reset the original logger in the end
-			if(log_.isDebug() && originalLogger == null) log_.debug("reset original logger back with originalLogger == null!");
+			if(log_.isDebugEnabled() && originalLogger == null) log_.debug("reset original logger back with originalLogger == null!");
 			ThreadLocalUserActivityLogger.userActivityLogger_.set(originalLogger);
 		}
 	}

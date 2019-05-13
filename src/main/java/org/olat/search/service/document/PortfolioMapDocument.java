@@ -22,13 +22,13 @@ package org.olat.search.service.document;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
@@ -56,7 +56,7 @@ import org.olat.search.service.SearchResourceContext;
 public class PortfolioMapDocument extends OlatDocument {
 
 	private static final long serialVersionUID = -7960651550499734346L;
-	private static final OLog log = Tracing.createLoggerFor(PortfolioMapDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(PortfolioMapDocument.class);
 	
 	private static EPFrontendManager ePFMgr; 
 	private static EPPolicyManager policyManager;
@@ -102,7 +102,7 @@ public class PortfolioMapDocument extends OlatDocument {
 		document.setParentContextType(searchResourceContext.getParentContextType());
 		document.setParentContextName(searchResourceContext.getParentContextName());
 		
-		if (log.isDebug()) log.debug(document.toString());
+		if (log.isDebugEnabled()) log.debug(document.toString());
 		return document.getLuceneDocument();
 	}
 	

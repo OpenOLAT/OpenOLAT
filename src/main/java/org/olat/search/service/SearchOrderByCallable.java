@@ -37,7 +37,7 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopDocs;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.SortKey;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.search.ServiceNotAvailableException;
@@ -51,7 +51,7 @@ import org.olat.search.model.AbstractOlatDocument;
  */
 class SearchOrderByCallable implements Callable<List<Long>> {
 	
-	private static final OLog log = Tracing.createLoggerFor(SearchOrderByCallable.class);
+	private static final Logger log = Tracing.createLoggerFor(SearchOrderByCallable.class);
 	
 	private String queryString;
 	private List<String> condQueries;

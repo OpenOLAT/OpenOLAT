@@ -55,7 +55,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.CodeHelper;
@@ -142,7 +142,7 @@ import org.olat.core.util.component.FormComponentVisitor;
  */
 public class Form {
 	
-	private static final OLog log = Tracing.createLoggerFor(Form.class);
+	private static final Logger log = Tracing.createLoggerFor(Form.class);
 	//
 	public static final String FORMCMD = "fid";
 	public static final String FORMID = "ofo_";
@@ -287,7 +287,7 @@ public class Form {
 					}
 					fbc.append(i.getClass().getName());
 				}
-				log.warn("OLAT-5061: Could not determine request source in FlexiForm >"+formName+"<. Check >"+fbc+"<", null);
+				log.warn("OLAT-5061: Could not determine request source in FlexiForm >"+formName+"<. Check >"+fbc+"<");
 				// Assuming the same as "implicitFormSubmit" for now.
 				submit(ureq);
 				

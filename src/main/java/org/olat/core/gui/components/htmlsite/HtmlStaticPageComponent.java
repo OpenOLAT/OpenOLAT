@@ -39,7 +39,7 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.SimpleHtmlParser;
@@ -55,7 +55,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
  */
 public class HtmlStaticPageComponent extends AbstractComponent implements AsyncMediaResponsible {
 	
-	private static final OLog log = Tracing.createLoggerFor(HtmlStaticPageComponent.class);
+	private static final Logger log = Tracing.createLoggerFor(HtmlStaticPageComponent.class);
 	// make public mainly for the IFrameDisplayController
 	public static final String OLAT_CMD_PREFIX = "olatcmd/";
 
@@ -168,7 +168,7 @@ public class HtmlStaticPageComponent extends AbstractComponent implements AsyncM
 
 					String path = amapPath.getUrl() + "/" + moduleURI;
 					ese.setResultingMediaResource(new RedirectMediaResource(path));
-					if(log.isDebug()) log.debug("RedirectMediaResource=" + path);
+					if(log.isDebugEnabled()) log.debug("RedirectMediaResource=" + path);
 					ese.accept();
 					mr = ese.getResultingMediaResource();
 					checkRegular = false;

@@ -30,7 +30,7 @@ import java.util.Iterator;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -42,7 +42,7 @@ import org.olat.core.logging.Tracing;
  */
 public class UpgradeManagerImpl extends UpgradeManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(UpgradeManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(UpgradeManagerImpl.class);
 	
 	/**
 	 * used by spring
@@ -71,7 +71,7 @@ public class UpgradeManagerImpl extends UpgradeManager {
 				while (iter.hasNext()) {
 					upgrade = iter.next();
 					if (upgrade.doPostSystemInitUpgrade(UpgradeManagerImpl.this)) {
-						log.audit("Successfully installed PostSystemInitUpgrade::" + upgrade.getVersion());
+						log.info(Tracing.M_AUDIT, "Successfully installed PostSystemInitUpgrade::" + upgrade.getVersion());
 					}
 					//just in case a doPostSystemInitUpgrade did forget it.
 					DBFactory.getInstance().commitAndCloseSession();

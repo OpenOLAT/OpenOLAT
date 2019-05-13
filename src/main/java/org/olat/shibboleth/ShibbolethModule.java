@@ -41,7 +41,7 @@ import javax.annotation.Resource;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -61,7 +61,7 @@ import org.springframework.stereotype.Service;
 @Service("shibbolethModule")
 public class ShibbolethModule extends AbstractSpringModule implements ConfigOnOff {
 
-	private static final OLog log = Tracing.createLoggerFor(ShibbolethModule.class);
+	private static final Logger log = Tracing.createLoggerFor(ShibbolethModule.class);
 
 	private static final String AUTHOR_CONTAINS_SPLIT_VALUE = ",";
 

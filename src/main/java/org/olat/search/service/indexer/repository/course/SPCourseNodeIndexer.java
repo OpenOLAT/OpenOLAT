@@ -34,8 +34,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSContainer;
@@ -54,7 +54,7 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexer {
-	private static final OLog log = Tracing.createLoggerFor(SPCourseNodeIndexer.class);
+	private static final Logger log = Tracing.createLoggerFor(SPCourseNodeIndexer.class);
 
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
@@ -68,7 +68,7 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 
 	@Override
 	public void doIndex(SearchResourceContext courseResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		if (log.isDebug()) log.debug("Index SinglePage...");
+		if (log.isDebugEnabled()) log.debug("Index SinglePage...");
 
 		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(courseResourceContext, courseNode, TYPE);
 		Document nodeDocument = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
@@ -123,15 +123,15 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 			doIndexVFSLeafByMySelf(fileContext, leaf, indexWriter, filePath);
 			
 			if (!indexOnlyChosenFile) {
-				if (log.isDebug()) log.debug("Index sub pages in SP.");
+				if (log.isDebugEnabled()) log.debug("Index sub pages in SP.");
 				Set<String> alreadyIndexFileNames = new HashSet<String>();
 				alreadyIndexFileNames.add(chosenFile);
 				// Check if page has links to subpages and index those as well
 				indexSubPages(courseNodeResourceContext,rootContainer,indexWriter,leaf,alreadyIndexFileNames,0,filePath);
-			} else if (log.isDebug()) {
+			} else if (log.isDebugEnabled()) {
 				log.debug("Index only chosen file in SP.");
 			}
-		} else if (log.isDebug()) {
+		} else if (log.isDebugEnabled()) {
 			log.debug("Can not found choosen file in SP => Nothing indexed.");
 		}
 	}
@@ -149,7 +149,7 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 		if (mySubPageLevel++ <= 5) {
 			List<String> links = getLinkListFrom(leaf);
 			for (String link : links) {
-				if (log.isDebug())
+				if (log.isDebugEnabled())
 					log.debug("link=" + link);
 				if ((rootFilePath != null) && !rootFilePath.equals("")) {
 					if (rootFilePath.endsWith("/")) {
@@ -162,7 +162,7 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 					VFSItem item = rootContainer.resolve(link);
 					if ((item != null) && (item instanceof VFSLeaf)) {
 						VFSLeaf subPageLeaf = (VFSLeaf) item;
-						if (log.isDebug())
+						if (log.isDebugEnabled())
 							log.debug("subPageLeaf=" + subPageLeaf);
 						String filePath = getPathFor(subPageLeaf);
 
@@ -173,16 +173,16 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 						
 						indexSubPages(courseNodeResourceContext, rootContainer, indexWriter, subPageLeaf, alreadyIndexFileNames, mySubPageLevel, newRootFilePath);
 					} else {
-						if (log.isDebug())
+						if (log.isDebugEnabled())
 							log.debug("Could not found sub-page for link=" + link);
 					}
 				} else {
-					if (log.isDebug())
+					if (log.isDebugEnabled())
 						log.debug("sub-page already indexed, link=" + link);
 				}
 			}
 		} else {
-			if (log.isDebug())
+			if (log.isDebugEnabled())
 				log.debug("Reach to many sub-page levels. Go not further with indexing sub-pages last leaf=" + leaf.getName());
 		}
 	}
@@ -195,7 +195,7 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 			BufferedInputStream bis = new BufferedInputStream(leaf.getInputStream());
 			String inputString = FileUtils.load(bis, "utf-8");
 		    // Remove all HTML Tags
-			if (log.isDebug()) log.debug(inputString);	
+			if (log.isDebugEnabled()) log.debug(inputString);	
 			extractSubpageLinks(inputString, linkList);
 		}
 		return linkList;

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -38,7 +39,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -62,7 +62,7 @@ import org.olat.portfolio.ui.structel.EPStructureEvent;
  */
 public class EPChangelogController extends FormBasicController {
 
-	private static OLog logger = Tracing.createLoggerFor(EPChangelogController.class);
+	private static final Logger logger = Tracing.createLoggerFor(EPChangelogController.class);
 
 	private ContextualSubscriptionController cSubscriptionCtrl;
 	private SubscriptionContext subsContext;
@@ -84,7 +84,7 @@ public class EPChangelogController extends FormBasicController {
 		// flc.contextPut("locale", getLocale());
 
 		/* the subscription context + component */
-		if (logger.isDebug())
+		if (logger.isDebugEnabled())
 			logger.debug("creating subscriptionContext for Map: " + map.getTitle() + ", getResourceableId: ->" + map.getResourceableId() + ", key: "
 					+ map.getKey());
 		subsContext = new SubscriptionContext(EPNotificationsHandler.TYPENNAME, map.getResourceableId(), EPNotificationsHandler.TYPENNAME);

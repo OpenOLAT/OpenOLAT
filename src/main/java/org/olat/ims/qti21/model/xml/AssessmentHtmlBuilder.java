@@ -28,9 +28,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.logging.log4j.Logger;
 import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.impl.NekoHTMLFilter;
@@ -65,7 +65,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.xslt.XsltSerializationOptions;
  */
 public class AssessmentHtmlBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentHtmlBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentHtmlBuilder.class);
 	
 	private final QtiSerializer qtiSerializer;
 	

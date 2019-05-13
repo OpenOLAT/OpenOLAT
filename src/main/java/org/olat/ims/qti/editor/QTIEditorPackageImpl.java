@@ -39,6 +39,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.XMLWriter;
@@ -47,7 +48,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -79,6 +79,8 @@ import org.olat.ims.resources.IMSEntityResolver;
  */
 public class QTIEditorPackageImpl implements QTIEditorPackage {
 
+	private static final Logger log = Tracing.createLoggerFor(QTIEditorPackageImpl.class);
+
 	public static final String FOLDERNAMEFOR_CHANGELOG = "changelog";
 	/*
 	 * Files are store in tmp directory as
@@ -93,8 +95,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	private File packageDir = null;
 	private QTIDocument qtiDocument = null;
 	private boolean resumed = false;
-	private static OutputFormat outformat; 
-	private OLog log = Tracing.createLoggerFor(this.getClass());
+	private static OutputFormat outformat;
 	private Translator translator;
 	private VFSSecurityCallback secCallback;
 

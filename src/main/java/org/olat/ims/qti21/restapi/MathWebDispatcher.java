@@ -33,7 +33,7 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.QTI21Service;
@@ -50,7 +50,7 @@ import uk.ac.ed.ph.qtiworks.mathassess.glue.AsciiMathHelper;
  */
 public class MathWebDispatcher implements Dispatcher {
 	
-	private static final OLog log = Tracing.createLoggerFor(MathWebDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(MathWebDispatcher.class);
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) {

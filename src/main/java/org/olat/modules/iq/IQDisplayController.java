@@ -52,7 +52,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
@@ -89,7 +89,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 
 	private static final String VELOCITY_ROOT = Util.getPackageVelocityRoot(IQDisplayController.class);
 
-	private static OLog log = Tracing.createLoggerFor(IQDisplayController.class);
+	private static final Logger log = Tracing.createLoggerFor(IQDisplayController.class);
 	
 	private VelocityContainer myContent;
 
@@ -630,7 +630,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 			sb.append(ureq.getParameter(paramName));
 		}
 		
-		log.audit("QTI audit logging: hreq=" + ureq.getHttpReq().getRequestURL() + ", params=" + sb.toString());
+		log.info(Tracing.M_AUDIT, "QTI audit logging: hreq=" + ureq.getHttpReq().getRequestURL() + ", params=" + sb.toString());
 
 		String command = ureq.getParameter("cid");
 		

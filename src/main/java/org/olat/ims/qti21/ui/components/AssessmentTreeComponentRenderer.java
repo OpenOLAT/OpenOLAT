@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.ui.components;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -28,7 +29,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -58,7 +58,7 @@ import uk.ac.ed.ph.jqtiplus.state.TestSessionState;
  */
 public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRenderer {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentTreeComponentRenderer.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentTreeComponentRenderer.class);
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu,

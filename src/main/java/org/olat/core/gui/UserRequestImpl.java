@@ -48,7 +48,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.control.DispatchResult;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.session.UserSessionManager;
@@ -61,7 +61,7 @@ import org.olat.core.util.session.UserSessionManager;
  */
 public class UserRequestImpl implements UserRequest {
 	
-	private static final OLog log = Tracing.createLoggerFor(UserRequestImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(UserRequestImpl.class);
 
 	/**
 	 * <code>PARAM_DELIM</code>
@@ -104,12 +104,13 @@ public class UserRequestImpl implements UserRequest {
 		this.uriPrefix = uriPrefix;
 		isValidDispatchURI = false;
 		userSessionMgr = CoreSpringFactory.getImpl(UserSessionManager.class);
-		params = new HashMap<String,String>(4);
+		params = new HashMap<>(4);
 		dispatchResult = new DispatchResult();
 		parseRequest(httpReq);
 		
 		requestTimestamp = new Date();
 		uuid = Integer.toString(count.incrementAndGet());
+		Tracing.setUuid(uuid);
 	}
 
 	@Override
@@ -222,7 +223,7 @@ public class UserRequestImpl implements UserRequest {
 		}
 
 		// log the http request headers, but do not parse the parameters (could destroy data for file upload)
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			StringBuilder sb = new StringBuilder("\nRequest Parameters:\n");
 			appendFormattedKeyValue(sb, "URI", hreq.getRequestURI());		
 			appendFormattedKeyValue(sb, "Protocol", hreq.getProtocol());

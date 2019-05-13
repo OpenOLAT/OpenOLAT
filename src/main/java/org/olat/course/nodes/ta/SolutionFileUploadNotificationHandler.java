@@ -26,9 +26,9 @@
 package org.olat.course.nodes.ta;
 
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
@@ -45,7 +45,7 @@ import org.olat.course.run.environment.CourseEnvironment;
  */
 public class SolutionFileUploadNotificationHandler extends AbstractTaskNotificationHandler implements NotificationsHandler {
 	private static final String CSS_CLASS_SOLUTION_ICON = "o_solution_icon"; 
-	private static OLog log = Tracing.createLoggerFor(SolutionFileUploadNotificationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(SolutionFileUploadNotificationHandler.class);
 	
 	public SolutionFileUploadNotificationHandler() {
 		//empty block
@@ -67,7 +67,7 @@ public class SolutionFileUploadNotificationHandler extends AbstractTaskNotificat
 		return "solution.notifications.entry";
 	}
 	
-	protected OLog getLogger() {
+	protected Logger getLogger() {
 		return log;
 	}
 	

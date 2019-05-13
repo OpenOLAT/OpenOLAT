@@ -26,7 +26,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class QTI21Module extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21Module.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21Module.class);
 	
 	@Autowired
 	private QTI21AssessmentTestHandler assessmentHandler;

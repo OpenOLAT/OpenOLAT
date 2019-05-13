@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -46,7 +46,7 @@ import org.olat.search.service.document.file.DocumentAccessException;
  */
 public class PdfExternalExtractor implements PdfExtractor {
 	
-	private static final OLog log = Tracing.createLoggerFor(PdfExternalExtractor.class);
+	private static final Logger log = Tracing.createLoggerFor(PdfExternalExtractor.class);
 	
 	private SearchModule searchModule;
 
@@ -115,14 +115,14 @@ public class PdfExternalExtractor implements PdfExtractor {
 
 		try {
 			int exitValue = proc.waitFor();
-			if(log.isDebug()) {
+			if(log.isDebugEnabled()) {
 				log.info("PDF extracted: " + exitValue);
 			}
 		} catch (InterruptedException e) {
 			//
 		}
 		
-		if(log.isDebug()) {
+		if(log.isDebugEnabled()) {
 			log.error(errors.toString());
 			log.info(output.toString());
 		}
@@ -151,7 +151,7 @@ public class PdfExternalExtractor implements PdfExtractor {
 		public void run() {
 			
 			try {
-				if(log.isDebug()) {
+				if(log.isDebugEnabled()) {
 					log.debug(cmd.toString());
 				}
 				

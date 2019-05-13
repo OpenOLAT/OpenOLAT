@@ -25,11 +25,11 @@
 
 package org.olat.course.tree;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.tree.DnDTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ObjectCloner;
 import org.olat.core.util.nodes.INode;
@@ -50,9 +50,9 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 															// zero -> meaning we read from an old
 															// xml-structure which set it to zero, since it
 															// did not exist
-	transient private final static int CURRENTVERSION = 3;
+	private static final transient int CURRENTVERSION = 3;
 	private int version;
-	private static OLog log = Tracing.createLoggerFor(CourseEditorTreeModel.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseEditorTreeModel.class);
 
 	/**
 	 * 

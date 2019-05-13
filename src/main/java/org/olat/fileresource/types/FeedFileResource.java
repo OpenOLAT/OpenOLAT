@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -47,7 +47,7 @@ import org.olat.modules.webFeed.manager.FeedManager;
  */
 public abstract class FeedFileResource extends FileResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(FeedFileResource.class);
+	private static final Logger log = Tracing.createLoggerFor(FeedFileResource.class);
 
 	public FeedFileResource(String type) {
 		super(type);

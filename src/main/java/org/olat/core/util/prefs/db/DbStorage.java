@@ -31,8 +31,8 @@ package org.olat.core.util.prefs.db;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesStorage;
@@ -51,7 +51,7 @@ import com.thoughtworks.xstream.XStream;
  */
 public class DbStorage implements PreferencesStorage {
 	
-	private static final OLog log = Tracing.createLoggerFor(DbStorage.class);
+	private static final Logger log = Tracing.createLoggerFor(DbStorage.class);
 
 	static final String USER_PROPERTY_KEY = "v2guipreferences";
 	

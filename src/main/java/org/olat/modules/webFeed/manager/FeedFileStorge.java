@@ -31,7 +31,7 @@ import java.util.List;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -81,7 +81,7 @@ import com.thoughtworks.xstream.XStream;
 @Service
 public class FeedFileStorge {
 
-	private static final OLog log = Tracing.createLoggerFor(FeedFileStorge.class);
+	private static final Logger log = Tracing.createLoggerFor(FeedFileStorge.class);
 
 	private static final String MEDIA_DIR = "media";
 	private static final String ITEMS_DIR = "items";

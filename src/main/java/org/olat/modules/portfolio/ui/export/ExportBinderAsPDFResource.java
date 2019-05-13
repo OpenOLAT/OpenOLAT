@@ -56,7 +56,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -86,7 +86,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class ExportBinderAsPDFResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(ExportBinderAsPDFResource.class);
+	private static final Logger log = Tracing.createLoggerFor(ExportBinderAsPDFResource.class);
 	
 	private File htmlDir;
 	private File pdfFile;

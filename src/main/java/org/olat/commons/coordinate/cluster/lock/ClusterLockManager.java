@@ -26,10 +26,10 @@ package org.olat.commons.coordinate.cluster.lock;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,7 +46,7 @@ import org.springframework.stereotype.Service;
 @Service("clusterLockManager")
 public class ClusterLockManager {
 
-	private static final OLog log = Tracing.createLoggerFor(ClusterLockManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ClusterLockManager.class);
 
 	@Autowired
 	private DB dbInstance;

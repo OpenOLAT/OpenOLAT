@@ -43,7 +43,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -105,7 +105,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.RootNodeLookup;
 @Service("qti21PoolServiceProvider")
 public class QTI21QPoolServiceProvider implements QPoolSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(QTI21QPoolServiceProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(QTI21QPoolServiceProvider.class);
 	
 	public static final String QTI_12_OO_TEST = "OpenOLAT Test";
 

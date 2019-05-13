@@ -61,7 +61,7 @@ import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DirectoryFilter;
 import org.olat.core.util.ExportUtil;
@@ -132,7 +132,7 @@ import com.thoughtworks.xstream.XStream;
 public class ProjectBrokerCourseNode extends GenericCourseNode implements PersistentAssessableCourseNode {
 
 	private static final long serialVersionUID = -8177448874150049173L;
-	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerCourseNode.class);
+	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerCourseNode.class);
 
 	private transient static final String PACKAGE_PROJECTBROKER = Util.getPackageName(ProjectListController.class);
 	private transient static final String PACKAGE = Util.getPackageName(ProjectBrokerCourseNode.class);

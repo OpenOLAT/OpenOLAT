@@ -237,13 +237,9 @@ public class ProjectBrokerCourseEditorController extends ActivateableTabbableDef
 		
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {		
-		if (getLogger().isDebug()) getLogger().debug("event source=" + source + " " + event.toString());		
+		if (getLogger().isDebugEnabled()) getLogger().debug("event source=" + source + " " + event.toString());		
 		if (source == editScoringConfigButton){
 			scoringController.setDisplayOnly(false);
 			editScoring.contextPut("isOverwriting", Boolean.TRUE);

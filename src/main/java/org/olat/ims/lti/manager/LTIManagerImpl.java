@@ -45,7 +45,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -69,7 +69,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class LTIManagerImpl implements LTIManager {
 
-	private static final OLog log = Tracing.createLoggerFor(LTIManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(LTIManagerImpl.class);
 
 	@Autowired
 	private DB dbInstance;

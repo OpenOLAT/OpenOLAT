@@ -33,6 +33,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.pdf.PdfSPI;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.commons.services.pdf.model.PdfDelivery;
@@ -44,7 +45,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.cache.CacheWrapper;
@@ -62,7 +62,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AthenaPdfSPI extends AbstractSpringModule implements PdfSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(AthenaPdfSPI.class);
+	private static final Logger log = Tracing.createLoggerFor(AthenaPdfSPI.class);
 	
 	private static final String ATHENAPDF_URL = "athena.pdf.url";
 	private static final String ATHENAPDF_KEY = "athena.pdf.key";

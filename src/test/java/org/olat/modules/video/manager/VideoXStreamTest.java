@@ -27,7 +27,7 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.video.VideoMarker;
 import org.olat.modules.video.VideoMarkers;
@@ -46,7 +46,7 @@ import org.olat.modules.video.model.VideoQuestionsImpl;
  */
 public class VideoXStreamTest {
 	
-	private static final OLog log = Tracing.createLoggerFor(VideoXStreamTest.class);
+	private static final Logger log = Tracing.createLoggerFor(VideoXStreamTest.class);
 	
 	@Test
 	public void writeRead_markers() {

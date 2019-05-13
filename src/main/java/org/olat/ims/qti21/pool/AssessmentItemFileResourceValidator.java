@@ -29,7 +29,7 @@ import java.util.zip.ZipInputStream;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.ShieldInputStream;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -53,7 +53,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.XmlFactories;
  */
 public class AssessmentItemFileResourceValidator {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentItemFileResourceValidator.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentItemFileResourceValidator.class);
 
 	public boolean validate(String filename, File file) {
 		if(file == null || !file.exists()) return false;

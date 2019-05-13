@@ -30,9 +30,9 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -45,7 +45,7 @@ import org.olat.search.service.SearchResourceContext;
  */
 public class TextDocument extends FileDocument {
 	private static final long serialVersionUID = 9188038452431819507L;
-	private static final OLog log = Tracing.createLoggerFor(TextDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(TextDocument.class);
 
 	public final static String FILE_TYPE = "type.file.text";
 
@@ -61,7 +61,7 @@ public class TextDocument extends FileDocument {
 		textDocument.setFileType(FILE_TYPE);
 		textDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf
 				.getName()));
-		if (log.isDebug())
+		if (log.isDebugEnabled())
 			log.debug(textDocument.toString());
 		return textDocument.getLuceneDocument();
 	}

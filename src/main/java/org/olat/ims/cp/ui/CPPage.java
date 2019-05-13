@@ -26,9 +26,9 @@
 
 package org.olat.ims.cp.ui;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.tree.DefaultElement;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -50,7 +50,7 @@ import org.olat.ims.cp.objects.CPResource;
  */
 public class CPPage {
 	
-	private static final OLog log = Tracing.createLoggerFor(CPPage.class);
+	private static final Logger log = Tracing.createLoggerFor(CPPage.class);
 
 	private String identifier;
 	private String idRef;

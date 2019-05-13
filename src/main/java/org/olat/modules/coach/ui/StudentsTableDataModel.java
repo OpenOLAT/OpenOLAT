@@ -28,7 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSorta
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.model.StudentStatEntry;
@@ -46,7 +46,7 @@ import org.olat.modules.coach.ui.LightedValue.Light;
 public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentStatEntry>
 	implements SortableFlexiTableDataModel<StudentStatEntry> {
 	
-	private static final OLog log = Tracing.createLoggerFor(StudentsTableDataModel.class);
+	private static final Logger log = Tracing.createLoggerFor(StudentsTableDataModel.class);
 
 	private List<StudentStatEntry> backupList;
 	

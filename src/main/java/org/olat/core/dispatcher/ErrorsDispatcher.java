@@ -26,7 +26,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -39,7 +39,7 @@ import org.olat.core.logging.Tracing;
  */
 public class ErrorsDispatcher implements Dispatcher {
 	
-	private static final OLog log = Tracing.createLoggerFor(ErrorsDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(ErrorsDispatcher.class);
 
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

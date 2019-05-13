@@ -48,7 +48,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -71,7 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class IFrameDisplayController extends BasicController implements GenericEventListener, Activateable2 {
 
-	private static final OLog log = Tracing.createLoggerFor(IFrameDisplayController.class);
+	private static final Logger log = Tracing.createLoggerFor(IFrameDisplayController.class);
 
 	private static final String NEW_URI_EVENT = "newUriEvent";
 	protected static final String FILE_SUFFIX_HTM = "htm";
@@ -222,7 +222,7 @@ public class IFrameDisplayController extends BasicController implements GenericE
 			myContent.contextPut("adjustAutoHeight", Boolean.FALSE);
 		}
 		
-		myContent.contextPut("debug", Boolean.valueOf(log.isDebug()));
+		myContent.contextPut("debug", Boolean.valueOf(log.isDebugEnabled()));
 
 		// Add us as cycle listener to be notified when current dispatch cycle is
 		// finished. we then need to add the css which is not yet defined at this

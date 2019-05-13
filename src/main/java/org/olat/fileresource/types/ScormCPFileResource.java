@@ -45,7 +45,7 @@ import org.dom4j.Element;
 import org.dom4j.Namespace;
 import org.dom4j.Node;
 import org.dom4j.XPath;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.PathUtils;
 import org.olat.ims.resources.IMSLoader;
@@ -57,7 +57,7 @@ import org.olat.ims.resources.IMSLoader;
  */
 public class ScormCPFileResource extends FileResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(ScormCPFileResource.class);
+	private static final Logger log = Tracing.createLoggerFor(ScormCPFileResource.class);
 	private static final String IMS_MANIFEST = "imsmanifest.xml";
 	
 	/**

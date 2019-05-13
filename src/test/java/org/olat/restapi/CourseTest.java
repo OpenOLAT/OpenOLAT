@@ -51,6 +51,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -63,7 +64,6 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
@@ -88,7 +88,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class CourseTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(CourseTest.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseTest.class);
 	
 	private Identity admin, auth0, auth1, auth2;
 	private ICourse course1;

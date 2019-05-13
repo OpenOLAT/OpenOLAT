@@ -32,7 +32,7 @@ import java.util.Set;
 
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.gui.control.Event;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -60,7 +60,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class UsrPropCfgManager extends AbstractSpringModule implements GenericEventListener {
 
-	private static final OLog log = Tracing.createLoggerFor(UsrPropCfgManager.class);
+	private static final Logger log = Tracing.createLoggerFor(UsrPropCfgManager.class);
 	/*
 	 * these properties (the handlers) cannot be deactivated. OLAT depends on them
 	 */

@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.TimeZone;
 
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -48,7 +48,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReminderModule extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(ReminderModule.class);
+	private static final Logger log = Tracing.createLoggerFor(ReminderModule.class);
 
 	private final TriggerKey reminderTriggerKey = new TriggerKey("reminderTrigger", Scheduler.DEFAULT_GROUP);
 	

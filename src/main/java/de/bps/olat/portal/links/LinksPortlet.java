@@ -39,7 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.AbstractPortlet;
 import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -54,6 +54,8 @@ import com.thoughtworks.xstream.XStream;
 * @author skoeber
 */
 public class LinksPortlet extends AbstractPortlet {
+	
+	private static final Logger log = Tracing.createLoggerFor(LinksPortlet.class);
 	
 	private String cssWrapperClass = "o_portlet_links";
 	
@@ -99,8 +101,7 @@ public class LinksPortlet extends AbstractPortlet {
 	}
 	
 	private static void init() {
-		OLog logger = Tracing.createLoggerFor(LinksPortlet.class);
-		if(logger.isDebug()) logger.debug("START: Loading remote portlets content.");
+		log.debug("START: Loading remote portlets content.");
 		
 		File configurationFile = new File(WebappHelper.getContextRealPath(CONFIG_FILE));
 		// fxdiff: have file outside of war/olatapp
@@ -114,14 +115,14 @@ public class LinksPortlet extends AbstractPortlet {
 			try {
 				fxConfFile.createNewFile();
 				FileUtils.copyFileToFile(configurationFile, fxConfFile, false);
-				logger.info("portal links portlet: copied initial config from " + CONFIG_FILE);
+				log.info("portal links portlet: copied initial config from " + CONFIG_FILE);
 			} catch (IOException e) {
 				new AssertException("could not copy an initial portal links config to olatdata", e);
 			}
 		}
 		
 		// this map contains the whole data
-		HashMap<String, PortletInstitution> portletMap = new HashMap<String, PortletInstitution>();
+		HashMap<String, PortletInstitution> portletMap = new HashMap<>();
 
 		if (!fxConfXStreamFile.exists()){
 			SAXReader reader = new SAXReader();
@@ -133,7 +134,7 @@ public class LinksPortlet extends AbstractPortlet {
 				for( Element instElem : lstInst ) {
 					String inst = instElem.attributeValue(ATTR_INSTITUTION_NAME);
 					List<Element> lstTmpLinks = instElem.elements(ELEM_LINK);
-					List<PortletLink> lstLinks = new ArrayList<PortletLink>(lstTmpLinks.size());
+					List<PortletLink> lstLinks = new ArrayList<>(lstTmpLinks.size());
 					for( Element linkElem: lstTmpLinks ) {
 						String title = linkElem.elementText(ELEM_LINK_TITLE);
 						String url = linkElem.elementText(ELEM_LINK_URL);
@@ -146,7 +147,7 @@ public class LinksPortlet extends AbstractPortlet {
 					portletMap.put(inst, new PortletInstitution(inst, lstLinks));
 				}
 			} catch (Exception e) {
-				logger.error("Error reading configuration file", e);
+				log.error("Error reading configuration file", e);
 			} finally {
 				content = portletMap;
 			}

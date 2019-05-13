@@ -35,7 +35,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.ValidationStatus;
@@ -49,7 +49,7 @@ import org.olat.core.util.ValidationStatus;
  * @author patrickb
  */
 public class MultipleSelectionElementImpl extends FormItemImpl implements MultipleSelectionElement {
-	private static final OLog log = Tracing.createLoggerFor(MultipleSelectionElementImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(MultipleSelectionElementImpl.class);
 
 	protected String[] keys;
 	protected String[] values;

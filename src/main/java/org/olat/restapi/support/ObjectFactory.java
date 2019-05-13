@@ -25,6 +25,7 @@ import java.util.Date;
 
 import javax.ws.rs.core.EntityTag;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
@@ -33,7 +34,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -64,7 +64,7 @@ import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
  * @author srosse, stephane.rosse@frentix.com
  */
 public class ObjectFactory {
-	private static final OLog log = Tracing.createLoggerFor(ObjectFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(ObjectFactory.class);
 	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
 
 	public static String formatDate(Date date) {

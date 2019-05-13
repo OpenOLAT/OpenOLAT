@@ -31,7 +31,7 @@ import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -47,7 +47,7 @@ import org.olat.core.util.vfs.VFSContainer;
  */
 class GlossaryTermMapper implements Mapper {
 	
-	private static final OLog log = Tracing.createLoggerFor(GlossaryTermMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(GlossaryTermMapper.class);
 
 	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
@@ -60,12 +60,12 @@ class GlossaryTermMapper implements Mapper {
 				+ GlossaryMarkupItemController.INTERNAL_FOLDER_NAME;
 		File glossaryFolderFile = new File(glossaryFolderString);
 		if (!glossaryFolderFile.isDirectory()) {
-			log.warn("GlossaryTerms delivery failed; path to glossaryFolder not existing: " + relPath, null);
+			log.warn("GlossaryTerms delivery failed; path to glossaryFolder not existing: " + relPath);
 			return new NotFoundMediaResource();
 		}
 		VFSContainer glossaryFolder = new LocalFolderImpl(glossaryFolderFile);
 		if (!gIM.isFolderContainingGlossary(glossaryFolder)) {
-			log.warn("GlossaryTerms delivery failed; glossaryFolder doesn't contain a valid Glossary: " + glossaryFolder, null);
+			log.warn("GlossaryTerms delivery failed; glossaryFolder doesn't contain a valid Glossary: " + glossaryFolder);
 			return new NotFoundMediaResource();
 		}
 

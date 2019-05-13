@@ -19,7 +19,7 @@
  */
 package org.olat.core.util;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -35,7 +35,7 @@ import org.olat.core.logging.Tracing;
  */
 public class IPUtils {
 	
-	private static final OLog log = Tracing.createLoggerFor(IPUtils.class);
+	private static final Logger log = Tracing.createLoggerFor(IPUtils.class);
 	
 	public static long ipToLong(byte[] octets) {
 		long result = 0;

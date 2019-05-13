@@ -47,7 +47,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -90,7 +90,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class LecturesBlocksTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(LecturesBlocksTest.class);
+	private static final Logger log = Tracing.createLoggerFor(LecturesBlocksTest.class);
 	
 	@Autowired
 	private DB dbInstance;

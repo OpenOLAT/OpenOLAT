@@ -41,7 +41,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
@@ -59,7 +59,7 @@ import org.olat.user.UserManager;
 *
 */
 public class PFNotifications {
-	private static final OLog log = Tracing.createLoggerFor(PFNotifications.class);
+	private static final Logger log = Tracing.createLoggerFor(PFNotifications.class);
 	
 	private final Date compareDate;
 	private final Subscriber subscriber;

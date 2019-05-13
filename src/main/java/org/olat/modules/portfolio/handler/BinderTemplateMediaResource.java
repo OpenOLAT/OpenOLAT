@@ -29,9 +29,9 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.ShieldOutputStream;
@@ -51,7 +51,7 @@ import org.olat.resource.OLATResource;
  */
 public class BinderTemplateMediaResource implements MediaResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(BinderTemplateMediaResource.class);
+	private static final Logger log = Tracing.createLoggerFor(BinderTemplateMediaResource.class);
 	
 	private final BinderRef template;
 	private final RepositoryEntry templateEntry;

@@ -53,7 +53,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.fileresource.types.ImsQTI21Resource;
@@ -89,7 +89,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class RepositoryEntryWebServiceTest extends OlatJerseyTestCase {
 
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryWebServiceTest.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryWebServiceTest.class);
 	
 	@Autowired
 	private DB dbInstance;

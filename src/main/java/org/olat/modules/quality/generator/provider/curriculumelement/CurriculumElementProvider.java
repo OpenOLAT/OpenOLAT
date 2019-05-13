@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -35,7 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -74,7 +74,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CurriculumElementProvider implements QualityGeneratorProvider {
 
-	private static final OLog log = Tracing.createLoggerFor(CurriculumElementProvider.class);
+	private static final Logger log = Tracing.createLoggerFor(CurriculumElementProvider.class);
 	
 	public static final String CONFIG_KEY_CURRICULUM_ELEMENT_TYPE = "curriculum.element.type";
 	public static final String CONFIG_KEY_DUE_DATE_BEGIN = "config.due.date.begin";
@@ -219,11 +219,11 @@ public class CurriculumElementProvider implements QualityGeneratorProvider {
 	private List<CurriculumElement> loadCurriculumElements(QualityGenerator generator, QualityGeneratorConfigs configs,
 			Date fromDate, Date toDate, List<Organisation> organisations) {
 		SearchParameters searchParams = createSearchParams(generator, configs, fromDate, toDate, organisations);
-		if(log.isDebug()) log.debug("Generator " + generator + " searches with " + searchParams);
+		if(log.isDebugEnabled()) log.debug("Generator " + generator + " searches with " + searchParams);
 		
 		List<CurriculumElement> elements = providerDao.loadPending(searchParams);
 		
-		if(log.isDebug()) log.debug("Generator " + generator + " found " + elements.size() + " curriculum elements");
+		if(log.isDebugEnabled()) log.debug("Generator " + generator + " found " + elements.size() + " curriculum elements");
 		return elements;
 	}
 	

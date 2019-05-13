@@ -34,7 +34,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.adobeconnect.model.AdobeConnectError;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrorCodes;
@@ -54,7 +54,7 @@ import org.w3c.dom.NodeList;
  */
 public class AdobeConnectUtils {
 	
-	private static final OLog log = Tracing.createLoggerFor(AdobeConnectUtils.class);
+	private static final Logger log = Tracing.createLoggerFor(AdobeConnectUtils.class);
 	
 	protected static boolean isStatusOk(HttpEntity entity) {
 		try {
@@ -181,7 +181,7 @@ public class AdobeConnectUtils {
 	}
 	
 	protected static void print(Document document) {
-		if(log.isDebug()) {
+		if(log.isDebugEnabled()) {
 		    try(StringWriter writer = new StringWriter()) {
 				Transformer transformer = TransformerFactory.newInstance().newTransformer();
 				Source source = new DOMSource(document);

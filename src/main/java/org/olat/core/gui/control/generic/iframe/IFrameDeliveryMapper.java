@@ -33,7 +33,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.SimpleHtmlParser;
@@ -49,7 +49,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
  */
 public class IFrameDeliveryMapper implements Mapper {
 
-	private static final OLog log = Tracing.createLoggerFor(IFrameDeliveryMapper.class);
+	private static final Logger log = Tracing.createLoggerFor(IFrameDeliveryMapper.class);
 	
 	private static final String DEFAULT_ENCODING = "iso-8859-1";
 	private static final String UNICODE_ENCODING = "unicode";
@@ -329,7 +329,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 		
 		if (enableTextmarking) {
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("Textmarking is enabled, including tooltips js files into iframe source...");
 			}
 			sb.appendJQuery();	

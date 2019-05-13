@@ -37,7 +37,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.SyncerCallback;
@@ -68,7 +68,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	
-	private static final OLog log = Tracing.createLoggerFor(ProjectGroupManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(ProjectGroupManagerImpl.class);
 	
 	@Autowired
 	private DB dbInstance;
@@ -115,7 +115,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 						cpm.deleteProperty(accountManagerGroupProperty);
 					}
 					groupKey = null;
-					log.warn("ProjectBroker: Account-manager does no longer exist, create a new one", null);
+					log.warn("ProjectBroker: Account-manager does no longer exist, create a new one");
 				}
 			} else {
 				log.debug("No group for project-broker exist => create a new one");
@@ -196,7 +196,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 				if (accountManagerGroup != null) {
 					BusinessGroupService bgs = businessGroupService;
 					bgs.deleteBusinessGroup(accountManagerGroup);
-					log.audit("ProjectBroker: Deleted accountManagerGroup=" + accountManagerGroup);
+					log.info(Tracing.M_AUDIT, "ProjectBroker: Deleted accountManagerGroup=" + accountManagerGroup);
 				} else {
 					log.debug("deleteAccountManagerGroup: accountManagerGroup=" + accountManagerGroup + " has already been deleted");
 				}
@@ -272,7 +272,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 					if (!securityGroupDao.isIdentityInSecurityGroup(identity, project.getCandidateGroup()) ) {
 						securityGroupDao.addIdentityToSecurityGroup(identity, project.getCandidateGroup());
 						addedIdentityList.add(identity);
-						log.audit("ProjectBroker: Add user as candidate, identity=" + identity);
+						log.info(Tracing.M_AUDIT, "ProjectBroker: Add user as candidate, identity=" + identity);
 					}
 					// fireEvents ?
 				}
@@ -290,7 +290,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 				Project reloadedProject = (Project) dbInstance.loadObject(project, true);
 				for (Identity identity : addIdentities) {
 					securityGroupDao.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-					log.audit("ProjectBroker: Remove user as candidate, identity=" + identity);
+					log.info(Tracing.M_AUDIT, "ProjectBroker: Remove user as candidate, identity=" + identity);
 					// fireEvents ?
 				}
 				return Boolean.TRUE;
@@ -312,7 +312,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 				for (final Identity identity : identities) {
 					if (businessGroupService.hasRoles(identity, reloadedProject.getProjectGroup(), GroupRoles.participant.name())) {
 						securityGroupDao.removeIdentityFromSecurityGroup(identity, reloadedProject.getCandidateGroup());
-						log.audit("ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
+						log.info(Tracing.M_AUDIT, "ProjectBroker: Accept candidate, identity=" + identity + " project=" + reloadedProject);
 					}		
 				}
 				return Boolean.TRUE;
@@ -389,7 +389,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 			Project project = iterator.next();
 			List<Identity> candidates = securityGroupDao.getIdentitiesOfSecurityGroup(project.getCandidateGroup());
 			if (!candidates.isEmpty()) {
-				log.audit("ProjectBroker: Accept ALL candidates, project=" + project);
+				log.info(Tracing.M_AUDIT, "ProjectBroker: Accept ALL candidates, project=" + project);
 				acceptCandidates(candidates, project, actionIdentity, autoSignOut, isAcceptSelectionManually);
 			}
 		}	

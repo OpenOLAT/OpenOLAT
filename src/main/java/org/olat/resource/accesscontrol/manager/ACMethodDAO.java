@@ -33,9 +33,9 @@ import java.util.Set;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.PersistenceHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
@@ -67,7 +67,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ACMethodDAO {
 
-	private static final OLog log = Tracing.createLoggerFor(ACMethodDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(ACMethodDAO.class);
 
 	@Autowired
 	private DB dbInstance;

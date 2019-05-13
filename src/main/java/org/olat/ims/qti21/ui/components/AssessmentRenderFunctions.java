@@ -31,10 +31,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.logging.log4j.Logger;
 import org.jcodec.common.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.render.StringOutput;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.AssessmentTestSession;
@@ -84,7 +84,7 @@ import uk.ac.ed.ph.jqtiplus.value.Value;
  */
 public class AssessmentRenderFunctions {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentRenderFunctions.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentRenderFunctions.class);
 	
 	public static boolean exists(Value value) {
 		return value != null && !value.isNull();

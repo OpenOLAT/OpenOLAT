@@ -45,7 +45,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.io.IOUtils;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -91,7 +91,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("repo/courses/{courseId}/elements")
 public class CourseElementWebService extends AbstractCourseNodeWebService {
-	private static final OLog log = Tracing.createLoggerFor(CourseElementWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(CourseElementWebService.class);
 	private static final String VERSION = "0.1";
 	
 	/**

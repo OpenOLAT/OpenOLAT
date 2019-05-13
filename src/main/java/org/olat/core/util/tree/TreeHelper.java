@@ -34,7 +34,7 @@ import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
@@ -49,7 +49,7 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class TreeHelper {
 	
-	private static final OLog log = Tracing.createLoggerFor(TreeHelper.class);
+	private static final Logger log = Tracing.createLoggerFor(TreeHelper.class);
 	
 	/**
 	 * Depth-first traversal.

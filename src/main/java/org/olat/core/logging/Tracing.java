@@ -26,24 +26,24 @@
 
 package org.olat.core.logging;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.olat.core.CoreSpringFactory;
-import org.olat.core.helpers.Settings;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.spi.LoggerContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.session.UserSessionManager;
 
 /**
  * This is the central place where all log information should pass.
@@ -99,14 +99,14 @@ public class Tracing {
 
 	private static final int stacklen = 11;
 	private static final String SEPARATOR = " ^%^ ";
-	private static long __auditRefNum__ = 0;
-	private static long __errorRefNum__ = 0;
-	private static long __warnRefNum__  = 0;
-	private static long __infoRefNum__  = 0;
-	private static long __debugRefNum__ = 0;
+	private static long auditRefNum = 0;
+	private static long errorRefNum = 0;
+	private static long warnRefNum  = 0;
+	private static long infoRefNum  = 0;
+	private static long debugRefNum = 0;
 	
-	// VM local cache to have one logger object per class
-	private static final ConcurrentMap<Class<?>, OLog> loggerLookupMap = new ConcurrentHashMap<>();
+	
+	public static final Marker M_AUDIT = MarkerManager.getMarker(AUDIT);
 
 	/**
 	 * per-thread singleton holding the actual HttpServletRequest which is the
@@ -132,7 +132,8 @@ public class Tracing {
 	 * @param loggingClass
 	 * @return
 	 */
-	public static OLog createLoggerFor(Class<?> loggingClass) {
+	public static Logger createLoggerFor(Class<?> loggingClass) {
+		/*
 		// Share logger object to reduce memory footprint
 		OLog logger = loggerLookupMap.get(loggingClass);
 		if (logger == null) {
@@ -142,7 +143,8 @@ public class Tracing {
 				logger = newLogger;
 			}
 		}
-		return logger;
+		*/
+		return  LogManager.getLogger(loggingClass.getName());
 	}
 	
 	
@@ -150,351 +152,7 @@ public class Tracing {
 	 * @return long the number of errors since last reboot. 
 	 */
 	public static long getErrorCount() {
-		return __errorRefNum__;
-	}
-
-	/**
-	 * Add error log entry. See package.html for propper usage!
-	 * 
-	 * @param category
-	 * @param logMsg
-	 * @param cause
-	 * @return Log entry identifier.
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 */
-	public static long logError(String logMsg, Throwable cause, Class<?> callingClass) {
-		long refNum = getErrorRefNum();
-		getLogger(callingClass).error(assembleThrowableMessage(ERROR, 'E',refNum, callingClass, logMsg, cause));
-		return refNum;
-	}
-	
-	public static long logError(String logMsg, Throwable cause, Logger logger, Class<?> callingClass) {
-		long refNum = getErrorRefNum();
-		logger.error(assembleThrowableMessage(ERROR, 'E',refNum, callingClass, logMsg, cause));
-		return refNum;
-	}
-
-	/**
-	 * @param callingClass
-	 * @param logMsg
-	 * @return
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 */
-	protected static long logError(String logMsg, Class<?> callingClass) {
-		return logError(logMsg, null, callingClass);
-	}
-
-	/**
-	 * See package.html for propper usage!
-	 * @param callingClass
-	 * @param logMsg
-	 * @param cause
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 * @return
-	 */
-	protected static long logWarn(String logMsg, Throwable cause, Class<?> callingClass) {
-		long refNum = getWarnRefNum();
-		getLogger(callingClass).warn(assembleThrowableMessage(WARN, 'W', refNum, callingClass, logMsg, cause));
-		return refNum;
-	}
-	
-	protected static long logWarn(String logMsg, Throwable cause, Logger logger, Class<?> callingClass) {
-		long refNum = getWarnRefNum();
-		logger.warn(assembleThrowableMessage(WARN, 'W', refNum, callingClass, logMsg, cause));
-		return refNum;
-	}
-
-	/**
-	 * @param callingClass
-	 * @param logMsg
-	 * @return
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 */
-	protected static long logWarn(String logMsg, Class<?> callingClass) {
-		return logWarn(logMsg, null, callingClass);
-	}
-
-	/**
-	 * Add debug log entry. Alwasy use together with
-	 * if(Tracing.isDebugEnabled()) Tracing.logDebug(...) to let the compiler
-	 * optimize it for a performance gain
-	 * 
-	 * @param callingClass
-	 * @param userObj
-	 * @param logMsg
-	 * @return
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 */
-	protected static long logDebug(String logMsg, String userObj, Class<?> callingClass) {
-		long refNum = getDebugRefNum();
-		if (isDebugEnabled(callingClass)) {
-			getLogger(callingClass).debug(assembleMsg(DEBUG, 'D', refNum, callingClass, userObj, logMsg));
-		}
-		return refNum;
-	}
-	
-	protected static long logDebug(String logMsg, String userObj, Logger logger, Class<?> callingClass) {
-		long refNum = getDebugRefNum();
-		if (logger.isDebugEnabled()) {
-			logger.debug(assembleMsg(DEBUG, 'D', refNum, callingClass, userObj, logMsg));
-		}
-		return refNum;
-	}
-
-	/**
-	 * Add debug log entry
-	 * 
-	 * @param callingClass
-	 * @param logMsg
-	 * @return
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 */
-	protected static long logDebug(String logMsg, Class<?> callingClass) {
-		return logDebug(logMsg, null, callingClass);
-	}
-
-	/**
-	 * @param callingClass
-	 * @param logMsg
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 * @return
-	 */
-	protected static long logInfo(String logMsg, String userObject, Class<?> callingClass) {
-		long refNum = getInfoRefNum();
-		getLogger(callingClass).info(assembleMsg(INFO, 'I', refNum, callingClass, userObject, logMsg));
-		return refNum;
-	}
-	
-	protected static long logInfo(String logMsg, String userObject, Logger logger, Class<?> callingClass) {
-		long refNum = getInfoRefNum();
-		logger.info(assembleMsg(INFO, 'I', refNum, callingClass, userObject, logMsg));
-		return refNum;
-	}
-
-	/**
-	 * @param callingClass
-	 * @param logMsg
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 * @return
-	 */
-	protected static long logInfo(String logMsg, Class<?> callingClass) {
-		return logInfo(logMsg, null, callingClass);
-
-	}
-
-	/**
-	 * Add audit log entry.
-	 * 
-	 * @param callingClass
-	 * @param logMsg
-	 * @return Log entry identifier.
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 */
-	protected static long logAudit(String logMsg, Class<?> callingClass) {
-		return logAudit(logMsg, null, callingClass);
-	}
-
-	/**
-	 * Add audit log entry with a user object.
-	 * 
-	 * @param callingClass
-	 * @param userObj
-	 * @param logMsg
-	 * @deprecated please use OLog log = Tracing.createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 * @return Log entry identifier.
-	 */
-	protected static long logAudit(String logMsg, String userObj, Class<?> callingClass) {
-		long refNum = getAuditRefNum();
-		getLogger(callingClass).info(assembleMsg(AUDIT, 'A', refNum, callingClass, userObj, logMsg));
-		return refNum;
-	}
-	
-	protected static long logAudit(String logMsg, String userObj, Logger logger, Class<?> callingClass) {
-		long refNum = getAuditRefNum();
-		logger.info(assembleMsg(AUDIT, 'A', refNum, callingClass, userObj, logMsg));
-		return refNum;
-	}
-
-	/**
-	 * Method getStackTrace returns the first few (stacklen) lines of the
-	 * stacktrace
-	 * 
-	 * @param cause
-	 * @return String
-	 */
-	private static StringBuilder getStackTrace(Throwable cause) {
-		StackTraceElement[] st = cause.getStackTrace();
-		StringBuilder stackTrace = new StringBuilder(500);
-		int max = (st.length < stacklen ? st.length : stacklen);
-		for (int i = 0; i < max; i++) {
-			stackTrace.append(" at ");
-			stackTrace.append(st[i]);
-		}
-		return stackTrace;
-	}
-
-	private synchronized static long getAuditRefNum() { //o_clusterOK by:fj
-		return ++__auditRefNum__;
-	}
-
-	private synchronized static long getErrorRefNum() { //o_clusterOK by:fj
-		return ++__errorRefNum__;
-	}
-	
-	private static long getWarnRefNum() {
-		return ++__warnRefNum__;
-	}
-
-	private synchronized static long getDebugRefNum() { //o_clusterOK by:fj
-		return ++__debugRefNum__;
-	}
-
-	private synchronized static long getInfoRefNum() { //o_clusterOK by:fj
-		return ++__infoRefNum__;
-	}
-
-	private static String assembleMsg(String category, char prefix, long refNum, Class<?> callingClass, String userObj, String logMsg) {
-
-		HttpServletRequest ureq = null;
-		if(tld != null){
-			//thread local data is not initialized so far if Tracing is called from
-			//e.g. a worker thread like in Search or UpdateEfficiency worker
-			//TODO:pb:check if this was also a problem with IM threads.
-			ureq = tld.getHttpServletRequest();
-		}
-		UserSession usess = null;
-		Identity identity = null;
-		String remoteIp = null;
-		String userAgent = null;
-		String referer = null;
-		if (ureq != null) {
-			usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSessionIfAlreadySet(ureq);
-			if (usess != null) {
-				identity = usess.getIdentity();
-				remoteIp = ureq.getRemoteAddr();
-				userAgent = ureq.getHeader("User-Agent");
-				referer = ureq.getHeader("Referer");
-			}
-		}
-
-		StringBuilder sb = new StringBuilder(256);
-		if (Settings.isDebuging()) {
-			// Short version for console output during debugging
-			if (userObj != null) {
-				sb.append(userObj).append(" ");
-			}
-		} else {
-			sb.append(PREFIX);
-			sb.append(category);
-			sb.append(SEPARATOR);
-			try {
-				// Node-Id + Error number e.g. N1-E17
-				sb.append("N");
-				sb.append(WebappHelper.getNodeId());
-				sb.append("-");
-			} catch (Throwable th) {
-				//ok
-				sb.append(N_A);
-			}
-				
-			sb.append(prefix);
-			sb.append(refNum);
-			sb.append(SEPARATOR);
-			sb.append(callingClass == null ? N_A : callingClass.getPackage().getName());
-			sb.append(SEPARATOR);
-			sb.append(identity == null ? N_A : identity.getKey());
-			sb.append(SEPARATOR);
-			sb.append(remoteIp == null ? N_A : remoteIp);
-			sb.append(SEPARATOR);
-			sb.append(referer == null ? N_A : referer);
-			sb.append(SEPARATOR);
-			sb.append(userAgent == null ? N_A : userAgent);
-			sb.append(SEPARATOR);
-			sb.append(userObj == null ? N_A : userObj);
-			sb.append(SEPARATOR);
-		}
-		sb.append(logMsg == null ? N_A : logMsg.replaceAll("[\\r\\f]", "").replaceAll("[/^]M", "").replaceAll("[\\r\\n]", ""));
-		return sb.toString();
-	}
-
-	private static String assembleThrowableMessage(String category, char prefix,long refNum, Class<?> callingClass, String logMsg, Throwable cause) {
-
-		HttpServletRequest ureq = null;
-		if(tld != null){
-			//thread local data is not initialized so far if Tracing is called from
-			//e.g. a worker thread like in Search or UpdateEfficiency worke
-			ureq = tld.getHttpServletRequest();
-		}
-		UserSession usess = null;
-		Identity identity = null;
-		String remoteIp = null;
-		String userAgent = null;
-		String referer = null;
-		if (ureq != null) {
-			usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(ureq);
-			identity = usess.getIdentity();
-			remoteIp = ureq.getRemoteAddr();
-			userAgent = ureq.getHeader("User-Agent");
-			referer = ureq.getHeader("Referer");
-		}
-
-		StringBuilder sb = new StringBuilder(2048);
-		if (!Settings.isDebuging()) {
-			sb.append(PREFIX);
-			sb.append(category);
-			sb.append(SEPARATOR);
-			try {
-				// Node-Id + Error number e.g. N1-E17
-				sb.append("N");
-				//FIXME:gs remove access to coordinator: gs accessing coordinator here loads the corespring factory. This means we cannot do unit testing without olat 
-				// as the first log call will start the whole OLAT stuff.
-				sb.append(nodeId);
-				sb.append("-");
-			} catch (Throwable th) {
-				//ok
-				sb.append(N_A);
-			}
-			sb.append(prefix);
-			sb.append(refNum);
-			sb.append(SEPARATOR);
-			sb.append(callingClass == null ? N_A : callingClass.getPackage().getName());
-			sb.append(SEPARATOR);
-			sb.append(identity == null ? N_A : identity.getKey());
-			sb.append(SEPARATOR);
-			sb.append(remoteIp == null ? N_A : remoteIp);
-			sb.append(SEPARATOR);
-			sb.append(referer == null ? N_A : referer);
-			sb.append(SEPARATOR);
-			sb.append(userAgent == null ? N_A : userAgent);
-			sb.append(SEPARATOR);
-			// olat:::::
-			// for effiency reasons, do not recompile the pattern each time. see javadoc:
-			// public String replaceAll(String regex, String replacement) {
-			//    return Pattern.compile(regex).matcher(this).replaceAll(replacement);
-	    	// }
-		}
-		sb.append(logMsg == null ? N_A : logMsg.replaceAll("[\\r\\f]", "").replaceAll("[/^]M", "").replaceAll("[\\r\\n]", ""));
-		sb.append(SEPARATOR);
-
-		if (cause == null) {
-			sb.append(CAUSE_N_A);
-		} else {
-			Throwable ca = cause;
-			int i = 1;
-			while (ca != null && i < 10) {
-				sb.append(STACK_OF);
-				sb.append(i);
-				sb.append(CAUSE);
-				sb.append(ca.getClass().getName());
-				sb.append(DOUBLEPOINT);
-				sb.append(ca.getMessage());
-				sb.append(REFERS_TO);
-				sb.append(getStackTrace(ca));
-				i++;
-				ca = ca.getCause();
-			}
-		}
-		return sb.toString();
+		return errorRefNum;
 	}
 
 	/**
@@ -509,36 +167,45 @@ public class Tracing {
 	 * 
 	 * @param ureq
 	 */
-	public static void setUreq(HttpServletRequest ureq) {
-		tld.setHttpServletRequest(ureq);
+	public static void setHttpRequest(HttpServletRequest httpRequest) {
+		tld.setHttpServletRequest(httpRequest);
+		if(httpRequest == null) {
+			ThreadContext.clearAll();
+		} else {
+			String remoteIp = httpRequest.getRemoteAddr();
+			String userAgent = httpRequest.getHeader("User-Agent");
+			String referer = httpRequest.getHeader("Referer");
+			ThreadContext.put("ip", remoteIp == null ? N_A : remoteIp);
+			ThreadContext.put("userAgent", userAgent == null ? N_A : userAgent);
+			ThreadContext.put("referer", referer == null ? N_A : referer);
+			ThreadContext.put("nodeId", Integer.toString(WebappHelper.getNodeId()));
+		}
 	}
-
-	/**
-	 * Returns a log4j logger for this class
-	 * @deprecated do use createLoggerFor(..) instead
-	 * @param clazz
-	 * @return the log4 logger
-	 */
-	public static Logger getLogger(Class<?> clazz) {
-		return Logger.getLogger(clazz.getName());
+	
+	public static void setUserSession(UserSession usess) {
+		Identity identity = usess.getIdentity();
+		ThreadContext.put("identity", identity == null ? N_A : identity.getKey().toString());
 	}
-
-	/**
-	 * if debug log level is enabled for argument
-	 * 
-	 * @param clazz
-	 * @deprecated please use OLog log = createLoggerFor(MySample.class) as a private static field in your class and use this log.
-	 * @return
-	 */
-	protected static boolean isDebugEnabled(Class<?> clazz) {
-		return Logger.getLogger(clazz).isDebugEnabled();
+	
+	public static void setUuid(String uuid) {
+		ThreadContext.put("ref", uuid == null ? N_A : uuid);
+	}
+	
+	public static void clearHttpRequest() {
+		tld.setHttpServletRequest(null);
+		ThreadContext.clearAll();
 	}
 
 	/**
 	 * @return list all current loggers
 	 */
 	public static List<Logger> getLoggers() {
-		return Collections.list(LogManager.getCurrentLoggers());
+		LoggerContext cxt = LogManager.getContext(Tracing.class.getClassLoader(), false);
+		if(cxt instanceof org.apache.logging.log4j.core.LoggerContext) {
+			Collection<org.apache.logging.log4j.core.Logger> loggers = ((org.apache.logging.log4j.core.LoggerContext)cxt).getLoggers();
+			return new ArrayList<>(loggers);
+		}
+		return Collections.emptyList();
 	}
 
 	/**
@@ -546,13 +213,13 @@ public class Tracing {
 	 * 
 	 * @param logLevel
 	 */
-	public static void setLevelForAllLoggers(Level logLevel) {
-		List<Logger> loggers = getLoggers();
-		Iterator<Logger> iter = loggers.iterator();
-		while (iter.hasNext()) {
-			Logger lo = iter.next();
-			lo.setLevel(logLevel);
+	public static boolean resetLevelForAllLoggers() {
+		LoggerContext cxt = LogManager.getContext(Tracing.class.getClassLoader(), false);
+		if(cxt instanceof org.apache.logging.log4j.core.LoggerContext) {
+			((org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false)).reconfigure();
+			return true;
 		}
+		return false;
 	}
 
 	/**
@@ -564,7 +231,7 @@ public class Tracing {
 	public static void setLevelForLogger(Level logLevel, String name) {
 		Logger logger = LogManager.getLogger(name);
 		if (logger != null) {
-			logger.setLevel(logLevel);
+			Configurator.setLevel(name, logLevel);
 		}
 	}
 
@@ -575,11 +242,7 @@ public class Tracing {
 	 */
 	public static List<Logger> getLoggersSortedByName() {
 		List<Logger> loggers = getLoggers();
-		Collections.sort(loggers, new Comparator<Logger>() {
-			public int compare(Logger a, Logger b) {
-				return a.getName().compareTo(b.getName());
-			}
-		});
+		Collections.sort(loggers, (a, b) ->  a.getName().compareTo(b.getName()));
 		return loggers;
 	}
 
@@ -598,9 +261,8 @@ public class Tracing {
 	 * @author patrick
 	 */
 	private static class ThreadLocalData extends ThreadLocal<HttpServletRequest> {
-		/**
-		 * @see java.lang.ThreadLocal#initialValue()
-		 */
+
+		@Override
 		public HttpServletRequest initialValue() {
 			return null;
 		}
@@ -618,7 +280,5 @@ public class Tracing {
 		public HttpServletRequest getHttpServletRequest() {
 			return super.get();
 		}
-
 	}
-
 }

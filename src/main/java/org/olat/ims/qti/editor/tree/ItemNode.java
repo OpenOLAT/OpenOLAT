@@ -37,7 +37,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.memento.Memento;
 import org.olat.ims.qti.editor.ItemNodeTabbedFormController;
@@ -63,7 +63,7 @@ public class ItemNode extends GenericQtiNode {
 	private Item item;
 	private QTIEditorPackage qtiPackage;
 	private TabbedPane myTabbedPane;
-	private static OLog log = Tracing.createLoggerFor(ItemNode.class);
+	private static final Logger log = Tracing.createLoggerFor(ItemNode.class);
 	
 	/**
 	 * 

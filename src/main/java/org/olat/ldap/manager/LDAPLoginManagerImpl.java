@@ -70,7 +70,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WorkThreadInformations;
@@ -111,7 +111,7 @@ import org.springframework.stereotype.Service;
 @Service("org.olat.ldap.LDAPLoginManager")
 public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListener {
 	
-	private static final OLog log = Tracing.createLoggerFor(LDAPLoginManagerImpl.class);
+	private static final Logger log = Tracing.createLoggerFor(LDAPLoginManagerImpl.class);
 
 	private static final String TIMEOUT_KEY = "com.sun.jndi.ldap.connect.timeout";
 	private static boolean batchSyncIsRunning = false;
@@ -276,7 +276,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		String[] userAttr = syncConfiguration.getUserAttributes();
 
 		if (login == null || pwd == null) {
-			if (log.isDebug()) log.debug("Error when trying to bind user, missing username or password. Username::" + login + " pwd::" + pwd);
+			if (log.isDebugEnabled()) log.debug("Error when trying to bind user, missing username or password. Username::" + login + " pwd::" + pwd);
 			errors.insert("Username and password must be selected");
 			return null;
 		}
@@ -440,7 +440,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	public void deleteIdentities(List<Identity> identityList, Identity doer) {
 		for (Identity identity:  identityList) {
 			if(Identity.STATUS_PERMANENT.equals(identity.getStatus())) {
-				log.audit(identity.getKey() + " was not deleted because is status is permanent.");
+				log.info(Tracing.M_AUDIT, identity.getKey() + " was not deleted because is status is permanent.");
 				continue;
 			}
 			
@@ -458,7 +458,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	@Override
 	public Identity syncUser(Map<String, String> olatPropertyMap, IdentityRef identityRef) {
 		if (identityRef == null) {
-			log.warn("Identiy is null - should not happen", null);
+			log.warn("Identiy is null - should not happen");
 			return null;
 		}
 		
@@ -528,7 +528,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		// Get and Check Config
 		String[] reqAttrs = syncConfiguration.checkRequestAttributes(userAttributes);
 		if (reqAttrs != null) {
-			log.warn("Can not create and persist user, the following attributes are missing::" + ArrayUtils.toString(reqAttrs), null);
+			log.warn("Can not create and persist user, the following attributes are missing::" + ArrayUtils.toString(reqAttrs));
 			return null;
 		}
 		
@@ -537,16 +537,16 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		String email = getAttributeValue(userAttributes.get(syncConfiguration.getOlatPropertyToLdapAttribute(UserConstants.EMAIL)));
 		// Lookup user
 		if (securityManager.findIdentityByNameCaseInsensitive(uid) != null) {
-			log.error("Can't create user with username='" + uid + "', this username does already exist in OLAT database", null);
+			log.error("Can't create user with username='" + uid + "', this username does already exist in OLAT database");
 			return null;
 		}
 		if (!MailHelper.isValidEmailAddress(email)) {
 			// needed to prevent possibly an AssertException in findIdentityByEmail breaking the sync!
-			log.error("Cannot try to lookup user " + uid + " by email with an invalid email::" + email, null);
+			log.error("Cannot try to lookup user " + uid + " by email with an invalid email::" + email);
 			return null;
 		}
 		if (!userManager.isEmailAllowed(email)) {
-			log.error("Can't create user with email='" + email + "', a user with that email does already exist in OLAT database", null);
+			log.error("Can't create user with email='" + email + "', a user with that email does already exist in OLAT database");
 			return null;
 		}
 		
@@ -679,7 +679,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	public void syncUserGroups(Identity identity) {	
 		LdapContext ctx = bindSystem();
 		if (ctx == null) {
-			log.error("could not bind to ldap", null);
+			log.error("could not bind to ldap");
 		}
 			
 		String ldapUserIDAttribute = syncConfiguration.getOlatPropertyToLdapAttribute(LDAPConstants.LDAP_USER_IDENTIFYER);
@@ -844,7 +844,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		}, (userFilter == null ? "" : userFilter), new String[] { userID }, ctx);
 
 		if (ldapList.isEmpty()) {
-			log.warn("No users in LDAP found, can't create deletionList!!", null);
+			log.warn("No users in LDAP found, can't create deletionList!!");
 			return Collections.emptyList();
 		}
 
@@ -905,7 +905,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			ctx = bindSystem();
 			if (ctx == null) {
 				errors.insert("LDAP connection ERROR");
-				log.error("LDAP batch sync: LDAP connection empty", null);
+				log.error("LDAP batch sync: LDAP connection empty");
 				freeSyncLock();
 				success = false;
 				return success;
@@ -933,7 +933,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			
 			ctx.close();
 			success = true;
-			log.audit("LDAP batch sync done: " + success + " in " + ((System.currentTimeMillis() - startTime) / 1000) + "s");
+			log.info(Tracing.M_AUDIT, "LDAP batch sync done: " + success + " in " + ((System.currentTimeMillis() - startTime) / 1000) + "s");
 			return success;
 		} catch (Exception e) {
 
@@ -1197,10 +1197,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 						newLdapUserList.add(ldapUser);
 					} else {
 						log.warn("LDAP batch sync: can't create user with username::" + user + " : missing required attributes::"
-							+ ArrayUtils.toString(reqAttrs), null);
+							+ ArrayUtils.toString(reqAttrs));
 					}
 				} else {
-					log.warn(errors.get(), null);
+					log.warn(errors.get());
 				}
 			} catch (Exception e) {
 				// catch here to go on with other users on exeptions!
@@ -1499,11 +1499,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	public void doSyncSingleUser(Identity ident){
 		LdapContext ctx = bindSystem();
 		if (ctx == null) {
-			log.error("could not bind to ldap", null);
+			log.error("could not bind to ldap");
 		}		
 		String userDN = ldapDao.searchUserDNByUid(ident.getName(), ctx);
 
-		final List<Attributes> ldapUserList = new ArrayList<Attributes>();
+		final List<Attributes> ldapUserList = new ArrayList<>();
 		// TODO: use userDN instead of filter to get users attribs
 		ldapDao.searchInLdap(new LDAPVisitor() {
 			@Override
@@ -1525,7 +1525,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 	public void doSyncSingleUserWithLoginAttribute(Identity ident) {
 		LdapContext ctx = bindSystem();
 		if (ctx == null) {
-			log.error("could not bind to ldap", null);
+			log.error("could not bind to ldap");
 		}
 		
 		String ldapUserIDAttribute = syncConfiguration.getLdapUserLoginAttribute();

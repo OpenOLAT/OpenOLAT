@@ -21,11 +21,11 @@ package org.olat.core.commons.services.help.spi;
 
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.helpers.SettingsTest;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -36,7 +36,7 @@ import org.olat.core.logging.Tracing;
  */
 public class ConfluenceLinkSPITest {
 	
-	private static final OLog log = Tracing.createLoggerFor(ConfluenceLinkSPITest.class);
+	private static final Logger log = Tracing.createLoggerFor(ConfluenceLinkSPITest.class);
 	
 	@Test
 	public void getUrl() {

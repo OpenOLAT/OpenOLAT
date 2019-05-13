@@ -22,7 +22,7 @@ package org.olat.modules.qpool.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.ims.qti.QTIConstants;
@@ -37,7 +37,7 @@ import org.olat.modules.qpool.QuestionStatus;
  */
 public class ItemWrapper implements QuestionItemView {
 	
-	private static final OLog log = Tracing.createLoggerFor(ItemWrapper.class);
+	private static final Logger log = Tracing.createLoggerFor(ItemWrapper.class);
 
 	private Long key;
 	private Date creationDate;

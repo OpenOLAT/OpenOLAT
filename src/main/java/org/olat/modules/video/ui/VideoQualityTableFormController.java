@@ -40,7 +40,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.vfs.VFSContainer;
@@ -70,7 +70,7 @@ public class VideoQualityTableFormController extends FormBasicController {
 
 	private int count = 0;
 	
-	private static final OLog log = Tracing.createLoggerFor(VideoQualityTableFormController.class);
+	private static final Logger log = Tracing.createLoggerFor(VideoQualityTableFormController.class);
 
 	@Autowired
 	private VideoManager videoManager;

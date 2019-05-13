@@ -30,10 +30,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.util.CSSHelper;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -48,7 +48,7 @@ import org.olat.search.service.document.file.pdf.PdfExtractor;
  */
 public class PdfDocument extends FileDocument {
 	private static final long serialVersionUID = 6432923202585881794L;
-	private static final OLog log = Tracing.createLoggerFor(PdfDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(PdfDocument.class);
 
 	public static final String FILE_TYPE = "type.file.pdf";
 	
@@ -72,7 +72,7 @@ public class PdfDocument extends FileDocument {
 		textDocument.init(leafResourceContext,leaf);
 		textDocument.setFileType(FILE_TYPE);
 		textDocument.setCssIcon(CSSHelper.createFiletypeIconCssClassFor(leaf.getName()));
-		if (log.isDebug() ) log.debug(textDocument.toString());
+		if (log.isDebugEnabled() ) log.debug(textDocument.toString());
 		return textDocument.getLuceneDocument();
 	}
 	
@@ -89,7 +89,7 @@ public class PdfDocument extends FileDocument {
 		String hashCodeAsString = Integer.toString(hashCode);
 		String splitDirName = hashCodeAsString.substring(hashCodeAsString.length()-2);
 		String pdfTextTmpFilePath = splitDirName + File.separator + hashCodeAsString + leafResourceContext.getFilePath();
-		if (log.isDebug()) log.debug("PdfTextTmpFilePath=" + pdfTextTmpFilePath);
+		if (log.isDebugEnabled()) log.debug("PdfTextTmpFilePath=" + pdfTextTmpFilePath);
 		return pdfTextTmpFilePath;
 	}
 
@@ -118,7 +118,7 @@ public class PdfDocument extends FileDocument {
 	}
 
 	private FileContent getPdfTextFromBuffer(File pdfTextFile) throws IOException {
-		if (log.isDebug()) log.debug("readContent from text file start...");
+		if (log.isDebugEnabled()) log.debug("readContent from text file start...");
 
 		try(BufferedReader br = new BufferedReader(new FileReader(pdfTextFile));
 				LimitedContentWriter sb = new LimitedContentWriter(5000, FileDocumentFactory.getMaxFileSize())) {

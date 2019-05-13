@@ -57,7 +57,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -113,7 +113,7 @@ import org.springframework.stereotype.Service;
 @Service("repositoryManager")
 public class RepositoryManager {
 
-	private static final OLog log = Tracing.createLoggerFor(RepositoryManager.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryManager.class);
 
 	public static final int PICTURE_WIDTH = 570;
 	public static final int PICTURE_HEIGHT = (PICTURE_WIDTH / 3) * 2;
@@ -1321,7 +1321,7 @@ public class RepositoryManager {
 				}
 
 				RepositoryMailing.sendEmail(ureqIdentity, identity, re, RepositoryMailing.Type.addOwner, mailing);
-				log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
+				log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
 						+ "' to repoentry with key " + re.getKey());
 			}//else silently ignore already owner identities
 		}
@@ -1369,7 +1369,7 @@ public class RepositoryManager {
 				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 			}
 	
-			log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
+			log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
 					+ "' as owner from repositoryentry with key " + re.getKey());
 		}
 	}
@@ -1453,7 +1453,7 @@ public class RepositoryManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
+		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
 				+ "' to repositoryentry with key " + re.getKey());
 	}
 
@@ -1487,7 +1487,7 @@ public class RepositoryManager {
 			} finally {
 				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 			}
-			log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
+			log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
 					+ "' as coach from repositoryentry with key " + re.getKey());
 		}
 	}
@@ -1554,7 +1554,7 @@ public class RepositoryManager {
 		} finally {
 			ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 		}
-		log.audit("Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
+		log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " added identity '" + identity.getKey()
 				+ "' to repositoryentry with key " + re.getKey());
 	}
 
@@ -1591,7 +1591,7 @@ public class RepositoryManager {
 				ThreadLocalUserActivityLogger.setStickyActionType(actionType);
 			}
 		
-			log.audit("Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
+			log.info(Tracing.M_AUDIT, "Identity(.key):" + ureqIdentity.getKey() + " removed identity '" + identity.getKey()
 				+ "' as participant from repositoryentry with key " + re.getKey());
 		}
 	}
@@ -1643,7 +1643,7 @@ public class RepositoryManager {
 			for (Identity member : members) {
 				sb.append(member.getKey()).append(", ");
 			}
-			log.audit(sb.toString());
+			log.info(Tracing.M_AUDIT, sb.toString());
 		}
 
 		for(Identity identity:members) {

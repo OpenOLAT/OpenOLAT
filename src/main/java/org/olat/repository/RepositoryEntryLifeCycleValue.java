@@ -22,7 +22,7 @@ package org.olat.repository;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -34,7 +34,7 @@ import org.olat.core.util.StringHelper;
  */
 public class RepositoryEntryLifeCycleValue implements Comparable<RepositoryEntryLifeCycleValue> {
 	
-	private static final OLog log = Tracing.createLoggerFor(RepositoryEntryLifeCycleValue.class);
+	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryLifeCycleValue.class);
 	
 	private final int value;
 	private final RepositoryEntryLifeCycleUnit unit;

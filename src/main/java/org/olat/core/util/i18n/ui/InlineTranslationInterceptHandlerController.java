@@ -202,7 +202,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 			String key = ureq.getParameter(ARG_KEY);
 			// The argument ARG_IDENT is not used for dispatching right now
 			if (isLogDebugEnabled()) {
-				logDebug("Got event to launch inline translation tool for bundle::" + bundle + " and key::" + key, null);
+				logDebug("Got event to launch inline translation tool for bundle::" + bundle + " and key::" + key);
 			}
 			if (StringHelper.containsNonWhitespace(bundle) && StringHelper.containsNonWhitespace(key)) {
 				// Get userconfigured reference locale

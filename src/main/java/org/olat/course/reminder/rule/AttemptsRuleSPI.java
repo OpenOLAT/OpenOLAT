@@ -23,8 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
@@ -49,7 +49,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AttemptsRuleSPI implements FilterRuleSPI {
 	
-	private static final OLog log = Tracing.createLoggerFor(AttemptsRuleSPI.class);
+	private static final Logger log = Tracing.createLoggerFor(AttemptsRuleSPI.class);
 	
 	@Autowired
 	private ReminderRuleDAO helperDao;

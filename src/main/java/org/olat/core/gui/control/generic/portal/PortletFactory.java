@@ -35,7 +35,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.context.SiteContextEntryControllerCreator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -47,7 +47,7 @@ import org.olat.core.logging.Tracing;
  * @author gnaegi
  */
 public class PortletFactory {
-	private static OLog log = Tracing.createLoggerFor(PortletFactory.class);
+	private static final Logger log = Tracing.createLoggerFor(PortletFactory.class);
 	
 	private static Map<String, Portlet> portlets;
 	private static Object lockObject = new Object();

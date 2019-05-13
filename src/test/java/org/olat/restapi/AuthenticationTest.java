@@ -46,9 +46,9 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
@@ -65,7 +65,7 @@ import org.olat.test.OlatJerseyTestCase;
  */
 public class AuthenticationTest extends OlatJerseyTestCase {
 	
-	private static final OLog log = Tracing.createLoggerFor(AuthenticationTest.class);
+	private static final Logger log = Tracing.createLoggerFor(AuthenticationTest.class);
 
 	@Test
 	public void testSessionCookieLogin() throws IOException, URISyntaxException {

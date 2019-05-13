@@ -36,7 +36,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.login.LoginModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 
 public class ShibbolethMigrationForm extends FormBasicController {
-	private static final OLog log = Tracing.createLoggerFor(ShibbolethMigrationForm.class);
+	private static final Logger log = Tracing.createLoggerFor(ShibbolethMigrationForm.class);
 	
 
 	private final Authentication authentication;
@@ -75,10 +75,10 @@ public class ShibbolethMigrationForm extends FormBasicController {
 		if (!securityManager.checkCredentials(authentication, password.getValue())) {
 			if (loginModule.registerFailedLoginAttempt(login.getValue())) {
 				password.setErrorKey("smf.error.blocked", null);
-				log.audit("Too many failed login attempts for " + login.getValue() + ". Login blocked.");
+				log.info(Tracing.M_AUDIT, "Too many failed login attempts for " + login.getValue() + ". Login blocked.");
 			} else {
 				password.setErrorKey("smf.error.password", null);
-				log.audit("Invalid password in ShibbolethMigration for login: " + login.getValue());
+				log.info(Tracing.M_AUDIT, "Invalid password in ShibbolethMigration for login: " + login.getValue());
 			}
 			return false;
 		}

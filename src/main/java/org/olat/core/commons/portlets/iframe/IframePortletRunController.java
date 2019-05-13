@@ -41,7 +41,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -57,7 +57,7 @@ import org.olat.core.util.vfs.VFSContainer;
  */
 public class IframePortletRunController extends BasicController {	
 	
-	private static final OLog log = Tracing.createLoggerFor(IframePortletRunController.class);
+	private static final Logger log = Tracing.createLoggerFor(IframePortletRunController.class);
 	
 	private final VelocityContainer iframeVC;
 	private Link editLink;

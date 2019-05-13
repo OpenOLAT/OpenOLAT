@@ -123,7 +123,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 				// over an existing language or create a new language
 				File tmpJar = importFile.getUploadFile();
 				i18nManager.copyLanguagesFromJar(tmpJar, importLangKeys);
-				logAudit("Uploaded languages from jar::" + importFile.getUploadFileName(), null);
+				logAudit("Uploaded languages from jar::" + importFile.getUploadFileName());
 				showInfo("configuration.management.package.import.success", importLangKeys.toString());
 				
 			} else {
@@ -134,7 +134,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 				}
 				// Ok, contains at least one language, copy to lang pack dir
 				importFile.moveUploadFileTo(I18nModule.LANG_PACKS_DIRECTORY);
-				logAudit("Uploaded language pack::" + importFile.getUploadFileName(), null);
+				logAudit("Uploaded language pack::" + importFile.getUploadFileName());
 				
 				if (alreadyInstalledLangs.size() > 0) {
 					getWindowControl().setWarning(

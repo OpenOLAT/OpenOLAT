@@ -47,7 +47,7 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -67,7 +67,7 @@ import org.olat.repository.RepositoryManager;
  * @author Felix Jost
  */
 public class FolderNotificationsHandler implements NotificationsHandler {
-	private static final OLog log = Tracing.createLoggerFor(FolderNotificationsHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(FolderNotificationsHandler.class);
 	
 	/**
 	 * 
@@ -152,12 +152,12 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 			if("BusinessGroup".equals(p.getResName())) {
 				BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(p.getResId());
 				if(bg == null) {
-					log.info("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey());
 					NotificationsManager.getInstance().deactivate(p);
 				}
 			} else if ("CourseModule".equals(p.getResName())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					log.info("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey());
 					NotificationsManager.getInstance().deactivate(p);
 				}
 			}

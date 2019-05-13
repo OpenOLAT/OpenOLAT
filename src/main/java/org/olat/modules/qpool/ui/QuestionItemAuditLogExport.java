@@ -32,7 +32,7 @@ import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -60,7 +60,7 @@ import org.olat.user.UserManager;
  */
 public class QuestionItemAuditLogExport extends OpenXMLWorkbookResource {
 	
-	private static final OLog log = Tracing.createLoggerFor(QuestionItemAuditLogExport.class);
+	private static final Logger log = Tracing.createLoggerFor(QuestionItemAuditLogExport.class);
 	
 	private final List<QuestionItemAuditLog> auditLog;
 	private final Translator translator;

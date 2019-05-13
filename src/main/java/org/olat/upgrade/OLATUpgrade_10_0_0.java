@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.persistence.TypedQuery;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.layout.LayoutModule;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
@@ -41,6 +42,7 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.GroupImpl;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.portfolio.manager.EPMapPolicy;
@@ -64,6 +66,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_10_0_0 extends OLATUpgrade {
+	
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_10_0_0.class);
 
 	private static final String PERMISSION_READ = "read";
 	
@@ -124,9 +128,9 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_10_0_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_10_0_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_10_0_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_10_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -180,7 +184,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 					processBusinessGroup(businessGroup); 
 				}
 				counter += businessGroups.size();
-				log.audit("Business groups processed: " + businessGroups.size() + ", total processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Business groups processed: " + businessGroups.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(businessGroups.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(TASK_BUSINESS_GROUPS, true);
@@ -222,7 +226,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 					processRepositoryEntry(repoEntry);
 				}
 				counter += repoEntries.size();
-				log.audit("Repository entries processed: " + repoEntries.size() + ", total processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Repository entries processed: " + repoEntries.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(repoEntries.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(TASK_REPOENTRIES, true);
@@ -283,7 +287,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 					processRelationToRepo(businessGroup);
 				}
 				counter += businessGroups.size();
-				log.audit("Business groups relations processed: " + businessGroups.size() + ", total processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Business groups relations processed: " + businessGroups.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(businessGroups.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(TASK_REPOENTRY_TO_BUSINESSGROUP, true);
@@ -346,7 +350,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 					}
 				}
 				counter += invitations.size();
-				log.audit("Invitations processed: " + invitations.size() + ", total processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Invitations processed: " + invitations.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(invitations.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(TASK_INVITATION, true);
@@ -382,7 +386,7 @@ public class OLATUpgrade_10_0_0 extends OLATUpgrade {
 					processMap(businessGroup);
 				}
 				counter += businessGroups.size();
-				log.audit("Maps processed: " + businessGroups.size() + ", total processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Maps processed: " + businessGroups.size() + ", total processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(businessGroups.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(TASK_UPGRADE_MAP, true);

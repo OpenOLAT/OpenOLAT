@@ -30,7 +30,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
  */
 @Service("registrationModule")
 public class RegistrationModule extends AbstractSpringModule {
-	private static final OLog log = Tracing.createLoggerFor(RegistrationModule.class);
+	private static final Logger log = Tracing.createLoggerFor(RegistrationModule.class);
 	
 	@Value("${registration.enableSelfRegistration}")
 	private boolean selfRegistrationEnabled;

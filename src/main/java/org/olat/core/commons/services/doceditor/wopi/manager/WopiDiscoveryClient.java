@@ -28,7 +28,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.olat.core.commons.services.doceditor.wopi.Discovery;
 import org.olat.core.commons.services.doceditor.wopi.model.DiscoveryImpl;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +41,7 @@ import org.springframework.stereotype.Service;
 @Service
 class WopiDiscoveryClient {
 	
-	private static final OLog log = Tracing.createLoggerFor(WopiDiscoveryClient.class);
+	private static final Logger log = Tracing.createLoggerFor(WopiDiscoveryClient.class);
 	
 	private static final int TIMEOUT_5000_MILLIS = 5000;
 	private static final RequestConfig REQUEST_CONFIG = RequestConfig.custom()

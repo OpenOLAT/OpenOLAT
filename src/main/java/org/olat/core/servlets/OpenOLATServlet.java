@@ -46,7 +46,7 @@ import org.olat.core.dispatcher.mapper.MapperDispatcher;
 import org.olat.core.extensions.ExtManager;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.StringHelper;
@@ -54,15 +54,13 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.WorkThreadInformations;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.olat.core.util.i18n.I18nManager;
-import org.olat.core.util.threadlog.RequestBasedLogLevelManager;
-import org.olat.core.util.threadlog.UserBasedLogLevelManager;
 
 
 @MultipartConfig(fileSizeThreshold=10240)
 public class OpenOLATServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -2777749229549683775L;
-	private static final OLog log = Tracing.createLoggerFor(OpenOLATServlet.class);
+	private static final Logger log = Tracing.createLoggerFor(OpenOLATServlet.class);
 	
     private static final String METHOD_PROPFIND = "PROPFIND";
     private static final String METHOD_PROPPATCH = "PROPPATCH";
@@ -75,30 +73,14 @@ public class OpenOLATServlet extends HttpServlet {
 	private String legacyContext;
 	
 	private SessionStatsManager sessionStatsManager;
-	private RequestBasedLogLevelManager requestBasedLogLevelManager;
 	
 	private WebDAVDispatcher webDAVDispatcher;
 	private Map<String, Dispatcher> dispatchers;
 	
-	/**
-	 * @see javax.servlet.Servlet#init(javax.servlet.ServletConfig)
-	 */
 	@Override
 	public void init(ServletConfig servletConfig) throws ServletException {
 		super.init(servletConfig);
-		
-		requestBasedLogLevelManager = RequestBasedLogLevelManager.getInstance();
-		if (requestBasedLogLevelManager==null) {
-			log.info("init: RequestBasedLogLevelManager is not configured on this system.");
-		} else {
-			log.info("init: RequestBasedLogLevelManager is configured and will be used.");
-		}
-		if (UserBasedLogLevelManager.getInstance()==null) {
-			log.info("init: UserBasedLogLevelManager is not configured on this system.");
-		} else {
-			log.info("init: UserBasedLogLevelManager is configured and will be used.");
-		}
-		
+
 		//the servlet.init method gets called after the spring stuff and all the stuff in web.xml is done
 		log.info("Framework has started, sending event to listeners of FrameworkStartupEventChannel");
 		FrameworkStartupEventChannel.fireEvent();
@@ -149,7 +131,7 @@ public class OpenOLATServlet extends HttpServlet {
 	protected void service(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
 
-		Tracing.setUreq(req);
+		Tracing.setHttpRequest(req);
 		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
 		WorkThreadInformations.set("Serve request: " + req.getRequestURI());
 		if(sessionStatsManager != null) {
@@ -179,16 +161,13 @@ public class OpenOLATServlet extends HttpServlet {
 	        }
 			
 		} finally {
-			if (requestBasedLogLevelManager != null) {
-				requestBasedLogLevelManager.deactivateRequestBasedLogLevel();
-			}
 			if(sessionStatsManager != null) {
 				sessionStatsManager.decrementConcurrentCounter();
 			}
 			WorkThreadInformations.unset();
 			ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 			I18nManager.remove18nInfoFromThread();
-			Tracing.setUreq(null);
+			Tracing.clearHttpRequest();
 			//let it at the end
 			DBFactory.getInstance().commitAndCloseSession();
 		}
@@ -269,10 +248,6 @@ public class OpenOLATServlet extends HttpServlet {
 	 */
 	private void executeUserRequest(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-		if (requestBasedLogLevelManager != null) {
-			requestBasedLogLevelManager.activateRequestBasedLogLevel(request);
-		}
-		
 		final String dispatcherName = DispatcherModule.getFirstPath(request);
 		if(dispatcherName != null && !dispatcherName.startsWith("/webdav")) {
 			String userAgent = request.getHeader("User-Agent");

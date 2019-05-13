@@ -38,7 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.statistic.StatisticUpdateManager;
 import org.quartz.CronTrigger;
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class StatisticsAdminController extends BasicController {
 
 	/** the logging object used in this class **/
-	private static final OLog log_ = Tracing.createLoggerFor(StatisticsAdminController.class);
+	private static final Logger log_ = Tracing.createLoggerFor(StatisticsAdminController.class);
 
 	private static final String STATISTICS_FULL_RECALCULATION_TRIGGER_BUTTON = "statistics.fullrecalculation.trigger.button";
 	private static final String STATISTICS_UPDATE_TRIGGER_BUTTON = "statistics.update.trigger.button";

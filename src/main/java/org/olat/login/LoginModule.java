@@ -33,7 +33,7 @@ import java.util.List;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
@@ -55,7 +55,7 @@ import org.springframework.stereotype.Service;
 @Service("loginModule")
 public class LoginModule extends AbstractSpringModule {
 	
-	private static final OLog log = Tracing.createLoggerFor(LoginModule.class);
+	private static final Logger log = Tracing.createLoggerFor(LoginModule.class);
 	
 	private static final OrganisationRoles[] policyRoles = new OrganisationRoles[] {
 		OrganisationRoles.sysadmin, OrganisationRoles.administrator, OrganisationRoles.principal,

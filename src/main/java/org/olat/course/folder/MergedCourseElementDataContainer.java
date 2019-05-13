@@ -28,7 +28,7 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.IdentityEnvironment;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.tree.TreeVisitor;
@@ -69,7 +69,7 @@ import org.olat.repository.RepositoryManager;
  */
 public class MergedCourseElementDataContainer extends MergeSource {
 	
-	private static final OLog log = Tracing.createLoggerFor(MergedCourseElementDataContainer.class);
+	private static final Logger log = Tracing.createLoggerFor(MergedCourseElementDataContainer.class);
 	
 	private final Long courseId;
 	private boolean initialized = false;

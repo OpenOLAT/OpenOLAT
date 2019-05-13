@@ -30,12 +30,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -75,7 +75,7 @@ import uk.ac.ed.ph.jqtiplus.xmlutils.locators.ResourceLocator;
 @RunWith(Parameterized.class)
 public class AssessmentItemBuilderTest {
 	
-	private static final OLog log = Tracing.createLoggerFor(AssessmentItemBuilderTest.class);
+	private static final Logger log = Tracing.createLoggerFor(AssessmentItemBuilderTest.class);
 	
 	@Parameters
     public static Collection<Object[]> data() {

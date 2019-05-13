@@ -50,7 +50,7 @@ public class OpenOLATContainerResponseFilter implements ContainerResponseFilter 
 			throws IOException {
 		ThreadLocalUserActivityLoggerInstaller.resetUserActivityLogger();
 		I18nManager.remove18nInfoFromThread();
-		Tracing.setUreq(null);
+		Tracing.clearHttpRequest();
 		DBFactory.getInstance().commitAndCloseSession();
 	}
 }

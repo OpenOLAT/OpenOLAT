@@ -30,7 +30,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.imscp.xml.manifest.FileType;
 import org.olat.imscp.xml.manifest.ManifestMetadataType;
@@ -47,7 +47,7 @@ import org.olat.imscp.xml.manifest.ResourcesType;
  */
 public class ManifestBuilder {
 	
-	private static final OLog log = Tracing.createLoggerFor(ManifestBuilder.class);
+	private static final Logger log = Tracing.createLoggerFor(ManifestBuilder.class);
 	private static final org.olat.imscp.xml.manifest.ObjectFactory objectFactory = new org.olat.imscp.xml.manifest.ObjectFactory();
 
 	public static final String SCHEMA_LOCATIONS = "http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p2.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 http://www.imsglobal.org/xsd/imsmd_v1p2p4.xsd";

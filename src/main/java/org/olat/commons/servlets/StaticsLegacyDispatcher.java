@@ -37,7 +37,7 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -61,7 +61,7 @@ import org.olat.core.logging.Tracing;
  *             e.g. static resources which are shared by all users
  */
 public class StaticsLegacyDispatcher implements Dispatcher {
-	private static final OLog log = Tracing.createLoggerFor(StaticsLegacyDispatcher.class);
+	private static final Logger log = Tracing.createLoggerFor(StaticsLegacyDispatcher.class);
 
     /**
      * Default constructor.
@@ -89,7 +89,7 @@ public class StaticsLegacyDispatcher implements Dispatcher {
 			 * silently ignore forward errors (except in debug mode), since IE
 			 * causes tons of such messages by its double GET request
 			 */
-			if (log.isDebug()) {
+			if (log.isDebugEnabled()) {
 				log.debug("could not execute legacy statics method:" + e.toString() + ",msg:" + e.getMessage());
 			}
 		}
@@ -152,7 +152,7 @@ public class StaticsLegacyDispatcher implements Dispatcher {
         String handlerName = null;
         long start = 0;
         
-        boolean logDebug = log.isDebug();
+        boolean logDebug = log.isDebugEnabled();
         if (logDebug) start = System.currentTimeMillis();
         try {
             relPath = path.substring(1);

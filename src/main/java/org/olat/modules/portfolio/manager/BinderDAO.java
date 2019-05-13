@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -38,7 +39,6 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -75,7 +75,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class BinderDAO {
 	
-	private static final OLog log = Tracing.createLoggerFor(BinderDAO.class);
+	private static final Logger log = Tracing.createLoggerFor(BinderDAO.class);
 
 	@Autowired
 	private DB dbInstance;

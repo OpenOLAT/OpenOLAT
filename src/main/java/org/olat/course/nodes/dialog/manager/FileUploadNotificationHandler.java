@@ -43,7 +43,7 @@ import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -66,7 +66,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class FileUploadNotificationHandler implements NotificationsHandler {
-	private static final OLog log = Tracing.createLoggerFor(FileUploadNotificationHandler.class);
+	private static final Logger log = Tracing.createLoggerFor(FileUploadNotificationHandler.class);
 	private static final String CSSS_CLASS_UPLOAD_ICON = "o_dialog_icon";
 	
 	@Autowired
@@ -158,7 +158,7 @@ public class FileUploadNotificationHandler implements NotificationsHandler {
 		try {
 			if ("CourseModule".equals(p.getResName())) {
 				if(!NotificationsUpgradeHelper.checkCourse(p)) {
-					log.info("deactivating publisher with key; " + p.getKey(), null);
+					log.info("deactivating publisher with key; " + p.getKey());
 					NotificationsManager.getInstance().deactivate(p);
 					return false;
 				}

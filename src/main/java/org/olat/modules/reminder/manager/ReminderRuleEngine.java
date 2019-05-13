@@ -28,7 +28,7 @@ import java.util.Set;
 
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.reminder.FilterRuleSPI;
 import org.olat.modules.reminder.IdentitiesProviderRuleSPI;
@@ -59,7 +59,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ReminderRuleEngine {
 	
-	private static final OLog log = Tracing.createLoggerFor(ReminderRuleEngine.class);
+	private static final Logger log = Tracing.createLoggerFor(ReminderRuleEngine.class);
 	
 	public static final String BEFORE_DATE_RULE_TYPE = BeforeDateRuleSPI.class.getSimpleName();
 	public static final String DATE_RULE_TYPE = DateRuleSPI.class.getSimpleName();

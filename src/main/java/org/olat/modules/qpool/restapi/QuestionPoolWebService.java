@@ -44,7 +44,7 @@ import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.modules.qpool.QPoolService;
@@ -68,7 +68,7 @@ import org.springframework.stereotype.Component;
 @Path("qpool/items")
 public class QuestionPoolWebService {
 	
-	private static final OLog log = Tracing.createLoggerFor(QuestionPoolWebService.class);
+	private static final Logger log = Tracing.createLoggerFor(QuestionPoolWebService.class);
 	
 	@PUT
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

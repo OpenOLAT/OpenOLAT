@@ -27,9 +27,9 @@ package org.olat.search.service.document;
 
 import java.util.Iterator;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
@@ -44,7 +44,7 @@ import org.olat.search.service.indexer.repository.course.ProjectBrokerCourseNode
 public class ProjectBrokerProjectDocument extends OlatDocument {
 
 	private static final long serialVersionUID = 8087008741983757688L;
-	private static final OLog log = Tracing.createLoggerFor(ProjectBrokerProjectDocument.class);
+	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerProjectDocument.class);
 
 	//Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to search for certain documenttype and lucene have problems with '_' 
@@ -72,7 +72,7 @@ public class ProjectBrokerProjectDocument extends OlatDocument {
 		projectDocument.setParentContextType(searchResourceContext.getParentContextType());
 		projectDocument.setParentContextName(searchResourceContext.getParentContextName());
 		
-		if (log.isDebug()) log.debug(projectDocument.toString());
+		if (log.isDebugEnabled()) log.debug(projectDocument.toString());
 		return projectDocument.getLuceneDocument();
 	}
 }

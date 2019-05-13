@@ -33,6 +33,8 @@ import org.apache.lucene.document.Document;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
 import org.olat.core.logging.AssertException;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.run.BusinessGroupMainRunController;
 import org.olat.modules.wiki.Wiki;
@@ -48,6 +50,9 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author Christian Guretzki
  */
 public class GroupWikiIndexer extends AbstractHierarchicalIndexer {
+
+	private static final Logger log = Tracing.createLoggerFor(GroupWikiIndexer.class);
+	
   //Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
 	public static final String TYPE = "type.group.wiki";
@@ -60,7 +65,7 @@ public class GroupWikiIndexer extends AbstractHierarchicalIndexer {
 		BusinessGroup businessGroup = (BusinessGroup)businessObj;
 		
 		// Index Group Wiki
-		if (isLogDebugEnabled()) logDebug("Analyse Wiki for Group=" + businessGroup);
+		if (log.isDebugEnabled()) log.debug("Analyse Wiki for Group=" + businessGroup);
 		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(businessGroup);
 		if (collabTools.isToolEnabled(CollaborationTools.TOOL_WIKI) ) {
 			try {
@@ -77,10 +82,10 @@ public class GroupWikiIndexer extends AbstractHierarchicalIndexer {
 					indexWriter.addDocument(document);
 				}
 			} catch (NullPointerException nex) {
-				logWarn("NullPointerException in GroupWikiIndexer.doIndex.", nex);
+				log.warn("NullPointerException in GroupWikiIndexer.doIndex.", nex);
 			}
 		} else {
-			if (isLogDebugEnabled()) logDebug("Group=" + businessGroup + " has no Wiki.");
+			if (log.isDebugEnabled()) log.debug("Group=" + businessGroup + " has no Wiki.");
 		}
 	}
 	

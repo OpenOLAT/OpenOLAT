@@ -70,7 +70,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.AlwaysEmptyMap;
 import org.olat.core.util.CodeHelper;
@@ -97,7 +97,7 @@ import org.springframework.stereotype.Service;
 @Service("I18nManager")
 public class I18nManager {
 
-	private static final OLog log = Tracing.createLoggerFor(I18nManager.class);
+	private static final Logger log = Tracing.createLoggerFor(I18nManager.class);
 	
 	private static final String BUNDLE_INLINE_TRANSLATION_INTERCEPTOR = "org.olat.core.util.i18n.ui";
 	private static final String BUNDLE_EXCEPTION = "org.olat.core.gui.exception";
@@ -221,7 +221,7 @@ public class I18nManager {
 				properties = getProperties(overlayLocale, bundleName, resolveRecursively, recursionLevel);
 				if (properties != null) {
 					msg = properties.getProperty(key);
-//					if (log.isDebug() && msg == null) {
+//					if (log.isDebugEnabled() && msg == null) {
 //						log.debug("Key::" + key + " not found in overlay::" + I18nModule.getOverlayName() + " for bundle::" + bundleName
 //								+ " and locale::" + locale.toString(), null);
 //					}
@@ -235,7 +235,7 @@ public class I18nManager {
 			// / fallback to default language
 			if (properties == null) {
 				if (Settings.isDebuging()) {
-					log.warn(FILE_NOT_FOUND_ERROR_PREFIX + "! locale::" + locale.toString() + ", path::" + bundleName, null);
+					log.warn(FILE_NOT_FOUND_ERROR_PREFIX + "! locale::" + locale.toString() + ", path::" + bundleName);
 				}
 			} else {
 				msg = properties.getProperty(key);
@@ -245,8 +245,8 @@ public class I18nManager {
 		// The following fallback behaviour is similar to
 		// java.util.ResourceBundle
 		if (msg == null) {
-			if (log.isDebug()) {
-				log.debug("Key::" + key + " not found for bundle::" + bundleName + " and locale::" + locale.toString(), null);
+			if (log.isDebugEnabled()) {
+				log.debug("Key::" + key + " not found for bundle::" + bundleName + " and locale::" + locale.toString());
 			}
 			// Fallback on the language if the locale has a country and/or a
 			// variant
@@ -287,9 +287,9 @@ public class I18nManager {
 					Locale fallbackLocale = i18nModule.getFallbackLocale();
 					if (fallbackLocale.equals(locale)) {
 						// finish when when already in fallback locale
-						if (log.isDebug()) {
+						if (log.isDebugEnabled()) {
 							log.warn("Could not find translation for bundle::" + bundleName + " and key::" + key
-									+ " ; not even in default or fallback packages", null);
+									+ " ; not even in default or fallback packages");
 						}
 						return null;
 					} else {
@@ -673,17 +673,17 @@ public class I18nManager {
 	public void saveOrUpdateI18nItem(I18nItem i18nItem, String value) {
 		Properties properties = getPropertiesWithoutResolvingRecursively(i18nItem.getLocale(), i18nItem.getBundleName());
 		// Add logging block to find bogus save issues
-		if (log.isDebug()) {
+		if (log.isDebugEnabled()) {
 			String itemIdent = i18nItem.getLocale() + ":" + buildI18nItemIdentifyer(i18nItem.getBundleName(), i18nItem.getKey());
 			if (properties.containsKey(i18nItem.getKey())) {
 				if (StringHelper.containsNonWhitespace(value)) {
-					log.debug("Updating i18n item::" + itemIdent + " with new value::" + value, null);					
+					log.debug("Updating i18n item::" + itemIdent + " with new value::" + value);					
 				} else {
-					log.debug("Deleting i18n item::" + itemIdent + " because new value is emty", null);
+					log.debug("Deleting i18n item::" + itemIdent + " because new value is emty");
 				}
 			} else {
 				if (StringHelper.containsNonWhitespace(value)) {
-					log.debug("Creating i18n item::" + itemIdent + " with new value::" + value, null);		
+					log.debug("Creating i18n item::" + itemIdent + " with new value::" + value);		
 				}				
 			}
 		}
@@ -825,7 +825,7 @@ public class I18nManager {
 				// proceed with 2)
 				if (f.exists()) {
 					is = new FileInputStream(f);
-					if (logDebug) log.debug("loading LocalStrings from file::" + f.getAbsolutePath(), null);
+					if (logDebug) log.debug("loading LocalStrings from file::" + f.getAbsolutePath());
 				}
 			}
 			//
@@ -837,7 +837,7 @@ public class I18nManager {
 				String relPath = bundleName.replace('.', '/') + "/" + I18N_DIRNAME + "/" + fileName;
 				ClassLoader classLoader = this.getClass().getClassLoader();
 				is = classLoader.getResourceAsStream(relPath);
-				if (logDebug && is != null) log.debug("loading LocalStrings from classpath relpath::" + relPath, null);
+				if (logDebug && is != null) log.debug("loading LocalStrings from classpath relpath::" + relPath);
 			}
 			// Now load the properties from resource (file, classpath or
 			// langpacks)
@@ -975,7 +975,7 @@ public class I18nManager {
 	 */
 	public void saveOrUpdateProperties(Properties properties, Locale locale, String bundleName) {
 		String key = calcPropertiesFileKey(locale, bundleName);
-		if (log.isDebug()) log.debug("saveOrUpdateProperties for key::" + key, null);
+		if (log.isDebugEnabled()) log.debug("saveOrUpdateProperties for key::" + key);
 
 		// 1) Save file to disk
 		File baseDir = i18nModule.getPropertyFilesBaseDir(locale, bundleName);
@@ -1039,7 +1039,7 @@ public class I18nManager {
 	 */
 	public void deleteProperties(Locale locale, String bundleName) {
 		String key = calcPropertiesFileKey(locale, bundleName);
-		if (log.isDebug()) log.debug("deleteProperties for key::" + key, null);
+		if (log.isDebugEnabled()) log.debug("deleteProperties for key::" + key);
 
 		if (locale != null) { // metadata files are not in cache
 			// 1) Remove from cache first
@@ -1327,7 +1327,7 @@ public class I18nManager {
 	public static void attachI18nInfoToThread(HttpServletRequest hreq) {
 		UserSession usess = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(hreq);
 		if (threadLocalLocale == null) {
-			log.error("can't attach i18n info to thread: threadLocalLocale is null", null);
+			log.error("can't attach i18n info to thread: threadLocalLocale is null");
 		} else {
 			if (threadLocalLocale.getThreadLocale() != null) {
 				log.warn("try to attach i18n info to thread, but threadLocalLocale is not null - a thread forgot to remove it!", new Exception("attachI18nInfoToThread"));
@@ -1335,10 +1335,10 @@ public class I18nManager {
 			threadLocalLocale.setThredLocale(usess.getLocale());
 		}
 		if (threadLocalIsMarkLocalizedStringsEnabled == null) {
-			log.error("can't attach i18n info to thread: threadLocalIsMarkLocalizedStringsEnabled is null", null);
+			log.error("can't attach i18n info to thread: threadLocalIsMarkLocalizedStringsEnabled is null");
 		} else {
 			if (threadLocalIsMarkLocalizedStringsEnabled.isMarkLocalizedStringsEnabled() != null) {
-				log.warn("try to attach i18n info to thread, but threadLocalIsMarkLocalizedStringsEnabled is not null - a thread forgot to remove it!", null);
+				log.warn("try to attach i18n info to thread, but threadLocalIsMarkLocalizedStringsEnabled is not null - a thread forgot to remove it!");
 			}
 			Boolean isMarkLocalizedStringsEnabled = (Boolean) usess.getEntry(USESS_KEY_I18N_MARK_LOCALIZED_STRINGS);
 			if (isMarkLocalizedStringsEnabled != null) {
@@ -1349,7 +1349,7 @@ public class I18nManager {
 	
 	public static void updateLocaleInfoToThread(UserSession usess) {
 		if (threadLocalLocale == null) {
-			log.error("can't attach i18n info to thread: threadLocalLocale is null", null);
+			log.error("can't attach i18n info to thread: threadLocalLocale is null");
 		} else {
 			threadLocalLocale.setThredLocale(usess.getLocale());
 		}
@@ -1673,7 +1673,7 @@ public class I18nManager {
 				JarEntry jarEntry = jarEntries.nextElement();
 				String jarEntryName = jarEntry.getName();
 				// check for executables
-				if (checkForExecutables && (jarEntryName.endsWith("java") || jarEntryName.endsWith("class"))) { return new TreeSet<String>(); }
+				if (checkForExecutables && (jarEntryName.endsWith("java") || jarEntryName.endsWith("class"))) { return new TreeSet<>(); }
 				// search for core util in jar
 				if (jarEntryName.indexOf(i18nModule.getCoreFallbackBundle().replace(".", "/") + "/" + I18N_DIRNAME) != -1) {
 					// don't add overlayLocales as selectable
@@ -1682,7 +1682,7 @@ public class I18nManager {
 						String lang = jarEntryName.substring(jarEntryName.indexOf(I18nModule.LOCAL_STRINGS_FILE_PREFIX)
 								+ I18nModule.LOCAL_STRINGS_FILE_PREFIX.length(), jarEntryName.lastIndexOf("."));
 						foundLanguages.add(lang);
-						if (log.isDebug()) log.debug("Adding lang::" + lang + " from filename::" + jarEntryName + " in jar::" + jar.getName(), null);
+						if (log.isDebugEnabled()) log.debug("Adding lang::" + lang + " from filename::" + jarEntryName + " in jar::" + jar.getName());
 					}
 				}
 			}
@@ -1846,10 +1846,10 @@ public class I18nManager {
 		for (String bundleName : bundlesCopy) {
 			if (reallyDeleteIt) {
 				deleteProperties(deleteLoclae, bundleName);
-				log.debug("Deleted bundle::" + bundleName + " and lang::" + deleteLangKey, null);
+				log.debug("Deleted bundle::" + bundleName + " and lang::" + deleteLangKey);
 			} else {
 				// just log
-				log.info("Dry-run-delete of bundle::" + bundleName + " and lang::" + deleteLangKey, null);
+				log.info("Dry-run-delete of bundle::" + bundleName + " and lang::" + deleteLangKey);
 			}
 		}
 		// Now reinitialize everything
@@ -1896,12 +1896,12 @@ public class I18nManager {
 					// Write properties to jar file
 					out.putNextEntry(jarEntry);
 					propertyFile.store(out, null);
-					if (log.isDebug()) {
-						log.debug("Adding file::" + entryFileName + " + to jar", null);
+					if (log.isDebugEnabled()) {
+						log.debug("Adding file::" + entryFileName + " + to jar");
 					}
 				}
 			}
-			log.debug("Finished writing jar file::" + file.getAbsolutePath(), null);
+			log.debug("Finished writing jar file::" + file.getAbsolutePath());
 		} catch (Exception e) {
 			log.error("Could not write jar file", e);
 			return null;

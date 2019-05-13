@@ -30,7 +30,7 @@ import java.util.Set;
 
 import javax.naming.directory.Attributes;
 
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.user.UserManager;
@@ -47,7 +47,7 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  */
 public class LDAPSyncConfiguration {
 	
-	private static final OLog log = Tracing.createLoggerFor(LDAPSyncConfiguration.class);
+	private static final Logger log = Tracing.createLoggerFor(LDAPSyncConfiguration.class);
 	
 	private String ldapUserFilter;
 	private String ldapGroupFilter;

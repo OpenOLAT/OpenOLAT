@@ -552,7 +552,7 @@ public class ProfileFormController extends FormBasicController {
 		String serverpath = Settings.getServerContextPathURI();
 		String servername = ureq.getHttpReq().getServerName();
 
-		logDebug("this servername is " + servername + " and serverpath is " + serverpath, null);
+		logDebug("this servername is " + servername + " and serverpath is " + serverpath);
 		// load or create temporary key
 		Map<String, String> mailMap = new HashMap<>();
 		mailMap.put("currentEMail", currentEmail);
@@ -571,7 +571,7 @@ public class ProfileFormController extends FormBasicController {
 		// create body and subject for email
 		String link = serverpath + "/dmz/emchange/index.html?key=" + tk.getRegistrationKey() + "&language=" + ureq.getLocale().getLanguage();
 		if(Settings.isDebuging()) {
-			logInfo(link, null);
+			logInfo(link);
 		}
 		String currentEmailDisplay = userManager.getUserDisplayEmail(currentEmail, getLocale());
 		String changedEmaildisplay = userManager.getUserDisplayEmail(changedEmail, getLocale());

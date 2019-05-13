@@ -34,14 +34,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.core.logging.OLATRuntimeException;
-import org.olat.core.logging.OLog;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
  * @author rkulow
  */
 public class ParserManager implements IParser {
-	private static final OLog log = Tracing.createLoggerFor(ParserManager.class);
+	private static final Logger log = Tracing.createLoggerFor(ParserManager.class);
 	private static String PROPERTIES_FILENAME = "org/olat/ims/qti/editor/beecom/parser/qtiparser.properties";
 	private static final Map<String,String> parserMap = new ConcurrentHashMap<>();
 	private static String PARSER_DEFAULT = "defaultparser";
@@ -89,7 +89,7 @@ public class ParserManager implements IParser {
 			} else {
 				parserClassName = tmpName;
 			}
-			if(log.isDebug()){
+			if(log.isDebugEnabled()){
 				log.debug("ELEMENTNAME:" + name + "PARSERNAME" + parserClassName);
 			}
 			Class<?> parserClass = this.getClass().getClassLoader().loadClass(parserClassName);

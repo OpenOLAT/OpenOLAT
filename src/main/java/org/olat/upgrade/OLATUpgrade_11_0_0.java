@@ -43,6 +43,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -53,6 +54,7 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.LoggingObject;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -132,6 +134,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class OLATUpgrade_11_0_0 extends OLATUpgrade {
+
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_11_0_0.class);
 	
 	private static final int BATCH_SIZE = 50;
 	private static final String ASSESSMENT_DATAS = "ASSESSMENT PROPERTY TABLE";
@@ -189,9 +193,9 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.audit("Finished OLATUpgrade_11_0_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_11_0_0 successfully!");
 		} else {
-			log.audit("OLATUpgrade_11_0_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_11_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}
@@ -269,7 +273,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					}
 				}
 				counter += courses.size();
-				log.audit("Efficiency statement data migration processed: " + courses.size() + ", total courses processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Efficiency statement data migration processed: " + courses.size() + ", total courses processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(courses.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(EFFICIENCY_STATEMENT_DATAS, allOk);
@@ -298,7 +302,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					}
 				}
 				counter += courses.size();
-				log.audit("Assessment data migration processed: " + courses.size() + ", total courses processed (" + counter + ")");
+				log.info(Tracing.M_AUDIT, "Assessment data migration processed: " + courses.size() + ", total courses processed (" + counter + ")");
 				dbInstance.commitAndCloseSession();
 			} while(courses.size() == BATCH_SIZE);
 			uhd.setBooleanDataValue(ASSESSMENT_DATAS, allOk);
@@ -625,14 +629,14 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 	private boolean compareProperty(String dataType, Serializable value, AssessmentEntryImpl nodeAssessment, RepositoryEntry courseEntry, String nodeIdent, Long identityKey) {
 		boolean allOk = true;
 		if(nodeAssessment == null) {
-			log.audit("ERROR nodeAssessment not found: " + getErrorAt(courseEntry, nodeIdent, identityKey));
+			log.info(Tracing.M_AUDIT, "ERROR nodeAssessment not found: " + getErrorAt(courseEntry, nodeIdent, identityKey));
 			allOk = false;
 		} else if(ATTEMPTS.equals(dataType)) {
 			if((value == null && nodeAssessment.getAttempts() == null) ||
 					(value != null && nodeAssessment.getAttempts() != null && value.equals(nodeAssessment.getAttempts()))) {
 				//ok
 			} else {
-				log.audit("ERROR number of attempts: " + value + " / " + nodeAssessment.getAttempts() + getErrorAt(courseEntry, nodeIdent, identityKey));
+				log.info(Tracing.M_AUDIT, "ERROR number of attempts: " + value + " / " + nodeAssessment.getAttempts() + getErrorAt(courseEntry, nodeIdent, identityKey));
 				allOk &= false;
 			}
 		} else if(PASSED.equals(dataType)) {
@@ -640,7 +644,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					(value != null && nodeAssessment.getPassed() != null && value.equals(nodeAssessment.getPassed()))) {
 				//ok
 			} else {
-				log.audit("ERROR passed: " + value + " / " + nodeAssessment.getPassed() + getErrorAt(courseEntry, nodeIdent, identityKey));
+				log.info(Tracing.M_AUDIT, "ERROR passed: " + value + " / " + nodeAssessment.getPassed() + getErrorAt(courseEntry, nodeIdent, identityKey));
 				allOk &= false;
 			}
 		} else if(FULLY_ASSESSED.equals(dataType)) {
@@ -648,7 +652,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					(value != null && nodeAssessment.getFullyAssessed() != null && value.equals(nodeAssessment.getFullyAssessed()))) {
 				//ok
 			} else {
-				log.audit("ERROR fullyAssessed: " + value + " / " + nodeAssessment.getFullyAssessed() + getErrorAt(courseEntry, nodeIdent, identityKey));
+				log.info(Tracing.M_AUDIT, "ERROR fullyAssessed: " + value + " / " + nodeAssessment.getFullyAssessed() + getErrorAt(courseEntry, nodeIdent, identityKey));
 				allOk &= false;
 			}
 		} else if(SCORE.equals(dataType)) {
@@ -656,7 +660,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					(value instanceof Float && nodeAssessment.getScore() != null && Math.abs(((Float)value).floatValue() - nodeAssessment.getScore().floatValue()) < 0.00001f)) {
 				//ok
 			} else {
-				log.audit("ERROR score: " + value + " / " + nodeAssessment.getScore() + getErrorAt(courseEntry, nodeIdent, identityKey));
+				log.info(Tracing.M_AUDIT, "ERROR score: " + value + " / " + nodeAssessment.getScore() + getErrorAt(courseEntry, nodeIdent, identityKey));
 				allOk &= false;
 			}
 		}
@@ -687,7 +691,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					(attempts != null && entry.getAttempts() != null && attempts.equals(entry.getAttempts()))) {
 				//ok
 			} else {
-				log.audit("ERROR number of attempts: " + attempts + " / " + entry.getAttempts() + getErrorAt(courseEntry, node));
+				log.info(Tracing.M_AUDIT, "ERROR number of attempts: " + attempts + " / " + entry.getAttempts() + getErrorAt(courseEntry, node));
 				allOk &= false;
 			}
 			
@@ -696,7 +700,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					(passed != null && entry.getPassed() != null && passed.equals(entry.getPassed()))) {
 				//ok
 			} else {
-				log.audit("ERROR passed: " + passed + " / " + entry.getPassed() + getErrorAt(courseEntry, node));
+				log.info(Tracing.M_AUDIT, "ERROR passed: " + passed + " / " + entry.getPassed() + getErrorAt(courseEntry, node));
 				allOk &= false;
 			}
 
@@ -705,7 +709,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					(fullyAssessed != null && entry.getFullyAssessed() != null && fullyAssessed.equals(entry.getFullyAssessed()))) {
 				//ok
 			} else {
-				log.audit("ERROR fullyAssessed: " + fullyAssessed + " / " + entry.getFullyAssessed() + getErrorAt(courseEntry, node));
+				log.info(Tracing.M_AUDIT, "ERROR fullyAssessed: " + fullyAssessed + " / " + entry.getFullyAssessed() + getErrorAt(courseEntry, node));
 				allOk &= false;
 			}
 
@@ -714,7 +718,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 					(score != null && entry.getScore() != null && Math.abs(score.floatValue() - entry.getScore().floatValue()) < 0.00001f)) {
 				//ok
 			} else {
-				log.audit("ERROR score: " + score + " / " + entry.getScore() + getErrorAt(courseEntry, node));
+				log.info(Tracing.M_AUDIT, "ERROR score: " + score + " / " + entry.getScore() + getErrorAt(courseEntry, node));
 				allOk &= false;
 			}
 		}
