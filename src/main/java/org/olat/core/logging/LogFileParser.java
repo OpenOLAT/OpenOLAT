@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -54,8 +55,8 @@ public class LogFileParser {
 	private static String logfilepathBase;
 	private static String filename;
 	private static final int linecount = 3; // we always get 4 lines
-	private static final String matchError = ".*" + Tracing.PREFIX + Tracing.ERROR + ".*";
-	private static final String matchWarn = ".*" + Tracing.PREFIX + Tracing.WARN + ".*" ;
+	private static final String matchError = ".*" + Level.ERROR + ".*";
+	private static final String matchWarn = ".*" + Level.WARN + ".*" ;
 
 	/**
 	 * [spring]

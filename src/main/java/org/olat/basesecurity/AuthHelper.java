@@ -310,6 +310,7 @@ public class AuthHelper {
 		// init the UserSession for the new User
 		// we can set the identity and finish the log in process
 		usess.setIdentity(identity);
+		Tracing.setIdentity(identity);
 		setRolesFor(identity, usess);
 
 		// check if loginDenied or maxSession (only for non-admin)

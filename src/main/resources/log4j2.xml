@@ -2,22 +2,13 @@
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">
 			<PatternLayout
-				pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
 			
 			<!-- This pattern mimic the previous OLog formatting (but not exactly)
 			<PatternLayout
-				pattern="%d{HH:mm:ss.SSS} [%t] %-5level %marker %c{1} ^%%^ I%X{ref}-J%sn ^%%^ %logger{36} ^%%^ %X{identity} ^%%^ %X{ip} ^%%^ %X{referer} ^%%^ %X{userAgent} ^%%^ %msg%ex{full,separator( )}%n" />
+				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %marker %c{1} ^%%^ N${sys:nodeId}-R%X{ref}-M%sn ^%%^ %logger{36} ^%%^ %X{identityKey} ^%%^ %X{ip} ^%%^ %X{referer} ^%%^ %X{userAgent} ^%%^ %msg%ex{full,separator( )}%n" />
 			-->
 		</Console>
-		<RollingFile name="RollingFile" fileName="olat.log"
-			filePattern="$${date:yyyy-MM}/oo-%d{MM-dd-yyyy}-%i.log.gz">
-			<PatternLayout>
-				<Pattern>%X{nodeId} %d %p [%c{1.}] [%t] %m%n</Pattern>
-			</PatternLayout>
-			<Policies>
-				<TimeBasedTriggeringPolicy interval="1" />
-			</Policies>
-		</RollingFile>
 	</Appenders>
 	<Loggers>
 		<Logger name="org.apache.commons.httpclient" additivity="false" level="warn">
@@ -39,8 +30,8 @@
 		<Logger name="org.hibernate.type.descriptor.sql.BasicBinder" additivity="false" level="fatal">
 			<AppenderRef ref="Console" />
 		</Logger>
-		<Root level="info">
+		<AsyncRoot level="info">
 			<AppenderRef ref="Console" />
-		</Root>
+		</AsyncRoot>
 	</Loggers>
 </Configuration>

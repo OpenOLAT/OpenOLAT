@@ -72,7 +72,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	private static String userDataRoot;
 	private static String defaultCharset;
 	private static boolean enforceUtf8Filesystem;
-	private static Map<String, String> mailConfig = new HashMap<String, String>(6);
+	private static Map<String, String> mailConfig = new HashMap<>(6);
 	private static long timeOfServerStartup = System.currentTimeMillis();
 	
 	private static String mathJaxCdn;
@@ -146,6 +146,7 @@ public class WebappHelper implements Initializable, Destroyable, ServletContextA
 	 */
 	public void setNodeId(int nodeId) {
 		WebappHelper.nodeId = nodeId;
+		System.setProperty("nodeId", Integer.toString(nodeId));
 	}
 
 	/**

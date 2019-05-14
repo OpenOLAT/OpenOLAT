@@ -112,7 +112,7 @@ public class OpenOLATServlet extends HttpServlet {
 			cookieConfig.setSecure(true);
 			cookieConfig.setHttpOnly(true);
 		}
-		
+
 		//preload extensions
 		ExtManager.getInstance().getExtensions();
 		AbstractSpringModule.printStats();
@@ -133,12 +133,12 @@ public class OpenOLATServlet extends HttpServlet {
 
 		Tracing.setHttpRequest(req);
 		ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(req);
-		WorkThreadInformations.set("Serve request: " + req.getRequestURI());
+		WorkThreadInformations.set("Serve request: ".concat(req.getRequestURI()));
 		if(sessionStatsManager != null) {
 			sessionStatsManager.incrementRequest();
 			sessionStatsManager.incrementConcurrentCounter();
 		}
-
+		
 		try{
 			
 			final String method = req.getMethod();

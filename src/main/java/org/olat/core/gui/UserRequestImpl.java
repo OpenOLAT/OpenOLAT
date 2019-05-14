@@ -168,6 +168,7 @@ public class UserRequestImpl implements UserRequest {
 	/**
 	 * @return HttpServletResponse
 	 */
+	@Override
 	public HttpServletResponse getHttpResp() {
 		return httpResp;
 	}
@@ -177,6 +178,7 @@ public class UserRequestImpl implements UserRequest {
 	 * 
 	 * @return Locale
 	 */
+	@Override
 	public Locale getLocale() {
 		return getUserSession().getLocale();
 	}
@@ -186,6 +188,7 @@ public class UserRequestImpl implements UserRequest {
 	 * 
 	 * @return Subject
 	 */
+	@Override
 	public Identity getIdentity() {
 		return getUserSession().getIdentity();
 	}
@@ -230,11 +233,11 @@ public class UserRequestImpl implements UserRequest {
 			appendFormattedKeyValue(sb, "HTTP Method", hreq.getMethod());
 			appendFormattedKeyValue(sb, "Scheme", hreq.getScheme());
 			appendFormattedKeyValue(sb, "Server Name", hreq.getServerName());
-			appendFormattedKeyValue(sb, "Server Port", new Integer(hreq.getServerPort()));
+			appendFormattedKeyValue(sb, "Server Port", Integer.valueOf(hreq.getServerPort()));
 			appendFormattedKeyValue(sb, "Remote Addr", hreq.getRemoteAddr());
 			appendFormattedKeyValue(sb, "Remote Host", hreq.getRemoteHost());
 			appendFormattedKeyValue(sb, "Character Encoding", hreq.getCharacterEncoding());
-			appendFormattedKeyValue(sb, "Content Length", new Integer(hreq.getContentLength()));
+			appendFormattedKeyValue(sb, "Content Length", Integer.valueOf(hreq.getContentLength()));
 			appendFormattedKeyValue(sb, "Content Type", hreq.getContentType());
 			appendFormattedKeyValue(sb, "Locale", hreq.getLocale());
 			appendFormattedKeyValue(sb, "QueryString", hreq.getQueryString());
@@ -327,12 +330,6 @@ public class UserRequestImpl implements UserRequest {
 			// decode the "mode" token (ajax or standard)
 			mode = Integer.parseInt(st.nextToken());
 
-			/*
-			// business control path for bookmarking
-			// for parsing, it is easiest to have at least one char -> substring
-			businessControlPath = st.nextToken().substring(1);
-			*/
-			
 			// decode remaining module specific key/value params
 			while (st.hasMoreTokens()) { // hasMoreToken would return false if there
 				// isn't any token at all

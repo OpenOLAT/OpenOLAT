@@ -167,6 +167,7 @@ public class RESTDispatcher implements Dispatcher {
 		UserSession usess = userSessionManager.getUserSession(request);
 		if(usess != null) {
 			ThreadLocalUserActivityLoggerInstaller.initUserActivityLogger(request);
+			Tracing.setUserSession(usess);
 		}
 		UserRequest ureq = null;
 		try {
@@ -191,7 +192,7 @@ public class RESTDispatcher implements Dispatcher {
 		if (xOlatToken != null) {
 			// Lookup identity that is associated with this token
 			Identity restIdentity = restSecurityBean.getIdentity(xOlatToken);			
-			// 
+			Tracing.setIdentity(restIdentity);
 			if(log.isDebugEnabled()) {
 				if (restIdentity == null)
 					log.debug("Found SSO token " + RestSecurityHelper.SEC_TOKEN + " in url, but token is not bound to an identity");
