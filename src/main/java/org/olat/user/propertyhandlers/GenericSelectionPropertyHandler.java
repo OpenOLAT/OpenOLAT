@@ -260,10 +260,8 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 		}
 		if (formItem instanceof SingleSelection) {
 			SingleSelection sel = (SingleSelection)formItem;
-			if(sel.isOneSelected()) {
+			if(sel.isOneSelected() && !NO_SEL_KEY.equals(sel.getSelectedKey())) {
 				return sel.getSelectedKey();
-			} else {
-				return null;
 			}
 		}
 		return null;

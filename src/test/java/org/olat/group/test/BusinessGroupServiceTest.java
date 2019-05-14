@@ -1228,6 +1228,64 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Assert.assertTrue(contactList.contains(adminIdentity));
 	}
 	
+	@Test
+	public void allowToLeavingBusinessGroup_subAndMoreOrganisation() {
+		// a special
+		String uuid = UUID.randomUUID().toString();
+		Organisation organisation = organisationService.getDefaultOrganisation();
+		Organisation subOrganisation1 = organisationService
+				.createOrganisation("Sub-organisation 1", uuid, "", organisation, null);
+		Organisation subOrganisation1_1 = organisationService
+				.createOrganisation("Sub-organisation 1.1", uuid, "", subOrganisation1, null);
+		Organisation subOrganisation2 = organisationService
+				.createOrganisation("Sub-organisation 2", uuid, "", organisation, null);
+		
+		// create an administrator
+		String adminName = "admin" + uuid;
+		User adminUser = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
+		Identity adminIdentity = securityManager.createAndPersistIdentityAndUser(adminName, null, adminUser, null, adminName);
+		organisationService.addMember(subOrganisation1, adminIdentity, OrganisationRoles.user);
+		organisationService.addMember(subOrganisation1, adminIdentity, OrganisationRoles.administrator);
+		// create a second administrator in the second sub organization
+		String adminName2 = "admin2" + uuid;
+		User adminUser2 = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
+		Identity adminIdentity2 = securityManager.createAndPersistIdentityAndUser(adminName2, null, adminUser2, null, adminName2);
+		organisationService.addMember(subOrganisation2, adminIdentity2, OrganisationRoles.user);
+		organisationService.addMember(subOrganisation2, adminIdentity2, OrganisationRoles.administrator);
+		// create a third administrator in the organization under the first sub organization
+		String adminName3 = "admin3" + uuid;
+		User adminUser3 = userManager.createUser("Admin", "Istrator", uuid + "admin@openolat.org");
+		Identity adminIdentity3 = securityManager.createAndPersistIdentityAndUser(adminName3, null, adminUser3, null, adminName3);
+		organisationService.addMember(subOrganisation1, adminIdentity3, OrganisationRoles.user);
+		organisationService.addMember(subOrganisation1_1, adminIdentity3, OrganisationRoles.administrator);
+		//create a user
+		String userName = "user" + uuid;
+		User user = userManager.createUser("Us", "er", uuid + "user@openolat.org");
+		Identity userIdentity = securityManager.createAndPersistIdentityAndUser(userName, null, user, null, userName);
+		organisationService.addMember(subOrganisation1, userIdentity, OrganisationRoles.user);
+		dbInstance.commitAndCloseSession();
+		
+		BusinessGroup group = businessGroupService.createBusinessGroup(null, "Leaving group", "But you cannot leave :-(", new Integer(0), new Integer(2), false, false, null);
+		businessGroupRelationDao.addRole(userIdentity, group, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//set to not allowed to leave
+		group = businessGroupService.updateAllowToLeaveBusinessGroup(group, false);
+		dbInstance.commitAndCloseSession();
+
+		//check the authors group leaving option
+		LeaveOption optionToLeave = businessGroupService.isAllowToLeaveBusinessGroup(userIdentity, group);
+		Assert.assertNotNull(optionToLeave);
+		Assert.assertFalse(optionToLeave.isAllowToLeave());
+		ContactList contacts = optionToLeave.getContacts();
+		Collection<Identity> contactList = contacts.getIdentiEmails().values();
+		Assert.assertNotNull(contactList);
+		Assert.assertFalse(contactList.isEmpty());
+		Assert.assertTrue(contactList.contains(adminIdentity));
+		Assert.assertFalse(contactList.contains(adminIdentity2));
+		Assert.assertFalse(contactList.contains(adminIdentity3));
+	}
+	
 	@Ignore @Test
 	public void parallelRemoveParticipants() {
 		mailModule.setInterSystem(true);
