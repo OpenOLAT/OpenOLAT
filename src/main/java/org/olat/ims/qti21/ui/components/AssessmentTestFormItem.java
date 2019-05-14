@@ -103,13 +103,25 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 	public void setMaxScoreAssessmentItem(boolean maxScoreAssessmentItem) {
 		component.setMaxScoreAssessmentItem(maxScoreAssessmentItem);
 	}
-	
+
+	@Override
 	public boolean isCorrectionHelp() {
 		return component.isCorrectionHelp();
 	}
 
+	@Override
 	public void setCorrectionHelp(boolean correctionHelp) {
 		component.setCorrectionHelp(correctionHelp);
+	}
+
+	@Override
+	public boolean isCorrectionSolution() {
+		return component.isCorrectionSolution();
+	}
+
+	@Override
+	public void setCorrectionSolution(boolean correctionSolution) {
+		component.setCorrectionSolution(correctionSolution);
 	}
 
 	public ResolvedAssessmentTest getResolvedAssessmentTest() {

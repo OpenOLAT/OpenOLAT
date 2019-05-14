@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -53,6 +54,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.TextOrVariable;
 import uk.ac.ed.ph.jqtiplus.node.expression.operator.Shape;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.item.CorrectResponse;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.AssociateInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ChoiceInteraction;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.ExtendedTextInteraction;
@@ -79,7 +81,10 @@ import uk.ac.ed.ph.jqtiplus.node.item.interaction.choice.SimpleChoice;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.content.Gap;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.AssociableHotspot;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.graphic.HotspotChoice;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.MapEntry;
+import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.Mapping;
 import uk.ac.ed.ph.jqtiplus.node.item.response.declaration.ResponseDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.shared.FieldValue;
 import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentItem;
 import uk.ac.ed.ph.jqtiplus.state.ItemSessionState;
 import uk.ac.ed.ph.jqtiplus.types.Identifier;
@@ -93,6 +98,7 @@ import uk.ac.ed.ph.jqtiplus.value.NullValue;
 import uk.ac.ed.ph.jqtiplus.value.Orientation;
 import uk.ac.ed.ph.jqtiplus.value.RecordValue;
 import uk.ac.ed.ph.jqtiplus.value.SingleValue;
+import uk.ac.ed.ph.jqtiplus.value.StringValue;
 import uk.ac.ed.ph.jqtiplus.value.Value;
 
 /**
@@ -609,6 +615,52 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 		stringuifiedResponses = CorrectResponsesUtil.stripResponse(stringuifiedResponses);
 		boolean correct = correctAnswers.match(stringuifiedResponses);
 		return Boolean.valueOf(correct);
+	}
+	
+	public String renderTextEntryAlternatives(TextEntryInteraction textEntry) {
+		LinkedHashSet<String> alternatives = new LinkedHashSet<>();
+		ResponseDeclaration responseDeclaration = assessmentItem.getResponseDeclaration(textEntry.getResponseIdentifier());
+		if(responseDeclaration != null &&responseDeclaration.hasBaseType(BaseType.STRING) && responseDeclaration.hasCardinality(Cardinality.SINGLE)) {
+			CorrectResponse correctResponse = responseDeclaration.getCorrectResponse();
+			if(correctResponse != null && correctResponse.getFieldValues() != null) {
+				for(FieldValue fValue:correctResponse.getFieldValues()) {
+					SingleValue aValue = fValue.getSingleValue();
+					if(aValue instanceof StringValue) {
+						alternatives.add(((StringValue)aValue).stringValue());
+					}
+				}
+			}
+
+			Mapping mapping = responseDeclaration.getMapping();
+			if(mapping != null) {
+				for(MapEntry mapEntry:mapping.getMapEntries()) {
+					SingleValue sValue = mapEntry.getMapKey();
+					if(sValue instanceof StringValue) {
+						alternatives.add(((StringValue)sValue).stringValue());
+					}
+				}
+			}
+			
+			// if there is a correct answer, remove the first one
+			if(correctResponse != null && correctResponse.getFieldValues() != null
+					&& !correctResponse.getFieldValues().isEmpty() && !alternatives.isEmpty()) {
+				alternatives.remove(alternatives.iterator().next());
+			}
+			
+		}
+		
+		String separator = ", ";
+		// Don't use , as a separator on punctuation exercise
+		if(alternatives.contains(",") || alternatives.contains(" ") || alternatives.contains(".")) {
+			separator = " \u007C ";
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		for(String alternative:alternatives) {
+			if(sb.length() > 0) sb.append(separator);
+			sb.append(alternative);
+		}
+		return sb.toString();
 	}
 	
 	public String renderClassAttr(BodyElement block) {
