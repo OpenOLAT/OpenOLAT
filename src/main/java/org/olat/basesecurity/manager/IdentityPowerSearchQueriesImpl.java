@@ -32,16 +32,19 @@ import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.AuthenticationImpl;
 import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityPowerSearchQueries;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -60,7 +63,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	
 	@Override
 	public int countIdentitiesByPowerSearch(SearchIdentityParams params) {
-		StringBuilder sb = new StringBuilder(5000);
+		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select count(ident.key) from org.olat.core.id.Identity as ident ")
 		  .append(" inner join ident.user as user ");
 		Number count = createIdentitiesByPowerQuery(params, null, sb, Number.class).getSingleResult();
@@ -69,7 +72,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 
 	@Override
 	public List<Identity> getIdentitiesByPowerSearch(SearchIdentityParams params, int firstResult, int maxResults) {
-		StringBuilder sb = new StringBuilder(5000);
+		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select distinct ident from org.olat.core.id.Identity as ident ")
 		  .append(" inner join fetch ident.user as user ");
 		TypedQuery<Identity> dbq = createIdentitiesByPowerQuery(params, null, sb, Identity.class);
@@ -86,7 +89,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 	public List<IdentityPropertiesRow> getIdentitiesByPowerSearch(SearchIdentityParams params,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale, SortKey orderBy, int firstResult, int maxResults) {
 
-		StringBuilder sb = new StringBuilder(5000);
+		QueryBuilder sb = new QueryBuilder(5000);
 		sb.append("select")
 		  .append(" ident.id as ident_id,")
 		  .append(" ident.name as ident_name,")
@@ -128,14 +131,14 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return rows;
 	}
 	
-	private void writeUserProperties(String user, StringBuilder sb, List<UserPropertyHandler> userPropertyHandlers) {
+	private void writeUserProperties(String user, QueryBuilder sb, List<UserPropertyHandler> userPropertyHandlers) {
 		for(UserPropertyHandler handler:userPropertyHandlers) {
 			sb.append(" ").append(user).append(".").append(handler.getName()).append(" as ")
 			  .append("ident_user_").append(handler.getDatabaseColumnName()).append(",");
 		}	
 	}
 
-	private <U> TypedQuery<U> createIdentitiesByPowerQuery(SearchIdentityParams params, SortKey orderBy, StringBuilder sb, Class<U> resultClass) {
+	private <U> TypedQuery<U> createIdentitiesByPowerQuery(SearchIdentityParams params, SortKey orderBy, QueryBuilder sb, Class<U> resultClass) {
 		if (hasWhereClause(params)) {
 			sb.append(" where ");
 			boolean needsAnd = createUserPropertiesQueryPart(params, sb);
@@ -166,7 +169,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				|| StringHelper.containsNonWhitespace(params.getIdAndExternalIds());
 	}
 	
-	private boolean createQueryPart(SearchIdentityParams params, StringBuilder sb, boolean needsAnd) {	
+	private boolean createQueryPart(SearchIdentityParams params, QueryBuilder sb, boolean needsAnd) {	
 		// authors and co-authors is essentially an OR
 		if(params.isAuthorAndCoAuthor()) {
 			needsAnd = checkAnd(sb, needsAnd);
@@ -220,6 +223,24 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" not exists (select bgroup from businessgroup bgroup, bgroupmember as me")
 			  .append("   where me.group.key=bgroup.baseGroup.key and me.identity.key=ident.key")
+			  .append(" )");
+		}
+		
+		if(params.isWithoutResources()) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" not exists (select v.key from repositoryentry v")
+			  .append("   inner join v.groups as relGroup")
+			  .append("   inner join relGroup.group as baseGroup")
+			  .append("   inner join baseGroup.members as membership")
+			  .append("   where membership.identity.key=ident.key and membership.role ").in(GroupRoles.owner, GroupRoles.coach, GroupRoles.participant)
+			  .append("   and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed())
+			  .append(" )");
+		}
+		
+		if(params.isWithoutEfficiencyStatements()) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" not exists (select eff.key from effstatement eff")
+			  .append("   where eff.identity.key=ident.key")
 			  .append(" )");
 		}
 		
@@ -280,7 +301,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return needsAnd;
 	}
 	
-	private boolean createAuthenticationProviderQueryPart(SearchIdentityParams params, StringBuilder sb, boolean needsAnd) {	
+	private boolean createAuthenticationProviderQueryPart(SearchIdentityParams params, QueryBuilder sb, boolean needsAnd) {	
 		// append query for authentication providers
 		if (params.hasAuthProviders()) {
 			boolean hasNull = false;
@@ -314,7 +335,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return needsAnd;
 	}
 	
-	public boolean createUserPropertiesQueryPart(SearchIdentityParams params, StringBuilder sb) {	
+	public boolean createUserPropertiesQueryPart(SearchIdentityParams params, QueryBuilder sb) {	
 		boolean needsAnd = false;
 		boolean needsUserPropertiesJoin = false;
 		
@@ -402,7 +423,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return needsAnd;
 	}
 	
-	private boolean createDatesQueryPart(SearchIdentityParams params, StringBuilder sb, boolean needsAnd) {		
+	private boolean createDatesQueryPart(SearchIdentityParams params, QueryBuilder sb, boolean needsAnd) {		
 		// append query for creation date restrictions
 		if (params.getCreatedAfter() != null) {
 			needsAnd = checkAnd(sb, needsAnd);
@@ -423,7 +444,7 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		return needsAnd;
 	}
 	
-	private void orderBy(StringBuilder sb, SortKey orderBy) {
+	private void orderBy(QueryBuilder sb, SortKey orderBy) {
 		if(orderBy == null) return;
 		
 		switch(orderBy.getKey()) {
@@ -551,12 +572,12 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		}
 	}
 	
-	private boolean checkAnd(StringBuilder sb, boolean needsAnd) {
+	private boolean checkAnd(QueryBuilder sb, boolean needsAnd) {
 		if (needsAnd) sb.append(" and ");
 		return true;
 	}
 
-	private boolean checkIntersectionInUserProperties(StringBuilder sb, boolean needsJoin, boolean userPropertiesAsIntersectionSearch) {
+	private boolean checkIntersectionInUserProperties(QueryBuilder sb, boolean needsJoin, boolean userPropertiesAsIntersectionSearch) {
 		if (needsJoin) 	{
 			if (userPropertiesAsIntersectionSearch) {
 				sb.append(" and ");								

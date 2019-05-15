@@ -33,7 +33,6 @@ import java.util.Map;
 
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.SearchIdentityParams;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
 import org.olat.core.gui.UserRequest;
@@ -79,6 +78,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private MultipleSelectionElement roles;
 	private MultipleSelectionElement organisations;
 	private MultipleSelectionElement status;
+	private MultipleSelectionElement extraSearch;
 	private SelectionElement auth;
 	private DateChooser beforeDate;
 	private DateChooser afterDate;
@@ -95,6 +95,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private String[] organisationValues;
 	private String[] authKeys;
 	private String[] authValues;
+	private String[] extraSearchKeys;
+	private String[] extraSearchValues;
 
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
@@ -105,6 +107,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	private LoginModule loginModule;
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private WebDAVModule webDAVModule;
 	@Autowired
 	private OAuthLoginModule oauthLoginModule;
 	
@@ -140,6 +144,9 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				translate("rightsForm.status.login_denied")
 		};
 		
+		extraSearchKeys = new String[] { "no-resources", "no-eff-statements" };
+		extraSearchValues = new String[] { translate("no.resource"), translate("no.eff.statement") };
+		
 		List<String> organisationKeyList = new ArrayList<>();
 		List<String> organisationValueList = new ArrayList<>();
 		for(Organisation organisation:manageableOrganisations) {
@@ -153,19 +160,16 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		// convention is that a translation key "search.form.constraint.auth." +
 		// providerName
 		// must exist. the element is stored using the name "auth." + providerName
-		List <String>authKeyList = new ArrayList<>();
-		List <String>authValueList = new ArrayList<>();
-		
+		List<String>authKeyList = new ArrayList<>();
+		List<String>authValueList = new ArrayList<>();
 		Collection<AuthenticationProvider> providers = loginModule.getAuthenticationProviders();
 		for (AuthenticationProvider provider:providers) {
 			if (provider.isEnabled()) {
 				authKeyList.add(provider.getName());
-				authValueList.add(translate(
-						"search.form.constraint.auth." +provider.getName()
-				));
+				authValueList.add(translate("search.form.constraint.auth." +provider.getName()));
 			}
 		}
-		if(CoreSpringFactory.getImpl(WebDAVModule.class).isEnabled()) {
+		if(webDAVModule.isEnabled()) {
 			authKeyList.add(WebDAVAuthManager.PROVIDER_WEBDAV);
 			authValueList.add(translate("search.form.constraint.auth.WEBDAV"));
 		}
@@ -173,11 +177,9 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		// add additional no authentication element
 		authKeyList.add("noAuth");
 		authValueList.add(translate("search.form.constraint.auth.none"));
-		
-		authKeys   = authKeyList.toArray(new String[authKeyList.size()]);
+		authKeys = authKeyList.toArray(new String[authKeyList.size()]);
 		authValues = authValueList.toArray(new String[authValueList.size()]);
 		
-
 		initForm(ureq);
 	}
 	
@@ -187,7 +189,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 	public SearchIdentityParams getSearchIdentityParams() {
 		// get user attributes from form
 		String idVal = getStringValue("id");
-		idVal = (idVal.equals("") ? null : idVal);
+		idVal = idVal.equals("") ? null : idVal;
 
 		String loginVal = getStringValue("login");
 		// when searching for deleted users, add wildcard to match with backup prefix
@@ -195,7 +197,7 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		if (statusList.contains(Identity.STATUS_DELETED)) {
 			loginVal = "*" + loginVal;
 		}
-		loginVal = (loginVal.equals("") ? null : loginVal);
+		loginVal = loginVal.equals("") ? null : loginVal;
 
 		// get user fields from form
 		// build user fields search map
@@ -228,6 +230,8 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		params.setOrganisations(getOrganisations());
 		params.setExactStatusList(statusList);
 		params.setIdAndExternalIds(idVal);
+		params.setWithoutResources(isNoResources());
+		params.setWithoutEfficiencyStatements(isNoEfficiencyStatements());
 		return params;
 	}
 
@@ -300,6 +304,14 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 		return statusList;
 	}
 	
+	protected boolean isNoResources() {
+		return extraSearch.getSelectedKeys().contains("no-resources");
+	}
+	
+	protected boolean isNoEfficiencyStatements() {
+		return extraSearch.getSelectedKeys().contains("no-eff-statements");
+	}
+
 	protected String[] getAuthProviders () {
 		List<String> apl = new ArrayList<>();
 		for (int i=0; i<authKeys.length; i++) {
@@ -396,15 +408,17 @@ public class UsermanagerUserSearchForm extends FormBasicController {
 				roleKeys.toArray(new String[roleKeys.size()]), roleValues.toArray(new String[roleValues.size()]));
 
 		uifactory.addSpacerElement("space2", formLayout, false);
-		auth = uifactory.addCheckboxesVertical("auth", "search.form.title.authentications", formLayout, authKeys, authValues, 1);
+		auth = uifactory.addCheckboxesVertical("auth", "search.form.title.authentications", formLayout, authKeys, authValues, 2);
 		
 		uifactory.addSpacerElement("space3", formLayout, false);
-		status = uifactory.addCheckboxesVertical("status", "search.form.title.status", formLayout, statusKeys, statusValues, 1);
+		status = uifactory.addCheckboxesVertical("status", "search.form.title.status", formLayout, statusKeys, statusValues, 2);
 		status.select(statusKeys[0], true);	
 		status.select(statusKeys[1], true);	
 		status.select(statusKeys[2], true);	
 		status.select(statusKeys[3], true);	
 		
+		extraSearch = uifactory.addCheckboxesVertical("extra.search", null, formLayout, extraSearchKeys, extraSearchValues, 2);
+
 		uifactory.addSpacerElement("space4", formLayout, false);
 		afterDate  = uifactory.addDateChooser("search.form.afterDate", null, formLayout);
 		afterDate.setValidDateCheck("error.search.form.no.valid.datechooser");

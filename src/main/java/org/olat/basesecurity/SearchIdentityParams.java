@@ -56,6 +56,8 @@ public class SearchIdentityParams {
 	private Collection<Long> identityKeys;
 	private Boolean managed;
 	private boolean withoutBusinessGroup;
+	private boolean withoutResources;
+	private boolean withoutEfficiencyStatements;
 	
 	private List<Organisation> organisationParents;
 	private List<OrganisationRef> organisations;
@@ -341,5 +343,21 @@ public class SearchIdentityParams {
 
 	public void setWithoutBusinessGroup(boolean withoutBusinessGroup) {
 		this.withoutBusinessGroup = withoutBusinessGroup;
+	}
+
+	public boolean isWithoutResources() {
+		return withoutResources;
+	}
+
+	public void setWithoutResources(boolean withoutResources) {
+		this.withoutResources = withoutResources;
+	}
+
+	public boolean isWithoutEfficiencyStatements() {
+		return withoutEfficiencyStatements;
+	}
+
+	public void setWithoutEfficiencyStatements(boolean withoutEfficiencyStatements) {
+		this.withoutEfficiencyStatements = withoutEfficiencyStatements;
 	}
 }
