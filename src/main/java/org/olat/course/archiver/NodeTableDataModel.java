@@ -48,6 +48,11 @@ public class NodeTableDataModel extends DefaultFlexiTableDataModel<AssessmentNod
     }
 
     @Override
+	public boolean isSelectable(int row) {
+		return getObject(row).isSelectable();
+	}
+
+	@Override
     public Object getValueAt(int row, int col) {
     	AssessmentNodeData nodeData = getObject(row);
     	switch (NodeCols.values()[col]) {
