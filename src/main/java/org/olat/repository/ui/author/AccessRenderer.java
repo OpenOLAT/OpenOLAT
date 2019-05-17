@@ -19,8 +19,10 @@
  */
 package org.olat.repository.ui.author;
 
+import java.io.IOException;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.components.table.CustomCellRenderer;
@@ -28,6 +30,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryEntry;
@@ -42,6 +45,8 @@ import org.olat.repository.RepositoryService;
  *
  */
 public class AccessRenderer implements FlexiCellRenderer, CustomCellRenderer {
+
+	private static final Logger log = Tracing.createLoggerFor(AccessRenderer.class);
 	
 	private final Translator translator;
 	
@@ -68,6 +73,16 @@ public class AccessRenderer implements FlexiCellRenderer, CustomCellRenderer {
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		// use the FlexiCellRenderer method
 		render(renderer, sb, val, -1, null, null, null);
+	}
+	
+	public String renderEntryStatus(RepositoryEntry re) {
+		try(StringOutput sb = new StringOutput(32)) {
+			render(sb, re.getEntryStatus());
+			return sb.toString();
+		} catch(IOException e) {
+			log.error("",e);
+			return "";
+		}
 	}
 
 	public void render(StringOutput sb, RepositoryEntryStatusEnum status) {

@@ -111,6 +111,6 @@ public class CurriculumServiceTest extends OlatTestCase {
 		Assert.assertTrue(membership.isParticipant());
 		Assert.assertFalse(membership.isCoach());
 		Assert.assertFalse(membership.isRepositoryEntryOwner());
-		Assert.assertFalse(membership.isCurriculumManager());
+		Assert.assertFalse(membership.isCurriculumElementOwner());
 	}
 }

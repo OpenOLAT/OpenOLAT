@@ -39,6 +39,7 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.DB;
@@ -797,6 +798,22 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
+	public boolean hasCurriculumElementRole(IdentityRef identity, String role) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select el.key from curriculumelement el")
+		  .append(" inner join el.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role=:role");
+		List<Long> has = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", role)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return has != null && !has.isEmpty() && has.get(0) != null;
+	}
+	
 	public List<Identity> getMembers(List<CurriculumElementRef> elements, String... roles) {
 		if(elements == null || elements.isEmpty()) return new ArrayList<>();
 		
@@ -870,8 +887,8 @@ public class CurriculumElementDAO {
 			CurriculumElementMembershipImpl membership = memberships
 					.computeIfAbsent(key, k -> new CurriculumElementMembershipImpl(k.getIdentityKey(), k.getCurriculumElementKey()));
 			
-			if(CurriculumRoles.curriculummanager.name().equals(role)) {
-				membership.setCurriculumManager(true);
+			if(CurriculumRoles.curriculumelementowner.name().equals(role)) {
+				membership.setCurriculumElementOwner(true);
 			} else if(CurriculumRoles.owner.name().equals(role)) {
 				membership.setRepositoryEntryOwner(true);
 			} else if(CurriculumRoles.coach.name().equals(role)) {

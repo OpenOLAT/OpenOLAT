@@ -46,6 +46,6 @@ public class CurriculumManagerAndOwnerSecurityCallback implements SiteSecurityCa
 		
 		Roles roles = usess.getRoles();
 		return roles != null && (roles.isAdministrator() || roles.isPrincipal() || roles.isCurriculumManager()
-				|| curriculumService.isCurriculumManagerOrOwner(ureq.getIdentity()));
+				|| curriculumService.isCurriculumOwnerUptoEntryOwner(ureq.getIdentity()));
 	}
 }

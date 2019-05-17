@@ -163,7 +163,7 @@ public class CurriculumComposerController extends FormBasicController implements
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(secCallback.canManagerCurriculumElementUsers()) {
+		if(secCallback.canManagerCurriculumElementsUsers()) {
 			if(managed && isAllowedToOverrideManaged(ureq)) {
 				overrideLink = uifactory.addFormLink("override.member", formLayout, Link.BUTTON);
 				overrideLink.setIconLeftCSS("o_icon o_icon-fw o_icon_refresh");
@@ -205,7 +205,7 @@ public class CurriculumComposerController extends FormBasicController implements
 		zoomColumn.setExportable(false);
 		zoomColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(zoomColumn);
-		if(secCallback.canEditCurriculumElement()) {
+		if(secCallback.canEditCurriculumElements()) {
 			DefaultFlexiColumnModel toolsColumn = new DefaultFlexiColumnModel(ElementCols.tools);
 			toolsColumn.setExportable(false);
 			toolsColumn.setAlwaysVisible(true);
@@ -299,8 +299,12 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private CurriculumElementRow forgeRow(CurriculumElementInfos element) {
-		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
-		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		FormLink toolsLink = null;
+		boolean tooled = secCallback.canEditCurriculumTree() || secCallback.canEditCurriculumElement(element.getCurriculumElement());
+		if(tooled) {
+			toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
+			toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
+		}
 		
 		FormLink resourcesLink = null;
 		if(element.getNumOfResources() > 0) {
@@ -309,7 +313,9 @@ public class CurriculumComposerController extends FormBasicController implements
 		CurriculumElementRow row = new CurriculumElementRow(element.getCurriculumElement(), element.getNumOfResources(),
 				element.getNumOfParticipants(), element.getNumOfCoaches(), element.getNumOfOwners(),
 				toolsLink, resourcesLink);
-		toolsLink.setUserObject(row);
+		if(toolsLink != null) {
+			toolsLink.setUserObject(row);
+		}
 		if(resourcesLink != null) {
 			resourcesLink.setUserObject(row);
 		}
@@ -535,7 +541,7 @@ public class CurriculumComposerController extends FormBasicController implements
 			showWarning("warning.curriculum.element.deleted");
 		} else {
 			List<CurriculumElement> elementsToMove = Collections.singletonList(element);
-			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), elementsToMove, curriculum);
+			moveElementCtrl = new MoveCurriculumElementController(ureq, getWindowControl(), elementsToMove, curriculum, secCallback);
 			listenTo(moveElementCtrl);
 			
 			String title = translate("move.element.title", new String[] { StringHelper.escapeHtml(row.getDisplayName() )});
@@ -694,22 +700,21 @@ public class CurriculumComposerController extends FormBasicController implements
 			this.row = row;
 			
 			mainVC = createVelocityContainer("tools");
-			
+
 			List<String> links = new ArrayList<>(4);
-			
-			//edit
-			editLink = addLink("edit", "o_icon_edit", links);
-			if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
-				moveLink = addLink("move.element", "o_icon_move", links);
-			}
-			if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
-				newLink = addLink("add.element.under", "o_icon_levels", links);
-			}
-			copyLink = addLink("copy.element", "o_icon_copy", links);
-			
-			if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.delete)) {
-				links.add("-");
-				deleteLink = addLink("delete", "o_icon_delete_item", links);
+			if(secCallback.canEditCurriculumElement(element)) {
+				editLink = addLink("edit", "o_icon_edit", links);
+				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.move)) {
+						moveLink = addLink("move.element", "o_icon_move", links);
+				}
+				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.addChildren)) {
+						newLink = addLink("add.element.under", "o_icon_levels", links);
+				}
+				copyLink = addLink("copy.element", "o_icon_copy", links);
+				if(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.delete)) {
+					links.add("-");
+					deleteLink = addLink("delete", "o_icon_delete_item", links);
+				}
 			}
 			mainVC.contextPut("links", links);
 			

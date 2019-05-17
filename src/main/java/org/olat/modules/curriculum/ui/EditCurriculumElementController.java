@@ -149,9 +149,11 @@ public class EditCurriculumElementController extends FormBasicController {
 			uifactory.addStaticTextElement("curriculum.element.external.id", externalId, formLayout);
 		}
 		
+		boolean canEdit = element == null ? true : secCallback.canEditCurriculumElement(element);
+		
 		String identifier = element == null ? "" : element.getIdentifier();
 		identifierEl = uifactory.addTextElement("identifier", "curriculum.element.identifier", 255, identifier, formLayout);
-		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && secCallback.canEditCurriculumElement());
+		identifierEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.identifier) && canEdit);
 		identifierEl.setMandatory(true);
 		if(identifierEl.isEnabled() && !StringHelper.containsNonWhitespace(identifier)) {
 			identifierEl.setFocus(true);
@@ -159,14 +161,14 @@ public class EditCurriculumElementController extends FormBasicController {
 
 		String displayName = element == null ? "" : element.getDisplayName();
 		displayNameEl = uifactory.addTextElement("displayName", "curriculum.element.displayName", 255, displayName, formLayout);
-		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && secCallback.canEditCurriculumElement());
+		displayNameEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.displayName) && canEdit);
 		displayNameEl.setMandatory(true);
 		
 		String[] statusValues = new String[] {
 			translate("status.active"), translate("status.inactive"), translate("status.deleted")
 		};
 		statusEl = uifactory.addRadiosHorizontal("status", "curriculum.element.status", formLayout, statusKey, statusValues);
-		statusEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.status) && secCallback.canEditCurriculumElement() );
+		statusEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.status) && canEdit);
 		if(element == null || element.getElementStatus() == null) {
 			statusEl.select(CurriculumElementStatus.active.name(), true);
 		} else {
@@ -183,7 +185,7 @@ public class EditCurriculumElementController extends FormBasicController {
 			typeValues[i+1] = types.get(i).getDisplayName();
 		}
 		curriculumElementTypeEl = uifactory.addDropdownSingleselect("type", "curriculum.element.type", formLayout, typeKeys, typeValues, null);
-		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type) && secCallback.canEditCurriculumElement());
+		curriculumElementTypeEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.type) && canEdit);
 		curriculumElementTypeEl.addActionListener(FormEvent.ONCHANGE);
 		boolean typeFound = false;
 		CurriculumElementType elementType = element == null ? null : element.getType();
@@ -202,12 +204,12 @@ public class EditCurriculumElementController extends FormBasicController {
 		}
 		
 		calendarsEnabledEl = uifactory.addRadiosHorizontal("type.calendars.enabled", formLayout, new String[0], new String[0]);
-		calendarsEnabledEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.calendars) && secCallback.canEditCurriculumElement());
+		calendarsEnabledEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.calendars) && canEdit);
 		CurriculumCalendars calendarsEnabled =  element == null ? CurriculumCalendars.inherited : element.getCalendars();
 		updateCalendarsEnabled(calendarsEnabled, elementType);
 		
 		lecturesEnabledEl = uifactory.addRadiosHorizontal("type.lectures.enabled", formLayout, new String[0], new String[0]);
-		lecturesEnabledEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.lectures) && secCallback.canEditCurriculumElement());
+		lecturesEnabledEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.lectures) && canEdit);
 		CurriculumLectures lecturesEnabled =  element == null ? CurriculumLectures.inherited : element.getLectures();
 		updateLecturesEnabled(lecturesEnabled, elementType);
 		
@@ -223,22 +225,22 @@ public class EditCurriculumElementController extends FormBasicController {
 		
 		Date begin = element == null ? null : element.getBeginDate();
 		beginEl = uifactory.addDateChooser("start", "curriculum.element.begin", begin, formLayout);
-		beginEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates) && secCallback.canEditCurriculumElement());
+		beginEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates) && canEdit);
 
 		Date end = element == null ? null : element.getEndDate();
 		endEl = uifactory.addDateChooser("end", "curriculum.element.end", end, formLayout);
-		endEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates) && secCallback.canEditCurriculumElement());
+		endEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.dates) && canEdit);
 		endEl.setDefaultValue(beginEl);
 		
 		String description = element == null ? "" : element.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("curriculum.description", "curriculum.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
-		descriptionEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.description) && secCallback.canEditCurriculumElement());
+		descriptionEl.setEnabled(!CurriculumElementManagedFlag.isManaged(element, CurriculumElementManagedFlag.description) && canEdit);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
-		if(secCallback.canEditCurriculumElement()) {
+		if(canEdit) {
 			uifactory.addFormSubmitButton("save", buttonsCont);
 		}
 	}

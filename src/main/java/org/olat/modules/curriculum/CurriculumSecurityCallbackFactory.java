@@ -19,6 +19,11 @@
  */
 package org.olat.modules.curriculum;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.olat.core.id.Roles;
 
 /**
@@ -37,24 +42,28 @@ public class CurriculumSecurityCallbackFactory {
 	 * @return A security callback without any administration permissions.
 	 */
 	public static final CurriculumSecurityCallback createDefaultCallback() {
-		return new DefaultCurriculumSecurityCallback(false);
+		return new DefaultCurriculumSecurityCallback(false, Collections.emptyList());
 	}
 	
 	public static final CurriculumSecurityCallback createCallback(Roles roles) {
 		boolean admin = roles.isCurriculumManager() || roles.isAdministrator();
-		return new DefaultCurriculumSecurityCallback(admin);
+		return new DefaultCurriculumSecurityCallback(admin, Collections.emptyList());
 	}
 	
-	public static final CurriculumSecurityCallback createCallback(boolean canManage) {
-		return new DefaultCurriculumSecurityCallback(canManage);
+	public static final CurriculumSecurityCallback createCallback(boolean canManage, List<CurriculumElementRef> ownedRefs) {
+		return new DefaultCurriculumSecurityCallback(canManage, ownedRefs);
 	}
 	
 	private static class DefaultCurriculumSecurityCallback implements CurriculumSecurityCallback {
 		
 		private final boolean admin;
+		private final Set<Long> ownedElementKeys;
 		
-		public DefaultCurriculumSecurityCallback(boolean admin) {
+		public DefaultCurriculumSecurityCallback(boolean admin, List<CurriculumElementRef> ownedElementRefs) {
 			this.admin = admin;
+			ownedElementKeys = ownedElementRefs.stream()
+					.map(CurriculumElementRef::getKey)
+					.collect(Collectors.toSet());
 		}
 
 		@Override
@@ -78,18 +87,41 @@ public class CurriculumSecurityCallbackFactory {
 		}
 
 		@Override
-		public boolean canEditCurriculumElement() {
+		public boolean canEditCurriculumElements() {
+			return admin || !ownedElementKeys.isEmpty();
+		}
+		
+		@Override
+		public boolean canEditCurriculumElement(CurriculumElement element) {
+			if(element == null) return false;
+			if(admin) return true;
+			
+			for(CurriculumElement el=element ; el != null; el=el.getParent()) {
+				if(ownedElementKeys.contains(el.getKey())) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public boolean canEditCurriculumTree() {
 			return admin;
 		}
 
 		@Override
-		public boolean canManagerCurriculumElementUsers() {
+		public boolean canManagerCurriculumElementsUsers() {
 			return admin;
 		}
 
 		@Override
-		public boolean canManagerCurriculumElementResources() {
-			return admin;
+		public boolean canManagerCurriculumElementUsers(CurriculumElement element) {
+			return element != null &&  (admin || ownedElementKeys.contains(element.getKey()));
+		}
+
+		@Override
+		public boolean canManagerCurriculumElementResources(CurriculumElement element) {
+			return element != null &&  (admin || ownedElementKeys.contains(element.getKey()));
 		}
 
 		@Override

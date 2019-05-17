@@ -120,7 +120,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!membersManaged && secCallback.canManagerCurriculumElementUsers()) {
+		if(!membersManaged && secCallback.canManagerCurriculumElementUsers(curriculumElement)) {
 			addMemberButton = uifactory.addFormLink("add.member", formLayout, Link.BUTTON);
 			addMemberButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 			addMemberButton.setIconRightCSS("o_icon o_icon_caret");
@@ -266,7 +266,11 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		removeAsListenerAndDispose(roleListCtrl);
 		
 		String title = translate("add.member");
-		roleListCtrl = new RoleListController(ureq, getWindowControl(), CurriculumRoles.values());
+		CurriculumRoles[] roles = new CurriculumRoles[] {
+				CurriculumRoles.curriculumelementowner,
+				CurriculumRoles.owner, CurriculumRoles.coach, CurriculumRoles.participant
+		};
+		roleListCtrl = new RoleListController(ureq, getWindowControl(), roles);
 		listenTo(roleListCtrl);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), roleListCtrl.getInitialComponent(), addMemberButton, title, true, null);

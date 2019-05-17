@@ -248,7 +248,7 @@ public class PortfolioConfigForm extends FormBasicController {
 		
 		searchController = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[]{ EPTemplateMapResource.TYPE_NAME, BinderTemplateResource.TYPE_NAME},
-				translate("select.map2"), false, true, false, false);			
+				translate("select.map2"), false, true, false, false, false);			
 		listenTo(searchController);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), searchController.getInitialComponent(), true, translate("select.map"));

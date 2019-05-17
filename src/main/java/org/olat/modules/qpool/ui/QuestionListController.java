@@ -872,7 +872,7 @@ public class QuestionListController extends AbstractItemListController implement
 			allowed = new String[]{ ImsQTI21Resource.TYPE_NAME };
 		}
 		importTestCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, allowed,
-				null, translate("import.repository"), false, false, false, true, Can.copyable);
+				null, translate("import.repository"), false, false, false, false, true, Can.copyable);
 		listenTo(importTestCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

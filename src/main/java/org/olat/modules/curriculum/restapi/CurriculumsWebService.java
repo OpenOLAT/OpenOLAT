@@ -96,7 +96,7 @@ public class CurriculumsWebService {
 	}
 	
 	/**
-	 * Return the curriculums an administrative user is allowed to see.
+	 * Return the curriculums a manager user is allowed to see.
 	 * 
 	 * @response.representation.200.qname {http://www.example.com}curriculumVO
 	 * @response.representation.200.mediaType application/xml, application/json
@@ -346,9 +346,9 @@ public class CurriculumsWebService {
 	 * @return It returns an array of <code>UserVO</code>
 	 */
 	@GET
-	@Path("{curriculumKey}/curriculummanagers")
+	@Path("{curriculumKey}/curriculumowners")
 	public Response getCurriculumManagers(@PathParam("curriculumKey") Long curriculumKey, @Context HttpServletRequest httpRequest) {
-		return getMembers(curriculumKey, CurriculumRoles.curriculummanager, httpRequest);
+		return getMembers(curriculumKey, CurriculumRoles.curriculumowner, httpRequest);
 	}
 
 	private Response getMembers(Long curriculumKey, CurriculumRoles role, HttpServletRequest httpRequest) {
@@ -379,10 +379,10 @@ public class CurriculumsWebService {
 	 * @return Nothing
 	 */
 	@PUT
-	@Path("{curriculumKey}/curriculummanagers/{identityKey}")
-	public Response putCurriculumManager(@PathParam("curriculumKey") Long curriculumKey,
+	@Path("{curriculumKey}/curriculumowners/{identityKey}")
+	public Response putCurriculumOwner(@PathParam("curriculumKey") Long curriculumKey,
 			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
-		return putMember(curriculumKey, identityKey, CurriculumRoles.curriculummanager, httpRequest);
+		return putMember(curriculumKey, identityKey, CurriculumRoles.curriculumowner, httpRequest);
 	}
 	
 	private Response putMember(Long curriculumKey, Long identityKey, CurriculumRoles role, HttpServletRequest httpRequest) {
@@ -413,10 +413,10 @@ public class CurriculumsWebService {
 	 * @return Nothing
 	 */
 	@DELETE
-	@Path("{curriculumKey}/curriculummanagers/{identityKey}")
+	@Path("{curriculumKey}/curriculumowners/{identityKey}")
 	public Response deleteCurriculumManager(@PathParam("curriculumKey") Long curriculumKey,
 			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
-		return deleteMember(curriculumKey, identityKey, CurriculumRoles.curriculummanager, httpRequest);
+		return deleteMember(curriculumKey, identityKey, CurriculumRoles.curriculumowner, httpRequest);
 	}
 	
 	private Response deleteMember(Long curriculumKey, Long identityKey, CurriculumRoles role, HttpServletRequest httpRequest) {

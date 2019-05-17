@@ -24,14 +24,25 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.manager.VFSRepositoryServiceImpl;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.manager.CurriculumDAO;
+import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.library.LibraryModule;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
@@ -53,9 +64,16 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 	private static final String MOVE_REPO_IMAGES = "MOVE REPO IMAGES";
 	private static final String MIGRATE_FILE_METADATA = "MIGRATE FILE METADATA";
 	private static final String MIGRATE_LIBRARY_CONFIGURATION = "MIGRATE LIBRARY CONFIGURATION";
+	private static final String MIGRATE_CURRICULUM_ROLES = "MIGRATE CURRICULUM ROLES";
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private GroupDAO groupDao;
+	@Autowired
+	private CurriculumDAO curriculumDao;
+	@Autowired
+	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
 	private LibraryModule libraryModule;
 	@Autowired
@@ -91,6 +109,7 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 		allOk &= migrateLibrary(upgradeManager, uhd);
 		allOk &= migrateRepositoryImages(upgradeManager, uhd);
 		allOk &= migrateMetadata(upgradeManager, uhd);// need to be the last
+		allOk &= migrateCurriculumRoles(upgradeManager, uhd);// need to be the last
 
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
@@ -108,6 +127,56 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 			vfsModule.setMigrated(true);
 		}
 		return super.doNewSystemInit();
+	}
+	
+	private boolean migrateCurriculumRoles(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
+		boolean allOk = true;
+		if (!uhd.getBooleanDataValue(MIGRATE_CURRICULUM_ROLES)) {
+			try {
+				migrateCurriculumsRoles();
+			} catch (Exception e) {
+				log.error("", e);
+				allOk = false;
+			}
+			
+			uhd.setBooleanDataValue(MIGRATE_CURRICULUM_ROLES, allOk);
+			upgradeManager.setUpgradesHistory(uhd, VERSION);
+		}
+		return allOk;
+	}
+	
+	private void migrateCurriculumsRoles() {
+		List<Curriculum> curriculums = curriculumDao.loadAllCurriculums();
+		for(Curriculum curriculum:curriculums) {
+			Group group = ((CurriculumImpl)curriculum).getGroup();
+			List<Identity> managers = groupDao.getMembers(group, CurriculumRoles.curriculummanager.name());
+			for(Identity manager:managers) {
+				groupDao.removeMembership(group, manager, CurriculumRoles.curriculummanager.name());
+				groupDao.addMembershipOneWay(group, manager, CurriculumRoles.curriculumowner.name());
+			}
+			dbInstance.commitAndCloseSession();
+			migrateCurriculumElementsRoles(curriculum);
+			dbInstance.commitAndCloseSession();
+		}
+	}
+	
+	private void migrateCurriculumElementsRoles(Curriculum curriculum) {
+		List<CurriculumElement> elements = curriculumElementDao.loadElements(curriculum, CurriculumElementStatus.values());
+		for(CurriculumElement element:elements) {
+			Group group = element.getGroup();
+			List<Identity> managers = groupDao.getMembers(group, CurriculumRoles.curriculummanager.name());
+			for(Identity manager:managers) {
+				groupDao.removeMembership(group, manager, CurriculumRoles.curriculummanager.name());
+				groupDao.addMembershipOneWay(group, manager, CurriculumRoles.curriculumowner.name());
+			}
+			
+			List<Identity> owners = groupDao.getMembers(group, CurriculumRoles.curriculumowner.name());
+			for(Identity owner:owners) {
+				groupDao.removeMembership(group, owner, CurriculumRoles.curriculumelementowner.name());
+				groupDao.addMembershipOneWay(group, owner, CurriculumRoles.curriculumelementowner.name());
+			}
+			dbInstance.commitAndCloseSession();
+		}
 	}
 	
 	private boolean migrateLibrary(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
@@ -148,16 +217,18 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 				
 				File repositoryHome = new File(FolderConfig.getCanonicalRepositoryHome());
 				File[] images = repositoryHome.listFiles(new ImageFilter());
-				for(File image:images) {
-					String name = image.getName();
-					int index = name.lastIndexOf('.');
-					String resourceId = name.substring(0, index);
-					if(StringHelper.isLong(resourceId)) {
-						migrateRepositoryImage(image, Long.valueOf(resourceId));
-					}
-					if(counter++ % 50 == 0) {
-						log.info("Images of lear resources moved: " + counter);
-						dbInstance.commitAndCloseSession();
+				if(images != null && images.length > 0) {
+					for(File image:images) {
+						String name = image.getName();
+						int index = name.lastIndexOf('.');
+						String resourceId = name.substring(0, index);
+						if(StringHelper.isLong(resourceId)) {
+							migrateRepositoryImage(image, Long.valueOf(resourceId));
+						}
+						if(counter++ % 50 == 0) {
+							log.info("Images of lear resources moved: " + counter);
+							dbInstance.commitAndCloseSession();
+						}
 					}
 				}
 			} catch (Exception e) {

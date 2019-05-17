@@ -34,7 +34,7 @@ import org.olat.core.id.OrganisationRef;
 public class CurriculumSearchParameters {
 	
 	private String searchString;
-	private Identity ownerIdentity;
+	private Identity elementOwner;
 	private Identity managerIdentity;
 	private List<? extends OrganisationRef> organisations;
 
@@ -57,19 +57,29 @@ public class CurriculumSearchParameters {
 		this.searchString = searchString;
 	}
 
-	public Identity getManagerIdentity() {
+	public Identity getCurriculumAdmin() {
 		return managerIdentity;
 	}
 
-	public void setManagerIdentity(Identity managerIdentity) {
+	/**
+	 * Set for curriculum owners and managers
+	 * 
+	 * @param managerIdentity
+	 */
+	public void setCurriculumAdmin(Identity managerIdentity) {
 		this.managerIdentity = managerIdentity;
 	}
 
-	public Identity getOwnerIdentity() {
-		return ownerIdentity;
+	public Identity getElementOwner() {
+		return elementOwner;
 	}
 
-	public void setOwnerIdentity(Identity ownerIdentity) {
-		this.ownerIdentity = ownerIdentity;
+	/**
+	 * Set for repository entry owners and curriculum elements owners
+	 * 
+	 * @param elementOwner
+	 */
+	public void setElementOwner(Identity elementOwner) {
+		this.elementOwner = elementOwner;
 	}
 }

@@ -37,7 +37,7 @@ public interface CurriculumElementMembership {
 	
 	public boolean isParticipant();
 	
-	public boolean isCurriculumManager();
+	public boolean isCurriculumElementOwner();
 	
 	/**
 	 * @return true if the identity has at least one role on the curriculum element

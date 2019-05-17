@@ -59,7 +59,7 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
 		Curriculum curriculum = curriculumService.createCurriculum("CUR-1", "Curriculum 1", "Short desc.", null);
 		dbInstance.commitAndCloseSession();
-		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculumowner);
 		dbInstance.commitAndCloseSession();
 		
 		// get memberships
@@ -67,7 +67,7 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		List<CurriculumMember> members = memberQueries.getMembers(curriculum, params);
 		Assert.assertNotNull(members);
 		Assert.assertEquals(1, members.size());
-		Assert.assertEquals(CurriculumRoles.curriculummanager.name(), members.get(0).getRole());
+		Assert.assertEquals(CurriculumRoles.curriculumowner.name(), members.get(0).getRole());
 		Assert.assertEquals(manager, members.get(0).getIdentity());	
 	}
 	
@@ -77,7 +77,7 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", CurriculumElementStatus.active,
 				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculumelementowner);
 		dbInstance.commitAndCloseSession();
 		
 		SearchMemberParameters params = new SearchMemberParameters();
@@ -86,7 +86,7 @@ public class CurriculumMemberQueriesTest extends OlatTestCase {
 		Assert.assertEquals(1, members.size());
 		CurriculumMember member = members.get(0);
 		Assert.assertEquals(supervisor, member.getIdentity());
-		Assert.assertEquals(CurriculumRoles.curriculummanager.name(), member.getRole());
+		Assert.assertEquals(CurriculumRoles.curriculumelementowner.name(), member.getRole());
 	}
 
 }

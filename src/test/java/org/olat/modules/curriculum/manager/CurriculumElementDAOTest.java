@@ -781,7 +781,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-4", "Curriculum for element", "Curriculum", null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-4", "4. Element", CurriculumElementStatus.active,
 				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculumelementowner);
 		dbInstance.commitAndCloseSession();
 		
 		List<CurriculumElementMembership> members = curriculumElementDao.getMembershipInfos(null, Collections.singletonList(element), supervisor);
@@ -789,7 +789,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(supervisor.getKey(), members.get(0).getIdentityKey());
 		Assert.assertEquals(element.getKey(), members.get(0).getCurriculumElementKey());
-		Assert.assertTrue(members.get(0).isCurriculumManager());
+		Assert.assertTrue(members.get(0).isCurriculumElementOwner());
 		Assert.assertFalse(members.get(0).isRepositoryEntryOwner());
 		Assert.assertFalse(members.get(0).isCoach());
 		Assert.assertFalse(members.get(0).isParticipant());
@@ -801,7 +801,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Curriculum curriculum = curriculumService.createCurriculum("cur-for-el-5", "Curriculum for element", "Curriculum", null);
 		CurriculumElement element = curriculumService.createCurriculumElement("Element-5", "5. Element", CurriculumElementStatus.active,
 				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
-		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(element, supervisor, CurriculumRoles.curriculumelementowner);
 		dbInstance.commitAndCloseSession();
 		
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
@@ -810,7 +810,7 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertEquals(1, members.size());
 		Assert.assertEquals(supervisor.getKey(), members.get(0).getIdentityKey());
 		Assert.assertEquals(element.getKey(), members.get(0).getCurriculumElementKey());
-		Assert.assertTrue(members.get(0).isCurriculumManager());
+		Assert.assertTrue(members.get(0).isCurriculumElementOwner());
 		Assert.assertFalse(members.get(0).isRepositoryEntryOwner());
 		Assert.assertFalse(members.get(0).isCoach());
 		Assert.assertFalse(members.get(0).isParticipant());

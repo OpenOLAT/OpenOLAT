@@ -263,7 +263,7 @@ public class CurriculumUserManagementController extends FormBasicController {
 		removeAsListenerAndDispose(roleListCtrl);
 		
 		String title = translate("add.member");
-		roleListCtrl = new RoleListController(ureq, getWindowControl(), new CurriculumRoles[] { CurriculumRoles.curriculummanager });
+		roleListCtrl = new RoleListController(ureq, getWindowControl(), new CurriculumRoles[] { CurriculumRoles.curriculumowner });
 		listenTo(roleListCtrl);
 		
 		calloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(), roleListCtrl.getInitialComponent(), addMemberButton, title, true, null);

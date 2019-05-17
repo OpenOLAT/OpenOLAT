@@ -542,7 +542,7 @@ public class EditMembershipController extends FormBasicController {
 			change.setCoach(rePermission.isTutor() == cCoach ? null : Boolean.valueOf(cCoach));
 			boolean cParticipant = option.getParticipant().isAtLeastSelected(1);
 			change.setParticipant(rePermission.isParticipant() == cParticipant ? null : Boolean.valueOf(cParticipant));
-			if(change.getCurriculumManager() != null || change.getRepositoryEntryOwner() != null || change.getCoach() != null || change.getParticipant() != null) {
+			if(change.getCurriculumElementOwner() != null || change.getRepositoryEntryOwner() != null || change.getCoach() != null || change.getParticipant() != null) {
 				changes.add(change);
 			}
 		}

@@ -36,7 +36,7 @@ public class CurriculumElementMembershipChange extends Event {
 	private CurriculumElement element;
 	private final Long groupKey;
 
-	private Boolean curriculumManager;
+	private Boolean curriculumElementOwner;
 	private Boolean repositoryEntryOwner;
 	private Boolean coach;
 	private Boolean participant;
@@ -48,7 +48,7 @@ public class CurriculumElementMembershipChange extends Event {
 	
 	public CurriculumElementMembershipChange(Identity member, CurriculumElementMembershipChange origin) {
 		this(member, origin.getElement());
-		curriculumManager = origin.curriculumManager;
+		curriculumElementOwner = origin.curriculumElementOwner;
 		repositoryEntryOwner = origin.repositoryEntryOwner;
 		participant = origin.participant;
 		coach = origin.coach;
@@ -80,12 +80,12 @@ public class CurriculumElementMembershipChange extends Event {
 		this.participant = participant;
 	}
 
-	public Boolean getCurriculumManager() {
-		return curriculumManager;
+	public Boolean getCurriculumElementOwner() {
+		return curriculumElementOwner;
 	}
 
-	public void setCurriculumManager(Boolean curriculumManager) {
-		this.curriculumManager = curriculumManager;
+	public void setCurriculumElementOwner(Boolean curriculumElementOwner) {
+		this.curriculumElementOwner = curriculumElementOwner;
 	}
 
 	public Boolean getRepositoryEntryOwner() {
@@ -103,8 +103,4 @@ public class CurriculumElementMembershipChange extends Event {
 	public void setCoach(Boolean coach) {
 		this.coach = coach;
 	}
-
-
-
-
 }

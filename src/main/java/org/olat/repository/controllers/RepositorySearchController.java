@@ -101,7 +101,8 @@ public class RepositorySearchController extends BasicController implements Activ
 	private Can enableSearchforAllInSearchForm;
 	private SearchType searchType;
 	private final Roles identityRoles;
-	private RepositoryEntryFilter filter;
+	private final RepositoryEntryFilter filter;
+	private final boolean organisationWildCard;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -109,10 +110,11 @@ public class RepositorySearchController extends BasicController implements Activ
 	private RepositoryService repositoryService;
 
 	public RepositorySearchController(String selectButtonLabel, UserRequest ureq, WindowControl myWControl,
-			boolean withCancel, boolean multiSelect, String[] limitTypes, RepositoryEntryFilter filter) {
+			boolean withCancel, boolean multiSelect, String[] limitTypes, boolean organisationWildCard, RepositoryEntryFilter filter) {
 		super(ureq, myWControl, Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		
 		this.filter = filter;
+		this.organisationWildCard = organisationWildCard;
 		identityRoles = ureq.getUserSession().getRoles();
 		
 		vc = createVelocityContainer("reposearch", "search");
@@ -246,8 +248,9 @@ public class RepositorySearchController extends BasicController implements Activ
 		String name = searchForm.getDisplayName();
 		String author = searchForm.getAuthor();
 		String desc = searchForm.getDescription();
-		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(getIdentity(), identityRoles, restrictedTypes, name, author, desc,
-					enableSearchforAllInSearchForm == Can.referenceable, enableSearchforAllInSearchForm == Can.copyable);
+		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(getIdentity(),
+				identityRoles,organisationWildCard, restrictedTypes, name, author, desc,
+				enableSearchforAllInSearchForm == Can.referenceable, enableSearchforAllInSearchForm == Can.copyable);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		if(updateFilters) {
@@ -255,20 +258,6 @@ public class RepositorySearchController extends BasicController implements Activ
 		}
 		tableCtr.modelChanged();
 		displaySearchResults(ureq);
-	}
-
-	
-	/**
-	 * Do search for all resources that the user can reference either because he 
-	 * is the owner of the resource or because he has author rights and the resource
-	 * is set to at least BA in the BARG settings and the resource has the flag
-	 * 'canReference' set to true.
-	 * @param owner The current identity
-	 * @param limitType The search limitation a specific type
-	 * @param roles The users roles
-	 */
-	public void doSearchForReferencableResourcesLimitType(Identity owner, String limitType, Roles roles) {
-		doSearchForReferencableResourcesLimitType(owner, limitType.equals("") ? null : new String[] { limitType }, roles);
 	}
 
 	/**
@@ -287,7 +276,9 @@ public class RepositorySearchController extends BasicController implements Activ
 		} else {
 			restrictedTypes.addAll(Arrays.asList(limitTypes));
 		}
-		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, restrictedTypes, null, null, null, true, false);
+		
+		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, organisationWildCard,
+				restrictedTypes, null, null, null, true, false);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);
@@ -311,7 +302,8 @@ public class RepositorySearchController extends BasicController implements Activ
 		} else {
 			restrictedTypes.addAll(Arrays.asList(limitTypes));
 		}
-		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, restrictedTypes, null, null, null, false, true);
+		List<RepositoryEntry> entries = repositoryManager.queryResourcesLimitType(owner, roles, organisationWildCard,
+				restrictedTypes, null, null, null, false, true);
 		filterRepositoryEntries(entries);
 		repoTableModel.setObjects(entries);
 		tableCtr.setFilters(null, null);

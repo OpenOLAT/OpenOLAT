@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.olat.NewControllerFactory;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -46,6 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.login.LoginModule;
@@ -106,7 +108,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources()) {
+		if(!resourcesManaged && secCallback.canManagerCurriculumElementResources(curriculumElement)) {
 			addResourcesButton = uifactory.addFormLink("add.resources", formLayout, Link.BUTTON);
 			addResourcesButton.setIconLeftCSS("o_icon o_icon-fw o_icon_add");
 		
@@ -228,9 +230,14 @@ public class CurriculumElementResourceListController extends FormBasicController
 	private void doChooseResources(UserRequest ureq) {
 		if(repoSearchCtr != null) return;
 		
+		Roles roles = ureq.getUserSession().getRoles();
+		boolean adminSearch = roles.hasRole(OrganisationRoles.administrator)
+				|| roles.hasRole(OrganisationRoles.learnresourcemanager)
+				|| roles.hasRole(OrganisationRoles.curriculummanager);
+		boolean orgSearch = secCallback.canEditCurriculumElement(curriculumElement) && !adminSearch;
 		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
-				new String[]{ CourseModule.getCourseTypeName() }, null,
-				translate("add.resources"), false, false, true, true, Can.referenceable);
+				new String[]{ CourseModule.getCourseTypeName() }, null, translate("add.resources"),
+				false, false, true, orgSearch, adminSearch, Can.referenceable);
 		listenTo(repoSearchCtr);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(), true, translate("add.resources"));

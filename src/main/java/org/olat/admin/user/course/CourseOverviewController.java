@@ -375,7 +375,7 @@ public class CourseOverviewController extends BasicController  {
 		RepositoryEntryFilter filter = new ManagedEntryfilter();
 		repoSearchCtr = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[]{ CourseModule.getCourseTypeName() }, filter,
-				translate("choose"), false, false, true, true, Can.all);
+				translate("choose"), false, false, true, false, true, Can.all);
 		repoSearchCtr.setUserObject(type);
 		listenTo(repoSearchCtr);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), repoSearchCtr.getInitialComponent(),

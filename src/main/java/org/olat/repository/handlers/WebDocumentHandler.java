@@ -50,7 +50,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.AnimationFileResource;
@@ -68,7 +67,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.repository.ui.WebDocumentRunController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -252,14 +250,10 @@ public class WebDocumentHandler extends FileHandler {
 
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re,  RepositoryEntrySecurity reSecurity, UserRequest ureq, WindowControl wControl) {
-		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity, new RuntimeControllerCreator() {
-			@Override
-			public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-					RepositoryEntry entry, RepositoryEntrySecurity rereSecurity, AssessmentMode assessmentMode) {
-				CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-					.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-				return new WebDocumentRunController(uureq, wwControl, entry, reSecurity);
-			}
+		return new RepositoryEntryRuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry, rereSecurity, assessmentMode) -> {
+			CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+				.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
+			return new WebDocumentRunController(uureq, wwControl, entry);
 		});
 	}
 

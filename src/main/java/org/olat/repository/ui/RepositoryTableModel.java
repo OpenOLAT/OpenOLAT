@@ -69,7 +69,7 @@ import org.olat.user.UserManager;
  * 
  */
 public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry> {
-
+	
 	/**
 	 * Identifies a table selection event (outer-left column)
 	 */
@@ -287,12 +287,7 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 			case repoEntry: return re; 
 			case displayname: return getDisplayName(re, translator.getLocale());
 			case author: return getFullname(re.getInitialAuthor());
-			case access: {
-				// delegate to specific access renderer
-				StringOutput sb = new StringOutput(32);
-				accessRenderer.render(sb, re.getEntryStatus());
-				return sb.toString();
-			}
+			case access: return accessRenderer.renderEntryStatus(re);
 			case creationDate: return re.getCreationDate();
 			case lastUsage: return re.getStatistics().getLastUsage();
 			case externalId: return re.getExternalId();

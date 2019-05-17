@@ -789,7 +789,7 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void getUsers_curriculumManagers()
+	public void getUsers_curriculumElementOwners()
 	throws IOException, URISyntaxException {
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-6");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
@@ -802,11 +802,12 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		curriculumService.addMember(element, member, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(element, member, CurriculumRoles.curriculumelementowner);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
-				.path("elements").path(element.getKey().toString()).path("users").queryParam("role", "curriculummanager").build();
+				.path("elements").path(element.getKey().toString()).path("users")
+				.queryParam("role", "curriculumelementowner").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		
 		HttpResponse response = conn.execute(method);
@@ -879,7 +880,7 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
-	public void getCurriculumManagers()
+	public void getCurriculumOwners()
 	throws IOException, URISyntaxException {
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-10");
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
@@ -892,11 +893,11 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		RestConnection conn = new RestConnection();
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		curriculumService.addMember(element, member, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(element, member, CurriculumRoles.curriculumelementowner);
 		dbInstance.commitAndCloseSession();
 		
 		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
-				.path("elements").path(element.getKey().toString()).path("curriculummanagers").build();
+				.path("elements").path(element.getKey().toString()).path("curriculumelementowners").build();
 		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
 		
 		HttpResponse response = conn.execute(method);

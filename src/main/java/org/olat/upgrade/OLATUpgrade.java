@@ -27,8 +27,6 @@ package org.olat.upgrade;
 
 import javax.sql.DataSource;
 
-import org.apache.logging.log4j.Logger;
-import org.olat.core.logging.Tracing;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 
@@ -45,7 +43,6 @@ public abstract class OLATUpgrade {
 	
 	static final String TASK_DP_UPGRADE = "Database update";
 	private String alterDbFilename;
-	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade.class);
 
 	/**
 	 * @return String representing the unique version identifyer of this upgrade

@@ -206,7 +206,7 @@ public class RepositoryEntryWhiteListController extends FormBasicController
 	private void doSelectRepositoryEntry(UserRequest ureq) {
 		selectCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[] { CourseModule.getCourseTypeName() }, translate("repository.entry.select.title"),
-				false, false, true, true);
+				false, false, true, false, true);
 		listenTo(selectCtrl);
 
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),

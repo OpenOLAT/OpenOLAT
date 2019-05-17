@@ -312,7 +312,7 @@ public class UserBulkChangeManager implements InitializingBean {
 			String internalGender = ((GenderPropertyHandler)handler).getInternalValue(identity.getUser());
 			if(StringHelper.containsNonWhitespace(internalGender)) {
 				Translator userPropTrans = userManager.getUserPropertiesConfig().getTranslator(translator);
-				gender = userPropTrans.translate("form.name.gender.salutation." + internalGender);
+				gender = userPropTrans.translate("form.name.gender.salutation." + internalGender.toLowerCase());
 			}
 		}
 		

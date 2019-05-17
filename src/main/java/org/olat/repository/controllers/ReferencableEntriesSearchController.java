@@ -99,8 +99,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private RepositoryEntry selectedRepositoryEntry;
 	private List<RepositoryEntry> selectedRepositoryEntries;
 	
-	private final boolean canImport;
 	private final Can canBe;
+	private final boolean canImport;
 	
 	private Object userObject;
 	
@@ -110,21 +110,21 @@ public class ReferencableEntriesSearchController extends BasicController {
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String limitType, String commandLabel) {
-		this(wControl, ureq, new String[]{ limitType }, null, commandLabel, true, true, false, false, Can.referenceable);
+		this(wControl, ureq, new String[]{ limitType }, null, commandLabel, true, true, false, false, false, Can.referenceable);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel) {
-		this(wControl, ureq, limitTypes, null, commandLabel, true, true, false, false, Can.referenceable);
+		this(wControl, ureq, limitTypes, null, commandLabel, true, true, false, false, false, Can.referenceable);
 	}
 	
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq, String[] limitTypes, String commandLabel,
-			boolean canImport, boolean canCreate, boolean multiSelect, boolean adminSearch) {
-		this(wControl, ureq, limitTypes, null, commandLabel, canImport, canCreate, multiSelect, adminSearch, Can.referenceable);
+			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch) {
+		this(wControl, ureq, limitTypes, null, commandLabel, canImport, canCreate, multiSelect, organisationWildCard, adminSearch, Can.referenceable);
 	}
 
 	public ReferencableEntriesSearchController(WindowControl wControl, UserRequest ureq,
 			String[] limitTypes, RepositoryEntryFilter filter, String commandLabel,
-			boolean canImport, boolean canCreate, boolean multiSelect, boolean adminSearch,
+			boolean canImport, boolean canCreate, boolean multiSelect, boolean organisationWildCard, boolean adminSearch, 
 			Can canBe) {
 
 		super(ureq, wControl);
@@ -139,7 +139,8 @@ public class ReferencableEntriesSearchController extends BasicController {
 		}
 
 		// add repo search controller
-		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(), false, multiSelect, limitTypes, filter);
+		searchCtr = new RepositorySearchController(commandLabel, ureq, getWindowControl(),
+				false, multiSelect, limitTypes, organisationWildCard, filter);
 		listenTo(searchCtr);
 		
 		// do instantiate buttons
@@ -296,10 +297,10 @@ public class ReferencableEntriesSearchController extends BasicController {
 				} else if (clickedLink == allEntriesLink){
 					switch(canBe) {
 						case referenceable:
-							searchCtr.doSearchForReferencableResourcesLimitType(ureq.getIdentity(), limitTypes, ureq.getUserSession().getRoles());
+							searchCtr.doSearchForReferencableResourcesLimitType(getIdentity(), limitTypes, ureq.getUserSession().getRoles());
 							break;
 						case copyable:
-							searchCtr.doSearchForCopyableResourcesLimitType(ureq.getIdentity(), limitTypes, ureq.getUserSession().getRoles());
+							searchCtr.doSearchForCopyableResourcesLimitType(getIdentity(), limitTypes, ureq.getUserSession().getRoles());
 							break;
 						case all:
 							searchCtr.doSearchByTypeLimitAccess(limitTypes, ureq);							

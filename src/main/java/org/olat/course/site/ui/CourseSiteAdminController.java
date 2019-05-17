@@ -222,7 +222,7 @@ public class CourseSiteAdminController extends FormBasicController {
 	private void doSelecCourse(UserRequest ureq, LanguageConfigurationRow row) {
 		removeAsListenerAndDispose(selectCtrl);
 		selectCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, new String[]{ "CourseModule" }, translate("select"),
-				true, true, false, true);
+				true, true, false, false, true);
 		selectCtrl.setUserObject(row);
 		listenTo(selectCtrl);
 		
@@ -238,7 +238,7 @@ public class CourseSiteAdminController extends FormBasicController {
 	}
 	
 	public CourseSiteConfiguration saveConfiguration() {
-		List<LanguageConfiguration> langConfigList = new ArrayList<LanguageConfiguration>();
+		List<LanguageConfiguration> langConfigList = new ArrayList<>();
 		for(LanguageConfigurationRow row:model.getObjects()) {
 			if(StringHelper.containsNonWhitespace(row.getSoftKey())) {
 				langConfigList.add(row.getRawObject());

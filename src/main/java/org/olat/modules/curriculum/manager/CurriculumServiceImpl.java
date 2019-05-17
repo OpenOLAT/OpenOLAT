@@ -157,14 +157,15 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public boolean isCurriculumManager(IdentityRef identity) {
-		return curriculumDao.hasCurriculumRole(identity, CurriculumRoles.curriculummanager.name());
+	public boolean isCurriculumOwner(IdentityRef identity) {
+		return curriculumDao.hasCurriculumRole(identity, CurriculumRoles.curriculumowner.name());
 	}
 
 	@Override
-	public boolean isCurriculumManagerOrOwner(IdentityRef identity) {
-		return curriculumDao.hasCurriculumRole(identity, CurriculumRoles.curriculummanager.name())
-				|| curriculumDao.hasOwnerRoleInCurriculum(identity);
+	public boolean isCurriculumOwnerUptoEntryOwner(IdentityRef identity) {
+		return curriculumDao.hasCurriculumRole(identity, CurriculumRoles.curriculumowner.name())
+				|| curriculumDao.hasOwnerRoleInCurriculumElement(identity)
+				|| curriculumElementDao.hasCurriculumElementRole(identity, CurriculumRoles.curriculumelementowner.name());
 	}
 
 	@Override
@@ -454,6 +455,12 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
+	public List<CurriculumElementMembership> getCurriculumElementMemberships(Curriculum curriculum, Identity identity) {
+		if(identity == null) return new ArrayList<>();
+		return curriculumElementDao.getMembershipInfos(Collections.singletonList(curriculum), null, identity);
+	}
+
+	@Override
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<CurriculumElement> elements, Identity... identities) {
 		return curriculumElementDao.getMembershipInfos(null, elements, identities);
 	}
@@ -483,11 +490,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private void updateCurriculumElementMembership(CurriculumElementMembershipChange changes) {
 		CurriculumElement element = changes.getElement();
 		
-		if(changes.getCurriculumManager() != null) {
-			if(changes.getCurriculumManager().booleanValue()) {
-				addMember(element, changes.getMember(), CurriculumRoles.curriculummanager);
+		if(changes.getCurriculumElementOwner() != null) {
+			if(changes.getCurriculumElementOwner().booleanValue()) {
+				addMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner);
 			} else {
-				removeMember(element, changes.getMember(), CurriculumRoles.curriculummanager);
+				removeMember(element, changes.getMember(), CurriculumRoles.curriculumelementowner);
 			}
 		}
 		

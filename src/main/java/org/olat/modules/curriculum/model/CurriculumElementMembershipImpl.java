@@ -32,7 +32,7 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	private final Long identityKey;
 	private final Long curriculumElementKey;
 	
-	private boolean curriculumManager;
+	private boolean curriculumElementOwner;
 	private boolean repositoryEntryOwner;
 	private boolean coach;
 	private boolean participant;
@@ -55,7 +55,7 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	
 	@Override
 	public boolean hasMembership() {
-		return repositoryEntryOwner || coach || participant || curriculumManager;
+		return repositoryEntryOwner || coach || participant || curriculumElementOwner;
 	}
 
 	@Override
@@ -86,12 +86,12 @@ public class CurriculumElementMembershipImpl implements CurriculumElementMembers
 	}
 
 	@Override
-	public boolean isCurriculumManager() {
-		return curriculumManager;
+	public boolean isCurriculumElementOwner() {
+		return curriculumElementOwner;
 	}
 
-	public void setCurriculumManager(boolean curriculumManager) {
-		this.curriculumManager = curriculumManager;
+	public void setCurriculumElementOwner(boolean curriculumElementOwner) {
+		this.curriculumElementOwner = curriculumElementOwner;
 	}
 
 	@Override

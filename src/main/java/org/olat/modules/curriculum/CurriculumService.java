@@ -127,14 +127,14 @@ public interface CurriculumService {
 	 * @param identity The identity
 	 * @return true if the identity is manager of at least one curriculum
 	 */
-	public boolean isCurriculumManager(IdentityRef identity);
+	public boolean isCurriculumOwner(IdentityRef identity);
 	
 	/**
 	 * @param identity The identity
 	 * @return true if the identity is manager of at least one curriculum or
 	 * 		is course owner of a course in a curriculum.
 	 */
-	public boolean isCurriculumManagerOrOwner(IdentityRef identity);
+	public boolean isCurriculumOwnerUptoEntryOwner(IdentityRef identity);
 	
 	/**
 	 * Add a member to the curriculum with the specified role.
@@ -356,6 +356,8 @@ public interface CurriculumService {
 	 * @return The list of memberships
 	 */
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, CurriculumRoles role);
+	
+	public List<CurriculumElementMembership> getCurriculumElementMemberships(Curriculum curriculum, Identity identity);
 	
 	public List<CurriculumElementMembership> getCurriculumElementMemberships(Collection<CurriculumElement> elements, Identity... identities);
 	

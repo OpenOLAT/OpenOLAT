@@ -46,6 +46,6 @@ public class CurriculumManagerSecurityCallback implements SiteSecurityCallback {
 		
 		Roles roles = usess.getRoles();
 		return roles != null && (roles.isAdministrator() || roles.isPrincipal() || roles.isCurriculumManager()
-				|| curriculumService.isCurriculumManager(ureq.getIdentity()));
+				|| curriculumService.isCurriculumOwner(ureq.getIdentity()));
 	}
 }

@@ -56,10 +56,13 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumElementMembership;
+import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
@@ -141,14 +144,14 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private void loadModel(String searchString, boolean reset) {
 		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
 		managerParams.setSearchString(searchString);
-		managerParams.setManagerIdentity(getIdentity());
+		managerParams.setCurriculumAdmin(getIdentity());
 		List<CurriculumInfos> managerCurriculums = curriculumService.getCurriculumsWithInfos(managerParams);
 		List<CurriculumRow> rows = managerCurriculums.stream()
 				.map(this::forgeManagedRow).collect(Collectors.toList());
 		
 		CurriculumSearchParameters ownerParams = new CurriculumSearchParameters();
 		ownerParams.setSearchString(searchString);
-		ownerParams.setOwnerIdentity(getIdentity());
+		ownerParams.setElementOwner(getIdentity());
 		List<CurriculumInfos> reOwnersCurriculums = curriculumService.getCurriculumsWithInfos(ownerParams);
 		List<CurriculumRow> reOwnerRows = reOwnersCurriculums.stream()
 				.filter(c -> !managerCurriculums.contains(c))
@@ -167,8 +170,6 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		toolsLink.setUserObject(row);
 		return row;
 	}
-	
-	
 
 	@Override
 	protected void doDispose() {
@@ -309,7 +310,13 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			showWarning("warning.curriculum.deleted");
 		} else {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance(Curriculum.class, row.getKey()), null);
-			CurriculumSecurityCallback curriculumSecCallback = CurriculumSecurityCallbackFactory.createCallback(row.canManage());
+			boolean canManage = row.canManage();
+			List<CurriculumElementMembership> memberships = curriculumService.getCurriculumElementMemberships(curriculum, getIdentity());
+			List<CurriculumElementRef> ownedElements = memberships.stream()
+					.filter(CurriculumElementMembership::isCurriculumElementOwner)
+					.map(m -> new CurriculumElementRefImpl(m.getCurriculumElementKey()))
+					.collect(Collectors.toList());
+			CurriculumSecurityCallback curriculumSecCallback = CurriculumSecurityCallbackFactory.createCallback(canManage, ownedElements);
 			composerCtrl = new CurriculumComposerController(ureq, swControl, toolbarPanel, curriculum, curriculumSecCallback);
 			listenTo(composerCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), composerCtrl);

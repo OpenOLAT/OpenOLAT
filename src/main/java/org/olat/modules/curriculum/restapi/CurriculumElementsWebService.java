@@ -285,7 +285,6 @@ public class CurriculumElementsWebService {
 		} else if(moveAsCurriculumRoot) {
 			dbInstance.commit();// make sure all is flushed on the database before such a move
 			curriculum = curriculumService.getCurriculum(curriculum);
-			System.out.println(curriculum.getDisplayName());
 			savedElement = curriculumService.moveCurriculumElement(savedElement, curriculum);
 		}
 		return savedElement;
@@ -703,10 +702,10 @@ public class CurriculumElementsWebService {
 	 * @return It returns an array of <code>UserVO</code>
 	 */
 	@GET
-	@Path("{curriculumElementKey}/curriculummanagers")
+	@Path("{curriculumElementKey}/curriculumelementowners")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumManagers(@PathParam("curriculumElementKey") Long curriculumElementKey) {
-		return getMembers(curriculumElementKey, CurriculumRoles.curriculummanager);
+		return getMembers(curriculumElementKey, CurriculumRoles.curriculumelementowner);
 	}
 	
 	private Response getMembers(Long curriculumElementKey, CurriculumRoles role) {
@@ -784,9 +783,9 @@ public class CurriculumElementsWebService {
 	 * @return Nothing
 	 */
 	@PUT
-	@Path("{curriculumElementKey}/curriculummanagers/{identityKey}")
+	@Path("{curriculumElementKey}/curriculumelementowners/{identityKey}")
 	public Response putCurriculumManager(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
-		return putMember(curriculumElementKey, identityKey, CurriculumRoles.curriculummanager);
+		return putMember(curriculumElementKey, identityKey, CurriculumRoles.curriculumelementowner);
 	}
 	
 	private Response putMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role) {
@@ -888,10 +887,10 @@ public class CurriculumElementsWebService {
 	 * @return Nothing
 	 */
 	@PUT
-	@Path("{curriculumElementKey}/curriculummanagers")
+	@Path("{curriculumElementKey}/curriculumelementowners")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putCurriculumManagers(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
-		return putMembers(curriculumElementKey, coaches, CurriculumRoles.curriculummanager);
+		return putMembers(curriculumElementKey, coaches, CurriculumRoles.curriculumelementowner);
 	}
 	
 	private Response putMembers(Long curriculumElementKey, UserVO[] members, CurriculumRoles role) {
@@ -974,10 +973,10 @@ public class CurriculumElementsWebService {
 	 * @return Nothing
 	 */
 	@DELETE
-	@Path("{curriculumElementKey}/curriculummanagers/{identityKey}")
+	@Path("{curriculumElementKey}/curriculumelementowners/{identityKey}")
 	public Response deleteCurriculumManager(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("identityKey") Long identityKey) {
-		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.curriculummanager);
+		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.curriculumelementowner);
 	}
 	
 	private Response deleteMember(Long curriculumElementKey, Long identityKey, CurriculumRoles role) {

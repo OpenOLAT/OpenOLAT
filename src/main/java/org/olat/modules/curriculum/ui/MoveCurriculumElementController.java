@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.core.commons.persistence.DB;
@@ -45,6 +46,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeToType;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -60,10 +62,14 @@ public class MoveCurriculumElementController extends FormBasicController {
 	private final CurriculumTreeModel curriculumModel;
 	
 	private final Curriculum curriculum;
+	private final CurriculumSecurityCallback secCallback;
 	private Set<CurriculumElementType> allowedTypes = new HashSet<>();
 	private Set<CurriculumElementType> allowedSiblingTypes = new HashSet<>();
 	private List<CurriculumElement> curriculumElementsToMove;
 	private Set<TreeNode> targetableNodes = new HashSet<>();
+	
+	private Predicate<CurriculumElement> admin = c -> true;
+	private Predicate<CurriculumElement> editionOnly = c -> isEditable(c);
 	
 	@Autowired
 	private DB dbInstance;
@@ -71,9 +77,11 @@ public class MoveCurriculumElementController extends FormBasicController {
 	private CurriculumService curriculumService;
 	
 	public MoveCurriculumElementController(UserRequest ureq, WindowControl wControl,
-			List<CurriculumElement> curriculumElementsToMove, Curriculum curriculum) {
+			List<CurriculumElement> curriculumElementsToMove, Curriculum curriculum,
+			CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "move_curriculum_element");
 		this.curriculum = curriculum;
+		this.secCallback = secCallback;
 		this.curriculumElementsToMove = new ArrayList<>(curriculumElementsToMove);
 		curriculumModel = new CurriculumTreeModel(curriculum, curriculumElementsToMove);
 		initAllowedTypes();
@@ -96,7 +104,8 @@ public class MoveCurriculumElementController extends FormBasicController {
 	
 	private void loadModel() {
 		List<CurriculumElement> allElements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
-		curriculumModel.loadTreeModel(allElements);
+		Predicate<CurriculumElement> filter = secCallback.canEditCurriculumTree() ? admin : editionOnly;
+		curriculumModel.loadTreeModel(allElements, filter);
 		
 		//remove children of the curriculum element to move
 		for(CurriculumElement elementToMove:curriculumElementsToMove) {
@@ -107,7 +116,7 @@ public class MoveCurriculumElementController extends FormBasicController {
 				nodeToMove.getParent().remove(nodeToMove);
 			}
 		}
-		
+
 		// remove the elements with incompatible types
 		List<TreeNode> openedNodes = new ArrayList<>();
 		filterByAllowedTypes(curriculumModel.getRootNode(), openedNodes);
@@ -240,6 +249,10 @@ public class MoveCurriculumElementController extends FormBasicController {
 			}
 		}
 		return false;
+	}
+	
+	private boolean isEditable(CurriculumElement element) {
+		return secCallback.canEditCurriculumElement(element);
 	}
 
 	@Override

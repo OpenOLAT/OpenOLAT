@@ -1139,8 +1139,9 @@ public class RepositoryManager {
 	 * This is an administrative query which need author, learn resource manager, quality manager
 	 * or higher permissions.
 	 * 
-	 * @param identity
-	 * @param roles
+	 * @param identity The searcher
+	 * @param roles The roles of the searcher
+	 * @param organisationWildCard No roles check but only organization membership instead of roles
 	 * @param resourceTypes
 	 * @param displayName
 	 * @param author
@@ -1149,8 +1150,8 @@ public class RepositoryManager {
 	 * @param checkCanCopy
 	 * @return
 	 */
-	public List<RepositoryEntry> queryResourcesLimitType(Identity identity, Roles roles, List<String> resourceTypes,
-			String displayName, String author, String desc, boolean checkCanReference, boolean checkCanCopy) {
+	public List<RepositoryEntry> queryResourcesLimitType(Identity identity, Roles roles, boolean organisationWildCard,
+			List<String> resourceTypes, String displayName, String author, String desc, boolean checkCanReference, boolean checkCanCopy) {
 		if(!checkCanReference && !checkCanCopy) {
 			return Collections.emptyList();
 		}
@@ -1160,7 +1161,7 @@ public class RepositoryManager {
 
 		// Build the query
 		// 1) Joining tables
-		QueryBuilder sb = new QueryBuilder(400);
+		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select distinct v from repositoryentry v ")
 		  .append(" inner join fetch v.olatResource as res" )
 		  .append(" inner join fetch v.statistics as statistics")
@@ -1176,23 +1177,24 @@ public class RepositoryManager {
 		//author
 		if(roles.isAuthor()) {
 			sb.append(" or (membership.role ").in(OrganisationRoles.author)
-			  .append(" and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed()).append(")");
-			if(checkCanReference) {
-				sb.append(" and v.canReference=true");
-			}
-			if(checkCanCopy) {
-				sb.append(" and v.canCopy=true");
-			}
+			  .append(" and v.status ").in(RepositoryEntryStatusEnum.reviewToClosed())
+			  .append(" and v.canReference=true", checkCanReference)
+			  .append(" and v.canCopy=true", checkCanCopy)
+			  .append(")");
 		}
 		if(roles.isQualityManager()) {
 			sb.append(" or (membership.role ").in(OrganisationRoles.qualitymanager)
-			  .append(" and v.status ").in(RepositoryEntryStatusEnum.published).append(")");
-			if(checkCanReference) {
-				sb.append(" and v.canReference=true");
-			}
-			if(checkCanCopy) {
-				sb.append(" and v.canCopy=true");
-			}
+			  .append(" and v.status ").in(RepositoryEntryStatusEnum.published)
+			  .append(" and v.canReference=true", checkCanReference)
+			  .append(" and v.canCopy=true", checkCanCopy)
+			  .append(")");
+		}
+		if(organisationWildCard) {
+			sb.append(" or (membership.role ").in(OrganisationRoles.user)
+			  .append(" and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed())
+			  .append(" and v.canReference=true", checkCanReference)
+			  .append(" and v.canCopy=true", checkCanCopy)
+			  .append(")");
 		}
 		
 		sb.append(")");

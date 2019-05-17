@@ -35,6 +35,7 @@ public enum CurriculumRoles {
 	
 	curriculummanager,
 	curriculumowner,// own a piece of a curriculum
+	curriculumelementowner,// own a piece of curriculum
 	owner, //same as GroupRoles
 	coach, //same as GroupRoles
 	participant; //same as GroupRoles

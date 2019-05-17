@@ -187,7 +187,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		
 		// search curriculum for the manager
 		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
-		managerParams.setManagerIdentity(manager);
+		managerParams.setCurriculumAdmin(manager);
 		List<Curriculum> managedCurriculums = curriculumDao.search(managerParams);
 		Assert.assertEquals(1, managedCurriculums.size());
 		Assert.assertEquals(curriculum, managedCurriculums.get(0));
@@ -195,7 +195,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		
 		// search curriculum for the user
 		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
-		userParams.setManagerIdentity(user);
+		userParams.setCurriculumAdmin(user);
 		List<Curriculum> userCurriculums = curriculumDao.search(userParams);
 		Assert.assertTrue(userCurriculums.isEmpty());
 	}
@@ -211,20 +211,20 @@ public class CurriculumDAOTest extends OlatTestCase {
 		
 		// search curriculum for the manager
 		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
-		managerParams.setManagerIdentity(manager);
+		managerParams.setCurriculumAdmin(manager);
 		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
 		Assert.assertEquals(1, managedCurriculums.size());
 		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
 		
 		// search curriculum for the user
 		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
-		userParams.setManagerIdentity(user);
+		userParams.setCurriculumAdmin(user);
 		List<CurriculumInfos> userCurriculums = curriculumDao.searchWithInfos(userParams);
 		Assert.assertTrue(userCurriculums.isEmpty());
 	}
 	
 	@Test
-	public void searchWithInfos_owner() {
+	public void searchWithInfos_repoOwner() {
 		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-user-1");
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-course-owner-1");
@@ -238,18 +238,40 @@ public class CurriculumDAOTest extends OlatTestCase {
 		curriculumService.addMember(curriculum, user, CurriculumRoles.participant);
 		dbInstance.commitAndCloseSession();
 		
-		// search curriculum for the manager
+		// search curriculum for the owner of a repository entry in curriculum
 		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
-		managerParams.setOwnerIdentity(owner);
+		managerParams.setElementOwner(owner);
 		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
 		Assert.assertEquals(1, managedCurriculums.size());
 		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
 		
 		// search curriculum for the user
 		CurriculumSearchParameters userParams = new CurriculumSearchParameters();
-		userParams.setOwnerIdentity(user);
+		userParams.setCurriculumAdmin(user);
 		List<CurriculumInfos> userCurriculums = curriculumDao.searchWithInfos(userParams);
 		Assert.assertTrue(userCurriculums.isEmpty());
+	}
+	
+	@Test
+	public void searchWithInfos_elementOwner() {
+		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-course-owner-1");
+		Curriculum curriculum = curriculumDao.createAndPersist("Curriculum for owners", "Owners", "Short desc.", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",  CurriculumElementStatus.active,
+				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		RepositoryEntry entry = JunitTestHelper.createRandomRepositoryEntry(owner);
+		curriculumService.addRepositoryEntry(element, entry, true);
+		dbInstance.commit();
+		curriculumService.addMember(curriculum, manager, CurriculumRoles.curriculummanager);
+		curriculumService.addMember(element, owner, CurriculumRoles.curriculumelementowner);
+		dbInstance.commitAndCloseSession();
+		
+		// search curriculum for the owner of a part of the curriculum
+		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
+		managerParams.setElementOwner(owner);
+		List<CurriculumInfos> managedCurriculums = curriculumDao.searchWithInfos(managerParams);
+		Assert.assertEquals(1, managedCurriculums.size());
+		Assert.assertEquals(curriculum, managedCurriculums.get(0).getCurriculum());
 	}
 	
 	@Test
@@ -319,7 +341,7 @@ public class CurriculumDAOTest extends OlatTestCase {
 		dbInstance.commit();
 
 		// is owner within a curriculum
-		boolean isOwner = curriculumDao.hasOwnerRoleInCurriculum(owner);
+		boolean isOwner = curriculumDao.hasOwnerRoleInCurriculumElement(owner);
 		Assert.assertTrue(isOwner);
 	}
 	

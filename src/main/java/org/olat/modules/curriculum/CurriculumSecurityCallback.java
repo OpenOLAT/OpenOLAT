@@ -35,11 +35,21 @@ public interface CurriculumSecurityCallback {
 	
 	public boolean canNewCurriculumElement();
 	
-	public boolean canEditCurriculumElement();
+	public boolean canEditCurriculumElements();
 	
-	public boolean canManagerCurriculumElementUsers();
+	/**
+	 * @param element The curriculum element
+	 * @return true if the user can edit the specified curriculum element
+	 */
+	public boolean canEditCurriculumElement(CurriculumElement element);
 	
-	public boolean canManagerCurriculumElementResources();
+	public boolean canEditCurriculumTree();
+	
+	public boolean canManagerCurriculumElementsUsers();
+	
+	public boolean canManagerCurriculumElementUsers(CurriculumElement element);
+	
+	public boolean canManagerCurriculumElementResources(CurriculumElement element);
 	
 	public boolean canViewAllCalendars();
 	

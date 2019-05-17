@@ -24,6 +24,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -66,8 +67,16 @@ public class CurriculumTreeModel extends GenericTreeModel implements InsertionTr
 	}
 	
 	public void loadTreeModel(List<CurriculumElement> elements) {
+		loadTreeModel(elements, c -> true);
+	}
+	
+	public void loadTreeModel(List<CurriculumElement> elements, Predicate<CurriculumElement> filter) {
 		Map<Long,GenericTreeNode> fieldKeyToNode = new HashMap<>();
 		for(CurriculumElement element:elements) {
+			if(!filter.test(element)) {
+				continue;
+			}
+			
 			Long key = element.getKey();
 			GenericTreeNode node = fieldKeyToNode.computeIfAbsent(key, k -> {
 				GenericTreeNode newNode = new GenericTreeNode(nodeKey(element));
@@ -78,7 +87,7 @@ public class CurriculumTreeModel extends GenericTreeModel implements InsertionTr
 			});
 
 			CurriculumElement parentElement = element.getParent();
-			if(parentElement == null) {
+			if(parentElement == null || !filter.test(parentElement)) {
 				//this is a root
 				getRootNode().addChild(node);
 			} else {
