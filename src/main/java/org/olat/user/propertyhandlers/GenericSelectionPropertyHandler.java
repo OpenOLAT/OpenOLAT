@@ -111,7 +111,7 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 	 * saves the configuration of this property
 	 */
 	public void saveConfig() {
-		Map<String, String> configMap = new HashMap<String, String>();
+		Map<String, String> configMap = new HashMap<>();
 		String isMulti = (isMultiselect) ? PROP_MULTISELECT_TRUE : "0";
 		configMap.put(PROP_MULTISELECT, isMulti);
 
@@ -198,13 +198,9 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 	 * @return
 	 */
 	private String[] getSelectedKeys(User user) {
-		String[] keys = getInternalValue(user).split(KEY_DELIMITER);
-		return keys;
+		return getInternalValue(user).split(KEY_DELIMITER);
 	}
 
-	/**
-	 * @see org.olat.user.AbstractUserPropertyHandler#getInternalValue(org.olat.core.id.User)
-	 */
 	@Override
 	public String getInternalValue(User user) {
 		String value = super.getInternalValue(user);
@@ -289,10 +285,7 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 		return values;
 	}
 
-	/**
-	 * @see org.olat.core.id.UserField#getUserFieldValueAsHTML(org.olat.core.id.User,
-	 *      java.util.Locale)
-	 */
+	@Override
 	public String getUserPropertyAsHTML(User user, Locale locale) {
 		StringBuilder htmlValue = new StringBuilder();
 		Translator trans = Util.createPackageTranslator(this.getClass(), locale);
@@ -301,9 +294,11 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 				htmlValue.append(trans.translate(value)).append(" ");
 			}
 		} else {
-			htmlValue.append(trans.translate(getInternalValue(user)));
+			String val = getInternalValue(user);
+			if(val != null && locale != null) {
+				htmlValue.append(trans.translate(val));
+			}
 		}
 		return htmlValue.toString();
 	}
-
 }
