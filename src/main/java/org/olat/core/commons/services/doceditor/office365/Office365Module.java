@@ -39,6 +39,10 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 	private static final String OFFICE365_ENABLED = "office365.enabled";
 	private static final String OFFICE365_BASE_URL = "office365.baseUrl";
 	private static final String OFFICE365_DATA_TRANSER_CONFIRMATION_ENABLED = "office365.data.transfer.confirmation.enabled";
+	private static final String OFFICE365_USAGE_RESTRICTED = "office365.usage.restricted";
+	private static final String OFFICE365_USAGE_AUTHORS = "office365.usage.authors";
+	private static final String OFFICE365_USAGE_COACHES = "office365.usage.coaches";
+	private static final String OFFICE365_USAGE_MANAGERS = "office365.usage.managers";
 	
 	@Value("${office365.enabled:false}")
 	private boolean enabled;
@@ -46,6 +50,14 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 	private String baseUrl;
 	@Value("${office365.data.transfer.confirmation.enabled:false}")
 	private boolean dataTransferConfirmationEnabled;
+	@Value("${office365.usage.restricted:false}")
+	private boolean usageRestricted;
+	@Value("${office365.usage.restricted.authors:false}")
+	private boolean usageRestrictedToAuthors;
+	@Value("${office365.usage.restricted.coaches:false}")
+	private boolean usageRestrictedToCoaches;
+	@Value("${office365.usage.restricted.managers:false}")
+	private boolean usageRestrictedToManagers;
 	
 	@Autowired
 	private Office365Module(CoordinatorManager coordinateManager) {
@@ -77,6 +89,26 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
 			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
 		}
+		
+		String usageRestrictedObj = getStringPropertyValue(OFFICE365_USAGE_RESTRICTED, true);
+		if(StringHelper.containsNonWhitespace(usageRestrictedObj)) {
+			usageRestricted = "true".equals(usageRestrictedObj);
+		}
+		
+		String usageRestrictedToAuthorsObj = getStringPropertyValue(OFFICE365_USAGE_AUTHORS, true);
+		if(StringHelper.containsNonWhitespace(usageRestrictedToAuthorsObj)) {
+			usageRestrictedToAuthors = "true".equals(usageRestrictedToAuthorsObj);
+		}
+		
+		String usageRestrictedToCoachesObj = getStringPropertyValue(OFFICE365_USAGE_COACHES, true);
+		if(StringHelper.containsNonWhitespace(usageRestrictedToCoachesObj)) {
+			usageRestrictedToCoaches = "true".equals(usageRestrictedToCoachesObj);
+		}
+		
+		String usageRestrictedToManagersObj = getStringPropertyValue(OFFICE365_USAGE_MANAGERS, true);
+		if(StringHelper.containsNonWhitespace(usageRestrictedToManagersObj)) {
+			usageRestrictedToManagers = "true".equals(usageRestrictedToManagersObj);
+		}
 	}
 
 	@Override
@@ -105,5 +137,41 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 	public void setDataTransferConfirmationEnabled(boolean dataTransferConfirmationEnabled) {
 		this.dataTransferConfirmationEnabled = dataTransferConfirmationEnabled;
 		setStringProperty(OFFICE365_DATA_TRANSER_CONFIRMATION_ENABLED, Boolean.toString(dataTransferConfirmationEnabled), true);
+	}
+
+	public boolean isUsageRestricted() {
+		return usageRestricted;
+	}
+
+	public void setUsageRestricted(boolean usageRestricted) {
+		this.usageRestricted = usageRestricted;
+		setStringProperty(OFFICE365_USAGE_RESTRICTED, Boolean.toString(usageRestricted), true);
+	}
+
+	public boolean isUsageRestrictedToAuthors() {
+		return usageRestrictedToAuthors;
+	}
+
+	public void setUsageRestrictedToAuthors(boolean usageRestrictedToAuthors) {
+		this.usageRestrictedToAuthors = usageRestrictedToAuthors;
+		setStringProperty(OFFICE365_USAGE_AUTHORS, Boolean.toString(usageRestrictedToAuthors), true);
+	}
+
+	public boolean isUsageRestrictedToCoaches() {
+		return usageRestrictedToCoaches;
+	}
+
+	public void setUsageRestrictedToCoaches(boolean usageRestrictedToCoaches) {
+		this.usageRestrictedToCoaches = usageRestrictedToCoaches;
+		setStringProperty(OFFICE365_USAGE_COACHES, Boolean.toString(usageRestrictedToCoaches), true);
+	}
+
+	public boolean isUsageRestrictedToManagers() {
+		return usageRestrictedToManagers;
+	}
+
+	public void setUsageRestrictedToManagers(boolean usageRestrictedToManagers) {
+		this.usageRestrictedToManagers = usageRestrictedToManagers;
+		setStringProperty(OFFICE365_USAGE_MANAGERS, Boolean.toString(usageRestrictedToManagers), true);
 	}
 }

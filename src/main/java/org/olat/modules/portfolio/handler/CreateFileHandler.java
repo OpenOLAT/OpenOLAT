@@ -25,10 +25,12 @@ import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.doceditor.DocTemplates;
-import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.commons.services.doceditor.DocTemplates.Builder;
+import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.modules.ceditor.PageElementAddController;
 import org.olat.modules.portfolio.ui.media.CreateFileMediaController;
 
@@ -40,16 +42,16 @@ import org.olat.modules.portfolio.ui.media.CreateFileMediaController;
  */
 public class CreateFileHandler extends FileHandler {
 	
-	public static DocTemplates getEditableTemplates(Locale locale) {
+	public static DocTemplates getEditableTemplates(Identity identity, Roles roles, Locale locale) {
 		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
 		Builder builder = DocTemplates.builder(locale);
-		if (docEditorService.hasEditor("docx", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true)) {
 			builder.addDocx();
 		}
-		if (docEditorService.hasEditor("xlsx", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, true)) {
 			builder.addXlsx();
 		}
-		if (docEditorService.hasEditor("pptx", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true)) {
 			builder.addPptx();
 		}
 		return builder.build();
@@ -62,7 +64,8 @@ public class CreateFileHandler extends FileHandler {
 	
 	@Override
 	public PageElementAddController getAddPageElementController(UserRequest ureq, WindowControl wControl) {
-		return new CreateFileMediaController(ureq, wControl, getEditableTemplates(ureq.getLocale()));
+		return new CreateFileMediaController(ureq, wControl,
+				getEditableTemplates(ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale()));
 	}
 
 }

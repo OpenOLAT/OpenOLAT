@@ -88,7 +88,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	private static final Logger log = Tracing.createLoggerFor(BinderTemplateHandler.class);
 
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return CoreSpringFactory.getImpl(PortfolioV2Module.class).isEnabled();
 	}
 	
@@ -196,7 +196,7 @@ public class BinderTemplateHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.embedded;
 	}
 	

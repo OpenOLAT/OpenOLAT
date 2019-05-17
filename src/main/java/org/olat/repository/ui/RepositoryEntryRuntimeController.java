@@ -405,7 +405,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void initToolsMenuEditor(Dropdown toolsDropdown) {
-		if (reSecurity.isEntryAdmin() && handler.supportsEdit(re.getOlatResource()) == EditionSupport.yes) {
+		if (reSecurity.isEntryAdmin() && handler.supportsEdit(re.getOlatResource(), getIdentity(), roles) == EditionSupport.yes) {
 			toolsDropdown.addComponent(new Spacer("editors-tools"));
 			
 			boolean managed = RepositoryEntryManagedFlag.isManaged(getRepositoryEntry(), RepositoryEntryManagedFlag.editcontent);
@@ -496,7 +496,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(entries != null && !entries.isEmpty()) {
 			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
 			if("Editor".equalsIgnoreCase(type)) {
-				if(handler.supportsEdit(re) == EditionSupport.yes
+				if(handler.supportsEdit(re, ureq.getIdentity(), ureq.getUserSession().getRoles()) == EditionSupport.yes
 						&& re.getEntryStatus() != RepositoryEntryStatusEnum.closed) {
 					doEdit(ureq);
 				}

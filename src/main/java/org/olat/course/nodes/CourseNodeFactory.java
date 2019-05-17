@@ -147,7 +147,7 @@ public class CourseNodeFactory implements PreWarm {
 		}
 		
 		RepositoryHandler typeToEdit = RepositoryHandlerFactory.getInstance().getRepositoryHandler(repositoryEntry);
-		if (typeToEdit.supportsEdit(repositoryEntry.getOlatResource()) == EditionSupport.no){
+		if (typeToEdit.supportsEdit(repositoryEntry.getOlatResource(), ureq.getIdentity(), ureq.getUserSession().getRoles()) == EditionSupport.no){
 			log.error("Trying to edit repository entry which has no associated editor: "+ typeToEdit);
 			return false;
 		}

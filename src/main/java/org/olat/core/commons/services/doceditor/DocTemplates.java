@@ -32,6 +32,8 @@ import java.util.Locale;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.doceditor.ui.CreateDocumentController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 
 /**
@@ -56,27 +58,27 @@ public class DocTemplates {
 		return docTemplates.isEmpty();
 	}
 	
-	public static Builder editables(Locale locale, boolean hasMeta) {
+	public static Builder editables(Identity identity, Roles roles, Locale locale, boolean hasMeta) {
 		Builder builder = new Builder(locale);
 		
 		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
 		
-		if (docEditorService.hasEditor("txt", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "txt", EDIT, hasMeta)) {
 			builder.addTxt();
 		}
-		if (docEditorService.hasEditor("html", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "html", EDIT, hasMeta)) {
 			builder.addHtml();
 		}
-		if (docEditorService.hasEditor("css", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "css", EDIT, hasMeta)) {
 			builder.addCss();
 		}
-		if (docEditorService.hasEditor("docx", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, hasMeta)) {
 			builder.addDocx();
 		}
-		if (docEditorService.hasEditor("xlsx", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, hasMeta)) {
 			builder.addXlsx();
 		}
-		if (docEditorService.hasEditor("pptx", EDIT, hasMeta)) {
+		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, hasMeta)) {
 			builder.addPptx();
 		}
 			

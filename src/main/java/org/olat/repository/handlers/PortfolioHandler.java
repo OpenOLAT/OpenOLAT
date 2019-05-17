@@ -84,7 +84,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	private static final Logger log = Tracing.createLoggerFor(PortfolioHandler.class);
 	
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return false;
 	}
 	
@@ -182,7 +182,7 @@ public class PortfolioHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.embedded;
 	}
 	

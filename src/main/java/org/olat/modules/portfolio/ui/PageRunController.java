@@ -53,6 +53,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
@@ -199,8 +200,9 @@ public class PageRunController extends BasicController implements TooledControll
 		putInitialPanel(mainVC);
 		
 		if(openInEditMode) {
-			pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider(),
-					new FullEditorSecurityCallback(), getTranslator());
+			pageEditCtrl = new PageEditorController(ureq, getWindowControl(),
+					new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()), new FullEditorSecurityCallback(),
+					getTranslator());
 			listenTo(pageEditCtrl);
 			mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
 			mainVC.put("page", pageEditCtrl.getInitialComponent());
@@ -649,7 +651,8 @@ public class PageRunController extends BasicController implements TooledControll
 		} else {
 			lockEntry = coordinator.getCoordinator().getLocker().acquireLock(lockOres, getIdentity(), "");
 			if(lockEntry.isSuccess()) {
-				pageEditCtrl = new PageEditorController(ureq, getWindowControl(), new PortfolioPageEditorProvider(),
+				pageEditCtrl = new PageEditorController(ureq, getWindowControl(),
+						new PortfolioPageEditorProvider(ureq.getUserSession().getRoles()),
 						new FullEditorSecurityCallback(), getTranslator());
 				listenTo(pageEditCtrl);
 				mainVC.contextPut("isPersonalBinder", (!secCallback.canNewAssignment() && secCallback.canEditMetadataBinder()));
@@ -753,7 +756,7 @@ public class PageRunController extends BasicController implements TooledControll
 		private final List<PageElementHandler> handlers = new ArrayList<>();
 		private final List<PageElementHandler> creationHandlers = new ArrayList<>();
 		
-		public PortfolioPageEditorProvider() {
+		public PortfolioPageEditorProvider(Roles roles) {
 			//handler for title
 			TitlePageElementHandler titleRawHandler = new TitlePageElementHandler();
 			handlers.add(titleRawHandler);
@@ -768,7 +771,7 @@ public class PageRunController extends BasicController implements TooledControll
 			creationHandlers.add(tableHandler);
 			
 			// Handler only to create files
-			if (isCreateFilePossible()) {
+			if (isCreateFilePossible(roles)) {
 				CreateFileHandler createFileHandler = new CreateFileHandler();
 				creationHandlers.add(createFileHandler);
 			}
@@ -803,10 +806,10 @@ public class PageRunController extends BasicController implements TooledControll
 			creationHandlers.add(htlmRawHandler);// at the end, legacy	
 		}
 
-		private boolean isCreateFilePossible() {
-			List<DocTemplate> editableTemplates = CreateFileHandler.getEditableTemplates(getLocale()).getTemplates();
+		private boolean isCreateFilePossible(Roles roles) {
+			List<DocTemplate> editableTemplates = CreateFileHandler.getEditableTemplates(getIdentity(), roles, getLocale()).getTemplates();
 			for (DocTemplate docTemplate: editableTemplates) {
-				if (vfsRepositoryService.hasEditor(docTemplate.getSuffix(), Mode.EDIT, true)) {
+				if (vfsRepositoryService.hasEditor(getIdentity(), roles,  docTemplate.getSuffix(), Mode.EDIT, true)) {
 					return true;
 				}
 			}

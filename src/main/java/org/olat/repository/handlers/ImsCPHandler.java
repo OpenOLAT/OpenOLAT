@@ -45,6 +45,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -87,7 +88,7 @@ import org.olat.resource.OLATResourceManager;
 public class ImsCPHandler extends FileHandler {
 	
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return true;
 	}
 	
@@ -201,7 +202,7 @@ public class ImsCPHandler extends FileHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.yes;
 	}
 	

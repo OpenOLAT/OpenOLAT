@@ -48,4 +48,6 @@ public interface DocEditorIdentityService {
 	
 	public String getUserDisplayName(Identity identity);
 
+	public boolean isCoach(Identity identity);
+
 }

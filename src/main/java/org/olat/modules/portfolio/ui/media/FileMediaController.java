@@ -38,6 +38,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -72,6 +73,7 @@ public class FileMediaController extends BasicController implements PageElementE
 
 	private DocEditorFullscreenController docEditorCtrl;
 
+	private final Roles roles;
 	private final Media media;
 	private final MediaRenderingHints hints;
 	private VFSLeaf vfsLeaf;
@@ -87,6 +89,7 @@ public class FileMediaController extends BasicController implements PageElementE
 	
 	public FileMediaController(UserRequest ureq, WindowControl wControl, Media media, MediaRenderingHints hints) {
 		super(ureq, wControl);
+		this.roles = ureq.getUserSession().getRoles();
 		this.media = media;
 		this.hints = hints;
 		setTranslator(Util.createPackageTranslator(PortfolioHomeController.class, getLocale(), getTranslator()));
@@ -167,9 +170,9 @@ public class FileMediaController extends BasicController implements PageElementE
 		DocEditorSecurityCallback viewSC = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.VIEW).build();
 		if (isEditingExcluded()) {
 			return null;
-		} else if (editMode && docEditorService.hasEditor(vfsLeaf, getIdentity(), editSC)) {
+		} else if (editMode && docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, editSC)) {
 			return editSC;
-		} else if (docEditorService.hasEditor(vfsLeaf, getIdentity(), viewSC)) {
+		} else if (docEditorService.hasEditor(getIdentity(), roles, vfsLeaf, viewSC)) {
 			return viewSC;
 		}
 		return null;

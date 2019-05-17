@@ -144,7 +144,7 @@ public class MediaCenterController extends FormBasicController
 		super(ureq, wControl, "medias");
 		this.stackPanel = null;
 		this.select = true;
-		this.editableFileTypes = CreateFileHandler.getEditableTemplates(getLocale());
+		this.editableFileTypes = CreateFileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 		 
 		initForm(ureq);
 		loadModel();
@@ -154,7 +154,7 @@ public class MediaCenterController extends FormBasicController
 		super(ureq, wControl, "medias");
 		this.stackPanel = stackPanel;
 		this.select = false;
-		this.editableFileTypes = CreateFileHandler.getEditableTemplates(getLocale());
+		this.editableFileTypes = CreateFileHandler.getEditableTemplates(getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 		 
 		initForm(ureq);
 		loadModel();

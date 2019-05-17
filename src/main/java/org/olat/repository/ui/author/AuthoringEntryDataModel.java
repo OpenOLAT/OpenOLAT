@@ -25,6 +25,8 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -39,15 +41,20 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<AuthoringEntryRow> {
 
 	private final RepositoryHandlerFactory handlerFactory;
+	private Identity identity;
+	private Roles roles;
 	
-	public AuthoringEntryDataModel(AuthoringEntryDataSource source, FlexiTableColumnModel columnModel) {
+	public AuthoringEntryDataModel(AuthoringEntryDataSource source, FlexiTableColumnModel columnModel,
+			Identity identity, Roles roles) {
 		super(source, columnModel);
+		this.identity = identity;
+		this.roles = roles;
 		handlerFactory = CoreSpringFactory.getImpl(RepositoryHandlerFactory.class);
 	}
 
 	@Override
 	public DefaultFlexiTableDataSourceModel<AuthoringEntryRow> createCopyWithEmptyList() {
-		return new AuthoringEntryDataModel(getSourceDelegate(), getTableColumnModel());
+		return new AuthoringEntryDataModel(getSourceDelegate(), getTableColumnModel(), identity, roles);
 	}
 	
 	public boolean isAuthoringEntryRowLoaded(List<Long> repoEntryKeys) {
@@ -126,7 +133,7 @@ class AuthoringEntryDataModel extends DefaultFlexiTableDataSourceModel<Authoring
 				if(handler == null) {
 					return Boolean.FALSE;
 				}
-				if(handler.supportsEdit(item.getOLATResourceable()) == EditionSupport.no) {
+				if(handler.supportsEdit(item.getOLATResourceable(), identity, roles) == EditionSupport.no) {
 					return Boolean.FALSE;
 				}
 				RepositoryEntryStatusEnum status = item.getEntryStatus();

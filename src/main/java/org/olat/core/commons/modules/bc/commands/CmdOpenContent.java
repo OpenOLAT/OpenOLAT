@@ -107,7 +107,7 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		
 		VFSLeaf vfsLeaf = (VFSLeaf) currentItem;
 		
-		DocEditorSecurityCallback secCallback = getDocEditorSecCallback(vfsLeaf);
+		DocEditorSecurityCallback secCallback = getDocEditorSecCallback(ureq, vfsLeaf);
 		HTMLEditorConfig htmlEditorConfig = getHtmlEditorConfig(vfsLeaf);
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
@@ -122,7 +122,7 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		return this;
 	}
 	
-	private DocEditorSecurityCallback getDocEditorSecCallback(VFSLeaf vfsLeaf) {
+	private DocEditorSecurityCallback getDocEditorSecCallback(UserRequest ureq, VFSLeaf vfsLeaf) {
 		VFSContainer currentContainer = folderComponent.getCurrentContainer();
 		boolean hasMeta = currentContainer.canMeta() == VFSConstants.YES;
 		VFSContainer container = VFSManager.findInheritingSecurityCallbackContainer(currentContainer);
@@ -131,15 +131,15 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		DocEditorSecurityCallbackBuilder secCallbackBuilder = DocEditorSecurityCallbackBuilder.builder()
 				.withVersionControlled(true)
 				.withHasMeta(hasMeta);
-		DocEditor.Mode mode = getMode(vfsLeaf, canWrite, secCallbackBuilder);
+		DocEditor.Mode mode = getMode(ureq, vfsLeaf, canWrite, secCallbackBuilder);
 		secCallbackBuilder.withMode(mode);
 		return secCallbackBuilder.build();
 	}
 	
-	private DocEditor.Mode getMode(VFSLeaf vfsLeaf, boolean canWrite, DocEditorSecurityCallbackBuilder secCallbackBuilder) {
+	private DocEditor.Mode getMode(UserRequest ureq, VFSLeaf vfsLeaf, boolean canWrite, DocEditorSecurityCallbackBuilder secCallbackBuilder) {
 		if (canWrite) {
 			DocEditorSecurityCallback editSecCallback = secCallbackBuilder.withMode(DocEditor.Mode.EDIT).build();
-			if (docEditorService.hasEditor(vfsLeaf, getIdentity(), editSecCallback)) {
+			if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, editSecCallback)) {
 				return DocEditor.Mode.EDIT;
 			}
 		}

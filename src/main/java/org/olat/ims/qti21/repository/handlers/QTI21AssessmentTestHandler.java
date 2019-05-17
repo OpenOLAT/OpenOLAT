@@ -127,7 +127,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	}
 
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return true;
 	}
 
@@ -363,7 +363,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.yes;
 	}
 	

@@ -135,7 +135,7 @@ public class CourseHandler implements RepositoryHandler {
 	private static final Logger log = Tracing.createLoggerFor(CourseHandler.class);
 	
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return true;
 	}
 	
@@ -521,7 +521,7 @@ public class CourseHandler implements RepositoryHandler {
 	}
 	
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.yes;
 	}
 	

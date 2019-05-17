@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -33,7 +34,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface WebDocumentCreateDelegate {
 	
-	public boolean supportCreate();
+	public boolean supportCreate(Identity identity, Roles roles);
 	
 	public String getCreateLabelI18nKey();
 	

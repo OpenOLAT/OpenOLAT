@@ -25,6 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -44,6 +45,15 @@ public interface DocEditor {
 	String getDisplayName(Locale locale);
 
 	boolean isDataTransferConfirmationEnabled();
+	
+	/**
+	 * Indicates whether a specific identity with specific roles is permitted to use the editor.
+	 *
+	 * @param identity 
+	 * @param roles
+	 * @return
+	 */
+	boolean isEnabledFor(Identity identity, Roles roles);
 	
 	/**
 	 * Indicates whether the editor supports the format with that suffix in the appropriate mode.
@@ -67,6 +77,5 @@ public interface DocEditor {
 	
 	Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
 			DocEditorSecurityCallback securityCallback, DocEditorConfigs configs);
-
 
 }

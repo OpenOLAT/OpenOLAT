@@ -40,6 +40,7 @@ import org.olat.core.gui.media.NotFoundMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -88,7 +89,7 @@ public class VideoHandler extends FileHandler {
 	private RepositoryService repositoryService;
 	
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return false;
 	}
 
@@ -227,7 +228,7 @@ public class VideoHandler extends FileHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.no;
 	}
 	

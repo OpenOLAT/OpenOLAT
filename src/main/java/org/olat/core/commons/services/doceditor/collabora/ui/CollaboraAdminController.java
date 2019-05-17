@@ -21,7 +21,10 @@ package org.olat.core.commons.services.doceditor.collabora.ui;
 
 import static org.olat.core.commons.services.doceditor.collabora.CollaboraService.REFRESH_EVENT_ORES;
 import static org.olat.core.commons.services.doceditor.collabora.ui.CollaboraUIFactory.validateIsMandatory;
+import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
+
+import java.util.Collection;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
@@ -39,6 +42,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
@@ -58,12 +62,17 @@ public class CollaboraAdminController extends FormBasicController {
 	private static final Logger log = Tracing.createLoggerFor(CollaboraAdminController.class);
 
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
+	private static final String USAGE_AUTHOR = "author";
+	private static final String USAGE_COACH = "coach";
+	private static final String USAGE_MANAGERS = "managers";
 	
 	private MultipleSelectionElement enabledEl;
 	private TextElement baseUrlEl;
 	private FormLink refreshDiscoveryLink;
 	private FormLink testLink;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
+	private MultipleSelectionElement usageRestrictedEl;
+	private MultipleSelectionElement usageRolesEl;
 
 	@Autowired
 	private CollaboraModule collaboraModule;
@@ -96,6 +105,22 @@ public class CollaboraAdminController extends FormBasicController {
 				translateAll(getTranslator(), ENABLED_KEYS));
 		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], collaboraModule.isDataTransferConfirmationEnabled());
 		
+		usageRestrictedEl = uifactory.addCheckboxesHorizontal("admin.usage.restricted", formLayout, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		usageRestrictedEl.setHelpTextKey("admin.usage.restricted.help", null);
+		usageRestrictedEl.select(ENABLED_KEYS[0], collaboraModule.isUsageRestricted());
+		usageRestrictedEl.addActionListener(FormEvent.ONCHANGE);
+		
+		KeyValues usageRolesKV = new KeyValues();
+		usageRolesKV.add(entry(USAGE_AUTHOR, translate("admin.usage.roles.author")));
+		usageRolesKV.add(entry(USAGE_COACH, translate("admin.usage.roles.coach")));
+		usageRolesKV.add(entry(USAGE_MANAGERS, translate("admin.usage.roles.managers")));
+		usageRolesEl = uifactory.addCheckboxesVertical("admin.usage.roles", formLayout, usageRolesKV.keys(), usageRolesKV.values(), 1);
+		usageRolesEl.select(USAGE_AUTHOR, collaboraModule.isUsageRestrictedToAuthors());
+		usageRolesEl.select(USAGE_COACH, collaboraModule.isUsageRestrictedToCoaches());
+		usageRolesEl.select(USAGE_MANAGERS, collaboraModule.isUsageRestrictedToManagers());
+		updateUsageUI();
+		
 		if (Settings.isDebuging()) {
 			testLink = uifactory.addFormLink("admin.test", formLayout, Link.BUTTON);
 		}
@@ -109,12 +134,19 @@ public class CollaboraAdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == refreshDiscoveryLink) {
 			doRefreshDiscovery();
+		} else if (source == usageRestrictedEl) {
+			updateUsageUI();
 		} else if (source == testLink) {
 			doTest();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private void updateUsageUI() {
+		boolean usageRestricted = usageRestrictedEl.isAtLeastSelected(1);
+		usageRolesEl.setVisible(usageRestricted);
+	}
+
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
@@ -141,6 +173,14 @@ public class CollaboraAdminController extends FormBasicController {
 		
 		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
 		collaboraModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
+		
+		boolean usageRestricted = usageRestrictedEl.isAtLeastSelected(1);
+		collaboraModule.setUsageRestricted(usageRestricted);
+		
+		Collection<String> restrictionKeys = usageRolesEl.getSelectedKeys();
+		collaboraModule.setUsageRestrictedToAuthors(restrictionKeys.contains(USAGE_AUTHOR));
+		collaboraModule.setUsageRestrictedToCoaches(restrictionKeys.contains(USAGE_COACH));
+		collaboraModule.setUsageRestrictedToManagers(restrictionKeys.contains(USAGE_MANAGERS));
 	}
 
 	@Override

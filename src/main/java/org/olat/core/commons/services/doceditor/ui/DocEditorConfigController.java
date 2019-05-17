@@ -67,7 +67,8 @@ public class DocEditorConfigController extends BasicController implements Activa
 		super(ureq, wControl);
 		this.guiEditorKey = getGuiPrefixKey(vfsLeaf);
 		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		editors = editorService.getEditors(suffix, secCallback.getMode(), secCallback.hasMeta());
+		editors = editorService.getEditors(getIdentity(), ureq.getUserSession().getRoles(), suffix,
+				secCallback.getMode(), secCallback.hasMeta());
 		
 		VelocityContainer mainVC = createVelocityContainer("editor_config");
 		

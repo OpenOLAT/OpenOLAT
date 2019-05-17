@@ -130,7 +130,7 @@ class SubmitDocumentsController extends FormBasicController {
 		this.gtaNode = cNode;
 		this.courseEnv = courseEnv;
 		initForm(ureq);
-		updateModel();
+		updateModel(ureq);
 	}
 
 	public Task getAssignedTask() {
@@ -182,7 +182,7 @@ class SubmitDocumentsController extends FormBasicController {
 		tableEl.setElementCssClass("o_table_no_margin");
 	}
 	
-	private void updateModel() {
+	private void updateModel(UserRequest ureq) {
 		File[] documents = documentsDir.listFiles(SystemFileFilter.FILES_ONLY);
 		if(documents == null) {
 			documents = new File[0];
@@ -211,7 +211,7 @@ class SubmitDocumentsController extends FormBasicController {
 			
 			if(item instanceof VFSLeaf) {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
-				openMode = getOpenMode(vfsLeaf, getIdentity(), readOnly);
+				openMode = getOpenMode(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, readOnly);
 			}
 			docList.add(new SubmittedSolution(document, uploadedBy, download, openMode));
 		}
@@ -251,7 +251,7 @@ class SubmitDocumentsController extends FormBasicController {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
 				SubmittedSolution document = (SubmittedSolution)confirmDeleteCtrl.getUserObject();
 				String filename = document.getFile().getName();
-				doDelete(document);
+				doDelete(ureq, document);
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.DELETE, filename));
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
@@ -287,7 +287,7 @@ class SubmitDocumentsController extends FormBasicController {
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.CREATE, filename));
 				gtaManager.markNews(courseEnv, gtaNode);
 				doOpen(ureq, filename, EDIT);
-				updateModel();
+				updateModel(ureq);
 			} 
 			checkDeadline(ureq);
 		} else if (source == docEditorCtrl) {
@@ -295,7 +295,7 @@ class SubmitDocumentsController extends FormBasicController {
 				fireEvent(ureq, new SubmitEvent(SubmitEvent.UPDATE, docEditorCtrl.getVfsLeaf().getName()));
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
-			updateModel();
+			updateModel(ureq);
 			cleanUp();
 			checkDeadline(ureq);
 		} else if(cmc == source) {
@@ -389,12 +389,12 @@ class SubmitDocumentsController extends FormBasicController {
 		confirmDeleteCtrl.setUserObject(solution);
 	}
 
-	private void doDelete(SubmittedSolution solution) {
+	private void doDelete(UserRequest ureq, SubmittedSolution solution) {
 		File document = solution.getFile();
 		if(document.exists()) {
 			document.delete();
 		}
-		updateModel();
+		updateModel(ureq);
 	}
 	
 	private void doOpen(UserRequest ureq, String filename, Mode mode) {
@@ -444,7 +444,7 @@ class SubmitDocumentsController extends FormBasicController {
 			logError("", e);
 			showError("");
 		}
-		updateModel();
+		updateModel(ureq);
 	}
 	
 	private void doOpenDocumentUpload(UserRequest ureq) {
@@ -469,7 +469,8 @@ class SubmitDocumentsController extends FormBasicController {
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");
 		} else {
-			newDocCtrl = new NewDocumentController(ureq, getWindowControl(), documentsContainer, htmlOffice(getLocale()));
+			newDocCtrl = new NewDocumentController(ureq, getWindowControl(), documentsContainer,
+					htmlOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
 			listenTo(newDocCtrl);
 			
 			cmc = new CloseableModalController(getWindowControl(), "close", newDocCtrl.getInitialComponent());

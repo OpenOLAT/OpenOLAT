@@ -87,7 +87,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	public static final String PROCESS_UPLOAD = "pu";
 
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return true;
 	}
 	
@@ -177,7 +177,7 @@ public class GlossaryHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.embedded;
 	}
 	

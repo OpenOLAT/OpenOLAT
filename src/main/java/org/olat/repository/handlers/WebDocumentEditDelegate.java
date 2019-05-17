@@ -23,6 +23,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -33,7 +35,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface WebDocumentEditDelegate {
 	
-	public EditionSupport supportsEdit();
+	public EditionSupport supportsEdit(Identity identity, Roles roles);
 	
 	public Controller createEditorController(RepositoryEntry re, UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar);
 

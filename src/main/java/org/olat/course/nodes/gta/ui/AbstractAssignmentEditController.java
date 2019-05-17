@@ -152,10 +152,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		taskModel = new TaskDefinitionTableModel(columnsModel);
 		taskDefTableEl = uifactory.addTableElement(getWindowControl(), "taskTable", taskModel, getTranslator(), tasksCont);
 		taskDefTableEl.setExportEnabled(true);
-		updateModel();
+		updateModel(ureq);
 	}
 	
-	protected void updateModel() {
+	protected void updateModel(UserRequest ureq) {
 		fileExistsRenderer.setFilenames(tasksFolder.list());
 		List<TaskDefinition> taskDefinitions = gtaManager.getTaskDefinitions(courseEnv, gtaNode);
 		List<TaskDefinitionRow> rows = new ArrayList<>(taskDefinitions.size());
@@ -167,7 +167,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
 				downloadLink = uifactory
 					.addDownloadLink("file_" + (++linkCounter), def.getFilename(), null, vfsLeaf, taskDefTableEl);
-				mode = getOpenMode(vfsLeaf, getIdentity(), readOnly);
+				mode = getOpenMode(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, readOnly);
 			}
 			
 			TaskDefinitionRow row = new TaskDefinitionRow(def, downloadLink, mode);
@@ -189,7 +189,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				TaskDefinition newTask = addTaskCtrl.getTask();
 				gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
 				fireEvent(ureq, Event.DONE_EVENT);
-				updateModel();
+				updateModel(ureq);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
@@ -198,7 +198,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 		} else if(editTaskCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				doFinishReplacementOfTask(editTaskCtrl.getFilenameToReplace(), editTaskCtrl.getTask());
-				updateModel();
+				updateModel(ureq);
 				//fireEvent(ureq, Event.DONE_EVENT);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
@@ -212,12 +212,12 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
 				doOpen(ureq, newTask, EDIT);
-				updateModel();
+				updateModel(ureq);
 			} 
 		} else if (source == docEditorCtrl) {
 			if(event == Event.DONE_EVENT) {
 				gtaManager.markNews(courseEnv, gtaNode);
-				updateModel();
+				updateModel(ureq);
 				cleanUp();
 			}
 		} else if(confirmDeleteCtrl == source) {
@@ -302,7 +302,8 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	}
 	
 	private void doCreateTask(UserRequest ureq) {
-		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer, htmlOffice(getLocale()));
+		newTaskCtrl = new NewTaskController(ureq, getWindowControl(), tasksContainer,
+				htmlOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
 		listenTo(newTaskCtrl);
 
 		String title = translate("create.task");
@@ -334,7 +335,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	
 	private void doDelete(UserRequest ureq, TaskDefinition taskDef) {
 		gtaManager.removeTaskDefinition(taskDef, courseEnv, gtaNode);
-		updateModel();
+		updateModel(ureq);
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 	

@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.office365.ui.Office365EditorController;
 import org.olat.core.gui.UserRequest;
@@ -30,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,8 @@ public class Office365Editor implements DocEditor {
 	private Office365Module office365Module;
 	@Autowired
 	private Office365Service office365Service;
+	@Autowired
+	private DocEditorIdentityService identityService;
 
 	@Override
 	public boolean isEnable() {
@@ -68,6 +72,18 @@ public class Office365Editor implements DocEditor {
 	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return office365Module.isDataTransferConfirmationEnabled();
+	}
+
+	@Override
+	public boolean isEnabledFor(Identity identity, Roles roles) {
+		if (office365Module.isUsageRestricted()) {
+			if (roles.isAdministrator()) return true;
+			if (office365Module.isUsageRestrictedToAuthors() && roles.isAuthor()) return true;
+			if (office365Module.isUsageRestrictedToManagers() && roles.isManager()) return true;
+			if (office365Module.isUsageRestrictedToCoaches() && identityService.isCoach(identity)) return true;
+			return false;
+		}
+		return true;
 	}
 
 	@Override

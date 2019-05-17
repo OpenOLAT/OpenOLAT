@@ -134,10 +134,10 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		solutionModel = new SolutionTableModel(columnsModel);
 		solutionTable = uifactory.addTableElement(getWindowControl(), "table", solutionModel, getTranslator(), formLayout);
 		solutionTable.setExportEnabled(true);
-		updateModel();
+		updateModel(ureq);
 	}
 	
-	private void updateModel() {
+	private void updateModel(UserRequest ureq) {
 		List<Solution> solutionList = gtaManager.getSolutions(courseEnv, gtaNode);
 		List<SolutionRow> rows = new ArrayList<>(solutionList.size());
 		for(Solution solution:solutionList) {
@@ -158,7 +158,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				VFSLeaf vfsLeaf = (VFSLeaf)item;
 				downloadLink = uifactory
 					.addDownloadLink("file_" + (++linkCounter), filename, null, vfsLeaf, solutionTable);
-				openMode = getOpenMode(vfsLeaf, getIdentity(), readOnly);
+				openMode = getOpenMode(getIdentity(), ureq.getUserSession().getRoles(), vfsLeaf, readOnly);
 			}
 
 			rows.add(new SolutionRow(solution, author, downloadLink, openMode));
@@ -179,7 +179,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 				Solution newSolution = addSolutionCtrl.getSolution();
 				gtaManager.addSolution(newSolution, courseEnv, gtaNode);
 				fireEvent(ureq, Event.DONE_EVENT);
-				updateModel();
+				updateModel(ureq);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
@@ -188,7 +188,7 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				gtaManager.updateSolution(editSolutionCtrl.getFilenameToReplace(), editSolutionCtrl.getSolution(), courseEnv, gtaNode);
 				fireEvent(ureq, Event.DONE_EVENT);
-				updateModel();
+				updateModel(ureq);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
@@ -201,13 +201,13 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 			if(event == Event.DONE_EVENT) {
 				gtaManager.addSolution(newSolution, courseEnv, gtaNode);
 				doOpen(ureq, newSolution, Mode.EDIT);
-				updateModel();
+				updateModel(ureq);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
 		} else if (source == docEditorCtrl) {
 			if(event == Event.DONE_EVENT) {
 				gtaManager.markNews(courseEnv, gtaNode);
-				updateModel();
+				updateModel(ureq);
 				cleanUp();
 			}
 		} else if(cmc == source) {
@@ -289,7 +289,8 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	}
 	
 	private void doCreateSolution(UserRequest ureq) {
-		newSolutionCtrl = new NewSolutionController(ureq, getWindowControl(), solutionContainer, htmlOffice(getLocale()));
+		newSolutionCtrl = new NewSolutionController(ureq, getWindowControl(), solutionContainer,
+				htmlOffice(getIdentity(), ureq.getUserSession().getRoles(), getLocale()));
 		listenTo(newSolutionCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), "close", newSolutionCtrl.getInitialComponent());
@@ -305,6 +306,6 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		}
 		gtaManager.removeSolution(solution.getSolution(), courseEnv, gtaNode);
 		fireEvent(ureq, Event.DONE_EVENT);
-		updateModel();
+		updateModel(ureq);
 	}
 }

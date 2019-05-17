@@ -212,10 +212,10 @@ public class AuthorListController extends FormBasicController implements Activat
 
 		stackPanel = new TooledStackedPanel(i18nName, getTranslator(), this);
 		stackPanel.pushController(translate(i18nName), this);
-		initTools();
+		initTools(ureq);
 	}
 	
-	protected void initTools() {
+	protected void initTools(UserRequest ureq) {
 		if(!withSearch && hasAuthorRight) {
 			importLink = LinkFactory.createLink("cmd.import.ressource", getTranslator(), this);
 			importLink.setDomReplacementWrapperRequired(false);
@@ -237,7 +237,7 @@ public class AuthorListController extends FormBasicController implements Activat
 			for(OrderedRepositoryHandler orderedHandler:handlers) {
 				RepositoryHandler handler = orderedHandler.getHandler();
 				
-				if(handler != null && handler.supportCreate()) {
+				if(handler != null && handler.supportCreate(getIdentity(), ureq.getUserSession().getRoles())) {
 					// for each 10-group, create a separator
 					int group = orderedHandler.getOrder() / 10;
 					if (group > lastGroup) {
@@ -350,7 +350,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		
 		initActionsColumns(columnsModel);
 		
-		model = new AuthoringEntryDataModel(dataSource, columnsModel);
+		model = new AuthoringEntryDataModel(dataSource, columnsModel, getIdentity(), ureq.getUserSession().getRoles());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
 		tableEl.setSearchEnabled(withSearch);
 		tableEl.setCssDelegate(this);

@@ -41,6 +41,7 @@ import org.olat.core.gui.media.ZippedDirectoryMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
@@ -73,7 +74,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class SCORMCPHandler extends FileHandler {
 	
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return false;
 	}
 	
@@ -175,7 +176,7 @@ public class SCORMCPHandler extends FileHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.no;
 	}
 	

@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -73,13 +74,13 @@ public class DocumentEditorDelegate implements WebDocumentCreateDelegate, WebDoc
 	}
 	
 	@Override
-	public boolean supportCreate() {
-		return canEdit();
+	public boolean supportCreate(Identity identity, Roles roles) {
+		return canEdit(identity, roles);
 	}
 
-	private boolean canEdit() {
+	private boolean canEdit(Identity identity, Roles roles) {
 		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
-		return docEditorService.hasEditor(type.getSuffix(), Mode.EDIT, true);
+		return docEditorService.hasEditor(identity, roles, type.getSuffix(), Mode.EDIT, true);
 	}
 	
 	@Override
@@ -100,8 +101,8 @@ public class DocumentEditorDelegate implements WebDocumentCreateDelegate, WebDoc
 	}
 	
 	@Override
-	public EditionSupport supportsEdit() {
-		return canEdit()? EditionSupport.yes: EditionSupport.no;
+	public EditionSupport supportsEdit(Identity identity, Roles roles) {
+		return canEdit(identity, roles)? EditionSupport.yes: EditionSupport.no;
 	}
 
 	@Override

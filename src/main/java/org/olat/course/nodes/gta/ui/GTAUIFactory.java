@@ -33,6 +33,7 @@ import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.doceditor.DocTemplates.Builder;
 import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
@@ -46,13 +47,13 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
  */
 class GTAUIFactory {
 	
-	static Mode getOpenMode(VFSLeaf vfsLeaf, Identity identity, boolean readOnly) {
+	static Mode getOpenMode(Identity identity, Roles roles, VFSLeaf vfsLeaf, boolean readOnly) {
 		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
 		DocEditorSecurityCallback editSC = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.EDIT).build();
 		DocEditorSecurityCallback viewSC = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.VIEW).build();
-		if (!readOnly && docEditorService.hasEditor(vfsLeaf, identity, editSC)) {
+		if (!readOnly && docEditorService.hasEditor(identity, roles, vfsLeaf, editSC)) {
 			return Mode.EDIT;
-		} else if (docEditorService.hasEditor(vfsLeaf, identity, viewSC)) {
+		} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, viewSC)) {
 			return Mode.VIEW;
 		}
 		return null;
@@ -73,19 +74,19 @@ class GTAUIFactory {
 				.build();
 	}
 	
-	static DocTemplates htmlOffice(Locale locale) {
+	static DocTemplates htmlOffice(Identity identity, Roles roles, Locale locale) {
 		DocumentEditorService docEditorService = CoreSpringFactory.getImpl(DocumentEditorService.class);
 		Builder builder = DocTemplates.builder(locale);
-		if (docEditorService.hasEditor("html", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "html", EDIT, true)) {
 			builder.addHtml();
 		}
-		if (docEditorService.hasEditor("docx", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "docx", EDIT, true)) {
 			builder.addDocx();
 		}
-		if (docEditorService.hasEditor("xlsx", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "xlsx", EDIT, true)) {
 			builder.addXlsx();
 		}
-		if (docEditorService.hasEditor("pptx", EDIT, true)) {
+		if (docEditorService.hasEditor(identity, roles, "pptx", EDIT, true)) {
 			builder.addPptx();
 		}
 		return builder.build();

@@ -31,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
@@ -72,6 +73,11 @@ public class FileEditor implements DocEditor {
 	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return false;
+	}
+
+	@Override
+	public boolean isEnabledFor(Identity identity, Roles roles) {
+		return true;
 	}
 
 	@Override

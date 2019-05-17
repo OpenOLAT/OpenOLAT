@@ -114,7 +114,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	private EvaluationFormManager evaluationFormManager;
 
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return formsModule.isEnabled();
 	}
 	
@@ -224,7 +224,7 @@ public class EvaluationFormHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.yes;
 	}
 	

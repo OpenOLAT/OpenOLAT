@@ -21,9 +21,9 @@ package org.olat.core.commons.services.doceditor.onlyoffice;
 
 import java.security.Key;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -48,6 +48,10 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String ONLYOFFICE_BASE_URL = "onlyoffice.baseUrl";
 	private static final String ONLYOFFICE_JWT_SECRET = "onlyoffice.jwt.secret";
 	private static final String ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED = "onlyoffice.data.transfer.confirmation.enabled";
+	private static final String ONLYOFFICE_USAGE_RESTRICTED = "onlyoffice.usage.restricted";
+	private static final String ONLYOFFICE_USAGE_AUTHORS = "onlyoffice.usage.authors";
+	private static final String ONLYOFFICE_USAGE_COACHES = "onlyoffice.usage.coaches";
+	private static final String ONLYOFFICE_USAGE_MANAGERS = "onlyoffice.usage.managers";
 	
 	@Value("${onlyoffice.enabled:false}")
 	private boolean enabled;
@@ -60,6 +64,14 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private Key jwtSignKey;
 	@Value("${onlyoffice.data.transfer.confirmation.enabled:false}")
 	private boolean dataTransferConfirmationEnabled;
+	@Value("${onlyoffice.usage.restricted:false}")
+	private boolean usageRestricted;
+	@Value("${onlyoffice.usage.restricted.authors:false}")
+	private boolean usageRestrictedToAuthors;
+	@Value("${onlyoffice.usage.restricted.coaches:false}")
+	private boolean usageRestrictedToCoaches;
+	@Value("${onlyoffice.usage.restricted.managers:false}")
+	private boolean usageRestrictedToManagers;
 	
 	@Autowired
 	private OnlyOfficeModule(CoordinatorManager coordinateManager) {
@@ -96,6 +108,26 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		String dataTransferConfirmationEnabledObj = getStringPropertyValue(ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
 			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
+		}
+		
+		String usageRestrictedObj = getStringPropertyValue(ONLYOFFICE_USAGE_RESTRICTED, true);
+		if(StringHelper.containsNonWhitespace(usageRestrictedObj)) {
+			usageRestricted = "true".equals(usageRestrictedObj);
+		}
+		
+		String usageRestrictedToAuthorsObj = getStringPropertyValue(ONLYOFFICE_USAGE_AUTHORS, true);
+		if(StringHelper.containsNonWhitespace(usageRestrictedToAuthorsObj)) {
+			usageRestrictedToAuthors = "true".equals(usageRestrictedToAuthorsObj);
+		}
+		
+		String usageRestrictedToCoachesObj = getStringPropertyValue(ONLYOFFICE_USAGE_COACHES, true);
+		if(StringHelper.containsNonWhitespace(usageRestrictedToCoachesObj)) {
+			usageRestrictedToCoaches = "true".equals(usageRestrictedToCoachesObj);
+		}
+		
+		String usageRestrictedToManagersObj = getStringPropertyValue(ONLYOFFICE_USAGE_MANAGERS, true);
+		if(StringHelper.containsNonWhitespace(usageRestrictedToManagersObj)) {
+			usageRestrictedToManagers = "true".equals(usageRestrictedToManagersObj);
 		}
 	}
 
@@ -155,6 +187,42 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	public void setDataTransferConfirmationEnabled(boolean dataTransferConfirmationEnabled) {
 		this.dataTransferConfirmationEnabled = dataTransferConfirmationEnabled;
 		setStringProperty(ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED, Boolean.toString(dataTransferConfirmationEnabled), true);
+	}
+
+	public boolean isUsageRestricted() {
+		return usageRestricted;
+	}
+
+	public void setUsageRestricted(boolean usageRestricted) {
+		this.usageRestricted = usageRestricted;
+		setStringProperty(ONLYOFFICE_USAGE_RESTRICTED, Boolean.toString(usageRestricted), true);
+	}
+
+	public boolean isUsageRestrictedToAuthors() {
+		return usageRestrictedToAuthors;
+	}
+
+	public void setUsageRestrictedToAuthors(boolean usageRestrictedToAuthors) {
+		this.usageRestrictedToAuthors = usageRestrictedToAuthors;
+		setStringProperty(ONLYOFFICE_USAGE_AUTHORS, Boolean.toString(usageRestrictedToAuthors), true);
+	}
+
+	public boolean isUsageRestrictedToCoaches() {
+		return usageRestrictedToCoaches;
+	}
+
+	public void setUsageRestrictedToCoaches(boolean usageRestrictedToCoaches) {
+		this.usageRestrictedToCoaches = usageRestrictedToCoaches;
+		setStringProperty(ONLYOFFICE_USAGE_COACHES, Boolean.toString(usageRestrictedToCoaches), true);
+	}
+
+	public boolean isUsageRestrictedToManagers() {
+		return usageRestrictedToManagers;
+	}
+
+	public void setUsageRestrictedToManagers(boolean usageRestrictedToManagers) {
+		this.usageRestrictedToManagers = usageRestrictedToManagers;
+		setStringProperty(ONLYOFFICE_USAGE_MANAGERS, Boolean.toString(usageRestrictedToManagers), true);
 	}
 
 }

@@ -21,7 +21,10 @@ package org.olat.core.commons.services.doceditor.office365.ui;
 
 import static org.olat.core.commons.services.doceditor.office365.Office365Service.REFRESH_EVENT_ORES;
 import static org.olat.core.commons.services.doceditor.office365.ui.Office365UIFactory.validateIsMandatory;
+import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
+
+import java.util.Collection;
 
 import org.olat.core.commons.services.doceditor.office365.Office365Module;
 import org.olat.core.commons.services.doceditor.office365.Office365RefreshDiscoveryEvent;
@@ -36,6 +39,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
@@ -51,11 +55,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class Office365AdminController extends FormBasicController {
 
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
+	private static final String USAGE_AUTHOR = "author";
+	private static final String USAGE_COACH = "coach";
+	private static final String USAGE_MANAGERS = "managers";
 	
 	private MultipleSelectionElement enabledEl;
 	private TextElement baseUrlEl;
 	private FormLink refreshDiscoveryLink;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
+	private MultipleSelectionElement usageRestrictedEl;
+	private MultipleSelectionElement usageRolesEl;
 
 	@Autowired
 	private Office365Module office365Module;
@@ -86,6 +95,22 @@ public class Office365AdminController extends FormBasicController {
 				translateAll(getTranslator(), ENABLED_KEYS));
 		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], office365Module.isDataTransferConfirmationEnabled());
 		
+		usageRestrictedEl = uifactory.addCheckboxesHorizontal("admin.usage.restricted", formLayout, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		usageRestrictedEl.setHelpTextKey("admin.usage.restricted.help", null);
+		usageRestrictedEl.select(ENABLED_KEYS[0], office365Module.isUsageRestricted());
+		usageRestrictedEl.addActionListener(FormEvent.ONCHANGE);
+		
+		KeyValues usageRolesKV = new KeyValues();
+		usageRolesKV.add(entry(USAGE_AUTHOR, translate("admin.usage.roles.author")));
+		usageRolesKV.add(entry(USAGE_COACH, translate("admin.usage.roles.coach")));
+		usageRolesKV.add(entry(USAGE_MANAGERS, translate("admin.usage.roles.managers")));
+		usageRolesEl = uifactory.addCheckboxesVertical("admin.usage.roles", formLayout, usageRolesKV.keys(), usageRolesKV.values(), 1);
+		usageRolesEl.select(USAGE_AUTHOR, office365Module.isUsageRestrictedToAuthors());
+		usageRolesEl.select(USAGE_COACH, office365Module.isUsageRestrictedToCoaches());
+		usageRolesEl.select(USAGE_MANAGERS, office365Module.isUsageRestrictedToManagers());
+		updateUsageUI();
+		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
@@ -95,8 +120,15 @@ public class Office365AdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == refreshDiscoveryLink) {
 			doRefreshDiscovery();
+		} else if (source == usageRestrictedEl) {
+			updateUsageUI();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+	
+	private void updateUsageUI() {
+		boolean usageRestricted = usageRestrictedEl.isAtLeastSelected(1);
+		usageRolesEl.setVisible(usageRestricted);
 	}
 	
 	@Override
@@ -125,6 +157,14 @@ public class Office365AdminController extends FormBasicController {
 		
 		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
 		office365Module.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
+		
+		boolean usageRestricted = usageRestrictedEl.isAtLeastSelected(1);
+		office365Module.setUsageRestricted(usageRestricted);
+		
+		Collection<String> restrictionKeys = usageRolesEl.getSelectedKeys();
+		office365Module.setUsageRestrictedToAuthors(restrictionKeys.contains(USAGE_AUTHOR));
+		office365Module.setUsageRestrictedToCoaches(restrictionKeys.contains(USAGE_COACH));
+		office365Module.setUsageRestrictedToManagers(restrictionKeys.contains(USAGE_MANAGERS));
 	}
 
 	@Override

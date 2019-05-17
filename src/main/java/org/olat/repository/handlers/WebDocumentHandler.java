@@ -31,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
@@ -43,8 +44,8 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -97,8 +98,8 @@ public class WebDocumentHandler extends FileHandler {
 	}
 	
 	@Override
-	public boolean supportCreate() {
-		return createDelegate.supportCreate();
+	public boolean supportCreate(Identity identity, Roles roles) {
+		return createDelegate.supportCreate(identity, roles);
 	}
 
 	@Override
@@ -235,8 +236,8 @@ public class WebDocumentHandler extends FileHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
-		return editDelegate.supportsEdit();
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
+		return editDelegate.supportsEdit(identity, roles);
 	}
 	
 	@Override
@@ -304,7 +305,7 @@ public class WebDocumentHandler extends FileHandler {
 	private static class NullCreateDelegate implements WebDocumentCreateDelegate {
 
 		@Override
-		public boolean supportCreate() {
+		public boolean supportCreate(Identity identity, Roles roles) {
 			return false;
 		}
 
@@ -324,7 +325,7 @@ public class WebDocumentHandler extends FileHandler {
 	private static class NullEditDelegate implements WebDocumentEditDelegate {
 
 		@Override
-		public EditionSupport supportsEdit() {
+		public EditionSupport supportsEdit(Identity identity, Roles roles) {
 			return EditionSupport.no;
 		}
 

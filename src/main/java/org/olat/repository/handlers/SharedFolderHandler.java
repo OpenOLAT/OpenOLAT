@@ -77,7 +77,7 @@ import org.olat.resource.references.ReferenceManager;
 public class SharedFolderHandler implements RepositoryHandler {
 	
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return true;
 	}
 	
@@ -156,7 +156,7 @@ public class SharedFolderHandler implements RepositoryHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) {
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) {
 		return EditionSupport.embedded;
 	}
 	

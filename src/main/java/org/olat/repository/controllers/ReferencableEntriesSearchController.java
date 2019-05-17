@@ -147,7 +147,7 @@ public class ReferencableEntriesSearchController extends BasicController {
 			List<String> creatorTypes = new ArrayList<>(limitTypes.length);
 			for(String limitType:limitTypes) {
 				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(limitType);
-				if(handler.supportCreate()) {
+				if(handler.supportCreate(getIdentity(), ureq.getUserSession().getRoles())) {
 					creatorTypes.add(limitType);
 				}
 			}

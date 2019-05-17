@@ -48,6 +48,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
@@ -102,7 +103,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		}
 		
 		boolean hasMeta = folderComponent.getCurrentContainer().canMeta() == VFSConstants.YES;
-		DocTemplates docTemplates = DocTemplates.editables(getLocale(), hasMeta).build();
+		Identity identity = getIdentity();
+		DocTemplates docTemplates = DocTemplates.editables(identity, ureq.getUserSession().getRoles(), getLocale(), hasMeta).build();
 		createCtrl = new CreateDocumentController(ureq, wControl, folderComponent.getCurrentContainer(), docTemplates);
 		listenTo(createCtrl);
 		
@@ -157,7 +159,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		boolean hasMeta = currentContainer.canMeta() == VFSConstants.YES;
 		
 		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
-		List<DocEditor> editors = docEditorService.getEditors(suffix, DocEditor.Mode.EDIT, hasMeta);
+		List<DocEditor> editors = docEditorService.getEditors(getIdentity(), ureq.getUserSession().getRoles(), suffix,
+				DocEditor.Mode.EDIT, hasMeta);
 		// Not able to decide which editor to use -> show the folder list
 		if (editors.size() != 1) {
 			fireEvent(ureq, new FolderEvent(FolderEvent.NEW_FILE_EVENT, fileName));

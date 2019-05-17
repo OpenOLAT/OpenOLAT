@@ -74,7 +74,7 @@ public class AuthorDeletedListController extends AuthorListController {
 	}
 
 	@Override
-	protected void initTools() {
+	protected void initTools(UserRequest ureq) {
 		//
 	}
 

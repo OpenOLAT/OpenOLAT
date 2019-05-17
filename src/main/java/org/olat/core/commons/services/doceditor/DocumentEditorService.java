@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.vfs.VFSLeaf;
 
 /**
@@ -36,23 +37,26 @@ public interface DocumentEditorService {
 	
 	/**
 	 * Check if file with a specific suffix is supported by any enabled editor.
-	 *
+	 * @param identity
+	 * @param roles
 	 * @param suffix
 	 * @param mode
 	 * @param hasMeta
 	 * @return
 	 */
-	public boolean hasEditor(String suffix, Mode mode, boolean hasMeta);
+	public boolean hasEditor(Identity identity, Roles roles, String suffix, Mode mode, boolean hasMeta);
 	
 	/**
 	 * Get all enabled editors which support a file with a specific suffix.
-	 *
+	 * @param identity 
+	 * @param roles 
 	 * @param suffix
 	 * @param mode
 	 * @param hasMeta
+	 *
 	 * @return
 	 */
-	public List<DocEditor> getEditors(String suffix, Mode mode, boolean hasMeta);
+	public List<DocEditor> getEditors(Identity identity, Roles roles, String suffix, Mode mode, boolean hasMeta);
 	
 	/**
 	 * Get the editor of a specific type.
@@ -66,12 +70,14 @@ public interface DocumentEditorService {
 	 * Checks whether a vfsLeaf can be opened in any editor by a user and in a
 	 * specific mode. This method checks not only if a file format is supported but
 	 * also e.g. if the vfsLeaf is not locked by an other editor or user.
-	 *
-	 * @param vfsLeaf
+	 * 
 	 * @param identity
+	 * @param roles 
+	 * @param vfsLeaf
 	 * @param secCallback
+	 *
 	 * @return
 	 */
-	public boolean hasEditor(VFSLeaf vfsLeaf, Identity identity, DocEditorSecurityCallback secCallback);
+	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, DocEditorSecurityCallback secCallback);
 	
 }

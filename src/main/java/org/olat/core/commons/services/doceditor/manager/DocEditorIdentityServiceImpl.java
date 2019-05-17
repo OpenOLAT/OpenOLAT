@@ -19,8 +19,13 @@
  */
 package org.olat.core.commons.services.doceditor.manager;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
@@ -68,6 +73,15 @@ public class DocEditorIdentityServiceImpl implements DocEditorIdentityService {
 	@Override
 	public String getUserDisplayName(Identity identity) {
 		return userManager.getUserDisplayName(identity);
+	}
+
+	@Override
+	public boolean isCoach(Identity identity) {
+		SearchIdentityParams params = new SearchIdentityParams();
+		params.setIdentityKeys(Collections.singletonList(identity.getKey()));
+		params.setRepositoryEntryRole(GroupRoles.coach);
+		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(params , 0, 1);
+		return !identities.isEmpty();
 	}
 
 }

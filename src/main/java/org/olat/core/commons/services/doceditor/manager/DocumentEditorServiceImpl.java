@@ -28,6 +28,7 @@ import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,20 +47,22 @@ public class DocumentEditorServiceImpl implements DocumentEditorService {
 	private List<DocEditor> editors;
 	
 	@Override
-	public boolean hasEditor(String suffix, Mode mode, boolean hasMeta) {
+	public boolean hasEditor(Identity identity, Roles roles, String suffix, Mode mode, boolean hasMeta) {
 		if (mode == null) return false;
 		
 		return editors.stream()
 				.filter(DocEditor::isEnable)
+				.filter(editor -> editor.isEnabledFor(identity, roles))
 				.filter(editor -> editor.isSupportingFormat(suffix, mode, hasMeta))
 				.findFirst()
 				.isPresent();
 	}
 
 	@Override
-	public List<DocEditor> getEditors(String suffix, Mode mode, boolean hasMeta) {
+	public List<DocEditor> getEditors(Identity identity, Roles roles, String suffix, Mode mode, boolean hasMeta) {
 		return editors.stream()
 				.filter(DocEditor::isEnable)
+				.filter(editor -> editor.isEnabledFor(identity, roles))
 				.filter(editor -> editor.isSupportingFormat(suffix, mode, hasMeta))
 				.collect(Collectors.toList());
 	}
@@ -73,14 +76,17 @@ public class DocumentEditorServiceImpl implements DocumentEditorService {
 	}
 	
 	@Override
-	public boolean hasEditor(VFSLeaf vfsLeaf, Identity identity, DocEditorSecurityCallback secCallback) {
+	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, DocEditorSecurityCallback secCallback) {
 		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
 		return editors.stream()
 				.filter(DocEditor::isEnable)
+				.filter(editor -> editor.isEnabledFor(identity, roles))
 				.filter(editor -> editor.isSupportingFormat(suffix, secCallback.getMode(), secCallback.hasMeta()))
 				.filter(editor -> !editor.isLockedForMe(vfsLeaf, identity, secCallback.getMode()))
 				.findFirst()
 				.isPresent();
 	}
+	
+	
 
 }

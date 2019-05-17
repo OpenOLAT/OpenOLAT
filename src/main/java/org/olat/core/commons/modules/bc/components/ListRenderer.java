@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FileSelection;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
@@ -55,7 +56,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -449,7 +450,8 @@ public class ListRenderer {
 		// open
 		if (!xssErrors) {
 			Identity identity = fc.getIdentityEnvironnement().getIdentity();
-			String openIcon = getOpenIconCss(child, canWrite, identity);
+			Roles roles = fc.getIdentityEnvironnement().getRoles();
+			String openIcon = getOpenIconCss(child, canWrite, identity, roles);
 			if (openIcon != null) {
 				sb.append("<a ");
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
@@ -512,7 +514,7 @@ public class ListRenderer {
 		sb.append("</td></tr>");
 	}
 	
-	private String getOpenIconCss(VFSItem child, boolean canWrite, Identity identity) {
+	private String getOpenIconCss(VFSItem child, boolean canWrite, Identity identity, Roles roles) {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
 			boolean hasMeta = vfsLeaf.canMeta() == VFSConstants.YES;
@@ -521,9 +523,9 @@ public class ListRenderer {
 					.withHasMeta(hasMeta);
 			DocEditorSecurityCallback editSecCallback = secCallbackBuilder.withMode(Mode.EDIT).build();
 			DocEditorSecurityCallback viewSecCallback = secCallbackBuilder.withMode(Mode.VIEW).build();
-			if (canWrite && docEditorService.hasEditor(vfsLeaf, identity, editSecCallback)) {
+			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, editSecCallback)) {
 				return "o_icon_edit";
-			} else if (docEditorService.hasEditor(vfsLeaf, identity, viewSecCallback)) {
+			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, viewSecCallback)) {
 				return "o_icon_preview";
 			}
 		}

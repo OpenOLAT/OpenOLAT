@@ -23,6 +23,7 @@ import java.util.Locale;
 
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
+import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.collabora.ui.CollaboraEditorController;
 import org.olat.core.gui.UserRequest;
@@ -30,6 +31,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,8 @@ public class CollaboraEditor implements DocEditor {
 	private CollaboraModule collaboraModule;
 	@Autowired
 	private CollaboraService collaboraService;
+	@Autowired
+	private DocEditorIdentityService identityService;
 
 	@Override
 	public boolean isEnable() {
@@ -68,6 +72,18 @@ public class CollaboraEditor implements DocEditor {
 	@Override
 	public boolean isDataTransferConfirmationEnabled() {
 		return collaboraModule.isDataTransferConfirmationEnabled();
+	}
+
+	@Override
+	public boolean isEnabledFor(Identity identity, Roles roles) {
+		if (collaboraModule.isUsageRestricted()) {
+			if (roles.isAdministrator()) return true;
+			if (collaboraModule.isUsageRestrictedToAuthors() && roles.isAuthor()) return true;
+			if (collaboraModule.isUsageRestrictedToManagers() && roles.isManager()) return true;
+			if (collaboraModule.isUsageRestrictedToCoaches() && identityService.isCoach(identity)) return true;
+			return false;
+		}
+		return true;
 	}
 
 	@Override

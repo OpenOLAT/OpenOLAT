@@ -42,6 +42,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentMode;
@@ -80,7 +81,7 @@ import org.olat.resource.references.ReferenceManager;
 public class QTITestHandler extends QTIHandler {
 	
 	@Override
-	public boolean supportCreate() {
+	public boolean supportCreate(Identity identity, Roles roles) {
 		return CoreSpringFactory.getImpl(QTIModule.class).isCreateResourcesEnabled();
 	}
 	
@@ -144,7 +145,7 @@ public class QTITestHandler extends QTIHandler {
 	}
 
 	@Override
-	public EditionSupport supportsEdit(OLATResourceable resource) { 
+	public EditionSupport supportsEdit(OLATResourceable resource, Identity identity, Roles roles) { 
 		if(resource != null && QTIResourceTypeModule.isOnyxTest(resource)) {
 			return EditionSupport.no;
 		}
