@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.modules.bc.commands;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.editor.htmleditor.HTMLEditorConfig;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
@@ -30,6 +31,7 @@ import org.olat.core.commons.services.doceditor.DocumentEditorService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Controller;
@@ -112,6 +114,10 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 				.build();
 		editCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
 		listenTo(editCtrl);
+		
+		if (vfsLeaf.canMeta() == VFSConstants.YES) {
+			CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(vfsLeaf);
+		}
 		
 		return this;
 	}
