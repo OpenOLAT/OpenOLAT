@@ -84,7 +84,8 @@ public class UserShortDescription extends BasicController {
 		mainVC.contextPut("userPropertyHandlers", userPropertyHandlers);
 		mainVC.contextPut("user", identity.getUser());			
 		mainVC.contextPut("identityKey", identity.getKey());
-		mainVC.contextPut("usernamePosition", "top");		
+		mainVC.contextPut("usernamePosition", "top");
+		mainVC.contextPut("locale", getLocale());
 		if(!alreadyDefinedUsername && (getIdentity().equals(identity) || isAdministrativeUser)) {
 			mainVC.contextPut("username", identity.getName());
 		}
