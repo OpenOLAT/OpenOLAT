@@ -53,6 +53,7 @@ import org.junit.runners.Suite;
 	org.olat.core.util.vfs.VFSTest.class,
 	org.olat.core.util.vfs.VFSManagerTest.class,
 	org.olat.core.util.filter.impl.XSSFilterTest.class,
+	org.olat.core.util.filter.impl.XSSFilterParamTest.class,
 	org.olat.core.util.filter.impl.AddBaseURLToMediaRelativeURLFilterTest.class,
 	org.olat.core.util.filter.impl.SimpleHTMLTagsFilterTest.class,
 	org.olat.core.util.filter.impl.NekoHTMLFilterTest.class,
