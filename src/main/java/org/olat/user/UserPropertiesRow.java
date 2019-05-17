@@ -40,6 +40,14 @@ public class UserPropertiesRow {
 	private final String identityName;
 	private final String[] identityProps;
 	
+	/**
+	 * 
+	 * @param identityKey The identity key
+	 * @param identityName The identity name
+	 * @param userPropertyHandlers The handlers (must match exactly the identities properties array)
+	 * @param identityProps The raw user properties
+	 * @param locale The locale
+	 */
 	public UserPropertiesRow(Long identityKey, String identityName, List<UserPropertyHandler> userPropertyHandlers, String[] identityProps, Locale locale) {
 		this.identityKey = identityKey;
 		this.identityName = identityName;
