@@ -30,8 +30,9 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.olat.basesecurity.BaseSecurityManager;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
+import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.onlyoffice.ApiConfig;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
@@ -46,7 +47,6 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.VFSConstants;
@@ -58,7 +58,6 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -84,13 +83,11 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	@Autowired
 	private OnlyOfficeSecurityService onlyOfficeSecurityService;
 	@Autowired
+	private DocEditorIdentityService identityService;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 	@Autowired
 	private VFSLockManager lockManager;
-	@Autowired
-	private BaseSecurityManager securityManager;
-	@Autowired
-	private UserManager userManager;
 
 	@Override
 	public boolean fileExists(String fileId) {
@@ -142,7 +139,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		
 		InfoImpl info = new InfoImpl();
 		String author = vfsMetadata.getAuthor() != null
-				? userManager.getUserDisplayName(vfsMetadata.getAuthor())
+				? identityService.getUserDisplayName(vfsMetadata.getAuthor())
 				: null;
 		info.setAuthor(author);
 		info.setCreated(null); // not in metadata
@@ -168,9 +165,9 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 		apiConfig.setEditor(editorConfig);
 		
 		UserImpl user = new UserImpl();
-		String name = userManager.getUserDisplayName(identity);
+		String name = identityService.getUserDisplayName(identity);
 		user.setName(name);
-		user.setId(identity.getKey().toString());
+		user.setId(identityService.getGlobalIdentityId(identity));
 		editorConfig.setUser(user);
 		
 		String token = onlyOfficeSecurityService.getApiConfigToken(document, editorConfig);
@@ -304,13 +301,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 
 	@Override
 	public Identity getIdentity(String identityId) {
-		try {
-			Long identityKey = Long.valueOf(identityId);
-			return securityManager.loadIdentityByKey(identityKey);
-		} catch (NumberFormatException e) {
-			log.warn("Try to load identity with key " + identityId, e);
-		}
-		return null;
+		return identityService.getIdentity(identityId);
 	}
 	
 }

@@ -42,13 +42,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraModule;
 import org.olat.core.commons.services.doceditor.collabora.CollaboraService;
 import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,7 +72,7 @@ public class CollaboraWebService {
 	@Autowired 
 	private CollaboraService collaboraService;
 	@Autowired
-	private UserManager userManager;
+	private DocEditorIdentityService identityService;
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -100,13 +100,13 @@ public class CollaboraWebService {
 		}
 		
 		VFSMetadata metadata = access.getMetadata();
-		String ownerId = metadata.getAuthor() != null? metadata.getAuthor().getKey().toString(): null;
+		String ownerId = metadata.getAuthor() != null? identityService.getGlobalIdentityId(metadata.getAuthor()): null;
 		CheckFileInfoVO checkFileInfoVO = CheckFileInfoVO.builder()
 				.withBaseFileName(metadata.getFilename()) // suffix is mandatory
 				.withOwnerId(ownerId)
 				.withSize(metadata.getFileSize())
-				.withUserId(access.getIdentity().getKey().toString())
-				.withUserFriendlyName(userManager.getUserDisplayName(access.getIdentity()))
+				.withUserId(identityService.getGlobalIdentityId(access.getIdentity()))
+				.withUserFriendlyName(identityService.getUserDisplayName(access.getIdentity()))
 				.withVersion(String.valueOf(metadata.getRevisionNr()))
 				.withLastModifiedTime(getAsIso8601(metadata.getLastModified()))
 				.withUserCanWrite(access.isCanEdit())

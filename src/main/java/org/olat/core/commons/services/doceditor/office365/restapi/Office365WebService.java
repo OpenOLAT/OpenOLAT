@@ -40,15 +40,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
 import org.olat.core.commons.services.doceditor.office365.Office365Module;
 import org.olat.core.commons.services.doceditor.office365.Office365Service;
 import org.olat.core.commons.services.doceditor.wopi.Access;
 import org.olat.core.commons.services.vfs.VFSMetadata;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -74,7 +74,7 @@ public class Office365WebService {
 	@Autowired 
 	private Office365Service office365Service;
 	@Autowired
-	private UserManager userManager;
+	private DocEditorIdentityService identityService;
 	
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -112,14 +112,18 @@ public class Office365WebService {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}
 		
+		String userId = identityService.getGlobalIdentityId(access.getIdentity());
 		VFSMetadata metadata = access.getMetadata();
-		String ownerId = metadata.getAuthor() != null? metadata.getAuthor().getKey().toString(): null;
+		// ownerId is mandatory (this hack seens to work)
+		String ownerId = metadata.getAuthor() != null
+				? identityService.getGlobalIdentityId(metadata.getAuthor())
+				: userId;
 		CheckFileInfoVO checkFileInfoVO = CheckFileInfoVO.builder()
 				.withBaseFileName(metadata.getFilename()) // suffix is mandatory
 				.withOwnerId(ownerId)
 				.withSize(metadata.getFileSize())
-				.withUserId(access.getIdentity().getKey().toString())
-				.withUserFriendlyName(userManager.getUserDisplayName(access.getIdentity()))
+				.withUserId(userId)
+				.withUserFriendlyName(identityService.getUserDisplayName(access.getIdentity()))
 				.withVersion(String.valueOf(metadata.getRevisionNr()))
 				.withLastModifiedTime(getAsIso8601(metadata.getLastModified()))
 				.withSupportsGetLock(true)

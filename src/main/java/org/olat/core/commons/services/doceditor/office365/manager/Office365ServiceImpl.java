@@ -31,6 +31,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.office365.Office365Module;
@@ -45,7 +46,6 @@ import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.gui.control.Event;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
