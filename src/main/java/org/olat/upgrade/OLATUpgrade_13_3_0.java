@@ -152,7 +152,9 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 			List<Identity> managers = groupDao.getMembers(group, CurriculumRoles.curriculummanager.name());
 			for(Identity manager:managers) {
 				groupDao.removeMembership(group, manager, CurriculumRoles.curriculummanager.name());
-				groupDao.addMembershipOneWay(group, manager, CurriculumRoles.curriculumowner.name());
+				if(groupDao.getMembership(group, manager, CurriculumRoles.curriculumowner.name()) == null) {
+					groupDao.addMembershipOneWay(group, manager, CurriculumRoles.curriculumowner.name());
+				}
 			}
 			dbInstance.commitAndCloseSession();
 			migrateCurriculumElementsRoles(curriculum);
@@ -167,13 +169,17 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 			List<Identity> managers = groupDao.getMembers(group, CurriculumRoles.curriculummanager.name());
 			for(Identity manager:managers) {
 				groupDao.removeMembership(group, manager, CurriculumRoles.curriculummanager.name());
-				groupDao.addMembershipOneWay(group, manager, CurriculumRoles.curriculumowner.name());
+				if(groupDao.getMembership(group, manager, CurriculumRoles.curriculumelementowner.name()) == null) {
+					groupDao.addMembershipOneWay(group, manager, CurriculumRoles.curriculumelementowner.name());
+				}
 			}
 			
 			List<Identity> owners = groupDao.getMembers(group, CurriculumRoles.curriculumowner.name());
 			for(Identity owner:owners) {
-				groupDao.removeMembership(group, owner, CurriculumRoles.curriculumelementowner.name());
-				groupDao.addMembershipOneWay(group, owner, CurriculumRoles.curriculumelementowner.name());
+				groupDao.removeMembership(group, owner, CurriculumRoles.curriculumowner.name());
+				if(groupDao.getMembership(group, owner, CurriculumRoles.curriculumelementowner.name()) == null) {
+					groupDao.addMembershipOneWay(group, owner, CurriculumRoles.curriculumelementowner.name());
+				}
 			}
 			dbInstance.commitAndCloseSession();
 		}
