@@ -19,6 +19,8 @@
  */
 package org.olat.course.certificate.ui;
 
+import static org.olat.core.gui.translator.TranslatorHelper.translateAll;
+
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
@@ -45,7 +47,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CertificatesSettingsAdminController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[]{ "on" };
-	private static final String[] onValues = new String[]{ "on" };
 
 	private TextElement bccEl;
 	private MultipleSelectionElement enableBccEl;
@@ -73,7 +74,8 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 		setFormTitle("admin.certificates.options.title");
 
 		String bcc = certificatesModule.getCertificateBcc();
-		enableBccEl = uifactory.addCheckboxesHorizontal("enableBcc", "admin.certificates.bcc.enable", formLayout, onKeys, onValues);
+		enableBccEl = uifactory.addCheckboxesHorizontal("enableBcc", "admin.certificates.bcc.enable", formLayout,
+				onKeys, translateAll(getTranslator(), onKeys));
 		enableBccEl.setHelpText(translate("admin.certificates.bcc.enable.help"));
 		enableBccEl.addActionListener(FormEvent.ONCHANGE);
 		if(StringHelper.containsNonWhitespace(bcc)) {
@@ -83,7 +85,8 @@ public class CertificatesSettingsAdminController extends FormBasicController {
 		bccEl = uifactory.addTextElement("bcc", "admin.certificates.bcc", 1024, bcc, formLayout);
 		bccEl.setVisible(enableBccEl.isAtLeastSelected(1));
 		
-		enableLinemanagerEl = uifactory.addCheckboxesHorizontal("admin.certificates.linemanager", formLayout, onKeys, onValues);
+		enableLinemanagerEl = uifactory.addCheckboxesHorizontal("admin.certificates.linemanager", formLayout, onKeys,
+				translateAll(getTranslator(), onKeys));
 		enableLinemanagerEl.select(onKeys[0], certificatesModule.isCertificateLinemanager());
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
