@@ -184,6 +184,10 @@
 					<constructor-arg index="0" value="OLAT_12.5.14" />
 					<property name="alterDbStatements" value="alter_12_5_x_to_12_5_14.sql" />
 				</bean>
+				<bean id="database_upgrade_12_5_24" class="org.olat.upgrade.DatabaseUpgrade">
+					<constructor-arg index="0" value="OLAT_12.5.24" />
+					<property name="alterDbStatements" value="alter_12_5_x_to_12_5_24.sql" />
+				</bean>
 			</list>
 		</property>
 	</bean>

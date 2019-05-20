@@ -102,9 +102,8 @@ public class NoteManager implements UserDataDeletable, UserDataExportable {
 	 * @return the note
 	 */
 	private Note findNote(IdentityRef owner, String resourceTypeName, Long resourceTypeId) {
-
-		String query = "select n from org.olat.note.NoteImpl as n where n.owner.key=:ownerKey and n.resourceTypeName=:resName and n.resourceTypeId=:resId";
-		List<Note> notes = dbInstance.getCurrentEntityManager().createQuery(query, Note.class)
+		List<Note> notes = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("noteByOwnerAndResource", Note.class)
 				.setParameter("ownerKey", owner.getKey())
 				.setParameter("resName", resourceTypeName)
 				.setParameter("resId", resourceTypeId)
@@ -120,9 +119,8 @@ public class NoteManager implements UserDataDeletable, UserDataExportable {
 	 * @return a list of notes belonging to the owner
 	 */
 	public List<Note> listUserNotes(IdentityRef owner) {
-		String query = "select n from org.olat.note.NoteImpl as n inner join fetch n.owner as noteowner where noteowner.key=:noteowner";
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(query, Note.class).
+				.createNamedQuery("noteByOwner", Note.class).
 				setParameter("noteowner", owner.getKey())
 				.getResultList();
 	}
