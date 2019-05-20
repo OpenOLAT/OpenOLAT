@@ -251,7 +251,7 @@ public class RelationRolesAdminController extends FormBasicController {
 			showWarning("error.relation.role.deleted");
 			loadModel();
 		} else if(identityRelationsService.isInUse(role)) {
-			showWarning("error.relation.role.in.use");
+			showWarning("error.relation.role.in.use", new String[] { role.getRole() });
 		} else {
 			String title = translate("confirm.delete.role.title", new String[] { role.getRole() });
 			String text = translate("confirm.delete.role.text", new String[] { role.getRole() });
