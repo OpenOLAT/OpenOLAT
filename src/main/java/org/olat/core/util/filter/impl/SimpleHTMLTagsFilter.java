@@ -19,11 +19,9 @@
  */
 package org.olat.core.util.filter.impl;
 
-import java.io.IOException;
 import java.io.StringReader;
 
 import org.apache.logging.log4j.Logger;
-import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
@@ -31,8 +29,10 @@ import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.search.service.document.file.FileDocumentFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * Description:<br>
@@ -60,7 +60,7 @@ public class SimpleHTMLTagsFilter implements Filter {
 		if(original.isEmpty()) return "";
 		
 		try {
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			HTMLHandler contentHandler = new HTMLHandler(original.length());
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(original)));
@@ -68,12 +68,6 @@ public class SimpleHTMLTagsFilter implements Filter {
 			text = text.replace('\u00a0', ' ');
 			text = StringHelper.escapeHtml(text);
 			return text;
-		} catch (SAXException e) {
-			log.error("", e);
-			return null;
-		} catch (IOException e) {
-			log.error("", e);
-			return null;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
@@ -99,7 +93,7 @@ public class SimpleHTMLTagsFilter implements Filter {
 				content.append(" ");
 			} else if("br".equals(elem)) {
 				content.append(" ");
-			} else if(NekoHTMLFilter.blockTags.contains(elem) && content.length() > 0 && content.charAt(content.length() -1) != ' ' ) {
+			} else if(HtmlFilter.blockTags.contains(elem) && content.length() > 0 && content.charAt(content.length() -1) != ' ' ) {
 				consumeBlanck = true;
 			}
 		}
@@ -124,7 +118,7 @@ public class SimpleHTMLTagsFilter implements Filter {
 				collect = true;
 			} else if("li".equals(elem) || "p".equals(elem)) {
 				content.append(" ");
-			} else if(NekoHTMLFilter.blockTags.contains(elem) && content.length() > 0 && content.charAt(content.length() -1) != ' ' ) {
+			} else if(HtmlFilter.blockTags.contains(elem) && content.length() > 0 && content.charAt(content.length() -1) != ' ' ) {
 				consumeBlanck = true;
 			}
 		}

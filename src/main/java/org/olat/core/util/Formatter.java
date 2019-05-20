@@ -50,7 +50,7 @@ import org.apache.commons.lang.time.DurationFormatUtils;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.helpers.Settings;
-import org.olat.core.util.filter.impl.NekoHTMLMathScanner;
+import org.olat.core.util.filter.impl.HtmlMathScanner;
 
 /**
  * enclosing_type Description: <br>
@@ -623,7 +623,7 @@ public class Formatter {
 	public static String formatLatexFormulas(String htmlFragment) {
 		if (htmlFragment == null) return "";
 		// optimize, reduce jsmath calls on client
-		if (new NekoHTMLMathScanner().scan(htmlFragment)) {
+		if (new HtmlMathScanner().scan(htmlFragment)) {
 			// add math wrapper
 			String domid = "mw_" + CodeHelper.getRAMUniqueID();
 			String elem = htmlFragment.contains("<div") || htmlFragment.contains("<p") ? "div" : "span";

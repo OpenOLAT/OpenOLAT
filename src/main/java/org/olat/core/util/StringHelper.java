@@ -51,7 +51,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.filter.impl.NekoHTMLScanner;
+import org.olat.core.util.filter.impl.HtmlScanner;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.user.UserManager;
 
@@ -337,9 +337,7 @@ public class StringHelper {
 	 */
 	public static boolean isHtml(String s) {
 		if (s == null) return false;
-		
-		boolean containsHtml = new NekoHTMLScanner().scan(s);
-		return containsHtml;
+		return new HtmlScanner().scan(s);
 	}
 
 	/**

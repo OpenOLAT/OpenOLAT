@@ -92,7 +92,7 @@ public class SimpleHTMLTagsFilterTest {
 	}
 
 	// Boundary test: this filter does NOT decode HTML entities. Use the
-	// NekoHTMLFilter if you need this feature!
+	// HtmlFilter if you need this feature!
 	@Test
 	public void testTagsWithEntities() {
 		t("Gn&auml;gi", "Gn&auml;gi");

@@ -19,7 +19,6 @@
  */
 package org.olat.ims.qti21.model.xml;
 
-import java.io.ByteArrayInputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +28,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.logging.log4j.Logger;
-import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.impl.NekoHTMLFilter;
+import org.olat.core.util.filter.impl.HtmlFilter;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -42,6 +40,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 import uk.ac.ed.ph.jqtiplus.JqtiExtensionManager;
 import uk.ac.ed.ph.jqtiplus.exception.QtiModelException;
 import uk.ac.ed.ph.jqtiplus.node.AbstractNode;
@@ -82,7 +82,8 @@ public class AssessmentHtmlBuilder {
 		if(!StringHelper.containsNonWhitespace(html)) return false;
 
 		try {
-			SAXParser parser = new SAXParser();
+			// return always true? Neko send always an html tag -> content true
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			ContentDetectionHandler contentHandler = new ContentDetectionHandler();
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(html)));
@@ -154,11 +155,12 @@ public class AssessmentHtmlBuilder {
 			} else {
 				htmlFragment = "<p>" + htmlFragment + "</p>";
 			}
-			//wrap around <html> to have a root element for neko
-			Document document = filter("<html>" + htmlFragment + "</html>");
+			//root element is an <html> element
+			Document document = filter(htmlFragment);
 			if(document != null) {
 				Element docElement = document.getDocumentElement();
 				cleanUpNamespaces(docElement);
+				// load the elements under the <html> root element
 				parent.getNodeGroups().load(docElement, new HTMLLoadingContext());
 			}
 		}
@@ -174,6 +176,16 @@ public class AssessmentHtmlBuilder {
 			element.removeAttribute("xmlns");
 		}
 		
+		// escaped by the HTML parser -> always remove them
+		Attr schemaLocationAttr = element.getAttributeNode("xsiU00003Aschemalocation");
+		if(schemaLocationAttr != null) {
+			element.removeAttribute("xsiU00003Aschemalocation");
+		}
+		Attr xsiattrEscaped = element.getAttributeNode("xmlnsU00003Axsi");
+		if(xsiattrEscaped != null) {
+			element.removeAttribute("xmlnsU00003Axsi");
+		}
+
 		for(Node child=element.getFirstChild(); child != null; child = child.getNextSibling()) {
 			if(child instanceof Element) {
 				cleanUpNamespaces((Element)child);
@@ -181,19 +193,25 @@ public class AssessmentHtmlBuilder {
 		}
 	}
 
+	/**
+	 * The method filters the content of textEntryInteraction (rename it correctly
+	 * and remove TinyMCE attributes) and repackage the video from TinyMCE format
+	 * to an object suited for QTI 2.1.
+	 * 
+	 * @param content The content to filter
+	 * @return A document object with an HTML root element with the actual
+	 * 		blocks under this root element.
+	 */
 	private Document filter(String content) {
 		try {
-			SAXParser parser = new SAXParser();
-			parser.setProperty("http://cyberneko.org/html/properties/names/elems", "lower");
-			parser.setFeature("http://cyberneko.org/html/features/balance-tags/document-fragment", true);
-			parser.setProperty("http://cyberneko.org/html/properties/default-encoding", "UTF-8");
-			
+			// Alter infoset because of special namespace on tag p
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document document = builder.newDocument();
 			HtmlToDomBuilderHandler contentHandler = new HtmlToDomBuilderHandler(document);
 			parser.setContentHandler(contentHandler);
-			parser.parse(new InputSource(new ByteArrayInputStream(content.getBytes())));
+			parser.parse(new InputSource(new StringReader(content)));
 			return document;
 		} catch (Exception e) {
 			log.error("", e);
@@ -222,9 +240,11 @@ public class AssessmentHtmlBuilder {
 
 		@Override
 		public void startElement(String uri, String localName, String qName, Attributes attributes) {
-			if(video) return;
+			if(video || "head".equalsIgnoreCase(localName) || "body".equalsIgnoreCase(localName)) {
+				return;
+			}
 			
-			if("textentryinteraction".equals(localName)) {
+			if("textentryinteraction".equalsIgnoreCase(localName)) {
 				localName = qName = "textEntryInteraction";
 
 				AttributesImpl attributesCleaned = new AttributesImpl("");
@@ -239,13 +259,16 @@ public class AssessmentHtmlBuilder {
 				}
 
 				attributes = new AttributesDelegate(attributesCleaned);
-			} else if("span".equals(localName)) {
+				super.startElement(uri, localName, qName, attributes);
+				super.endElement(uri, localName, qName);
+				return;
+			} else if("span".equalsIgnoreCase(localName)) {
 				String cssClass = attributes.getValue("class");
 				if(cssClass != null && "olatFlashMovieViewer".equals(cssClass)) {
 					video = true;
 					return;
 				}
-			} else if("u".equals(localName)) {
+			} else if("u".equalsIgnoreCase(localName)) {
 				qName = "span";
 				AttributesImpl underlineAttributes = new AttributesImpl("");
 				underlineAttributes.addAttributes(attributes);
@@ -266,13 +289,16 @@ public class AssessmentHtmlBuilder {
 
 		@Override
 		public void endElement(String uri, String localName, String qName) {
+			if("head".equalsIgnoreCase(localName) || "body".equalsIgnoreCase(localName)) {
+				return;
+			}
 			if(video) {
-				if("span".equals(localName)) {
+				if("span".equalsIgnoreCase(localName)) {
 					String content = scriptBuffer.toString();
 					String startScript = "BPlayer.insertPlayer(";
 					int start = content.indexOf(startScript);
 					if(start >= 0) {
-						int end = content.indexOf(")", start);
+						int end = content.indexOf(')', start);
 						String parameters = content.substring(start + startScript.length(), end);
 						translateToObject(uri, parameters);
 					}
@@ -280,10 +306,9 @@ public class AssessmentHtmlBuilder {
 				}
 				return;
 			}
-			
-			if("textentryinteraction".equals(localName)) {
-				localName = qName = "textEntryInteraction";
-			} 
+			if("textentryinteraction".equalsIgnoreCase(localName)) {
+				return;
+			}
 			super.endElement(uri, localName, qName);
 		}
 		
@@ -297,7 +322,7 @@ public class AssessmentHtmlBuilder {
 			String type = array[6].replace("\"", "");
 			String ooData = parameters.replace("\"", "'");
 
-			AttributesImpl attributes = new AttributesImpl(uri);
+			AttributesImpl attributes = new AttributesImpl("");
 			attributes.addAttribute("data", data);
 			attributes.addAttribute("id", id);
 			attributes.addAttribute("class", "olatFlashMovieViewer");
@@ -306,8 +331,8 @@ public class AssessmentHtmlBuilder {
 			attributes.addAttribute("type", type);
 			attributes.addAttribute("data-oo-movie", ooData);
 
-			super.startElement(uri, "object", "object", attributes);
-			super.endElement(uri, "object", "object");
+			super.startElement("", "object", "object", attributes);
+			super.endElement("", "object", "object");
 		}
 	}
 	
@@ -542,7 +567,7 @@ public class AssessmentHtmlBuilder {
 			String elem = localName.toLowerCase();
 			if("script".equals(elem)) {
 				collect = false;
-			} else if(!NekoHTMLFilter.blockTags.contains(localName)) {
+			} else if(!HtmlFilter.blockTags.contains(localName)) {
 				content = true;
 			}
 		}
@@ -562,7 +587,7 @@ public class AssessmentHtmlBuilder {
 			String elem = localName.toLowerCase();
 			if("script".equals(elem)) {
 				collect = true;
-			} else if(!NekoHTMLFilter.blockTags.contains(localName)) {
+			} else if(!HtmlFilter.blockTags.contains(localName)) {
 				content = true;
 			}
 		}

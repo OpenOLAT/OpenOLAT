@@ -44,10 +44,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.io.IOUtils;
-import org.cyberneko.html.parsers.SAXParser;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.image.ImageUtils;
 import org.olat.core.commons.services.image.Size;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.ShieldInputStream;
@@ -64,6 +63,7 @@ import org.xml.sax.SAXException;
 
 import fmath.conversion.ConvertFromLatexToMathML;
 import fmath.conversion.ConvertFromMathMLToWord;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * The page are A4 format, with 2.54cm margins on top, bottom, left and right.
@@ -419,12 +419,10 @@ public class OpenXMLDocument {
 		if(!StringHelper.containsNonWhitespace(html)) return;
 		try {
 			html = cleanUpHTML(html);
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser();
 			parser.setContentHandler(new HTMLToOpenXMLHandler(this, spacing));
 			parser.parse(new InputSource(new StringReader(html)));
-		} catch (SAXException e) {
-			log.error("", e);
-		} catch (IOException e) {
+		} catch (SAXException | IOException e) {
 			log.error("", e);
 		}
 	}
@@ -433,13 +431,11 @@ public class OpenXMLDocument {
 		if(!StringHelper.containsNonWhitespace(html)) return;
 		try {
 			html = cleanUpHTML(html);
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser();
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
 			parser.setContentHandler(new HTMLToOpenXMLHandler(this, null, paragraphEl, true));
 			parser.parse(new InputSource(new StringReader(html)));
-		} catch (SAXException e) {
-			log.error("", e);
-		} catch (IOException e) {
+		} catch (SAXException | IOException e) {
 			log.error("", e);
 		}
 	}
@@ -448,20 +444,18 @@ public class OpenXMLDocument {
 		if(!StringHelper.containsNonWhitespace(html)) return;
 		try {
 			html = cleanUpHTML(html);
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser();
 			Element paragraphEl = getParagraphToAppendTo(newParagraph);
 			handler.setInitialParagraph(paragraphEl);
 			parser.setContentHandler(handler);
 			parser.parse(new InputSource(new StringReader(html)));
-		} catch (SAXException e) {
-			log.error("", e);
-		} catch (IOException e) {
+		} catch (SAXException | IOException e) {
 			log.error("", e);
 		}
 	}
 	
 	/**
-	 * The Neko HTMl parser has some issues with <p/>.
+	 * The HTMl parser has / had some issues with <p/>.
 	 * 
 	 * @param html The HTML to clean up
 	 * @return HTML code which Neko understands

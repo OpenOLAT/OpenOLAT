@@ -32,8 +32,8 @@ import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.filter.impl.NekoHTMLFilter;
-import org.olat.core.util.filter.impl.NekoHTMLFilter.NekoContent;
+import org.olat.core.util.filter.impl.HtmlFilter;
+import org.olat.core.util.filter.impl.HtmlFilter.HtmlContent;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 
@@ -64,7 +64,7 @@ public class HtmlDocument extends FileDocument {
 	protected FileContent readContent(VFSLeaf leaf) throws DocumentException {
 		try(InputStream is = leaf.getInputStream()) {
 			// Remove all HTML and &nbsp; Tags
-			NekoContent output = new NekoHTMLFilter().filter(is);
+			HtmlContent output = new HtmlFilter().filter(is);
 			if (log.isDebugEnabled())
 				log.debug("HTML content without tags :" + output);
 	

@@ -63,7 +63,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.core.util.filter.impl.NekoHTMLFilter;
+import org.olat.core.util.filter.impl.HtmlFilter;
 import org.olat.core.util.i18n.I18nModule;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
@@ -603,7 +603,7 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 				sb.append(translator.translate("disclaimer.paragraph1"))
 				  .append("\n")
 				  .append(translator.translate("disclaimer.paragraph2"));
-				String disclaimer = new NekoHTMLFilter().filter(sb.toString(), true);
+				String disclaimer = new HtmlFilter().filter(sb.toString(), true);
 				out.write(disclaimer);
 			}
 		} catch (IOException e) {

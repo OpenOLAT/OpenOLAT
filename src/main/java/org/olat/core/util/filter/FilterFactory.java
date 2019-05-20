@@ -22,7 +22,7 @@ package org.olat.core.util.filter;
 
 import org.olat.core.util.filter.impl.AddBaseURLToMediaRelativeURLFilter;
 import org.olat.core.util.filter.impl.ConditionalHTMLCommentsFilter;
-import org.olat.core.util.filter.impl.NekoHTMLFilter;
+import org.olat.core.util.filter.impl.HtmlFilter;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter.Variant;
 import org.olat.core.util.filter.impl.SimpleHTMLTagsFilter;
@@ -44,7 +44,7 @@ import org.olat.core.util.filter.impl.XMLValidEntityFilter;
 public class FilterFactory {
 	// the html tag filter is static, not stateful
 	private static final Filter htmlTagsFilter = new SimpleHTMLTagsFilter();
-	private static final Filter htmlTagsAndDesescapingFilter = new NekoHTMLFilter();
+	private static final Filter htmlTagsAndDesescapingFilter = new HtmlFilter();
 	private static final Filter conditionalCommentsFilter = new ConditionalHTMLCommentsFilter();
 	private static final Filter xmlValidCharacterFilter = new XMLValidCharacterFilter();
 	private static final Filter smileysCssToDataUriFilter = new SmileysCssToDataUriFilter();

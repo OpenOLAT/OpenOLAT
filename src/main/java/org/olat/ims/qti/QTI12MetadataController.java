@@ -31,7 +31,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.core.util.filter.impl.NekoHTMLFilter;
+import org.olat.core.util.filter.impl.HtmlFilter;
 import org.olat.ims.qti.editor.ItemNodeTabbedFormController;
 import org.olat.ims.qti.editor.QTIEditHelper;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
@@ -192,7 +192,7 @@ public class QTI12MetadataController extends FormBasicController  {
 		} else {
 			responseSummary = response.getContent().renderAsText();
 			if(responseSummary.length() > 128) {
-				responseSummary = new NekoHTMLFilter().filter(responseSummary);
+				responseSummary = new HtmlFilter().filter(responseSummary);
 				if(responseSummary.length() > 128) {
 					responseSummary = responseSummary.substring(0, 125) + "...";
 				}

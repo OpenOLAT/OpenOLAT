@@ -40,7 +40,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import org.cyberneko.html.parsers.SAXParser;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
@@ -63,7 +63,6 @@ import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -109,6 +108,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * 
@@ -421,7 +423,7 @@ public class ExportBinderAsCPResource implements MediaResource {
 	
 	public String exportMedia(String html, ZipOutputStream zout) {
 		try {
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			ExportMedia contentHandler = new ExportMedia(zout);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(html)));

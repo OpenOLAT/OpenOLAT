@@ -21,34 +21,21 @@ package org.olat.core.util.filter.impl;
 
 import java.io.ByteArrayInputStream;
 
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.olat.core.util.filter.impl.NekoHTMLFilter.NekoContent;
+import org.olat.core.util.filter.impl.HtmlFilter.HtmlContent;
 
 /**
  * Description:<br>
- * This test case tests the NEko HTML tags filter
+ * This test case tests the HTML tags filter.
  * 
  * <P>
  * Initial Date:  14.07.2009 <br>
  * @author gnaegi
  */
-@RunWith(JUnit4.class)
-public class NekoHTMLFilterTest{
+public class HtmlFilterTest {
 
-	protected NekoHTMLFilter filter;
-
-	@Before public void setup() {
-		filter = new NekoHTMLFilter();
-	}
-
-	@After public void tearDown() {
-		filter = null;
-	}
+	private final HtmlFilter filter = new HtmlFilter();
 
 	private void t(String input, String result) {
 		Assert.assertEquals(result, filter.filter(input));
@@ -61,6 +48,7 @@ public class NekoHTMLFilterTest{
 	public void escaping() {
 		String output = filter.filter("Test &auml; test");
 		System.out.println(output);
+		Assert.assertEquals("Test \u00E4 test", output);
 	}
 	
 	@Test public void testPlainText() {
@@ -158,8 +146,8 @@ public class NekoHTMLFilterTest{
 		p("<a href=\"index.html\">GO HERE</a>", "GO HERE");
 		t("<a href=\"/go/here/index.html\">GO HERE</a>", "GO HERE");
 		p("<a href=\"/go/here/index.html\">GO HERE</a>", "GO HERE");
-		t("<a href=\"http://www.openolat.org/go/here/index.html\" title=\\\"super site\\\">GO HERE</a>", "GO HERE");
-		p("<a href=\"http://www.openolat.org/go/here/index.html\" title=\\\"super site\\\">GO HERE</a>", "http://www.openolat.org/go/here/index.html GO HERE");
+		t("<a href=\"http://www.openolat.org/go/here/index.html\" title=\"super site\">GO HERE</a>", "GO HERE");
+		p("<a href=\"http://www.openolat.org/go/here/index.html\" title=\"super site\">GO HERE</a>", "http://www.openolat.org/go/here/index.html GO HERE");
 		t("<a href=\"https://www.openolat.org/go/here/index.html\" title=\"super site\">GO HERE</a>", "GO HERE");
 		p("<a href=\"https://www.openolat.org/go/here/index.html\" title=\"super site\">GO HERE</a>", "https://www.openolat.org/go/here/index.html GO HERE");
 
@@ -174,7 +162,7 @@ public class NekoHTMLFilterTest{
             + "</body></html>"; // Text = 'Dies ist der Test Text'
 		String text = "Hello Neko Test HTML Seite fuer JUnit Test Dies ist der Test\u00A0Text"; // must include '\u00A0' !!! 19.5.2010/cg
 		
-		NekoContent content = filter.filter(new ByteArrayInputStream(htmlText.getBytes()));
+		HtmlContent content = filter.filter(new ByteArrayInputStream(htmlText.getBytes()));
 		Assert.assertNotNull(content);
 		Assert.assertEquals("Hello Neko", content.getTitle());
 		Assert.assertEquals(text, content.getContent());

@@ -27,7 +27,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 
 import org.apache.logging.log4j.Logger;
-import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
@@ -41,6 +40,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * Description:<br>
@@ -213,7 +215,7 @@ public class OWASPAntiSamyXSSFilter implements Filter {
 	private String cleanHtml(String original) {
 		try {
 			HTMLCleanerHandler handler = new HTMLCleanerHandler();
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			parser.setContentHandler(handler);
 			parser.parse(new InputSource(new StringReader(original)));
 			return handler.toString();

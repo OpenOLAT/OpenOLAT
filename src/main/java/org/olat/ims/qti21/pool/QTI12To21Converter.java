@@ -43,11 +43,10 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.lang.StringEscapeUtils;
-import org.cyberneko.html.parsers.SAXParser;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -109,6 +108,8 @@ import org.olat.resource.OLATResource;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 import uk.ac.ed.ph.jqtiplus.node.AssessmentObject;
 import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.content.xhtml.text.P;
@@ -777,7 +778,7 @@ public class QTI12To21Converter {
 					XMLOutputFactory xof = XMLOutputFactory.newInstance();
 					XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 						
-					SAXParser parser = new SAXParser();
+					HtmlParser parser = new HtmlParser();
 					QTI12To21HtmlHandler handler = new QTI12To21HtmlHandler(xtw);
 					parser.setContentHandler(handler);
 					parser.parse(new InputSource(new StringReader(trimmedText)));
@@ -797,7 +798,7 @@ public class QTI12To21Converter {
 	
 	private void collectMaterial(String content) {
 		try {
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			QTI12HtmlHandler contentHandler = new QTI12HtmlHandler(materialPath);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(content)));

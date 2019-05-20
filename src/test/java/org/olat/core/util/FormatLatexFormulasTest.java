@@ -60,7 +60,7 @@ public class FormatLatexFormulasTest {
                 { "<span class='math\"'\"></span>", Boolean.FALSE },
                 { "<span class='math></\"span>", Boolean.FALSE },
                 { "<span class='math></'span>", Boolean.FALSE },
-                { "<span class='math", Boolean.TRUE },
+                { "<span class='math", Boolean.FALSE },
                 { "<span class=math\"", Boolean.FALSE }
         });
     }

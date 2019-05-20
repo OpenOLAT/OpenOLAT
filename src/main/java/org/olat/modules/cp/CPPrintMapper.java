@@ -34,7 +34,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.batik.css.parser.ParseException;
 import org.apache.batik.css.parser.Parser;
 import org.apache.logging.log4j.Logger;
-import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.components.tree.TreeNode;
@@ -51,12 +50,15 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.xml.sax.InputSource;
 
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
+
 /**
  * 
  * Description:<br>
  * Deliver the CP as a single page. All the HTML Pages are parser and the
  * attribute href/src are rewritten to absolute /olat/m/xxxx urls. The HTML parser
- * used is NekoHTML. For CSS there is the same process. We use the Batik CSS
+ * used is validator.HtmlParser. For CSS there is the same process. We use the Batik CSS
  * parser for SAC.
  * 
  * <P>
@@ -125,18 +127,18 @@ public class CPPrintMapper implements Mapper {
 	}
 
 	private MediaResource deliverCompositePage(HttpServletRequest request) {
-		List<NekoHtmlPageHandler> parsedPages = composePrintPage(selectedNodeIds);
+		List<HtmlPageHandler> parsedPages = composePrintPage(selectedNodeIds);
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("<html><head>");
-		for(NekoHtmlPageHandler page:parsedPages) {
+		for(HtmlPageHandler page:parsedPages) {
 			sb.append("<!-- Header of -->");
 			sb.append(page.getHeader()).append("\n\n");
 		}
 		injectJavascriptAndCss(sb);
 		
 		sb.append("</head><body onload='window.focus();window.print()'>");
-		for(NekoHtmlPageHandler page:parsedPages) {
+		for(HtmlPageHandler page:parsedPages) {
 			if(page.isEmpty()) {
 				String title = page.getTitle();
 				if(StringHelper.containsNonWhitespace(title)) {
@@ -165,18 +167,18 @@ public class CPPrintMapper implements Mapper {
 		}
 	}
 	
-	protected void bodyDecorator(NekoHtmlPageHandler page, StringBuilder sb) {
+	protected void bodyDecorator(HtmlPageHandler page, StringBuilder sb) {
 		sb.append("<!-- Body of ").append(page.getDocument().getName()).append("-->");
 		sb.append("<div class=\"o_cp_print_page\" style='clear:both; position:relative;page-break-after:always;'>\n");
 		sb.append(page.getBody());
 		sb.append("\n</div>");
 	}
 	
-	private List<NekoHtmlPageHandler> composePrintPage(List<String> nodeIds) {
-		List<NekoHtmlPageHandler> pages = new ArrayList<>();
+	private List<HtmlPageHandler> composePrintPage(List<String> nodeIds) {
+		List<HtmlPageHandler> pages = new ArrayList<>();
 		
 		for(String nodeId:nodeIds) {
-			NekoHtmlPageHandler parsedPage = null;
+			HtmlPageHandler parsedPage = null;
 			TreeNode treeNode = ctm.getNodeById(nodeId);
 			String identifierRes = (String)treeNode.getUserObject();	
 			if(StringHelper.containsNonWhitespace(identifierRes)) {
@@ -190,15 +192,15 @@ public class CPPrintMapper implements Mapper {
 				}
 			}
 			if(parsedPage == null) {
-				parsedPage = new NekoHtmlPageHandler(treeNode, null, rootDir, baseUri);
+				parsedPage = new HtmlPageHandler(treeNode, null, rootDir, baseUri);
 			}
 			pages.add(parsedPage);
 		}
 		return pages;
 	}
 	
-	private NekoHtmlPageHandler parsePage(String identifierRes, VFSLeaf document, TreeNode node) {
-		NekoHtmlPageHandler page = new NekoHtmlPageHandler(node, document, rootDir, baseUri);
+	private HtmlPageHandler parsePage(String identifierRes, VFSLeaf document, TreeNode node) {
+		HtmlPageHandler page = new HtmlPageHandler(node, document, rootDir, baseUri);
 		int index = identifierRes.lastIndexOf('/');
 		if(index > 0) {
 			String relativePath = identifierRes.substring(0, index+1);
@@ -219,7 +221,7 @@ public class CPPrintMapper implements Mapper {
 				rawContent = FileUtils.load(document.getInputStream(), content.getEncoding());
 			}
 			
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			parser.setContentHandler(page);
 			parser.parse(new InputSource(new StringReader(rawContent)));
 			return page;

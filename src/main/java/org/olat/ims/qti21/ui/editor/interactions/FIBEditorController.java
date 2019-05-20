@@ -22,7 +22,6 @@ package org.olat.ims.qti21.ui.editor.interactions;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 
-import org.cyberneko.html.parsers.SAXParser;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.olat.core.gui.UserRequest;
@@ -53,6 +52,9 @@ import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
+
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * 
@@ -331,10 +333,7 @@ public class FIBEditorController extends FormBasicController {
 	
 	private void extractSolution(String content) {
 		try {
-			SAXParser parser = new SAXParser();
-			parser.setProperty("http://cyberneko.org/html/properties/names/elems", "lower");
-			parser.setFeature("http://cyberneko.org/html/features/balance-tags/document-fragment", true);
-			parser.setProperty("http://cyberneko.org/html/properties/default-encoding", "UTF-8");
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			parser.setContentHandler(new SolutionExtractorHandler());
 			parser.parse(new InputSource(new ByteArrayInputStream(content.getBytes())));
 		} catch (Exception e) {

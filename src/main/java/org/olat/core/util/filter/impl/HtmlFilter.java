@@ -19,7 +19,6 @@
  */
 package org.olat.core.util.filter.impl;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Arrays;
@@ -27,27 +26,28 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
-import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.Filter;
 import org.olat.core.util.io.LimitedContentWriter;
 import org.olat.search.service.document.file.FileDocumentFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * Description:<br>
- * Filter the HTML code using Neko SAX parser and extract the content.
- * Neko parse the HTML entities too and deliver cleaned text.
+ * Filter the HTML code using HtmlParser SAX parser and extract the content.
+ * It parses the HTML entities too and deliver cleaned text.
  * 
  * <P>
  * Initial Date:  2 dec. 2009 <br>
  * @author srosse
  */
-public class NekoHTMLFilter implements Filter {
-	private static final Logger log = Tracing.createLoggerFor(NekoHTMLFilter.class);
+public class HtmlFilter implements Filter {
+	private static final Logger log = Tracing.createLoggerFor(HtmlFilter.class);
 	
 	public static final Set<String> blockTags = new HashSet<>();
 	public static final Set<String> toBeSkippedTags = new HashSet<>();
@@ -66,48 +66,36 @@ public class NekoHTMLFilter implements Filter {
 		if(original.isEmpty()) return "";
 		
 		try {
-			SAXParser parser = new SAXParser();
-			HTMLHandler contentHandler = new HTMLHandler((int)(original.length() * 0.66f), pretty);
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
+			HtmlHandler contentHandler = new HtmlHandler((int)(original.length() * 0.66f), pretty);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(original)));
 			return contentHandler.toString();
-		} catch (SAXException e) {
-			log.error("", e);
-			return null;
-		} catch (IOException e) {
-			log.error("", e);
-			return null;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
 	}
 
-	public NekoContent filter(InputStream in) {
+	public HtmlContent filter(InputStream in) {
 		if (in == null) return null;
 		try {
-			SAXParser parser = new SAXParser();
-			HTMLHandler contentHandler = new HTMLHandler((int)(1000 * 0.66f), false);
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
+			HtmlHandler contentHandler = new HtmlHandler((int)(1000 * 0.66f), false);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(in));
 			return contentHandler.getContent();
-		} catch (SAXException e) {
-			log.error("", e);
-			return null;
-		} catch (IOException e) {
-			log.error("", e);
-			return null;
 		} catch (Exception e) {
 			log.error("", e);
 			return null;
 		}
 	}
 	
-	public static class NekoContent {
+	public static class HtmlContent {
 		private final String title;
 		private final LimitedContentWriter content;
 		
-		public NekoContent(String title, LimitedContentWriter content) {
+		public HtmlContent(String title, LimitedContentWriter content) {
 			this.title = title;
 			this.content = content;
 		}
@@ -121,7 +109,7 @@ public class NekoHTMLFilter implements Filter {
 		}
 	}
 	
-	private static class HTMLHandler extends DefaultHandler {
+	private static class HtmlHandler extends DefaultHandler {
 		private boolean collect = true;
 		private boolean consumeBlanck = false;
 		private boolean consumeTitle = true;
@@ -129,7 +117,7 @@ public class NekoHTMLFilter implements Filter {
 		private final LimitedContentWriter content;
 		private final StringBuilder title;
 		
-		public HTMLHandler(int size, boolean pretty) {
+		public HtmlHandler(int size, boolean pretty) {
 			this.pretty = pretty;
 			content = new LimitedContentWriter(size, FileDocumentFactory.getMaxFileSize());
 			title = new StringBuilder(32);
@@ -213,8 +201,8 @@ public class NekoHTMLFilter implements Filter {
 			}
 		}
 
-		public NekoContent getContent() {
-			return new NekoContent(title.toString(), content);
+		public HtmlContent getContent() {
+			return new HtmlContent(title.toString(), content);
 		}
 		
 		@Override

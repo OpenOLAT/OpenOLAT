@@ -22,37 +22,39 @@ package org.olat.core.util.filter.impl;
 import java.io.StringReader;
 
 import org.apache.logging.log4j.Logger;
-import org.cyberneko.html.parsers.SAXParser;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.WebappHelper;
+import org.olat.core.util.StringHelper;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
+
 /**
- * Detect the tag math and a CSS clas named math
+ * Detect tags.
  * 
- * 
- * Initial date: 23 avr. 2018<br>
+ * Initial date: 10.08.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class NekoHTMLMathScanner {
+public class HtmlScanner {
 	
-	private static final Logger log = Tracing.createLoggerFor(NekoHTMLMathScanner.class);
+	private static final Logger log = Tracing.createLoggerFor(HtmlScanner.class);
 
 	public boolean scan(String original) {
 		if (original == null) return false;
 		
 		try {
-			SAXParser parser = new SAXParser();
-			parser.setFeature("http://cyberneko.org/html/features/balance-tags/document-fragment", true);
-			parser.setFeature("http://cyberneko.org/html/features/balance-tags", false);
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALLOW);
+			parser.setCheckingNormalization(false);
 			HTMLHandler contentHandler = new HTMLHandler();
 			parser.setContentHandler(contentHandler);
-			parser.parse(new InputSource(new StringReader(original)));
-			return contentHandler.mathFound();
+			parser.setErrorHandler(contentHandler);
+			parser.parseFragment(new InputSource(new StringReader(original)), "");
+			return contentHandler.tagFound();
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -60,36 +62,33 @@ public class NekoHTMLMathScanner {
 	}
 
 	private static class HTMLHandler extends DefaultHandler {
-		private boolean mathFound = false;
+		private boolean tagFound = false;
 		
-		public boolean mathFound() {
-			return mathFound;
+		public boolean tagFound() {
+			return tagFound;
 		}
 
 		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) {
-			if("MATH".equals(localName)) {
-				mathFound = true;
-			} else if(attributes != null) {
-				String css = attributes.getValue("class");
-				if(css != null) {
-					String[] splited = css.split("\\s+");
-					for(String split:splited) {
-						if(split.equals("math")) {
-							mathFound = true;
-						}
-					}
-				}
+		public void error(SAXParseException exception) throws SAXException {
+			String msg = exception.getMessage();
+			if(msg != null && (msg.equals("Stray start tag \u201Chtml\\u201D.") || msg.equals("Stray start tag \u201Cbody\u201D."))) {
+				tagFound = true;
 			}
 		}
 
 		@Override
-		public void characters(char[] ch, int start, int length) throws SAXException {
-			if(!mathFound && WebappHelper.isMathJaxMarkers()) {
-				String content = new String(ch, start, length);
-				if(content.contains("\\(") || content.contains("\\[") || content.contains("$$")) {
-					mathFound = true;
-				}
+		public void startElement(String uri, String localName, String qName, Attributes attributes) {
+			if(!tagFound && StringHelper.containsNonWhitespace(localName) && isTagAllowed(localName)) {
+				tagFound = true;
+			}
+		}
+		
+		private boolean isTagAllowed(String localName) {
+			switch(localName) {
+				case "textEntryInteraction": return false;
+				case "textentryinteraction": return false;
+				case "TEXTENTRYINTERACTION": return false;
+				default: return true;
 			}
 		}
 	}

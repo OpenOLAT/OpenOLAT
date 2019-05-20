@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.1.6.RELEASE</org.springframework.version>
+		<org.springframework.version>5.1.7.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.2.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<apache.cxf>3.3.2</apache.cxf>
@@ -2165,6 +2165,11 @@
 			<scope>test</scope>
 		</dependency>
 		<!-- core dependencies -->
+		<dependency>
+			<groupId>nu.validator</groupId>
+			<artifactId>htmlparser</artifactId>
+			<version>1.4.13</version>
+		</dependency>
 		<dependency>
 			<groupId>net.sourceforge.nekohtml</groupId>
 			<artifactId>nekohtml</artifactId>

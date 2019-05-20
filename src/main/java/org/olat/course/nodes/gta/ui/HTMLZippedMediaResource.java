@@ -31,10 +31,9 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.cyberneko.html.parsers.SAXParser;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -42,6 +41,9 @@ import org.olat.core.util.ZipUtil;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
+
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * 
@@ -128,7 +130,7 @@ public class HTMLZippedMediaResource implements MediaResource {
 	public HTMLHandler filter(File file) {
 		try(InputStream in = new FileInputStream(file);
 				BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			HTMLHandler contentHandler = new HTMLHandler();
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(bis));

@@ -22,36 +22,30 @@ package org.olat.modules.fo;
 import java.io.IOException;
 import java.io.StringReader;
 
-import org.cyberneko.html.parsers.DOMParser;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.Filter;
-import org.w3c.dom.Document;
+import org.w3c.dom.DocumentFragment;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import nu.validator.htmlparser.dom.HtmlDocumentBuilder;
 
 public class QuoteAndTagFilter implements Filter {
 	
 	private static final Logger log = Tracing.createLoggerFor(QuoteAndTagFilter.class);
 
-	/**
-	 * @see org.olat.core.util.filter.Filter#filter(java.lang.String)
-	 */
 	@Override
 	public String filter(String original) {
 		try {
-			DOMParser parser = new DOMParser();
-			parser.parse(new InputSource(new StringReader(original)));
-			Document document = parser.getDocument();
+			HtmlDocumentBuilder parser = new HtmlDocumentBuilder();
+			DocumentFragment document = parser.parseFragment(new InputSource(new StringReader(original)), "");
 			StringBuilder sb = new StringBuilder();
 			scanNode(document, sb);
 			return sb.toString();
-		} catch (SAXException e) {
-			log.error("", e);
-			return null;
-		} catch (IOException e) {
+		} catch (SAXException | IOException e) {
 			log.error("", e);
 			return null;
 		}

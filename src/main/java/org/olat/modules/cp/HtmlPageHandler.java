@@ -32,20 +32,19 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * 
  * Description:<br>
- * SAX handler for the NekoParser
+ * SAX handler for the HtmlParser
  * 
  * <P>
  * Initial Date:  18 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-//fxdiff VCRP-14: print cp
-public class NekoHtmlPageHandler extends DefaultHandler {
-	private final StringBuilder header = new StringBuilder();
-	private final StringBuilder body = new StringBuilder();
+public class HtmlPageHandler extends DefaultHandler {
+	private final StringBuilder header = new StringBuilder(4096);
+	private final StringBuilder body = new StringBuilder(8192);
 	
-	private final String HEAD = "HEAD";
-	private final String BODY = "BODY";
-	private final String SCRIPT = "SCRIPT";
+	private static final String HEAD = "head";
+	private static final String BODY = "body";
+	private static final String SCRIPT = "script";
 	
 	private boolean pauseOutput;
 	private StringBuilder output;
@@ -56,7 +55,7 @@ public class NekoHtmlPageHandler extends DefaultHandler {
 	private final VFSLeaf document;
 	private final VFSContainer rootContainer;
 	
-	public NekoHtmlPageHandler(TreeNode node, VFSLeaf document, VFSContainer rootDir, String baseUri) {
+	public HtmlPageHandler(TreeNode node, VFSLeaf document, VFSContainer rootDir, String baseUri) {
 		this.document = document;
 		this.rootContainer = rootDir;
 		this.baseUri = baseUri;
@@ -108,11 +107,11 @@ public class NekoHtmlPageHandler extends DefaultHandler {
 
 	@Override
 	public final void startElement(String uri, String localName, String qName, Attributes attributes) {
-		if (HEAD.equals(localName)) {
+		if (HEAD.equalsIgnoreCase(localName)) {
 			output = header;
-		} else if (BODY.equals(localName)) {
+		} else if (BODY.equalsIgnoreCase(localName)) {
 			output = body;
-		} else if (SCRIPT.equals(localName)) {
+		} else if (SCRIPT.equalsIgnoreCase(localName)) {
 			pauseOutput = true;
 		} else if (output != null) {
 			pauseOutput = false;

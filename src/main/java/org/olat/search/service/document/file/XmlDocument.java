@@ -33,8 +33,8 @@ import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
-import org.olat.core.util.filter.impl.NekoHTMLFilter;
-import org.olat.core.util.filter.impl.NekoHTMLFilter.NekoContent;
+import org.olat.core.util.filter.impl.HtmlFilter;
+import org.olat.core.util.filter.impl.HtmlFilter.HtmlContent;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.search.service.SearchResourceContext;
 
@@ -61,13 +61,12 @@ public class XmlDocument extends FileDocument {
 		return htmlDocument.getLuceneDocument();
 	}
 	
-	//fxdiff FXOLAT-97: index run in infinite loop
 	protected FileContent readContent(VFSLeaf leaf) throws IOException {
 		InputStream is = leaf.getInputStream();
     // Remove all HTML and &nbsp; Tags
-    NekoContent output;
+		HtmlContent output;
 		try {
-			output = new NekoHTMLFilter().filter(is);
+			output = new HtmlFilter().filter(is);
 	    if (log.isDebugEnabled() ) log.debug("HTML content without tags :" + output);
 		} catch (Exception e) {
 			throw new IOException(e);

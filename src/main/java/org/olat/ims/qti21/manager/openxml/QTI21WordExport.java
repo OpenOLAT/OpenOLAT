@@ -39,10 +39,9 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.cyberneko.html.parsers.SAXParser;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -79,6 +78,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import nu.validator.htmlparser.sax.HtmlParser;
 import uk.ac.ed.ph.jqtiplus.attribute.Attribute;
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.content.basic.Block;
@@ -420,6 +420,9 @@ public class QTI21WordExport implements MediaResource {
 					break;
 				case "textentryinteraction":
 					startTextEntryInteraction(tag, attributes);
+					flushText();
+					Style[] currentStyles = popStyle(tag);
+					unsetTextPreferences(currentStyles);
 					break;
 				case "extendedtextinteraction":
 					startExtendedTextInteraction(attributes);
@@ -507,9 +510,6 @@ public class QTI21WordExport implements MediaResource {
 					endSimpleChoice();
 					break;
 				case "textentryinteraction":
-					flushText();
-					Style[] currentStyles = popStyle(tag);
-					unsetTextPreferences(currentStyles);
 					break;
 				case "extendedtextinteraction":
 					//auto closing tag
@@ -1108,7 +1108,7 @@ public class QTI21WordExport implements MediaResource {
 				return Collections.emptyList();
 			}
 			try {
-				SAXParser parser = new SAXParser();
+				HtmlParser parser = new HtmlParser();
 				HTMLToOpenXMLHandler handler = new HTMLToOpenXMLHandler(factory, relPath, wrapEl, false);
 				handler.setMaxWidthCm(widthCm);
 				parser.setContentHandler(handler);

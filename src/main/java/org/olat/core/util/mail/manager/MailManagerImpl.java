@@ -93,7 +93,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
-import org.olat.core.util.filter.impl.NekoHTMLFilter;
+import org.olat.core.util.filter.impl.HtmlFilter;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailAttachment;
 import org.olat.core.util.mail.MailBundle;
@@ -1772,7 +1772,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	
 	private Multipart createMultipartAlternative(String text)
 	throws MessagingException {
-		String pureText = new NekoHTMLFilter().filter(text, true);
+		String pureText = new HtmlFilter().filter(text, true);
 		MimeBodyPart textPart = new MimeBodyPart();
 		textPart.setText(pureText, "utf-8");
 		

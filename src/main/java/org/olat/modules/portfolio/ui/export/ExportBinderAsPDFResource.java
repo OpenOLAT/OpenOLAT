@@ -35,7 +35,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.cyberneko.html.parsers.SAXParser;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.dispatcher.DispatcherModule;
@@ -56,7 +56,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.SyntheticUserRequest;
 import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -73,6 +72,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * It makes a flat html file, copy all medias around it
@@ -238,7 +240,7 @@ public class ExportBinderAsPDFResource implements MediaResource {
 	
 	public String exportMedia(String html, File outputDir) {
 		try {
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			ExportMedia contentHandler = new ExportMedia(outputDir);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(html)));

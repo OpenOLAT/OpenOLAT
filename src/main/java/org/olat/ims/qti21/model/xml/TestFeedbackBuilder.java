@@ -22,7 +22,6 @@ package org.olat.ims.qti21.model.xml;
 import java.io.StringReader;
 import java.util.List;
 
-import org.cyberneko.html.parsers.SAXParser;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -32,6 +31,8 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
 
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 import uk.ac.ed.ph.jqtiplus.node.expression.Expression;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.BaseValue;
 import uk.ac.ed.ph.jqtiplus.node.expression.general.Variable;
@@ -235,7 +236,7 @@ public class TestFeedbackBuilder {
 		}
 		
 		try {
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			HTMLHandler contentHandler = new HTMLHandler();
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(value)));

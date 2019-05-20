@@ -43,7 +43,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.cyberneko.html.parsers.SAXParser;
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
@@ -55,7 +55,6 @@ import org.dom4j.io.XMLWriter;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.PathUtils;
@@ -87,6 +86,9 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * This class is NOT thread-safe
@@ -524,7 +526,7 @@ class QTIImportProcessor {
 	 */
 	protected void findMaterialInMatText(String content, List<String> materialPath) {
 		try {
-			SAXParser parser = new SAXParser();
+			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			QTI12HtmlHandler contentHandler = new QTI12HtmlHandler(materialPath);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(content)));

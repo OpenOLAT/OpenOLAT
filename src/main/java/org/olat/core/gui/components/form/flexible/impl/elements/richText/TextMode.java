@@ -23,7 +23,6 @@ import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cyberneko.html.parsers.SAXParser;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -31,6 +30,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+
+import nu.validator.htmlparser.common.XmlViolationPolicy;
+import nu.validator.htmlparser.sax.HtmlParser;
 
 /**
  * 
@@ -118,12 +120,9 @@ public enum TextMode {
 	}
 	
 	private static void parse(String text, DefaultHandler handler) throws Exception {
-		SAXParser parser = new SAXParser();
-		parser.setProperty("http://cyberneko.org/html/properties/names/elems", "lower");
-		parser.setFeature("http://cyberneko.org/html/features/balance-tags/document-fragment", true);
-		parser.setProperty("http://cyberneko.org/html/properties/default-encoding", "UTF-8");
+		HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 		parser.setContentHandler(handler);
-		parser.parse(new InputSource(new ByteArrayInputStream(text.getBytes())));
+		parser.parseFragment(new InputSource(new ByteArrayInputStream(text.getBytes())), "");
 	}
 	
 	private static final class TextAnalyser extends DefaultHandler {
