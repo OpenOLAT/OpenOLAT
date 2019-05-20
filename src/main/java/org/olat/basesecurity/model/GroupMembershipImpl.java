@@ -29,7 +29,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -54,18 +53,16 @@ import org.olat.core.util.StringHelper;
  */
 @Entity(name="bgroupmember")
 @Table(name="o_bs_group_member")
-@NamedQueries({
-	@NamedQuery(name="membershipsByGroup", query="select membership from bgroupmember as membership where membership.group.key=:groupKey"),
-	@NamedQuery(name="membershipsByGroupAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role"),
-	@NamedQuery(name="membershipByGroupIdentityAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role"),
-	@NamedQuery(name="deleteMembershipsByGroupAndRole", query="delete from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role"),
-	@NamedQuery(name="membershipsByGroupAndIdentity", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey"),
-	@NamedQuery(name="membershipsByGroupIdentityAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role"),
-	@NamedQuery(name="countMembersByGroup", query="select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey"),
-	@NamedQuery(name="countMembersByGroupAndRole", query="select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role"),
-	@NamedQuery(name="membersByGroupAndRole", query="select distinct membership.identity from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role"),
-	@NamedQuery(name="hasRoleByGroupIdentityAndRole", query="select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role")
-})
+@NamedQuery(name="membershipsByGroup", query="select membership from bgroupmember as membership where membership.group.key=:groupKey")
+@NamedQuery(name="membershipsByGroupAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role")
+@NamedQuery(name="membershipByGroupIdentityAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role")
+@NamedQuery(name="deleteMembershipsByGroupAndRole", query="delete from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role")
+@NamedQuery(name="membershipsByGroupAndIdentity", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey")
+@NamedQuery(name="membershipsByGroupIdentityAndRole", query="select membership from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role")
+@NamedQuery(name="countMembersByGroup", query="select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey")
+@NamedQuery(name="countMembersByGroupAndRole", query="select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role")
+@NamedQuery(name="membersByGroupAndRole", query="select distinct membership.identity from bgroupmember as membership where membership.group.key=:groupKey and membership.role=:role")
+@NamedQuery(name="hasRoleByGroupIdentityAndRole", query="select count(membership.key) from bgroupmember as membership where membership.group.key=:groupKey and membership.identity.key=:identityKey and membership.role=:role")
 public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persistable {
 
 	private static final long serialVersionUID = -194666973136469187L;
