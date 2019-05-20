@@ -388,7 +388,7 @@ public class CoachingDAO {
 		  .append(" inner join v.groups as relGroup")
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as coach on coach.role ")
-		  		.in(GroupRoles.coach, GroupRoles.owner.name())
+		  		.in(GroupRoles.coach, GroupRoles.owner)
 		  .append(" where coach.identity.key=:coachKey and res.resName='CourseModule'")
 		  .append(" and v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
 

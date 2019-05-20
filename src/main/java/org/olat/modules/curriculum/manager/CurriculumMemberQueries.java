@@ -52,7 +52,7 @@ public class CurriculumMemberQueries {
 	
 	public List<CurriculumMember> getMembers(CurriculumRef curriculum, SearchMemberParameters params) {
 		StringBuilder sb = new StringBuilder(256);
-		sb.append("select ident, membership.role from curriculum cur")
+		sb.append("select ident, membership.role, membership.inheritanceModeString from curriculum cur")
 		  .append(" inner join cur.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
 		  .append(" inner join membership.identity ident")
@@ -70,7 +70,12 @@ public class CurriculumMemberQueries {
 		for(Object[] object:rawObjects) {
 			Identity identity = (Identity)object[0];
 			String role = (String)object[1];
-			members.add(new CurriculumMember(identity, role));
+			String inheritanceModeString = (String)object[2];
+			GroupMembershipInheritance inheritanceMode = GroupMembershipInheritance.none;
+			if(StringHelper.containsNonWhitespace(inheritanceModeString)) {
+				inheritanceMode = GroupMembershipInheritance.valueOf(inheritanceModeString);
+			}
+			members.add(new CurriculumMember(identity, role, inheritanceMode));
 		}
 		return members;
 	}

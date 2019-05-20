@@ -17,38 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.curriculum.model;
+package org.olat.basesecurity.model;
 
-import org.olat.basesecurity.GroupMembershipInheritance;
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.GroupMembership;
 
 /**
  * 
- * Initial date: 19 juin 2018<br>
+ * Initial date: 20 mai 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumMember {
+public class IdentityToRoleKey {
 	
-	private final Identity identity;
+	private final Long identityKey;
 	private final String role;
-	private final GroupMembershipInheritance inheritanceMode;
 	
-	public CurriculumMember(Identity identity, String role, GroupMembershipInheritance inheritanceMode) {
-		this.identity = identity;
+	public IdentityToRoleKey(GroupMembership membership) {
+		identityKey = membership.getIdentity().getKey();
+		role = membership.getRole();
+	}
+	
+	public IdentityToRoleKey(Long identityKey, String role) {
+		this.identityKey = identityKey;
 		this.role = role;
-		this.inheritanceMode = inheritanceMode;
 	}
 
-	public Identity getIdentity() {
-		return identity;
+	@Override
+	public int hashCode() {
+		return identityKey.hashCode() + role.hashCode();
 	}
 
-	public String getRole() {
-		return role;
-	}
-
-	public GroupMembershipInheritance getInheritanceMode() {
-		return inheritanceMode;
+	@Override
+	public boolean equals(Object obj) {
+		if(this == obj) {
+			return true;
+		}
+		if(obj instanceof IdentityToRoleKey) {
+			IdentityToRoleKey m = (IdentityToRoleKey)obj;
+			return identityKey.equals(m.identityKey) && role.equals(m.role);
+		}
+		return false;
 	}
 }

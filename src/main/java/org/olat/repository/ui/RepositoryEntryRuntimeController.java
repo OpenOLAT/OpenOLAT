@@ -883,7 +883,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	private void doRun(UserRequest ureq, RepositoryEntrySecurity security) {
-		if(security.isEntryAdmin() || security.isPrincipal()) {
+		if(security.isEntryAdmin() || security.isPrincipal() || reSecurity.isMasterCoach()) {
 			launchContent(ureq, security);
 		} else {
 			// guest are allowed to see resource with BARG

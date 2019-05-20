@@ -37,6 +37,7 @@ public enum CurriculumRoles {
 	curriculumowner,// own a piece of a curriculum
 	curriculumelementowner,// own a piece of curriculum
 	owner, //same as GroupRoles
+	mastercoach,
 	coach, //same as GroupRoles
 	participant; //same as GroupRoles
 	
@@ -61,5 +62,13 @@ public enum CurriculumRoles {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * @param role The role to check
+	 * @return true if the role is by default inherited in the curriculum tree
+	 */
+	public static boolean isInheritedByDefault(CurriculumRoles role) {
+		return role == CurriculumRoles.mastercoach;
 	}
 }

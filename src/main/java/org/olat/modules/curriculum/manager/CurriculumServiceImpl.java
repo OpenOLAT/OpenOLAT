@@ -30,18 +30,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.Group;
+import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationDataDeletable;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.manager.GroupDAO;
+import org.olat.basesecurity.model.IdentityToRoleKey;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
+import org.olat.core.logging.AssertException;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
@@ -63,6 +67,7 @@ import org.olat.modules.curriculum.model.CurriculumCopySettings.CopyResources;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipChange;
+import org.olat.modules.curriculum.model.CurriculumElementNode;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
@@ -272,8 +277,19 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		if(parentRef == null) {
 			curriculum = getCurriculum(curriculum);
 		}
-		return curriculumElementDao.createCurriculumElement(identifier, displayName, status,
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, displayName, status,
 				beginDate, endDate, parentRef, elementType, calendars, lectures, curriculum);
+		if(element.getParent() != null) {
+			Group organisationGroup = element.getGroup();
+			List<GroupMembership> memberships = groupDao.getMemberships(element.getParent().getGroup());
+			for(GroupMembership membership:memberships) {
+				if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited
+						|| membership.getInheritanceMode() == GroupMembershipInheritance.root) {
+					groupDao.addMembershipOneWay(organisationGroup, membership.getIdentity(), membership.getRole(), GroupMembershipInheritance.inherited);
+				}
+			}
+		}
+		return element;
 	}
 
 	@Override
@@ -388,11 +404,65 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	
 	@Override
 	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent, CurriculumElement siblingBefore) {
-		return curriculumElementDao.move(elementToMove, newParent, siblingBefore);
+		CurriculumElement element = curriculumElementDao.move(elementToMove, newParent, siblingBefore);
+		
+		// propagate inheritance of the new parent
+		List<GroupMembership> memberships = groupDao.getMemberships(newParent.getGroup());
+		List<GroupMembership> membershipsToPropagate = new ArrayList<>();
+		Map<IdentityToRoleKey,GroupMembership> identityRoleToNewParentMembership = new HashMap<>();
+		for(GroupMembership membership:memberships) {
+			if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited || membership.getInheritanceMode() == GroupMembershipInheritance.root) {
+				membershipsToPropagate.add(membership);
+				identityRoleToNewParentMembership.put(new IdentityToRoleKey(membership), membership);
+			}
+		}
+		
+		// inherited of the moved element eventuel -> root
+		List<GroupMembership> movedElementMemberships = groupDao.getMemberships(element.getGroup());
+		for(GroupMembership movedElementMembership:movedElementMemberships) {
+			if(movedElementMembership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
+				GroupMembership newParentMembership = identityRoleToNewParentMembership.get(new IdentityToRoleKey(movedElementMembership));
+				if(newParentMembership == null || newParentMembership.getInheritanceMode() == GroupMembershipInheritance.none) {
+					groupDao.updateInheritanceMode(movedElementMembership, GroupMembershipInheritance.root);
+				}
+			}
+		}
+		
+		CurriculumElementNode treeToMove = curriculumElementDao.getDescendantTree(element);
+		if(!membershipsToPropagate.isEmpty()) {
+			propagateMembership(treeToMove, membershipsToPropagate);
+		}
+		return element;
+	}
+	
+	private void propagateMembership(CurriculumElementNode node, List<GroupMembership> membershipsToPropagate) {
+		Group group = node.getElement().getGroup();
+		List<GroupMembership> nodeMemberships = groupDao.getMemberships(group);
+		Map<IdentityToRoleKey,GroupMembership> identityRoleToMembership = new HashMap<>();
+		for(GroupMembership nodeMembership:nodeMemberships) {
+			identityRoleToMembership.put(new IdentityToRoleKey(nodeMembership), nodeMembership);
+		}
+
+		for(GroupMembership membershipToPropagate:membershipsToPropagate) {
+			GroupMembership nodeMembership = identityRoleToMembership.get(new IdentityToRoleKey(membershipToPropagate));
+			if(nodeMembership == null) {
+				groupDao.addMembershipOneWay(group, membershipToPropagate.getIdentity(), membershipToPropagate.getRole(), GroupMembershipInheritance.inherited);
+			} else if(nodeMembership.getInheritanceMode() != GroupMembershipInheritance.inherited)  {
+				groupDao.updateInheritanceMode(nodeMembership, GroupMembershipInheritance.inherited);
+			}
+		}
+
+		List<CurriculumElementNode> children = node.getChildrenNode();
+		if(children != null && !children.isEmpty()) {
+			for(CurriculumElementNode child:children) {
+				propagateMembership(child, membershipsToPropagate);
+			}
+		}
 	}
 
 	@Override
 	public CurriculumElement moveCurriculumElement(CurriculumElement rootElement, Curriculum curriculum) {
+		// root element move they entire memberships with, don't need to change them
 		CurriculumElement element = curriculumElementDao.move(rootElement, curriculum);
 		dbInstance.commit();
 		return element;
@@ -525,14 +595,81 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role) {
-		if(!groupDao.hasRole(element.getGroup(), member, role.name())) {
-			groupDao.addMembershipOneWay(element.getGroup(), member, role.name(), GroupMembershipInheritance.none);
-		} 
+		GroupMembershipInheritance inheritanceMode;
+		if(CurriculumRoles.isInheritedByDefault(role)) {
+			inheritanceMode = GroupMembershipInheritance.root;
+		} else {
+			inheritanceMode = GroupMembershipInheritance.none;
+		}
+		addMember(element, member, role, inheritanceMode);
+	}
+	
+	public void addMember(CurriculumElement element, Identity member, CurriculumRoles role, GroupMembershipInheritance inheritanceMode) {
+		if(inheritanceMode == GroupMembershipInheritance.inherited) {
+			throw new AssertException("Inherited are automatic");
+		}
+		
+		GroupMembership membership = groupDao.getMembership(element.getGroup(), member, role.name());
+		if(membership == null) {
+			groupDao.addMembershipOneWay(element.getGroup(), member, role.name(), inheritanceMode);
+		} else if(membership.getInheritanceMode() != inheritanceMode) {
+			groupDao.updateInheritanceMode(membership, inheritanceMode);
+		}
+		
+		if(inheritanceMode == GroupMembershipInheritance.root) {
+			List<CurriculumElement> descendants = curriculumElementDao.getDescendants(element);
+			for(CurriculumElement descendant:descendants) {
+				GroupMembership inheritedMembership = groupDao.getMembership(descendant.getGroup(), member, role.name());
+				if(inheritedMembership == null) {
+					groupDao.addMembershipOneWay(descendant.getGroup(), member, role.name(), GroupMembershipInheritance.inherited);
+				} else if(inheritedMembership.getInheritanceMode() == GroupMembershipInheritance.none) {
+					groupDao.updateInheritanceMode(inheritedMembership, GroupMembershipInheritance.inherited);
+				}
+			}
+		}
 	}
 
 	@Override
 	public void removeMember(CurriculumElement element, IdentityRef member) {
 		groupDao.removeMembership(element.getGroup(), member);
+
+		List<GroupMembership> memberships = groupDao.getMemberships(element.getGroup(), member);
+		
+		CurriculumElementNode elementNode = null;
+		for(GroupMembership membership:memberships) {
+			if(membership.getInheritanceMode() == GroupMembershipInheritance.none) {
+				groupDao.removeMembership(membership);
+			} else if(membership.getInheritanceMode() == GroupMembershipInheritance.root) {
+				String role = membership.getRole();
+				groupDao.removeMembership(membership);
+				
+				if(elementNode == null) {
+					elementNode = curriculumElementDao.getDescendantTree(element);
+				}
+				for(CurriculumElementNode child:elementNode.getChildrenNode()) {
+					removeInherithedMembership(child, member, role);
+				}
+			}
+		}
+	}
+	
+	/**
+	 * The method will recursively delete the inherithed membership. If it
+	 * found a mebership marked as "root" or "none". It will stop.
+	 * 
+	 * @param elementNode The organization node
+	 * @param member The user to remove
+	 * @param role The role
+	 */
+	private void removeInherithedMembership(CurriculumElementNode elementNode, IdentityRef member, String role) {
+		GroupMembership membership = groupDao
+				.getMembership(elementNode.getElement().getGroup(), member, role);
+		if(membership != null && membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
+			groupDao.removeMembership(membership);
+			for(CurriculumElementNode child:elementNode.getChildrenNode()) {
+				removeInherithedMembership(child, member, role);
+			}
+		}
 	}
 
 	@Override

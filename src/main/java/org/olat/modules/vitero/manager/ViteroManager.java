@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.net.ConnectException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -48,7 +49,7 @@ import javax.xml.ws.handler.HandlerResolver;
 import javax.xml.ws.handler.PortInfo;
 import javax.xml.ws.soap.SOAPFaultException;
 
-import org.apache.commons.httpclient.ConnectTimeoutException;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
@@ -56,7 +57,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -1490,7 +1490,7 @@ public class ViteroManager implements UserDataDeletable {
 				return ErrorCode.find(code);
 			}
 			return ErrorCode.unkown;
-		} else if (f.getCause() instanceof ConnectTimeoutException) {
+		} else if (f.getCause() instanceof SocketTimeoutException) {
 			throw new VmsNotAvailableException(f);
 		}
 		return ErrorCode.unkown;

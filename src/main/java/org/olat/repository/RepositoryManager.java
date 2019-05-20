@@ -39,6 +39,7 @@ import java.util.Set;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
@@ -57,7 +58,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.OlatResourceableType;
@@ -77,6 +77,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.group.GroupLoggingAction;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.repository.manager.RepositoryEntryDAO;
 import org.olat.repository.manager.RepositoryEntryQueries;
@@ -527,6 +528,7 @@ public class RepositoryManager {
 		boolean isPrincipal = false;
 		boolean isAdministrator = false;
 		boolean isLearnRessourceManager = false;
+		boolean isMasterCoach = false;
 		
 		boolean canLaunch = false;
 		RepositoryEntryStatusEnum status = re.getEntryStatus();
@@ -592,6 +594,13 @@ public class RepositoryManager {
 							break;
 						default: break;
 					}
+				} else if(CurriculumRoles.isValueOf(role)) {
+					switch(CurriculumRoles.valueOf(role)) {
+						case mastercoach:
+							isMasterCoach = true;
+							break;
+						default: break;
+					}
 				}
 			}
 
@@ -617,7 +626,7 @@ public class RepositoryManager {
 					}
 				}
 				
-				if(!canLaunch && (isGroupCoach || isCourseCoach || isCurriculumCoach)) {
+				if(!canLaunch && (isGroupCoach || isCourseCoach || isCurriculumCoach || isMasterCoach)) {
 					canLaunch = status == RepositoryEntryStatusEnum.coachpublished
 							|| status == RepositoryEntryStatusEnum.published
 							|| status == RepositoryEntryStatusEnum.closed;
@@ -636,7 +645,7 @@ public class RepositoryManager {
 		return new RepositoryEntrySecurity(isEntryAdmin, isOwner,
 				isCourseParticipant, isCourseCoach,
 				isGroupParticipant, isGroupCoach, isGroupWaiting,
-				isCurriculumParticipant, isCurriculumCoach,
+				isCurriculumParticipant, isCurriculumCoach, isMasterCoach,
 				isAuthor, isPrincipal, canLaunch, readOnly);
 	}
 

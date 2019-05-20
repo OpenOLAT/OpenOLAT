@@ -33,6 +33,7 @@ public class RepositoryEntrySecurity {
 	private final boolean readOnly;
 	private final boolean author;
 	private final boolean principal;
+	private final boolean masterCoach;
 	
 	private final boolean courseParticipant;
 	private final boolean courseCoach;
@@ -46,7 +47,7 @@ public class RepositoryEntrySecurity {
 	public RepositoryEntrySecurity(boolean entryAdmin, boolean owner,
 			boolean courseParticipant, boolean courseCoach,
 			boolean groupParticipant, boolean groupCoach, boolean groupWaiting,
-			boolean curriculumParticipant, boolean curriculumCoach,
+			boolean curriculumParticipant, boolean curriculumCoach, boolean masterCoach,
 			boolean author, boolean principal,
 			boolean canLaunch, boolean readOnly) {
 		this.owner = owner;
@@ -54,6 +55,7 @@ public class RepositoryEntrySecurity {
 		this.entryAdmin = entryAdmin;
 		this.author = author;
 		this.principal = principal;
+		this.masterCoach = masterCoach;
 		
 		this.courseParticipant = courseParticipant;
 		this.courseCoach = courseCoach;
@@ -85,6 +87,10 @@ public class RepositoryEntrySecurity {
 	 */
 	public boolean isParticipant() {
 		return courseParticipant || groupParticipant || curriculumParticipant;
+	}
+	
+	public boolean isMasterCoach() {
+		return masterCoach;
 	}
 	
 	public boolean isEntryAdmin() {
@@ -153,5 +159,9 @@ public class RepositoryEntrySecurity {
 	 */
 	public boolean isOnlyPrincipal() {
 		return principal && !isMember() && !isEntryAdmin();
+	}
+	
+	public boolean isOnlyMasterCoach() {
+		return masterCoach && !isMember() && !isEntryAdmin();
 	}
 }

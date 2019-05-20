@@ -94,7 +94,7 @@ public class GroupMembershipImpl implements GroupMembership, ModifiedInfo, Persi
 	@Column(name="g_role", nullable=false, insertable=true, updatable=false)
 	private String role;
 	
-	@Column(name="g_inheritance_mode", nullable=false, insertable=true, updatable=false)
+	@Column(name="g_inheritance_mode", nullable=false, insertable=true, updatable=true)
 	private String inheritanceModeString;
 	
 	@ManyToOne(targetEntity=GroupImpl.class,fetch=FetchType.LAZY,optional=false)

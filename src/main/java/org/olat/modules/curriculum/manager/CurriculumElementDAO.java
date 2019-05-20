@@ -60,6 +60,7 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
 import org.olat.modules.curriculum.model.CurriculumElementMembershipImpl;
+import org.olat.modules.curriculum.model.CurriculumElementNode;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumImpl;
@@ -745,7 +746,34 @@ public class CurriculumElementDAO {
 				.getResultList();
 	}
 	
-	
+	public CurriculumElementNode getDescendantTree(CurriculumElement rootElement) {
+		List<CurriculumElement> descendants = getChildren(rootElement);
+		CurriculumElementNode rootNode = new CurriculumElementNode(rootElement);
+		
+		Map<Long,CurriculumElementNode> keyToOrganisations = new HashMap<>();
+		for(CurriculumElement descendant:descendants) {
+			keyToOrganisations.put(descendant.getKey(), new CurriculumElementNode(descendant));
+		}
+
+		for(CurriculumElement descendant:descendants) {
+			Long key = descendant.getKey();
+			if(key.equals(rootElement.getKey())) {
+				continue;
+			}
+			
+			CurriculumElementNode node = keyToOrganisations.get(key);
+			CurriculumElement parentOrganisation = descendant.getParent();
+			Long parentKey = parentOrganisation.getKey();
+			if(parentKey.equals(rootElement.getKey())) {
+				//this is a root, or the user has not access to parent
+				rootNode.addChild(node);
+			} else {
+				CurriculumElementNode parentNode = keyToOrganisations.get(parentKey);
+				parentNode.addChild(node);
+			}
+		}
+		return rootNode;
+	}
 	
 	public List<Identity> getMembersIdentity(CurriculumElementRef element, String role) {
 		StringBuilder sb = new StringBuilder(256);

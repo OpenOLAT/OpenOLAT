@@ -27,6 +27,7 @@ import java.util.Set;
 import org.olat.admin.user.UserSearchController;
 import org.olat.admin.user.UserTableDataModel;
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.events.MultiIdentityChosenEvent;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.basesecurity.model.IdentityRefImpl;
@@ -238,13 +239,17 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	
 	private void doConfirmRemoveAllMemberships(UserRequest ureq) {
 		Set<Integer> selectedRows = tableEl.getMultiSelectedIndex();
-		if(selectedRows.isEmpty()) {
+		List<CurriculumMemberRow> rows = new ArrayList<>(selectedRows.size());
+		for(Integer selectedRow:selectedRows) {
+			CurriculumMemberRow row = tableModel.getObject(selectedRow.intValue());
+			if(row.getInheritanceMode() == GroupMembershipInheritance.root || row.getInheritanceMode() == GroupMembershipInheritance.none) {
+				rows.add(row);
+			}
+		}
+		
+		if(rows.isEmpty()) {
 			showWarning("warning.atleastone.member");
 		} else {
-			List<CurriculumMemberRow> rows = new ArrayList<>(selectedRows.size());
-			for(Integer selectedRow:selectedRows) {
-				rows.add(tableModel.getObject(selectedRow.intValue()));
-			}
 			String title = translate("confirm.remove.member.title");
 			confirmRemoveCtrl = activateYesNoDialog(ureq, title, translate("confirm.remove.member.text", ""), confirmRemoveCtrl);
 			confirmRemoveCtrl.setUserObject(rows);
@@ -267,7 +272,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 		
 		String title = translate("add.member");
 		CurriculumRoles[] roles = new CurriculumRoles[] {
-				CurriculumRoles.curriculumelementowner,
+				CurriculumRoles.curriculumelementowner, CurriculumRoles.mastercoach,
 				CurriculumRoles.owner, CurriculumRoles.coach, CurriculumRoles.participant
 		};
 		roleListCtrl = new RoleListController(ureq, getWindowControl(), roles);

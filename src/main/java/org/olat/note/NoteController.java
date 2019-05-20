@@ -25,6 +25,7 @@
 
 package org.olat.note;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -65,6 +66,8 @@ public class NoteController extends FormBasicController implements GenericEventL
 	private FormLink editButton;
 	private FormSubmit submitButton;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private NoteManager noteManager;
 
@@ -129,7 +132,11 @@ public class NoteController extends FormBasicController implements GenericEventL
 		
 		noteField = uifactory.addRichTextElementForStringData("noteField", null, n.getNoteText(), 20, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		noteField.setEnabled(false);
-		noteField.setMaxLength(4000);
+		if(dbInstance.isOracle()) {
+			noteField.setMaxLength(4000);
+		} else {
+			noteField.setMaxLength(400000);
+		}
 
 		submitButton = uifactory.addFormSubmitButton("submit", formLayout);
 		submitButton.setVisible(false);

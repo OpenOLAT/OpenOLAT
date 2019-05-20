@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupMembership;
 import org.olat.basesecurity.GroupMembershipInheritance;
@@ -39,6 +40,7 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeRef;
+import org.olat.basesecurity.model.IdentityToRoleKey;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
 import org.olat.basesecurity.model.OrganisationNode;
@@ -50,7 +52,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -229,13 +230,13 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	private void propagateMembership(OrganisationNode node, List<GroupMembership> membershipsToPropagate) {
 		Group group = node.getOrganisation().getGroup();
 		List<GroupMembership> nodeMemberships = groupDao.getMemberships(group);
-		Map<IdentityRoleKey,GroupMembership> identityRoleToMembership = new HashMap<>();
+		Map<IdentityToRoleKey,GroupMembership> identityRoleToMembership = new HashMap<>();
 		for(GroupMembership nodeMembership:nodeMemberships) {
-			identityRoleToMembership.put(new IdentityRoleKey(nodeMembership), nodeMembership);
+			identityRoleToMembership.put(new IdentityToRoleKey(nodeMembership), nodeMembership);
 		}
 
 		for(GroupMembership membershipToPropagate:membershipsToPropagate) {
-			GroupMembership nodeMembership = identityRoleToMembership.get(new IdentityRoleKey(membershipToPropagate));
+			GroupMembership nodeMembership = identityRoleToMembership.get(new IdentityToRoleKey(membershipToPropagate));
 			if(nodeMembership == null) {
 				groupDao.addMembershipOneWay(group, membershipToPropagate.getIdentity(), membershipToPropagate.getRole(), GroupMembershipInheritance.inherited);
 			} else if(nodeMembership.getInheritanceMode() != GroupMembershipInheritance.inherited)  {
@@ -251,15 +252,15 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		}
 	}
 	
-	private void cleanMembership(OrganisationNode node, Set<IdentityRoleKey> inheritance) {
+	private void cleanMembership(OrganisationNode node, Set<IdentityToRoleKey> inheritance) {
 		List<GroupMembership> memberships = groupDao.getMemberships(node.getOrganisation().getGroup());
 		for(GroupMembership membership:memberships) {
 			if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
-				if(!inheritance.contains(new IdentityRoleKey(membership))) {
+				if(!inheritance.contains(new IdentityToRoleKey(membership))) {
 					groupDao.removeMembership(node.getOrganisation().getGroup(), membership.getIdentity(), membership.getRole());
 				}
 			} else if(membership.getInheritanceMode() == GroupMembershipInheritance.root) {
-				inheritance.add(new IdentityRoleKey(membership));
+				inheritance.add(new IdentityToRoleKey(membership));
 			}
 		}
 		
@@ -268,34 +269,6 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 			for(OrganisationNode child:children) {
 				cleanMembership(child, new HashSet<>(inheritance));
 			}
-		}
-	}
-	
-	private static class IdentityRoleKey {
-		
-		private final Long identityKey;
-		private final String role;
-		
-		public IdentityRoleKey(GroupMembership membership) {
-			identityKey = membership.getIdentity().getKey();
-			role = membership.getRole();
-		}
-
-		@Override
-		public int hashCode() {
-			return identityKey.hashCode() + role.hashCode();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if(this == obj) {
-				return true;
-			}
-			if(obj instanceof IdentityRoleKey) {
-				IdentityRoleKey m = (IdentityRoleKey)obj;
-				return identityKey.equals(m.identityKey) && role.equals(m.role);
-			}
-			return false;
 		}
 	}
 

@@ -21,6 +21,7 @@ package org.olat.modules.curriculum.ui;
 
 import java.util.Locale;
 
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
@@ -49,6 +50,13 @@ implements SortableFlexiTableDataModel<CurriculumMemberRow> {
 			CurriculumUserManagementTableSortDelegate sort = new CurriculumUserManagementTableSortDelegate(orderBy, this, locale);
 			super.setObjects(sort.sort());
 		}
+	}
+	
+	@Override
+	public boolean isSelectable(int row) {
+		CurriculumMemberRow member = getObject(row);
+		return member.getInheritanceMode() == GroupMembershipInheritance.root
+				|| member.getInheritanceMode() == GroupMembershipInheritance.none;
 	}
 
 	@Override

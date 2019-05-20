@@ -187,8 +187,8 @@ public class CourseWebService {
 
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null,
 					null, null, null,
-					reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal(), reSecurity.isParticipant(),
-					reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal());
+					reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach(), reSecurity.isParticipant(),
+					reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
 			KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, null);
 			return new CalWebService(wrapper);
 		}

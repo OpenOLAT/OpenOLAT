@@ -19,36 +19,39 @@
  */
 package org.olat.modules.curriculum.model;
 
-import org.olat.basesecurity.GroupMembershipInheritance;
-import org.olat.core.id.Identity;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.olat.modules.curriculum.CurriculumElement;
 
 /**
  * 
- * Initial date: 19 juin 2018<br>
+ * Initial date: 20 mai 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumMember {
+public class CurriculumElementNode {
 	
-	private final Identity identity;
-	private final String role;
-	private final GroupMembershipInheritance inheritanceMode;
+	private final CurriculumElement element;
+	private final List<CurriculumElementNode> children = new ArrayList<>();
 	
-	public CurriculumMember(Identity identity, String role, GroupMembershipInheritance inheritanceMode) {
-		this.identity = identity;
-		this.role = role;
-		this.inheritanceMode = inheritanceMode;
+	public CurriculumElementNode(CurriculumElement element) {
+		this.element = element;
+	}
+	
+	public CurriculumElement getElement() {
+		return element;
+	}
+	
+	/**
+	 * @return A copy of the list of direct children.
+	 */
+	public List<CurriculumElementNode> getChildrenNode() {
+		return new ArrayList<>(children);
+	}
+	
+	public void addChild(CurriculumElementNode node) {
+		children.add(node);
 	}
 
-	public Identity getIdentity() {
-		return identity;
-	}
-
-	public String getRole() {
-		return role;
-	}
-
-	public GroupMembershipInheritance getInheritanceMode() {
-		return inheritanceMode;
-	}
 }

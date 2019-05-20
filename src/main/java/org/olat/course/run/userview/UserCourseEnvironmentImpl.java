@@ -125,8 +125,8 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 
 		return new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course.getCourseEnvironment(), wControl,
 				coachedGroups, participatedGroups, waitingLists,
-				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal(), reSecurity.isParticipant(),
-				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal());
+				reSecurity.isCoach(), reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach() , reSecurity.isParticipant(),
+				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
 	}
 
 	/**
