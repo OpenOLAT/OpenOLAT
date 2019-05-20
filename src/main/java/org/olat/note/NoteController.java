@@ -58,6 +58,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  */
 public class NoteController extends FormBasicController implements GenericEventListener {
+	
+	private static final int NOTE_MAX_LENGTH = 400000;
 
 	private Note n;
 	private EventBus sec;
@@ -129,7 +131,7 @@ public class NoteController extends FormBasicController implements GenericEventL
 		
 		noteField = uifactory.addRichTextElementForStringData("noteField", null, n.getNoteText(), 20, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
 		noteField.setEnabled(false);
-		noteField.setMaxLength(4000);
+		noteField.setMaxLength(NOTE_MAX_LENGTH);
 
 		submitButton = uifactory.addFormSubmitButton("submit", formLayout);
 		submitButton.setVisible(false);
@@ -147,18 +149,12 @@ public class NoteController extends FormBasicController implements GenericEventL
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		sec.deregisterFor(this, OresHelper.lookupType(Note.class));
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.util.event.GenericEventListener#event(org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(Event event) {
 		if (event instanceof OLATResourceableJustBeforeDeletedEvent) {
 			OLATResourceableJustBeforeDeletedEvent bdev = (OLATResourceableJustBeforeDeletedEvent) event;
@@ -173,15 +169,16 @@ public class NoteController extends FormBasicController implements GenericEventL
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
 		String text = noteField.getValue();
-		boolean allOk = true;
-		if(text.length() <= 4000) {
-			noteField.clearError();
-		} else {
-			noteField.setErrorKey("input.toolong", new String[]{"4000"});
-			allOk = false;
+		noteField.clearError();
+		if(text.length() > NOTE_MAX_LENGTH) {
+			noteField.setErrorKey("input.toolong", new String[]{ Integer.toString(NOTE_MAX_LENGTH) });
+			allOk &= false;
 		}
-		return allOk && super.validateFormLogic(ureq);
+		
+		return allOk;
 	}
 
 	@Override
@@ -197,17 +194,10 @@ public class NoteController extends FormBasicController implements GenericEventL
 		noteField.setEnabled(false);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		// persisting: see formOK
-		
 		// If the user clicked the edit button, set the rich text input field to enabled and hide the edit button.
-		if ((source == editButton) && (editButton.isEnabled())) {
+		if (source == editButton && editButton.isEnabled()) {
 			noteField.setEnabled(true);
 			editButton.setVisible(false);
 			submitButton.setVisible(true);

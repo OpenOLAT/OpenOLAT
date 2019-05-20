@@ -27,8 +27,25 @@ package org.olat.note;
 
 import java.util.Date;
 
-import org.olat.core.commons.persistence.PersistentObject;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.Version;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parameter;
+import org.olat.basesecurity.IdentityImpl;
+import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Persistable;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -37,19 +54,55 @@ import org.olat.core.logging.AssertException;
  * 
  * @author Alexander Schneider
  */
-public class NoteImpl extends PersistentObject implements Note {
+@Entity(name="note")
+@Table(name="o_note")
+@NamedQueries({
+	@NamedQuery(name="noteByOwner", query="select n from note as n inner join fetch n.owner as noteowner where noteowner.key=:noteowner"),
+	@NamedQuery(name="noteByOwnerAndResource", query="select n from note as n where n.owner.key=:ownerKey and n.resourceTypeName=:resName and n.resourceTypeId=:resId")
+})
+public class NoteImpl implements Note, Persistable, CreateInfo {
 
 	private static final long serialVersionUID = -403450817851666464L;
-	
-	private Identity owner;
-	private String resourceTypeName;
-	private Long resourceTypeId;
-	private String subtype;
-	private String noteTitle;
-	private String noteText;
-	private Date lastModified;
 	private static final int RESOURCETYPENAME_MAXLENGTH = 50;
 	private static final int SUBTYPE_MAXLENGTH = 50;
+	
+	@Id
+	@GeneratedValue(generator = "system-uuid")
+	@GenericGenerator(name = "system-uuid", strategy = "enhanced-sequence", parameters={
+		@Parameter(name="sequence_name", value="hibernate_unique_key"),
+		@Parameter(name="force_table_use", value="true"),
+		@Parameter(name="optimizer", value="legacy-hilo"),
+		@Parameter(name="value_column", value="next_hi"),
+		@Parameter(name="increment_size", value="32767"),
+		@Parameter(name="initial_value", value="32767")
+	})
+	@Column(name="note_id", nullable=false, unique=true, insertable=true, updatable=false)
+	private Long key;
+	@Version
+	private int version = 0;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="creationdate", nullable=false, insertable=true, updatable=false)
+	private Date creationDate;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="lastmodified", nullable=false, insertable=true, updatable=true)
+	private Date lastModified;
+	
+	@Column(name="resourcetypename", nullable=false, insertable=true, updatable=false)
+	private String resourceTypeName;
+	@Column(name="resourcetypeid", nullable=false, insertable=true, updatable=false)
+	private Long resourceTypeId;
+	@Column(name="sub_type", nullable=true, insertable=true, updatable=false)
+	private String subtype;
+
+	@Column(name="notetitle", nullable=true, insertable=true, updatable=true)
+	private String noteTitle;
+	@Column(name="notetext", nullable=true, insertable=true, updatable=true)
+	private String noteText;
+	
+	@OneToOne(targetEntity=IdentityImpl.class)
+	@JoinColumn(name="owner_id", nullable=false, insertable=true, updatable=false)
+	private Identity owner;
 
 	/**
 	 * Default construcor
@@ -58,9 +111,38 @@ public class NoteImpl extends PersistentObject implements Note {
 	// nothing to do
 	}
 
+	@Override
+	public Long getKey() {
+		return key;
+	}
+
+	public void setKey(Long key) {
+		this.key = key;
+	}
+
+	@Override
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
+	public void setCreationDate(Date creationDate) {
+		this.creationDate = creationDate;
+	}
+
+	@Override
+	public Date getLastModified() {
+		return lastModified;
+	}
+
+	@Override
+	public void setLastModified(Date date) {
+		this.lastModified = date;
+	}
+
 	/**
 	 * @return Returns the noteText.
 	 */
+	@Override
 	public String getNoteText() {
 		return noteText;
 	}
@@ -68,6 +150,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @param noteText The noteText to set.
 	 */
+	@Override
 	public void setNoteText(String noteText) {
 		this.noteText = noteText;
 	}
@@ -75,6 +158,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @return Returns the noteTitle.
 	 */
+	@Override
 	public String getNoteTitle() {
 		return noteTitle;
 	}
@@ -82,6 +166,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @param noteTitle The noteTitle to set.
 	 */
+	@Override
 	public void setNoteTitle(String noteTitle) {
 		this.noteTitle = noteTitle;
 	}
@@ -89,6 +174,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @return Returns the owner.
 	 */
+	@Override
 	public Identity getOwner() {
 		return owner;
 	}
@@ -96,6 +182,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @param owner The owner to set.
 	 */
+	@Override
 	public void setOwner(Identity owner) {
 		this.owner = owner;
 	}
@@ -103,6 +190,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @return Returns the resourceTypeId.
 	 */
+	@Override
 	public Long getResourceTypeId() {
 		return resourceTypeId;
 	}
@@ -110,6 +198,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @param resourceTypeId The resourceTypeId to set.
 	 */
+	@Override
 	public void setResourceTypeId(Long resourceTypeId) {
 		this.resourceTypeId = resourceTypeId;
 	}
@@ -117,6 +206,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @return Returns the resourceTypeName.
 	 */
+	@Override
 	public String getResourceTypeName() {
 		return resourceTypeName;
 	}
@@ -124,6 +214,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @param resourceTypeName The resourceTypeName to set.
 	 */
+	@Override
 	public void setResourceTypeName(String resourceTypeName) {
 		if (resourceTypeName.length() > RESOURCETYPENAME_MAXLENGTH)
 			throw new AssertException("resourcetypename in o_note too long");
@@ -133,6 +224,7 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @return Returns the subtype.
 	 */
+	@Override
 	public String getSubtype() {
 		return subtype;
 	}
@@ -140,26 +232,11 @@ public class NoteImpl extends PersistentObject implements Note {
 	/**
 	 * @param subtype The subtype to set.
 	 */
+	@Override
 	public void setSubtype(String subtype) {
 		if (subtype != null && subtype.length() > SUBTYPE_MAXLENGTH)
 			throw new AssertException("subtype of o_note too long");
 		this.subtype = subtype;
-	}
-
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#getLastModified()
-	 */
-	public Date getLastModified() {
-		return lastModified;
-	}
-
-	/**
-	 * 
-	 * @see org.olat.core.id.ModifiedInfo#setLastModified(java.util.Date)
-	 */
-	public void setLastModified(Date date) {
-		this.lastModified = date;
 	}
 
 	@Override
@@ -177,5 +254,10 @@ public class NoteImpl extends PersistentObject implements Note {
 			return getKey() != null && getKey().equals(note.getKey());
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsByPersistableKey(Persistable persistable) {
+		return equals(persistable);
 	}
 }
