@@ -29,6 +29,7 @@
 package org.olat.core.id.context;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
@@ -51,24 +52,29 @@ public class StackedBusinessWindowControl implements WindowControl {
 		this.businessControl = businessControl;
 		
 	}
-	
+
+	@Override
 	public BusinessControl getBusinessControl() {
 		// inject the new business control here
 		return businessControl;
 	}
 
+	@Override
 	public WindowControlInfo getWindowControlInfo() {
 		return origWControl.getWindowControlInfo();
 	}
 
+	@Override
 	public void makeFlat() {
 		origWControl.makeFlat();
 	}
 
+	@Override
 	public void pop() {
 		origWControl.pop();
 	}
 
+	@Override
 	public void pushAsModalDialog(Component comp) {
 		origWControl.pushAsModalDialog(comp);
 	}
@@ -78,25 +84,33 @@ public class StackedBusinessWindowControl implements WindowControl {
 		origWControl.pushAsCallout(comp, targetId, settings);
 	}
 
+	@Override
+	public void pushFullScreen(Controller ctrl, String bodyClass) {
+		origWControl.pushFullScreen(ctrl, bodyClass);
+	}
+
+	@Override
 	public void pushToMainArea(Component comp) {
 		origWControl.pushToMainArea(comp);
 	}
 
+	@Override
 	public void setError(String string) {
 		origWControl.setError(string);
 	}
 
+	@Override
 	public void setInfo(String string) {
 		origWControl.setInfo(string);
 	}
 
+	@Override
 	public void setWarning(String string) {
 		origWControl.setWarning(string);
 	}
 
+	@Override
 	public WindowBackOffice getWindowBackOffice() {
 		return origWControl.getWindowBackOffice();
 	}
-	
-
 }

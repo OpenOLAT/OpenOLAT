@@ -20,6 +20,7 @@
 package org.olat.restapi.support;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
@@ -52,6 +53,9 @@ public class ErrorWindowControl implements WindowControl {
 	
 	@Override
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {/* */}
+
+	@Override
+	public void pushFullScreen(Controller ctrl, String bodyClass) {/* */}
 
 	@Override
 	public void pop() {/* */}

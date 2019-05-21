@@ -29,6 +29,7 @@ public class ScreenMode {
 	private Mode wish;
 	private boolean fullScreen;
 	private String businessPath;
+	private String fullScreenBodyClass;
 
 	public boolean isFullScreen() {
 		return fullScreen;
@@ -44,9 +45,14 @@ public class ScreenMode {
 	 * @param businessPath The business path to beautify the reload (in the form [Repository:3781][CourseNode:23468732]) (optional)
 	 */
 	public void setMode(Mode mode, String businessPath) {
+		setMode(mode, businessPath, fullScreenBodyClass);
+	}
+	
+	public void setMode(Mode mode, String businessPath, String fullScreenBodyClass) {
 		fullScreen = Mode.full.equals(mode);
 		this.wish = mode;
 		this.businessPath = businessPath;
+		this.fullScreenBodyClass = fullScreenBodyClass;
 	}
 	
 	public boolean isWishFullScreen() {
@@ -72,6 +78,10 @@ public class ScreenMode {
 	
 	public String getBusinessPath() {
 		return businessPath;
+	}
+	
+	public String getFullScreenBodyClass() {
+		return fullScreenBodyClass;
 	}
 	
 	public boolean wishFullScreen(boolean erase) {

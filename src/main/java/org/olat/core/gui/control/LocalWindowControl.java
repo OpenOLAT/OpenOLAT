@@ -42,7 +42,6 @@ public class LocalWindowControl implements WindowControl {
 	private static final Logger log = Tracing.createLoggerFor(LocalWindowControl.class);
 	private final WindowControl origWControl;
 	private int localHeight = 0;
-	//private final Controller controller;
 	private final WindowControlInfoImpl wci;
 	
 	LocalWindowControl(WindowControl origWControl, DefaultController defaultcontroller) {
@@ -50,9 +49,6 @@ public class LocalWindowControl implements WindowControl {
 		wci = new WindowControlInfoImpl(defaultcontroller, (origWControl == null? null: origWControl.getWindowControlInfo()));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#pop()
-	 */
 	@Override
 	public void pop() {
 		if (localHeight > 0) {
@@ -63,9 +59,7 @@ public class LocalWindowControl implements WindowControl {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#pushAsModalDialog(java.lang.String, org.olat.core.gui.components.Component)
-	 */
+	@Override
 	public void pushAsModalDialog(Component comp) {
 		origWControl.pushAsModalDialog(comp);
 		localHeight++;
@@ -77,36 +71,34 @@ public class LocalWindowControl implements WindowControl {
 		localHeight++;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#pushToMainArea(org.olat.core.gui.components.Component)
-	 */
+	@Override
+	public void pushFullScreen(Controller ctrl, String bodyClass) {
+		origWControl.pushFullScreen(ctrl, bodyClass);
+		localHeight++;
+	}
+
+	@Override
 	public void pushToMainArea(Component comp) {
 		origWControl.pushToMainArea(comp);
 		localHeight++;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#setError(java.lang.String)
-	 */
+	@Override
 	public void setError(String string) {
 		origWControl.setError(string);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#setInfo(java.lang.String)
-	 */
+	@Override
 	public void setInfo(String string) {
 		origWControl.setInfo(string);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#setWarning(java.lang.String)
-	 */
+	@Override
 	public void setWarning(String string) {
 		origWControl.setWarning(string);
 	}
-	
-	
+
+	@Override
 	public void makeFlat() {
 		for (int i = 0; i < localHeight; i++) {
 			origWControl.pop();
@@ -114,20 +106,17 @@ public class LocalWindowControl implements WindowControl {
 		localHeight = 0;
 	}
 
+	@Override
 	public WindowControlInfo getWindowControlInfo() {
 		return wci;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.WindowControl#getBusinessControl()
-	 */
+	@Override
 	public BusinessControl getBusinessControl() {
 		return origWControl.getBusinessControl();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.WindowControl#getWindowBackOffice()
-	 */
+	@Override
 	public WindowBackOffice getWindowBackOffice() {
 		return origWControl.getWindowBackOffice();
 	}

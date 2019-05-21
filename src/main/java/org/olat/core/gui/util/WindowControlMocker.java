@@ -66,6 +66,11 @@ public class WindowControlMocker implements WindowControl{
 	}
 
 	@Override
+	public void pushFullScreen(Controller ctrl, String bodyClass) {
+		//
+	}
+
+	@Override
 	public void pop() {
 		//
 	}

@@ -30,8 +30,6 @@ import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.generic.closablewrapper.CalloutSettings;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for Trans
  * 
  * <P>
  * Initial Date: 24.01.2007 <br>
@@ -52,15 +50,9 @@ public interface GuiStack {
 	 */
 	public void pushCallout(Component content, String targetId, CalloutSettings settings);
 
-	/**
-	 * @see org.olat.core.gui.control.GuiStackHandle#pushContent(org.olat.core.gui.components.Component)
-	 */
 	public void pushContent(Component newContent);
 
-	/**
-	 * @see org.olat.core.gui.control.GuiStackHandle#popContent()
-	 */
-	public void popContent();
+	public Component popContent();
 
 	/**
 	 * @return

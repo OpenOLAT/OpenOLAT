@@ -23,10 +23,8 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -71,30 +69,21 @@ public class DocEditorFullscreenController extends BasicController {
 		//
 	}
 
-	@SuppressWarnings("deprecation")
 	private void doOpenEditor() {
-		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-		String businessPath = editorCtrl.getWindowControlForDebug().getBusinessControl().getAsString();
-		cc.getScreenMode().setMode(Mode.full, businessPath);
-		cc.addBodyCssClass("o_doceditor_body");
-		getWindowControl().pushToMainArea(editorCtrl.getInitialComponent());
+		getWindowControl().pushFullScreen(editorCtrl, "o_doceditor_body");
 	}
 	
 	private void doCloseEditor() {
 		getWindowControl().pop();
-		String businessPath = getWindowControl().getBusinessControl().getAsString();
-		ChiefController cc = getWindowControl().getWindowBackOffice().getChiefController();
-		cc.getScreenMode().setMode(Mode.standard, businessPath);
-		cc.removeBodyCssClass("o_doceditor_body");
-		
 		removeAsListenerAndDispose(editorCtrl);
 		editorCtrl = null;
 	}
-	
 
 	@Override
 	protected void doDispose() {
-		//
+		if(editorCtrl != null) {
+			removeAsListenerAndDispose(editorCtrl);
+			editorCtrl = null;
+		}
 	}
-
 }

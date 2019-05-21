@@ -63,7 +63,13 @@ public interface WindowControl {
 	 * @param targetId
 	 */
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings);
-	
+
+	/**
+	 * Push a controller to full screen mode.
+	 * @param ctrl 
+	 * @param bodyClass An additional body class (optional)
+	 */
+	public void pushFullScreen(Controller ctrl, String bodyClass);
 
 	/**
 	 * 

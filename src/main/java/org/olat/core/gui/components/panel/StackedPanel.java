@@ -42,7 +42,7 @@ public interface StackedPanel extends ComponentCollection {
 	
 	public void setContent(Component component);
 	
-	public void popContent();
+	public Component popContent();
 	
 	/**
 	 * @param newContent may not be null

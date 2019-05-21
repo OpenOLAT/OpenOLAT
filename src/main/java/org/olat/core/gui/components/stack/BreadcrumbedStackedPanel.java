@@ -285,12 +285,17 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	}
 
 	@Override
-	public void popContent() {
+	public Component popContent() {
+		Component component = null;
 		if(stack.size() > 1) {
 			Link link = stack.remove(stack.size() - 1);
 			BreadCrumb crumb = (BreadCrumb)link.getUserObject();
+			if(crumb.getController() != null) {
+				component = crumb.getController().getInitialComponent();
+			}
 			crumb.dispose();
 		}
+		return component;
 	}
 
 	@Override
@@ -378,7 +383,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 				Link link = stack.get(i);
 				popedCrumb = (BreadCrumb)link.getUserObject();
 			}
-			return popedCrumb.getController();
+			return popedCrumb == null ? null : popedCrumb.getController();
 		}
 		return null;
 	}

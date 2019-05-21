@@ -20,6 +20,9 @@
 package org.olat.core.commons.fullWebApp;
 
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.control.ChiefController;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ScreenMode.Mode;
 import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.WindowControlInfoImpl;
@@ -39,6 +42,8 @@ class BaseFullWebappWindowControl implements WindowControl {
 	private final WindowControlInfo wci;
 	private final WindowBackOffice wbo;
 	private final BaseFullWebappController webappCtrl;
+	
+	private Component fullScreenCmp;
 
 	public BaseFullWebappWindowControl(BaseFullWebappController webappCtrl, WindowBackOffice wbo) {
 		this.wbo = wbo;
@@ -46,17 +51,12 @@ class BaseFullWebappWindowControl implements WindowControl {
 		wci = new WindowControlInfoImpl(webappCtrl, null);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#pushToMainArea(org.olat.core.gui.components.Component)
-	 */
+	@Override
 	public void pushToMainArea(Component newMainArea) {
 		webappCtrl.getCurrentGuiStack().pushContent(newMainArea);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#pushAsModalDialog(java.lang.String,
-	 *      org.olat.core.gui.components.Component)
-	 */
+	@Override
 	public void pushAsModalDialog(Component newModalDialog) {
 		webappCtrl.getCurrentGuiStack().pushModalDialog(newModalDialog);
 	}
@@ -66,17 +66,28 @@ class BaseFullWebappWindowControl implements WindowControl {
 		webappCtrl.getCurrentGuiStack().pushCallout(comp, targetId, settings);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#pop()
-	 */
-	public void pop() {
-		// reactivate latest dialog from stack, dumping current one
-		webappCtrl.getCurrentGuiStack().popContent();
+	@Override
+	public void pushFullScreen(Controller ctrl, String bodyClass) {
+		ChiefController cc = getWindowBackOffice().getChiefController();
+		String businessPath = ctrl.getWindowControlForDebug().getBusinessControl().getAsString();
+		cc.getScreenMode().setMode(Mode.full, businessPath, bodyClass);
+		fullScreenCmp = ctrl.getInitialComponent();
+		webappCtrl.getCurrentGuiStack().pushContent(fullScreenCmp);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#setInfo(java.lang.String)
-	 */
+	@Override
+	public void pop() {
+		// reactivate latest dialog from stack, dumping current one
+		Component popedComponent = webappCtrl.getCurrentGuiStack().popContent();
+		if(popedComponent != null && popedComponent == fullScreenCmp) {
+			String businessPath = getBusinessControl().getAsString();
+			ChiefController cc = getWindowBackOffice().getChiefController();
+			cc.getScreenMode().setMode(Mode.standard, businessPath);
+			fullScreenCmp = null;
+		}
+	}
+
+	@Override
 	public void setInfo(String info) {
 		webappCtrl.getGUIMessage().setInfo(info);
 		webappCtrl.getGUIMsgPanel().setContent(webappCtrl.getGUIMsgVc());
@@ -84,34 +95,34 @@ class BaseFullWebappWindowControl implements WindowControl {
 		// setInfo is called input guimsgPanel into the correct place
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#setError(java.lang.String)
-	 */
+	@Override
 	public void setError(String error) {
 		webappCtrl.getGUIMessage().setError(error);
 		webappCtrl.getGUIMsgPanel().setContent(webappCtrl.getGUIMsgVc());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowControl#setWarning(java.lang.String)
-	 */
+	@Override
 	public void setWarning(String warning) {
 		webappCtrl.getGUIMessage().setWarn(warning);
 		webappCtrl.getGUIMsgPanel().setContent(webappCtrl.getGUIMsgVc());
 	}
 
+	@Override
 	public WindowControlInfo getWindowControlInfo() {
 		return wci;
 	}
 
+	@Override
 	public void makeFlat() {
 		throw new AssertException("should never be called!");
 	}
 
+	@Override
 	public BusinessControl getBusinessControl() {
 		return BusinessControlFactory.getInstance().getEmptyBusinessControl();
 	}
 
+	@Override
 	public WindowBackOffice getWindowBackOffice() {
 		return wbo;
 	}

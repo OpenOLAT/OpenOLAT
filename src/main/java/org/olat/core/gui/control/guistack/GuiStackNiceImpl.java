@@ -164,9 +164,7 @@ public class GuiStackNiceImpl implements GuiStack {
 		modalLayers++;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.GuiStackHandle#pushContent(org.olat.core.gui.components.Component)
-	 */
+	@Override
 	public void pushContent(Component newContent) {
 		if (modalLayers > 0) {
 			// if, in a modaldialog, a push-to-main-area is issued, put it on the modal stack.
@@ -178,20 +176,16 @@ public class GuiStackNiceImpl implements GuiStack {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.GuiStackHandle#popContent()
-	 */
-	public void popContent() {
+	@Override
+	public Component popContent() {
+		Component popComponent;
 		if (modalLayers > 0) {
 			modalLayers--;
-			modalPanel.popContent();
-			if (modalLayers == 0) {
-				// unblock background panel
-				//panel.setEnabled(true);
-			}
+			popComponent = modalPanel.popContent();
 		} else {
-			panel.popContent();
+			popComponent = panel.popContent();
 		}
+		return popComponent;
 	}
 
 	/**
