@@ -97,4 +97,19 @@ public class NoteTest extends OlatTestCase {
 	    Assert.assertEquals("Important", reloadedNote.getNoteTitle());
 	    Assert.assertEquals("Cool update with new features", reloadedNote.getNoteText());
 	}
+	
+	@Test
+	public void findNote() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("note-2-");
+	    OLATResource resource = JunitTestHelper.createRandomResource();
+		Note note = noteManager.loadNoteOrCreateInRAM(identity, resource.getResourceableTypeName(), resource.getResourceableId());
+		note.setNoteTitle("Very important");
+	    note.setNoteText("Critical update with new features");
+	    noteManager.saveNote(note);
+	    dbInstance.commitAndCloseSession();
+	    
+	    Note reloadedNote = noteManager.loadNoteOrCreateInRAM(identity, resource.getResourceableTypeName(), resource.getResourceableId());
+	    Assert.assertNotNull(reloadedNote);
+	    Assert.assertEquals(note, reloadedNote);
+	}
 }
