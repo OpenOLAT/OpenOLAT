@@ -58,10 +58,14 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.io.SystemFileFilter;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -82,15 +86,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-class SubmitDocumentsController extends FormBasicController {
+class SubmitDocumentsController extends FormBasicController implements Activateable2 {
 	
 	private DocumentTableModel model;
 	private FlexiTableElement tableEl;
-	private FormLink uploadDocButton, createDocButton;
+	private FormLink uploadDocButton;
+	private FormLink createDocButton;
 
 	private CloseableModalController cmc;
 	private NewDocumentController newDocCtrl;
-	private DocumentUploadController uploadCtrl, replaceCtrl;
+	private DocumentUploadController uploadCtrl;
+	private DocumentUploadController replaceCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private SinglePageController viewDocCtrl;
 	private DocEditorFullscreenController docEditorCtrl;
@@ -246,6 +252,13 @@ class SubmitDocumentsController extends FormBasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if((entries == null ||entries.isEmpty()) && docEditorCtrl != null) {
+			cleanUp();
+		}
+	}
+
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(confirmDeleteCtrl == source) {
 			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
@@ -298,6 +311,7 @@ class SubmitDocumentsController extends FormBasicController {
 			updateModel(ureq);
 			cleanUp();
 			checkDeadline(ureq);
+			addToHistory(ureq, this);
 		} else if(cmc == source) {
 			cleanUp();
 		}
@@ -406,7 +420,8 @@ class SubmitDocumentsController extends FormBasicController {
 					.withMode(mode)
 					.build();
 			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(documentsContainer, filename, null);
-			docEditorCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
+			WindowControl swb = addToHistory(ureq, OresHelper.createOLATResourceableType("DocEditor"), null);
+			docEditorCtrl = new DocEditorFullscreenController(ureq, swb, (VFSLeaf)vfsItem, secCallback, configs);
 			listenTo(docEditorCtrl);
 		}
 	}

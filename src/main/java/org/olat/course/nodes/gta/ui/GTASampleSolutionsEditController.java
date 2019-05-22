@@ -49,6 +49,10 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -68,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTASampleSolutionsEditController extends FormBasicController {
+public class GTASampleSolutionsEditController extends FormBasicController implements Activateable2 {
 	
 	private FormLink addSolutionLink;
 	private FormLink createSolutionLink;
@@ -226,7 +230,14 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 		addSolutionCtrl = null;
 		cmc = null;
 	}
-	
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) {
+			cleanUp();
+		}
+	}
+
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(addSolutionLink == source) {
@@ -256,14 +267,15 @@ public class GTASampleSolutionsEditController extends FormBasicController {
 	
 	private void doOpen(UserRequest ureq, Solution solution, Mode mode) {
 		VFSItem vfsItem = solutionContainer.resolve(solution.getFilename());
-		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
 			DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 					.withMode(mode)
 					.build();
 			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(solutionContainer, solution.getFilename(), courseRepoKey);
-			docEditorCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
+			WindowControl swb = addToHistory(ureq, OresHelper.createOLATResourceableType("DocEditor"), null);
+			docEditorCtrl = new DocEditorFullscreenController(ureq, swb, (VFSLeaf)vfsItem, secCallback, configs);
 			listenTo(docEditorCtrl);
 		}
 	}

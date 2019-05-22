@@ -669,7 +669,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		if (loggingAction.getTypeListDefinition()==null) {
 			// this is a foul!
 			log_.warn("LoggingAction has no ResourceableTypeList defined: action="+loggingAction+", fieldId="+loggingAction.getJavaFieldIdForDebug());
-		} else {
+		} else if(log_.isDebugEnabled()) {
 			// good boy
 			String errorMsg = loggingAction.getTypeListDefinition().executeCheckAndGetErrorMessage(resourceInfos);
 			if (errorMsg!=null) {
@@ -684,7 +684,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 		// start creating the LoggingObject 
 		final LoggingObject logObj = new LoggingObject(sessionId, identityKey, crudAction.name().substring(0,1), actionVerb.name(), actionObject);
 
-		if (resourceInfos!=null && resourceInfos.size()!=0) {
+		if (resourceInfos != null && !resourceInfos.isEmpty()) {
 			// this should be the normal case - we do have LoggingResourceables which we can log
 			// alongside the log message
 

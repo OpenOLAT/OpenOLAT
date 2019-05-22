@@ -551,17 +551,26 @@ public class FolderRunController extends BasicController implements Activateable
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
 		if(entries == null || entries.isEmpty()) return;
 		
-		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
-		VFSItem vfsItem = folderComponent.getRootContainer().resolve(path);
-		if (vfsItem instanceof VFSContainer) {
-			folderComponent.setCurrentContainerPath(path);
-			updatePathResource(ureq);
+		if("DocEditor".equals(entries.get(entries.size() - 1).getOLATResourceable().getResourceableTypeName())
+				&& folderCommandController != null) {
+			// do nothing
 		} else {
-			activatePath(ureq, path);
+			String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+			VFSItem vfsItem = folderComponent.getRootContainer().resolve(path);
+			if (vfsItem instanceof VFSContainer) {
+				folderComponent.setCurrentContainerPath(path);
+				updatePathResource(ureq);
+			} else {
+				activatePath(ureq, path);
+			}
 		}
 	}
 
 	public void activatePath(UserRequest ureq, String path) {
+		if(folderCommandController != null) {
+			removeAsListenerAndDispose(folderCommandController);
+			folderCommandController = null;
+		}
 		if (path != null && path.length() > 0) {
 			VFSItem vfsItem = folderComponent.getRootContainer().resolve(path.endsWith("/") ? path.substring(0, path.length()-1) : path);
 			if (vfsItem instanceof VFSLeaf) {

@@ -40,6 +40,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
@@ -71,9 +72,9 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 	}
 
 	@Override
-	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl,
+	public Controller execute(FolderComponent folderCmp, UserRequest ureq, WindowControl wControl,
 			Translator translator) {
-		this.folderComponent = folderComponent;
+		this.folderComponent = folderCmp;
 		String pos = ureq.getParameter(ListRenderer.PARAM_CONTENT_EDIT_ID);
 		if (!StringHelper.containsNonWhitespace(pos)) {
 			// somehow parameter did not make it to us
@@ -112,14 +113,16 @@ public class CmdOpenContent extends BasicController implements FolderCommand {
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
 				.build();
-		editCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
+		
+		WindowControl swb = addToHistory(ureq, OresHelper.createOLATResourceableType("DocEditor"), null);
+		editCtrl = new DocEditorFullscreenController(ureq, swb, vfsLeaf, secCallback, configs);
 		listenTo(editCtrl);
 		
 		if (vfsLeaf.canMeta() == VFSConstants.YES) {
 			CoreSpringFactory.getImpl(VFSRepositoryService.class).increaseDownloadCount(vfsLeaf);
 		}
 		
-		return this;
+		return editCtrl;
 	}
 	
 	private DocEditorSecurityCallback getDocEditorSecCallback(UserRequest ureq, VFSLeaf vfsLeaf) {

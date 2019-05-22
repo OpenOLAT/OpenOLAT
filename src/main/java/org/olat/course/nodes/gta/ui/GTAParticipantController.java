@@ -744,28 +744,32 @@ public class GTAParticipantController extends GTAAbstractController implements A
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
-		if("Correction".equalsIgnoreCase(type)) {
-			int revisionLoop = entries.get(0).getOLATResourceable().getResourceableId().intValue();
-			if(revisionLoop == 0) {
-				if(correctionsCtrl != null) {
-					List<ContextEntry> subEntries = entries.subList(1, entries.size());
-					correctionsCtrl.activate(ureq, subEntries, null);
+		if(entries == null || entries.isEmpty()) {
+			if(submitDocCtrl != null) {
+				submitDocCtrl.activate(ureq, entries, state);
+			}
+		} else {
+			String type = entries.get(0).getOLATResourceable().getResourceableTypeName();
+			if("Correction".equalsIgnoreCase(type)) {
+				int revisionLoop = entries.get(0).getOLATResourceable().getResourceableId().intValue();
+				if(revisionLoop == 0) {
+					if(correctionsCtrl != null) {
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						correctionsCtrl.activate(ureq, subEntries, null);
+					}
+				} else if(revisionDocumentsCtrl != null) {
+					revisionDocumentsCtrl.activate(ureq, entries, null);
 				}
-			} else if(revisionDocumentsCtrl != null) {
-				revisionDocumentsCtrl.activate(ureq, entries, null);
-			}
-		} else if("Solution".equalsIgnoreCase(type)) {
-			if(solutionsCtrl != null) {
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				solutionsCtrl.activate(ureq, subEntries, null);
-			}
-		} else if("Assessment".equalsIgnoreCase(type)) {
-			if(gradingCtrl != null) {
-				List<ContextEntry> subEntries = entries.subList(1, entries.size());
-				gradingCtrl.activate(ureq, subEntries, null);
+			} else if("Solution".equalsIgnoreCase(type)) {
+				if(solutionsCtrl != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					solutionsCtrl.activate(ureq, subEntries, null);
+				}
+			} else if("Assessment".equalsIgnoreCase(type)) {
+				if(gradingCtrl != null) {
+					List<ContextEntry> subEntries = entries.subList(1, entries.size());
+					gradingCtrl.activate(ureq, subEntries, null);
+				}
 			}
 		}
 	}

@@ -19,12 +19,17 @@
  */
 package org.olat.course.nodes.gta.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -35,7 +40,7 @@ import org.olat.modules.ModuleConfiguration;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACoachManagementController extends BasicController {
+public class GTACoachManagementController extends BasicController implements Activateable2 {
 	
 	private GTACoachAssignementEditController assignmentEditCtrl;
 	private GTASampleSolutionsEditController solutionEditCtrl;
@@ -65,6 +70,17 @@ public class GTACoachManagementController extends BasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+
+
+	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(assignmentEditCtrl != null) {
+			assignmentEditCtrl.activate(ureq, entries, state);
+		}
+		if(solutionEditCtrl != null) {
+			solutionEditCtrl.activate(ureq, entries, state);
+		}
 	}
 
 	@Override

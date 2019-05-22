@@ -170,20 +170,15 @@ public class WindowBackOfficeImpl implements WindowBackOffice {
 	 * @return
 	 */
 	public JSAndCSSAdderImpl createJSAndCSSAdder() {
-		JSAndCSSAdderImpl jcImpl = new JSAndCSSAdderImpl(this);
-		return jcImpl;
+		return new JSAndCSSAdderImpl(this);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.WindowBackOffice#sendCommandTo(org.olat.core.gui.control.winmgr.Command)
-	 */
 	@Override
 	public void sendCommandTo(Command wco) {
 		if (ajaxC != null) ajaxC.sendCommandTo(new WindowCommand(this,wco));
 	}
 	
 	public void pushCommands(UserRequest ureq, HttpServletRequest request, HttpServletResponse response) {
-
 		try {
 			boolean acceptJson = ServletUtil.acceptJson(request);
 			//first set the headers with the content-type

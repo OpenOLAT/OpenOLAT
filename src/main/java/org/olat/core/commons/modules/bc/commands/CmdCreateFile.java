@@ -52,6 +52,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -86,15 +87,15 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 	}
 
 	@Override
-	public Controller execute(FolderComponent folderComponent, UserRequest ureq, WindowControl wControl, Translator translator) {
-		if (folderComponent.getCurrentContainer().canWrite() != VFSConstants.YES) {
-			throw new AssertException("Illegal attempt to create file in: " + folderComponent.getCurrentContainerPath());
+	public Controller execute(FolderComponent folderCmp, UserRequest ureq, WindowControl wControl, Translator translator) {
+		if (folderCmp.getCurrentContainer().canWrite() != VFSConstants.YES) {
+			throw new AssertException("Illegal attempt to create file in: " + folderCmp.getCurrentContainerPath());
 		}		
 		setTranslator(translator);
-		this.folderComponent = folderComponent;
+		this.folderComponent = folderCmp;
 
 		//check for quota
-		long quotaLeft = VFSManager.getQuotaLeftKB(folderComponent.getCurrentContainer());
+		long quotaLeft = VFSManager.getQuotaLeftKB(folderCmp.getCurrentContainer());
 		if (quotaLeft <= 0 && quotaLeft != -1 ) {
 			String supportAddr = WebappHelper.getMailConfig("mailQuota");
 			String msg = translate("QuotaExceededSupport", new String[] { supportAddr });
@@ -102,10 +103,10 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 			return null;
 		}
 		
-		boolean hasMeta = folderComponent.getCurrentContainer().canMeta() == VFSConstants.YES;
+		boolean hasMeta = folderCmp.getCurrentContainer().canMeta() == VFSConstants.YES;
 		Identity identity = getIdentity();
 		DocTemplates docTemplates = DocTemplates.editables(identity, ureq.getUserSession().getRoles(), getLocale(), hasMeta).build();
-		createCtrl = new CreateDocumentController(ureq, wControl, folderComponent.getCurrentContainer(), docTemplates);
+		createCtrl = new CreateDocumentController(ureq, wControl, folderCmp.getCurrentContainer(), docTemplates);
 		listenTo(createCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), createCtrl.getInitialComponent(),
@@ -177,7 +178,8 @@ public class CmdCreateFile extends BasicController implements FolderCommand {
 		DocEditorConfigs configs = DocEditorConfigs.builder()
 				.addConfig(htmlEditorConfig)
 				.build();
-		editorCtr = new DocEditorFullscreenController(ureq, getWindowControl(), vfsLeaf, secCallback, configs);
+		WindowControl swb = addToHistory(ureq, OresHelper.createOLATResourceableType("DocEditor"), null);
+		editorCtr = new DocEditorFullscreenController(ureq, swb, vfsLeaf, secCallback, configs);
 		listenTo(editorCtr);
 	}
 

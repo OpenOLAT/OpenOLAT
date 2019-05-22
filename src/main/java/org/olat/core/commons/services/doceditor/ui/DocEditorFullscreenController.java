@@ -82,8 +82,7 @@ public class DocEditorFullscreenController extends BasicController {
 	@Override
 	protected void doDispose() {
 		if(editorCtrl != null) {
-			removeAsListenerAndDispose(editorCtrl);
-			editorCtrl = null;
+			doCloseEditor();
 		}
 	}
 }

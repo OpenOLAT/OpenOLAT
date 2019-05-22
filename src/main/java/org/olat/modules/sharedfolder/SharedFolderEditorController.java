@@ -91,11 +91,13 @@ public class SharedFolderEditorController extends DefaultController implements A
 
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.isEmpty()) return;
-		
-		String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
-		if(StringHelper.containsNonWhitespace(path)) {
-			folderRunController.activatePath(ureq, path);
+		if(entries == null || entries.isEmpty()) {
+			folderRunController.activate(ureq, entries, state);
+		} else {
+			String path = BusinessControlFactory.getInstance().getPath(entries.get(0));
+			if(StringHelper.containsNonWhitespace(path)) {
+				folderRunController.activatePath(ureq, path);
+			}
 		}
 	}
 

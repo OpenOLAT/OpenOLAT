@@ -53,13 +53,17 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
@@ -79,7 +83,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-abstract class AbstractAssignmentEditController extends FormBasicController {
+abstract class AbstractAssignmentEditController extends FormBasicController implements Activateable2 {
 
 	private FormLink addTaskLink, createTaskLink;
 	private FlexiTableElement taskDefTableEl;
@@ -183,6 +187,13 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 	}
 
 	@Override
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if((entries == null || entries.isEmpty()) && docEditorCtrl != null) {
+			cleanUp();
+		}
+	}
+
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(addTaskCtrl == source) {
 			if(event == Event.DONE_EVENT) {
@@ -194,12 +205,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 			}
 			cmc.deactivate();
 			cleanUp();
-			//fireEvent(ureq, Event.DONE_EVENT);
 		} else if(editTaskCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				doFinishReplacementOfTask(editTaskCtrl.getFilenameToReplace(), editTaskCtrl.getTask());
 				updateModel(ureq);
-				//fireEvent(ureq, Event.DONE_EVENT);
 				gtaManager.markNews(courseEnv, gtaNode);
 			}
 			cmc.deactivate();
@@ -219,6 +228,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 				gtaManager.markNews(courseEnv, gtaNode);
 				updateModel(ureq);
 				cleanUp();
+				addToHistory(ureq, this);
 			}
 		} else if(confirmDeleteCtrl == source) {
 			if(DialogBoxUIFactory.isOkEvent(event) || DialogBoxUIFactory.isYesEvent(event)) {
@@ -314,14 +324,15 @@ abstract class AbstractAssignmentEditController extends FormBasicController {
 
 	private void doOpen(UserRequest ureq, TaskDefinition taskDef, Mode mode) {
 		VFSItem vfsItem = tasksContainer.resolve(taskDef.getFilename());
-		if(vfsItem == null || !(vfsItem instanceof VFSLeaf)) {
+		if(!(vfsItem instanceof VFSLeaf)) {
 			showError("error.missing.file");
 		} else {
 			DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 					.withMode(mode)
 					.build();
 			DocEditorConfigs configs = GTAUIFactory.getEditorConfig(tasksContainer, taskDef.getFilename(), courseRepoKey);
-			docEditorCtrl = new DocEditorFullscreenController(ureq, getWindowControl(), (VFSLeaf)vfsItem, secCallback, configs);
+			WindowControl swb = addToHistory(ureq, OresHelper.createOLATResourceableType("DocEditor"), null);
+			docEditorCtrl = new DocEditorFullscreenController(ureq, swb, (VFSLeaf)vfsItem, secCallback, configs);
 			listenTo(docEditorCtrl);
 		}
 	}

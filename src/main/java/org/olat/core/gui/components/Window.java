@@ -407,7 +407,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							
 						MediaResource mmr = null;
 						//REVIEW:PB: this will be the code allowing back forward navigation
-						//-----> if (didDispatch || inlineAfterBackForward) {
 						if (forceReload) {
 							//force RELOAD with a redirect to itself
 							String reRenderUri = buildURIFor(this, timestampID, null);
@@ -421,7 +420,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 									// a) have the normal mode set (not the ajax mode)
 									// b) have the target="_blank" attribute
 									// reason: in non-ajax-mode, a link has to know beforehand whether it opens in a new window or not.
-									// FIXME:fj:c think about bodyOnLoad -> win.open(new window url)
 									throw new AssertException("a link in ajax mode should never result in a new window");
 								}
 								mmr = ureq.getDispatchResult().getResultingMediaResource();
@@ -433,7 +431,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							} 
 							
 							//REVIEW:PB: this will be the code allowing back forward navigation
-							//-----> if (inline) {
 							if (inline || !validForDispatching) {
 								if(!validForDispatching){
 									// not valid: fire oldtimestamp event and later rerender
@@ -720,16 +717,19 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 					
 					// todo maybe better delegate window registry to the windowbackoffice?
 					URLBuilder ubu = new URLBuilder(uriPrefix, resWindow.getInstanceId(), String.valueOf(resWindow.timestamp));
-					StringOutput sout = new StringOutput(30);
-					ubu.buildURI(sout, null, null);
-					mr = new RedirectMediaResource(sout.toString());
-					ServletUtil.serveResource(request, response, mr);
-					if (isDebugLog) {
-						long diff = System.currentTimeMillis() - debug_start;
-						debugMsg.append("rdirnw:").append(diff).append(LOG_SEPARATOR);
-						log.debug(debugMsg.toString());
-						long durationDispatchRequest = System.currentTimeMillis() - debug_start;
-						log.debug("Perf-Test: Window return from 2 durationDispatchRequest=" + durationDispatchRequest);
+					try(StringOutput sout = new StringOutput(30)) {
+						ubu.buildURI(sout, null, null);
+						mr = new RedirectMediaResource(sout.toString());
+						ServletUtil.serveResource(request, response, mr);
+						if (isDebugLog) {
+							long diff = System.currentTimeMillis() - debug_start;
+							debugMsg.append("rdirnw:").append(diff).append(LOG_SEPARATOR);
+							log.debug(debugMsg.toString());
+							long durationDispatchRequest = System.currentTimeMillis() - debug_start;
+							log.debug("Perf-Test: Window return from 2 durationDispatchRequest=" + durationDispatchRequest);
+						}
+					} catch(IOException e) {
+						log.error("", e);
 					}
 					return;
 				}
@@ -920,9 +920,13 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		URLBuilder ubu = new URLBuilder(getUriPrefix(), getInstanceId(), getTimestamp());
 		Renderer fr = Renderer.getInstance(cmp.getParent(), cmp.getTranslator(), ubu, renderResult, wbackofficeImpl.getGlobalSettings());
 		
-		StringOutput sb = StringOutputPool.allocStringBuilder(2048);
-		fr.render(cmp, sb, null);
-		return StringOutputPool.freePop(sb);
+		try(StringOutput sb = StringOutputPool.allocStringBuilder(2048)) {
+			fr.render(cmp, sb, null);
+			return StringOutputPool.freePop(sb);
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
+		}
 	}
 
 	/**
@@ -945,8 +949,9 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 				start = System.currentTimeMillis();
 			}
 			
-			final List<Component> dirties = new ArrayList<Component>();
+			final List<Component> dirties = new ArrayList<>();
 			ComponentVisitor dirtyV = new ComponentVisitor() {
+				@Override
 				public boolean visit(Component comp, UserRequest ureq) {
 					boolean visitChildren = false;
 					if(comp == null) {
@@ -1128,9 +1133,13 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 	 */
 	public String buildURIFor(Window win, String timestampId, String moduleUri) {
 		URLBuilder ubu = new URLBuilder(uriPrefix, win.getInstanceId(), timestampId);
-		StringOutput so = new StringOutput();
-		ubu.buildURI(so, null, null, moduleUri, 0);
-		return so.toString();
+		try(StringOutput so = new StringOutput()) {
+			ubu.buildURI(so, null, null, moduleUri, 0);
+			return so.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
+		}
 	}	
 
 	private String buildURIForRedirect(String moduleUri) {
@@ -1157,7 +1166,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 			return NO_DISPATCHRESULT;
 		}
 
-		List<Component> foundPath = new ArrayList<Component>(10);
+		List<Component> foundPath = new ArrayList<>(10);
 		// OLAT-1973
 		Component target = ComponentHelper.findDescendantOrSelfByID(getContentPane(), s_compID, foundPath);
 		if (target == null) {

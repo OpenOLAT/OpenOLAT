@@ -161,7 +161,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 			}
 		} else if("management".equalsIgnoreCase(type)) {
 			if(manageLink != null) {
-				doManage(ureq);
+				List<ContextEntry> subEntries = entries.subList(1, entries.size());
+				doManage(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());
 				if(segmentView != null) {
 					segmentView.select(manageLink);
 				}
@@ -174,6 +175,16 @@ public class GTARunController extends BasicController implements Activateable2 {
 					segmentView.select(runLink);
 				}
 			}
+		} else {
+			if("CourseNode".equalsIgnoreCase(entries.get(0).getOLATResourceable().getResourceableTypeName())) {
+				state = entries.get(0).getTransientState();
+				entries = entries.subList(1, entries.size());
+			}
+			
+			if(runCtrl != null && segmentView == null) {
+				runCtrl.activate(ureq, entries, state);
+			}
+			
 		}
 	}
 
@@ -221,9 +232,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 	private Activateable2 doOpenRun(UserRequest ureq) {
 		if(runCtrl == null) {
 			createRun(ureq);
-		} else {
-			addToHistory(ureq, runCtrl);
 		}
+		addToHistory(ureq, runCtrl);
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", runCtrl.getInitialComponent());
 		}
@@ -235,8 +245,8 @@ public class GTARunController extends BasicController implements Activateable2 {
 			createMarked(ureq);
 		} else {
 			markedCtrl.reload(ureq);
-			addToHistory(ureq, markedCtrl);
 		}
+		addToHistory(ureq, markedCtrl);
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", markedCtrl.getInitialComponent());
 		}
@@ -248,23 +258,23 @@ public class GTARunController extends BasicController implements Activateable2 {
 			createCoach(ureq);
 		} else {
 			coachCtrl.reload(ureq);
-			addToHistory(ureq, coachCtrl);
 		}
+		addToHistory(ureq, coachCtrl);
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", coachCtrl.getInitialComponent());
 		}
 		return coachCtrl;
 	}
 	
-	private void doManage(UserRequest ureq) {
+	private GTACoachManagementController doManage(UserRequest ureq) {
 		if(manageCtrl == null) {
 			createManage(ureq);
-		} else {
-			addToHistory(ureq, manageCtrl);
 		}
+		addToHistory(ureq, manageCtrl);
 		if(mainVC != null) {
 			mainVC.put("segmentCmp", manageCtrl.getInitialComponent());
 		}
+		return manageCtrl;
 	}
 	
 	private GTAParticipantController createRun(UserRequest ureq) {
