@@ -208,6 +208,11 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 	}
 
 	@Override
+	public String getUserProperty(User user, Locale locale) {
+		return getUserPropertyAsHTML(user, locale);
+	}
+
+	@Override
 	public void updateUserFromFormItem(User user, FormItem formItem) {
 		String internalValue = getStringValue(formItem);
 		setInternalValue(user, internalValue);
@@ -287,17 +292,15 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 
 	@Override
 	public String getUserPropertyAsHTML(User user, Locale locale) {
+		String val = super.getInternalValue(user);// don't want "no selection" key
 		StringBuilder htmlValue = new StringBuilder();
 		Translator trans = Util.createPackageTranslator(this.getClass(), locale);
 		if (isMultiSelect()) {
-			for (String value : getInternalValue(user).split(KEY_DELIMITER)) {
+			for (String value : val.split(KEY_DELIMITER)) {
 				htmlValue.append(trans.translate(value)).append(" ");
 			}
-		} else {
-			String val = getInternalValue(user);
-			if(val != null && locale != null) {
-				htmlValue.append(trans.translate(val));
-			}
+		} else if(val != null && locale != null) {
+			htmlValue.append(trans.translate(val));
 		}
 		return htmlValue.toString();
 	}
