@@ -24,7 +24,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -390,7 +389,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 
 			// Case 4: default case: normal translation, surround with inline
 			// translation link
-			StringBuffer tmp = new StringBuffer();
+			StringBuilder tmp = new StringBuilder();
 			tmp.append(stringWithMarkup.substring(0, startSPos));
 			tmp.append(SPAN_TRANSLATION_I18NITEM_OPEN);
 			tmp.append(link);
@@ -417,7 +416,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 	 */
 	private static String replaceItemWithHTMLMarkupSurrounded(String stringWithMarkup, StringOutput link, int startSPos, int startEPos,
 			int endSPos, int endEPos, int wrapperOpen, int wrapperClose) {
-		StringBuffer tmp = new StringBuffer();
+		StringBuilder tmp = new StringBuilder();
 		tmp.append(stringWithMarkup.substring(0, wrapperOpen));
 		tmp.append(SPAN_TRANSLATION_I18NITEM_OPEN);
 		tmp.append(link);
@@ -441,7 +440,7 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 	 * @return
 	 */
 	private static String replaceItemWithoutHTMLMarkup(String stringWithMarkup, int startSPos, int startEPos, int endSPos, int endEPos) {
-		StringBuffer tmp = new StringBuffer();
+		StringBuilder tmp = new StringBuilder();
 		tmp.append(stringWithMarkup.substring(0, startSPos));
 		tmp.append(stringWithMarkup.substring(startEPos, endSPos));
 		tmp.append(stringWithMarkup.substring(endEPos));
@@ -465,9 +464,9 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 			link.append("\" title=\"");
 			String combinedKey = arguments[0] + ":" + arguments[1];
 			if (CoreSpringFactory.getImpl(I18nModule.class).isTransToolEnabled()) {
-				link.append(StringEscapeUtils.escapeHtml(inlineTrans.translate("inline.translate", new String[] { combinedKey })));
+				link.appendHtmlEscaped(inlineTrans.translate("inline.translate", new String[] { combinedKey }));
 			} else {
-				link.append(StringEscapeUtils.escapeHtml(inlineTrans.translate("inline.customize.translate", new String[] { combinedKey })));			
+				link.appendHtmlEscaped(inlineTrans.translate("inline.customize.translate", new String[] { combinedKey }));			
 			}
 			link.append("\"><i class='o_icon o_icon_translation_item'> </i></a>");			
 	}

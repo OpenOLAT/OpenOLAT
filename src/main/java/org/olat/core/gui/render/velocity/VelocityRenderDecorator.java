@@ -36,7 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.components.Component;
@@ -461,7 +460,7 @@ public class VelocityRenderDecorator implements Closeable {
 			Locale locale = renderer.getTranslator().getLocale();
 			String url = getHelpModule().getHelpProvider().getURL(locale, page);
 			if(url != null) {
-				String title = StringEscapeUtils.escapeHtml(renderer.getTranslator().translate("help.button"));
+				String title = StringHelper.escapeHtml(renderer.getTranslator().translate("help.button"));
 				sb.append("<span class=\"o_chelp_wrapper\">")
 				  .append("<a href=\"").append(url)
 				  .append("\" class=\"o_chelp\" target=\"_blank\" title=\"").append(title).append("\"><i class='o_icon o_icon_help'></i> ")
@@ -707,7 +706,7 @@ public class VelocityRenderDecorator implements Closeable {
 	 * @return
 	 */
 	public String translateInAttribute(String key) {
-		return StringEscapeUtils.escapeHtml(translate(key));
+		return StringHelper.escapeHtml(translate(key));
 	}
 
 	/** 

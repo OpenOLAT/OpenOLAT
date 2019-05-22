@@ -19,7 +19,6 @@
  */
 package org.olat.modules.video.ui.component;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -44,7 +43,7 @@ public class VideoMarkerTextCellRenderer implements FlexiCellRenderer {
 		if(cellValue instanceof String) {
 			String val = FilterFactory.getHtmlTagsFilter().filter((String)cellValue);
 			if(val.length() > 50) {
-				val = StringEscapeUtils.unescapeHtml(val);// remove entities
+				val = StringHelper.unescapeHtml(val);// remove entities
 				val = Formatter.truncate(val, 50);// truncate
 				val = StringHelper.escapeHtml(val);
 			}

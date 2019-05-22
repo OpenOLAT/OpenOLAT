@@ -19,7 +19,6 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -90,8 +89,8 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			String cssClass = check.getCssClass();
 
 			if(stF.isEscapeHtml()){
-				key = StringEscapeUtils.escapeHtml(key);
-				value = StringEscapeUtils.escapeHtml(value);
+				key = StringHelper.escapeHtml(key);
+				value = StringHelper.escapeHtml(value);
 			}
 				
 			sb.append("<li class='");
@@ -274,8 +273,8 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 		String key = check.getKey();
 		String value = check.getValue();
 		if(stF.isEscapeHtml()){
-			key = StringEscapeUtils.escapeHtml(key);
-			value = StringEscapeUtils.escapeHtml(value);
+			key = StringHelper.escapeHtml(key);
+			value = StringHelper.escapeHtml(value);
 		}
 			
 		boolean selected = check.isSelected();

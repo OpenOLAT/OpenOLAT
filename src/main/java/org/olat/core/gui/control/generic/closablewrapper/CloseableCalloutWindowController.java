@@ -21,7 +21,6 @@ package org.olat.core.gui.control.generic.closablewrapper;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -36,6 +35,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.util.ZIndexWrapper;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.StringHelper;
 
 /**
  * Description:<br>
@@ -122,7 +122,7 @@ public class CloseableCalloutWindowController extends BasicController {
 			calloutVC.contextPut("closable", Boolean.toString(closable));
 			calloutVC.contextPut("cssClasses", (cssClasses == null ? "small" : cssClasses));
 			if (title != null) {
-				String escapedTitle = StringEscapeUtils.escapeJavaScript(StringEscapeUtils.escapeHtml(title));
+				String escapedTitle = StringHelper.escapeJavaScript(StringHelper.escapeHtml(title));
 				calloutVC.contextPut("title", escapedTitle);
 			}
 			putInitialPanel(calloutVC);

@@ -28,17 +28,14 @@ package org.olat.course.statistic;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.table.CustomCellRenderer;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CourseNodeFactory;
 
 /**
- *@TODO
  * Copy/Pasted class from assessment.IndentedNodeRenderer.
  * <p>
  * The idea was not to disturb anything in the assessment area - but it is 
@@ -104,7 +101,7 @@ public class IndentedStatisticNodeRenderer implements CustomCellRenderer {
 		Integer indent = (Integer) nodeData.get(AssessmentHelper.KEY_INDENT);
 		String type = (String)  nodeData.get(AssessmentHelper.KEY_TYPE);
 		if (type==null) {
-			sb.append(StringHelper.escapeHtml(title));
+			sb.appendHtmlEscaped(title);
 			return;
 		}
 		appendIndent(sb,indent);
@@ -112,9 +109,9 @@ public class IndentedStatisticNodeRenderer implements CustomCellRenderer {
 		String cssClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type).getIconCSSClass();
 		sb.append("<i class='o_icon ").append(cssClass).append("'> </i> <span ");
 		if (altText != null) {
-			sb.append("title= \"").append(StringEscapeUtils.escapeHtml(altText));
+			sb.append("title= \"").appendHtmlEscaped(altText);
 		}
-		sb.append("\">").append(StringHelper.escapeHtml(title)).append("</span>");
+		sb.append("\">").appendHtmlEscaped(title).append("</span>");
 	}
 	
 	private void appendIndent(StringOutput sb, Integer indent) {

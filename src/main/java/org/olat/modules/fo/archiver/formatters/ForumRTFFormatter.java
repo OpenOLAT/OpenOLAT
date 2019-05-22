@@ -39,7 +39,6 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -365,7 +364,7 @@ public class ForumRTFFormatter extends ForumFormatter {
 		// Remove all &nbsp;
 		Matcher tmp = HTML_SPACE_PATTERN.matcher(htmlText);
 		htmlText = tmp.replaceAll(" ");
-		htmlText = StringEscapeUtils.unescapeHtml(htmlText);
+		htmlText = StringHelper.unescapeHtml(htmlText);
 
 		return htmlText;
 	}

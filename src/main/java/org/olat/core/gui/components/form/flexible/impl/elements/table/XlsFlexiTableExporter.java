@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.EmptyURLBuilder;
@@ -124,7 +123,7 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 					cellValue = StringHelper.stripLineBreaks(cellValue);
 					cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
 					if(StringHelper.containsNonWhitespace(cellValue)) {
-						cellValue = StringEscapeUtils.unescapeHtml(cellValue);
+						cellValue = StringHelper.unescapeHtml(cellValue);
 					}
 					dataRow.addCell(col, cellValue, null);
 				}

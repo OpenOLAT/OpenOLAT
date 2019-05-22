@@ -25,7 +25,6 @@
 */
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -38,8 +37,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for SingleSelectionSelectboxRenderer
  * 
  * <P>
  * Initial Date:  02.01.2007 <br>
@@ -104,7 +101,7 @@ class SelectboxRenderer extends DefaultComponentRenderer {
 			}
 			sb.append(">");
 			if(escapeHtml) {
-				sb.append(StringEscapeUtils.escapeHtml(values[i]));
+				sb.appendHtmlEscaped(values[i]);
 			} else {
 				sb.append(values[i]);
 			}

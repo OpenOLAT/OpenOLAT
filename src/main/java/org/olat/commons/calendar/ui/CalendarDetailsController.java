@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
@@ -146,7 +145,7 @@ public class CalendarDetailsController extends BasicController {
 				
 				wrapper.setUri(uri);
 				wrapper.setDisplayName(link.getDisplayName());
-				wrapper.setTitle(StringEscapeUtils.escapeHtml(link.getDisplayName()));
+				wrapper.setTitle(StringHelper.escapeHtml(link.getDisplayName()));
 				if (StringHelper.containsNonWhitespace(iconCssClass)) {
 					wrapper.setCssClass(iconCssClass);
 				}

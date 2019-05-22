@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -120,7 +119,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 				if (question.length() > cut) {
 					question = question.substring(0, cut) + "...";
 				}
-				question = StringEscapeUtils.unescapeHtml(question);
+				question = StringHelper.unescapeHtml(question);
 				hR1.append(": " + escape(question));
 				// CELFI#107 END
 
@@ -362,7 +361,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 				question = FilterFactory.getXSSFilter(-1).filter(question);
 				question = FilterFactory.getHtmlTagsFilter().filter(question);
 			}
-			question = StringEscapeUtils.unescapeHtml(question);
+			question = StringHelper.unescapeHtml(question);
 			sb.append(question);
 			sb.append(car);
 			// CELFI#107 END
@@ -381,7 +380,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 
 				if (responseLabelMaterials != null) {
 					String s = responseLabelMaterials.get(i);
-					s = StringEscapeUtils.unescapeHtml(s);
+					s = StringHelper.unescapeHtml(s);
 					if (tagless) {
 						s = s.replaceAll("\\<.*?\\>", "");
 					}

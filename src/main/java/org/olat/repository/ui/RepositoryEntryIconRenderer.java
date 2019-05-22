@@ -21,7 +21,6 @@ package org.olat.repository.ui;
 
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -98,7 +97,7 @@ public class RepositoryEntryIconRenderer implements CustomCellRenderer, FlexiCel
 			sb.append("<i class='o_icon ").append(cssClass).append("'");
 			if (StringHelper.containsNonWhitespace(type)) {
 				sb.append(" title=\"");
-				sb.append(StringEscapeUtils.escapeHtml(type));
+				sb.appendHtmlEscaped(type);
 			}
 			sb.append("\"> </i>");	
 			if(managed) {

@@ -19,7 +19,6 @@
  */
 package org.olat.core.gui.components.table;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
@@ -63,7 +62,7 @@ class TableSortRenderer extends DefaultComponentRenderer {
 	              .append(formName).append("','").append(Table.FORM_CMD).append("','").append(Table.COMMAND_SORTBYCOLUMN)
 	              .append("','").append(Table.FORM_PARAM).append("','").append(i).append("'); return false;\"")
 				  .append(" title=\"")
-				  .append(StringEscapeUtils.escapeHtml(translator.translate("row.sort"))).append("\">");
+				  .appendHtmlEscaped(translator.translate("row.sort")).append("\">");
 				
 				if(sortedCD == cd) {
 					if(asc) {

@@ -27,7 +27,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.ArrayList;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
@@ -50,8 +49,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for TextElement
  * <P>
  * Initial Date: 25.11.2006 <br>
  * 
@@ -63,8 +60,8 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	//set text input type as default
 	private String htmlInputType = HTML_INPUT_TYPE_TEXT;
 	
-	public final static String HTML_INPUT_TYPE_TEXT = "text";
-	public final static String HTML_INPUT_TYPE_PASSWORD = "password";
+	public static final String HTML_INPUT_TYPE_TEXT = "text";
+	public static final String HTML_INPUT_TYPE_PASSWORD = "password";
 	
 	//inline stuff
 	protected String transientValue;//last submitted value, which may be good or wrong
@@ -78,7 +75,6 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	}
 	
 	/**
-	 * TODO: check if htmlInputType is valid
 	 * @param id A fix identifier for state-less behavior, must be unique or null
 	 * @param name
 	 * @param predefinedValue
@@ -173,7 +169,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 				tmpVal = StringHelper.containsNonWhitespace(getValue()) ? getValue() : emptyVal;
 			}
 			// append the html safe value
-			htmlVal.append(StringEscapeUtils.escapeHtml(tmpVal));
+			htmlVal.append(StringHelper.escapeHtml(tmpVal));
 			if (!itei.isEnabled()) {
 				// RO view and not clickable
 				String id = aiec.getFormDispatchId();
@@ -207,7 +203,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 					// Javascript
 					sb.append(FormJSHelper.getJSStart());
 					// clicking outside or pressing enter -> OK, pressing ESC -> Cancel
-					FormJSHelper.getInlineEditOkCancelJS(sb, id, StringEscapeUtils.escapeHtml(getValue()), itei.getRootForm());
+					FormJSHelper.getInlineEditOkCancelJS(sb, id, StringHelper.escapeHtml(getValue()), itei.getRootForm());
 					sb.append(FormJSHelper.getJSEnd());
 
 				} else {
@@ -215,7 +211,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 					Translator trans = Util.createPackageTranslator(TextElementImpl.class, translator.getLocale(), translator);
 					String id = aiec.getFormDispatchId();
 					sb.append("<div id='").append(id).append("' class='form-control-static' title=\"")
-						.append(StringEscapeUtils.escapeHtml(trans.translate("inline.edit.help")))
+						.appendHtmlEscaped(trans.translate("inline.edit.help"))
 						.append("\" ")
 						.append(FormJSHelper.getRawJSFor(itei.getRootForm(), id, itei.getAction()))
 						.append("> ")

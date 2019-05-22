@@ -40,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
@@ -335,7 +334,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 		String alt = curRoot.getAltText();
 		if (alt != null) {
 			target.append(" title=\"")
-			      .append(StringEscapeUtils.escapeHtml(alt))
+			      .appendHtmlEscaped(alt)
 			      .append("\"");
 		}
 		target.append(">");

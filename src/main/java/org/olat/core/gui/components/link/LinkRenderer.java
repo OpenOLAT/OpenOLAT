@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
@@ -217,9 +216,9 @@ public class LinkRenderer extends DefaultComponentRenderer {
 				if (!link.isHasTooltip()) {
 					sb.append(" title=\"");
 					if (nontranslated){
-						sb.append(StringEscapeUtils.escapeHtml(title)).append("\"");
+						sb.appendHtmlEscaped(title).append("\"");
 					} else {
-						sb.append(StringEscapeUtils.escapeHtml(translator.translate(title))).append("\"");
+						sb.appendHtmlEscaped(translator.translate(title)).append("\"");
 					}
 				}
 				//tooltips based on the extjs library, see webapp/static/js/ext*
@@ -230,7 +229,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 					} else {
 						text = translator.translate(title);
 					}
-					sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(text)).append("\"");
+					sb.append(" title=\"").appendHtmlEscaped(text).append("\"");
 				}
 			}
 			sb.append(">");

@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
@@ -347,7 +346,7 @@ public class CheckListAssessmentDataModel extends DefaultFlexiTableDataModel<Che
 				cellValue = StringHelper.stripLineBreaks(cellValue);
 				cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
 				if(StringHelper.containsNonWhitespace(cellValue)) {
-					cellValue = StringEscapeUtils.unescapeHtml(cellValue);
+					cellValue = StringHelper.unescapeHtml(cellValue);
 				}
 				dataRow.addCell(sheetCol, cellValue, null);
 			}

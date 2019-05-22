@@ -30,18 +30,14 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
-import org.apache.logging.log4j.Logger;
-import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
 /**
  * @author Felix Jost
  */
 public class StringOutput extends Writer {
-	
-	private static final Logger log = Tracing.createLoggerFor(StringOutput.class);
 
 	private final StringBuilder sb;
 
@@ -182,11 +178,7 @@ public class StringOutput extends Writer {
 	 * @return Itself
 	 */
 	public StringOutput appendHtmlEscaped(String str) {
-		try {
-			StringEscapeUtils.escapeHtml(this, str);
-		} catch (IOException e) {
-			log.error("Error escaping HTML", e);
-		}
+		StringHelper.escapeHtml(this, str);
 		return this;
 	}
 	

@@ -28,7 +28,6 @@ package org.olat.core.gui.components.table;
 
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 
@@ -55,8 +54,8 @@ public abstract class IconedTypeCellRenderer implements CustomCellRenderer {
 				Renderer.renderStaticURI(sb, iconPath);
 				sb.append(DOUBLE_QUOTES);
 				if (altText != null) {
-					sb.append(" alt=\"").append(StringEscapeUtils.escapeHtml(altText)).append(DOUBLE_QUOTES);
-					sb.append(" title= \"").append(StringEscapeUtils.escapeHtml(altText)).append(DOUBLE_QUOTES);
+					sb.append(" alt=\"").appendHtmlEscaped(altText).append(DOUBLE_QUOTES);
+					sb.append(" title= \"").appendHtmlEscaped(altText).append(DOUBLE_QUOTES);
 				}
 			}
 			sb.append(" />");			

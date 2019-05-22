@@ -27,7 +27,6 @@ package org.olat.core.gui.components.table;
 
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
 import org.olat.core.gui.render.Renderer;
@@ -79,8 +78,8 @@ public abstract class CustomCssCellRenderer implements CustomCellRenderer, Flexi
 			sb.append(getCssClass(val));
 			String hoverText = getHoverText(val);
 			if (StringHelper.containsNonWhitespace(hoverText)) {
-				sb.append("\" title=\"");
-				sb.append(StringEscapeUtils.escapeHtml(hoverText));
+				sb.append("\" title=\"")
+				  .appendHtmlEscaped(hoverText);
 			}
 			sb.append("\"> </i> ").append(getCellValue(val));			
 		}

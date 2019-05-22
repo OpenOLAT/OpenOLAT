@@ -42,7 +42,6 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -790,7 +789,7 @@ public class QTI12To21Converter {
 				}
 				
 			} else {
-				text = StringEscapeUtils.unescapeHtml(text);
+				text = StringHelper.unescapeHtml(text);
 			}
 		}
 		return text;

@@ -22,7 +22,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.dispatcher.impl.StaticMediaDispatcher;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
@@ -283,7 +282,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		sb.append("\" class=\"BGlossarIgnore\">");
 		// The value needs to be encoded when loading into the editor to properly display < > etc values. 
 		// See http://tinymce.moxiecode.com/punbb/viewtopic.php?id=1846
-		sb.append(StringEscapeUtils.escapeHtml(value));
+		sb.appendHtmlEscaped(value);
 		sb.append("</textarea>");
 	}
 }

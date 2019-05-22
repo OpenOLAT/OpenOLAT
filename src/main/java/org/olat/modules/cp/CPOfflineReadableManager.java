@@ -37,7 +37,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
@@ -50,6 +49,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -271,15 +271,15 @@ public class CPOfflineReadableManager {
 			sb.append("\" target=\"");
 			sb.append(FRAME_NAME_CONTENT);
 			sb.append("\" alt=\"");
-			sb.append(StringEscapeUtils.escapeHtml(altText));
+			sb.append(StringHelper.escapeHtml(altText));
 			sb.append("\" title=\"");
-			sb.append(StringEscapeUtils.escapeHtml(altText));
+			sb.append(StringHelper.escapeHtml(altText));
 			sb.append("\">");
 			sb.append(title);
 			sb.append("</a>\n");
 		} else {
 			sb.append("<span title=\"");
-			sb.append(StringEscapeUtils.escapeHtml(altText));
+			sb.append(StringHelper.escapeHtml(altText));
 			sb.append("\">");
 			sb.append(title);
 			sb.append("</span>");

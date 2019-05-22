@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -85,7 +84,7 @@ public class FOPeekviewController extends BasicController implements Controller 
 		// add items, only as many as configured
 		List<MessagePeekview> messages = forumManager.getPeekviewMessages(forum, itemsToDisplay);
 		// only take the configured amount of messages
-		List<MessageView> views = new ArrayList<MessageView>(itemsToDisplay);
+		List<MessageView> views = new ArrayList<>(itemsToDisplay);
 		for (MessagePeekview message :messages) {
 			// add link to item
 			// Add link to jump to course node
@@ -98,7 +97,7 @@ public class FOPeekviewController extends BasicController implements Controller 
 			String body = message.getBody();
 			if(body.length() > 256) {
 				String truncateBody = FilterFactory.getHtmlTagsFilter().filter(body);
-				truncateBody = StringEscapeUtils.unescapeHtml(truncateBody);// remove entities
+				truncateBody = StringHelper.unescapeHtml(truncateBody);// remove entities
 				if(truncateBody.length() < 256) {
 					body = StringHelper.xssScan(body);
 				} else {

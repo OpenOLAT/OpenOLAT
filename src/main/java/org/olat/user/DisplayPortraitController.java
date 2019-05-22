@@ -27,7 +27,6 @@ package org.olat.user;
 
 import java.io.File;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -41,6 +40,7 @@ import org.olat.core.gui.control.generic.popup.PopupBrowserWindow;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
@@ -159,7 +159,7 @@ public class DisplayPortraitController extends BasicController implements Generi
 		String fullName = UserManager.getInstance().getUserDisplayName(portraitIdent);
 		myContent.contextPut("fullName", fullName);		
 		String altText = translate("title.homepage") + ": " + fullName;
-		myContent.contextPut("altText", StringEscapeUtils.escapeHtml(altText));
+		myContent.contextPut("altText", StringHelper.escapeHtml(altText));
 		putInitialPanel(myContent);
 		
 		loadPortrait();
