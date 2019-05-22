@@ -22,7 +22,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.io.File;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.elements.FileElement;
@@ -124,18 +123,18 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 				 sb.append(" onfocus=\"this.form.fake_").append(id).append(".nextSibling.style.border = '1px dotted black';\"")
 				   .append(" onblur=\"this.form.fake_").append(id).append(".nextSibling.style.border = '0';\"");
 				 // Add select text (hover)
-				 sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\" />");
+				 sb.append(" title=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" />");
 			}
 			// Add the visible but fake input field and a styled faked file chooser button
 			sb.append("<div class='o_fakechooser input-group'>");
-			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").append(StringEscapeUtils.escapeHtml(fileName))
-			  .append("\" placeholder=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.select"))).append("\" />");  
+			sb.append("<input class='form-control' name='fake_").append(id).append("' value=\"").appendHtmlEscaped(fileName)
+			  .append("\" placeholder=\"").appendHtmlEscaped(trans.translate("file.element.select")).append("\" />");  
 			sb.append("<span class='input-group-addon'><a href='javascript:;'><i class='o_icon o_icon_upload'> </i></a></span>");
 			if(showDeleteButton) {
 				sb.append("<a class='input-group-addon' href=\"javascript:")
 				  .append(FormJSHelper.getXHRFnCallFor(fileElem.getRootForm(), fileComp.getFormDispatchId(), 1, false, false, new NameValuePair("delete", "delete")))
 				  .append(";\" onclick=\"\" ")
-				  .append(" title=\"").append(StringEscapeUtils.escapeHtml(trans.translate("file.element.delete"))).append("\" ><i class='o_icon o_icon_delete'> </i></a>");
+				  .append(" title=\"").appendHtmlEscaped(trans.translate("file.element.delete")).append("\" ><i class='o_icon o_icon_delete'> </i></a>");
 			}
 			sb.append("</div></div>");
 			// Add example text and  max upload size
@@ -165,7 +164,7 @@ public class FileElementRenderer extends DefaultComponentRenderer {
 			  .append(" >")
 			  .append("<input type='text' disabled=\"disabled\" class=\"form-control o_disabled\" size=\"")
 			  .append("\" value=\"")
-			  .append(StringEscapeUtils.escapeHtml(fileName)).append("\" ")
+			  .appendHtmlEscaped(fileName).append("\" ")
 			  .append("\" />")
 			  .append("</span>");
 		}

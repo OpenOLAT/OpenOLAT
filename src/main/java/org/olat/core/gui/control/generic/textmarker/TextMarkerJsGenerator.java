@@ -29,7 +29,6 @@ package org.olat.core.gui.control.generic.textmarker;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.glossary.GlossaryItem;
 import org.olat.core.commons.modules.glossary.GlossaryItemManager;
@@ -74,7 +73,7 @@ public class TextMarkerJsGenerator {
 			sb.append("new Array(\"");
 			for (Iterator<String> iterator2 = allHighlightStrings.iterator(); iterator2.hasNext();) {
 				String termFlexionSynonym = iterator2.next();
-				String javaEscapedTermFlexionSynonym = StringEscapeUtils.escapeJava(termFlexionSynonym);
+				String javaEscapedTermFlexionSynonym = StringHelper.escapeJava(termFlexionSynonym);
 				sb.append(javaEscapedTermFlexionSynonym).append("\"");
 				if(!termFlexionSynonym.equals(javaEscapedTermFlexionSynonym)) {
 					String htmlEscapedTermFlexionSynonym = StringHelper.escapeHtml(termFlexionSynonym);

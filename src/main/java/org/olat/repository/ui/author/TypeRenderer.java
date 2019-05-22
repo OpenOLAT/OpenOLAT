@@ -19,7 +19,6 @@
  */
 package org.olat.repository.ui.author;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -57,7 +56,7 @@ public class TypeRenderer implements FlexiCellRenderer {
 		} else {
 			type = NewControllerFactory.translateResourceableTypeName(type, translator.getLocale());
 		}
-		type = StringEscapeUtils.escapeHtml(type);
+		type = StringHelper.escapeHtml(type);
 		
 		String cssClass = "";
 		boolean managed = false;

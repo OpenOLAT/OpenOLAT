@@ -28,7 +28,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -37,6 +36,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
@@ -80,7 +80,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 
 			//date chooser button
 			sb.append("<span class='input-group-addon'>")
-			  .append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").append(StringEscapeUtils.escapeHtml(sourceTranslator.translate("calendar.choose"))).append("\"")
+			  .append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").appendHtmlEscaped(sourceTranslator.translate("calendar.choose")).append("\"")
 			  .append(" onclick=\"jQuery('#").append(receiverId).append("').datepicker('show');\"")
 			  .append("></i></span>")
 			  .append("</div></div>");//input-group
@@ -168,7 +168,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		if(value == null){
 			value = "";
 		}
-		value = StringEscapeUtils.escapeHtml(value);
+		value = StringHelper.escapeHtml(value);
 		sb.append("<span id='").append(id).append("_wp' ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
 		  .append("title=\"").append(value).append("\">");
@@ -234,7 +234,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 		  .append(id).append("\" name=\"").append(id)
 		  .append("\" size=\"").append(te.displaySize)
 		  .append("\" maxlength=\"").append(maxlength)
-		  .append("\" value=\"").append(StringEscapeUtils.escapeHtml(te.getValue())).append("\" ")
+		  .append("\" value=\"").append(StringHelper.escapeHtml(te.getValue())).append("\" ")
 		  .append(FormJSHelper.getRawJSFor(te.getRootForm(), id, te.getAction()))
 		  .append("/>");
 		//add set dirty form only if enabled

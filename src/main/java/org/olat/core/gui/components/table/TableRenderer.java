@@ -28,7 +28,6 @@ package org.olat.core.gui.components.table;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -40,6 +39,7 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.OLog;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 
 /**
  * enclosing_type Description: <br>
@@ -138,7 +138,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 				String multiSelectActionIdentifer = action.getAction();
 				String value;
 				if(action.getI18nKey() != null) {
-					value = StringEscapeUtils.escapeHtml(translator.translate(action.getI18nKey()));
+					value = StringHelper.escapeHtml(translator.translate(action.getI18nKey()));
 				} else {
 					value = action.getLabel();
 				}

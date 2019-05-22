@@ -139,6 +139,10 @@ public class StringHelperTest {
 		//it's pahlavi \u10B7x
 		String value12 = StringHelper.cleanUTF8ForXml("Hello\u10B7x pahlavi");
 		Assert.assertEquals("Pahlavi test", "Hello\u10B7x pahlavi", value12);
+
+		// smile
+		String value13 = StringHelper.cleanUTF8ForXml("Smile \uD83D\uDE00x now");
+		Assert.assertEquals("Smile test", "Smile \uD83D\uDE00x now", value13);
 	}
 	
 	@Test

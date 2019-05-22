@@ -29,7 +29,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.StringTokenizer;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
@@ -137,7 +136,7 @@ public class FloatingResizableDialogController extends BasicController {
 		wrapper.contextPut("offsetX", this.offsetX);
 		wrapper.contextPut("offsetY", this.offsetY);
 		wrapper.contextPut("title", escapedTitle);
-		wrapper.contextPut("collabsibleContentPanelTitel", StringEscapeUtils.escapeHtml(collabsibleContentPanelTitel));
+		wrapper.contextPut("collabsibleContentPanelTitel", StringHelper.escapeHtml(collabsibleContentPanelTitel));
 		wrapper.contextPut("resizable", resizable);
 		wrapper.contextPut("constrain", constrain);
 		wrapper.contextPut("scroll", Boolean.valueOf(autoScroll).toString());

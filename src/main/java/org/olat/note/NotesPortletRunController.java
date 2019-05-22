@@ -32,7 +32,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
@@ -62,6 +61,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
@@ -292,7 +292,7 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 			public int compare(final Note note1, final Note note2) {	
 				int comparisonResult = 0;
 			  if(criteria.getSortingTerm()==SortingCriteria.ALPHABETICAL_SORTING) {			  	
-			  	comparisonResult = collator.compare(StringEscapeUtils.escapeHtml(note1.getNoteTitle()).toString(), StringEscapeUtils.escapeHtml(note2.getNoteTitle()).toString());			  		  	
+			  	comparisonResult = collator.compare(StringHelper.escapeHtml(note1.getNoteTitle()).toString(), StringHelper.escapeHtml(note2.getNoteTitle()).toString());			  		  	
 			  } else if(criteria.getSortingTerm()==SortingCriteria.DATE_SORTING) {
 			  	comparisonResult = note1.getLastModified().compareTo(note2.getLastModified());
 			  } 

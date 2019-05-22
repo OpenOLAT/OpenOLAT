@@ -38,7 +38,6 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -750,7 +749,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderItemStatusMessage(String status, String i18nKey, StringOutput sb, Translator translator) {
 		String title = translator.translate(i18nKey);
-		sb.append("<span class='o_assessmentitem_status ").append(status).append(" ' title=\"").append(StringEscapeUtils.escapeHtml(title))
+		sb.append("<span class='o_assessmentitem_status ").append(status).append(" ' title=\"").append(StringHelper.escapeHtml(title))
 		.append("\"><i class='o_icon o_icon-fw o_icon_qti_").append(status).append("'> </i><span>").append(title).append("</span></span>");
 	}
 

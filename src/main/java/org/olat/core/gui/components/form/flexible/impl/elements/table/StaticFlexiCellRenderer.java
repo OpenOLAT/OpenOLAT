@@ -19,8 +19,6 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -124,7 +122,7 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, true, true, pair);
 			target.append("<a href=\"javascript:").append(jsCode).append(";\"");
 			if(StringHelper.containsNonWhitespace(linkTitle)) {
-				target.append(" title=\"").append(StringEscapeUtils.escapeHtml(linkTitle)).append("\"");
+				target.append(" title=\"").appendHtmlEscaped(linkTitle).append("\"");
 			}
 			if(StringHelper.containsNonWhitespace(linkCSS)) {
 				target.append(" class=\"").append(linkCSS).append("\"");

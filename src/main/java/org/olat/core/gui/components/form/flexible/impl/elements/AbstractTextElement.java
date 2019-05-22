@@ -29,7 +29,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.ValidationError;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -40,9 +39,6 @@ import org.olat.core.util.ValidationStatusImpl;
 import org.olat.core.util.filter.Filter;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for AbstractTextElement
- * <P>
  * Initial Date: 27.11.2006 <br>
  * 
  * @author patrickb
@@ -168,7 +164,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 			// null value is not regarded as initial value. only
 			// real values are used inital values
 			if (!originalInitialised){
-				original = new String(value);
+				original = value;
 				originalInitialised = true;
 			}
 		}
@@ -193,7 +189,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	@Override
 	public void setNewOriginalValue(String value) {
 		if (value == null) value = "";
-		original = new String(value);
+		original = value;
 		originalInitialised = true;
 		if (getValue() != null && !getValue().equals(value)) {
 			getComponent().setDirty(true);
@@ -337,7 +333,7 @@ public abstract class AbstractTextElement extends FormItemImpl implements TextEl
 	@Override
 	public void setPlaceholderText(String placeholderText) {
 		if (StringHelper.containsNonWhitespace(placeholderText)) {
-			placeholder = StringEscapeUtils.escapeHtml(placeholderText);
+			placeholder = StringHelper.escapeHtml(placeholderText);
 		} else {
 			placeholder = null;
 		}

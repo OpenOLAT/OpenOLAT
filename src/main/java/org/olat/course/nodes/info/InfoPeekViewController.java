@@ -24,7 +24,6 @@ import java.text.DateFormat;
 import java.util.List;
 import java.util.Locale;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.commons.info.InfoMessage;
 import org.olat.commons.info.InfoMessageFrontendManager;
 import org.olat.core.gui.UserRequest;
@@ -179,7 +178,7 @@ public class InfoPeekViewController extends BasicController {
 				boolean tooltip = StringHelper.containsNonWhitespace(item.getMessage());
 				if(tooltip) {
 					String message = Formatter.escWithBR(Formatter.truncate(item.getMessage(), 255)).toString();
-					sb.append("<span title=\"").append(StringEscapeUtils.escapeHtml(message)).append("\">");
+					sb.append("<span title=\"").appendHtmlEscaped(message).append("\">");
 				} else {
 					sb.append("<span>");
 				}

@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.controllers.navigation.Dated;
@@ -59,6 +58,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
@@ -346,7 +346,7 @@ public class ItemsController extends BasicController implements Activateable2 {
 		itemLink_more.setUserObject(item);
 
 		Link itemLink_title = LinkFactory.createCustomLink("titlelink.to." + guid, "titlelink.to." + guid,
-				StringEscapeUtils.escapeHtml(item.getTitle()), Link.NONTRANSLATED, vcItems, this);
+				StringHelper.escapeHtml(item.getTitle()), Link.NONTRANSLATED, vcItems, this);
 		itemLink_title.setUserObject(item);
 
 		itemLinks.add(itemLink_title);

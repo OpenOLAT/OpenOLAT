@@ -19,7 +19,6 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -58,7 +57,7 @@ public abstract class AbstractCSSIconFlexiCellRenderer implements FlexiCellRende
 		String hoverText = getHoverText(cellValue, translator);
 		if (StringHelper.containsNonWhitespace(hoverText)) {
 			target.append("\" title=\"");
-			target.append(StringEscapeUtils.escapeHtml(hoverText));
+			target.append(StringHelper.escapeHtml(hoverText));
 		}
 		target.append("\"> </i>");
 		if(delegate == null) {

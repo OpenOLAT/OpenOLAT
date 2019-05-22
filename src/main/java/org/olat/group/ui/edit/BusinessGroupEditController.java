@@ -27,7 +27,6 @@ package org.olat.group.ui.edit;
 
 import java.util.List;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
@@ -49,6 +48,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ActionType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
@@ -144,7 +144,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				setAllTabs(ureq);
 				mainVC = createVelocityContainer("edit");
 				mainVC.put("tabbedpane", tabbedPane);
-				String[] title = new String[] { StringEscapeUtils.escapeHtml(currBusinessGroup.getName()) };
+				String[] title = new String[] { StringHelper.escapeHtml(currBusinessGroup.getName()) };
 				mainVC.contextPut("title", getTranslator().translate("group.edit.title", title));
 				putInitialPanel(mainVC);
 			}

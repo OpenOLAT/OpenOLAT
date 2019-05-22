@@ -19,7 +19,7 @@
  */
 package org.olat.commons.calendar.ui.components;
 
-import static org.apache.commons.lang.StringEscapeUtils.escapeJavaScript;
+import static org.olat.core.util.StringHelper.escapeJavaScript;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;

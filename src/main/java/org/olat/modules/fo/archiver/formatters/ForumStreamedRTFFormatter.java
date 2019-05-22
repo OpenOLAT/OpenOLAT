@@ -38,7 +38,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
@@ -358,7 +357,7 @@ public class ForumStreamedRTFFormatter extends ForumFormatter {
 		// Remove all &nbsp;
 		Matcher tmp = HTML_SPACE_PATTERN.matcher(htmlText);
 		htmlText = tmp.replaceAll(" ");
-		htmlText = StringEscapeUtils.unescapeHtml(htmlText);
+		htmlText = StringHelper.unescapeHtml(htmlText);
 
 		return htmlText;
 	}

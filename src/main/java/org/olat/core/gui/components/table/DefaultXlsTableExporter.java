@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Date;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.translator.Translator;
@@ -111,7 +110,7 @@ public class DefaultXlsTableExporter implements TableExporter {
 				cellValue = StringHelper.stripLineBreaks(cellValue);
 				cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
 				if(StringHelper.containsNonWhitespace(cellValue)) {
-					cellValue = StringEscapeUtils.unescapeHtml(cellValue);
+					cellValue = StringHelper.unescapeHtml(cellValue);
 					if(cellValue.length() >= 32767) {
 						cellValue = Formatter.truncate(cellValue, 32760);
 					}

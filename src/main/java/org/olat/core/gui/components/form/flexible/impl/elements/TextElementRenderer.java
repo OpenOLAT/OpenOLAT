@@ -25,7 +25,6 @@
 */ 
 package org.olat.core.gui.components.form.flexible.impl.elements;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -34,6 +33,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date: 08.12.2006 <br>
@@ -55,7 +55,7 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			value = "";
 		}
 		StringBuilder htmlVal = new StringBuilder();
-		htmlVal.append(StringEscapeUtils.escapeHtml(value));
+		htmlVal.append(StringHelper.escapeHtml(value));
 		if (source.isEnabled()) {
 			//read write view			
 			String elementCSS = te.getElementCssClass();

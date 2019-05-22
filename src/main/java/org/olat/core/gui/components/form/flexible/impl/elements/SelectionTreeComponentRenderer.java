@@ -27,7 +27,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -85,7 +84,7 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 				if(cssClass != null) {
 					sb.append("<i class='").append(cssClass).append("'> </i> ");
 				}
-				sb.append(StringEscapeUtils.escapeHtml(currentNode.getTitle()));
+				sb.appendHtmlEscaped(currentNode.getTitle());
 				renderNodeDecorator(sb, currentNode);
 				sb.append("</span>");
 			}
@@ -113,8 +112,8 @@ class SelectionTreeComponentRenderer extends DefaultComponentRenderer {
 		String key = check.getKey();
 		String value = check.getValue();
 		if(stF.isEscapeHtml()){
-			key = StringEscapeUtils.escapeHtml(key);
-			value = StringEscapeUtils.escapeHtml(value);
+			key = StringHelper.escapeHtml(key);
+			value = StringHelper.escapeHtml(value);
 		}
 		
 		boolean selected = check.isSelected();

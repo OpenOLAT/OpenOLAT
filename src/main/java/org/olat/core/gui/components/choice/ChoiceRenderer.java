@@ -26,7 +26,6 @@
 
 package org.olat.core.gui.components.choice;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.control.winmgr.AJAXFlags;
@@ -35,6 +34,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * Initial Date: Feb 2, 2004 A <b>ChoiceRenderer </b> is
@@ -88,7 +88,7 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 			String label = model.getLabel(i);
 			target.append("<td class='o_choice_textrow'>");
 			if(choice.isEscapeHtml()) {
-				target.append(StringEscapeUtils.escapeHtml(label));
+				target.append(StringHelper.escapeHtml(label));
 			} else {
 				target.append(label);
 			}
@@ -110,14 +110,14 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 		// Submit button
 		target.append("<button type='button' class='btn btn-primary'")
 	          .append(" onclick=\"o_TableMultiActionEvent('").append(id).append("','olat_fosm');\"><span>")
-	          .append(StringEscapeUtils.escapeHtml(translator.translate(choice.getSubmitKey()))).append("</span></button>");
+	          .append(StringHelper.escapeHtml(translator.translate(choice.getSubmitKey()))).append("</span></button>");
 
 		//Reset button
 		String resetKey = choice.getResetKey();
 		if (resetKey != null) {
 			target.append("<button type='button' class='btn btn-default'")
 			      .append(" onclick=\"o_TableMultiActionEvent('").append(id).append("','").append(Choice.RESET_IDENTIFICATION).append("');\"><span>")
-			      .append(StringEscapeUtils.escapeHtml(translator.translate(resetKey))).append("</span></button>");
+			      .append(StringHelper.escapeHtml(translator.translate(resetKey))).append("</span></button>");
 		}
 		
 		// Cancel button
@@ -125,7 +125,7 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 		if (cancelKey != null) {
 			target.append("<button type='button' class='btn btn-default'")
 		          .append(" onclick=\"o_TableMultiActionEvent('").append(id).append("','").append(Choice.CANCEL_IDENTIFICATION).append("');\"><span>")
-		          .append(StringEscapeUtils.escapeHtml(translator.translate(cancelKey))).append("</span></button>");
+		          .append(StringHelper.escapeHtml(translator.translate(cancelKey))).append("</span></button>");
 		}
 		target.append("</div></td></tr></table></form>");
 	}

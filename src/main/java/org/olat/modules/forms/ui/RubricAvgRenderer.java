@@ -19,7 +19,6 @@
  */
 package org.olat.modules.forms.ui;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -70,7 +69,7 @@ public class RubricAvgRenderer implements FlexiCellRenderer {
 		target.append("'>");
 		if (ratingCss != null) {
 			target.append("<i class='o_icon o_icon-fw ").append(getRatingIconCssClass(rating)).append("' title=\"");
-			target.append(StringEscapeUtils.escapeHtml(getRatingIconExplanation(rating, rubric, translator))).append("\"> </i> ");
+			target.appendHtmlEscaped(getRatingIconExplanation(rating, rubric, translator)).append("\"> </i> ");
 		}
 		target.append(EvaluationFormFormatter.formatDouble(value));
 		target.append("</div>");
