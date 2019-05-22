@@ -35,6 +35,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.WrapsElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
@@ -561,5 +562,15 @@ public class OOGraphene {
 		} catch (Exception e) {
 			//e.printStackTrace();
 		}
+	}
+	
+	public static final WebElement unwrap(WebElement element) {
+		if(element instanceof WrapsElement) {
+			WebElement wrappedCircleEl = ((WrapsElement)element).getWrappedElement();
+			if(wrappedCircleEl instanceof WrapsElement) {
+				element = ((WrapsElement)wrappedCircleEl).getWrappedElement();
+			}
+		}
+		return element;
 	}
 }

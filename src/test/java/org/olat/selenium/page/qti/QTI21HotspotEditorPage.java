@@ -97,6 +97,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		By circleBy = By.cssSelector("div.o_draw_circle");
 		OOGraphene.waitElement(circleBy, browser);
 		WebElement circleEl = browser.findElement(circleBy);
+		circleEl = OOGraphene.unwrap(circleEl);
 		Dimension dim = circleEl.getSize();
 		Position pos = Position.valueOf(10, 10, dim, browser);
 		new Actions(browser)
@@ -135,13 +136,13 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	
 	private QTI21HotspotEditorPage moveElement(By elementBy, int xOffset, int yOffset) {
 		OOGraphene.waitElement(elementBy, browser);
-		WebElement rectangleEl = browser.findElement(elementBy);
-		Dimension size = rectangleEl.getSize();
+		WebElement element = browser.findElement(elementBy);
+		element = OOGraphene.unwrap(element);
+		Dimension size = element.getSize();
 		int centerX = size.getWidth() / 2;
 		int centerY = size.getHeight() / 2;
-		
 		new Actions(browser)
-			.moveToElement(rectangleEl, centerX, centerY)
+			.moveToElement(element, centerX, centerY)
 			.clickAndHold()
 			.moveByOffset(xOffset, yOffset)
 			.release()

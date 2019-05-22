@@ -312,9 +312,9 @@ public class QTI21Page {
 	public QTI21Page answerMatchDropSourceToTarget(String source, String target) {
 		By sourceBy = By.xpath("//li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
 		OOGraphene.waitElement(sourceBy, 5, browser);
-		WebElement sourceEl = browser.findElement(sourceBy);
+		WebElement sourceEl = OOGraphene.unwrap(browser.findElement(sourceBy));
 		By targetBy = By.xpath("//li[contains(@class,'o_match_dnd_target')]/div[@class='clearfix']/p[contains(text(),'" + target + "')]");
-		WebElement targetEl = browser.findElement(targetBy);
+		WebElement targetEl = OOGraphene.unwrap(browser.findElement(targetBy));
 		new Actions(browser)
 			.moveToElement(sourceEl, 30, 30)
 			.clickAndHold()
@@ -330,9 +330,9 @@ public class QTI21Page {
 	
 	public QTI21Page answerMatchDropTargetToTarget(String source, String target) {
 		By sourceDroppedBy = By.xpath("//ul[contains(@class,'o_match_dnd_target_drop_zone')]/li[contains(@class,'o_match_dnd_source')]/p[contains(text(),'" + source + "')]");
-		WebElement sourceEl = browser.findElement(sourceDroppedBy);
+		WebElement sourceEl = OOGraphene.unwrap(browser.findElement(sourceDroppedBy));
 		By targetBy = By.xpath("//li[contains(@class,'o_match_dnd_target')]/div[@class='clearfix']/p[contains(text(),'" + target + "')]");
-		WebElement targetEl = browser.findElement(targetBy);
+		WebElement targetEl = OOGraphene.unwrap(browser.findElement(targetBy));
 		new Actions(browser)
 			.moveToElement(sourceEl, 30, 30)
 			.clickAndHold()
@@ -353,9 +353,9 @@ public class QTI21Page {
 	
 	public QTI21Page answerAssociate(String source, int index, boolean left) {
 		By itemBy = By.xpath("//div[contains(@class,'o_associate_items')]/div[contains(@class,'o_associate_item')][contains(text(),'" + source + "')]");
-		WebElement itemEl = browser.findElement(itemBy);
+		WebElement itemEl = OOGraphene.unwrap( browser.findElement(itemBy));
 		By targetBy = By.xpath("//div[@class='association'][" + index + "]/div[contains(@class,'association_box')][contains(@class,'" + (left ? "left" : "right") + "')]");
-		WebElement targetEl = browser.findElement(targetBy);
+		WebElement targetEl = OOGraphene.unwrap(browser.findElement(targetBy));
 		new Actions(browser)
 			.moveToElement(itemEl, 10, 10)
 			.clickAndHold()
@@ -417,9 +417,9 @@ public class QTI21Page {
 	public QTI21Page answerOrderDropItem(String source) {
 		By sourceBy = By.xpath("//li[@class='o_assessmentitem_order_item'][contains(text(),'" + source + "')]");
 		OOGraphene.waitElement(sourceBy, 5, browser);
-		WebElement sourceEl = browser.findElement(sourceBy);
+		WebElement sourceEl = OOGraphene.unwrap(browser.findElement(sourceBy));
 		By targetBy = By.xpath("//div[@class='orderInteraction']//div[contains(@class,'target')]/ul");
-		WebElement targetEl = browser.findElement(targetBy);
+		WebElement targetEl = OOGraphene.unwrap(browser.findElement(targetBy));
 		
 		Position sourcePos = Position.valueOf(30, 30, sourceEl.getSize(), browser);
 		Position targetPos = Position.valueOf(30, 30,  targetEl.getSize(), browser);
@@ -491,7 +491,7 @@ public class QTI21Page {
 	public QTI21Page answerSelectPoint(int x, int y, int width, int height) {
 		Position pos = Position.valueOf(x, y, width, height, browser);
 		By canvasBy = By.xpath("//div[contains(@class,'selectPointInteraction')]/div/canvas");
-		WebElement canvasEl = browser.findElement(canvasBy);
+		WebElement canvasEl = OOGraphene.unwrap(browser.findElement(canvasBy));
 		new Actions(browser)
 			.moveToElement(canvasEl, pos.getX(), pos.getY())
 			.click()
@@ -526,9 +526,9 @@ public class QTI21Page {
 	public QTI21Page answerPositionObject(int index, int x, int y, int firefoxCorrection) {
 		By itemBy = By.xpath("//div[contains(@class,'positionObjectStage')]//div[@id='object-item-" + index + "']");
 		OOGraphene.waitElement(itemBy, browser);
-		WebElement itemEl = browser.findElement(itemBy);
+		WebElement itemEl = OOGraphene.unwrap(browser.findElement(itemBy));
 		By targetBy = By.xpath("//div[@class='positionObjectStage']//img[contains(@id,'qtiworks_id_container_')]");
-		WebElement targetEl = browser.findElement(targetBy);
+		WebElement targetEl = OOGraphene.unwrap(browser.findElement(targetBy));
 		Dimension targetDim = targetEl.getSize();
 		Position targetPos = Position.valueOf(x, y, firefoxCorrection, targetDim, browser);
 		Dimension itemDim = itemEl.getSize();
@@ -566,7 +566,7 @@ public class QTI21Page {
 	public QTI21Page answerVerticalSlider(int val) {
 		By sliderBy = By.xpath("//div[contains(@class,'sliderInteraction')]/div[contains(@class,'sliderVertical')]/div[contains(@class,'sliderWidget')]");
 		OOGraphene.waitElement(sliderBy, browser);
-		WebElement sliderEl = browser.findElement(sliderBy);
+		WebElement sliderEl = OOGraphene.unwrap(browser.findElement(sliderBy));
 		Dimension size = sliderEl.getSize();
 		float height = (size.getHeight() / 100f) * val;
 		int scaledY = Math.round(size.getHeight() - height);
@@ -602,7 +602,7 @@ public class QTI21Page {
 	 */
 	public QTI21Page answerDrawing() {
 		By drawingBy = By.xpath("//div[contains(@class,'drawingInteraction')]//canvas[@id='tmp_canvas']");
-		WebElement drawingEl = browser.findElement(drawingBy);
+		WebElement drawingEl = OOGraphene.unwrap(browser.findElement(drawingBy));
 		
 		new Actions(browser)
 			.moveToElement(drawingEl, 30, 30)

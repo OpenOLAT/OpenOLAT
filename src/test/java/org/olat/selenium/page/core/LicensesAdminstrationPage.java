@@ -47,6 +47,7 @@ public class LicensesAdminstrationPage {
 		WebElement resourceCheckEl = browser.findElement(resourceCheckBy);
 		WebElement resourceLabelEl = browser.findElement(resourceLabelBy);
 		if(browser instanceof ChromeDriver) {
+			resourceLabelEl = OOGraphene.unwrap(resourceLabelEl);
 			new Actions(browser).moveToElement(resourceLabelEl).build().perform();
 			OOGraphene.waitingALittleBit();
 		}
