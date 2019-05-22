@@ -488,23 +488,24 @@ public class StringHelper {
 		if(string == null) return null;
 		if(string.length() == 0) return string;
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(string.length());
 		char[] charArr = string.toCharArray();
 		int numOfCharacters = charArr.length;
 		for(int i=0; i<numOfCharacters; i++) {
-			char ch = charArr[i];
+			int ch = string.codePointAt(i);
 			if(ch < 32) {
 				switch(ch) {
-					case '\n': sb.append(ch); break;//0x000A
-					case '\t': sb.append(ch); break;//0x0009
-					case '\r': sb.append(ch); break;//0x000D
+					case '\n': //0x000A
+					case '\t': //0x0009
+					case '\r': sb.appendCodePoint(ch); break;//0x000D
+					default: // dump them
 				}
 			} else if(ch >= 0x0020 && ch <= 0xD7FF) {
-				sb.append(ch);
+				sb.appendCodePoint(ch);
 			} else if(ch >= 0xE000 && ch <= 0xFFFD) {
-				sb.append(ch);
+				sb.appendCodePoint(ch);
 			} else if(ch >= 0x10000 && ch <= 0x10FFFF) {
-				sb.append(ch);
+				sb.appendCodePoint(ch);
 			}
 		}
 		return sb.toString();
