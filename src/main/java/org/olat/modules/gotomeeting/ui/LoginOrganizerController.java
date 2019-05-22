@@ -89,8 +89,8 @@ public class LoginOrganizerController extends FormBasicController {
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("ok", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("ok", buttonLayout);
 	}
 	
 	@Override
@@ -100,7 +100,7 @@ public class LoginOrganizerController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		usernameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(usernameEl.getValue())) {
@@ -114,7 +114,7 @@ public class LoginOrganizerController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

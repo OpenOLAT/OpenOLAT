@@ -60,8 +60,8 @@ public class EditOrganizerNameController extends FormBasicController {
 
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("ok", buttonLayout);
 		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("ok", buttonLayout);
 	}
 	
 	@Override

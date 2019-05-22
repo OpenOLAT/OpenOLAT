@@ -153,7 +153,7 @@ public class EditTrainingController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(meeting == null || meeting.getOrganizer() == null) {
 			organizersEl.clearError();
@@ -201,7 +201,7 @@ public class EditTrainingController extends FormBasicController {
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

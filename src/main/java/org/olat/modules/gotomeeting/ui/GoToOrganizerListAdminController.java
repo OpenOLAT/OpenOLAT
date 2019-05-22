@@ -155,7 +155,7 @@ public class GoToOrganizerListAdminController extends FormBasicController implem
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(editOrganizerNameController == source || loginOrganizerController == null) {
+		if(editOrganizerNameController == source || loginOrganizerController == source) {
 			if(event == Event.DONE_EVENT) {
 				updateModel();
 			}
@@ -176,9 +176,11 @@ public class GoToOrganizerListAdminController extends FormBasicController implem
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(editOrganizerNameController);
+		removeAsListenerAndDispose(loginOrganizerController);
 		removeAsListenerAndDispose(confirmRemoveOrganizer);
 		removeAsListenerAndDispose(cmc);
 		editOrganizerNameController = null;
+		loginOrganizerController = null;
 		confirmRemoveOrganizer = null;
 		cmc = null;
 	}
