@@ -70,7 +70,7 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 			setNextStep(new BulkAssessment_2b_ChooseColumnsStep(ureq, savedDatas.getColumnsSettings()));
 		}
 		
-		hasPreviousStep = (courseNode == null ? false : true);
+		hasPreviousStep = courseNode != null;
 	}
 
 	@Override
