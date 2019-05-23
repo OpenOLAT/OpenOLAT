@@ -51,6 +51,7 @@ import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
+import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.TaskHelper.FilesLocked;
 import org.olat.course.nodes.gta.TaskProcess;
 import org.olat.course.nodes.gta.model.DueDate;
@@ -560,13 +561,9 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(revisionDocumentsCtrl == source) {
-			cleanUpProcess();
-			process(ureq);
-		} else if(participantGradingCtrl == source) {
-			cleanUpProcess();
-			process(ureq);
-		} else if(groupGradingCtrl == source) {
+		if(revisionDocumentsCtrl == source
+				|| participantGradingCtrl == source
+				|| groupGradingCtrl == source) {
 			cleanUpProcess();
 			process(ureq);
 		} else if(submitCorrectionsCtrl == source) {
@@ -664,7 +661,13 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	
 	private void doReviewedDocument(UserRequest ureq, Task task) {
 		//go to solution, grading or graded
-		gtaManager.reviewedTask(task, gtaNode);
+		if(task == null) {
+			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
+			TaskList reloadedTaskList = gtaManager.getTaskList(courseEnv.getCourseGroupManager().getCourseEntry(), gtaNode);
+			task = gtaManager.createAndPersistTask(null, reloadedTaskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
+		}
+		
+		gtaManager.reviewedTask(task, gtaNode, Role.coach);
 		showInfo("coach.documents.successfully.reviewed");
 		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
@@ -818,7 +821,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			contactList.add(assessedIdentity);			
 		}
 		// open dialog with mail form
-		if (contactList != null && contactList.getEmailsAsStrings().size() > 0) {
+		if (contactList != null && !contactList.getEmailsAsStrings().isEmpty()) {
 			removeAsListenerAndDispose(emailController);
 			
 			ContactMessage cmsg = new ContactMessage(ureq.getIdentity());

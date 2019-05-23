@@ -411,7 +411,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void doCloseRevisionProcess() {
-		assignedTask = gtaManager.reviewedTask(assignedTask, gtaNode);
+		assignedTask = gtaManager.reviewedTask(assignedTask, gtaNode, Role.coach);
 		gtaManager.log("Revision", "close revision", assignedTask,
 				getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 	}

@@ -337,7 +337,7 @@ public interface GTAManager {
 	 * @param cNode
 	 * @return
 	 */
-	public Task reviewedTask(Task task, GTACourseNode cNode);
+	public Task reviewedTask(Task task, GTACourseNode cNode, Role by);
 	
 	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, Role by);
 	
