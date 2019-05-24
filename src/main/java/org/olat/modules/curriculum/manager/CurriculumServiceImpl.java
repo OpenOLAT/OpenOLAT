@@ -338,7 +338,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public List<CurriculumElement> getCurriculumElements(Collection<CurriculumElementRef> elementRefs) {
+	public List<CurriculumElement> getCurriculumElements(Collection<? extends CurriculumElementRef> elementRefs) {
 		return curriculumElementDao.loadByKeys(elementRefs);
 	}
 

@@ -36,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityContextToCurriculumElement;
@@ -64,6 +65,8 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 	
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	QualityUIContextsDataCollectionBuilder(QualityDataCollection dataCollection, Locale locale) {
 		this.dataCollection = dataCollection;
@@ -105,6 +108,10 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 					uiContext.add(keyValue);
 				}
 			}
+			if (attributes.contains(Attribute.CURRICULUM_ELEMENTS)) {
+				Collection<KeyValue> keyValues = getCurriculumElements(contexts);
+				uiContext.addAll(keyValues);
+			}
 			if (attributes.contains(Attribute.COURSE)) {
 				String value = getAudienceCourses(contexts);
 				if (StringHelper.containsNonWhitespace(value)) {
@@ -112,10 +119,6 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 					KeyValue keyValue = new KeyValue(key, value);
 					uiContext.add(keyValue);
 				}
-			}
-			if (attributes.contains(Attribute.CURRICULUM_ELEMENTS)) {
-				Collection<KeyValue> keyValues = getCurriculumElements(contexts);
-				uiContext.addAll(keyValues);
 			}
 			if (attributes.contains(Attribute.TAXONOMY_LEVELS)) {
 				Collection<KeyValue> keyValues = getTaxonomyLevels(contexts);
@@ -159,25 +162,52 @@ public class QualityUIContextsDataCollectionBuilder extends QualityUIContextsBui
 				.collect(Collectors.joining(DELIMITER));
 	}
 	
-	private Collection<KeyValue> getCurriculumElements(List<QualityContext> contexts) {
-		// Group curriculum elements by the name of the type and join the display names
-		Map<String, String> typesNamesToCurriculumElements = contexts.stream()
+	private List<KeyValue> getCurriculumElements(List<QualityContext> contexts) {
+		// Get a list of all curriculum elements and its parents.
+		List<CurriculumElement> elements = contexts.stream()
 				.map(QualityContext::getContextToCurriculumElement)
 				.flatMap(Set::stream)
 				.map(QualityContextToCurriculumElement::getCurriculumElement)
 				.distinct()
 				.filter(Objects::nonNull)
-				.collect(Collectors.groupingBy(element -> getTypeName(element),
-					Collectors.mapping(CurriculumElement::getDisplayName, Collectors.joining(DELIMITER))));
+				.collect(Collectors.toList());
 		
-		List<KeyValue> keyValues = new ArrayList<>(typesNamesToCurriculumElements.size());
-		for (Map.Entry<String, String> entry : typesNamesToCurriculumElements.entrySet()) {
-			KeyValue keyValue = new KeyValue(entry.getKey(), entry.getValue());
+		// reload to fetch the parents
+		elements = curriculumService.getCurriculumElements(elements);
+		List<CurriculumElement> elementsHierarchical = new ArrayList<>();
+		for (CurriculumElement element: elements) {
+			addParents(elementsHierarchical, element);
+		}
+		// reverse, so that the top most element is the first element
+		List<CurriculumElement> invertedList = new ArrayList<>();
+		for (int i = elementsHierarchical.size() - 1; i >= 0; i--) {
+			invertedList.add(elementsHierarchical.get(i));
+		}
+		elementsHierarchical = invertedList;
+		
+		List<KeyValue> keyValues = new ArrayList<>(elementsHierarchical.size());
+		for (CurriculumElement element : elementsHierarchical) {
+			KeyValue keyValue = new KeyValue(getTypeName(element), getName(element));
 			keyValues.add(keyValue);
 		}
 		return keyValues;
 	}
+
+	private void addParents(List<CurriculumElement> elementsHierarchical, CurriculumElement element) {
+		elementsHierarchical.add(element);
+		if (element.getParent() != null) {
+			addParents(elementsHierarchical, element.getParent());
+		}
+	}
 	
+	private String getName(CurriculumElement element) {
+		StringBuilder sb = new StringBuilder(element.getDisplayName());
+		if (StringHelper.containsNonWhitespace(element.getIdentifier())) {
+			sb.append(" (").append(element.getIdentifier()).append(")");
+		}
+		return sb.toString();
+	}
+
 	private String getTypeName(CurriculumElement element) {
 		CurriculumElementType curriculumElementType = element.getType();
 		return curriculumElementType != null
