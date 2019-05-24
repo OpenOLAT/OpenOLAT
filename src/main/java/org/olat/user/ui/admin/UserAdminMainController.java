@@ -41,8 +41,10 @@ import org.olat.admin.user.delete.TabbedPaneController;
 import org.olat.admin.user.imp.UserImportController;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
@@ -80,7 +82,13 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.quality.QualityModule;
 import org.olat.user.UserManager;
+import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -109,9 +117,6 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private Controller contentCtr;
 	private UserAdminController editCtrl;
 	private UserCreateController createCtrl;
-	private UserImportController importCtrl;
-	private TabbedPaneController deleteCtrl;
-	private DirectDeleteController directDeleteCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
 
 	private final Roles identityRoles;
@@ -121,7 +126,19 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	@Autowired
 	private UserManager userManager;
 	@Autowired
+	private QualityModule qualityModule;
+	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
+	private QuestionPoolModule poolModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
+	@Autowired
+	private BaseSecurityModule securityModule;
+	@Autowired
 	private OrganisationService organisationService;
+	@Autowired
+	private IdentityRelationshipService relationshipService;
 
 	/**
 	 * Constructor of the home main controller
@@ -256,7 +273,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean canCreateOLATPassword = roles.isAdministrator() || roles.isRolesManager() || roles.isUserManager();
 
-		importCtrl = new UserImportController(ureq, getWindowControl(), canCreateOLATPassword);
+		UserImportController importCtrl = new UserImportController(ureq, getWindowControl(), canCreateOLATPassword);
 		addToHistory(ureq, importCtrl);
 		listenTo(importCtrl);
 		content.rootController(translate("menu.usersimport"), importCtrl);
@@ -270,11 +287,25 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		Object uobject = treeNode.getUserObject();
 		if (uobject instanceof GenericActionExtension) {
 			ctrl = getController(ureq, (GenericActionExtension)uobject);
+		} else if(uobject instanceof OrganisationRoles) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(uobject.toString()), null);
+			ctrl = createUserSearchController(ureq, bwControl, (OrganisationRoles)uobject);
+		} else if(uobject instanceof CurriculumRoles) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(uobject.toString()), null);
+			ctrl = createUserSearchController(ureq, bwControl, (CurriculumRoles)uobject);
 		} else if(uobject instanceof String) {
 			ctrl = getController(ureq, (String)uobject);
 		} else if(uobject instanceof Organisation) {
 			ctrl = getController(ureq, (Organisation)uobject);
+		} else if(uobject instanceof IdentityRelation) {
+			IdentityRelation rel = (IdentityRelation)uobject;
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Relation", rel.getRelationRole().getKey()), null);
+			ctrl = createUserSearchController(ureq, bwControl, (IdentityRelation)uobject);
+		} else if(uobject instanceof Presentation) {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableType(treeNode.getIdent()), null);
+			ctrl = createInfoController(ureq, bwControl, (Presentation)uobject);
 		}
+			
 		if(ctrl != null) {
 			listenTo(ctrl);
 			content.popUpToRootController(ureq);
@@ -288,50 +319,27 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(uobject, 0l);
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
-		
 		switch(uobject) {
-			case "menuroles": return createInfoController(ureq, bwControl, "systemroles");
-			case "menuqueries": return createInfoController(ureq, bwControl, "predefinedqueries");
-			case "menuaccess": return createInfoController(ureq, bwControl, "systemroles");
-			case "organisations": return createInfoController(ureq, bwControl, "systemorganisations");
+			// mains
 			case "usearch":
 			case "useradmin": return createUserSearchController(ureq, bwControl);
-			case "admingroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.administrator);
-			case "sysadmingroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.sysadmin);
-			case "principalgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.principal);
-			case "usermanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.usermanager);
-			case "rolesmanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.rolesmanager);
-			case "groupmanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.groupmanager);
-			case "learnresourcemanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.learnresourcemanager);
-			case "linemanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.linemanager);
-			case "lecturemanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.lecturemanager);
-			case "qualitymanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.qualitymanager);
-			case "curriculummanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.curriculummanager);
-			case "poolmanagergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.poolmanager);
-			case "authorgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.author);
-			case "usergroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.user);
-			case "anonymousgroup": return createUserSearchController(ureq, bwControl, OrganisationRoles.guest);
+			// groups
+			case "groupcoach": return createUserSearchController(ureq, bwControl,
+					SearchIdentityParams.resources(null, true, GroupRoles.coach, null, null, null, Identity.STATUS_VISIBLE_LIMIT));
+			case "groupparticipant": return createUserSearchController(ureq, bwControl,
+					SearchIdentityParams.resources(null, true, GroupRoles.participant, null, null, null, Identity.STATUS_VISIBLE_LIMIT));
+			// resources
+			case "coauthors": return createUserSearchController(ureq, bwControl,
+					SearchIdentityParams.resources(GroupRoles.owner, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT));
+			case "courseparticipants": return createUserSearchController(ureq, bwControl,
+					SearchIdentityParams.resources(GroupRoles.participant, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT));
+			case "coursecoach": return createUserSearchController(ureq, bwControl,
+					SearchIdentityParams.resources(GroupRoles.coach, true, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT));
+			// status
 			case "pendinggroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_PENDING);
 			case "logondeniedgroup": return createUserSearchController(ureq, bwControl, Identity.STATUS_LOGIN_DENIED);
 			case "deletedusers": return createDeletedUserController(ureq, bwControl);
-			case "created.lastweek": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.DAY_OF_MONTH, -7);
-			case "created.lastmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -1);
-			case "created.sixmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -6);
-			case "created.newUsersNotification": return new NewUsersNotificationsController(ureq, bwControl, content);
-			// repository entry owners - authors
-			case "coauthors": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(GroupRoles.owner, null, null, new OrganisationRoles[] { OrganisationRoles.author }, Identity.STATUS_VISIBLE_LIMIT));
-			// authors + repository entry owners
-			case "resourceowners": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.authorsAndCoAuthors());
-			case "courseparticipants": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(GroupRoles.participant, null, null, null, Identity.STATUS_VISIBLE_LIMIT));
-			case "coursecoach": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(GroupRoles.coach, null, null, null, Identity.STATUS_VISIBLE_LIMIT));
-			case "groupcoach": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.resources(null, GroupRoles.coach, null, null, Identity.STATUS_VISIBLE_LIMIT));
-			case "noauthentication": return createUserSearchController(ureq, bwControl,
-					SearchIdentityParams.authenticationProviders(new String[]{ null }, Identity.STATUS_VISIBLE_LIMIT));
+			// predefined queries
 			case "userswithoutgroup":
 				return createUserSearchController(ureq, bwControl, SearchIdentityParams.withBusinesGroups());
 			case "userswithoutemail":
@@ -340,6 +348,13 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			case "usersemailduplicates":
 				List<Identity> usersEmailDuplicates = userManager.findVisibleIdentitiesWithEmailDuplicates();
 				return new UsermanagerUserSearchController(ureq, bwControl, content, usersEmailDuplicates, true, false);
+			case "noauthentication": return createUserSearchController(ureq, bwControl,
+					SearchIdentityParams.authenticationProviders(new String[]{ null }, Identity.STATUS_VISIBLE_LIMIT));
+			// time based predefined queries
+			case "created.lastweek": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.DAY_OF_MONTH, -7);
+			case "created.lastmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -1);
+			case "created.sixmonth": return createUserSearchControllerAfterDate(ureq, bwControl, Calendar.MONTH, -6);
+			case "created.newUsersNotification": return new NewUsersNotificationsController(ureq, bwControl, content);
 			default: return null;		
 		}
 	}
@@ -349,8 +364,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		return createUserSearchController(ureq, getWindowControl(), predefinedQuery);
 	}
 	
-	private Controller createInfoController(UserRequest ureq, WindowControl bwControl, String template) {
-		return new InfoController(ureq, bwControl, template);
+	private Controller createInfoController(UserRequest ureq, WindowControl bwControl, Presentation template) {
+		return new InfoController(ureq, bwControl, template.getTitleKey(), template.getDescriptionKey());
 	}
 
 	private UsermanagerUserSearchController createUserSearchControllerAfterDate(UserRequest ureq, WindowControl bwControl, int unit, int amount) {
@@ -363,6 +378,11 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, OrganisationRoles role) {
 		final OrganisationRoles[] roles = { role };
 		SearchIdentityParams predefinedQuery = SearchIdentityParams.params(roles, Identity.STATUS_VISIBLE_LIMIT);
+		return createUserSearchController(ureq, bwControl, predefinedQuery);
+	}
+	
+	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, CurriculumRoles role) {
+		SearchIdentityParams predefinedQuery = SearchIdentityParams.resources(null, true, null, role, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		return createUserSearchController(ureq, bwControl, predefinedQuery);
 	}
 	
@@ -386,6 +406,16 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		return new UsermanagerUserSearchController(ureq, bwControl, content, predefinedQuery, true);
 	}
 	
+	private UsermanagerUserSearchController createUserSearchController(UserRequest ureq, WindowControl bwControl, IdentityRelation relation) {
+		List<Identity> identities;
+		if(relation.isContra()) {
+			identities = relationshipService.getTargets(relation.getRelationRole());
+		} else {
+			identities = relationshipService.getSources(relation.getRelationRole());
+		}
+		return new UsermanagerUserSearchController(ureq, bwControl, content, identities, true, false);
+	}
+	
 	private DeletedUsersController createDeletedUserController(UserRequest ureq, WindowControl bwControl) {
 		return new DeletedUsersController(ureq, bwControl);
 	}
@@ -406,7 +436,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		Controller controller = acquireDeleteUserLock(ureq);
 		if (controller == null) {
 			//success -> create new User deletion workflow
-			directDeleteCtrl = new DirectDeleteController(ureq, getWindowControl());
+			DirectDeleteController directDeleteCtrl = new DirectDeleteController(ureq, getWindowControl());
 			controller = directDeleteCtrl;
 			listenTo(controller);
 		}
@@ -424,7 +454,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		Controller controller = acquireDeleteUserLock(ureq);
 		if (controller == null) {
 			//success -> create new User deletion workflow
-			deleteCtrl = new TabbedPaneController(ureq, getWindowControl());
+			TabbedPaneController deleteCtrl = new TabbedPaneController(ureq, getWindowControl());
 			controller = deleteCtrl;
 			listenTo(deleteCtrl);
 		}
@@ -467,13 +497,45 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		appendNode("menu.usearch", "menu.usearch.alt", "usearch", "o_sel_useradmin_search", root);
 		
 		// Sub menu with organizations
-		GenericTreeNode organisationsNode = appendNode("menu.organisations", "menu.organisations.alt", "organisations", "o_sel_useradmin_organisations", root);
+		GenericTreeNode organisationsNode = appendNode("menu.organisations", "menu.organisations.alt",
+				new Presentation("menu.organisations", "organisations.intro"), "o_sel_useradmin_organisations", root);
 		buildTreeOrganisationSubMenu(organisationsNode);
-		// Sub menu access and rights
-		GenericTreeNode accessNode = appendNode("menu.menuaccess", "menu.menuaccess.alt", "menuaccess", "o_sel_useradmin_access", root);
-		buildTreeAccessSubMenu(accessNode);
+
+		// Sub menu organizations roles
+		GenericTreeNode organisationsRolesNode = appendNode("menu.organisations.roles", "menu.organisations.roles.alt",
+				new Presentation("menu.organisations.roles", "menu.organisations.roles.intro"), "o_sel_useradmin_organisationsroles", root);
+		buildTreeOrganisationsRoles(organisationsRolesNode);
+		// Sub menu course roles
+		GenericTreeNode resourcesRolesNode = appendNode("menu.resources.roles", "menu.resources.roles.alt",
+				new Presentation("menu.resources.roles", "menu.resources.roles.intro"), "o_sel_useradmin_resourcesroles", root);
+		buildTreeResourcesRoles(resourcesRolesNode);
+		// Sub menu groups roles
+		GenericTreeNode groupsRolesNode = appendNode("menu.groups.roles", "menu.groups.roles.alt",
+				new Presentation("menu.groups.roles", "menu.groups.roles.intro"), "o_sel_useradmin_groupsroles", root);
+		buildTreeBusinessGroupsRoles(groupsRolesNode);
+		//Sub menu curriculum roles
+		if(curriculumModule.isEnabled()) {
+			GenericTreeNode curriculumsRolesNode = appendNode("menu.curriculums.roles", "menu.curriculums.roles.alt",
+					new Presentation("menu.curriculums.roles", "menu.curriculums.roles.intro"), "o_sel_useradmin_curriculumsroles", root);
+			buildTreeCurriculumsRoles(curriculumsRolesNode);
+		}
+		// Sub menu identity to identity relations
+		if(securityModule.isRelationRoleEnabled()) {
+			List<RelationRole> roles = relationshipService.getAvailableRoles();
+			if(!roles.isEmpty()) {
+			
+				GenericTreeNode relationsNode = appendNode("menu.relations", "menu.relations.alt",
+						new Presentation("menu.relations", "menu.relations.intro"), "o_sel_useradmin_relations", root);
+				buildTreeRelationsSubMenu(relationsNode, roles);
+			}
+		}
+		// Sub menu status
+		GenericTreeNode statusNode = appendNode("menu.status", "menu.status.alt",
+				new Presentation("menu.status", "menu.status.intro"), "o_sel_useradmin_status", root);
+		buildTreeStatusSubMenu(statusNode);
 		// Sub menu queries
-		GenericTreeNode queriesNode = appendNode("menu.menuqueries", "menu.menuqueries.alt", "menuqueries", "o_sel_useradmin_menuqueries", root);
+		GenericTreeNode queriesNode = appendNode("menu.menuqueries", "menu.menuqueries.alt",
+				new Presentation("menu.menuqueries", "queries.intro"), "o_sel_useradmin_menuqueries", root);
 		buildTreeQueriesSubMenu(queriesNode);
 		buildTreeExtensionsSubMenu(ureq, queriesNode);
 		return gtm;
@@ -521,49 +583,85 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			}
 		}
 	}
-	
-	private void buildTreeAccessSubMenu(GenericTreeNode accessNode) {
-		appendNode("menu.usergroup", "menu.usergroup.alt", "usergroup", "o_sel_useradmin_usergroup", accessNode);
-		
+
+	private void buildTreeOrganisationsRoles(GenericTreeNode accessNode) {
 		boolean isAdministrator = identityRoles.isSystemAdmin() || identityRoles.isAdministrator()
 				|| identityRoles.isPrincipal() || identityRoles.isUserManager() || identityRoles.isRolesManager();
-		if (isAdministrator) {
-			appendNode("menu.authorgroup", "menu.authorgroup.alt", "authorgroup", "o_sel_useradmin_authorgroup", accessNode);
-			appendNode("menu.coauthors", "menu.coauthors.alt", "coauthors", "o_sel_useradmin_coauthors", accessNode);
-			// too slow appendNode("menu.resourceowners", "menu.resourceowners.alt", "resourceowners", "o_sel_useradmin_resourceowners", accessNode);
-		}
-		
-		appendNode("menu.coursecoach", "menu.coursecoach.alt", "coursecoach", "o_sel_useradmin_coursecoach", accessNode);
-		appendNode("menu.courseparticipants", "menu.courseparticipants.alt", "courseparticipants", "o_sel_useradmin_courseparticipants", accessNode);
-
-		if (isAdministrator) {
-			appendNode("menu.groupmanagergroup", "menu.groupmanagergroup.alt", "groupmanagergroup", "o_sel_useradmin_groupmanagergroup", accessNode);
-			appendNode("menu.groupcoach", "menu.groupcoach.alt", "groupcoach", "o_sel_useradmin_groupcoach", accessNode);
-		}
-		
 		// admin group and user manager group always restricted to admins
 		if (isAdministrator) {
-			appendNode("menu.lecturemanagergroup", "menu.lecturemanagergroup.alt", "lecturemanagergroup", "o_sel_useradmin_lecturemanagergroup", accessNode);
-			appendNode("menu.qualitymanagergroup", "menu.qualitymanagergroup.alt", "qualitymanagergroup", "o_sel_useradmin_qualitymanagergroup", accessNode);
-			appendNode("menu.poolmanagergroup", "menu.poolmanagergroup.alt", "poolmanagergroup", "o_sel_useradmin_poolmanagergroup", accessNode);
+			appendNode("menu.usergroup", "menu.usergroup.alt", "usergroup", "o_sel_useradmin_usergroup", accessNode);
 			
-			appendNode("menu.usermanagergroup", "menu.usermanagergroup.alt", "usermanagergroup", "o_sel_useradmin_usermanagergroup", accessNode);
-			appendNode("menu.rolesmanagergroup", "menu.rolesmanagergroup.alt", "rolesmanagergroup", "o_sel_useradmin_rolesmanagergroup", accessNode);
-			appendNode("menu.learnresourcemanagergroup", "menu.learnresourcemanagergroup.alt", "learnresourcemanagergroup", "o_sel_useradmin_learnresourcemanagergroup", accessNode);
-			
-			appendNode("menu.linemanagergroup", "menu.linemanagergroup.alt", "linemanagergroup", "o_sel_useradmin_linemanagergroup", accessNode);
-			
-
-			appendNode("menu.principalgroup", "menu.principalgroup.alt", "principalgroup", "o_sel_useradmin_principalgroup", accessNode);
-			appendNode("menu.admingroup", "menu.admingroup.alt", "admingroup", "o_sel_useradmin_admingroup", accessNode);
-			appendNode("menu.sysadmingroup", "menu.sysadmingroup.alt", "sysadmingroup", "o_sel_useradmin_sysadmingroup", accessNode);
+			buildTreeNodeRole(accessNode, OrganisationRoles.author);
+			buildTreeNodeRole(accessNode, OrganisationRoles.groupmanager);
+			if(lectureModule.isEnabled()) {
+				buildTreeNodeRole(accessNode, OrganisationRoles.lecturemanager);
+			}
+			if(qualityModule.isEnabled()) {
+				buildTreeNodeRole(accessNode, OrganisationRoles.qualitymanager);
+			}
+			if(poolModule.isEnabled()) {
+				buildTreeNodeRole(accessNode, OrganisationRoles.poolmanager);
+			}
+			buildTreeNodeRole(accessNode, OrganisationRoles.usermanager);
+			buildTreeNodeRole(accessNode, OrganisationRoles.rolesmanager);
+			if(curriculumModule.isEnabled()) {
+				buildTreeNodeRole(accessNode, OrganisationRoles.curriculummanager);
+			}
+			buildTreeNodeRole(accessNode, OrganisationRoles.linemanager);
+			buildTreeNodeRole(accessNode, OrganisationRoles.principal);
+			buildTreeNodeRole(accessNode, OrganisationRoles.administrator);
+			buildTreeNodeRole(accessNode, OrganisationRoles.sysadmin);
 		}
 		
 		if (identityRoles.isRolesManager() || identityRoles.isAdministrator() || identityRoles.isSystemAdmin()) {
-			appendNode("menu.anonymousgroup", "menu.anonymousgroup.alt", "anonymousgroup", "o_sel_useradmin_anonymousgroup", accessNode);
+			buildTreeNodeRole(accessNode, OrganisationRoles.invitee);
 		}
-		
-		appendNode("menu.noauthentication", "menu.noauthentication.alt", "noauthentication", "o_sel_useradmin_noauthentication", accessNode);
+	}
+	
+	private void buildTreeNodeRole(GenericTreeNode accessNode, Enum<?> role) {
+		String i18n = "menu." + role.name() + "group";
+		appendNode(i18n, i18n, role, "o_sel_useradmin_".concat(role.name()), accessNode);
+	}
+	
+	private void buildTreeResourcesRoles(GenericTreeNode accessNode) {
+		appendNode("menu.coauthors", "menu.coauthors.alt", "coauthors", "o_sel_useradmin_coauthors", accessNode);
+		appendNode("menu.coursecoach", "menu.coursecoach.alt", "coursecoach", "o_sel_useradmin_coursecoach", accessNode);
+		appendNode("menu.courseparticipants", "menu.courseparticipants.alt", "courseparticipants", "o_sel_useradmin_courseparticipants", accessNode);
+	}
+
+	private void buildTreeBusinessGroupsRoles(GenericTreeNode accessNode) {
+		appendNode("menu.groupcoach", "menu.groupcoach.alt", "groupcoach", "o_sel_useradmin_groupcoach", accessNode);
+		appendNode("menu.groupparticipant", "menu.groupparticipant.alt", "groupparticipant", "o_sel_useradmin_groupparticipant", accessNode);
+	}
+
+	private void buildTreeCurriculumsRoles(GenericTreeNode accessNode) {
+		buildTreeNodeRole(accessNode, CurriculumRoles.curriculumowner);
+		buildTreeNodeRole(accessNode, CurriculumRoles.curriculumelementowner);
+		buildTreeNodeRole(accessNode, CurriculumRoles.mastercoach);
+		buildTreeNodeRole(accessNode, CurriculumRoles.owner);
+		buildTreeNodeRole(accessNode, CurriculumRoles.coach);
+		buildTreeNodeRole(accessNode, CurriculumRoles.participant);
+	}
+	
+	private void buildTreeRelationsSubMenu(GenericTreeNode relationsNode, List<RelationRole> roles ) {
+		for(RelationRole relationRole:roles) {
+			String relationName = RelationRolesAndRightsUIFactory
+					.getTranslatedRole(relationRole, getLocale());
+			GenericTreeNode treeNode = new GenericTreeNode();		
+			treeNode.setTitle(relationName);
+			treeNode.setUserObject(new IdentityRelation(relationRole, false));
+			relationsNode.addChild(treeNode);
+			
+			String contraRelationName = RelationRolesAndRightsUIFactory
+					.getTranslatedContraRole(relationRole, getLocale());
+			GenericTreeNode contraTreeNode = new GenericTreeNode();		
+			contraTreeNode.setTitle(contraRelationName);
+			contraTreeNode.setUserObject(new IdentityRelation(relationRole, true));
+			relationsNode.addChild(contraTreeNode);
+		}
+	}
+	
+	private void buildTreeStatusSubMenu(GenericTreeNode accessNode) {
 		appendNode("menu.pendinggroup", "menu.pendinggroup.alt", "pendinggroup", "o_sel_useradmin_pendinggroup", accessNode);
 		appendNode("menu.logondeniedgroup", "menu.logondeniedgroup.alt", "logondeniedgroup", "o_sel_useradmin_logondeniedgroup", accessNode);
 		appendNode("menu.deletedusers", "menu.deletedusers.alt", "deletedusers", "o_sel_useradmin_deletedusers", accessNode);
@@ -575,6 +673,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			appendNode("menu.users.without.email", "menu.users.without.email.alt", "userswithoutemail", "o_sel_useradmin_userswithoutemail", queriesNode);
 			appendNode("menu.users.email.duplicate", "menu.users.email.duplicate.alt", "usersemailduplicates", "o_sel_useradmin_usersemailduplicates", queriesNode);
 		}
+		appendNode("menu.noauthentication", "menu.noauthentication.alt", "noauthentication", "o_sel_useradmin_noauthentication", queriesNode);
 		appendNode("menu.created.lastweek", "menu.created.lastweek.alt", "created.lastweek", "o_sel_useradmin_createdlastweek", queriesNode);
 		appendNode("menu.created.lastmonth", "menu.created.lastmonth.alt", "created.lastmonth", "o_sel_useradmin_createdlastmonth", queriesNode);
 		appendNode("menu.created.sixmonth", "menu.created.sixmonth.alt", "created.sixmonth", "o_sel_useradmin_createdsixmonth", queriesNode);
@@ -661,5 +760,41 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	protected void doDispose() {
 		// controllers disposed in BasicController
 		releaseDeleteUserLock();
+	}
+	
+	private static class Presentation {
+		private final String titleKey;
+		private final String descriptionKey;
+		
+		public Presentation(String titleKey, String descriptionKey) {
+			this.titleKey = titleKey;
+			this.descriptionKey = descriptionKey;
+		}
+
+		public String getTitleKey() {
+			return titleKey;
+		}
+
+		public String getDescriptionKey() {
+			return descriptionKey;
+		}
+	}
+	
+	private static class IdentityRelation {
+		private final boolean contra;
+		private final RelationRole relationRole;
+		
+		public IdentityRelation(RelationRole relationRole, boolean contra) {
+			this.contra = contra;
+			this.relationRole = relationRole;
+		}
+		
+		public boolean isContra() {
+			return contra;
+		}
+		
+		public RelationRole getRelationRole() {
+			return relationRole;
+		}
 	}
 }

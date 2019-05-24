@@ -221,5 +221,35 @@ public class IdentityToIdentityRelationDAOTest extends OlatTestCase {
 						idSourceRoleOtherNoRight,
 						idSourceOtherTarget);
 	}
+	
+	@Test
+	public void getSources() {
+		String role = random();
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
+		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-8");
+		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-9");
+		IdentityToIdentityRelation relation = identityToIdentityRelationDao.createRelation(idSource, idTarget, relationRole, null, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+		
+		List<Identity> targets = identityToIdentityRelationDao.getSources(relationRole);
+		assertThat(targets)
+			.containsExactly(idSource);
+	}
+	
+	@Test
+	public void getTargets() {
+		String role = random();
+		RelationRole relationRole = relationRoleDao.createRelationRole(role, null, null, null);
+		Identity idSource = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-8");
+		Identity idTarget = JunitTestHelper.createAndPersistIdentityAsRndUser("id-2-id-9");
+		IdentityToIdentityRelation relation = identityToIdentityRelationDao.createRelation(idSource, idTarget, relationRole, null, null);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(relation);
+		
+		List<Identity> targets = identityToIdentityRelationDao.getTargets(relationRole);
+		assertThat(targets)
+			.containsExactly(idTarget);
+	}
 
 }

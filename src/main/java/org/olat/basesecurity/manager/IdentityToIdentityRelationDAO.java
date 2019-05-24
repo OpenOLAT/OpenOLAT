@@ -161,6 +161,30 @@ public class IdentityToIdentityRelationDAO {
 		return query.getResultList();
 	}
 	
+	public List<Identity> getSources(RelationRole role) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select distinct identSource from identitytoidentity as identRel")
+		  .append(" inner join identRel.source as identSource")
+		  .append(" inner join fetch identSource.user as userSource")
+		  .append(" where identRel.role.key=:roleKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("roleKey", role.getKey())
+				.getResultList();
+	}
+	
+	public List<Identity> getTargets(RelationRole role) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select distinct identTarget from identitytoidentity as identRel")
+		  .append(" inner join identRel.target as identTarget")
+		  .append(" inner join fetch identTarget.user as userTarget")
+		  .append(" where identRel.role.key=:roleKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("roleKey", role.getKey())
+				.getResultList();
+	}
+	
 	public void removeRelation(IdentityToIdentityRelation relation) {
 		dbInstance.getCurrentEntityManager().remove(relation);
 	}

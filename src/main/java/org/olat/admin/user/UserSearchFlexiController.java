@@ -460,7 +460,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 				userPropertiesSearch, userPropertiesAsIntersectionSearch, null, 
 				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
 		params.setOrganisations(searchableOrganisations);
-		params.setRepositoryEntryRole(repositoryEntryRole);
+		params.setRepositoryEntryRole(repositoryEntryRole, false);
 		return identitySearchQueries.getIdentitiesByPowerSearch(params, 0, -1);
 	}
 }

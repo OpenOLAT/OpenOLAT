@@ -165,6 +165,16 @@ public class IdentityRelationshipServiceImpl implements IdentityRelationshipServ
 	}
 
 	@Override
+	public List<Identity> getSources(RelationRole relationRole) {
+		return identityRelationshipDao.getSources(relationRole);
+	}
+
+	@Override
+	public List<Identity> getTargets(RelationRole relationRole) {
+		return identityRelationshipDao.getTargets(relationRole);
+	}
+
+	@Override
 	public IdentityToIdentityRelation getRelation(Long relationKey) {
 		return identityRelationshipDao.getRelation(relationKey);
 	}

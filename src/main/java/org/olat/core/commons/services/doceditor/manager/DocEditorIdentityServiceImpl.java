@@ -79,7 +79,7 @@ public class DocEditorIdentityServiceImpl implements DocEditorIdentityService {
 	public boolean isCoach(Identity identity) {
 		SearchIdentityParams params = new SearchIdentityParams();
 		params.setIdentityKeys(Collections.singletonList(identity.getKey()));
-		params.setRepositoryEntryRole(GroupRoles.coach);
+		params.setRepositoryEntryRole(GroupRoles.coach, false);
 		List<Identity> identities = securityManager.getIdentitiesByPowerSearch(params , 0, 1);
 		return !identities.isEmpty();
 	}

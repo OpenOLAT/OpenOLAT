@@ -29,6 +29,7 @@ import java.util.Map;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
+import org.olat.modules.curriculum.CurriculumRoles;
 
 /**
  * 
@@ -43,8 +44,9 @@ public class SearchIdentityParams {
 	private OrganisationRoles[] roles;
 	private OrganisationRoles[] excludedRoles;
 	private GroupRoles repositoryEntryRole;
+	private boolean repositoryEntryRoleInDefaultOnly;
 	private GroupRoles businessGroupRole;
-	private boolean authorAndCoAuthor;
+	private CurriculumRoles curriculumRole;
 	
 	private String[] authProviders;
 	private Date createdAfter;
@@ -98,11 +100,13 @@ public class SearchIdentityParams {
 		return new SearchIdentityParams(null, null, true, null, authProviders, null, null, null, null, status);
 	}
 	
-	public static SearchIdentityParams resources(GroupRoles repositoryEntryRole, GroupRoles businessGroupRole,
+	public static SearchIdentityParams resources(GroupRoles repositoryEntryRole, boolean defOnly,
+			GroupRoles businessGroupRole, CurriculumRoles curriculumRole,
 			OrganisationRoles[] roles, OrganisationRoles[] excludedRoles, Integer status) {
 		SearchIdentityParams params = new SearchIdentityParams(null, null, true, null, null, null, null, null, null, status);
-		params.setRepositoryEntryRole(repositoryEntryRole);
+		params.setRepositoryEntryRole(repositoryEntryRole, defOnly);
 		params.setBusinessGroupRole(businessGroupRole);
+		params.setCurriculumRole(curriculumRole);
 		params.setRoles(roles);
 		params.setExcludedRoles(excludedRoles);
 		return params;
@@ -119,18 +123,6 @@ public class SearchIdentityParams {
 		SearchIdentityParams params = new SearchIdentityParams();
 		params.setWithoutBusinessGroup(true);
 		params.setStatus(Identity.STATUS_VISIBLE_LIMIT);
-		return params;
-	}
-	
-	/**
-	 * 
-	 * @return A set of parameters to search authors along co-authors
-	 */
-	public static SearchIdentityParams authorsAndCoAuthors() {
-		SearchIdentityParams params = new SearchIdentityParams(null, null, true, null, null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
-		params.setRepositoryEntryRole(GroupRoles.owner);
-		params.setRoles(new OrganisationRoles[] { OrganisationRoles.author } );
-		params.setAuthorAndCoAuthor(true);
 		return params;
 	}
 	
@@ -218,8 +210,9 @@ public class SearchIdentityParams {
 		return repositoryEntryRole;
 	}
 
-	public void setRepositoryEntryRole(GroupRoles repositoryEntryRole) {
+	public void setRepositoryEntryRole(GroupRoles repositoryEntryRole, boolean defaultOnly) {
 		this.repositoryEntryRole = repositoryEntryRole;
+		this.repositoryEntryRoleInDefaultOnly = defaultOnly;
 	}
 
 	public GroupRoles getBusinessGroupRole() {
@@ -228,6 +221,22 @@ public class SearchIdentityParams {
 
 	public void setBusinessGroupRole(GroupRoles businessGroupRole) {
 		this.businessGroupRole = businessGroupRole;
+	}
+
+	public boolean isRepositoryEntryRoleInDefaultOnly() {
+		return repositoryEntryRoleInDefaultOnly;
+	}
+
+	public void setRepositoryEntryRoleInDefaultOnly(boolean repositoryEntryRoleInDefaultOnly) {
+		this.repositoryEntryRoleInDefaultOnly = repositoryEntryRoleInDefaultOnly;
+	}
+
+	public CurriculumRoles getCurriculumRole() {
+		return curriculumRole;
+	}
+
+	public void setCurriculumRole(CurriculumRoles curriculumRole) {
+		this.curriculumRole = curriculumRole;
 	}
 
 	public boolean hasAuthProviders() {
@@ -240,20 +249,6 @@ public class SearchIdentityParams {
 	
 	public void setAuthProviders(String[] authProviders) {
 		this.authProviders = authProviders;
-	}
-	
-	public boolean isAuthorAndCoAuthor() {
-		return authorAndCoAuthor;
-	}
-
-	/**
-	 * Set to true, this search will overwrite the
-	 * roles and repository entry role specified.
-	 * 
-	 * @param authorAndCoAuthor
-	 */
-	private void setAuthorAndCoAuthor(boolean authorAndCoAuthor) {
-		this.authorAndCoAuthor = authorAndCoAuthor;
 	}
 
 	public Boolean getManaged() {

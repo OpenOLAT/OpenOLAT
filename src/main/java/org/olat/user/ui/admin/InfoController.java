@@ -21,6 +21,7 @@ package org.olat.user.ui.admin;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -31,11 +32,14 @@ import org.olat.core.gui.control.controller.BasicController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InfoController extends BasicController {
+class InfoController extends BasicController {
 	
-	public InfoController(UserRequest ureq, WindowControl wControl, String template) {
+	public InfoController(UserRequest ureq, WindowControl wControl, String title, String description) {
 		super(ureq, wControl);
-		putInitialPanel(createVelocityContainer(template));
+		VelocityContainer mainVC = createVelocityContainer("infos");
+		mainVC.contextPut("title", translate(title));
+		mainVC.contextPut("description", translate(description));
+		putInitialPanel(mainVC);
 	}
 
 	@Override

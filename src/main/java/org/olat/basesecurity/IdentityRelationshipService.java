@@ -67,6 +67,10 @@ public interface IdentityRelationshipService {
 	
 	public void deleteRelation(IdentityToIdentityRelation relation);
 	
+	public List<Identity> getSources(RelationRole relationRole);
+	
+	public List<Identity> getTargets(RelationRole relationRole);
+	
 	/**
 	 * 
 	 * @param asSource

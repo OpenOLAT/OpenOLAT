@@ -162,26 +162,15 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 				|| params.getUserLoginAfter() != null || params.getUserLoginBefore() != null
 				|| params.hasAuthProviders() || params.getManaged() != null
 				|| params.getStatus() != null || (params.getExactStatusList() != null && !params.getExactStatusList().isEmpty())
-				|| params.hasRoles() || params.hasExcludedRoles() || params.isAuthorAndCoAuthor()
-				|| params.getRepositoryEntryRole() != null || params.getBusinessGroupRole() != null
+				|| params.hasRoles() || params.hasExcludedRoles()
+				|| params.getRepositoryEntryRole() != null || params.getBusinessGroupRole() != null || params.getCurriculumRole() != null
 				|| params.hasOrganisations() || params.hasOrganisationParents()
 				|| StringHelper.containsNonWhitespace(params.getIdAndExternalIds());
 	}
 	
 	private boolean createQueryPart(SearchIdentityParams params, QueryBuilder sb, boolean needsAnd) {	
 		// authors and co-authors is essentially an OR
-		if(params.isAuthorAndCoAuthor()) {
-			needsAnd = checkAnd(sb, needsAnd);
-			sb.append(" ident.key in (select membership.identity.key from bgroupmember membership ")
-			  .append("   left join repoentrytogroup as relGroup on (relGroup.group.key=membership.group.key) ")
-			  .append("   where  membership.role in (:roles) or (relGroup.group.key is not null and membership.role=:repositoryEntryRole))");
-			if(params.hasOrganisations()) {
-				sb.append(" and ident.key in  (select orgtomember.identity.key from bgroupmember as orgtomember ")
-				  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
-				  .append("  where orgtomember.identity.key=ident.key and orgtomember.inheritanceModeString in ('").append(GroupMembershipInheritance.none).append("','").append(GroupMembershipInheritance.root).append("')")
-				  .append("  and org.key in (:organisationKey))");
-			}
-		} else if(params.hasRoles() && params.hasOrganisations()) {
+		if(params.hasRoles() && params.hasOrganisations()) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" exists (select orgtomember.key from bgroupmember as orgtomember ")
 			  .append("  inner join organisation as org on (org.group.key=orgtomember.group.key)")
@@ -251,12 +240,22 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			  .append("  where bmember.identity.key=ident.key and  bmember.role=:businessGroupRole)");
 		}
 		
-		if(params.getRepositoryEntryRole() != null && !params.isAuthorAndCoAuthor()) {
+		if(params.getRepositoryEntryRole() != null) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" exists (select rmember.key from repoentrytogroup as relGroup")
 			  .append("  inner join relGroup.group as rGroup")
 			  .append("  inner join rGroup.members as rmember")
-			  .append("  where rmember.identity.key=ident.key and  rmember.role=:repositoryEntryRole)");
+			  .append("  where rmember.identity.key=ident.key and  rmember.role=:repositoryEntryRole")
+			  .append("  and (relGroup.defaultGroup=true)", params.isRepositoryEntryRoleInDefaultOnly())
+			  .append(" )");
+		}
+		
+		if(params.getCurriculumRole() != null) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" exists (select curEl.key from curriculumelement as curEl")
+			  .append("  inner join curEl.group as cGroup")
+			  .append("  inner join cGroup.members as cmember")
+			  .append("  where cmember.identity.key=ident.key and  cmember.role=:curriculumRole)");
 		}
 		
 		// append query for identity primary keys
@@ -515,6 +514,10 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 		
 		if(params.getRepositoryEntryRole() != null) {
 			dbq.setParameter("repositoryEntryRole", params.getRepositoryEntryRole().name());
+		}
+		
+		if(params.getCurriculumRole() != null) {
+			dbq.setParameter("curriculumRole", params.getCurriculumRole().name());
 		}
 
 		// add authentication providers
