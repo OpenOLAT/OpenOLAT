@@ -108,7 +108,7 @@ public class WikiMarkupRenderer extends DefaultComponentRenderer {
 			
 			boolean xssScan = CoreSpringFactory.getImpl(WikiModule.class).isXSScanEnabled();
 			if(xssScan) {
-				content = FilterFactory.getXSSFilterForWiki(-1).filter(content);
+				content = FilterFactory.getXSSFilter().filter(content);
 			}
 			sb.append(Formatter.formatLatexFormulas(content));
 		}

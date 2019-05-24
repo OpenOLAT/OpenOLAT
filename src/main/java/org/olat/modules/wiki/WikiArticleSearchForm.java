@@ -77,24 +77,23 @@ public class WikiArticleSearchForm extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		String val = searchQuery.getValue();
 		searchQuery.clearError();
 		if(!StringHelper.containsNonWhitespace(val)) {
 			searchQuery.setErrorKey("form.legende.mandatory", null);
-			allOk = false;
+			allOk &= false;
 		} else if(StringHelper.xssScanForErrors(val)) {
 			searchQuery.setErrorKey("form.legende.mandatory", null);
 			searchQuery.setValue("");
-			allOk = false;
+			allOk &= false;
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	public String getQuery() {
-		String query = searchQuery.getValue();
-		return query;
+		return searchQuery.getValue();
 	}
 }

@@ -32,11 +32,11 @@ import org.olat.core.util.filter.FilterFactory;
 public class OLATRuntimeException extends RuntimeException {
 
 	private static final long serialVersionUID = -1627846608356883591L;
-	private String logMsg;
-	private String usrMsgKey;
-	private String usrMsgPackage;
-	private String[] usrMsgArgs;
-	private Class<?> throwingClazz;
+	private final String logMsg;
+	private final String usrMsgKey;
+	private final String usrMsgPackage;
+	private final String[] usrMsgArgs;
+	private final Class<?> throwingClazz;
 
 	/**
 	 * @param throwing class
@@ -97,7 +97,7 @@ public class OLATRuntimeException extends RuntimeException {
 	 * @return HTML fragment.
 	 */
 	public static String throwableToHtml(Throwable th) {
-		StringBuilder sb = new StringBuilder("<br />");
+		StringBuilder sb = new StringBuilder("<br>");
 		if (th == null) {
 			sb.append("n/a");
 		}
@@ -114,7 +114,7 @@ public class OLATRuntimeException extends RuntimeException {
 				ca = ca.getCause();	
 			}
 		}
-		return FilterFactory.getXSSFilter(10000).filter(sb.toString());
+		return FilterFactory.getXSSFilter().filter(sb.toString());
 	}
 
 	private static void toHtml(StringBuilder sb, Throwable th) {

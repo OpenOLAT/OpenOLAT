@@ -112,7 +112,7 @@ public class RichTextElementImpl extends AbstractTextElement implements
 	@Override
 	public String getValue() {
 		String val = getRawValue();
-		Filter xssFilter = FilterFactory.getXSSFilter(val.length() + 1);
+		Filter xssFilter = FilterFactory.getXSSFilter();
 		val = xssFilter.filter(val);
 		for (Filter filter : configuration.getValueFilters()) {
 			val = filter.filter(val);

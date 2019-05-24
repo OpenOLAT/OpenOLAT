@@ -282,7 +282,6 @@ public class ListRenderer {
 		
 			if (isContainer) { // for directories... normal module URIs
 				// needs encoding, not done in buildHrefAndOnclick!
-				//FIXME: SR: refactor encode: move to ubu.buildHrefAndOnclick
 				String pathAndNameEncoded = ubu.encodeUrl(pathAndName);
 				ubu.buildHrefAndOnclick(sb, pathAndNameEncoded, iframePostEnabled, false, true);
 			} else { // for files, add PARAM_SERV command

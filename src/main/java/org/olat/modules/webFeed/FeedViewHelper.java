@@ -367,7 +367,7 @@ public class FeedViewHelper {
 				if (item.getFeed().isExternal()) {
 					// Apply xss filter for security reasons. Only necessary for external
 					// feeds (e.g. to not let them execute JS code in our OLAT environment)
-					Filter xssFilter = FilterFactory.getXSSFilter(description.length() + 1);
+					Filter xssFilter = FilterFactory.getXSSFilter();
 					itemDescription = xssFilter.filter(description);
 				} else {
 					// Add relative media base to media elements to display internal media
@@ -399,7 +399,7 @@ public class FeedViewHelper {
 				if (item.getFeed().isExternal()) {
 					// Apply xss filter for security reasons. Only necessary for external
 					// feeds (e.g. to not let them execute JS code in our OLAT environment)
-					Filter xssFilter = FilterFactory.getXSSFilter(content.length() + 1);
+					Filter xssFilter = FilterFactory.getXSSFilter();
 					itemContent = xssFilter.filter(content);
 				} else {
 					// Add relative media base to media elements to display internal media

@@ -26,7 +26,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -198,7 +198,7 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 	private boolean convertXmlFile(Path inputFile, Path outputFile, InputType type, HandlerProvider provider) {
 		File tmpFile = new File(WebappHelper.getTmpDir(), UUID.randomUUID() + ".xml");
 		try(InputStream in = Files.newInputStream(inputFile);
-				Writer out = Files.newBufferedWriter(tmpFile.toPath(), Charset.forName("UTF-8"))) {
+				Writer out = Files.newBufferedWriter(tmpFile.toPath(), StandardCharsets.UTF_8)) {
 			XMLOutputFactory xof = XMLOutputFactory.newInstance();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
 	

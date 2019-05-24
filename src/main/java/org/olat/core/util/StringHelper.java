@@ -425,9 +425,7 @@ public class StringHelper {
 	}
 	
 	public static final boolean xssScanForErrors(String str) {
-		OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
-		filter.filter(str);
-		return filter.getNumOfErrors() > 0;
+		return new OWASPAntiSamyXSSFilter().errors(str);
 	}
 	
 	public static final String escapeJava(String str) {

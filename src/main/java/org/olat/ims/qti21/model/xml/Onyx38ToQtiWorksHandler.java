@@ -268,10 +268,21 @@ public class Onyx38ToQtiWorksHandler extends DefaultHandler2 {
 				if(!envelopP && isCharacterRelevant(ch, start, length)) {
 					xtw.writeStartElement("p");
 					int diff = trimStart(ch, start, length);
-					start += diff;
-					length -= diff;
-					envelopP = true;
+					if(diff > 0) {
+						start += diff;
+						length -= diff;
+						envelopP = true;
+					}
+					
+					if(start < 0) {
+						start = 0;
+					}
+					if(length > ch.length - start) {
+						length = ch.length - start;
+					}
 				}
+				
+				
 				xtw.writeCharacters(ch, start, length);
 			} else if(rubricBlock) {
 				rubricCharacterBuffer.append(ch, start, length);
@@ -288,7 +299,7 @@ public class Onyx38ToQtiWorksHandler extends DefaultHandler2 {
 		for(int i=start; i<end; i++) {
 			char ch = chArray[i];
 			if(ch != '\n' && ch != '\r' && ch != '\t' && ch != ' ') {
-				return start - i;
+				return start + i;
 			}
 		}
 		return 0;

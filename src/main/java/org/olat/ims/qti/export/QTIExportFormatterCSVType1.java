@@ -112,8 +112,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 
 				// CELFI#107
 				String question = item.getQuestionText();
-				//question = FilterFactory.getHtmlTagsFilter().filter(question);
-				question = FilterFactory.getXSSFilter(-1).filter(question);
+				question = FilterFactory.getXSSFilter().filter(question);
 				question = FilterFactory.getHtmlTagsFilter().filter(question);
 				
 				if (question.length() > cut) {
@@ -358,7 +357,7 @@ public class QTIExportFormatterCSVType1 extends QTIExportFormatter {
 			sb.append(sep + sep + sep + sep);
 			String question = element.getQuestionText();
 			if (tagless) {
-				question = FilterFactory.getXSSFilter(-1).filter(question);
+				question = FilterFactory.getXSSFilter().filter(question);
 				question = FilterFactory.getHtmlTagsFilter().filter(question);
 			}
 			question = StringHelper.unescapeHtml(question);

@@ -1385,8 +1385,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>3.8.1</version>
 					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+						<source>${targetJdk}</source>
+						<target>${targetJdk}</target>
 						<encoding>UTF-8</encoding>
 					</configuration>
 				</plugin>
@@ -2171,20 +2171,9 @@
 			<version>1.4.13</version>
 		</dependency>
 		<dependency>
-			<groupId>net.sourceforge.nekohtml</groupId>
-			<artifactId>nekohtml</artifactId>
-			<version>1.9.22</version>
-		</dependency>
-		<dependency>
-			<groupId>org.owasp.antisamy</groupId>
-			<artifactId>antisamy</artifactId>
-			<version>1.5.8</version>
-			<exclusions>
-				<exclusion>
-					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-				</exclusion>
-			</exclusions>
+			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
+			<artifactId>owasp-java-html-sanitizer</artifactId>
+			<version>20190503.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
@@ -2374,31 +2363,6 @@
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
 			<version>1.4.11.1</version>
-		</dependency>
-		<dependency>
-			<groupId>xerces</groupId>
-			<artifactId>xercesImpl</artifactId>
-			<version>2.12.0</version>
-			<!-- prevents duplicate -->
-			<exclusions>
-  				<exclusion>
-  					<groupId>xml-apis</groupId>
-					<artifactId>xml-apis</artifactId>
-  				</exclusion>
-  				<exclusion>
-  					<groupId>xerces</groupId>
-					<artifactId>xmlParserAPIs</artifactId>
-  				</exclusion>
-				<exclusion>
-					<groupId>jdom</groupId>
-					<artifactId>jdom</artifactId>
-				</exclusion>
-  			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>xml-apis</groupId>
-			<artifactId>xml-apis</artifactId>
-			<version>1.4.01</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
@@ -2598,8 +2562,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>23.0</version>
-			<scope>test</scope>
+			<version>27.1-jre</version>
 		</dependency>
 		<!--  selenium first -->
 		<dependency>
