@@ -323,8 +323,8 @@ class QualityMailing {
 		StringBuilder sb = new StringBuilder();
 		List<UIContext> uiContexts = QualityUIContextsBuilder.builder(dataCollection, locale)
 				.addAttribute(Attribute.ROLE)
-				.addAttribute(Attribute.COURSE)
 				.addAttribute(Attribute.CURRICULUM_ELEMENTS)
+				.addAttribute(Attribute.COURSE)
 				.addAttribute(Attribute.TAXONOMY_LEVELS)
 				.build()
 				.getUiContexts();
