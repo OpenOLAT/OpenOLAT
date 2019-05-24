@@ -58,6 +58,7 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -70,7 +71,7 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementMembership;
 import org.olat.modules.curriculum.CurriculumElementWithView;
 import org.olat.modules.curriculum.CurriculumRef;
-import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
@@ -117,6 +118,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private final boolean guestOnly;
 	private final CurriculumRef curriculum;
 	private final MapperKey mapperThumbnailKey;
+	private final Identity assessedIdentity;
+	private final CurriculumSecurityCallback secCallback;
 	
 	private RepositoryEntryDetailsController detailsCtrl;
 	private CurriculumElementCalendarController calendarsCtrl;
@@ -136,10 +139,13 @@ public class CurriculumElementListController extends FormBasicController impleme
 	@Autowired
 	private RepositoryManager repositoryManager;
 	
-	public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, CurriculumRef curriculum) {
+	public CurriculumElementListController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			Identity assessedIdentity, CurriculumRef curriculum, CurriculumSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculum_element_list", Util.createPackageTranslator(RepositoryService.class, ureq.getLocale()));
 		this.curriculum = curriculum;
 		this.stackPanel = stackPanel;
+		this.secCallback = secCallback;
+		this.assessedIdentity = assessedIdentity;
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		
@@ -161,7 +167,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 		elementIdentifierCol.setCellRenderer(new CurriculumElementCompositeRenderer("select", new TextFlexiCellRenderer()));
 		columnsModel.addFlexiColumnModel(elementIdentifierCol);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ElementViewCols.select));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
+		if(assessedIdentity.equals(getIdentity())) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.mark));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.details));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.calendars));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ElementViewCols.start));
@@ -169,7 +177,11 @@ public class CurriculumElementListController extends FormBasicController impleme
 		tableModel = new CurriculumElementWithViewsDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 50, false, getTranslator(), formLayout);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
-		tableEl.setRendererType(FlexiTableRendererType.custom);
+		if(assessedIdentity.equals(getIdentity())) {
+			tableEl.setRendererType(FlexiTableRendererType.custom);
+		} else {
+			tableEl.setRendererType(FlexiTableRendererType.classic);
+		}
 		tableEl.setElementCssClass("o_curriculumtable");
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
@@ -181,7 +193,8 @@ public class CurriculumElementListController extends FormBasicController impleme
 		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
 		tableEl.setRowRenderer(row, this);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v3-" + curriculum.getKey());
+		tableEl.setAndLoadPersistedPreferences(ureq, "my-curriculum-elements-v3-"
+					+ (assessedIdentity.equals(getIdentity()) ? "" : "look-") + curriculum.getKey());
 	}
 	
 	private List<FlexiTableFilter> getFilters() {
@@ -243,7 +256,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 	private void loadModel(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
 		List<CurriculumRef> curriculumList = Collections.singletonList(curriculum);
-		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService.getCurriculumElements(getIdentity(), roles, curriculumList);
+		List<CurriculumElementRepositoryEntryViews> elementsWithViews = curriculumService.getCurriculumElements(assessedIdentity, roles, curriculumList);
 		
 		Set<Long> repoKeys = new HashSet<>(elementsWithViews.size() * 3);
 		List<OLATResource> resourcesWithAC = new ArrayList<>(elementsWithViews.size() * 3);
@@ -256,7 +269,7 @@ public class CurriculumElementListController extends FormBasicController impleme
 			}
 		}
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
-		repositoryService.filterMembership(getIdentity(), repoKeys);
+		repositoryService.filterMembership(assessedIdentity, repoKeys);
 
 		List<CurriculumElementWithViewsRow> rows = new ArrayList<>(elementsWithViews.size() * 3);
 		for(CurriculumElementRepositoryEntryViews elementWithViews:elementsWithViews) {
@@ -559,9 +572,9 @@ public class CurriculumElementListController extends FormBasicController impleme
 			}
 		}
 		
+		
 		List<RepositoryEntry> entries = repositoryService.loadByKeys(entryKeys);
-		calendarsCtrl = new CurriculumElementCalendarController(ureq, bwControl, element, entries,
-				CurriculumSecurityCallbackFactory.createDefaultCallback());
+		calendarsCtrl = new CurriculumElementCalendarController(ureq, bwControl, element, entries, secCallback);
 		listenTo(calendarsCtrl);
 		stackPanel.pushController(translate("calendars"), calendarsCtrl);
 	}

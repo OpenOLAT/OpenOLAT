@@ -38,12 +38,15 @@ import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumRef;
+import org.olat.modules.curriculum.CurriculumSecurityCallback;
+import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumManagerDataModel.CurriculumCols;
 import org.olat.modules.curriculum.ui.component.CurriculumActiveCellRenderer;
@@ -62,16 +65,44 @@ public class CurriculumListController extends FormBasicController implements Act
 	private FlexiTableElement tableEl;
 	private CurriculumManagerDataModel tableModel;
 	
-	private final BreadcrumbedStackedPanel stackPanel;
+	private BreadcrumbedStackedPanel stackPanel;
 	
+	private CurriculumSecurityCallback secCallback;
 	private CurriculumElementListController elementListCtrl;
+	
+	private Identity assessedIdentity;
 	
 	@Autowired
 	private CurriculumService curriculumService;
 	
+	/**
+	 * This opens the list of the curriculum of the loged in user with standard permissions.
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param stackPanel The bread crumb panel
+	 */
 	public CurriculumListController(UserRequest ureq, WindowControl wControl, BreadcrumbedStackedPanel stackPanel) {
 		super(ureq, wControl, "curriculum_list");
 		this.stackPanel = stackPanel;
+		assessedIdentity = getIdentity();
+		secCallback = CurriculumSecurityCallbackFactory.createDefaultCallback();
+		
+		initForm(ureq);
+		loadModel();
+	}
+	
+	/**
+	 * This opens the list of curriculums of the specified user.
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param assessedIdentity The identity to look at the curriculums
+	 */
+	public CurriculumListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
+		super(ureq, wControl, "curriculum_list");
+		this.assessedIdentity = assessedIdentity;
+		secCallback = CurriculumSecurityCallbackFactory.userLookCallback();
 		
 		initForm(ureq);
 		loadModel();
@@ -79,6 +110,10 @@ public class CurriculumListController extends FormBasicController implements Act
 	
 	public String getName() {
 		return "curriculum";
+	}
+	
+	public void setBreadcrumbPanel(BreadcrumbedStackedPanel stackPanel) {
+		this.stackPanel = stackPanel;
 	}
 
 	@Override
@@ -88,17 +123,15 @@ public class CurriculumListController extends FormBasicController implements Act
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.active, new CurriculumActiveCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.displayName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.identifier, "select"));
-		DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(CurriculumCols.tools);
-		toolsCol.setExportable(false);
-		toolsCol.setAlwaysVisible(true);
-		columnsModel.addFlexiColumnModel(toolsCol);
 		
 		tableModel = new CurriculumManagerDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
 		tableEl.setEmtpyTableMessageKey("table.curriculum.empty");
 		tableEl.setFilters("activity", getFilters(), false);
-		tableEl.setSelectedFilterKey("active");
+		if(assessedIdentity.equals(getIdentity())) {
+			tableEl.setSelectedFilterKey("active");
+		}
 		tableEl.setAndLoadPersistedPreferences(ureq, "cur-curriculum-list-v2");
 	}
 	
@@ -112,8 +145,8 @@ public class CurriculumListController extends FormBasicController implements Act
 	}
 	
 	private void loadModel() {
-		List<Curriculum> curriculums = curriculumService.getMyCurriculums(getIdentity());
-		List<CurriculumRef> activeRefs = curriculumService.getMyActiveCurriculumRefs(getIdentity());
+		List<Curriculum> curriculums = curriculumService.getMyCurriculums(assessedIdentity);
+		List<CurriculumRef> activeRefs = curriculumService.getMyActiveCurriculumRefs(assessedIdentity);
 		List<Long> activeKeys = activeRefs.stream().map(CurriculumRef::getKey).collect(Collectors.toList());
 		List<CurriculumRow> rows = curriculums.stream()
 				.map(c -> new CurriculumRow(c, activeKeys.contains(c.getKey())))
@@ -176,7 +209,8 @@ public class CurriculumListController extends FormBasicController implements Act
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Curriculum", row.getKey());
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		elementListCtrl = new CurriculumElementListController(ureq, swControl, stackPanel, row);
+		elementListCtrl = new CurriculumElementListController(ureq, swControl, stackPanel,
+				assessedIdentity, row, secCallback);
 		listenTo(elementListCtrl);
 		stackPanel.pushController(row.getDisplayName(), elementListCtrl);
 	}

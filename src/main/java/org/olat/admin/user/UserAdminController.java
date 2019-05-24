@@ -64,6 +64,8 @@ import org.olat.core.util.vfs.QuotaManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListController;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.ui.CurriculumListController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.taxonomy.TaxonomyModule;
@@ -100,7 +102,7 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_FOUND_PROPERTY		= "found.property";
 	private static final String NLS_EDIT_UPROFILE		= "edit.uprofile";
 	private static final String NLS_EDIT_UPREFS			= "edit.uprefs";
-	private static final String NLS_EDIT_UPCRED 			= "edit.upwd";
+	private static final String NLS_EDIT_UPCRED 		= "edit.upwd";
 	private static final String NLS_EDIT_UAUTH 			= "edit.uauth";
 	private static final String NLS_EDIT_UPROP			= "edit.uprop";
 	private static final String NLS_EDIT_UROLES			= "edit.uroles";
@@ -112,7 +114,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private static final String NLS_VIEW_EFF_STATEMENTS	= "view.effStatements";
 	private static final String NLS_VIEW_SUBSCRIPTIONS 	= "view.subscriptions";
 	private static final String NLS_VIEW_LECTURES		= "view.lectures";
-	private static final String NLS_VIEW_COMPETENCES		= "view.competences";
+	private static final String NLS_VIEW_COMPETENCES	= "view.competences";
+	private static final String NLS_VIEW_CURRICULUM		= "view.curriculum";
 
 	private VelocityContainer myContent;
 	private final TooledStackedPanel stackPanel;
@@ -126,6 +129,7 @@ public class UserAdminController extends BasicController implements Activateable
 	// controllers used in tabbed pane
 	private TabbedPane userTabP;
 	private Controller prefsCtr, propertiesCtr, pwdCtr, quotaCtr, rolesCtr, userShortDescrCtr;
+	private CurriculumListController curriculumCtr;
 	private UserRelationsController relationsCtrl;
 	private DisplayPortraitController portraitCtr;
 	private UserAuthenticationsEditorController authenticationsCtr;
@@ -155,6 +159,8 @@ public class UserAdminController extends BasicController implements Activateable
 	private LectureModule lectureModule;
 	@Autowired
 	private TaxonomyModule taxonomyModule;
+	@Autowired
+	private CurriculumModule curriculumModule;
 	@Autowired
 	private QuotaManager quotaManager;
 	@Autowired
@@ -487,6 +493,18 @@ public class UserAdminController extends BasicController implements Activateable
 				BreadcrumbedStackedPanel competencePanel = new BreadcrumbedStackedPanel("competences", getTranslator(), competencesCtrl);
 				competencePanel.pushController(translate(NLS_VIEW_COMPETENCES), competencesCtrl);
 				competencesCtrl.setBreadcrumbPanel(competencePanel);
+				competencePanel.setInvisibleCrumb(1);
+				return competencePanel;
+			});
+		}
+		
+		if(curriculumModule.isEnabled() && (isUserManagerOf || isRolesManagerOf || isAdminOf || isPrincipalOf)) {
+			userTabP.addTab(translate(NLS_VIEW_CURRICULUM),  uureq -> {
+				curriculumCtr = new CurriculumListController(uureq, getWindowControl(), identity);
+				listenTo(curriculumCtr);
+				BreadcrumbedStackedPanel competencePanel = new BreadcrumbedStackedPanel("curriculums", getTranslator(), curriculumCtr);
+				competencePanel.pushController(translate(NLS_VIEW_CURRICULUM), curriculumCtr);
+				curriculumCtr.setBreadcrumbPanel(competencePanel);
 				competencePanel.setInvisibleCrumb(1);
 				return competencePanel;
 			});
