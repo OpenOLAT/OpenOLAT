@@ -60,7 +60,8 @@ public class ChoiceItemController extends BasicController implements ControllerE
 	private Item item;
 	private QTIEditorPackage qtiPackage;
 	private DialogBoxController delYesNoCtrl;
-	private boolean restrictedEdit;
+	private final boolean restrictedEdit;
+	private final boolean blockedEdit;
 	private Material editQuestion;
 	private Response editResponse;
 	private CloseableModalController dialogCtr;
@@ -73,10 +74,12 @@ public class ChoiceItemController extends BasicController implements ControllerE
 	 * @param wControl
 	 */
 	public ChoiceItemController(UserRequest ureq, WindowControl wControl,
-			Item item, QTIEditorPackage qtiPackage, Translator trnsltr, boolean restrictedEdit) {
+			Item item, QTIEditorPackage qtiPackage, Translator trnsltr,
+			boolean restrictedEdit, boolean blockedEdit) {
 		super(ureq, wControl, trnsltr);
 
 		this.restrictedEdit = restrictedEdit;
+		this.blockedEdit = blockedEdit;
 		this.item = item;
 		this.qtiPackage = qtiPackage;
 		
@@ -90,6 +93,7 @@ public class ChoiceItemController extends BasicController implements ControllerE
 		main.contextPut("question", item.getQuestion());
 		main.contextPut("isSurveyMode", qtiPackage.getQTIDocument().isSurvey() ? "true" : "false");
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
+		main.contextPut("isBlockedEdit", Boolean.valueOf(blockedEdit));
 		
 		String mediaBaseUrl = qtiPackage.getMediaBaseURL();
 		if(mediaBaseUrl != null && !mediaBaseUrl.startsWith("http")) {
@@ -100,10 +104,6 @@ public class ChoiceItemController extends BasicController implements ControllerE
 		putInitialPanel(main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == main) {
@@ -129,14 +129,14 @@ public class ChoiceItemController extends BasicController implements ControllerE
 				}
 			} else if (cmd.equals("editq")) {
 				editQuestion = item.getQuestion().getQuestion();
-				displayMaterialFormController(ureq, editQuestion, restrictedEdit,
+				displayMaterialFormController(ureq, editQuestion,
 						translate("fieldset.legend.question"));
 			} else if (cmd.equals("editr")) {
 				List<Response> elements = item.getQuestion().getResponses();
 				if(posid >= 0 && posid < elements.size()) {
 					editResponse = elements.get(posid);
 					Material responseMat = editResponse.getContent();
-					displayMaterialFormController(ureq, responseMat, restrictedEdit,
+					displayMaterialFormController(ureq, responseMat,
 							translate("fieldset.legend.answers"));
 				}
 			} else if (cmd.equals("addchoice")) {
@@ -154,7 +154,7 @@ public class ChoiceItemController extends BasicController implements ControllerE
 				delYesNoCtrl.setUserObject(new Integer(posid));
 				delYesNoCtrl.activate();
 			} else if (cmd.equals("ssc")) { // submit sc
-				if(!restrictedEdit) {
+				if(!restrictedEdit && !blockedEdit) {
 					ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
 					List<Response> q_choices = question.getResponses();
 					String correctChoice = ureq.getParameter("correctChoice");
@@ -182,7 +182,7 @@ public class ChoiceItemController extends BasicController implements ControllerE
 					question.setSingleCorrectScore(sc);
 				}
 			} else if (cmd.equals("smc")) { // submit mc
-				if(!restrictedEdit) {
+				if(!restrictedEdit && !blockedEdit) {
 					ChoiceQuestion question = (ChoiceQuestion) item.getQuestion();
 					List<Response> choices = question.getResponses();
 					boolean hasZeroPointChoice = false;
@@ -212,7 +212,7 @@ public class ChoiceItemController extends BasicController implements ControllerE
 					}
 				}
 			} else if (cmd.equals("skprim")) { // submit kprim
-				if(!restrictedEdit) {
+				if(!restrictedEdit && !blockedEdit) {
 					float maxValue = 0;
 					try {
 						maxValue = Float.parseFloat(ureq.getParameter("max_value"));
@@ -238,10 +238,6 @@ public class ChoiceItemController extends BasicController implements ControllerE
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller controller, Event event) {
 		if (controller == matFormCtr) {
@@ -300,8 +296,8 @@ public class ChoiceItemController extends BasicController implements ControllerE
 	 * @param mat
 	 * @param isRestrictedEditMode
 	 */
-	private void displayMaterialFormController(UserRequest ureq, Material mat, boolean isRestrictedEditMode, String title) {
-		matFormCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, isRestrictedEditMode);
+	private void displayMaterialFormController(UserRequest ureq, Material mat, String title) {
+		matFormCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, restrictedEdit, blockedEdit);
 		matFormCtr.addControllerListener(this);
 		dialogCtr = new CloseableModalController(getWindowControl(), "close",
 				matFormCtr.getInitialComponent(), true, title);
@@ -309,9 +305,6 @@ public class ChoiceItemController extends BasicController implements ControllerE
 		dialogCtr.activate();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		item = null;

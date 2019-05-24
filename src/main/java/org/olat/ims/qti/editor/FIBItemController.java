@@ -63,6 +63,7 @@ public class FIBItemController extends BasicController implements ControllerEven
 	private boolean surveyMode = false;
 	private DialogBoxController delYesNoCtrl;
 	private boolean restrictedEdit;
+	private boolean blockedEdit;
 	private Material editQuestion;
 	private Response editResponse;
 	private CloseableModalController dialogCtr;
@@ -75,10 +76,11 @@ public class FIBItemController extends BasicController implements ControllerEven
 	 * @param wControl
 	 */
 	public FIBItemController(UserRequest ureq, WindowControl wControl,
-			Item item, QTIEditorPackage qtiPackage, Translator trnsltr,  boolean restrictedEdit) {
+			Item item, QTIEditorPackage qtiPackage, Translator trnsltr,  boolean restrictedEdit, boolean blockedEdit) {
 		super(ureq, wControl, trnsltr);
 
 		this.restrictedEdit = restrictedEdit;
+		this.blockedEdit = blockedEdit;
 		this.item = item;
 		this.qtiPackage = qtiPackage;
 		main = createVelocityContainer("fibitem", "tab_fibItem");
@@ -86,6 +88,7 @@ public class FIBItemController extends BasicController implements ControllerEven
 		surveyMode = qtiPackage.getQTIDocument().isSurvey();
 		main.contextPut("isSurveyMode", surveyMode ? "true" : "false");
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
+		main.contextPut("isBlockedEdit", Boolean.valueOf(blockedEdit));
 		
 		String mediaBaseUrl = qtiPackage.getMediaBaseURL();
 		if(mediaBaseUrl != null && !mediaBaseUrl.startsWith("http")) {
@@ -126,14 +129,14 @@ public class FIBItemController extends BasicController implements ControllerEven
 				}
 			} else if (cmd.equals("editq")) {
 				editQuestion = item.getQuestion().getQuestion();
-				displayMaterialFormController(ureq, editQuestion, restrictedEdit);
+				displayMaterialFormController(ureq, editQuestion);
 
 			} else if (cmd.equals("editr")) {
 				List<Response> elements = item.getQuestion().getResponses();
 				if (posid >= 0 && posid < elements.size()) {
 					editResponse = elements.get(posid);
 					Material responseMat = elements.get(posid).getContent();
-					displayMaterialFormController(ureq, responseMat, restrictedEdit);
+					displayMaterialFormController(ureq, responseMat);
 				} else {
 					logError("posid doesn't match responses length: " + posid + "/" + elements.size(), null);
 				}
@@ -298,18 +301,15 @@ public class FIBItemController extends BasicController implements ControllerEven
 	 * @param mat
 	 * @param isRestrictedEditMode
 	 */
-	private void displayMaterialFormController(UserRequest ureq, Material mat, boolean isRestrictedEditMode) {
-		matFormCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, isRestrictedEditMode);
+	private void displayMaterialFormController(UserRequest ureq, Material mat) {
+		matFormCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, restrictedEdit, blockedEdit);
 		matFormCtr.addControllerListener(this);
 		dialogCtr = new CloseableModalController(getWindowControl(), "close",
 				matFormCtr.getInitialComponent(), true, translate("questionform_answer"));
 		matFormCtr.addControllerListener(dialogCtr);
 		dialogCtr.activate();
 	}	
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+
 	@Override
 	protected void doDispose() {
 		main = null;

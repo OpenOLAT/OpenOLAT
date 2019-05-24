@@ -11,14 +11,15 @@
 		<tbody><tr>
 			<td>$r.formatLatexFormulas($question.getQuestion().renderAsHtml($mediaBaseURL))</td>
 			<td align="center">
+			#if(!$isBlockedEdit)
 				<a $r.hrefAndOnclick("editq",true,true) title="$r.translateInAttribute("mat.edit.question")"><i class="o_icon o_icon-lg o_icon_edit"> </i></a>
+			#end
 			</td>
 		</tr></tbody>
 	</table>
 </fieldset>
 <fieldset class="o_form form-horizontal" role="form">
-	<legend>$r.translate("fieldset.legend.answers")
-	</legend>
+	<legend>$r.translate("fieldset.legend.answers")</legend>
 	
 	<form action="$r.formURIbg("smc")" id="ofo_tab_mcitem" name="ofo_tab_mcitem" method="post" onsubmit="o_XHRSubmit('ofo_tab_mcitem');">
 #if ($question && $question.getResponses().size() > 0)
@@ -41,7 +42,7 @@
 				#set ($count = ($foreach.count - 1))
 			<tr>			
 				<td>
-				#if(!$isRestrictedEdit)
+				#if(!$isRestrictedEdit && !$isBlockedEdit)
 					<a $r.hrefAndOnclick("up",true,true,"posid","$count") title="$r.translateInAttribute("mat.move_up")"><i class="o_icon o_icon-lg o_icon_move_up"> </i></a>
 					<br />
 					<a $r.hrefAndOnclick("down",true,true,"posid","$count") title="$r.translateInAttribute("mat.move_down")"><i class="o_icon o_icon-lg o_icon_move_down"> </i></a>
@@ -52,7 +53,7 @@
 #if($isSurveyMode.equals("false"))
 			#if(!$question.isSingleCorrect())
 				<td>
-					#if($isRestrictedEdit)
+					#if($isRestrictedEdit || $isBlockedEdit)
 						$content.getPoints()
 					#else
 						<input type="text" name="points_q$count" value="$content.getPoints()" size="5" onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
@@ -60,7 +61,7 @@
 				</td>
 			#else	
 				<td valign="middle" align="center">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					#if($content.isCorrect())
 					<input type="checkbox" class="o_checkbox" name="value_q" value="true" disabled="disabled" checked="checked"/>
 					#else
@@ -77,9 +78,11 @@
 			#end
 #end
 				<td valign="middle" align="center">
+					#if(!$isBlockedEdit)
 					<a $r.hrefAndOnclick("editr",true,true,"posid","$count") title="$r.translateInAttribute("mat.edit.response")"><i class="o_icon o_icon-lg o_icon_edit"> </i></a>
+					#end
 					&nbsp;
-					#if(!$isRestrictedEdit)
+					#if(!$isRestrictedEdit && !$isBlockedEdit)
 					<a $r.hrefAndOnclick("del",true,true,"posid","$count") title="$r.translateInAttribute("delete")"><i class="o_icon o_icon-lg o_icon_delete_item"> </i></a>
 					#end
 				</td>
@@ -89,7 +92,7 @@
 		</table>
 #end
 
-		#if(!$isRestrictedEdit)
+		#if(!$isRestrictedEdit && !$isBlockedEdit)
 		<a href="$r.commandURI("addchoice")" onclick="$r.commandURI("addchoice") return false;" class="btn btn-default"><span>$r.translate("add_answer")</span></a>
 		#end
 
@@ -98,7 +101,7 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("valuation_method")</label>
 			<div class="col-sm-9">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					#if(!$question.isSingleCorrect())
 						<p class="form-control-static">$r.translate("valuation_method_multi")</p>
 					#else
@@ -127,7 +130,7 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("single_score") <i>$r.translate("valuation_method_single")</i></label>
 			<div class="col-sm-9">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					#if($question.isSingleCorrect())
 						<p class="form-control-static">$!question.getSingleCorrectScore()</p>
 					#else
@@ -141,7 +144,7 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("min_value")</label>
 			<div class="col-sm-9">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					<p class="form-control-static">$!question.getMinValue()</p>
 				#else
 					<input type="text" name="min_value" value="$!question.getMinValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
@@ -151,14 +154,14 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("max_value")</label>
 			<div class="col-sm-9">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					<p class="form-control-static">$!question.getMaxValue()</p>
 				#else
 					<input type="text" name="max_value" value="$!question.getMaxValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_mcitem')" onclick="return setFormDirty('ofo_tab_mcitem')"/>
 				#end
 			</div>
 		</div>
-	#if(!$isRestrictedEdit)
+	#if(!$isRestrictedEdit && !$isBlockedEdit)
 		<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
 			<button type="button" class="btn btn-primary" name="olat_fosm" onclick="o_IQEvent('ofo_tab_mcitem')"><span>$r.translateInAttribute("submit")</span></button>
 		</div></div>

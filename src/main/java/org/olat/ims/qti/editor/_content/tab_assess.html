@@ -19,18 +19,18 @@
 	<div class="form-group">
 		<label class="control-label col-sm-3">$r.translate("form.metadata.title")</label>
 		<div class="col-sm-9">
-			<input class="form-control" type="text" size="30" name="title" value="$r.escapeHtml($!assessment.title)" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" />
+			<input class="form-control" type="text" size="30" name="title" value="$r.escapeHtml($!assessment.title)" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" #if($isBlockedEdit) disabled="disabled" #end />
 		</div>
 	</div>
 
 	<div class="form-group">
 		<label class="control-label col-sm-3">$r.translate("form.metadata.objectives")</label>
 		<div class="col-sm-9">
-			<textarea name="objectives" class="form-control" cols="35" rows="8" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" >$!assessment.objectives</textarea>
+			<textarea name="objectives" class="form-control" cols="35" rows="8" onchange="return setFormDirty('ofo_assessform')" onclick="return setFormDirty('ofo_assessform')" #if($isBlockedEdit) disabled="disabled" #end>$!assessment.objectives</textarea>
 		</div>
 	</div>
 	
-#if($isRestrictedEdit)
+#if($isRestrictedEdit || $isBlockededit)
 	<div class="form-group">
 		<label class="control-label col-sm-3">$r.translate("form.assessment.selection_pre")$r.render("selectionPreHelpText")</label>
 		<div class="col-sm-9">
@@ -96,7 +96,7 @@
 
 
 #if($isSurveyMode.equals("false"))
-	#if($isRestrictedEdit)
+	#if($isRestrictedEdit || $isBlockedEdit)
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("form.metadata.duration")</label>
 			<div class="col-sm-9">
@@ -137,7 +137,7 @@
 		</div>
 	#end
 		
-	#if($isRestrictedEdit)
+	#if($isRestrictedEdit || $isBlockedEdit)
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("form.metadata.globalfeedbackNsolution")$r.render("globalfeedbackNsolutionHelpText")</label>
 			<div class="col-sm-9">
@@ -166,7 +166,7 @@
 		</div>
 	#end
 	
-	#if($isRestrictedEdit)
+	#if($isRestrictedEdit || $isBlockedEdit)
 		#if ($assessment.isInheritControls())
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("form.metadata.show.feedback")</label>
@@ -203,7 +203,7 @@
 		</div>
 	#end
 	
-	#if($isRestrictedEdit)
+	#if($isRestrictedEdit || $isBlockedEdit)
 		#if ($assessment.isInheritControls())
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("form.metadata.show.hints")</label>
@@ -240,7 +240,7 @@
 		</div>
 	#end
 		
-	#if($isRestrictedEdit)
+	#if($isRestrictedEdit || $isBlockedEdit)
 		#if ($assessment.isInheritControls())
 		<div class="form-group">	
 			<label class="control-label col-sm-3">$r.translate("form.metadata.show.solution")</label>
@@ -284,7 +284,7 @@
 #end 
 
 #if($isSurveyMode.equals("false"))
-	#if($isRestrictedEdit)
+	#if($isRestrictedEdit || $isBlockedEdit)
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("form.metadata.cutvalue")</label>
 			<div class="col-sm-9">
@@ -301,7 +301,11 @@
 		</div>
 	#end
 #end
+#if($isBlockedEdit)
+
+#else
 	<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
 		<button type="button" class="btn btn-primary" name="olat_fosm" onclick="o_IQEvent('ofo_assessform')"><span>$r.translateInAttribute("submit")</span></button>
 	</div></div>
+#end
 </form></fieldset>

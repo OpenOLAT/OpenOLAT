@@ -54,34 +54,31 @@ import org.olat.ims.qti.editor.beecom.objects.Question;
 public class ItemMetadataFormController extends FormBasicController {
 
 	private Item item;
-	private boolean isSurvey, isRestrictedEditMode;
+	private boolean isSurvey, isRestrictedEditMode, isBlockedEdit;
 	private TextElement title;
 	private RichTextElement desc, hint, solution;
 	private SingleSelection layout, limitAttempts, limitTime, shuffle, showHints, showSolution;
 	private IntegerElement attempts, timeMin, timeSec;
 	private final QTIEditorPackage qti;
 
-	public ItemMetadataFormController(UserRequest ureq, WindowControl control, Item item, QTIEditorPackage qti, boolean restrictedEdit) {
+	public ItemMetadataFormController(UserRequest ureq, WindowControl control, Item item, QTIEditorPackage qti,
+			boolean restrictedEdit, boolean blockeEdit) {
 		super(ureq, control);
 		this.item = item;
 		this.qti = qti;
 		this.isSurvey = qti.getQTIDocument().isSurvey();
 		this.isRestrictedEditMode = restrictedEdit;
+		this.isBlockedEdit = blockeEdit;
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
+	@Override
 	protected void doDispose() {
 	// still to come
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
+
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == limitAttempts) {
 			toggle(attempts);
@@ -141,7 +138,7 @@ public class ItemMetadataFormController extends FormBasicController {
 		if (layout != null && q instanceof ChoiceQuestion) {
 			((ChoiceQuestion) q).setFlowLabelClass("h".equals(layout.getSelectedKey()) ? ChoiceQuestion.BLOCK : ChoiceQuestion.LIST);
 		}
-		if (!isSurvey && !isRestrictedEditMode) {
+		if (!isSurvey && !isRestrictedEditMode && !isBlockedEdit) {
 			q.setShuffle(shuffle.getSelected() == 0);
 			Control itemControl = item.getItemcontrols().get(0);
 			itemControl.setFeedback(itemControl.getFeedback() == Control.CTRL_UNDEF ? Control.CTRL_NO : itemControl.getFeedback());
@@ -187,6 +184,7 @@ public class ItemMetadataFormController extends FormBasicController {
 		title = uifactory.addTextElement("title", "form.imd.title", -1, item.getTitle(), formLayout);
 		title.setMandatory(true);
 		title.setNotEmptyCheck("form.imd.error.empty.title");
+		title.setEnabled(!isBlockedEdit);
 
 		// Question Type
 		String typeName = getType();
@@ -196,6 +194,7 @@ public class ItemMetadataFormController extends FormBasicController {
 		desc = uifactory.addRichTextElementForStringData("desc", "form.imd.descr", item.getObjectives(), 8, -1, true, null, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		desc.getEditorConfiguration().setFigCaption(false);
+		desc.setEnabled(!isBlockedEdit);
 		RichTextConfiguration richTextConfig = desc.getEditorConfiguration();
 		// set upload dir to the media dir
 		richTextConfig.setFileBrowserUploadRelPath("media");
@@ -217,10 +216,10 @@ public class ItemMetadataFormController extends FormBasicController {
 
 			// Attempts
 			limitAttempts = uifactory.addRadiosHorizontal("form.imd.limittries", formLayout, yesnoKeys, yesnoValues);
-			limitAttempts.setEnabled(!isRestrictedEditMode);
+			limitAttempts.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			limitAttempts.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			attempts = uifactory.addIntegerElement("form.imd.tries", 0, formLayout);
-			attempts.setEnabled(!isRestrictedEditMode);
+			attempts.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			attempts.setDisplaySize(3);
 			if (item.getMaxattempts() > 0) {
 				limitAttempts.select("y", true);
@@ -233,12 +232,12 @@ public class ItemMetadataFormController extends FormBasicController {
 			// Time Limit
 			limitTime = uifactory.addRadiosHorizontal("form.imd.limittime", formLayout, yesnoKeys, yesnoValues);
 			limitTime.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
-			limitTime.setEnabled(!isRestrictedEditMode);
+			limitTime.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			timeMin = uifactory.addIntegerElement("form.imd.time.min", 0, formLayout);
-			timeMin.setEnabled(!isRestrictedEditMode);
+			timeMin.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			timeMin.setDisplaySize(3);
 			timeSec = uifactory.addIntegerElement("form.imd.time.sek", 0, formLayout);
-			timeSec.setEnabled(!isRestrictedEditMode);
+			timeSec.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			timeSec.setDisplaySize(3);
 			if (item.getDuration() != null && item.getDuration().isSet()) {
 				limitTime.select("y", true);
@@ -252,7 +251,7 @@ public class ItemMetadataFormController extends FormBasicController {
 
 			// Shuffle Answers
 			shuffle = uifactory.addRadiosHorizontal("shuffle", "form.imd.shuffle", formLayout, yesnoKeys, yesnoValues);
-			shuffle.setEnabled(!isRestrictedEditMode);
+			shuffle.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			shuffle.setVisible(t != Question.TYPE_ESSAY && t != Question.TYPE_FIB);
 			if (item.getQuestion().isShuffle()) {
 				shuffle.select("y", true);
@@ -263,13 +262,13 @@ public class ItemMetadataFormController extends FormBasicController {
 			// Hints
 			Control itemControl = item.getItemcontrols().get(0);
 			showHints = uifactory.addRadiosHorizontal("showHints", "form.imd.solutionhints.show", formLayout, yesnoKeys, yesnoValues);
-			showHints.setEnabled(!isRestrictedEditMode);
+			showHints.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			showHints.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			showHints.setVisible(t != Question.TYPE_ESSAY);
 
 			hint = uifactory.addRichTextElementForStringData("hint", "form.imd.solutionhints", item.getQuestion().getHintText(), 8, -1,
 					true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
-			hint.setEnabled(!isRestrictedEditMode);
+			hint.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			hint.getEditorConfiguration().setFigCaption(false);
 			// set upload dir to the media dir
 			hint.getEditorConfiguration().setFileBrowserUploadRelPath("media");
@@ -282,14 +281,14 @@ public class ItemMetadataFormController extends FormBasicController {
 
 			// Solution
 			showSolution = uifactory.addRadiosHorizontal("showSolution", "form.imd.correctsolution.show", formLayout, yesnoKeys, yesnoValues);
-			showSolution.setEnabled(!isRestrictedEditMode);
+			showSolution.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			showSolution.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			
 			boolean essay = (q.getType() == Question.TYPE_ESSAY);
 			String solLabel = essay ? "form.imd.correctsolution.word" : "form.imd.correctsolution";
 			solution = uifactory.addRichTextElementForStringData("solution", solLabel, item.getQuestion().getSolutionText(), 8,
 					-1, true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
-			solution.setEnabled(!isRestrictedEditMode);
+			solution.setEnabled(!isRestrictedEditMode && !isBlockedEdit);
 			solution.getEditorConfiguration().setFigCaption(false);
 			// set upload dir to the media dir
 			solution.getEditorConfiguration().setFileBrowserUploadRelPath("media");
@@ -303,7 +302,9 @@ public class ItemMetadataFormController extends FormBasicController {
 			}
 		}
 		// Submit Button
-		uifactory.addFormSubmitButton("submit", formLayout);
+		if(!isBlockedEdit) {
+			uifactory.addFormSubmitButton("submit", formLayout);
+		}
 	}
 
 	/**

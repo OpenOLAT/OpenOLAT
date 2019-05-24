@@ -2,7 +2,6 @@
 	<legend>$r.translate("fieldset.legend.answers")
 		$r.contextHelpWithWrapper("Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_fib")
 	</legend>
-	
 	<form action="$r.formURIbg("sfib")" id="ofo_tab_fibitem" name="ofo_tab_fibitem" method="post" onsubmit="o_XHRSubmit('ofo_tab_fibitem');">
 		#if ($question && $question.getResponses().size() > 0)
 		<table class="table table-bordered">
@@ -27,7 +26,7 @@
 				#set ($count = ($foreach.count - 1))
 			<tr>
 				<td>
-				#if(!$isRestrictedEdit)
+				#if(!$isRestrictedEdit && !$isBlockedEdit)
 					<a $r.hrefAndOnclick("up",true,true,"posid","$count") title="$r.translateInAttribute("mat.move_up")"><i class="o_icon o_icon-lg o_icon_move_up"> </i></a>
 					<br />
 					<a $r.hrefAndOnclick("down",true,true,"posid","$count") title="$r.translateInAttribute("mat.move_down")"><i class="o_icon o_icon-lg o_icon_move_down"> </i></a>
@@ -61,14 +60,14 @@
 				#end
 					<input type="hidden" name="ident_q$count" value="$content.getIdent()" />
 				</td>
-				## if(!$isRestrictedEdit)
+				## if(!$isRestrictedEdit && !$isBlockedEdit)
 					#if($isSurveyMode.equals("false"))
 						#if($content.getType().equals("BLANK"))
 				<td valign="middle" align="center">
 							#if($content.getCaseSensitive().equals("Yes"))
-					<input type="checkbox" class="o_checkbox" name="case_q$count" value="Yes" checked onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
+					<input type="checkbox" class="o_checkbox" name="case_q$count" value="Yes" checked onchange="return setFormDirty('ofo_tab_fibitem')" #if($isBlockedEdit) disabled #end onclick="return setFormDirty('ofo_tab_fibitem')"/>
 							#else
-					<input type="checkbox" class="o_checkbox" name="case_q$count" value="Yes" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
+					<input type="checkbox" class="o_checkbox" name="case_q$count" value="Yes" onchange="return setFormDirty('ofo_tab_fibitem')" #if($isBlockedEdit) disabled #end onclick="return setFormDirty('ofo_tab_fibitem')"/>
 							#end
 						#end
 				</td>
@@ -76,17 +75,17 @@
 				## end
 				#if($content.getType().equals("BLANK"))
 				<td valign="middle" align="center">
-					<input type="text" name="size_q$count" value="$content.getSize()" size="3" maxlength="3" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
+					<input type="text" name="size_q$count" value="$content.getSize()" size="3" maxlength="3" onchange="return setFormDirty('ofo_tab_fibitem')" #if($isBlockedEdit) disabled #end onclick="return setFormDirty('ofo_tab_fibitem')"/>
 				</td>
 				<td valign="middle" align="center">
-					<input type="text" name="maxl_q$count" value="$content.getMaxLength()" size="3" maxlength="3" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
+					<input type="text" name="maxl_q$count" value="$content.getMaxLength()" size="3" maxlength="3" onchange="return setFormDirty('ofo_tab_fibitem')" #if($isBlockedEdit) disabled #end onclick="return setFormDirty('ofo_tab_fibitem')"/>
 				</td>
 				#end
 
 				#if($isSurveyMode.equals("false") && !$question.isSingleCorrect() && $content.getType().equals("BLANK"))
 				<td>
-					#if(!$isRestrictedEdit)
-					<input type="text" name="points_q$count" value="$content.getPoints()" size="5" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
+					#if(!$isRestrictedEdit && !$isBlockedEdit)
+					<input type="text" name="points_q$count" value="$content.getPoints()" size="5" onchange="return setFormDirty('ofo_tab_fibitem')" #if($isBlockedEdit) disabled #end onclick="return setFormDirty('ofo_tab_fibitem')"/>
 					#else
 					$content.getPoints()
 					#end
@@ -95,12 +94,14 @@
 
 				<td valign="middle" align="center">
 				#if($content.getType().equals("CONTENT"))
+					#if(!$isBlockedEdit)
 					<a $r.hrefAndOnclick("editr",true,true,"posid","$count") title="$r.translateInAttribute("mat.edit.response")"><i class="o_icon o_icon-lg o_icon_edit"> </i></a>
+					#end
 				#else
 					<img src="$r.staticLink("images/qti/empty.gif")" alt "" border="0" width="16">
 				#end
 					&nbsp;
-				#if(!$isRestrictedEdit && ($question.getResponses().size() > 1) )
+				#if(!$isRestrictedEdit && !$isBlockedEdit && ($question.getResponses().size() > 1) )
 					<a $r.hrefAndOnclick("del",true,true,"posid","$count") title="$r.translateInAttribute("mat.edit.delete")"><i class="o_icon o_icon-lg o_icon_delete_item"> </i></a>
 				#end
 				</td>
@@ -112,7 +113,7 @@
 
 		<p>
 		<br />
-		#if(!$isRestrictedEdit)
+		#if(!$isRestrictedEdit && !$isBlockedEdit)
 		<a $r.hrefAndOnclick("addtext",true,true) class="btn btn-default"><span>$r.translate("add_text")</span></a>
 		&nbsp;
 		<a $r.hrefAndOnclick("addblank",true,true) class="btn btn-default"><span>$r.translate("add_blank")</span></a>
@@ -124,7 +125,7 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("valuation_method")</label>
 			<div class="col-sm-9">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					#if(!$question.isSingleCorrect())
 						<p class="form-control-static">$r.translate("valuation_method_multi")</p>
 					#else
@@ -153,7 +154,7 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("single_score") <i>$r.translate("valuation_method_single")</i></label>
 			<div class="col-sm-9">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					#if($question.isSingleCorrect())
 						<p class="form-control-static">$!question.getSingleCorrectScore()</p>
 					#else
@@ -168,7 +169,7 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("min_value")</label>
 			<div class="col-sm-9">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					<p class="form-control-static">$!question.getMinValue()</p>
 				#else
 					<input type="text" name="min_value" value="$!question.getMinValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
@@ -178,7 +179,7 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("max_value")</label>
 			<div class="col-sm-9">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					<p class="form-control-static">$!question.getMaxValue()</p>
 				#else
 					<input type="text" name="max_value" value="$!question.getMaxValue()" size="4" class="form-control" onchange="return setFormDirty('ofo_tab_fibitem')" onclick="return setFormDirty('ofo_tab_fibitem')"/>
@@ -187,6 +188,8 @@
 		</div>
 #end
 	<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
+	#if(!$isBlockedEdit)
 		<button type="button" class="btn btn-primary" name="olat_fosm" onclick="o_IQEvent('ofo_tab_fibitem')"><span>$r.translateInAttribute("submit")</span></button>
+	#end
 	</div>
 </form></fieldset>

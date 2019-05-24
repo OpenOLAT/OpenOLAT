@@ -52,7 +52,8 @@ public class AssessmentController extends TabbableDefaultController implements C
 	private Assessment assessment;
 	private QTIEditorPackage qtiPackage;
 	private boolean surveyMode = false;
-	private boolean restrictedEdit;
+	private final boolean restrictedEdit;
+	private final boolean  blockedEdit;
 
 	/**
 	 * @param assessment
@@ -61,10 +62,11 @@ public class AssessmentController extends TabbableDefaultController implements C
 	 * @param wControl
 	 */
 	public AssessmentController(Assessment assessment, QTIEditorPackage qtiPackage, UserRequest ureq, WindowControl wControl,
-			boolean restrictedEdit) {
+			boolean restrictedEdit, boolean blockedEdit) {
 		super(ureq, wControl);
 
 		this.restrictedEdit = restrictedEdit;
+		this.blockedEdit = blockedEdit;
 		this.assessment = assessment;
 		this.qtiPackage = qtiPackage;
 				
@@ -90,6 +92,7 @@ public class AssessmentController extends TabbableDefaultController implements C
 		main.contextPut("mediaBaseURL", qtiPackage.getMediaBaseURL());
 		main.contextPut("control", QTIEditHelper.getControl(assessment));
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
+		main.contextPut("isBlockedEdit", Boolean.valueOf(blockedEdit));
 		surveyMode = qtiPackage.getQTIDocument().isSurvey();
 		main.contextPut("isSurveyMode", surveyMode ? "true" : "false");
 
@@ -138,7 +141,7 @@ public class AssessmentController extends TabbableDefaultController implements C
 					assessment.setObjectives(newObjectives);
 				}
 				//
-				if (!surveyMode && !restrictedEdit) {
+				if (!surveyMode && !restrictedEdit && !blockedEdit) {
 					//ordering
 					assessment.getSelection_ordering().setOrderType(ureq.getParameter("order_type"));
 					assessment.getSelection_ordering().setSelectionNumber(ureq.getParameter("selection_number"));

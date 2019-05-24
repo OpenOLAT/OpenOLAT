@@ -50,31 +50,26 @@ public class MaterialFormController extends FormBasicController {
 	private QTIEditorPackage qtiPackage;
 	private Material mat;
 	private RichTextElement richText;
-	private boolean isRestrictedEditMode;
+	private final boolean isRestrictedEditMode;
+	private final boolean isBlockedEditMode;
 	private String htmlContent = "";
 
 	public MaterialFormController(UserRequest ureq, WindowControl control, Material mat, QTIEditorPackage qtiPackage,
-			boolean isRestrictedEditMode) {
+			boolean isRestrictedEditMode, boolean isBlockedEditMode) {
 		super(ureq, control, FormBasicController.LAYOUT_VERTICAL);
 		this.mat = mat;
 		this.qtiPackage = qtiPackage;
 		this.htmlContent = mat.renderAsHtmlForEditor();
-
+		this.isBlockedEditMode = isBlockedEditMode;
 		this.isRestrictedEditMode = isRestrictedEditMode;
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 	// nothing to get rid of
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String newHtml = richText.getRawValue(); // trust authors, don't to XSS filtering
@@ -106,23 +101,20 @@ public class MaterialFormController extends FormBasicController {
 			// "lazy migration" to the new rich text style).
 			Mattext textHtml = new Mattext(newHtml);
 			// A single text/html element will be left over.
-			List<QTIObject> elements = new ArrayList<QTIObject>(1);
+			List<QTIObject> elements = new ArrayList<>(1);
 			elements.add(textHtml);
 			mat.setElements(elements);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 
 		richText = uifactory.addRichTextElementForStringData("mce", null, htmlContent, 14, -1, true, qtiPackage.getBaseDir(), null,
 				formLayout, ureq.getUserSession(), getWindowControl());
 		richText.getEditorConfiguration().setFigCaption(false);
+		richText.setEnabled(!isBlockedEditMode);
 
 		RichTextConfiguration richTextConfig = richText.getEditorConfiguration();
 		// disable <p> element for enabling vertical layouts
@@ -135,7 +127,9 @@ public class MaterialFormController extends FormBasicController {
 		richTextConfig.setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
 		richTextConfig.setExtendedValidElements("script[src|type|defer]");
 		
-		uifactory.addFormSubmitButton("submit", formLayout);
+		if(!isBlockedEditMode) {
+			uifactory.addFormSubmitButton("submit", formLayout);
+		}
 	}
 
 	/**

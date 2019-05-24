@@ -82,13 +82,12 @@ public class SectionNode extends GenericQtiNode {
 		section.setTitle(title);
 	}
 
-	/**
-	 * @see org.olat.ims.qti.editor.tree.GenericQtiNode#createEditTabbedPane(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, org.olat.core.gui.translator.Translator, QTIEditorMainController)
-	 */
+	@Override
 	public TabbedPane createEditTabbedPane(UserRequest ureq, WindowControl wControl, Translator trnsltr, QTIEditorMainController editorMainController) {
 		if (myTabbedPane == null) {
 			myTabbedPane = new TabbedPane("tabbedPane", ureq.getLocale());
-			sectionCtrl = new SectionController(section, qtiPackage, ureq, wControl, editorMainController.isRestrictedEdit());
+			sectionCtrl = new SectionController(section, qtiPackage, ureq, wControl,
+					editorMainController.isRestrictedEdit(), editorMainController.isBlockedEdit());
 			sectionCtrl.addTabs(myTabbedPane);
 			sectionCtrl.addControllerListener(editorMainController);
 		}

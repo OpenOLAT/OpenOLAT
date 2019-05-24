@@ -52,7 +52,8 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 	private FeedbackFormController feedbackCtr;
 	private Panel feedbackPanel = new Panel("feedbackPanel");
 
-	private boolean restrictedEdit;
+	private final boolean restrictedEdit;
+	private final boolean blockedEdit;
 	
 	/**
 	 * @param item
@@ -61,10 +62,11 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 	 * @param trnsltr
 	 */
 	public ItemNodeTabbedFormController(Item item, QTIEditorPackage qtiPackage, UserRequest ureq, WindowControl wControl,
-			boolean restrictedEdit) {
+			boolean restrictedEdit, boolean blockedEdit) {
 		super(ureq, wControl);
+		this.blockedEdit = blockedEdit;
 		this.restrictedEdit = restrictedEdit;
-		metadataCtr = new ItemMetadataFormController(ureq, getWindowControl(), item, qtiPackage, restrictedEdit);
+		metadataCtr = new ItemMetadataFormController(ureq, getWindowControl(), item, qtiPackage, restrictedEdit, blockedEdit);
 		listenTo(metadataCtr);
 		this.item = item;
 		this.qtiPackage = qtiPackage;
@@ -72,19 +74,19 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 		int questionType = item.getQuestion().getType();
 		switch (questionType) {
 			case Question.TYPE_SC:
-				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
+				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit, blockedEdit);
 				break;
 			case Question.TYPE_MC:
-				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
+				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit, blockedEdit);
 				break;
 			case Question.TYPE_KPRIM:
-				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
+				itemCtrl = new ChoiceItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit, blockedEdit);
 				break;
 			case Question.TYPE_FIB:
-				itemCtrl = new FIBItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
+				itemCtrl = new FIBItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit, blockedEdit);
 				break;
 			case Question.TYPE_ESSAY:
-				itemCtrl = new EssayItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit);
+				itemCtrl = new EssayItemController(ureq, getWindowControl(), item, qtiPackage, getTranslator(), restrictedEdit, blockedEdit);
 				break;
 		}
 		if(itemCtrl != null) {
@@ -92,10 +94,6 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == metadataCtr && event.equals(Event.DONE_EVENT)) {
@@ -107,17 +105,13 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 		
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (event instanceof TabbedPaneChangedEvent) {
 			TabbedPaneChangedEvent tabbedPaneEvent = (TabbedPaneChangedEvent) event;
 			if (feedbackPanel.equals(tabbedPaneEvent.getNewComponent())) {
 				if (feedbackCtr != null) removeAsListenerAndDispose(feedbackCtr);
-				feedbackCtr = new FeedbackFormController(ureq, getWindowControl(), qtiPackage, item, restrictedEdit);
+				feedbackCtr = new FeedbackFormController(ureq, getWindowControl(), qtiPackage, item, restrictedEdit, blockedEdit);
 				// feedback controller sends out NodeBeforeChangeEvents which must be propagated				
 				listenTo(feedbackCtr);
 				feedbackPanel.setContent(feedbackCtr.getInitialComponent());
@@ -125,17 +119,11 @@ public class ItemNodeTabbedFormController extends TabbableDefaultController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 	// metadataCtr and feedbackCtr are registered as child controllers
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		// add as listener to get tab activation events

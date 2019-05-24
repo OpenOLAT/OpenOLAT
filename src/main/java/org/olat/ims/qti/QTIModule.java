@@ -26,7 +26,6 @@
 package org.olat.ims.qti;
 
 import org.olat.core.configuration.AbstractSpringModule;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.ims.qti.repository.handlers.QTISurveyHandler;
 import org.olat.ims.qti.repository.handlers.QTITestHandler;
@@ -42,14 +41,13 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class QTIModule extends AbstractSpringModule {
-	
-	private static final String CREATE_RESOURCES_ENABLED = "qti12.create.resources.enabled";
-	private static final String CREATE_SURVEY_RESOURCES_ENABLED = "qti12.create.survey.resources.enabled";
 
 	@Value("${qti12.create.resources.enabled:false}")
 	private boolean createResourcesEnabled;
 	@Value("${qti12.survey.create.resources.enabled:false}")
 	private boolean createSurveyResourcesEnabled;
+	@Value("${qti12.edit.resources.enabled:false}")
+	private boolean createEditResourcesEnabled;
 
 	@Autowired
 	public QTIModule(CoordinatorManager coordinatorManager) {
@@ -65,32 +63,18 @@ public class QTIModule extends AbstractSpringModule {
 
 	@Override
 	protected void initFromChangedProperties() {
-		String createResourceEnabledObj = getStringPropertyValue(CREATE_RESOURCES_ENABLED, true);
-		if(StringHelper.containsNonWhitespace(createResourceEnabledObj)) {
-			createResourcesEnabled = "true".equals(createResourceEnabledObj);
-		}
-		
-		String createSurveyResourceObj = getStringPropertyValue(CREATE_SURVEY_RESOURCES_ENABLED, true);
-		if(StringHelper.containsNonWhitespace(createSurveyResourceObj)) {
-			createSurveyResourcesEnabled = "true".equals(createSurveyResourceObj);
-		}
+		//
 	}
 
 	public boolean isCreateResourcesEnabled() {
 		return createResourcesEnabled;
 	}
-
-	public void setCreateResourcesEnabled(boolean enabled) {
-		createResourcesEnabled = enabled;
-		setStringProperty(CREATE_RESOURCES_ENABLED, enabled ? "true" : "false", true);
-	}
 	
 	public boolean isCreateSurveyResourcesEnabled() {
 		return createSurveyResourcesEnabled;
 	}
-
-	public void setCreateSurveyResourcesEnabled(boolean enabled) {
-		createSurveyResourcesEnabled = enabled;
-		setStringProperty(CREATE_SURVEY_RESOURCES_ENABLED, enabled ? "true" : "false", true);
+	
+	public boolean isEditResourcesEnabled() {
+		return createEditResourcesEnabled;
 	}
 }

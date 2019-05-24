@@ -251,7 +251,7 @@ public class QTIEditHelper {
 
 		// controls
 		Control control = new Control();
-		List<Control> controls = new ArrayList<Control>();
+		List<Control> controls = new ArrayList<>();
 		controls.add(control);
 		newItem.setItemcontrols(controls);
 		
@@ -307,7 +307,7 @@ public class QTIEditHelper {
 
 		// conrols
 		Control control = new Control();
-		List<Control> controls = new ArrayList<Control>();
+		List<Control> controls = new ArrayList<>();
 		controls.add(control);
 		newItem.setItemcontrols(controls);
 		
@@ -344,7 +344,7 @@ public class QTIEditHelper {
 
 		// conrols
 		Control control = new Control();
-		List<Control> controls = new ArrayList<Control>();
+		List<Control> controls = new ArrayList<>();
 		controls.add(control);
 		newItem.setItemcontrols(controls);
 		

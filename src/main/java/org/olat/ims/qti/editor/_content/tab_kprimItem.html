@@ -12,7 +12,9 @@
 			<tr>
 				<td>$r.formatLatexFormulas($question.getQuestion().renderAsHtml($mediaBaseURL))</td>
 				<td align="center">
+				#if(!$isBlockedEdit)
 					<a $r.hrefAndOnclick("editq",true,true) title="$r.translateInAttribute("mat.edit.question")"><i class="o_icon o_icon-lg o_icon_edit"> </i></a>
+				#end
 				</td>
 			</tr>
 		</tbody>
@@ -43,7 +45,7 @@
 				#set ($count = ($foreach.count - 1))
 			<tr>			
 				<td>
-				#if(!$isRestrictedEdit)
+				#if(!$isRestrictedEdit && !$isBlockedEdit)
 					<a $r.hrefAndOnclick("up",true,true,"posid","$count") title="$r.translateInAttribute("mat.move_up")"><i class="o_icon o_icon-lg o_icon_move_up"> </i></a>
 					<br />
 					<a $r.hrefAndOnclick("down",true,true,"posid","$count")" title="$r.translateInAttribute("mat.move_down")"><i class="o_icon o_icon-lg o_icon_move_down"> </i></a>
@@ -52,7 +54,7 @@
 				<td>$r.formatLatexFormulas($content.getContent().renderAsHtml($mediaBaseURL))</td>
 
 #if($isSurveyMode.equals("false"))
-			#if($isRestrictedEdit)
+			#if($isRestrictedEdit || $isBlockedEdit)
 				<td valign="middle" align="center">
 					<input type="radio" name="correctChoice_qro$count" value="correct" #if($content.isCorrect()) checked="checked" #end disabled="disabled" />	
 				</td>
@@ -79,7 +81,9 @@
 				<td >&nbsp;</td>
 #end
 				<td valign="middle" align="center">
+				#if(!$$isBlockedEdit)
 					<a $r.hrefAndOnclick("editr",true,true,"posid","$count") title="$r.translateInAttribute("mat.edit.response")"><i class="o_icon o_icon-lg o_icon_edit"> </i></a>
+				#end
 				</td>
 			</tr>
 #end
@@ -94,14 +98,14 @@
 		<div class="form-group">
 			<label class="control-label col-sm-3">$r.translate("max_value")</label>
 			<div class="col-sm-9">
-				#if($isRestrictedEdit)
+				#if($isRestrictedEdit || $isBlockedEdit)
 					<p class="form-control-static">$!question.getMaxValue()</p>
 				#else
 					<input type="text" name="max_value" class="form-control" value="$!question.getMaxValue()" size="4" onchange="return setFormDirty('ofo_tab_kprimitem')" onclick="return setFormDirty('ofo_tab_kprimitem')"/>
 				#end
 			</div>
 		</div>
-	#if(!$isRestrictedEdit)
+	#if(!$isRestrictedEdit && !$isBlockedEdit)
 		<div class="col-sm-offset-3 col-sm-9 "><div class="btn-group">
 			<button type="button" class="btn btn-primary" name="olat_fosm" onclick="o_IQEvent('ofo_tab_kprimitem')"><span>$r.translateInAttribute("submit")</span></button>
 		</div></div>

@@ -103,6 +103,7 @@ import org.olat.fileresource.types.FileResource;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIChangeLogMessage;
 import org.olat.ims.qti.QTIConstants;
+import org.olat.ims.qti.QTIModule;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.editor.beecom.objects.Assessment;
 import org.olat.ims.qti.editor.beecom.objects.ChoiceQuestion;
@@ -241,6 +242,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private Link previewLink, exportPoolLink, convertQTI21Link, exportDocLink, importTableLink, closeLink;
 	private Link addPoolLink, addSectionLink, addSCLink, addMCLink, addFIBLink, addKPrimLink, addEssayLink;
 	private Link deleteLink, moveLink, copyLink;
+	private Link convertQTI21Button;
 
 	private QTIEditorTreeModel menuTreeModel;
 	private DialogBoxController deleteDialog;
@@ -248,6 +250,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private IQDisplayController previewController;
 	private LockResult lockEntry;
 	private boolean restrictedEdit;
+	private boolean blockedEdit;
 	private Map<String, Memento> history = null;
 	private String startedWithTitle;
 	private List<Reference> referencees;
@@ -270,6 +273,8 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private RepositoryEntry qtiEntry;
 
 	@Autowired
+	private QTIModule qtiModule;
+	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private QuotaManager quotaManager;
@@ -290,6 +295,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		super(ureq, wControl);
 		
 		this.qtiEntry = qtiEntry;
+		blockedEdit = !qtiModule.isEditResourcesEnabled();
 
 		for(Iterator<Reference> iter = referencees.iterator(); iter.hasNext(); ) {
 			Reference ref = iter.next();
@@ -386,8 +392,11 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		} else {
 			// start with a fresh history. Editor is resumed but no changes were made
 			// so far.
-			history = new HashMap<String, Memento>();
+			history = new HashMap<>();
 		}
+		
+		convertQTI21Button = LinkFactory.createButton("tools.convert.qti21", main, this);
+		convertQTI21Button.setIconLeftCSS("o_icon o_FileResource-IMSQTI21_icon");
 
 		// The menu tree model represents the structure of the qti document.
 		// All insert/move operations on the model are propagated to the structure
@@ -411,7 +420,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		populateToolC(); // qtiPackage must be loaded previousely
 		
 		// Add css background
-		if (restrictedEdit) {
+		if (restrictedEdit || blockedEdit) {
 			addSectionLink.setEnabled(false);
 			addSCLink.setEnabled(false);
 			addMCLink.setEnabled(false);
@@ -425,6 +434,10 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			columnLayoutCtr.addCssClassToMain("o_editor_qti_correct");
 		} else {
 			columnLayoutCtr.addCssClassToMain("o_editor_qti");
+		}
+		if(blockedEdit) {
+			importTableLink.setEnabled(false);
+			exportPoolLink.setEnabled(false);
 		}
 
 		deleteLink.setEnabled(false);
@@ -453,7 +466,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		boolean warningEssay = false;
 		if(qtiPackage.getQTIDocument() != null && !qtiPackage.getQTIDocument().isSurvey()) {
 			//check if the test contains some essay
-			List<TreeNode> flattedTree = new ArrayList<TreeNode>();
+			List<TreeNode> flattedTree = new ArrayList<>();
 			TreeHelper.makeTreeFlat(menuTreeModel.getRootNode(), flattedTree);
 			for(TreeNode node:flattedTree) {
 				Object uo = node.getUserObject();
@@ -463,7 +476,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 				}
 			}
 		}
-		main.contextPut("warningEssay", new Boolean(warningEssay));
+		main.contextPut("warningEssay", Boolean.valueOf(warningEssay));
 	}
 
 	@Override
@@ -501,10 +514,10 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					copyLink.setEnabled(false);
 					stackedPanel.setDirty(true);
 				} else {
-					deleteLink.setEnabled(true && !restrictedEdit);
-					moveLink.setEnabled(true && !restrictedEdit);
+					deleteLink.setEnabled(!restrictedEdit && !blockedEdit);
+					moveLink.setEnabled(!restrictedEdit && !blockedEdit);
 					if (clickedNode instanceof ItemNode) {
-						copyLink.setEnabled(true && !restrictedEdit);
+						copyLink.setEnabled(!restrictedEdit && !blockedEdit);
 					} else {
 						copyLink.setEnabled(false);
 					}
@@ -651,7 +664,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 			doExportQItem();
 		} else if (exportDocLink == source) {
 			doExportDocx(ureq);
-		} else if (convertQTI21Link == source) {
+		} else if (convertQTI21Link == source || convertQTI21Button == source) {
 			doConvertToQTI21(ureq);
 		} else if (importTableLink == source) {
 			doImportTable(ureq);
@@ -1006,9 +1019,6 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		int targetPos = tp.getChildpos();
 		ItemNode selectedNode = (ItemNode) menuTree.getSelectedNode();
 		// only items are moveable
-		// use XStream instead of ObjectCloner
-		// Item qtiItem =
-		// (Item)xstream.fromXML(xstream.toXML(selectedNode.getUnderlyingQTIObject()));
 		Item toClone = (Item) selectedNode.getUnderlyingQTIObject();
 		Item qtiItem = (Item) XStreamHelper.xstreamClone(toClone);
 		// copy flow label class too, olat-2791
@@ -1210,7 +1220,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 		addItemTools.addComponent(new Spacer(""));
 		addPoolLink = LinkFactory.createToolLink(CMD_TOOLS_ADD_QPOOL, translate("tools.import.qpool"), this, "o_mi_qpool_import");
 		addItemTools.addComponent(addPoolLink);
-
+	
 		importTableLink = LinkFactory.createToolLink(CMD_TOOLS_IMPORT_TABLE, translate("tools.import.table"), this, "o_mi_table_import");
 		importTableLink.setIconLeftCSS("o_icon o_icon_table o_icon-fw");
 		addItemTools.addComponent(importTableLink);
@@ -1463,6 +1473,10 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	 */
 	public boolean isRestrictedEdit() {
 		return restrictedEdit;
+	}
+	
+	public boolean isBlockedEdit() {
+		return blockedEdit;
 	}
 
 	public boolean isLockedSuccessfully() {

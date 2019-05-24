@@ -71,22 +71,19 @@ public class AssessmentNode extends GenericQtiNode {
 	 * 
 	 * @param title
 	 */
+	@Override
 	public void setMenuTitleAndAlt(String title) {
 		super.setMenuTitleAndAlt(title);
 		assmnt.setTitle(title);
 	}
 
-	/**
-	 * @see org.olat.ims.qti.editor.tree.GenericQtiNode#createEditTabbedPane(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.core.gui.translator.Translator, QTIEditorMainController)
-	 */
+	@Override
 	public TabbedPane createEditTabbedPane(UserRequest ureq, WindowControl wControl, Translator trnsltr,
 			QTIEditorMainController editorMainController) {
 		if (myTabbedPane == null) {
 			myTabbedPane = new TabbedPane("tabbedPane", ureq.getLocale());
-			TabbableController tabbCntrllr = new AssessmentController(assmnt, qtiPackage, ureq, wControl, editorMainController
-					.isRestrictedEdit());
+			TabbableController tabbCntrllr = new AssessmentController(assmnt, qtiPackage, ureq, wControl,
+					editorMainController.isRestrictedEdit(), editorMainController.isBlockedEdit());
 			tabbCntrllr.addTabs(myTabbedPane);
 			tabbCntrllr.addControllerListener(editorMainController);
 		}

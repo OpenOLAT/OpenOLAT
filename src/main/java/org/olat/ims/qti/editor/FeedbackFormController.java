@@ -62,20 +62,21 @@ public class FeedbackFormController extends FormBasicController {
 	private final Item item;
 	private final QTIEditorPackage qtiPackage;
 	private final boolean isRestrictedEditMode;
+	private final boolean isBlockedEditMode;
 	private CloseableModalController dialogCtr;
 	private MaterialFormController materialCtr;
 	private SingleSelection feedbackSwitch;
 	private Control control;
-	private HashMap<Material, RichTextElement> textElements = new HashMap<Material, RichTextElement>();
-	private HashMap<Material, String> identities = new HashMap<Material, String>();
-	private HashMap<RichTextElement, Material> materialsByText = new HashMap<RichTextElement, Material>();
-	private HashMap<FormLink, Material> materialsByLink = new HashMap<FormLink, Material>();
+	private HashMap<Material, RichTextElement> textElements = new HashMap<>();
+	private HashMap<Material, String> identities = new HashMap<>();
+	private HashMap<RichTextElement, Material> materialsByText = new HashMap<>();
+	private HashMap<FormLink, Material> materialsByLink = new HashMap<>();
 	private FormLayoutContainer overallFeedbackLayout, responseLevelHintsLayout;
 	private String mediaBaseUrl;
 	private Material masteryMat, failureMat;
 
 	public FeedbackFormController(UserRequest ureq, WindowControl wControl, QTIEditorPackage qtiPackage, Item item,
-			boolean isRestrictedEditMode) {
+			boolean isRestrictedEditMode, boolean isBlockedEditMode) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
 		this.qtiPackage = qtiPackage;
 		this.item = item;
@@ -83,20 +84,16 @@ public class FeedbackFormController extends FormBasicController {
 
 		control = QTIEditHelper.getControl(item);
 		this.isRestrictedEditMode = isRestrictedEditMode;
+		this.isBlockedEditMode = isBlockedEditMode;
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
+	@Override
 	protected void doDispose() {
 	// nothing so far
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == materialCtr) {
 			if (event instanceof QTIObjectBeforeChangeEvent) {
@@ -140,23 +137,17 @@ public class FeedbackFormController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
+	@Override
 	protected void formOK(UserRequest ureq) {
 	// there's no submit button in this form
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formInnerEvent(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.form.flexible.FormItem,
-	 *      org.olat.core.gui.components.form.flexible.impl.FormEvent)
-	 */
+	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source instanceof RichTextElement) {
-			displayMaterialFormController(ureq, materialsByText.get(source), isRestrictedEditMode);
+			displayMaterialFormController(ureq, materialsByText.get(source));
 		} else if (source instanceof FormLink) {
-			displayMaterialFormController(ureq, materialsByLink.get(source), isRestrictedEditMode);
+			displayMaterialFormController(ureq, materialsByLink.get(source));
 		} else if (source == feedbackSwitch) {
 			// feedbackSwitch takes values in {0 = on/yes, 1 = off/no}
 			// control.feedback takes values in {0 = undef, 1 = on, 2 = off}
@@ -200,6 +191,7 @@ public class FeedbackFormController extends FormBasicController {
 
 		feedbackSwitch = uifactory.addRadiosHorizontal("feedbackswitch", switchLayout, yesNoKeys, yesNoValues);
 		feedbackSwitch.addActionListener(FormEvent.ONCLICK);
+		feedbackSwitch.setEnabled(!isBlockedEditMode);
 		if (control.isFeedback()) {
 			feedbackSwitch.select(yesNoKeys[0], true);
 		} else {
@@ -246,7 +238,7 @@ public class FeedbackFormController extends FormBasicController {
 		registerFeedbackElement(failureMat, failureFeedback, failureLink);
 
 		// Feedback for each response when single or multiple choice question
-		List<Material> responses = new ArrayList<Material>();
+		List<Material> responses = new ArrayList<>();
 		boolean hasResponseLevelHints = false;
 		if (item.getQuestion().getType() <= Question.TYPE_MC) {
 			int i = 1;
@@ -261,6 +253,7 @@ public class FeedbackFormController extends FormBasicController {
 						getWindowControl());
 				responseHintText.getEditorConfiguration().setFigCaption(false);
 				FormLink link = uifactory.addFormLink("link_" + i, responseLevelHintsLayout, Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS);
+				link.setEnabled(!isBlockedEditMode);
 				link.getComponent().setCustomDisplayText(" ");
 				link.getComponent().setIconLeftCSS("o_icon o_icon_edit o_icon-lg");
 				registerFeedbackElement(responseFeedbackMat, responseHintText, link);
@@ -292,6 +285,7 @@ public class FeedbackFormController extends FormBasicController {
 		textElement.getEditorConfiguration().setInvalidElements(RichTextConfiguration.INVALID_ELEMENTS_FORM_FULL_VALUE_UNSAVE_WITH_SCRIPT);
 		textElement.getEditorConfiguration().setExtendedValidElements("script[src,type,defer]");
 		
+		link.setVisible(!isBlockedEditMode);
 		materialsByText.put(textElement, mat);
 		materialsByLink.put(link, mat);
 	}
@@ -303,8 +297,8 @@ public class FeedbackFormController extends FormBasicController {
 	 * @param mat
 	 * @param isRestrictedEditMode
 	 */
-	private void displayMaterialFormController(UserRequest ureq, Material mat, boolean isRestrictedEditMode) {
-		materialCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, isRestrictedEditMode);
+	private void displayMaterialFormController(UserRequest ureq, Material mat) {
+		materialCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, isRestrictedEditMode, isBlockedEditMode);
 		listenTo(materialCtr);
 		dialogCtr = new CloseableModalController(getWindowControl(), "close", materialCtr.getInitialComponent());
 		listenTo(dialogCtr);

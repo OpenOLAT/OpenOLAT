@@ -58,6 +58,8 @@ public class QTI12EditorController extends BasicController implements QPoolItemE
 	private final QuestionItem qitem;
 	
 	@Autowired
+	private QTIModule qtiModule;
+	@Autowired
 	private QPoolService qpoolService;
 	private Item item;
 
@@ -78,7 +80,8 @@ public class QTI12EditorController extends BasicController implements QPoolItemE
 				String mapperUrl = registerMapper(ureq, new VFSContainerMapper(directory));
 				QTIDocument doc = new QTIDocument();
 				QTIEditorPackage qtiPackage = new QTI12ItemEditorPackage(item, doc, mapperUrl, leaf, directory, this);
-				editorsCtrl = new ItemNodeTabbedFormController(item, qtiPackage, ureq, getWindowControl(), false);
+				editorsCtrl = new ItemNodeTabbedFormController(item, qtiPackage, ureq, getWindowControl(),
+						false, qtiModule.isEditResourcesEnabled());
 				editorsCtrl.addTabs(mainPanel);
 				listenTo(editorsCtrl);
 			}

@@ -63,6 +63,7 @@ public class SectionController extends FormBasicController implements TabbableCo
 	private Section section;
 	private final QTIEditorPackage qtiPackage;
 	private final boolean restrictedEdit;
+	private final boolean blockedEdit;
 
 	/**
 	 * @param section
@@ -70,15 +71,13 @@ public class SectionController extends FormBasicController implements TabbableCo
 	 * @param locale
 	 * @param wControl
 	 */
-	public SectionController(Section section, QTIEditorPackage qtiPackage, UserRequest ureq, WindowControl wControl, boolean restrictedEdit) {
+	public SectionController(Section section, QTIEditorPackage qtiPackage, UserRequest ureq, WindowControl wControl,
+			boolean restrictedEdit, boolean blockedEdit) {
 		super(ureq, wControl);
-
+		this.blockedEdit = blockedEdit;
 		this.restrictedEdit = restrictedEdit;
 		this.section = section;
 		this.qtiPackage = qtiPackage;
-		/*
-		main.contextPut("mediaBaseURL", qtiPackage.getMediaBaseURL());
-		*/
 		initForm(ureq);
 	}
 
@@ -89,11 +88,13 @@ public class SectionController extends FormBasicController implements TabbableCo
 
 		String title = section.getTitle();
 		titleEl = uifactory.addTextElement("title", "form.metadata.title", 255, title, formLayout);
+		titleEl.setEnabled(!blockedEdit);
 		
 		String objectives = section.getObjectives();
 		objectivesEl = uifactory.addRichTextElementForStringData("objectives", "form.metadata.objectives", objectives, 6, 12, false,
 				qtiPackage.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
 		objectivesEl.getEditorConfiguration().setFigCaption(false);
+		objectivesEl.setEnabled(!blockedEdit);
 		
 		RichTextConfiguration richTextConfig = objectivesEl.getEditorConfiguration();
 		// disable <p> element for enabling vertical layouts
@@ -110,14 +111,14 @@ public class SectionController extends FormBasicController implements TabbableCo
 		String[] yesnoValues = new String[] { translate("yes"), translate("no") };
 		limitTimeEl = uifactory.addRadiosHorizontal("form.section.durationswitch", formLayout, yesnoKeys, yesnoValues);
 		limitTimeEl.addActionListener(FormEvent.ONCHANGE);
-		limitTimeEl.setEnabled(!restrictedEdit);
+		limitTimeEl.setEnabled(!restrictedEdit && !blockedEdit);
 		
 		timeMinEl = uifactory.addIntegerElement("form.imd.time.min", 0, formLayout);
 		timeMinEl.setDisplaySize(3);
-		timeMinEl.setEnabled(!restrictedEdit);
+		timeMinEl.setEnabled(!restrictedEdit && !blockedEdit);
 		timeSecEl = uifactory.addIntegerElement("form.imd.time.sek", 0, formLayout);
 		timeSecEl.setDisplaySize(3);
-		timeSecEl.setEnabled(!restrictedEdit);
+		timeSecEl.setEnabled(!restrictedEdit && !blockedEdit);
 		if (section.getDuration() != null && section.getDuration().isSet()) {
 			limitTimeEl.select(yesnoKeys[0], true);
 			timeMinEl.setIntValue(section.getDuration().getMin());
@@ -132,7 +133,7 @@ public class SectionController extends FormBasicController implements TabbableCo
 		boolean random = SelectionOrdering.RANDOM.equals(section.getSelection_ordering().getOrderType());
 		shuffleEl = uifactory.addRadiosHorizontal("shuffle", "form.section.shuffle", formLayout, yesnoKeys, yesnoValues);
 		shuffleEl.addActionListener(FormEvent.ONCHANGE);
-		shuffleEl.setEnabled(!restrictedEdit);
+		shuffleEl.setEnabled(!restrictedEdit && !blockedEdit);
 		if (random) {
 			shuffleEl.select(yesnoKeys[0], true);
 		} else {
@@ -150,7 +151,7 @@ public class SectionController extends FormBasicController implements TabbableCo
 		}
 		selectionNumEl = uifactory.addDropdownSingleselect("selection.num", "form.section.selection_pre", formLayout, theKeys, theValues, null);
 		selectionNumEl.setHelpText(translate("form.section.selection_pre.hover"));
-		selectionNumEl.setEnabled(!restrictedEdit);
+		selectionNumEl.setEnabled(!restrictedEdit && !blockedEdit);
 		int selectionNum = section.getSelection_ordering().getSelectionNumber();
 		if(selectionNum <= 0) {
 			selectionNumEl.select(theKeys[0], true);
@@ -162,7 +163,9 @@ public class SectionController extends FormBasicController implements TabbableCo
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
-		uifactory.addFormSubmitButton("submit", buttonsCont);
+		if(!blockedEdit) {
+			uifactory.addFormSubmitButton("submit", buttonsCont);
+		}
 	}
 	
 	public void childNodeChanges() {
@@ -228,7 +231,7 @@ public class SectionController extends FormBasicController implements TabbableCo
 			section.setObjectives(newObjectives);
 		}
 
-		if (!restrictedEdit) {
+		if (!restrictedEdit && !blockedEdit) {
 			String selectionNumStr = selectionNumEl.getSelectedKey();
 			int selectionNum = 1;
 			try {

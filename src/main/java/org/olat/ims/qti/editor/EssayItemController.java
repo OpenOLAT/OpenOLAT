@@ -53,7 +53,8 @@ public class EssayItemController extends BasicController implements ControllerEv
 	private Item item;
 	private EssayQuestion essayQuestion;
 	private QTIEditorPackage qtiPackage;
-	private boolean restrictedEdit;
+	private final boolean restrictedEdit;
+	private final boolean blockedEdit;
 	private CloseableModalController dialogCtr;
 	private MaterialFormController matFormCtr;
 
@@ -63,11 +64,13 @@ public class EssayItemController extends BasicController implements ControllerEv
 	 * @param trnsltr
 	 * @param wControl
 	 */
-	public EssayItemController(UserRequest ureq, WindowControl wControl, Item item, QTIEditorPackage qtiPackage, Translator trnsltr,  boolean restrictedEdit) {
+	public EssayItemController(UserRequest ureq, WindowControl wControl, Item item, QTIEditorPackage qtiPackage, Translator trnsltr,
+			boolean restrictedEdit, boolean blockedEdit) {
 		super(ureq, wControl);
 		setTranslator(trnsltr);
 
 		this.restrictedEdit = restrictedEdit;
+		this.blockedEdit = blockedEdit;
 		this.item = item;
 		this.qtiPackage = qtiPackage;
 		this.trnsltr = trnsltr;
@@ -81,21 +84,17 @@ public class EssayItemController extends BasicController implements ControllerEv
 		}
 		main.contextPut("mediaBaseURL", mediaBaseUrl);
 		main.contextPut("isRestrictedEdit", restrictedEdit ? Boolean.TRUE : Boolean.FALSE);
+		main.contextPut("isBlockedEdit", Boolean.valueOf(blockedEdit));
 		main.contextPut("isSurveyMode", qtiPackage.getQTIDocument().isSurvey() ? "true" : "false");
 		putInitialPanel(main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == main) {
 			String cmd = event.getCommand();
 			if (cmd.equals("editq")) {
-				displayMaterialFormController(ureq, item.getQuestion().getQuestion(), restrictedEdit);
-
+				displayMaterialFormController(ureq, item.getQuestion().getQuestion());
 			} else if (cmd.equals("sessay")) { // submit essay
 				main.setDirty(true);
 				
@@ -155,10 +154,6 @@ public class EssayItemController extends BasicController implements ControllerEv
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller controller, Event event) {
 		if (controller == matFormCtr) {
@@ -199,18 +194,15 @@ public class EssayItemController extends BasicController implements ControllerEv
 	 * @param ureq
 	 * @param mat
 	 */
-	private void displayMaterialFormController(UserRequest ureq, Material mat, boolean isRestrictedEditMode) {
-		matFormCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, isRestrictedEditMode);
+	private void displayMaterialFormController(UserRequest ureq, Material mat) {
+		matFormCtr = new MaterialFormController(ureq, getWindowControl(), mat, qtiPackage, restrictedEdit, blockedEdit);
 		matFormCtr.addControllerListener(this);
 		dialogCtr = new CloseableModalController(getWindowControl(), "close",
 				matFormCtr.getInitialComponent(), true, trnsltr.translate("fieldset.legend.question"));
 		matFormCtr.addControllerListener(dialogCtr);
 		dialogCtr.activate();
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+
 	@Override
 	protected void doDispose() {
 		item = null;
