@@ -27,12 +27,14 @@ import java.util.UUID;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.basesecurity.model.SearchMemberParameters;
@@ -531,5 +533,40 @@ public class OrganisationDAOTest extends OlatTestCase {
 		Assert.assertFalse(identities.isEmpty());
 		Assert.assertFalse(identities.contains(member));
 		Assert.assertTrue(identities.contains(notMember));
+	}
+	
+	@Test
+	public void getStatistics() {
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-11");
+		Identity author1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-12");
+		Identity author2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-13");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation = organisationDao.createAndPersistOrganisation("Org 14", identifier, null, null, null);
+		dbInstance.commit();
+		organisationService.addMember(organisation, user, OrganisationRoles.user);
+		organisationService.addMember(organisation, author1, OrganisationRoles.author);
+		organisationService.addMember(organisation, author2, OrganisationRoles.author);
+		dbInstance.commitAndCloseSession();
+		
+		// check
+		List<IdentityRef> identities = new ArrayList<>();
+		identities.add(user);
+		identities.add(author1);
+		identities.add(author2);
+
+		List<OrganisationMembershipStats> stats = organisationDao.getStatistics(organisation, identities);
+		Assert.assertEquals(2, stats.size());
+		
+		long numOfUsers = -1l;
+		long numOfAuthors = -1l;
+		for(OrganisationMembershipStats stat:stats) {
+			if(OrganisationRoles.user == stat.getRole()) {
+				numOfUsers = stat.getNumOfMembers();
+			} else if(OrganisationRoles.author == stat.getRole()) {
+				numOfAuthors = stat.getNumOfMembers();
+			}
+		}
+		Assert.assertEquals(1, numOfUsers);
+		Assert.assertEquals(2, numOfAuthors);
 	}
 }

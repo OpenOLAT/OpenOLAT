@@ -6,4 +6,7 @@ $r.render("table")
 	#if($r.available("bulkChange.title"))
 		$r.render("bulkChange.title")
 	#end
+	#if($r.available("command.move.to.organisation"))
+		$r.render("command.move.to.organisation")
+	#end
 </div>

@@ -28,8 +28,6 @@ package org.olat.basesecurity;
 import org.olat.core.commons.persistence.PersistentObject;
 
 /**
- * Description: <br>
- * TODO: Class Description
  * 
  * @author Felix Jost
  */
@@ -40,11 +38,11 @@ public class NamedGroupImpl extends PersistentObject implements NamedGroup {
 	/**
 	 * for hibernate only
 	 */
-	protected NamedGroupImpl() {
-	//  
+	public NamedGroupImpl() {
+		//  
 	}
 
-	NamedGroupImpl(String groupName, SecurityGroup securityGroup) {
+	public NamedGroupImpl(String groupName, SecurityGroup securityGroup) {
 		this.groupName = groupName;
 		this.securityGroup = securityGroup;
 	}

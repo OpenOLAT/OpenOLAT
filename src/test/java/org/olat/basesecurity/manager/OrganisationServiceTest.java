@@ -19,6 +19,7 @@
  */
 package org.olat.basesecurity.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -230,6 +231,74 @@ public class OrganisationServiceTest extends OlatTestCase {
 		GroupMembership author1_1_3MembershipInherited = groupDao.getMembership(organisation1_1_3_2.getGroup(), author1_1_3, OrganisationRoles.author.name());
 		Assert.assertNotNull(author1_1_3MembershipInherited);
 		Assert.assertEquals(GroupMembershipInheritance.inherited, author1_1_3MembershipInherited.getInheritanceMode());	
+	}
+	
+	@Test
+	public void moveMembers() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation sourceOrganisation1 = organisationService.createOrganisation("Source 1", "Source 1", "", defOrganisation, null);
+		Organisation sourceOrganisation1_1 = organisationService.createOrganisation("Source 1.1", "Source 1.1", "", sourceOrganisation1, null);
+		Organisation sourceOrganisation1_1_1 = organisationService.createOrganisation("Source 1.1.1", "Source 1.1.1", "", sourceOrganisation1_1, null);
+		
+		Organisation targetOrganisation1 = organisationService.createOrganisation("Target 1", "Target 1", "", defOrganisation, null);
+		Organisation targetOrganisation1_1 = organisationService.createOrganisation("Target 1", "Target 1", "", targetOrganisation1, null);
+		Organisation targetOrganisation1_1_1 = organisationService.createOrganisation("Target 1", "Target 1", "", targetOrganisation1_1, null);
+		dbInstance.commitAndCloseSession();
+
+		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-1");
+		organisationService.addMember(sourceOrganisation1, user1, OrganisationRoles.user);
+		Identity user1_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-1-1");
+		organisationService.addMember(sourceOrganisation1_1, user1_1, OrganisationRoles.user);
+		Identity user1_1_1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-1-1-1");
+		organisationService.addMember(sourceOrganisation1_1_1, user1_1_1, OrganisationRoles.user);
+		Identity admin1 = JunitTestHelper.createAndPersistIdentityAsRndUser("admin-1");
+		organisationService.addMember(sourceOrganisation1, admin1, OrganisationRoles.administrator);
+		dbInstance.commitAndCloseSession();
+
+		// move the user1 and author1 from org. 1 source to target
+		List<Identity> identitiesToMove = new ArrayList<>();
+		identitiesToMove.add(user1);
+		identitiesToMove.add(admin1);
+		List<OrganisationRoles> roles = new ArrayList<>();
+		roles.add(OrganisationRoles.administrator);
+		roles.add(OrganisationRoles.author);
+		roles.add(OrganisationRoles.user);
+		organisationService.moveMembers(sourceOrganisation1, targetOrganisation1, identitiesToMove, roles);
+		
+		// check user 1
+		{
+			GroupMembership userMembership_source1 = groupDao.getMembership(sourceOrganisation1.getGroup(), user1, OrganisationRoles.user.name());
+			Assert.assertNull(userMembership_source1);
+			GroupMembership userMembership_1 = groupDao.getMembership(targetOrganisation1.getGroup(), user1, OrganisationRoles.user.name());
+			Assert.assertNotNull(userMembership_1);
+			Assert.assertEquals(GroupMembershipInheritance.none, userMembership_1.getInheritanceMode());
+			// make sure of unwanted inheritance
+			GroupMembership userMembership_1_1 = groupDao.getMembership(targetOrganisation1_1.getGroup(), user1, OrganisationRoles.user.name());
+			Assert.assertNull(userMembership_1_1);
+		}
+		
+		// check user1_1 (no changes)
+		{
+			GroupMembership user11Membership_1_1 = groupDao.getMembership(sourceOrganisation1_1.getGroup(), user1_1, OrganisationRoles.user.name());
+			Assert.assertNotNull(user11Membership_1_1);
+			Assert.assertEquals(GroupMembershipInheritance.none, user11Membership_1_1.getInheritanceMode());
+			GroupMembership user11TargetMembership_1 = groupDao.getMembership(targetOrganisation1.getGroup(), user1_1, OrganisationRoles.user.name());
+			Assert.assertNull(user11TargetMembership_1);
+			GroupMembership user11TargetMembership_1_1 = groupDao.getMembership(targetOrganisation1_1.getGroup(), user1_1, OrganisationRoles.user.name());
+			Assert.assertNull(user11TargetMembership_1_1);
+		}
+
+		// check admin
+		{
+			GroupMembership adminMembership_source1_1_1 = groupDao.getMembership(sourceOrganisation1_1_1.getGroup(), admin1, OrganisationRoles.administrator.name());
+			Assert.assertNull(adminMembership_source1_1_1);
+			GroupMembership adminMembership1 = groupDao.getMembership(targetOrganisation1.getGroup(), admin1, OrganisationRoles.administrator.name());
+			Assert.assertNotNull(adminMembership1);
+			Assert.assertEquals(GroupMembershipInheritance.root, adminMembership1.getInheritanceMode());
+			GroupMembership adminMembership1_1_1 = groupDao.getMembership(targetOrganisation1_1_1.getGroup(), admin1, OrganisationRoles.administrator.name());
+			Assert.assertNotNull(adminMembership1_1_1);
+			Assert.assertEquals(GroupMembershipInheritance.inherited, adminMembership1_1_1.getInheritanceMode());
+		}
 	}
 	
 	private Identity createRandomUser(String login) {

@@ -43,6 +43,7 @@ import org.olat.basesecurity.OrganisationTypeRef;
 import org.olat.basesecurity.model.IdentityToRoleKey;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.CoreSpringFactory;
@@ -363,6 +364,9 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 
 	@Override
 	public List<Identity> getMembersIdentity(Organisation organisation, OrganisationRoles role) {
+		if(role == null) {
+			return new ArrayList<>();
+		}
 		return organisationDao.getMembersIdentity(organisation, role.name());
 	}
 
@@ -486,7 +490,27 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		}
 		return false;
 	}
-	
+
+	@Override
+	public void moveMembers(OrganisationRef sourceOrganisation, OrganisationRef targetOrganisation,
+			List<Identity> identities, List<OrganisationRoles> roles) {
+		Organisation sourceOrg = getOrganisation(sourceOrganisation);
+		Organisation targetOrg = getOrganisation(targetOrganisation);
+		
+		for(OrganisationRoles role:roles) {
+			List<Identity> currentMembers = organisationDao.getNonInheritedMembersIdentity(sourceOrganisation, role.name());
+			Set<Identity> currentMemberSet = new HashSet<>(currentMembers);
+
+			for(Identity identity:identities) {
+				if(currentMemberSet.contains(identity)) {
+					removeMember(sourceOrg, identity, role, true);
+					addMember(targetOrg, identity, role);
+					dbInstance.commit();
+				}
+			}
+		}
+	}
+
 	@Override
 	public boolean hasRole(String organisationIdentifier, IdentityRef identity, OrganisationRoles... roles) {
 		List<String> roleList = OrganisationRoles.toList(roles);
@@ -519,6 +543,10 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	public List<Identity> getIdentitiesWithRole(OrganisationRoles role) {
 		return organisationDao.getIdentities(role.name());
 	}
-	
-	
+
+	@Override
+	public List<OrganisationMembershipStats> getOrganisationStatistics(OrganisationRef organisation,
+			List<IdentityRef> identities) {
+		return organisationDao.getStatistics(organisation, identities);
+	}
 }

@@ -22,6 +22,7 @@ package org.olat.basesecurity;
 import java.util.List;
 
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
@@ -229,6 +230,17 @@ public interface OrganisationService {
 	
 	public boolean hasRole(IdentityRef identity, OrganisationRoles role);
 	
+
+	/**
+	 * 
+	 * @param SourceOrganisation
+	 * @param targetOrganisation
+	 * @param identities
+	 * @param roles
+	 */
+	public void moveMembers(OrganisationRef sourceOrganisation, OrganisationRef targetOrganisation,
+			List<Identity> identities, List<OrganisationRoles> roles);
+	
 	/**
 	 * Check if the specified user has the list of roles in the organization.
 	 * 
@@ -254,5 +266,13 @@ public interface OrganisationService {
 	public List<Identity> getDefaultsSystemAdministator();
 	
 	public List<Identity> getIdentitiesWithRole(OrganisationRoles role);
+	
+	/**
+	 * 
+	 * @param organisation The organization (mandatory)
+	 * @param identities A list of identities, not null, not empty.
+	 * @return The number of user with a role in the organization
+	 */
+	public List<OrganisationMembershipStats> getOrganisationStatistics(OrganisationRef organisation, List<IdentityRef> identities);
 
 }

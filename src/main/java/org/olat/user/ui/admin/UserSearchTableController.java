@@ -34,6 +34,7 @@ import org.olat.admin.user.bulkChange.UserBulkChanges;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.basesecurity.model.IdentityPropertiesRow;
 import org.olat.core.commons.persistence.DefaultResultInfos;
@@ -68,6 +69,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -80,6 +82,8 @@ import org.olat.modules.co.ContactFormController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.olat.user.ui.admin.UserSearchTableModel.UserCols;
+import org.olat.user.ui.admin.bulk.move.UserBulkMove;
+import org.olat.user.ui.admin.bulk.move.UserBulkMove_1_ChooseRoleStep;
 import org.olat.user.ui.identity.UserInfoSegmentedController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,6 +102,7 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private Link nextLink;
 	private Link previousLink;
 	private FormLink mailButton;
+	private FormLink bulkMovebutton;
 	private FormLink bulkChangesButton;
 	
 	private FlexiTableElement tableEl;
@@ -108,29 +113,36 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	private UserAdminController userAdminCtr;
 	private ContactFormController contactCtr;
 	private UserInfoSegmentedController userInfoCtr;
-	private StepsMainRunController userBulkChangesController; 
+	private StepsMainRunController userBulkMoveController;
+	private StepsMainRunController userBulkChangesController;
 	
 	private final Roles roles;
 	private final boolean vCard;
 	private final boolean bulkMail;
+	private final boolean bulkOrganisationMove;
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
+	
+	private SearchIdentityParams currentSearchParams;
 
-	@Autowired
-	private UserBulkChangeManager userBulkChangesManager;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
+	private UserBulkChangeManager userBulkChangesManager;
 	
 	public UserSearchTableController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			boolean bulkMail, boolean vCard) {
+			boolean bulkMail, boolean bulkOrganisationMove, boolean vCard) {
 		super(ureq, wControl, "search_table");
 		this.vCard = vCard;
 		this.bulkMail = bulkMail;
 		this.stackPanel = stackPanel;
+		this.bulkOrganisationMove = bulkOrganisationMove;
 		setTranslator(Util.createPackageTranslator(UsermanagerUserSearchController.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
@@ -153,6 +165,9 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		}
 		if(roles.isAdministrator() || roles.isUserManager() || roles.isRolesManager()) {
 			bulkChangesButton = uifactory.addFormLink("bulkChange.title", formLayout, Link.BUTTON);
+		}
+		if(bulkOrganisationMove) {
+			bulkMovebutton = uifactory.addFormLink("command.move.to.organisation", formLayout, Link.BUTTON);
 		}
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -192,15 +207,21 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	}
 	
 	public void loadModel(SearchIdentityParams params) {
+		currentSearchParams = params;
 		UserSearchDataSource dataSource = new UserSearchDataSource(params, userPropertyHandlers, getLocale());
 		tableModel.setSource(dataSource);
 		tableEl.reset(true, true, true);
+		bulkMovebutton.setVisible(currentSearchParams != null
+				&& currentSearchParams.getOrganisations() != null
+				&& currentSearchParams.getOrganisations().size() == 1);
 	}
 	
 	public void loadModel(List<Identity> identityList) {
+		currentSearchParams = null;
 		IdentityListDataSource dataSource = new IdentityListDataSource(identityList, userPropertyHandlers, getLocale());
 		tableModel.setSource(dataSource);
 		tableEl.reset(true, true, true);
+		bulkMovebutton.setVisible(false);
 	}
 
 	@Override
@@ -238,6 +259,18 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				cleanUp();
 			}	
+		} else if(userBulkMoveController == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+			}
+			if (event == Event.CHANGED_EVENT) {
+				doFinishBulkMove();
+			} else if (event == Event.DONE_EVENT) {
+				showError("bulkChange.failed");
+			}
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				cleanUp();
+			}
 		} else if(contactCtr == source) {
 			cmc.deactivate();
 			cleanUp();
@@ -252,10 +285,12 @@ public class UserSearchTableController extends FormBasicController implements Ac
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(userBulkChangesController);
+		removeAsListenerAndDispose(userBulkMoveController);
 		removeAsListenerAndDispose(userInfoCtr);
 		removeAsListenerAndDispose(contactCtr);
 		removeAsListenerAndDispose(cmc);
 		userBulkChangesController = null;
+		userBulkMoveController = null;
 		userInfoCtr = null;
 		contactCtr = null;
 		cmc = null;
@@ -283,6 +318,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			doMail(ureq);
 		} else if(bulkChangesButton == source) {
 			doBulkEdit(ureq);
+		} else if(bulkMovebutton == source) {
+			doBulkMove(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -475,7 +512,48 @@ public class UserSearchTableController extends FormBasicController implements Ac
 			identityKeys.add(row.getIdentityKey());
 		}
 		return securityManager.loadIdentityByKeys(identityKeys);
-	} 
+	}
+	
+	private void doBulkMove(UserRequest ureq) {
+		if(userBulkMoveController != null) return;
+		
+		List<Identity> identities = getSelectedIdentitiesWithWarning();
+		if(identities.isEmpty()) {
+			return;
+		}
+		Organisation organisation = null;
+		if(currentSearchParams != null && currentSearchParams.getOrganisations() != null && currentSearchParams.getOrganisations().size() == 1) {
+			organisation = organisationService.getOrganisation(currentSearchParams.getOrganisations().get(0));
+		}
+		if(organisation == null) {
+			return;
+		}
+		
+		// valid selection: load in wizard
+		final UserBulkMove userBulkMove = new UserBulkMove(organisation, identities);
+		Step start = new UserBulkMove_1_ChooseRoleStep(ureq, userBulkMove);
+		// callback executed in case wizard is finished.
+		StepRunnerCallback finish = (uureq, wwControl, runContext) -> {
+			// all information to do now is within the runContext saved
+			boolean hasChanges = userBulkMove.getRoles() != null && !userBulkMove.getRoles().isEmpty()
+					&& userBulkMove.getIdentitiesToMove() != null && !userBulkMove.getIdentitiesToMove().isEmpty();
+			if(hasChanges) {
+				organisationService.moveMembers(userBulkMove.getOrganisation(), userBulkMove.getTargetOrganisation(),
+						userBulkMove.getIdentitiesToMove(), userBulkMove.getRoles());
+			}
+			// signal correct completion and tell if changes were made or not.
+			return hasChanges ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
+		};
+
+		userBulkMoveController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
+				translate("bulkChange.title"), "o_sel_user_bulk_move_wizard");
+		listenTo(userBulkMoveController);
+		getWindowControl().pushAsModalDialog(userBulkMoveController.getInitialComponent());
+	}
+	
+	private void doFinishBulkMove() {
+		tableEl.reset(true, true, true);
+	}
 	
 	private final class Index {
 		private final boolean vcard;

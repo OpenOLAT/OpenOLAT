@@ -36,11 +36,13 @@ import javax.persistence.TypedQuery;
 import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.model.OrganisationImpl;
 import org.olat.basesecurity.model.OrganisationMember;
+import org.olat.basesecurity.model.OrganisationMembershipStats;
 import org.olat.basesecurity.model.OrganisationNode;
 import org.olat.basesecurity.model.SearchMemberParameters;
 import org.olat.core.commons.persistence.DB;
@@ -242,6 +244,22 @@ public class OrganisationDAO {
 		  .append(" inner join membership.identity ident")
 		  .append(" inner join fetch ident.user identUser")
 		  .append(" where org.key=:organisationKey and membership.role=:role");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("organisationKey", organisation.getKey())
+				.setParameter("role", role)
+				.getResultList();
+	}
+	
+	public List<Identity> getNonInheritedMembersIdentity(OrganisationRef organisation, String role) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select ident from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where org.key=:organisationKey and membership.role=:role ")
+		  .append(" and membership.inheritanceModeString").in(GroupMembershipInheritance.root, GroupMembershipInheritance.none);
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Identity.class)
 				.setParameter("organisationKey", organisation.getKey())
@@ -475,5 +493,28 @@ public class OrganisationDAO {
 			int len2 = s2 == null ? 0 : s2.length();
 			return len1 - len2;
 		}
+	}
+	
+	public List<OrganisationMembershipStats> getStatistics(OrganisationRef organisation, List<IdentityRef> identities) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select membership.role, count(distinct membership.key) from organisation org")
+		  .append(" inner join org.group baseGroup")
+		  .append(" inner join baseGroup.members membership")
+		  .append(" where org.key=:organisationKey and membership.identity.key in (:identityKeys)")
+		  .append(" group by membership.role");
+		
+		List<Long> identityKeys = identities.stream()
+				.map(IdentityRef::getKey).collect(Collectors.toList());
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("organisationKey", organisation.getKey())
+				.setParameter("identityKeys", identityKeys)
+				.getResultList();
+		return rawObjects.stream().map(rawObject -> {
+			String roleStr = (String)rawObject[0];
+			Long numOfMembers = PersistenceHelper.extractLong(rawObject, 1);
+			OrganisationRoles role = (OrganisationRoles.isValue(roleStr) ? OrganisationRoles.valueOf(roleStr) : null);
+			return new OrganisationMembershipStats(role, numOfMembers);
+		}).collect(Collectors.toList());
 	}
 }

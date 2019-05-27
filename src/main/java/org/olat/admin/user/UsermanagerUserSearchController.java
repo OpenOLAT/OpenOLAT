@@ -74,6 +74,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	private UserSearchTableController tableCtr;
 
 	private final boolean showEmailButton;
+	private final boolean showOrganisationMove;
 	private final boolean isAdministrativeUser;
 	private List<Organisation> manageableOrganisations;
 	private SearchIdentityParams identityQueryParams;
@@ -98,7 +99,8 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		
 		this.stackedPanel = stackedPanel;
 		this.manageableOrganisations = manageableOrganisations;
-		this.showEmailButton = true;
+		showEmailButton = true;
+		showOrganisationMove = false;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
@@ -124,16 +126,18 @@ public class UsermanagerUserSearchController extends BasicController implements 
 	 * @param searchCreatedBefore
 	 */
 	public UsermanagerUserSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackedPanel,
-			SearchIdentityParams predefinedQuery, boolean showEmailButton) {
+			SearchIdentityParams predefinedQuery, boolean showEmailButton, boolean showOrganisationMove) {
 		super(ureq, wControl);
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackedPanel = stackedPanel;
 		this.showEmailButton = showEmailButton;
+		this.showOrganisationMove = showOrganisationMove;
 
 		identityQueryParams = predefinedQuery;
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		
-		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel, showEmailButton, true);
+		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel,
+				showEmailButton, showOrganisationMove, true);
 		listenTo(tableCtr);
 		tableCtr.loadModel(identityQueryParams);
 		putInitialPanel(tableCtr.getInitialComponent());
@@ -155,10 +159,11 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		this.stackedPanel = stackedPanel;
 		this.showEmailButton = showEmailButton;
+		showOrganisationMove = false;
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 
-		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel, showEmailButton, true);
+		tableCtr = new UserSearchTableController(ureq, getWindowControl(), stackedPanel, showEmailButton, false, true);
 		listenTo(tableCtr);
 		tableCtr.loadModel(identitiesList);
 		
@@ -227,7 +232,7 @@ public class UsermanagerUserSearchController extends BasicController implements 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("table", 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = addToHistory(ureq, ores, null);
-		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel, showEmailButton, true);
+		tableCtr = new UserSearchTableController(ureq, bwControl, stackedPanel, showEmailButton, showOrganisationMove, true);
 		listenTo(tableCtr);
 		tableCtr.loadModel(identityQueryParams);
 		stackedPanel.pushController("Results", tableCtr);
