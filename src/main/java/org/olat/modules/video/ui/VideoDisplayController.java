@@ -132,7 +132,9 @@ public class VideoDisplayController extends BasicController {
 		super(ureq, wControl);
 		this.videoEntry = videoEntry;
 		this.displayOptions = displayOptions;
-		descriptionText = displayOptions.isCustomDescription() ? descriptionText : displayOptions.getDescriptionText();
+		this.descriptionText = displayOptions.isCustomDescription()
+				? displayOptions.getDescriptionText()
+				: courseNode.getLearningObjectives();
 		
 		mainVC = createVelocityContainer("video_run");
 		putInitialPanel(mainVC);
