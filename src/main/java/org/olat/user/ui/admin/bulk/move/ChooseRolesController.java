@@ -97,26 +97,26 @@ public class ChooseRolesController extends StepFormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		int numOfRoles = statistics.size();
-		String[] roleKeys = new String[statistics.size()];
-		String[] roleValues = new String[statistics.size()];
-		for(int i=0; i<numOfRoles; i++) {
-			OrganisationMembershipStats stats = statistics.get(i);
-			roleKeys[i] = stats.getRole().name();
-			roleValues[i] = translate("role.".concat(stats.getRole().name())) + " ( " + stats.getNumOfMembers() + " )"; 
+		KeyValues rolesKeyValues = new KeyValues();
+		for(OrganisationMembershipStats stats:statistics) {
+			if(stats.getRole() != null) {
+				String roleKey = stats.getRole().name();
+				String roleValue = translate("role.".concat(stats.getRole().name())) + " ( " + stats.getNumOfMembers() + " )";
+				rolesKeyValues.add(KeyValues.entry(roleKey, roleValue));
+			}
 		}
-		rolesEl = uifactory.addCheckboxesVertical("roles", formLayout, roleKeys, roleValues, 1);
+		rolesEl = uifactory.addCheckboxesVertical("roles", formLayout, rolesKeyValues.keys(), rolesKeyValues.values(), 1);
 		
 		uifactory.addStaticTextElement("source.organisation", organisation.getDisplayName(), formLayout);
 
-		KeyValues keyValues = new KeyValues();
+		KeyValues organisationsKeyValues = new KeyValues();
 		for(Organisation target:targetOrganisations) {
 			String organisationKey = target.getKey().toString();
 			String parentLine = organisationWithParentLine(target);
-			keyValues.add(KeyValues.entry(organisationKey, parentLine));
+			organisationsKeyValues.add(KeyValues.entry(organisationKey, parentLine));
 		}
-		keyValues.sort(KeyValues.VALUE_ASC);
-		targetOrganisationEl = uifactory.addDropdownSingleselect("target.organisation", formLayout, keyValues.keys(), keyValues.values());
+		organisationsKeyValues.sort(KeyValues.VALUE_ASC);
+		targetOrganisationEl = uifactory.addDropdownSingleselect("target.organisation", formLayout, organisationsKeyValues.keys(), organisationsKeyValues.values());
 	}
 	
 	private String organisationWithParentLine(Organisation org) {

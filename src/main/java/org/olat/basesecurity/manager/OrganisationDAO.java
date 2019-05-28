@@ -500,7 +500,7 @@ public class OrganisationDAO {
 		sb.append("select membership.role, count(distinct membership.key) from organisation org")
 		  .append(" inner join org.group baseGroup")
 		  .append(" inner join baseGroup.members membership")
-		  .append(" where org.key=:organisationKey and membership.identity.key in (:identityKeys)")
+		  .append(" where org.key=:organisationKey and membership.identity.key in (:identityKeys) and membership.role is not null")
 		  .append(" group by membership.role");
 		
 		List<Long> identityKeys = identities.stream()
