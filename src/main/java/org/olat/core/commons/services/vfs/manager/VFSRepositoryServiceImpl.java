@@ -1077,6 +1077,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(directory.isHidden() || VFSRepositoryModule.canMeta(directory) != VFSConstants.YES) {
 					return FileVisitResult.SKIP_SUBTREE;
 				}
+				if(dir.getNameCount() > 50) {
+					log.error("More than 50 directories deep. Stop migrating metadata: {}", directory);
+					return FileVisitResult.SKIP_SUBTREE;
+				}
+				
 				VFSMetadata parent = parentLine.peekLast();
 				VFSMetadata metadata = migrateMetadata(dir.toFile(), parent);
 				parentLine.add(metadata);
@@ -1084,6 +1089,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 					dbInstance.commitAndCloseSession();
 					return FileVisitResult.SKIP_SUBTREE;
 				}
+				dbInstance.commit();
 				return FileVisitResult.CONTINUE;
 			}
 
