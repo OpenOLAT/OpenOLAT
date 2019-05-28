@@ -90,7 +90,7 @@ public class CalendarEntryDetailsController extends BasicController {
 		pane = new TabbedPane("pane", getLocale());
 		pane.addListener(this);
 		
-		eventForm = new CalendarEntryForm(ureq, wControl, kalendarEvent, calendarWrapper, availableCalendars, isNew);
+		eventForm = new CalendarEntryForm(ureq, wControl, kalendarEvent, calendarWrapper, availableCalendars, isNew, caller);
 		listenTo(eventForm);
 		isReadOnly = calendarWrapper == null ? true : calendarWrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY;
 

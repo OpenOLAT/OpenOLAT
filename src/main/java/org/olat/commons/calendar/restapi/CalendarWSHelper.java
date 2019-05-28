@@ -51,11 +51,12 @@ public class CalendarWSHelper {
 		kalEvent.setLocation(event.getLocation());
 		kalEvent.setManagedFlags(CalendarManagedFlag.toEnum(event.getManagedFlags()));
 		kalEvent.setAllDayEvent(event.isAllDayEvent());
+		kalEvent.setLiveStreamUrl(event.getLiveStreamUrl());
         kalEvent.setExternalId(event.getExternalId());
         kalEvent.setExternalSource(event.getExternalSource());
 	}
 	
-	protected static boolean hasReadAccess(KalendarRenderWrapper wrapper) {
+	static boolean hasReadAccess(KalendarRenderWrapper wrapper) {
 		if(wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) {
 			return true;
 		}

@@ -36,10 +36,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
@@ -52,6 +54,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,11 +62,11 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.commons.calendar.restapi.EventVO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.group.BusinessGroup;
@@ -185,6 +188,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		CollaborationTools collabTools1 = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(g1);
 		collabTools1.setToolEnabled(CollaborationTools.TOOL_FORUM, true);
 		collabTools1.setToolEnabled(CollaborationTools.TOOL_WIKI, true);
+		collabTools1.setToolEnabled(CollaborationTools.TOOL_CALENDAR, true);
 		collabTools1.saveNews("<p>Hello world</p>");
     
 		try {
@@ -259,7 +263,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(groups);
 		assertTrue(groups.size() >= 4);//g1, g2, g3 and g4 + from olat
 		
-		Set<Long> keys = new HashSet<Long>();
+		Set<Long> keys = new HashSet<>();
 		for(GroupVO vo:groups) {
 			keys.add(vo.getKey());
 		}
@@ -282,7 +286,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		assertNotNull(groups);
 		assertTrue(groups.size() >= 2);//g1, g2, g3 and g4 + from olat
 		
-		Set<Long> keys = new HashSet<Long>();
+		Set<Long> keys = new HashSet<>();
 		for(GroupVO vo:groups) {
 			keys.add(vo.getKey());
 		}
@@ -366,6 +370,44 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testGetGroupCalendarEvents() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		//create an event
+		EventVO event = new EventVO();
+		Calendar cal = Calendar.getInstance();
+		event.setBegin(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 1);
+		event.setEnd(cal.getTime());
+		String subject = UUID.randomUUID().toString();
+		event.setSubject(subject);
+
+		URI eventUri = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/calendar/event").build();
+		HttpPost postEventMethod = conn.createPost(eventUri, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(postEventMethod, event);
+		HttpResponse postEventResponse = conn.execute(postEventMethod);
+		assertEquals(200, postEventResponse.getStatusLine().getStatusCode());
+		
+		// Get the event
+		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/calendar/events").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		List<EventVO> vos = parseEventArray(response);
+		assertNotNull(vos);
+	}
+	
+	private List<EventVO> parseEventArray(HttpResponse response) {
+		try(InputStream body = response.getEntity().getContent()) {
+			ObjectMapper mapper = new ObjectMapper(jsonFactory); 
+			return mapper.readValue(body, new TypeReference<List<EventVO>>(){/* */});
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
+	}
+	
+	@Test
 	public void testUpdateCourseGroup() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
 		
@@ -439,7 +481,7 @@ public class GroupMgmtTest extends OlatJerseyTestCase {
 		//update the configuration
 		GroupConfigurationVO configVo = new GroupConfigurationVO();
 		configVo.setTools(new String[]{ "hasFolder", "hasNews" });
-		HashMap<String, Integer> toolsAccess = new HashMap<String, Integer>();
+		HashMap<String, Integer> toolsAccess = new HashMap<>();
 		toolsAccess.put("hasFolder", new Integer(CollaborationTools.FOLDER_ACCESS_OWNERS));
 		configVo.setToolsAccess(toolsAccess);
 		configVo.setOwnersVisible(Boolean.TRUE);

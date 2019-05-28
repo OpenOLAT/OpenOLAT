@@ -19,6 +19,7 @@
  */
 package org.olat.restapi.group;
 
+import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 import static org.olat.restapi.security.RestSecurityHelper.isGroupManager;
 import static org.olat.restapi.support.ObjectFactory.getInformation;
 
@@ -49,8 +50,12 @@ import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.collaboration.CollaborationManager;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
+import org.olat.commons.calendar.CalendarModule;
+import org.olat.commons.calendar.restapi.CalWebService;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.vfs.restapi.VFSWebServiceSecurityCallback;
@@ -599,6 +604,43 @@ public class LearningGroupWebService {
 		}
 		return null;
 	}
+	
+	/**
+	 * Return the callendar web service
+	 * @param groupKey The key of the group
+	 * @param request The HTTP Request
+	 * @return
+	 */
+	@Path("{groupKey}/calendar")
+	public CalWebService getCalendarWebService(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
+		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
+		if(!calendarModule.isEnabled() || !calendarModule.isEnableGroupCalendar()) {
+			return null;
+		}
+		
+		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
+		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
+		if(bg == null) {
+			return null;
+		}
+		
+		if(!isGroupManager(request)) {
+			Identity identity = RestSecurityHelper.getIdentity(request);
+			if(!bgs.isIdentityInBusinessGroup(identity, bg)) {
+				return null;
+			}
+		}
+		
+		CollaborationTools collabTools = CollaborationToolsFactory.getInstance().getOrCreateCollaborationTools(bg);
+		if(collabTools.isToolEnabled(CollaborationTools.TOOL_CALENDAR)) {
+			CollaborationManager collaborationManager = CoreSpringFactory.getImpl(CollaborationManager.class);
+			UserRequest ureq = getUserRequest(request);
+			KalendarRenderWrapper calendar = collaborationManager.getCalendar(bg, ureq, true);
+			return new CalWebService(calendar);
+		}
+		return null;
+	}
+
 	
 	/**
 	 * Returns the list of owners of the group specified by the groupKey.

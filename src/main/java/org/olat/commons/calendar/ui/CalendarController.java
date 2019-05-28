@@ -36,6 +36,7 @@ public interface CalendarController extends Controller {
 
 	public static final String ACTION_CALENDAR_COURSE = "action.calendar.course";
 	public static final String ACTION_CALENDAR_GROUP = "action.calendar.group";
+	public static final String CALLER_LIVE_STREAM = "livestream";
 	public static final String CALLER_CURRICULUM = "curriculum";
 	public static final String CALLER_COURSE = "course";
 	public static final String CALLER_COLLAB = "collab";

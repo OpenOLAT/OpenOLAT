@@ -36,6 +36,7 @@ public class KalendarComparator implements Comparator<KalendarRenderWrapper> {
 	
 	public static final KalendarComparator getInstance() { return INSTANCE; }
 	
+	@Override
 	public int compare(KalendarRenderWrapper calendar0, KalendarRenderWrapper calendar1) {
 		// if of the same type, order by display name
 		if (calendar0.getKalendar().getType() == calendar1.getKalendar().getType())
@@ -45,7 +46,7 @@ public class KalendarComparator implements Comparator<KalendarRenderWrapper> {
 		if (calendar0.getKalendar().getType() == CalendarManager.TYPE_USER) return -1; // TYPE_USER is displayed first
 		if (calendar0.getKalendar().getType() == CalendarManager.TYPE_GROUP) return +1; // TYPE GROUP is displayed last
 		if (calendar1.getKalendar().getType() == CalendarManager.TYPE_USER) return +1;
-		else return -1;
+		return -1;
 	}
 
 }

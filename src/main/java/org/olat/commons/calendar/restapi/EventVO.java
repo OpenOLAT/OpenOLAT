@@ -43,6 +43,8 @@ public class EventVO {
 	private Date end;
 	private boolean allDayEvent;
 	
+	private String liveStreamUrl;
+	
 	private String managedFlags;
 	private String externalId;
 	private String externalSource;
@@ -60,6 +62,7 @@ public class EventVO {
 		begin = event.getBegin();
 		end = event.getEnd();
 		allDayEvent = event.isAllDayEvent();
+		liveStreamUrl = event.getLiveStreamUrl();
 		calendarId = event.getCalendar().getType() + "_" + event.getCalendar().getCalendarID();
 		managedFlags = CalendarManagedFlag.toString(event.getManagedFlags());
 		externalId = event.getExternalId();
@@ -124,6 +127,14 @@ public class EventVO {
 
 	public void setAllDayEvent(boolean allDayEvent) {
 		this.allDayEvent = allDayEvent;
+	}
+
+	public String getLiveStreamUrl() {
+		return liveStreamUrl;
+	}
+
+	public void setLiveStreamUrl(String liveStreamUrl) {
+		this.liveStreamUrl = liveStreamUrl;
 	}
 
 	public String getCalendarId() {

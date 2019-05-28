@@ -414,6 +414,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_gotomeeting_icon:before { content: $fa-var-desktop;}
 .o_card2brain_icon:before, %o_icon_card2brain { content:"\E800"; font-family: openolat; font-size: 120%; }
 .o_edubase_icon:before, %o_icon_edubase { content:"\E885"; font-family: openolat; }
+.o_livestream_icon:before, { content: $fa-var-video-camera;}
 
 /* portal icons */
 .o_portlet_infomsg_icon:before {content: $fa-var-info-circle; }

@@ -37,12 +37,13 @@ public enum CalendarManagedFlag {
 	
 	all,
 		details(all),
-			subject(details, all),
-			description(details, all),
-			location(details, all),
-			dates(details, all),
+		subject(details, all),
+		description(details, all),
+		location(details, all),
+		dates(details, all),
 		classification(all),
 		links(all),
+		liveStreamUrl(details, all)
 	;
 	
 	private CalendarManagedFlag[] parents;

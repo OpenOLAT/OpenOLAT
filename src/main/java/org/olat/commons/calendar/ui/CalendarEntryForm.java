@@ -67,7 +67,7 @@ public class CalendarEntryForm extends FormBasicController {
 
 	private StaticTextElement calendarName;
 	private SingleSelection chooseCalendar;
-	private TextElement subjectEl, descriptionEl, locationEl;
+	private TextElement subjectEl, descriptionEl, locationEl, liveStreamUrlEl;
 	private SelectionElement allDayEvent;
 	
 	private DateChooser begin, end;
@@ -80,6 +80,7 @@ public class CalendarEntryForm extends FormBasicController {
 	private KalendarRenderWrapper choosenWrapper;
 	private List<KalendarRenderWrapper> writeableCalendars;
 	private final boolean readOnly, isNew;
+	private final String caller;
 	
 	private String[] calendarKeys, calendarValues;
 	private String[] keysRecurrence, valuesRecurrence;
@@ -96,11 +97,13 @@ public class CalendarEntryForm extends FormBasicController {
 	 * @param choosenWrapper
 	 * @param availableCalendars	At least one calendar must be editable if this is a new event.
 	 * @param isNew		If it is a new event, display a list of calendars to choose from.
+	 * @param caller 
 	 * @param locale
 	 */
 	public CalendarEntryForm(UserRequest ureq, WindowControl wControl, KalendarEvent event, KalendarRenderWrapper choosenWrapper,
-			Collection<KalendarRenderWrapper> availableCalendars, boolean isNew) {
+			Collection<KalendarRenderWrapper> availableCalendars, boolean isNew, String caller) {
 		super(ureq, wControl);
+		this.caller = caller;
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		
 		this.event = event;
@@ -196,10 +199,12 @@ public class CalendarEntryForm extends FormBasicController {
 				chooseRecurrence.select(RECURRENCE_NONE, true);
 			}
 		}
+		
+		liveStreamUrlEl.setValue(kalendarEvent.getLiveStreamUrl());
 	}
 	
 	@Override
-	protected boolean validateFormLogic (UserRequest ureq) {
+	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
 		begin.clearError();
@@ -270,6 +275,14 @@ public class CalendarEntryForm extends FormBasicController {
 		} else {
 			String rrule = calendarManager.getRecurrenceRule(chooseRecurrence.getSelectedKey(), recurrenceEnd.getDate());
 			event.setRecurrenceRule(rrule);
+		}
+		
+		// live Stream
+		if (liveStreamUrlEl.isVisible() && liveStreamUrlEl.isEnabled()) {
+			String liveStreamUrl = StringHelper.containsNonWhitespace(liveStreamUrlEl.getValue())
+					? liveStreamUrlEl.getValue()
+					: null;
+			event.setLiveStreamUrl(liveStreamUrl);
 		}
 
 		return event;
@@ -381,6 +394,10 @@ public class CalendarEntryForm extends FormBasicController {
 		}
 		recurrenceEnd.setEnabled(!managedDates);
 		recurrenceEnd.setVisible(!chooseRecurrence.getSelectedKey().equals(RECURRENCE_NONE));
+		
+		liveStreamUrlEl = uifactory.addTextElement("cal.live.stream.url", 2000, event.getLiveStreamUrl(), formLayout);
+		liveStreamUrlEl.setEnabled(!CalendarManagedFlag.isManaged(event, CalendarManagedFlag.liveStreamUrl));
+		liveStreamUrlEl.setVisible(CalendarController.CALLER_LIVE_STREAM.equals(caller));
 		
 		classification = uifactory.addRadiosVertical("classification", "cal.form.class", formLayout, classKeys, classValues);
 		classification.setHelpUrlForManualPage("Calendar#_visibility");

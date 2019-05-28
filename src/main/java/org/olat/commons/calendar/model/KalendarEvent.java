@@ -76,6 +76,8 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 	private String recurrenceRule;
 	private String recurrenceExc;
 	
+	private String liveStreamUrl;
+	
 	private String externalId;
 	private String externalSource;
 	private CalendarManagedFlag[] managedFlags;
@@ -386,6 +388,14 @@ public class KalendarEvent implements Cloneable, Comparable<KalendarEvent> {
 		this.recurrenceExc = recurrenceExc;
 	}
 	
+	public String getLiveStreamUrl() {
+		return liveStreamUrl;
+	}
+
+	public void setLiveStreamUrl(String liveStreamUrl) {
+		this.liveStreamUrl = liveStreamUrl;
+	}
+
 	public void addRecurrenceExc(Date excDate) {
 		List<Date> excDates = CalendarUtils.getRecurrenceExcludeDates(recurrenceExc);
 		excDates.add(excDate);

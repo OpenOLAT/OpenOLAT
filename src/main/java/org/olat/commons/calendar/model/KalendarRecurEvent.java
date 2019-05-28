@@ -78,6 +78,7 @@ public class KalendarRecurEvent extends KalendarEvent {
 		setParticipants(event.getParticipants());
 		setRecurrenceExc(event.getRecurrenceExc());
 		setRecurrenceRule(event.getRecurrenceRule());
+		setLiveStreamUrl(event.getLiveStreamUrl());
 		setSourceNodeId(event.getSourceNodeId());
 		setSubject(event.getSubject());
 	}

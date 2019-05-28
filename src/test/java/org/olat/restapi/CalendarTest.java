@@ -22,6 +22,7 @@ package org.olat.restapi;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,11 +44,14 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.restapi.CalendarVO;
 import org.olat.commons.calendar.restapi.EventVO;
@@ -499,6 +503,81 @@ public class CalendarTest extends OlatJerseyTestCase {
 		Assert.assertTrue(found);
 
 		conn.shutdown();
+	}
+	
+	@Test
+	public void testAttributeMapping() throws IOException, URISyntaxException {
+		// create a user and login
+		Identity identtiy = JunitTestHelper.createAndPersistIdentityAsRndUser("cal-3");
+		RestConnection conn = new RestConnection();
+		conn.login(identtiy.getName(), JunitTestHelper.PWD);
+		
+		//create a course with a calendar
+		CourseConfigVO config = new CourseConfigVO();
+		config.setCalendar(Boolean.TRUE);
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(identtiy, RepositoryEntryStatusEnum.published,
+				false, false);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.commit();
+		
+		// load the calendar
+		URI calUri = UriBuilder.fromUri(getContextURI()).path("users").path(identtiy.getKey().toString()).path("calendars").build();
+		HttpGet calMethod = conn.createGet(calUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(calMethod);
+		List<CalendarVO> vos = parseArray(response);
+		CalendarVO calendar = getCourseCalendar(vos, course);
+		
+		// Add an calendar event
+		EventVO event = new EventVO();
+		Calendar cal = Calendar.getInstance();
+		event.setBegin(cal.getTime());
+		cal.add(Calendar.HOUR_OF_DAY, 1);
+		event.setEnd(cal.getTime());
+		event.setSubject(random());
+		event.setAllDayEvent(true);
+		event.setDescription(random());
+		event.setExternalId(random());
+		event.setExternalSource(random());
+		event.setLocation(random());
+		event.setManagedFlags(CalendarManagedFlag.description.name());
+		event.setLiveStreamUrl(random());
+
+		URI eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(identtiy.getKey().toString())
+				.path("calendars").path(calendar.getId()).path("event").build();
+		HttpPost postEventMethod = conn.createPost(eventUri, MediaType.APPLICATION_JSON);
+		conn.addJsonEntity(postEventMethod, event);
+		conn.execute(postEventMethod);
+		
+		// Load the calendar from the manager and compare the event attributes
+		Kalendar kalendar = calendarManager.getCourseCalendar(course).getKalendar();
+		KalendarEvent kalendarEvent = kalendar.getEvents().get(0);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(kalendarEvent.getBegin()).isEqualTo(event.getBegin());
+		softly.assertThat(kalendarEvent.getEnd()).isEqualTo(event.getEnd());
+		softly.assertThat(kalendarEvent.getSubject()).isEqualTo(event.getSubject());
+		softly.assertThat(kalendarEvent.isAllDayEvent()).isEqualTo(event.isAllDayEvent());
+		softly.assertThat(kalendarEvent.getDescription()).isEqualTo(event.getDescription());
+		softly.assertThat(kalendarEvent.getExternalId()).isEqualTo(event.getExternalId());
+		softly.assertThat(kalendarEvent.getLocation()).isEqualTo(event.getLocation());
+		softly.assertThat(kalendarEvent.getManagedFlags()).containsExactly(CalendarManagedFlag.description);
+		softly.assertThat(kalendarEvent.getLiveStreamUrl()).isEqualTo(event.getLiveStreamUrl());
+		
+		// Load the calendar from REST again and compare the event attributes
+		eventUri = UriBuilder.fromUri(getContextURI()).path("users").path(identtiy.getKey().toString())
+				.path("calendars").path(calendar.getId()).path("events").build();
+		HttpGet eventMethod = conn.createGet(eventUri, MediaType.APPLICATION_JSON, true);
+		HttpResponse eventResponse = conn.execute(eventMethod);
+		EventVO reloadedEvent = parseEventArray(eventResponse).get(0);
+		softly.assertThat(reloadedEvent.getBegin()).isEqualTo(event.getBegin());
+		softly.assertThat(reloadedEvent.getEnd()).isEqualTo(event.getEnd());
+		softly.assertThat(reloadedEvent.getSubject()).isEqualTo(event.getSubject());
+		softly.assertThat(reloadedEvent.isAllDayEvent()).isEqualTo(event.isAllDayEvent());
+		softly.assertThat(reloadedEvent.getDescription()).isEqualTo(event.getDescription());
+		softly.assertThat(reloadedEvent.getExternalId()).isEqualTo(event.getExternalId());
+		softly.assertThat(reloadedEvent.getLocation()).isEqualTo(event.getLocation());
+		softly.assertThat(reloadedEvent.getManagedFlags()).isEqualTo(event.getManagedFlags());
+		softly.assertThat(reloadedEvent.getLiveStreamUrl()).isEqualTo(event.getLiveStreamUrl());
+		softly.assertAll();
 	}
 	
 	@Test

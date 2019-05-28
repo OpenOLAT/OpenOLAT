@@ -49,6 +49,7 @@ import java.util.StringTokenizer;
 import java.util.UUID;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
@@ -66,7 +67,6 @@ import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
@@ -683,6 +683,11 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 			}
 		}
 		
+		// video stream
+		if(StringHelper.containsNonWhitespace(kEvent.getLiveStreamUrl())) {
+			vEventProperties.add(new XProperty(ICAL_X_OLAT_VIDEO_STREAM_URL, kEvent.getLiveStreamUrl()));
+		}
+		
 		return vEvent;
 	}
 	
@@ -862,6 +867,12 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// recurrence exclusions
 		if (event.getProperty(ICAL_EXDATE) != null) {
 			calEvent.setRecurrenceExc(event.getProperty(ICAL_EXDATE).getValue());
+		}
+		
+		// video stream
+		Property liveStreamUrl = event.getProperty(ICAL_X_OLAT_VIDEO_STREAM_URL);
+		if(liveStreamUrl != null) {
+			calEvent.setLiveStreamUrl(liveStreamUrl.getValue());
 		}
 		
 		return calEvent;
