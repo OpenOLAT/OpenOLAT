@@ -132,9 +132,7 @@ public class VideoDisplayController extends BasicController {
 		super(ureq, wControl);
 		this.videoEntry = videoEntry;
 		this.displayOptions = displayOptions;
-		this.descriptionText = displayOptions.isCustomDescription()
-				? displayOptions.getDescriptionText()
-				: courseNode.getLearningObjectives();
+		this.descriptionText = getDescription(courseNode, displayOptions);
 		
 		mainVC = createVelocityContainer("video_run");
 		putInitialPanel(mainVC);
@@ -198,6 +196,12 @@ public class VideoDisplayController extends BasicController {
 				loadVideo(ureq, videoMetadata.getUrl(), videoMetadata.getVideoFormat());
 			}
 		}
+	}
+
+	private String getDescription(VideoCourseNode courseNode, VideoDisplayOptions displayOptions) {
+		if (displayOptions.isCustomDescription()) return displayOptions.getDescriptionText();
+		if (courseNode != null) return courseNode.getLearningObjectives();
+		return null;
 	}
 	
 	public VideoMeta getVideoMetadata() {
