@@ -43,8 +43,8 @@
 			this.dmzCarrousel = jQuery().ooBgCarrousel();
 			this.dmzCarrousel.initCarrousel({
 				query: "#o_body.o_dmz #o_bg", 
-				images: ['learn-bg.jpg', 'christian-bg.jpg', 'classroom-bg.jpg', 'holger-bg.jpg', 'oo-bg.jpg', 'florian-bg.jpg' ], 
-				shuffle: false,
+				images: ['infinite.jpg', 'holger.jpg', 'marco.jpg', 'openolat_award.jpg', 'weg.jpg', 'christian.jpg'], 
+				shuffle: true,
 				shuffleFirst: false,
 				durationshow: 5000,
 				durationout: 500,

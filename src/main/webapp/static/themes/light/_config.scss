@@ -25,6 +25,17 @@
 	Add your custom font sizes and other bootstrap overrides here. 
 	Full spec here: http://getbootstrap.com/customize/
 */
+
+/* bootstrap default is very white, use just a little bit more than just white */
+$btn-default-bg					: #fcfcfc !default;
+$dropdown-bg					: #fcfcfc !default; 
+$panel-bg						: #fcfcfc !default;
+$pagination-bg					: #fcfcfc !default;
+$pagination-active-color 		: #fcfcfc !default;
+$tooltip-bg						: #fcfcfc !default;
+$list-group-bg					: #fcfcfc !default;
+
+$input-bg						: #fcfcfc !default; 
 $input-bg-disabled				: #fafafa !default; /* lighter than default bootstrap */
 
 /* 	Add standard bootstrap variables to the mix */
@@ -302,11 +313,13 @@ $o-coursesite-rowelem-width-sm 	: 120px !default;
 $o-coursesite-rowelem-height-sm : 80px !default;
 $o-coursesite-rowelem-width-xs 	: 75px !default;
 $o-coursesite-rowelem-height-xs : 50px !default;
-$o-coursesite-rowelem-border 	: $brand-primary !default;
+$o-coursesite-rowelem-border 	: #ccc !default; /* same as button default border */
+$o-coursesite-rowelem-border-radius : $border-radius-base !default;
+$o-coursesite-rowelem-bg		: #fcfcfc !default;
 $o-coursesite-catalog-space 	: $padding-large-vertical * 2 !default;
 $o-coursesite-catalog-space-sm 	: $padding-large-vertical !default;
 $o-coursesite-catalog-space-xs 	: $padding-xs-vertical !default;
-$o-coursesite-catalog-border 	: $brand-primary !default;
+$o-coursesite-catalog-border 	: $o-coursesite-rowelem-border !default;
 $o-coursesite-meta-title-color	: $brand-primary !default;
 $o-coursesite-meta-author-color	: $state-success-text !default;
 $o-coursesite-meta-title-font-size	: ceil(($font-size-base * 2.6)) !default; /* same as h1 default size: 36px */
@@ -804,9 +817,10 @@ $o-drawing-border-width		: 4px !default;
 /* Placeholder panels */
 $o-panel-placeholder-border-width	: 2px !default;
 $o-panel-placeholder-border-radius	: 10px !default;
-$o-panel-placeholder-color			: $brand-primary !default;
+$o-panel-placeholder-color			: #888 !default;
 $o-panel-placeholder-font-weight	: bold !default;
-$o-panel-placeholder-border-color	: lighten($o-panel-placeholder-color, 20%) !default;
+$o-panel-placeholder-border-color	: #ccc!default;
+$o-panel-placeholder-bg				: #fcfcfc !default;
 $o-panel-placeholder-padding		: 10px !default;
 
 /* Citations */

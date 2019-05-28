@@ -37,11 +37,18 @@
 		 .o_table_row {
 			position: relative;
 			border: 1px solid $o-coursesite-rowelem-border;
+			border-radius: $o-coursesite-rowelem-border-radius;	
+			background: $o-coursesite-rowelem-bg;
+	
 			margin-bottom: floor($line-height-computed / 2);
 			
 			.o_visual {
 				box-sizing: content-box;
-				border-right: 1px solid $o-coursesite-rowelem-border;		
+				border-top-left-radius: $o-coursesite-rowelem-border-radius;
+				border-bottom-left-radius: $o-coursesite-rowelem-border-radius;
+				.o_visual_not_available {
+					background-color: $o-coursesite-rowelem-bg;
+				}
 			}
 			
 			.o_access {
@@ -114,6 +121,7 @@
 				}
 				.o_start, .o_book {
 					right: 0;
+					border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
 				}
 				.o_start { @include button-variant($o-coursesite-start-color, $o-coursesite-start-bg, $o-coursesite-start-border); }
 				.o_book  { @include button-variant($o-coursesite-book-color, $o-coursesite-book-bg, $o-coursesite-book-border); }
@@ -147,6 +155,8 @@
 				margin: 0 $o-coursesite-rowelem-width-md 0 $o-coursesite-rowelem-width-md;
 				position: relative;
 				padding: 1em 0.5em 0.25em 1em;
+				background: $o-coursesite-rowelem-bg;		
+				border-left: 1px solid $o-coursesite-rowelem-border;					
 
 				overflow: hidden;
 	
@@ -169,12 +179,13 @@
 					font-size: 90%;
 					@include text-overflow();
 					color: $o-coursesite-meta-author-color;
+					background: $o-coursesite-rowelem-bg;
 				}
 				.o_lifecycle {
 					position: absolute; 
 					top: 5px; right: 40px;
 					z-index: 2px;
-					background: white;
+					background: $o-coursesite-rowelem-bg;
 					padding: 0 3px 3px 3px;
 					border-radius: 0px 0px $border-radius-small $border-radius-small;
 					font-size: 90%;
@@ -189,7 +200,8 @@
 					}
 				}
 				.o_desc {
-					margin-top: 0.5em;					
+					margin-top: 0.5em;	
+					background: $o-coursesite-rowelem-bg;				
 				}
 				.o_bookmark {
 					position: absolute;
@@ -227,6 +239,8 @@
 					line-height: $o-coursesite-rowelem-height-xs;
 					color: $o-coursesite-go-xs-color;
 					background-color: $o-coursesite-go-xs-bg;
+					border-top-right-radius: $o-coursesite-rowelem-border-radius;
+					border-bottom-right-radius: $o-coursesite-rowelem-border-radius;
 				}
 				
 			}

@@ -1,13 +1,45 @@
-
 /* OpenOLAT colors */
-$brand-primary : #3b678a;
+$o-brand-turquoise				: rgb(0,163,173);
+$o-brand-red					: rgb(166,9,61);
+$o-brand-green					: rgb(0,106,82);
+$o-brand-orange					: rgb(255,184,28);
+$o-brand-grey					: rgb(90,90,90);
+$o-brand-black					: rgb(71,55,41);
+
+/* General colors */
+$brand-primary 					: $o-brand-turquoise; 		
+$brand-success					: $o-brand-green;		
+$brand-info  					: $o-brand-grey;
+$brand-warning					: $o-brand-orange;	
+$brand-danger					: $o-brand-red;
+
+$text-color						: $o-brand-black;
+$link-color						: $o-brand-turquoise;
+$link-hover-color				: darken($o-brand-turquoise, 10%);
+$o-content-link-color			: $link-color;
+$o-content-link-hover-color		: $link-hover-color;
+$o-content-link-decoration		: underline;
+
+$headings-color					: $o-brand-black;
+$o-content-header-base-color	: $headings-color;
+$o-content-fieldset-legend-color: $headings-color;
+$o-dialog-header-color			: $headings-color;
+$jumbotron-heading-color		: $headings-color;
+$o-login-header-color			: $headings-color;
+$o-coursesite-meta-title-color	: $headings-color;
+
+$o-bookmark-color				: $o-brand-red;
+$o-button-dirty-bg				: $o-brand-orange;
+$o-portfolio-editor-border-color	: $brand-primary;
+
+/* Login screen */
+$o-login-form-align				: left;
+$o-login-form-bg-img			: "images/infinite.jpg";  	
+$o-login-form-bg-gradient-steps	: rgba(255,255,255,0) 0.2%, rgba(255,255,255,0.3) 60%, rgba(255,255,255,0.5) 100%;
 
 /* Login screen background image copyrights: 
-learn-bg.jpg 
-CC by Thomas Leuthard https://www.flickr.com/photos/thomasleuthard/8587724648/
-
-classroom-bg.jpg
-CC by Alex https://www.flickr.com/photos/eflon/8917394523/
+infinite.jpg
+Pixaby License by https://pixabay.com/photos/away-avenue-trees-nature-infinite-2414983/
 
 christian-bg.jpg
 florian-bg.jpg
@@ -15,4 +47,43 @@ holger-bg.jpg
 oo-bg.jpg
 CC by frentix GmbH http://www.frentix.com 
 */
-$o-login-form-bg-img			: "images/learn-bg.jpg";  	
+
+
+$o-login-btn-register-color		: #fff;
+$o-login-btn-register-bg		: $o-brand-orange;
+$o-login-btn-register-border	: $o-brand-orange;
+
+/* Course site start button */
+$o-coursesite-start-bg			: $o-brand-turquoise; 
+$o-coursesite-book-bg			: $o-brand-turquoise;
+$o-coursesite-details-bg		: $o-brand-grey;
+
+/* Font family */
+$font-family-base				: Roboto, "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; 
+/*
+$headings-font-family			: inherit;
+$font-size-base					: 14px;
+*/
+
+/* Inverted navbar 
+$o-navbar-color						: #777 ;
+$o-navbar-bg						: #222 ;
+$o-navbar-border-color				: darken($o-navbar-bg, 10%) ;
+$o-navbar-link-color				: #777 ;
+$o-navbar-link-hover-color			: #fff ;
+$o-navbar-link-hover-bg 			: transparent ;
+$o-navbar-link-active-color 		: $o-navbar-link-hover-color ;
+$o-navbar-link-active-bg 			: darken($o-navbar-bg, 10%) ;
+$o-navbar-link-disabled-color 		: #444 ;
+$o-navbar-link-disabled-bg 			: transparent ;
+$o-navbar-tools-permanent-color		: #777;
+*/
+
+/* Inverted footer 
+$o-footer-outer-bg 					: $o-navbar-bg;
+$o-footer-inner-bg 					: $o-navbar-bg;
+$o-footer-default-color 			: $o-navbar-link-color;
+$o-footer-default-link-color 		: $o-navbar-link-color;
+$o-footer-default-link-hover-color 	: $o-navbar-link-hover-color;
+*/
+

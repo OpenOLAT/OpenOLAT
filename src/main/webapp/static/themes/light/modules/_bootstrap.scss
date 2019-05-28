@@ -64,6 +64,9 @@ body div.tooltip-inner {
 
 body div.popover {
 	max-width:450px;
+	input {
+		max-width: 100%;
+	}
 }
 
 body .modal-body.alert {

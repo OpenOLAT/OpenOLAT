@@ -45,7 +45,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_bold:before { content: $fa-var-bold; }
 .o_icon_booking:before { content: $fa-var-shopping-cart; }
 .o_icon_bookmark:before { content: $fa-var-bookmark; color: $o-bookmark-color; }
-.o_icon_bookmark_add:before { content: $fa-var-bookmark-o; }
+.o_icon_bookmark_add:before { content: $fa-var-bookmark-o;  color: $o-bookmark-color; }
 .o_icon_bookmark_header:before { content: $fa-var-bookmark; }
 .o_icon_browse:before { content: $fa-var-search-plus; } 
 .o_icon_brush:before { content: $fa-var-paint-brush; }

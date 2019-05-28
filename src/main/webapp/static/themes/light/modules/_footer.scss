@@ -62,6 +62,7 @@
 	img {	
 		@include opacity(.6);
 		&:hover { @include opacity(1); }	
+		width: 120px;
 	}		
 	a {
 		@extend %o_undecorated; 

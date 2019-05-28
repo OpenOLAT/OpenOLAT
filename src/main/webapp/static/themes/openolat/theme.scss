@@ -1,12 +1,25 @@
 @charset "UTF-8";
 
+/* Add client fonts */
+@import "fonts/fonts";
+
 /* Use OpenOLAT configuration to override defaults */
 @import "openolat_config";
 
+/* Modify variables for square ui (no rounded borders)
+@import "light/styles/square_config";
+*/
+
 /* Add all default config and apply styles from light theme */
 @import "light/theme";
-/* Add styles from bootstrap theme (nice buttons etc) */
+
+/* Modify stles for square ui (no rounded borders)
+@import "light/styles/square_theme";
+*/
+
+/* Add styles from bootstrap theme (nice buttons etc) 
 @import "light/styles/realistic";
+*/
 
 /* Override with OpenOLAT customizations */
 @import "openolat_theme"; 
