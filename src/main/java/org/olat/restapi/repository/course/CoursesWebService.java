@@ -250,6 +250,8 @@ public class CoursesWebService {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle, @QueryParam("title") String title,
 			@QueryParam("displayName") String displayName, @QueryParam("description") String description,
+			@QueryParam("objectives") String objectives, @QueryParam("requirements") String requirements,
+			@QueryParam("credits") String credits, @QueryParam("expenditureOfWork") String expenditureOfWork,
 			@QueryParam("softKey") String softKey, @QueryParam("status") String status,
 			@QueryParam("allUsers") Boolean allUsers, @QueryParam("guests") Boolean guests,
 			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
@@ -296,12 +298,14 @@ public class CoursesWebService {
 		}
 
 		if(copyFrom != null) {
-			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, description, softKey,
-					accessStatus, accessAllUsers, accessGuests, organisationKey,
+			course = copyCourse(copyFrom, ureq, id, shortTitle, title, displayName, description,
+					objectives, requirements, credits, expenditureOfWork,
+					softKey, accessStatus, accessAllUsers, accessGuests, organisationKey,
 					authors, location, externalId, externalRef, managedFlags, configVO);
 		} else {
-			course = createEmptyCourse(id, shortTitle, title, displayName, description, softKey,
-					accessStatus, accessAllUsers, accessGuests, organisationKey,
+			course = createEmptyCourse(id, shortTitle, title, displayName, description,
+					objectives, requirements, credits, expenditureOfWork,
+					softKey, accessStatus, accessAllUsers, accessGuests, organisationKey,
 					authors, location, externalId, externalRef, managedFlags, configVO);
 		}
 		if(course == null) {
@@ -334,7 +338,7 @@ public class CoursesWebService {
 
 		CourseConfigVO configVO = new CourseConfigVO();
 		ICourse course = createEmptyCourse(ureq.getIdentity(),
-				courseVo.getTitle(), courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(),
+				courseVo.getTitle(), courseVo.getTitle(), courseVo.getTitle(), courseVo.getDescription(), null, null, null, null,
 				courseVo.getSoftKey(), RepositoryEntryStatusEnum.preparation, false, false, courseVo.getOrganisationKey(),
 				courseVo.getAuthors(), courseVo.getLocation(),
 				courseVo.getExternalId(), courseVo.getExternalRef(), courseVo.getManagedFlags(),
@@ -474,7 +478,8 @@ public class CoursesWebService {
 	}
 
 	private ICourse copyCourse(Long copyFrom, UserRequest ureq, Identity initialAuthor, String shortTitle, String longTitle, String displayName,
-			String description, String softKey, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, Long organisationKey,
+			String description, String objectives, String requirements, String credits, String expenditureOfWork, String softKey,
+			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests, Long organisationKey,
 			String authors, String location, String externalId, String externalRef, String managedFlags, CourseConfigVO courseConfigVO) {
 
 		OLATResourceable originalOresTrans = OresHelper.createOLATResourceableInstance(CourseModule.class, copyFrom);
@@ -542,6 +547,18 @@ public class CoursesWebService {
 			if(StringHelper.containsNonWhitespace(managedFlags)) {
 				preparedEntry.setManagedFlagsString(managedFlags);
 			}
+			if(StringHelper.containsNonWhitespace(objectives)) {
+				preparedEntry.setObjectives(objectives);
+			}
+			if(StringHelper.containsNonWhitespace(credits)) {
+				preparedEntry.setCredits(credits);
+			}
+			if(StringHelper.containsNonWhitespace(requirements)) {
+				preparedEntry.setRequirements(requirements);
+			}
+			if(StringHelper.containsNonWhitespace(expenditureOfWork)) {
+				preparedEntry.setExpenditureOfWork(expenditureOfWork);
+			}
 			preparedEntry.setEntryStatus(status);
 			preparedEntry.setAllUsers(allUsers);
 			preparedEntry.setGuests(guests);
@@ -573,7 +590,8 @@ public class CoursesWebService {
 	 * @return
 	 */
 	private ICourse createEmptyCourse(Identity initialAuthor, String shortTitle, String longTitle, String reDisplayName,
-			String description, String softKey, RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
+			String description, String objectives, String requirements, String credits, String expenditureOfWork, String softKey,
+			RepositoryEntryStatusEnum status, boolean allUsers, boolean guests,
 			Long organisationKey, String authors, String location, String externalId, String externalRef,
 			String managedFlags, CourseConfigVO courseConfigVO) {
 
@@ -602,6 +620,10 @@ public class CoursesWebService {
 			addedEntry.setExternalRef(externalRef);
 			addedEntry.setManagedFlagsString(managedFlags);
 			addedEntry.setDescription(description);
+			addedEntry.setObjectives(objectives);
+			addedEntry.setRequirements(requirements);
+			addedEntry.setCredits(credits);
+			addedEntry.setExpenditureOfWork(expenditureOfWork);
 			if(RepositoryEntryManagedFlag.isManaged(addedEntry, RepositoryEntryManagedFlag.membersmanagement)) {
 				addedEntry.setAllowToLeaveOption(RepositoryEntryAllowToLeaveOptions.never);
 			} else {
