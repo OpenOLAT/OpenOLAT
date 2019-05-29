@@ -393,6 +393,47 @@ public class CoursesTest extends OlatJerseyTestCase {
 		Assert.assertEquals(1, owners.size());
 		Assert.assertEquals(adhocAuthor, owners.get(0));
 	}
+	
+	@Test
+	public void testCreateEmpty_withMetadata() throws IOException, URISyntaxException {
+		Identity adhocAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("adhoc-author");
+		dbInstance.commit();
+
+		assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+			.queryParam("shortTitle", "Course with metadata")
+			.queryParam("title", "Course with metadata")
+			.queryParam("initialAuthor", adhocAuthor.getKey().toString())
+			.queryParam("objectives", "My objectives")
+			.queryParam("requirements", "My requirements")
+			.queryParam("credits", "My credits")
+			.queryParam("expenditureOfWork", "Take a long time")
+			.queryParam("location", "Zurich")
+			.queryParam("externalId", "825761")
+			.queryParam("externalRef", "AC-825761")
+			.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		CourseVO courseVo = conn.parse(response, CourseVO.class);
+		Assert.assertNotNull(courseVo);
+		Assert.assertEquals("Course with metadata", courseVo.getTitle());
+
+		// load repository entry
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseVo.getRepoEntryKey());
+		Assert.assertNotNull(re);
+		Assert.assertNotNull(re.getOlatResource());
+		Assert.assertEquals("Course with metadata", re.getDisplayname());
+		Assert.assertEquals("My objectives", re.getObjectives());
+		Assert.assertEquals("My requirements", re.getRequirements());
+		Assert.assertEquals("My credits", re.getCredits());
+		Assert.assertEquals("Take a long time", re.getExpenditureOfWork());
+		Assert.assertEquals("Zurich", re.getLocation());
+		Assert.assertEquals("825761", re.getExternalId());
+		Assert.assertEquals("AC-825761", re.getExternalRef());
+	}
 
 	@Test
 	public void testImportCourse() throws IOException, URISyntaxException {
@@ -515,6 +556,49 @@ public class CoursesTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertTrue(response.getStatusLine().getStatusCode() == 404);
 		EntityUtils.consume(response.getEntity());
+	}
+	
+	@Test
+	public void testCopyCourse_withMetadata() throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Assert.assertNotNull(entry);
+
+		conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.queryParam("shortTitle", "Course copy")
+				.queryParam("title", "Course copy")
+				.queryParam("initialAuthor", author.getKey().toString())
+				.queryParam("copyFrom", entry.getKey().toString())
+				.queryParam("objectives", "My copied objectives")
+				.queryParam("requirements", "My copied requirements")
+				.queryParam("credits", "My copied credits")
+				.queryParam("expenditureOfWork", "Take a long time")
+				.queryParam("location", "Basel")
+				.queryParam("externalId", "825762")
+				.queryParam("externalRef", "AC-825762")
+				
+				.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+
+		CourseVO vo = conn.parse(response, CourseVO.class);
+		assertNotNull(vo);
+		assertNotNull(vo.getRepoEntryKey());
+		assertNotNull(vo.getKey());
+		
+		// load repository entry
+		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(vo.getRepoEntryKey());
+		Assert.assertEquals("My copied objectives", re.getObjectives());
+		Assert.assertEquals("My copied requirements", re.getRequirements());
+		Assert.assertEquals("My copied credits", re.getCredits());
+		Assert.assertEquals("Take a long time", re.getExpenditureOfWork());
+		Assert.assertEquals("Basel", re.getLocation());
+		Assert.assertEquals("825762", re.getExternalId());
+		Assert.assertEquals("AC-825762", re.getExternalRef());
 	}
 
 	protected List<CourseVO> parseCourseArray(HttpEntity entity) {
