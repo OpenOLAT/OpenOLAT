@@ -56,11 +56,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OLATUpgrade_13_3_0 extends OLATUpgrade {
+public class OLATUpgrade_14_0_0 extends OLATUpgrade {
 
-	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_13_3_0.class);
+	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_14_0_0.class);
 	
-	private static final String VERSION = "OLAT_13.3.0";
+	private static final String VERSION = "OLAT_14.0.0";
 	private static final String MOVE_REPO_IMAGES = "MOVE REPO IMAGES";
 	private static final String MIGRATE_FILE_METADATA = "MIGRATE FILE METADATA";
 	private static final String MIGRATE_LIBRARY_CONFIGURATION = "MIGRATE LIBRARY CONFIGURATION";
@@ -83,7 +83,7 @@ public class OLATUpgrade_13_3_0 extends OLATUpgrade {
 	@Autowired
 	private VFSRepositoryServiceImpl vfsRepositoryService;
 	
-	public OLATUpgrade_13_3_0() {
+	public OLATUpgrade_14_0_0() {
 		super();
 	}
 	
