@@ -114,8 +114,10 @@ public class LIveStreamServiceImpl implements LiveStreamService {
 
 	private LiveStreamEventImpl toLiveStreamEvent(KalendarEvent event, boolean timeOnly) {
 		LiveStreamEventImpl liveStreamEvent = new LiveStreamEventImpl();
+		liveStreamEvent.setId(event.getID());
 		liveStreamEvent.setBegin(event.getBegin());
 		liveStreamEvent.setEnd(event.getEnd());
+		liveStreamEvent.setAllDayEvent(event.isAllDayEvent());
 		liveStreamEvent.setLiveStreamUrl(event.getLiveStreamUrl());
 		if (!timeOnly) {
 			liveStreamEvent.setSubject(event.getSubject());

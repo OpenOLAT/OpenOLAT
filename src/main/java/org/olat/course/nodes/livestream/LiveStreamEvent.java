@@ -28,6 +28,8 @@ import java.util.Date;
  *
  */
 public interface LiveStreamEvent {
+	
+	String getId();
 
 	String getSubject();
 
@@ -36,6 +38,8 @@ public interface LiveStreamEvent {
 	Date getBegin();
 
 	Date getEnd();
+
+	boolean isAllDayEvent();
 
 	String getLocation();
 	

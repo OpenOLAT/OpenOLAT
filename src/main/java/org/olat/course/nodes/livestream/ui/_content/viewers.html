@@ -1,0 +1,18 @@
+<div class="o_livestream_viewer">
+	#if($noLiveStream)
+		<div class="o_warning">
+			$r.translate("viewer.no.stream")
+		</div>
+	#else
+		$r.render("display0")
+		$r.render("display1")
+		$r.render("display2")
+		$r.render("display3")
+		$r.render("display4")
+		$r.render("display5")
+		$r.render("display6")
+		$r.render("display7")
+		$r.render("display8")
+		$r.render("display9")
+	#end
+</div>

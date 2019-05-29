@@ -1,0 +1,29 @@
+#if($r.isNotNull($id))
+	<div class="o_block_large_bottom clearfix">
+		#if($title)
+			<h3>$title</h3>
+		#end
+
+		<div class="o_cal_date text-muted">
+			<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+			$date
+		</div>
+		#if($time && $time != "")
+			<div class="o_cal_time text-muted">
+				<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
+				$time
+			</div>
+		#end
+		#if($location && !${location.isEmpty()})
+			<div class="o_cal_location text-muted">
+				<i class="o_icon o_icon-fw o_icon_home" title="$r.translateInAttribute("cal.form.location")">&nbsp;</i>
+				$r.escapeHtml($location)
+			</div>
+		#end
+		#if($description && !${description.isEmpty()})
+			<div class="o_cal_description">
+				$r.xssScan($description)
+			</div>
+		#end
+	</div>
+#end

@@ -25,6 +25,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.util.CodeHelper;
+import org.olat.core.util.StringHelper;
 import org.olat.course.nodes.livestream.LiveStreamEvent;
 
 /**
@@ -33,30 +35,34 @@ import org.olat.course.nodes.livestream.LiveStreamEvent;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LiveStreamViewerController extends BasicController {
+public class LiveStreamVideoController extends BasicController {
 	
 	private final VelocityContainer mainVC;
-	private final LiveStreamVideoController videoCtrl;
-	private final LiveStreamMetadataController metadataCtrl;
+	
+	private String runningUrl;
 
-	public LiveStreamViewerController(UserRequest ureq, WindowControl wControl) {
+	protected LiveStreamVideoController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		
-		mainVC = createVelocityContainer("viewer");
-		
-		videoCtrl = new LiveStreamVideoController(ureq, wControl);
-		listenTo(videoCtrl);
-		mainVC.put("video", videoCtrl.getInitialComponent());
-		metadataCtrl = new LiveStreamMetadataController(ureq, wControl);
-		listenTo(metadataCtrl);
-		mainVC.put("metadata", metadataCtrl.getInitialComponent());
-		
+		mainVC = createVelocityContainer("video");
+		updateUI(null);
 		putInitialPanel(mainVC);
 	}
-
+	
 	public void setEvent(LiveStreamEvent event) {
-		videoCtrl.setEvent(event);
-		metadataCtrl.setEvent(event);
+		String url = event != null? event.getLiveStreamUrl(): null;
+		updateUI(url);
+	}
+
+	private void updateUI(String url) {
+		if (url == null || !url.equalsIgnoreCase(runningUrl)) {
+			runningUrl = url;
+			if (StringHelper.containsNonWhitespace(runningUrl)) {
+				mainVC.contextPut("id", CodeHelper.getRAMUniqueID());
+				mainVC.contextPut("src", url);
+			} else {
+				mainVC.contextRemove("id");
+			}
+		}
 	}
 
 	@Override

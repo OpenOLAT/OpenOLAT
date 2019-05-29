@@ -19,12 +19,18 @@
  */
 package org.olat.course.nodes.livestream.ui;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.logging.Tracing;
 import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.modules.ModuleConfiguration;
 
@@ -36,28 +42,37 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class LiveStreamsController extends BasicController {
 
+	private static final Logger log = Tracing.createLoggerFor(LiveStreamsController.class);
+
 	private final VelocityContainer mainVC;
 	
-	private LiveStreamViewerController viewerCtrl;
+	private LiveStreamViewersController viewersCtrl;
 	private LiveStreamListController listCtrl;
+
+	private ScheduledExecutorService scheduler;
 
 	public LiveStreamsController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfiguration,
 			CourseCalendars calendars) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("streams");
 
-		viewerCtrl = new LiveStreamViewerController(ureq, wControl, moduleConfiguration, calendars);
-		listenTo(viewerCtrl);
-		mainVC.put("viewer", viewerCtrl.getInitialComponent());
+		viewersCtrl = new LiveStreamViewersController(ureq, wControl, moduleConfiguration, calendars);
+		listenTo(viewersCtrl);
+		mainVC.put("viewers", viewersCtrl.getInitialComponent());
 
 		listCtrl = new LiveStreamListController(ureq, wControl, moduleConfiguration, calendars);
 		listenTo(listCtrl);
 		mainVC.put("list", listCtrl.getInitialComponent());
+		
+		scheduler = Executors.newScheduledThreadPool(1);
+		scheduler.scheduleAtFixedRate(new RefreshTask(), 10, 10, TimeUnit.SECONDS);
 
 		putInitialPanel(mainVC);
 	}
 
-	public void refreshData() {
+	public synchronized void refreshData() {
+		log.debug("Refresh live stream data of " + getIdentity());
+		viewersCtrl.refresh();
 		listCtrl.refreshData();
 	}
 
@@ -68,7 +83,16 @@ public class LiveStreamsController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		scheduler.shutdown();
+	}
+
+	private final class RefreshTask implements Runnable {
+
+		@Override
+		public void run() {
+			refreshData();
+		}
+
 	}
 
 }

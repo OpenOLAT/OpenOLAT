@@ -1,0 +1,10 @@
+#if($r.isNotNull($id))
+	<div>
+		## height / width does not matter, because the size is streched responsive.
+		<p><span id="o_livestream_${id}" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000;">
+			<script type="text/javascript" defer>
+				BPlayer.insertPlayer("$src","o_livestream_${id}",400,'100%',0,0,"video",undefined,true,true,false);
+			</script>
+		</span></p>
+	</div>
+#end

@@ -32,12 +32,24 @@ import org.olat.course.nodes.livestream.LiveStreamEvent;
  */
 public class LiveStreamEventImpl implements LiveStreamEvent {
 
+	private String id;
 	private String subject;
 	private String description;
 	private Date begin;
 	private Date end;
+	private boolean allDayEvent;
 	private String location;
 	private String liveStreamUrl;
+
+	
+	@Override
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
 
 	@Override
 	public String getSubject() {
@@ -80,6 +92,15 @@ public class LiveStreamEventImpl implements LiveStreamEvent {
 		return location;
 	}
 
+	@Override
+	public boolean isAllDayEvent() {
+		return allDayEvent;
+	}
+
+	public void setAllDayEvent(boolean allDayEvent) {
+		this.allDayEvent = allDayEvent;
+	}
+
 	public void setLocation(String location) {
 		this.location = location;
 	}
@@ -91,6 +112,31 @@ public class LiveStreamEventImpl implements LiveStreamEvent {
 
 	public void setLiveStreamUrl(String liveStreamUrl) {
 		this.liveStreamUrl = liveStreamUrl;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		LiveStreamEventImpl other = (LiveStreamEventImpl) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
 	}
 
 }
