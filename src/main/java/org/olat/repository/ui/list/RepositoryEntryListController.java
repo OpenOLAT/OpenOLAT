@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponentDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFilterEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
@@ -83,6 +84,7 @@ import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.OrderBy;
 import org.olat.repository.ui.RepositoryEntryImageMapper;
+import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -175,7 +177,8 @@ public class RepositoryEntryListController extends FormBasicController
 		if(!guestOnly) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.favorit.name()));
 		}
-
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.type.name(),
+				FlexiColumnModel.ALIGNMENT_LEFT, new TypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName.i18nKey(), Cols.select.ordinal(),
 				true, OrderBy.displayname.name()));
 		if(repositoryModule.isManagedRepositoryEntries()) {
@@ -220,13 +223,15 @@ public class RepositoryEntryListController extends FormBasicController
 		initFilters(tableEl);
 		initSorters(tableEl);
 		
-		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-" + name);
+		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-v2-".concat(name));
+		loadFilterPreferences(ureq);
 	}
 	
 	private void initFilters(FlexiTableElement tableElement) {
 		List<FlexiTableFilter> filters = new ArrayList<>(16);
 		filters.add(new FlexiTableFilter(translate("filter.show.all"), Filter.showAll.name(), true));
 		filters.add(FlexiTableFilter.SPACER);
+		filters.add(new FlexiTableFilter(translate("filter.only.courses"), Filter.onlyCourses.name()));
 		filters.add(new FlexiTableFilter(translate("filter.current.courses"), Filter.currentCourses.name()));
 		filters.add(new FlexiTableFilter(translate("filter.upcoming.courses"), Filter.upcomingCourses.name()));
 		filters.add(new FlexiTableFilter(translate("filter.old.courses"), Filter.oldCourses.name()));
@@ -264,6 +269,22 @@ public class RepositoryEntryListController extends FormBasicController
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
 		options.setDefaultOrderBy(new SortKey(OrderBy.title.name(), true));
 		tableElement.setSortSettings(options);
+	}
+	
+	private void loadFilterPreferences(UserRequest ureq) {
+		FilterPreferences prefs = (FilterPreferences)ureq.getUserSession().getGuiPreferences()
+			.get(RepositoryEntryListController.class, "rev-filters-".concat(name));
+		if(prefs != null && prefs.getSelectedFilters() != null) {
+			for(String selectedFilter:prefs.getSelectedFilters()) {
+				tableEl.setSelectedFilterKey(selectedFilter);
+			}
+		}
+	}
+	
+	private void saveFilterPreferences(UserRequest ureq, List<FlexiTableFilter> filters) {
+		ureq.getUserSession().getGuiPreferences()
+		.putAndSave(RepositoryEntryListController.class, "rev-filters-".concat(name),
+				FilterPreferences.valueOf(filters));
 	}
 
 	@Override
@@ -346,6 +367,9 @@ public class RepositoryEntryListController extends FormBasicController
 				RepositoryEntryListState state = new RepositoryEntryListState();
 				state.setTableState(tableEl.getStateEntry());
 				addToHistory(ureq, state);
+			} else if(event instanceof FlexiTableFilterEvent) {
+				FlexiTableFilterEvent ftfe = (FlexiTableFilterEvent)event;
+				saveFilterPreferences(ureq, ftfe.getFilters());
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -373,7 +397,7 @@ public class RepositoryEntryListController extends FormBasicController
 						selectedFilters.add((Filter)filter.getUserObject());
 					}
 				}
-				doFilter(selectedFilters);
+				doFilter(ureq, selectedFilters);
 				flc.setDirty(true);
 			}
 		} else if(source == mainForm.getInitialComponent()) {
@@ -381,7 +405,7 @@ public class RepositoryEntryListController extends FormBasicController
 				String rowKeyStr = ureq.getParameter("select_row");
 				if(StringHelper.isLong(rowKeyStr)) {
 					try {
-						Long rowKey = new Long(rowKeyStr);
+						Long rowKey = Long.valueOf(rowKeyStr);
 						List<RepositoryEntryRow> rows = model.getObjects();
 						for(RepositoryEntryRow row:rows) {
 							if(row != null && row.getKey().equals(rowKey)) {
@@ -481,7 +505,7 @@ public class RepositoryEntryListController extends FormBasicController
 		addToHistory(ureq, state);
 	}
 	
-	protected void doFilter(List<Filter> filters) {
+	protected void doFilter(UserRequest ureq, List<Filter> filters) {	
 		dataSource.setFilters(filters);
 		tableEl.reset();
 	}

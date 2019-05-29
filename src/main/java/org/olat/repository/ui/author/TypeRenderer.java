@@ -31,6 +31,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.ui.RepositoyUIFactory;
+import org.olat.repository.ui.list.RepositoryEntryRow;
 
 /**
  * 
@@ -49,6 +50,8 @@ public class TypeRenderer implements FlexiCellRenderer {
 			type = ((RepositoryEntryShort)cellValue).getResourceType();
 		} else if(cellValue instanceof RepositoryEntry) {
 			type = ((RepositoryEntry)cellValue).getOlatResource().getResourceableTypeName();
+		} else if(cellValue instanceof RepositoryEntryRow) {
+			type = ((RepositoryEntryRow)cellValue).getOLATResourceable().getResourceableTypeName();
 		}
 		
 		if(type == null) {
@@ -74,6 +77,11 @@ public class TypeRenderer implements FlexiCellRenderer {
 			cssClass = RepositoyUIFactory.getIconCssClass(re);
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 			status = re.getEntryStatus();
+		} else if (cellValue instanceof RepositoryEntryRow) {
+			RepositoryEntryRow re = (RepositoryEntryRow) cellValue;
+			cssClass = RepositoyUIFactory.getIconCssClass(re.getOLATResourceable().getResourceableTypeName());
+			managed = false;// no indication for this type of row
+			status = re.getStatus();
 		}
 		
 		if(renderer == null) {
