@@ -152,7 +152,7 @@ public class SearchMyRepositoryEntryViewParams {
 	}
 	
 	public boolean isResourceTypesDefined() {
-		return resourceTypes != null && resourceTypes.size() > 0;
+		return resourceTypes != null && !resourceTypes.isEmpty();
 	}
 
 	public List<String> getResourceTypes() {
@@ -165,7 +165,7 @@ public class SearchMyRepositoryEntryViewParams {
 	
 	public void addResourceTypes(String... types) {
 		if(this.resourceTypes == null) {
-			this.resourceTypes = new ArrayList<String>();
+			this.resourceTypes = new ArrayList<>();
 		}
 		if(types != null) {
 			for(String resourceType:types) {
@@ -220,10 +220,12 @@ public class SearchMyRepositoryEntryViewParams {
 		lifecycleSoftkey,
 		lifecycleStart,
 		lifecycleEnd,
+		type
 	}
 	
 	public enum Filter {
 		showAll,
+		onlyCourses,
 		currentCourses,
 		oldCourses,
 		upcomingCourses,

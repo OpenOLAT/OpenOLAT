@@ -438,6 +438,9 @@ public class RepositoryEntryMyCourseQueries {
 		boolean needIdentityKey = false;
 		switch(filter) {
 			case showAll: break;
+			case onlyCourses:
+				sb.append(" and res.resName='CourseModule'");
+				break;
 			case currentCourses:
 				sb.append(" and lifecycle.validFrom<=:now and lifecycle.validTo>=:now");
 				break;
@@ -614,6 +617,10 @@ public class RepositoryEntryMyCourseQueries {
 				case lifecycleEnd:
 					sb.append(" order by lifecycle.validTo ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
+				case type:
+					sb.append(" order by res.resName ");
+					appendAsc(sb, asc).append(", lower(v.displayname) asc");
 					break;
 				default:
 					if(asc) {

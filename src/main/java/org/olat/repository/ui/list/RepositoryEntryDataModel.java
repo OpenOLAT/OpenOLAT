@@ -73,6 +73,7 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 			case details: return item.getDetailsLink();
 			case ratings: return item.getRatingFormItem();
 			case comments: return item.getCommentsLink();
+			case type: return item;
 		}
 		return null;
 	}
@@ -92,7 +93,8 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 		start("table.header.start"),
 		mark("table.header.mark"),
 		ratings("ratings"),
-		comments("comments");
+		comments("comments"),
+		type("table.header.typeimg");
 		
 		private final String i18nKey;
 		
