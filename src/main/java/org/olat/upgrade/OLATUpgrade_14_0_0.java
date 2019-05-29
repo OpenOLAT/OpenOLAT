@@ -114,9 +114,9 @@ public class OLATUpgrade_14_0_0 extends OLATUpgrade {
 		uhd.setInstallationComplete(allOk);
 		upgradeManager.setUpgradesHistory(uhd, VERSION);
 		if(allOk) {
-			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_13_3_0 successfully!");
+			log.info(Tracing.M_AUDIT, "Finished OLATUpgrade_14_0_0 successfully!");
 		} else {
-			log.info(Tracing.M_AUDIT, "OLATUpgrade_13_3_0 not finished, try to restart OpenOLAT!");
+			log.info(Tracing.M_AUDIT, "OLATUpgrade_14_0_0 not finished, try to restart OpenOLAT!");
 		}
 		return allOk;
 	}

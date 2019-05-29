@@ -19,6 +19,7 @@
  */
 package org.olat.restapi;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -880,6 +881,36 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void getMasterCoaches()
+	throws IOException, URISyntaxException {
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-10");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 10", "REST-p-10-organisation", "", defOrganisation, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-16", "Element 16", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commit();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		curriculumService.addMember(element, member, CurriculumRoles.mastercoach);
+		dbInstance.commitAndCloseSession();
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("mastercoaches").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<UserVO> memberVoes = parseUserArray(response.getEntity());
+		assertThat(memberVoes)
+			.isNotNull()
+			.size().isEqualTo(1);
+		Assert.assertEquals(member.getKey(), memberVoes.get(0).getKey());
+	}
+	
+	@Test
 	public void getCurriculumOwners()
 	throws IOException, URISyntaxException {
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-10");
@@ -1002,6 +1033,34 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void addMasterCoach()
+	throws IOException, URISyntaxException {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-21");
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 21", "REST-p-21-organisation", "", defOrganisation, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-22", "Element 22", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commit();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("mastercoaches").path(masterCoach.getKey().toString()).build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<Identity> masterCoaches = curriculumService.getMembersIdentity(element, CurriculumRoles.mastercoach);
+		Assert.assertNotNull(masterCoaches);
+		Assert.assertEquals(1, masterCoaches.size());
+		Assert.assertEquals(masterCoach, masterCoaches.get(0));
+	}
+	
+	@Test
 	public void addParticipants()
 	throws IOException, URISyntaxException {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
@@ -1065,6 +1124,40 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		List<Identity> coachList = curriculumService.getMembersIdentity(element, CurriculumRoles.coach);
 		Assert.assertNotNull(coachList);
 		Assert.assertEquals(2, coachList.size());
+	}
+	
+	@Test
+	public void addMasterCoaches()
+	throws IOException, URISyntaxException {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Identity masterCoach1 = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-23");
+		Identity masterCoach2 = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-24");
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 25", "REST-p-25-organisation", "", defOrganisation, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-26", "Element 26", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commit();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		UserVO[] coaches = new UserVO[] {
+			UserVOFactory.get(masterCoach1),
+			UserVOFactory.get(masterCoach2)
+		};
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("mastercoaches").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, coaches);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<Identity> masterCoachList = curriculumService.getMembersIdentity(element, CurriculumRoles.mastercoach);
+		assertThat(masterCoachList)
+			.isNotNull()
+			.containsExactlyInAnyOrder(masterCoach1, masterCoach2);
 	}
 	
 	@Test
@@ -1162,6 +1255,43 @@ public class CurriculumElementsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertTrue(coaches.isEmpty());
 		List<Identity> participants = curriculumService.getMembersIdentity(element, CurriculumRoles.participant);
 		Assert.assertEquals(1, participants.size());
+	}
+	
+	@Test
+	public void removeMasterCoach()
+	throws IOException, URISyntaxException {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-30");
+		Identity mastercoach = JunitTestHelper.createAndPersistIdentityAsRndUser("element-member-31");
+		Organisation organisation = organisationService.createOrganisation("REST Parent Organisation 32", "REST-p-32-organisation", "", defOrganisation, null);
+		Curriculum curriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-33", "Element 33", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commit();
+		
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		curriculumService.addMember(element, mastercoach, CurriculumRoles.mastercoach);
+		dbInstance.commitAndCloseSession();
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("curriculum").path(curriculum.getKey().toString())
+				.path("elements").path(element.getKey().toString()).path("mastercoaches").path(mastercoach.getKey().toString()).build();
+		HttpDelete method = conn.createDelete(request, MediaType.APPLICATION_JSON);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		EntityUtils.consume(response.getEntity());
+		
+		List<Identity> masterCoaches = curriculumService.getMembersIdentity(element, CurriculumRoles.mastercoach);
+		assertThat(masterCoaches)
+			.isNotNull()
+			.isEmpty();
+		List<Identity> participants = curriculumService.getMembersIdentity(element, CurriculumRoles.participant);
+		assertThat(participants)
+			.isNotNull()
+			.containsExactly(participant);
 	}
 	
 	@Test
