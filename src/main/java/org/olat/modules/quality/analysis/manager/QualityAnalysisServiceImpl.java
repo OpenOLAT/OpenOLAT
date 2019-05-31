@@ -19,7 +19,6 @@
  */
 package org.olat.modules.quality.analysis.manager;
 
-import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
@@ -314,19 +313,6 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 		GroupedStatistics<RawGroupedStatistic> rawStatistics = new GroupedStatistics<>(statisticsList);
 		GroupedStatistics<GroupedStatistic> statistics = statisticsCalculator.getGroupedStatistics(rawStatistics, rubrics);
 		return statisticsCalculator.getTrendsByIdentifiers(statistics, temporalGroupBy);
-	}
-
-	@Override
-	public MultiTrendSeries<MultiKey> calculateTrends(AnalysisSearchParameter searchParams, Rubric rubric,
-			MultiGroupBy groupBy, TemporalGroupBy temporalGroupBy) {
-		if (groupBy == null || temporalGroupBy == null) return new MultiTrendSeries<>();
-		
-		List<String> identifiers = rubric.getSliders().stream().map(Slider::getId).collect(toList());
-		List<RawGroupedStatistic> statisticsList = filterDao.loadGroupedStatistic(searchParams,
-				identifiers, true, groupBy, temporalGroupBy);
-		GroupedStatistics<RawGroupedStatistic> rawStatistics = new GroupedStatistics<>(statisticsList);
-		GroupedStatistics<GroupedStatistic> statistics = statisticsCalculator.getGroupedStatistics(rawStatistics, singletonList(rubric));
-		return statisticsCalculator.getTrendsByMultiKey(statistics, temporalGroupBy);
 	}
 
 	@Override
