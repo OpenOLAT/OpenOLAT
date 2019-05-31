@@ -69,12 +69,23 @@ public class StatisticsCalculator {
 		GroupedStatistics<GroupedStatistic> statistics = new GroupedStatistics<>();
 		for (RawGroupedStatistic rawStatistic : rawStatistics.getStatistics()) {
 			Rubric rubric = identifierToRubric.get(rawStatistic.getIdentifier());
+			if (rubric == null) {
+				// fallback for trend (grouped by rubric / grouped by all)
+				rubric = getFirstRubric(rubrics);
+			}
 			if (rubric != null) {
 				GroupedStatistic statistic = getGroupedStatistic(rawStatistic, rubric);
 				statistics.putStatistic(statistic);
 			}
 		}
 		return statistics;
+	}
+	
+	private Rubric getFirstRubric(Collection<Rubric> rubrics) {
+		for (Rubric rubric : rubrics) {
+			return rubric;
+		}
+		return null;
 	}
 	
 	private Map<String, Rubric> getIdentifierToRubric(Collection<Rubric> rubrics) {
