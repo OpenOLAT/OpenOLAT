@@ -166,9 +166,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		if(roles.isAdministrator() || roles.isUserManager() || roles.isRolesManager()) {
 			bulkChangesButton = uifactory.addFormLink("bulkChange.title", formLayout, Link.BUTTON);
 		}
-		if(bulkOrganisationMove) {
-			bulkMovebutton = uifactory.addFormLink("command.move.to.organisation", formLayout, Link.BUTTON);
-		}
+		bulkMovebutton = uifactory.addFormLink("command.move.to.organisation", formLayout, Link.BUTTON);
+		bulkMovebutton.setVisible(bulkOrganisationMove);
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		if(isAdministrativeUser) {
@@ -211,7 +210,8 @@ public class UserSearchTableController extends FormBasicController implements Ac
 		UserSearchDataSource dataSource = new UserSearchDataSource(params, userPropertyHandlers, getLocale());
 		tableModel.setSource(dataSource);
 		tableEl.reset(true, true, true);
-		bulkMovebutton.setVisible(currentSearchParams != null
+		bulkMovebutton.setVisible(bulkOrganisationMove
+				&& currentSearchParams != null
 				&& currentSearchParams.getOrganisations() != null
 				&& currentSearchParams.getOrganisations().size() == 1);
 	}
