@@ -19,7 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.richText;
 
-import java.io.ByteArrayInputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -122,7 +122,7 @@ public enum TextMode {
 	private static void parse(String text, DefaultHandler handler) throws Exception {
 		HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 		parser.setContentHandler(handler);
-		parser.parseFragment(new InputSource(new ByteArrayInputStream(text.getBytes())), "");
+		parser.parseFragment(new InputSource(new StringReader(text)), "");
 	}
 	
 	private static final class TextAnalyser extends DefaultHandler {

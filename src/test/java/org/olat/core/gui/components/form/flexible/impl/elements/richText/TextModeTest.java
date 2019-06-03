@@ -68,5 +68,8 @@ public class TextModeTest {
 		
 		String linedText2 = TextMode.toMultiLine("<p>Lorem</p>ipsum<br>dolor<p>sit amet</p>");
 		Assert.assertEquals("Lorem\nipsum\ndolor\nsit amet", linedText2);
+		
+		String linedText3 = TextMode.toMultiLine("<p>Lorem</p>ipsum<br>dolor<p>sit \u00E4met</p>");
+		Assert.assertEquals("Lorem\nipsum\ndolor\nsit \u00E4met", linedText3);
 	}
 }

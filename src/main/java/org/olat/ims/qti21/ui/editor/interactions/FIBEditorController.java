@@ -19,8 +19,8 @@
  */
 package org.olat.ims.qti21.ui.editor.interactions;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.StringReader;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -335,7 +335,7 @@ public class FIBEditorController extends FormBasicController {
 		try {
 			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			parser.setContentHandler(new SolutionExtractorHandler());
-			parser.parse(new InputSource(new ByteArrayInputStream(content.getBytes())));
+			parser.parse(new InputSource(new StringReader(content)));
 		} catch (Exception e) {
 			logError("", e);
 		}
