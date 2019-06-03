@@ -2,14 +2,14 @@ var BPlayer = {
 	/**
 	 * Create a video player within the given DOM element with the given parameters. Same as insertHTML5Player() 
 	 */
-	insertPlayer: function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster) {
-		BPlayer.insertHTML5Player(address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster);
+	insertPlayer: function (address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster,errorCallback) {
+		BPlayer.insertHTML5Player(address,domId,width,height,start,duration,provider,streamer,autostart,repeat,controlbar,poster,errorCallback);
 	},
 	
 	/**
 	 * Create a video player within the given DOM element with the given parameters
 	 */
-	insertHTML5Player : function (address, domId, width, height, start, duration, provider, streamer, autostart, repeat, controlbar, poster) {
+	insertHTML5Player : function (address, domId, width, height, start, duration, provider, streamer, autostart, repeat, controlbar, poster, errorCallback) {
 		// Calculate relative video URL
 		var videoUrl = address;
 		if(address.indexOf('://') < 0 && (address.indexOf('/raw/static/') == 0 || address.indexOf('/secstatic/qtieditor/') >= 0 || address.indexOf('/secstatic/qti/') >= 0)) {
@@ -58,8 +58,13 @@ var BPlayer = {
 		if(typeof controlbar != 'undefined' && !controlbar) {
 			args.controlbar = "none";
 		}
-		if(typeof poster != 'undefined') {
+		if(typeof poster != 'undefined' && poster) {
 			args.image = poster;
+		}
+		if(typeof errorCallback != 'undefined') {
+			args.errorCallback = errorCallback;
+		} else {
+			args.errorCallback = function(mediaElement, originalNode, player){};
 		}
 
 		// Finally, load player library and play video
@@ -221,6 +226,7 @@ var BPlayer = {
 		        path: mediaElementBaseUrl + 'flv/flv.min.js',
 		        withCredentials: true
 		    },
+			error: config.errorCallback,
 			success: function(mediaElement, originalNode, player) {
 				if(config.start) {
 					player.load();
