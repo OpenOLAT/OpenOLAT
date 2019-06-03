@@ -986,6 +986,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			return false;// background request cannot change screen size, need to wait async
 		}
 
+		boolean wishFullScreen = getScreenMode().isWishFullScreen();
 		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
 		if(screen && StringHelper.containsNonWhitespace(getScreenMode().getBusinessPath())) {
 			String businessPath;
@@ -998,6 +999,15 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			}
 			mainVc.getContext().put("startBusinessPath", businessPath);
 		}
+
+		if(screen && StringHelper.containsNonWhitespace(getScreenMode().getFullScreenBodyClass())) {
+			if(wishFullScreen) {
+				bodyCssClasses.add(getScreenMode().getFullScreenBodyClass());
+			} else {
+				bodyCssClasses.remove(getScreenMode().getFullScreenBodyClass());
+			}
+		}
+		
 		boolean r = reload != null && reload.booleanValue();
 		if(erase && reload != null) {
 			reload = null;
@@ -1008,7 +1018,17 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 
 	@Override
 	public boolean wishAsyncReload(UserRequest ureq, boolean erase) {
+		boolean wishFullScreen = getScreenMode().isWishFullScreen();
 		boolean screen = getScreenMode().wishScreenModeSwitch(erase);
+		
+		if(screen && StringHelper.containsNonWhitespace(getScreenMode().getFullScreenBodyClass())) {
+			if(wishFullScreen) {
+				bodyCssClasses.add(getScreenMode().getFullScreenBodyClass());
+			} else {
+				bodyCssClasses.remove(getScreenMode().getFullScreenBodyClass());
+			}
+		}
+		
 		boolean l = checkAssessmentGuard(ureq, lockMode);
 		return screen || l; 
 	}
