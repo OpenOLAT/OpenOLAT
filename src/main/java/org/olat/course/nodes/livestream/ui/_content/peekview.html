@@ -1,0 +1,38 @@
+<div class="o_livestream_peekview clearfix">
+	#if($events.isEmpty())
+		<div class="o_instruction">
+			$r.translate("peekview.no.streams")
+		</div>
+	</div>
+	#else
+		#foreach($event in $events)
+			<div class="o_livestream_peekview_event">
+				#if($event.getTitle())
+					<h5>$event.getTitle()</h5>
+				#end
+				<div class="o_cal_date text-muted">
+					<i class="o_icon o_icon-fw o_icon_calendar">&nbsp;</i>
+					$event.getDate()
+				</div>
+				#if($event.getTime() && $event.getTime() != "")
+					<div class="o_cal_time text-muted">
+						<i class="o_icon o_icon-fw o_icon_time">&nbsp;</i>
+						$event.getTime()
+					</div>
+				#end
+				#if($event.getLocation() && $event.getLocation() != "")
+					<div class="o_cal_location text-muted">
+						<i class="o_icon o_icon-fw o_icon_home" title="$r.translateInAttribute("cal.form.location")">&nbsp;</i>
+						$r.escapeHtml($event.getLocation())
+					</div>
+				#end
+			</div>
+		#end
+		#if($r.available("peekview.open.live"))
+			$r.render("peekview.open.live")
+		#end
+		#if($r.available("peekview.open.upcoming"))
+			$r.render("peekview.open.upcoming")
+		#end
+	#end
+</div>

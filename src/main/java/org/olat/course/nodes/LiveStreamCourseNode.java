@@ -40,6 +40,7 @@ import org.olat.course.nodes.livestream.LiveStreamModule;
 import org.olat.course.nodes.livestream.LiveStreamSecurityCallback;
 import org.olat.course.nodes.livestream.LiveStreamSecurityCallbackFactory;
 import org.olat.course.nodes.livestream.ui.LiveStreamEditController;
+import org.olat.course.nodes.livestream.ui.LiveStreamPeekviewController;
 import org.olat.course.nodes.livestream.ui.LiveStreamRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -99,6 +100,13 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_livestream_icon");
 		return new NodeRunConstructionResult(ctrl);
+	}
+	
+	@Override
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		CourseCalendars calendars = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, userCourseEnv, ne);
+		return new LiveStreamPeekviewController(ureq, wControl, getIdent(), this.getModuleConfiguration(), calendars);
 	}
 
 	@SuppressWarnings("deprecation")
