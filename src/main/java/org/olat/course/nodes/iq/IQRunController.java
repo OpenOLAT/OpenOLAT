@@ -27,7 +27,8 @@ package org.olat.course.nodes.iq;
 
 import java.io.File;
 import java.text.DateFormat;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -222,25 +223,34 @@ public class IQRunController extends BasicController implements GenericEventList
 		Formatter formatter = Formatter.getInstance(ureq.getLocale());
 		ImsRepositoryResolver resolver = new ImsRepositoryResolver(referenceTestEntry);
 		QTIChangeLogMessage[] qtiChangeLog = resolver.getDocumentChangeLog();
+		
 		StringBuilder qtiChangelog = new StringBuilder();
 
 		if(qtiChangeLog.length>0){
+			List<QTIChangeLogMessage> qtiChangeLogList = new ArrayList<>(qtiChangeLog.length);
+			for (int i=qtiChangeLog.length; i-->0 ; ) {
+				if(qtiChangeLog[i] != null) {
+					qtiChangeLogList.add(qtiChangeLog[i]);
+				}
+			}
 			//there are resource changes
-			Arrays.sort(qtiChangeLog);
-			for (int i = qtiChangeLog.length-1; i >= 0 ; i--) {
+			Collections.sort(qtiChangeLogList);
+			
+			for (int i = qtiChangeLogList.size()-1; i >= 0 ; i--) {
+				QTIChangeLogMessage qtiChangeLogEntry = qtiChangeLogList.get(i);
 				//show latest change first
-				if(!showAll && qtiChangeLog[i].isPublic()){
+				if(!showAll && qtiChangeLogEntry.isPublic()){
 					//logged in person is a normal user, hence public messages only
-					Date msgDate = new Date(qtiChangeLog[i].getTimestmp());
+					Date msgDate = new Date(qtiChangeLogEntry.getTimestmp());
 					qtiChangelog.append("\nChange date: ").append(formatter.formatDateAndTime(msgDate)).append("\n");
-					String msg = StringHelper.escapeHtml(qtiChangeLog[i].getLogMessage());
+					String msg = StringHelper.escapeHtml(qtiChangeLogEntry.getLogMessage());
 					qtiChangelog.append(msg);
 					qtiChangelog.append("\n********************************\n");
 				}else if (showAll){
 					//logged in person is an author, olat admin, owner, show all messages
-					Date msgDate = new Date(qtiChangeLog[i].getTimestmp());
+					Date msgDate = new Date(qtiChangeLogEntry.getTimestmp());
 					qtiChangelog.append("\nChange date: ").append(formatter.formatDateAndTime(msgDate)).append("\n");
-					String msg = StringHelper.escapeHtml(qtiChangeLog[i].getLogMessage());
+					String msg = StringHelper.escapeHtml(qtiChangeLogEntry.getLogMessage());
 					qtiChangelog.append(msg);
 					qtiChangelog.append("\n********************************\n");
 				}//else non public messages are not shown to normal user
