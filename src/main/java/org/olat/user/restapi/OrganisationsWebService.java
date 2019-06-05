@@ -39,11 +39,13 @@ import javax.ws.rs.core.Response.Status;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupMembershipInheritance;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationStatus;
 import org.olat.basesecurity.OrganisationType;
+import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
 import org.olat.core.commons.persistence.DB;
@@ -170,6 +172,43 @@ public class OrganisationsWebService {
 		}
 		Organisation savedOrganisation = saveOrganisation(organisation);
 		return Response.ok(OrganisationVO.valueOf(savedOrganisation)).build();
+	}
+	
+	/**
+	 * Get the organizations where the specified user has the role.
+	 * 
+	 * @response.representation.200.qname {http://www.example.com}organisationVO
+	 * @response.representation.200.mediaType application/xml, application/json
+	 * @response.representation.200.doc The list of organizations
+	 * @response.representation.200.example {@link org.olat.user.restapi.Examples#SAMPLE_ORGANISATIONVO}
+	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
+	 * @param role The role in organizations
+	 * @param identityKey The user
+	 * @param withInheritance With or without inheritance in the organization structure (default with)
+	 * @param httpRequest The HTTP request
+	 * @return The organization
+	 */
+	@GET
+	@Path("membership/{role}/{identityKey}")
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response getMemberships(@PathParam("role") String role, @PathParam("identityKey") Long identityKey,
+			@QueryParam("withInheritance") Boolean withInheritance, @Context HttpServletRequest httpRequest) {
+		if(!isAdministrator(httpRequest)) {
+			return Response.serverError().status(Status.UNAUTHORIZED).build();
+		}
+		if(!OrganisationRoles.isValue(role)) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		}
+		
+		IdentityRef member = new IdentityRefImpl(identityKey);
+		List<Organisation> organisations;
+		if(withInheritance == null || withInheritance.booleanValue()) {
+			organisations = organisationService.getOrganisations(member, OrganisationRoles.valueOf(role));
+		} else {
+			organisations = organisationService.getOrganisationsNotInherited(member, OrganisationRoles.valueOf(role));
+		}
+		OrganisationVO[] organisationVOes = toArrayOfVOes(organisations);
+		return Response.ok(organisationVOes).build();
 	}
 	
 	/**

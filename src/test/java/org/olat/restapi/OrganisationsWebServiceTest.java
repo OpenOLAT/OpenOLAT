@@ -20,6 +20,7 @@
 package org.olat.restapi;
 
 import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -460,7 +461,7 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 	@Test
 	public void getRepositoryEntries()
 	throws IOException, URISyntaxException {
-		// prepare an organisation with a course
+		// prepare an organization with a course
 		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-13");
 		Organisation organisation = organisationService.createOrganisation("REST Organisation 8", "REST-p-8-organisation", "", null, null);
 		organisationService.addMember(organisation, member, OrganisationRoles.administrator);
@@ -483,7 +484,120 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals(1, entries.size());
 		Assert.assertEquals(course.getKey(), entries.get(0).getKey());
 	}
+	
+	@Test
+	public void getMemberships()
+	throws IOException, URISyntaxException {
+		// prepare an organization with a course
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-14");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 9", "REST-p-9-organisation", "", null, null);
+		organisationService.addMember(organisation, member, OrganisationRoles.author);
+		dbInstance.commit();
 
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
+				.path("user").path(member.getKey().toString()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<OrganisationVO> organisations = parseOrganisationArray(response.getEntity());
+		Assert.assertNotNull(organisations);
+		Assert.assertEquals(1, organisations.size());
+		Assert.assertEquals(organisationService.getDefaultOrganisation().getKey(), organisations.get(0).getKey());
+	}
+	
+	/**
+	 * Default is with inheritance but be sure.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void getMemberships_usermanager()
+	throws IOException, URISyntaxException {
+		// prepare an organization with a course
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-16");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 14", "REST-p-14-organisation", "", null, null);
+		Organisation subOrganisation = organisationService.createOrganisation("REST Organisation 14b", "REST-p-14-b-organisation", "", organisation, null);
+		Organisation otherOrganisation = organisationService.createOrganisation("REST Organisation 15", "REST-p-16-organisation", "", null, null);
+		organisationService.addMember(organisation, member, OrganisationRoles.rolesmanager);
+		organisationService.addMember(otherOrganisation, member, OrganisationRoles.rolesmanager);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
+				.path("rolesmanager").path(member.getKey().toString()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<OrganisationVO> organisations = parseOrganisationArray(response.getEntity());
+		assertThat(organisations)
+			.extracting(OrganisationVO::getKey)
+			.containsExactlyInAnyOrder(organisation.getKey(), otherOrganisation.getKey(), subOrganisation.getKey());
+	}
+	
+	@Test
+	public void getMemberships_usermanager_withInheritance()
+	throws IOException, URISyntaxException {
+		// prepare an organization with a course
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-17");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 16", "REST-p-16-organisation", "", null, null);
+		Organisation subOrganisation = organisationService.createOrganisation("REST Organisation 16b", "REST-p-16-b-organisation", "", organisation, null);
+		Organisation otherOrganisation = organisationService.createOrganisation("REST Organisation 17", "REST-p-17-organisation", "", null, null);
+		organisationService.addMember(organisation, member, OrganisationRoles.usermanager);
+		organisationService.addMember(otherOrganisation, member, OrganisationRoles.usermanager);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
+				.path("usermanager").path(member.getKey().toString()).build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<OrganisationVO> organisations = parseOrganisationArray(response.getEntity());
+		assertThat(organisations)
+			.extracting(OrganisationVO::getKey)
+			.containsExactlyInAnyOrder(organisation.getKey(), otherOrganisation.getKey(), subOrganisation.getKey());
+	}
+	
+	@Test
+	public void getMemberships_usermanager_notInherited()
+	throws IOException, URISyntaxException {
+		// prepare an organization with a course
+		Identity member = JunitTestHelper.createAndPersistIdentityAsRndUser("org-member-15");
+		Organisation organisation = organisationService.createOrganisation("REST Organisation 10", "REST-p-10-organisation", "", null, null);
+		Organisation subOrganisation = organisationService.createOrganisation("REST Organisation 11", "REST-p-11-organisation", "", organisation, null);
+		Organisation otherOrganisation = organisationService.createOrganisation("REST Organisation 12", "REST-p-12-organisation", "", null, null);
+		organisationService.addMember(organisation, member, OrganisationRoles.usermanager);
+		organisationService.addMember(otherOrganisation, member, OrganisationRoles.usermanager);
+		dbInstance.commit();
+
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").path("membership")
+				.path("usermanager").path(member.getKey().toString())
+				.queryParam("withInheritance", "false").build();
+		HttpGet method = conn.createGet(request, MediaType.APPLICATION_JSON, true);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+		List<OrganisationVO> organisations = parseOrganisationArray(response.getEntity());
+		assertThat(organisations)
+			.extracting(OrganisationVO::getKey)
+			.containsExactlyInAnyOrder(organisation.getKey(), otherOrganisation.getKey())
+			.doesNotContain(subOrganisation.getKey());
+	}
+	
 	protected List<UserVO> parseUserArray(HttpEntity entity) {
 		try(InputStream in=entity.getContent()) {
 			ObjectMapper mapper = new ObjectMapper(jsonFactory); 

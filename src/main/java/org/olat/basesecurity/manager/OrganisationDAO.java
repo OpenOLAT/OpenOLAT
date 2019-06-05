@@ -314,7 +314,7 @@ public class OrganisationDAO {
 				.getResultList();
 	}
 	
-	public List<Organisation> getOrganisations(IdentityRef identity, List<String> roleList) {
+	public List<Organisation> getOrganisations(IdentityRef identity, List<String> roleList, boolean withInheritence) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select org from organisation org")
 		  .append(" inner join fetch org.group baseGroup")
@@ -323,6 +323,9 @@ public class OrganisationDAO {
 		  .append(" left join fetch org.parent parentOrg")
 		  .append(" where membership.identity.key=:identityKey and membership.role in (:roles)")
 		  .append(" and org.status ").in(OrganisationStatus.notDelete());
+		if(!withInheritence) {
+			sb.append(" and membership.inheritanceModeString ").in(GroupMembershipInheritance.root, GroupMembershipInheritance.none);
+		}
 		List<Organisation> organisations = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Organisation.class)
 				.setParameter("identityKey", identity.getKey())

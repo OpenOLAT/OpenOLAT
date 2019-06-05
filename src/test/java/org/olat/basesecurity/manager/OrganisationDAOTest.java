@@ -19,6 +19,8 @@
  */
 package org.olat.basesecurity.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -240,18 +242,44 @@ public class OrganisationDAOTest extends OlatTestCase {
 		managerRoles.add(OrganisationRoles.usermanager.name());
 		managerRoles.add(OrganisationRoles.groupmanager.name());
 		managerRoles.add(OrganisationRoles.poolmanager.name());
-		List<Organisation> managedOrganisations = organisationDao.getOrganisations(member, managerRoles);
+		List<Organisation> managedOrganisations = organisationDao.getOrganisations(member, managerRoles, true);
 		Assert.assertEquals(2, managedOrganisations.size());
 		Assert.assertTrue(managedOrganisations.contains(organisation1));
 		Assert.assertTrue(managedOrganisations.contains(organisation3));
 		
 		List<String> userRole = Collections.singletonList(OrganisationRoles.user.name());
-		List<Organisation> organisations = organisationDao.getOrganisations(member, userRole);
+		List<Organisation> organisations = organisationDao.getOrganisations(member, userRole, true);
 		Assert.assertEquals(4, organisations.size());
 		Assert.assertTrue(organisations.contains(organisation1));
 		Assert.assertTrue(organisations.contains(organisation2));
 		Assert.assertTrue(organisations.contains(organisation3));
 		Assert.assertTrue(organisations.contains(defOrganisation));	
+	}
+	
+	@Test
+	public void getOrganisations_identity_notInherited() {
+		Identity member1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-16");
+		Identity member2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Member-17");
+		String identifier = UUID.randomUUID().toString();
+		Organisation organisation1 = organisationDao.createAndPersistOrganisation("Org 10", identifier, null, null, null);
+		Organisation organisation1_1 = organisationDao.createAndPersistOrganisation("Org 11", identifier, null, organisation1, null);
+		Organisation organisation2 = organisationDao.createAndPersistOrganisation("Org 12", identifier, null, null, null);
+		dbInstance.commit();
+		organisationService.addMember(organisation1, member1, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation2, member1, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation2, member2, OrganisationRoles.usermanager);
+		dbInstance.commitAndCloseSession();
+
+		List<String> managerRoles = new ArrayList<>();
+		managerRoles.add(OrganisationRoles.usermanager.name());
+		List<Organisation> organisationsFor1 = organisationDao.getOrganisations(member1, managerRoles, false);
+		assertThat(organisationsFor1)
+			.containsExactlyInAnyOrder(organisation1, organisation2)
+			.doesNotContain(organisation1_1);
+
+		List<Organisation> organisationsFor2 = organisationDao.getOrganisations(member2, managerRoles, false);
+		assertThat(organisationsFor2)
+			.containsExactly(organisation2);
 	}
 	
 	@Test

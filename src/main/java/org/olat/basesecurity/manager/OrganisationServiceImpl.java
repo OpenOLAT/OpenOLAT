@@ -339,7 +339,16 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 		for(OrganisationRoles r:role) {
 			roleList.add(r.name());
 		}
-		return organisationDao.getOrganisations(member, roleList);
+		return organisationDao.getOrganisations(member, roleList, true);
+	}
+
+	@Override
+	public List<Organisation> getOrganisationsNotInherited(IdentityRef member, OrganisationRoles... role) {
+		List<String> roleList = new ArrayList<>(role.length);
+		for(OrganisationRoles r:role) {
+			roleList.add(r.name());
+		}
+		return organisationDao.getOrganisations(member, roleList, false);
 	}
 
 	@Override

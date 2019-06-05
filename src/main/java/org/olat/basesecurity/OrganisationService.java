@@ -147,11 +147,24 @@ public interface OrganisationService {
 	public List<OrganisationType> getOrganisationTypes();
 
 	/**
+	 * The list of all organizations where the user has the specified roles,
+	 * with inheritance in the organization structure dependent of the role.
+	 * 
 	 * @param member The user (mandatory)
 	 * @param role The roles (mandatory)
 	 * @return A list of organization where the user has the specified roles
 	 */
 	public List<Organisation> getOrganisations(IdentityRef member, OrganisationRoles... role);
+	
+	/**
+	 * The list of organizations where the user has the specified roles,
+	 * without any inheritance in the organization structure.
+	 * 
+	 * @param member The user (mandatory)
+	 * @param role The roles (mandatory)
+	 * @return A list of organization where the user has the specified roles
+	 */
+	public List<Organisation> getOrganisationsNotInherited(IdentityRef member, OrganisationRoles... role);
 	
 	/**
 	 * Return the organization the specified user is allow to see. 
