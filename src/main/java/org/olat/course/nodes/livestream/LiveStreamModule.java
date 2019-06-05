@@ -39,6 +39,7 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	public static final String LIVE_STREAM_ENABLED = "live.stream.enabled";
 	public static final String LIVE_STREAM_BUFFER_BEFORE_MIN = "live.stream.buffer.before.min";
 	public static final String LIVE_STREAM_BUFFER_AFTER_MIN = "live.stream.buffer.after.min";
+	public static final String LIVE_STREAM_EDIT_COACH = "live.stream.edit.coach";
 
 	@Value("${live.stream.enabled:false}")
 	private boolean enabled;
@@ -46,7 +47,9 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	private int bufferBeforeMin;
 	@Value("${live.stream.buffer.after.min:5}")
 	private int bufferAfterMin;
-			
+	@Value("${live.stream.edit.coach:false}")
+	private boolean editCoach;
+	
 	@Autowired
 	public LiveStreamModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -67,6 +70,11 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 		String bufferAfterMinObj = getStringPropertyValue(LIVE_STREAM_BUFFER_AFTER_MIN, true);
 		if(StringHelper.containsNonWhitespace(bufferAfterMinObj)) {
 			bufferAfterMin = Integer.parseInt(bufferAfterMinObj);
+		}
+		
+		String editCoachObj = getStringPropertyValue(LIVE_STREAM_EDIT_COACH, true);
+		if(StringHelper.containsNonWhitespace(editCoachObj)) {
+			editCoach = "true".equals(editCoachObj);
 		}
 	}
 	
@@ -101,6 +109,15 @@ public class LiveStreamModule extends AbstractSpringModule implements ConfigOnOf
 	public void setBufferAfterMin(int bufferAfterMin) {
 		this.bufferAfterMin = bufferAfterMin;
 		setStringProperty(LIVE_STREAM_BUFFER_BEFORE_MIN, Integer.toString(bufferAfterMin), true);
+	}
+
+	public boolean isEditCoach() {
+		return editCoach;
+	}
+
+	public void setEditCoach(boolean editCoach) {
+		this.editCoach = editCoach;
+		setStringProperty(LIVE_STREAM_EDIT_COACH, Boolean.toString(editCoach), true);
 	}
 
 }

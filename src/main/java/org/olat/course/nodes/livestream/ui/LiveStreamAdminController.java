@@ -27,53 +27,72 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.course.nodes.LiveStreamCourseNode;
-import org.olat.modules.ModuleConfiguration;
+import org.olat.course.nodes.livestream.LiveStreamModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 23.05.2019<br>
+ * Initial date: 5 Jun 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LiveStreamConfigController extends FormBasicController {
+public class LiveStreamAdminController extends FormBasicController {
 	
 	private static final String[] ENABLED_KEYS = new String[]{"on"};
 	
-	private final ModuleConfiguration config;
-	
+	private MultipleSelectionElement enabledEl;
 	private TextElement bufferBeforeMinEl;
 	private TextElement bufferAfterMinEl;
 	private MultipleSelectionElement coachCanEditEl;
+	
+	@Autowired
+	private LiveStreamModule liveStreamModule;
 
-	public LiveStreamConfigController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfiguration) {
-		super(ureq, wControl);
-		this.config = moduleConfiguration;
+	public LiveStreamAdminController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, LAYOUT_BAREBONE);
 		
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		int bufferBeforeMin = config.getIntegerSafe(LiveStreamCourseNode.CONFIG_BUFFER_BEFORE_MIN, 0);
-		bufferBeforeMinEl = uifactory.addTextElement("config.buffer.before.min", 4, String.valueOf(bufferBeforeMin),
-				formLayout);
+		FormLayoutContainer generalCont = FormLayoutContainer.createDefaultFormLayout("general", getTranslator());
+		generalCont.setFormTitle(translate("admin.general.title"));
+		generalCont.setRootForm(mainForm);
+		formLayout.add("genearl", generalCont);
+		
+		enabledEl = uifactory.addCheckboxesHorizontal("admin.module.enabled", generalCont, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		enabledEl.select(ENABLED_KEYS[0], liveStreamModule.isEnabled());
+		
+		FormLayoutContainer defaultValuesCont = FormLayoutContainer.createDefaultFormLayout("default_values", getTranslator());
+		defaultValuesCont.setFormTitle(translate("admin.default.values.title"));
+		defaultValuesCont.setFormDescription(translate("admin.default.values.desc"));
+		defaultValuesCont.setRootForm(mainForm);
+		formLayout.add("defaultValues", defaultValuesCont);
+
+		int bufferBeforeMin = liveStreamModule.getBufferBeforeMin();
+		bufferBeforeMinEl = uifactory.addTextElement("admin.buffer.before.min", 4, String.valueOf(bufferBeforeMin),
+				defaultValuesCont);
 		bufferBeforeMinEl.setMandatory(true);
 
-		int bufferAfterMin = config.getIntegerSafe(LiveStreamCourseNode.CONFIG_BUFFER_AFTER_MIN, 0);
-		bufferAfterMinEl = uifactory.addTextElement("config.buffer.after.min", 4, String.valueOf(bufferAfterMin),
-				formLayout);
+		int bufferAfterMin = liveStreamModule.getBufferAfterMin();
+		bufferAfterMinEl = uifactory.addTextElement("admin.buffer.after.min", 4, String.valueOf(bufferAfterMin),
+				defaultValuesCont);
 		bufferAfterMinEl.setMandatory(true);
 		
-		coachCanEditEl = uifactory.addCheckboxesVertical("config.coach.edit", formLayout, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS), 1);
-		boolean coachCanEdit = config.getBooleanSafe(LiveStreamCourseNode.CONFIG_COACH_CAN_EDIT);
+		coachCanEditEl = uifactory.addCheckboxesHorizontal("admin.coach.edit", defaultValuesCont, ENABLED_KEYS,
+				translateAll(getTranslator(), ENABLED_KEYS));
+		boolean coachCanEdit = liveStreamModule.isEditCoach();
 		coachCanEditEl.select(ENABLED_KEYS[0], coachCanEdit);
 		
-		uifactory.addFormSubmitButton("save", formLayout);
+		FormLayoutContainer buttonsCont = FormLayoutContainer.createDefaultFormLayout("buttons", getTranslator());
+		buttonsCont.setRootForm(mainForm);
+		formLayout.add("buttons", buttonsCont);
+		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 
 	@Override
@@ -88,25 +107,22 @@ public class LiveStreamConfigController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
-	
-	protected ModuleConfiguration getUpdatedConfig() {
+		boolean enabled = enabledEl.isAtLeastSelected(1);
+		liveStreamModule.setEnabled(enabled);
+		
 		int bufferBeforeMin = Integer.parseInt(bufferBeforeMinEl.getValue());
-		config.setIntValue(LiveStreamCourseNode.CONFIG_BUFFER_BEFORE_MIN, bufferBeforeMin);
+		liveStreamModule.setBufferBeforeMin(bufferBeforeMin);
 		
 		int bufferAfterMin = Integer.parseInt(bufferAfterMinEl.getValue());
-		config.setIntValue(LiveStreamCourseNode.CONFIG_BUFFER_AFTER_MIN, bufferAfterMin);
+		liveStreamModule.setBufferAfterMin(bufferAfterMin);
 		
 		boolean coachCanEdit = coachCanEditEl.isAtLeastSelected(1);
-		config.setBooleanEntry(LiveStreamCourseNode.CONFIG_COACH_CAN_EDIT, coachCanEdit);
-		
-		return config;
+		liveStreamModule.setEditCoach(coachCanEdit);
 	}
-
+	
 	@Override
 	protected void doDispose() {
 		//
 	}
-	
+
 }

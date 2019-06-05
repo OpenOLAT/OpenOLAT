@@ -129,7 +129,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 			LiveStreamModule liveStreamModule = CoreSpringFactory.getImpl(LiveStreamModule.class);
 			config.setIntValue(CONFIG_BUFFER_BEFORE_MIN, liveStreamModule.getBufferBeforeMin());
 			config.setIntValue(CONFIG_BUFFER_AFTER_MIN, liveStreamModule.getBufferAfterMin());
-			config.setBooleanEntry(CONFIG_COACH_CAN_EDIT, false);
+			config.setBooleanEntry(CONFIG_COACH_CAN_EDIT, liveStreamModule.isEditCoach());
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
