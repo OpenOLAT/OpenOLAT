@@ -21,6 +21,7 @@ package org.olat.course.nodes.livestream.ui;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -73,6 +74,7 @@ public class LiveStreamPeekviewController extends BasicController implements Con
 		List<? extends LiveStreamEvent> runningEvents = liveStreamService.getRunningEvents(calendars, bufferBeforeMin, bufferAfterMin);
 		List<EventWrapper> events;
 		if (!runningEvents.isEmpty()) {
+			Collections.sort(runningEvents, (e1, e2) -> e1.getBegin().compareTo(e2.getBegin()));
 			events = wrapEvents(runningEvents, true);
 			nodeLink = LinkFactory.createLink("peekview.open.live", mainVC, this);
 			nodeLink.setIconRightCSS("o_icon o_icon_start");
@@ -80,6 +82,7 @@ public class LiveStreamPeekviewController extends BasicController implements Con
 		} else {
 			List<? extends LiveStreamEvent> upcomingEvents = liveStreamService.getUpcomingEvents(calendars, bufferBeforeMin);
 			if (!upcomingEvents.isEmpty()) {
+				Collections.sort(upcomingEvents, (e1, e2) -> e1.getBegin().compareTo(e2.getBegin()));
 				events = new ArrayList<>(1);
 				events.add(wrapEvent(upcomingEvents.get(0), false));
 				nodeLink = LinkFactory.createLink("peekview.open.upcoming", mainVC, this);
