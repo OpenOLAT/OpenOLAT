@@ -73,6 +73,14 @@ public interface CalendarController extends Controller {
 	public void setDifferentiateManagedEvent(boolean differentiate);
 	
 	/**
+	 * Add additional CSS class to the events which are
+	 * live streams to differentiate them.
+	 * 
+	 * @param differentiate
+	 */
+	public void setDifferentiateLiveStreams(boolean differentiate);
+	
+	/**
 	 * Sets the calendar dirty. The calendar controller should
 	 * issue an KalendarModfied event upon next user click.
 	 */

@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,7 +38,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.media.JSONMediaResource;
 import org.olat.core.gui.media.MediaResource;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -156,6 +156,9 @@ public class FullCalendarMapper implements Mapper {
 		} else if(StringHelper.containsNonWhitespace(cal.getCssClass())) {
 			applyClassNames(jsonEvent, cal);
 		}
+		if(fcC.isDifferentiateLiveStreams()) {
+			applyLiveStreamClass(jsonEvent, event);
+		}
 		
 		jsonEvent.put("editable", Boolean.valueOf(cal.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE));
 		
@@ -228,6 +231,18 @@ public class FullCalendarMapper implements Mapper {
 			classNames.append(" o_cal_event_not_managed");
 		}
 		jsonEvent.put("className", classNames.toString());
+	}
+
+	private void applyLiveStreamClass(JSONObject jsonEvent, KalendarEvent event) throws JSONException {
+		if(StringHelper.containsNonWhitespace(event.getLiveStreamUrl())) {
+			Object classNamesObj = jsonEvent.get("className");
+			if (classNamesObj instanceof String) {
+				String className = (String) classNamesObj;
+				jsonEvent.put("className", className + " o_cal_event_livestream");
+			} else {
+				jsonEvent.put("className", "o_cal_event_livestream");
+			}
+		}
 	}
 	
 	private String formatDateTime(Date date) {

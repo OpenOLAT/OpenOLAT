@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
@@ -38,7 +39,6 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
@@ -98,7 +98,15 @@ public class FullCalendarElement extends FormItemImpl {
 	public void setDifferentiateManagedEvents(boolean differentiateManagedEvents) {
 		component.setDifferentiateManagedEvents(differentiateManagedEvents);
 	}
+	
+	public boolean isDifferentiateLiveStreams() {
+		return component.isDifferentiateLiveStreams();
+	}
 
+	public void setDifferentiateLiveStreams(boolean differentiateLiveStreams) {
+		component.setDifferentiateLiveStreams(differentiateLiveStreams);
+	}
+	
 	public KalendarRenderWrapper getCalendar(String calendarID) {
 		return component.getCalendar(calendarID);
 	}

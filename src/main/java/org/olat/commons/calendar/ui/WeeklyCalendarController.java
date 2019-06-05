@@ -249,6 +249,11 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	public void setDifferentiateManagedEvent(boolean differentiate) {
 		calendarEl.setDifferentiateManagedEvents(differentiate);
 	}
+	
+	@Override
+	public void setDifferentiateLiveStreams(boolean differentiate) {
+		calendarEl.setDifferentiateLiveStreams(differentiate);
+	}
 
 	@Override
 	public void setCalendars(List<KalendarRenderWrapper> calendars) {

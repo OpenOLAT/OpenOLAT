@@ -129,7 +129,7 @@ $o-cal-color-width : 20px;
 	}
 }
 
-.o_cal_event_managed .fc-content:after {
+.o_cal_event_managed .fc-content:after  {
 	margin-right: 2px;
 	float: right;
 	font-family: FontAwesome;
@@ -148,9 +148,45 @@ $o-cal-color-width : 20px;
 	font-style: normal;
 	font-weight: normal;
 	font-size: 100%;
-	webkit-font-smoothing: antialiased;
+	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	content: $fa-var-user;
+}
+
+.o_cal_event_livestream .fc-content:after {
+	margin-right: 2px;
+	float: right;
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 100%;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	content: $fa-var-video-camera;
+}
+
+.o_cal_event_managed.o_cal_event_livestream .fc-content:after {
+	margin-right: 2px;
+	float: right;
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 100%;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	content: "#{$fa-var-video-camera}\00a0#{$fa-var-lock}"
+}
+
+.o_cal_event_not_managed.o_cal_event_livestream .fc-content:after {
+	margin-right: 2px;
+	float: right;
+	font-family: FontAwesome;
+	font-style: normal;
+	font-weight: normal;
+	font-size: 100%;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	content: "#{$fa-var-video-camera}\00a0#{$fa-var-user}"
 }
 
 /* 

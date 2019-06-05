@@ -120,6 +120,8 @@ public class LiveStreamRunController extends BasicController {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType(EDIT_RES_TYPE), null);
 			editCtrl = new WeeklyCalendarController(ureq, swControl, calendars.getCalendars(),
 					WeeklyCalendarController.CALLER_LIVE_STREAM, courseOres, false);
+			editCtrl.setDifferentiateManagedEvent(true);
+			editCtrl.setDifferentiateLiveStreams(true);
 			listenTo(editCtrl);
 		} else {
 			addToHistory(ureq, editCtrl);

@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.model.KalendarRecurEvent;
 import org.olat.core.CoreSpringFactory;
@@ -37,7 +38,6 @@ import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 
 /**
@@ -62,6 +62,7 @@ public class FullCalendarComponent extends AbstractComponent {
 	private boolean configurationEnabled;
 	private boolean aggregatedFeedEnabled;
 	private boolean differentiateManagedEvents;
+	private boolean differentiateLiveStreams;
 	
 	private final MapperKey mapperKey;
 	private final FullCalendarElement calendarEl;
@@ -131,6 +132,14 @@ public class FullCalendarComponent extends AbstractComponent {
 
 	public void setDifferentiateManagedEvents(boolean differentiateManagedEvents) {
 		this.differentiateManagedEvents = differentiateManagedEvents;
+	}
+
+	public boolean isDifferentiateLiveStreams() {
+		return differentiateLiveStreams;
+	}
+
+	public void setDifferentiateLiveStreams(boolean differentiateLiveStreams) {
+		this.differentiateLiveStreams = differentiateLiveStreams;
 	}
 
 	public List<KalendarRenderWrapper> getAlwaysVisibleCalendars() {
