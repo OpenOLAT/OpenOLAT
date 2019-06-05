@@ -259,13 +259,15 @@ public class ProfileFormController extends FormBasicController {
 		mimeTypes.add("image/jpeg");
 		mimeTypes.add("image/png");
 
+		boolean portraitEnable = isAdministrativeUser 
+				|| (canModify && !userModule.isPortraitManaged());
 		portraitUpload = uifactory.addFileElement(getWindowControl(), "ul.select", "ul.select", groupContainer);
 		portraitUpload.setMaxUploadSizeKB(10000, null, null);
 		portraitUpload.setPreview(ureq.getUserSession(), true);
 		portraitUpload.addActionListener(FormEvent.ONCHANGE);
 		portraitUpload.setHelpTextKey("ul.select.fhelp", null);
 		portraitUpload.setDeleteEnabled(true);
-		portraitUpload.setEnabled(canModify);
+		portraitUpload.setEnabled(portraitEnable);
 		if(portraitFile != null) {
 			portraitUpload.setInitialFile(portraitFile);
 		}

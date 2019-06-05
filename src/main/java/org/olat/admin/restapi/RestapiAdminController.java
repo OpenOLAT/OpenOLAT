@@ -35,6 +35,7 @@ import org.olat.group.BusinessGroupModule;
 import org.olat.repository.RepositoryModule;
 import org.olat.restapi.RestModule;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.user.UserModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -55,6 +56,7 @@ public class RestapiAdminController extends FormBasicController {
 	private MultipleSelectionElement managedGroupsEl;
 	private MultipleSelectionElement managedCalendarEl;
 	private MultipleSelectionElement managedRelationRole;
+	private MultipleSelectionElement managedUserPortraitEl;
 	private FormLayoutContainer docLinkFlc;
 	
 	private static final String[] keys = {"on"};
@@ -69,6 +71,8 @@ public class RestapiAdminController extends FormBasicController {
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private BaseSecurityModule securityModule;
+	@Autowired
+	private UserModule userModule;
 
 	public RestapiAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "rest");
@@ -120,6 +124,10 @@ public class RestapiAdminController extends FormBasicController {
 			managedRelationRole = uifactory.addCheckboxesHorizontal("managed.relation.role", managedFlc, keys, valueOn);
 			managedRelationRole.addActionListener(FormEvent.ONCHANGE);
 			managedRelationRole.select(keys[0], securityModule.isRelationRoleManaged());
+			
+			managedUserPortraitEl = uifactory.addCheckboxesHorizontal("managed.user.portrait", managedFlc, keys, valueOn);
+			managedUserPortraitEl.addActionListener(FormEvent.ONCHANGE);
+			managedUserPortraitEl.select(keys[0], userModule.isPortraitManaged());
 		}
 	}
 
@@ -152,6 +160,9 @@ public class RestapiAdminController extends FormBasicController {
 		} else if (source == managedRelationRole) {
 			boolean enable = managedRelationRole.isAtLeastSelected(1);
 			securityModule.setRelationRoleManaged(enable);
+		} else if (source == managedUserPortraitEl) {
+			boolean enable = managedUserPortraitEl.isAtLeastSelected(1);
+			userModule.setPortraitManaged(enable);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}

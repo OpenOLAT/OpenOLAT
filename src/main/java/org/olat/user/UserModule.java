@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.admin.site.UserAdminSite;
 import org.olat.admin.user.UserAdminContextEntryControllerCreator;
@@ -41,7 +42,6 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -70,6 +70,7 @@ public class UserModule extends AbstractSpringModule {
 	private static final String ALLOW_REQUEST_DELETE_ACCOUNT = "allow.request.delete.account";
 	private static final String ALLOW_REQUEST_DELETE_ACCOUNT_DISCLAIMER = "allow.request.delete.account.disclaimer";
 	private static final String MAIL_REQUEST_DELETE_ACCOUNT = "request.delete.account.mail";
+	private static final String PORTRAIT_MANAGED = "user.portrait.managed";
 	
 	@Autowired @Qualifier("loginBlacklist")
 	private ArrayList<String> loginBlacklist;
@@ -95,6 +96,9 @@ public class UserModule extends AbstractSpringModule {
 	private boolean isEmailMandatory;
 	@Value("${user.email.unique:true}")
 	private boolean isEmailUnique;
+	
+	@Value("${user.portrait.managed:false}")
+	private boolean portraitManaged;
 	
 	@Autowired
 	private UserPropertiesConfig userPropertiesConfig;
@@ -167,6 +171,11 @@ public class UserModule extends AbstractSpringModule {
 		String mailRequestDeleteObj = getStringPropertyValue(MAIL_REQUEST_DELETE_ACCOUNT, false);
 		if(StringHelper.containsNonWhitespace(mailRequestDeleteObj)) {
 			mailToRequestAccountDeletion = mailRequestDeleteObj;
+		}
+		
+		String portraitManagedObj = getStringPropertyValue(PORTRAIT_MANAGED, false);
+		if(StringHelper.containsNonWhitespace(portraitManagedObj)) {
+			portraitManaged = "true".equalsIgnoreCase(portraitManagedObj);
 		}
 	}
 
@@ -315,4 +324,14 @@ public class UserModule extends AbstractSpringModule {
 		this.mailToRequestAccountDeletion = mailToRequestAccountDeletion;
 		setStringProperty(MAIL_REQUEST_DELETE_ACCOUNT, mailToRequestAccountDeletion, true);
 	}
+
+	public boolean isPortraitManaged() {
+		return portraitManaged;
+	}
+
+	public void setPortraitManaged(boolean portraitManaged) {
+		this.portraitManaged = portraitManaged;
+		setStringProperty(PORTRAIT_MANAGED, Boolean.toString(portraitManaged), true);
+	}
+	
 }
