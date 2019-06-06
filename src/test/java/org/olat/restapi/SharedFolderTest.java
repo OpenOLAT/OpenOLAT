@@ -170,6 +170,69 @@ public class SharedFolderTest extends OlatJerseyTestCase {
 	}
 	
 	/**
+	 * GET for directory but a little deeper.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void getFolders_deep() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("shared-owner-");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry sharedFolder = new SharedFolderHandler().createResource(owner, "Shared 5", "Shared files", null, defOrganisation, Locale.ENGLISH);
+		VFSContainer container = SharedFolderManager.getInstance().getNamedSharedFolder(sharedFolder, true);
+		VFSContainer firstContainer = container.createChildContainer("First");
+		VFSContainer secondContainer = firstContainer.createChildContainer("Second");
+		VFSContainer thirdContainer = secondContainer.createChildContainer("Third");
+		copyFileInResourceFolder(thirdContainer, "portrait.jpg", "2_");
+		
+		URI uri = UriBuilder.fromUri(getFolderURI(sharedFolder)).path("files")
+				.path("First").path("Second").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(200, response.getStatusLine().getStatusCode());
+
+		List<FileVO> links = parseFileArray(response.getEntity());
+		Assert.assertNotNull(links);
+		Assert.assertEquals(1, links.size());
+		Assert.assertEquals("Third", links.get(0).getTitle());
+
+		conn.shutdown();
+	}
+	
+	/**
+	 * GET for directory but a little deeper.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void getFolders_notFound() throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+		
+		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("shared-owner-");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		RepositoryEntry sharedFolder = new SharedFolderHandler().createResource(owner, "Shared 5", "Shared files", null, defOrganisation, Locale.ENGLISH);
+		VFSContainer container = SharedFolderManager.getInstance().getNamedSharedFolder(sharedFolder, true);
+		VFSContainer firstContainer = container.createChildContainer("First");
+		VFSContainer secondContainer = firstContainer.createChildContainer("Second");
+		VFSContainer thirdContainer = secondContainer.createChildContainer("Third");
+		copyFileInResourceFolder(thirdContainer, "portrait.jpg", "2_");
+		
+		URI uri = UriBuilder.fromUri(getFolderURI(sharedFolder)).path("files")
+				.path("First").path("Second").path("Trois").build();
+		HttpGet method = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		Assert.assertEquals(404, response.getStatusLine().getStatusCode());
+
+		conn.shutdown();
+	}
+	
+	/**
 	 * Owner of the shared folder want to put a file.
 	 * 
 	 * @throws IOException
