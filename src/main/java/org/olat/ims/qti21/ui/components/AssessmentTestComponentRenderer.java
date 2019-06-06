@@ -25,7 +25,6 @@ import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.testFee
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -71,6 +70,7 @@ import uk.ac.ed.ph.jqtiplus.node.content.variable.RubricBlock;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
 import uk.ac.ed.ph.jqtiplus.node.item.template.declaration.TemplateDeclaration;
 import uk.ac.ed.ph.jqtiplus.node.outcome.declaration.OutcomeDeclaration;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.NavigationMode;
 import uk.ac.ed.ph.jqtiplus.node.test.TestFeedback;
@@ -389,17 +389,23 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	
 	private void renderTestItemBody(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component, TestPlanNode itemNode,
 			URLBuilder ubu, Translator translator, RenderingRequest options) {
-		final ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
-		
-		URI itemSystemId = itemNode.getItemSystemId();
-		ResolvedAssessmentItem resolvedAssessmentItem = component.getResolvedAssessmentTest()
-				.getResolvedAssessmentItemBySystemIdMap().get(itemSystemId);
-		if(resolvedAssessmentItem == null) {
-			log.error("Missing assessment item: " + itemSystemId);
+
+		AssessmentItemRef itemRef = component.getResolvedAssessmentTest()
+				.getItemRefsByIdentifierMap().get(itemNode.getKey().getIdentifier());
+		if(itemRef == null) {
+			log.error("Missing assessment item ref: " + itemNode.getKey());
 			renderMissingItem(sb, translator);
 			return;
 		}
-		
+		ResolvedAssessmentItem resolvedAssessmentItem = component.getResolvedAssessmentTest()
+				.getResolvedAssessmentItem(itemRef);
+		if(resolvedAssessmentItem == null) {
+			log.error("Missing assessment item: " + itemNode.getKey());
+			renderMissingItem(sb, translator);
+			return;
+		}
+
+		final ItemSessionState itemSessionState = component.getItemSessionState(itemNode.getKey());
 		final AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 
 		sb.append("<div class='o_assessmentitem_wrapper'>");
