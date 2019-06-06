@@ -35,6 +35,7 @@ import uk.ac.ed.ph.jqtiplus.node.item.ModalFeedback;
 import uk.ac.ed.ph.jqtiplus.node.item.interaction.Interaction;
 import uk.ac.ed.ph.jqtiplus.node.result.SessionStatus;
 import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
 import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
@@ -174,9 +175,16 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 		}
 		
 		try {
-			URI itemSystemId = itemNode.getItemSystemId();
+			AssessmentItemRef itemRef = getResolvedAssessmentTest().getItemRefsByIdentifierMap()
+				.get(itemNode.getKey().getIdentifier());
+			if(itemRef == null) {
+				return false;
+			}
 			ResolvedAssessmentItem resolvedAssessmentItem = getResolvedAssessmentTest()
-					.getResolvedAssessmentItemBySystemIdMap().get(itemSystemId);
+				.getResolvedAssessmentItem(itemRef);
+			if(resolvedAssessmentItem == null) {
+				return false;
+			}
 			AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 			if(assessmentItem.getAdaptive()) {
 				return true;
