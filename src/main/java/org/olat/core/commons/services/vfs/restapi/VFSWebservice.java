@@ -74,8 +74,9 @@ public class VFSWebservice {
 	private static final String VERSION  = "1.0";
 	
 	private static final Logger log = Tracing.createLoggerFor(VFSWebservice.class);
+	private static final int MAX_FOLDER_DEPTH = 20;
 	
-	public static CacheControl cc = new CacheControl();
+	private static final CacheControl cc = new CacheControl();
 	static {
 		cc.setMaxAge(-1);
 	}
@@ -182,8 +183,13 @@ public class VFSWebservice {
 	public Response postFile64ToRoot(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
 			@FormParam("file") String file, @Context UriInfo uriInfo) {
 		byte[] fileAsBytes = Base64.decodeBase64(file);
-		InputStream in = new ByteArrayInputStream(fileAsBytes);
-		return putFile(foldername, filename, in, uriInfo, Collections.<PathSegment>emptyList());
+		try(InputStream in = new ByteArrayInputStream(fileAsBytes)) {
+			return putFile(foldername, filename, in, uriInfo, Collections.<PathSegment>emptyList());
+		} catch (VFSDepthException e) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		} catch (IOException e) {
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 	
 	/**
@@ -224,8 +230,13 @@ public class VFSWebservice {
 	public Response postFile64ToFolder(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
 			@FormParam("file") String file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
 		byte[] fileAsBytes = Base64.decodeBase64(file);
-		InputStream in = new ByteArrayInputStream(fileAsBytes);
-		return putFile(foldername, filename, in, uriInfo, path);
+		try(InputStream in = new ByteArrayInputStream(fileAsBytes)) {
+			return putFile(foldername, filename, in, uriInfo, path);
+		} catch (VFSDepthException e) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		} catch (IOException e) {
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 	
 	/**
@@ -260,8 +271,13 @@ public class VFSWebservice {
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putFile64VOToRoot(File64VO file, @Context UriInfo uriInfo) {
 		byte[] fileAsBytes = Base64.decodeBase64(file.getFile());
-		InputStream in = new ByteArrayInputStream(fileAsBytes);
-		return putFile(null, file.getFilename(), in, uriInfo, Collections.<PathSegment>emptyList());
+		try(InputStream in = new ByteArrayInputStream(fileAsBytes)) {
+			return putFile(null, file.getFilename(), in, uriInfo, Collections.<PathSegment>emptyList());
+		} catch (VFSDepthException e) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		} catch (IOException e) {
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 	
 	/**
@@ -300,6 +316,9 @@ public class VFSWebservice {
 		} catch (FileNotFoundException e) {
 			log.error("", e);
 			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}  catch (VFSDepthException e) {
+			log.error("", e);
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		} finally {
 			MultipartReader.closeQuietly(partsReader);
 			IOUtils.closeQuietly(in);
@@ -323,8 +342,13 @@ public class VFSWebservice {
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putFile64ToFolder(File64VO file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
 		byte[] fileAsBytes = Base64.decodeBase64(file.getFile());
-		InputStream in = new ByteArrayInputStream(fileAsBytes);
-		return putFile(null, file.getFilename(), in, uriInfo, path);
+		try(InputStream in = new ByteArrayInputStream(fileAsBytes)) {
+			return putFile(null, file.getFilename(), in, uriInfo, path);
+		} catch (VFSDepthException e) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		} catch(IOException e) {
+			return Response.serverError().status(Status.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 	
 	/**
@@ -368,15 +392,23 @@ public class VFSWebservice {
 		if(container.getLocalSecurityCallback() != null && !container.getLocalSecurityCallback().canWrite()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
-		
-		VFSContainer directory = resolveContainer(path, true);
-		if(directory == null) {
-			return Response.serverError().status(Status.NOT_FOUND).build();
+		if(path.size() >= MAX_FOLDER_DEPTH) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
 		}
-		return Response.ok(createFileVO(directory, uriInfo)).build();
+		
+		try {
+			VFSContainer directory = resolveContainer(path, true);
+			if(directory == null) {
+				return Response.serverError().status(Status.NOT_FOUND).build();
+			}
+			return Response.ok(createFileVO(directory, uriInfo)).build();
+		} catch (VFSDepthException e) {
+			return Response.serverError().status(Status.NOT_ACCEPTABLE).build();
+		}
 	}
 	
-	protected Response putFile(String foldername, String filename, InputStream file, UriInfo uriInfo, List<PathSegment> path) {
+	private Response putFile(String foldername, String filename, InputStream file, UriInfo uriInfo, List<PathSegment> path)
+	throws VFSDepthException {
 		if(container.getLocalSecurityCallback() != null && !container.getLocalSecurityCallback().canWrite()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
@@ -476,13 +508,18 @@ public class VFSWebservice {
 		return Response.serverError().status(Status.BAD_REQUEST).build();
 	}
 	
-	protected VFSContainer resolveContainer(List<PathSegment> path, boolean create) {
+	protected VFSContainer resolveContainer(List<PathSegment> path, boolean create)
+	throws VFSDepthException {
 		VFSContainer directory = container;
 		boolean notFound = false;
 		
 		//remove trailing segment if a trailing / is used
-		if(path.size() > 0 && !StringHelper.containsNonWhitespace(path.get(path.size() - 1).getPath())) {
+		if(!path.isEmpty() && !StringHelper.containsNonWhitespace(path.get(path.size() - 1).getPath())) {
 			path = path.subList(0, path.size() -1);
+		}
+		
+		if(create && path.size() >= MAX_FOLDER_DEPTH) {
+			throw new VFSDepthException();
 		}
 		
 		a_a:
@@ -517,7 +554,7 @@ public class VFSWebservice {
 		boolean notFound = false;
 		
 		//remove trailing segment if a trailing / is used
-		if(path.size() > 0 && !StringHelper.containsNonWhitespace(path.get(path.size() - 1).getPath())) {
+		if(!path.isEmpty() && !StringHelper.containsNonWhitespace(path.get(path.size() - 1).getPath())) {
 			path = path.subList(0, path.size() -1);
 		}
 		

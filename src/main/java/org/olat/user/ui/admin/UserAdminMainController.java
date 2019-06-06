@@ -62,6 +62,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
+import org.olat.core.gui.components.tree.TreeEvent;
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
@@ -209,9 +210,11 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == menuTree) {
-			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
-				TreeNode selTreeNode = menuTree.getSelectedNode();
-				contentCtr = pushController(ureq, selTreeNode);
+			if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED) && event instanceof TreeEvent) {
+				TreeNode selTreeNode = menuTree.getTreeModel().getNodeById(((TreeEvent)event).getNodeId());
+				if(selTreeNode != null) {
+					contentCtr = pushController(ureq, selTreeNode);
+				}
 			} else { // the action was not allowed anymore
 				content.popUpToRootController(ureq);
 			}

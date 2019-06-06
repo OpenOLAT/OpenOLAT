@@ -77,7 +77,7 @@
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
 		<activemq.version>5.15.9</activemq.version>
-		<qtiworks.version>1.0.16</qtiworks.version>
+		<qtiworks.version>1.0.17</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
 	    <!-- by default no tests are executed so far (April 2011). Use appropriate profiles and properties on the command line -->
@@ -1411,7 +1411,7 @@
 								<Implementation-Build>${buildNumber}</Implementation-Build>
 							</manifestEntries>
 						</archive>
-						<warSourceExcludes>**/*.pxm, **/*.psd, **/*.scss, **/*.sh, static/bootstrap/**, **/*.README</warSourceExcludes>
+						<warSourceExcludes>**/*.pxm, **/*.psd, **/*.sh, static/bootstrap/**, **/*.README</warSourceExcludes>
 						<webResources>
 							<resource>
 								<directory>src/main/webapp</directory>
