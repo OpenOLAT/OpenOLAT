@@ -220,6 +220,20 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testCreateFolders_tooMany() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("RootFolder")
+				.path("Folder").path("Folder").path("Folder").path("Folder").path("Folder")
+				.path("Folder").path("Folder").path("Folder").path("Folder").path("Folder")
+				.path("Folder").path("Folder").path("Folder").path("Folder").path("Folder")
+				.path("Folder").path("Folder").path("Folder").path("Folder").path("Folder").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(406, response.getStatusLine().getStatusCode());
+	}
+	
+	@Test
 	public void deleteFolder() throws IOException, URISyntaxException {
 		//add some folders
 		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
