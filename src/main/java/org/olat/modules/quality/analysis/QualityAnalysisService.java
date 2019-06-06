@@ -98,9 +98,6 @@ public interface QualityAnalysisService {
 	
 	public MultiTrendSeries<String> calculateIdentifierTrends(AnalysisSearchParameter searchParams,
 			Collection<String> responseIdentifiers, Collection<Rubric> rubrics, TemporalGroupBy temporalGroupBy);
-	
-	public MultiTrendSeries<MultiKey> calculateTrends(AnalysisSearchParameter searchParams,
-			Rubric rubric, MultiGroupBy groupBy, TemporalGroupBy temporalGroupBy);
 
 	/**
 	 * Calculate trend of multiple rubrics. Before using this method, make sure,
