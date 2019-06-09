@@ -28,8 +28,6 @@ import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.page.InitialPage;
-import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -81,8 +79,6 @@ public class PortfolioV2Test extends Deployments {
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
-	@Page
-	private NavigationPage navBar;
 	
 	
 	/**
@@ -94,10 +90,11 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createSimpleBinder(@InitialPage LoginPage loginPage) 
+	public void createSimpleBinder() 
 			throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
 		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
@@ -135,17 +132,18 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void createTemplate(@InitialPage LoginPage loginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void createTemplate(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
-		
-		loginPage
+
+		LoginPage
+			.load(browser, deploymentUrl)
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		
 		String binderTitle = "PF-Binder-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createPortfolioBinder(binderTitle)
@@ -194,13 +192,13 @@ public class PortfolioV2Test extends Deployments {
 			.finish();
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
-		ryomouLoginPage
+		LoginPage
+			.load(ryomouBrowser, deploymentUrl)
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -231,10 +229,11 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void collectForumMediaInCourse(@InitialPage LoginPage loginPage)
+	public void collectForumMediaInCourse()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
@@ -242,6 +241,7 @@ public class PortfolioV2Test extends Deployments {
 		String courseTitle = "Collect-Forum-" + UUID.randomUUID();
 		String forumTitle = ("Forum-" + UUID.randomUUID()).substring(0, 24);
 		//go to authoring, create a course with a forum
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.openCreateDropDown()
@@ -294,15 +294,17 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void collectWikiMediaInWikiResource(@InitialPage LoginPage loginPage)
+	public void collectWikiMediaInWikiResource()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		
 		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
 		AuthoringEnvPage authoringEnv = navBar
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment();
@@ -349,15 +351,17 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void collectBlogEntryMediaInBlogResource(@InitialPage LoginPage loginPage)
+	public void collectBlogEntryMediaInBlogResource()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		
 		//create a course
 		String courseTitle = "Course-With-Blog-" + UUID.randomUUID().toString();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -427,17 +431,18 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void collectEfficiencyStatement(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void collectEfficiencyStatement(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
-		
-		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
+
+		LoginPage.load(browser, deploymentUrl)
+			.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-Assessment-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -491,8 +496,8 @@ public class PortfolioV2Test extends Deployments {
 			.assertUserPassedCourseNode(assessmentNodeTitle);
 		
 		//Ryomou login
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
-		ryomouLoginPage
+		LoginPage
+			.load(ryomouBrowser, deploymentUrl)
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
 		
@@ -534,13 +539,13 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void binderInvitation(@InitialPage LoginPage loginPage,
-			@Drone @User WebDriver inviteeBrowser)
+	public void binderInvitation(@Drone @User WebDriver inviteeBrowser)
 			throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
-		
-		loginPage
+
+		LoginPage
+			.load(browser, deploymentUrl)
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		
@@ -631,18 +636,19 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void binderAssessment(@InitialPage LoginPage loginPage,
-			@Drone @User WebDriver reiBrowser)
+	public void binderAssessment(@Drone @User WebDriver reiBrowser)
 			throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("rei");
-		
-		loginPage
+
+		LoginPage
+			.load(browser, deploymentUrl)
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		
 		String binderTitle = "Binder to assess " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createPortfolioBinder(binderTitle)
@@ -707,13 +713,13 @@ public class PortfolioV2Test extends Deployments {
 			.finish();
 		
 		//Participant log in
-		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
-		reiLoginPage
+		LoginPage
+			.load(reiBrowser, deploymentUrl)
 			.loginAs(rei)
 			.resume();
 		
 		//open the course
-		NavigationPage reiNavBar = new NavigationPage(reiBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(reiBrowser);
 		reiNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -799,10 +805,11 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void editPage(@InitialPage LoginPage loginPage) 
+	public void editPage() 
 			throws IOException, URISyntaxException {
 		UserVO user = new UserRestClient(deploymentUrl).createRandomUser("rei");
-		loginPage
+		LoginPage
+			.load(browser, deploymentUrl)
 			.loginAs(user.getLogin(), user.getPassword())
 			.resume();
 		
@@ -872,11 +879,12 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void deletePage(@InitialPage LoginPage loginPage)
+	public void deletePage()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
-		
-		loginPage
+
+		LoginPage
+			.load(browser, deploymentUrl)
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		
@@ -956,11 +964,12 @@ public class PortfolioV2Test extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void deleteBinder(@InitialPage LoginPage loginPage)
+	public void deleteBinder()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createRandomUser("rei");
-		
-		loginPage
+
+		LoginPage
+			.load(browser, deploymentUrl)
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		

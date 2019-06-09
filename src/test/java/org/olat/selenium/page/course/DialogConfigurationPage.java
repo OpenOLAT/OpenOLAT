@@ -41,7 +41,7 @@ public class DialogConfigurationPage {
 	
 	public DialogConfigurationPage selectConfiguration() {
 		By dialogConfigBy = By.cssSelector("fieldset.o_sel_dialog_settings_upload");
-		OOGraphene.selectTab(CourseEditorPageFragment.navBarNodeConfiguration, dialogConfigBy, browser);
+		OOGraphene.selectTab("o_node_config", dialogConfigBy, browser);
 		return this;
 	}
 	

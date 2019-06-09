@@ -24,7 +24,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.interactions.Actions;
 
 /**
  * 
@@ -42,17 +41,13 @@ public class LicensesAdminstrationPage {
 	
 	public LicensesAdminstrationPage enableForResources(String license) {
 		By resourceCheckBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + license + "')]]]/td[10]/div/label/input[@type='checkbox']");
-		By resourceLabelBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + license + "')]]]/td[10]/div/label");
-
-		WebElement resourceCheckEl = browser.findElement(resourceCheckBy);
-		WebElement resourceLabelEl = browser.findElement(resourceLabelBy);
 		if(browser instanceof ChromeDriver) {
-			resourceLabelEl = OOGraphene.unwrap(resourceLabelEl);
-			new Actions(browser).moveToElement(resourceLabelEl).build().perform();
+			OOGraphene.moveTo(resourceCheckBy, browser);
 			OOGraphene.waitingALittleBit();
 		}
-		
-		OOGraphene.check(resourceLabelEl, resourceCheckEl, Boolean.TRUE);
+
+		WebElement resourceCheckEl = browser.findElement(resourceCheckBy);
+		OOGraphene.check(resourceCheckEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

@@ -27,8 +27,6 @@ import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.page.InitialPage;
-import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
@@ -73,8 +71,6 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
-	@Page
-	private NavigationPage navBar;
 	
 	/**
 	 * Check if the hotspot interaction send a "correct" feedback.
@@ -85,15 +81,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21HotspotInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21HotspotInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Hotspot QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_hotspot.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -130,15 +128,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21AssociateInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21AssociateInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Associate QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_associate_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -180,15 +180,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21GraphicAssociateInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21GraphicAssociateInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Graphic associate QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_graphic_associate_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -228,15 +230,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21MatchInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21MatchInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Match QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_match_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -277,15 +281,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21OrderInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21OrderInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Order QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_order_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -324,15 +330,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EndInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21EndInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "End QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_end_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -386,15 +394,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21GraphicGapInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21GraphicGapInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Graphic Gap Match QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_graphic_gap_match_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -433,15 +443,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21SelectPointInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21SelectPointInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Select point QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_select_point_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -478,15 +490,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21GraphicOrderInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21GraphicOrderInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Graphic order QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_graphic_order_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -527,15 +541,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21PositionObjectInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21PositionObjectInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Position object QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_position_object_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -575,15 +591,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21InlineChoiceInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21InlineChoiceInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Inline choice QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_inline_choice_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -620,15 +638,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21SliderInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21SliderInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Slider QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_slider_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -666,15 +686,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21GapMatchInteraction(@InitialPage LoginPage authorLoginPage)
+	public void qti21GapMatchInteraction()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Gap match QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_gap_match_ims.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)
@@ -712,15 +734,17 @@ public class ImsQTI21InteractionsTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21MultipleInput(@InitialPage LoginPage authorLoginPage)
+	public void qti21MultipleInput()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Gap match QTI 2.1 " + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/qti21/simple_QTI_21_multi-input.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile)

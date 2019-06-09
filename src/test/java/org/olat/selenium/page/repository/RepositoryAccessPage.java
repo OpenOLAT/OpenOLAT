@@ -49,11 +49,8 @@ public class RepositoryAccessPage {
 			OOGraphene.waitElement(guestsBy, browser);
 			
 			if(access == UserAccess.guest) {
-				By labelGuestsBy = By.xpath("//div[contains(@class,'o_sel_repositoryentry_access_guest')]//label/input[@name='entry.access.guest' and @value='on']");
-
 				WebElement guestsEl = browser.findElement(guestsBy);
-				WebElement labelGuestsEl = browser.findElement(labelGuestsBy);
-				OOGraphene.check(labelGuestsEl, guestsEl, Boolean.TRUE);
+				OOGraphene.check(guestsEl, Boolean.TRUE);
 			}
 		} else if(access == UserAccess.membersOnly) {
 			By allUsersBy = By.xpath("//div[@id='o_coentry_access_type']/div/label/input[@name='entry.access.type' and @value='private']");

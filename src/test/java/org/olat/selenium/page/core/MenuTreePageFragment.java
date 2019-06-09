@@ -62,34 +62,22 @@ public class MenuTreePageFragment {
 	}
 	
 	public MenuTreePageFragment selectWithTitle(String title) {
-		boolean found = false;
-		WebElement tree = browser.findElement(treeBy);
-		List<WebElement> nodeLinks = tree.findElements(By.cssSelector("li>div>span.o_tree_link>a"));
-		for(WebElement nodeLink:nodeLinks) {
-			String text = nodeLink.getText().toLowerCase();
-			if(text.contains(title.toLowerCase())) {
-				nodeLink.click();
-				OOGraphene.waitBusy(browser);
-				found = true;
-			}
-		}
-		
-		Assert.assertTrue("Link not found with title: " + title, found);
+		By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li/div/span[contains(@class,'o_tree_link')]/a[span[contains(text(),'" + title + "')]]");
+		OOGraphene.waitElement(linkBy, browser);
+		browser.findElement(linkBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 
 	public MenuTreePageFragment assertWithTitle(String title) {
-		boolean found = false;
-		By titleBy = By.cssSelector(".o_tree li>div>span.o_tree_link>a");
-		List<WebElement> nodeLinks = browser.findElements(titleBy);
-		for(WebElement nodeLink:nodeLinks) {
-			String text = nodeLink.getText();
-			if(text.contains(title)) {
-				found = true;
-			}
-		}
-		
-		Assert.assertTrue("Link not found with title: " + title, found);
+		By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li/div/span[contains(@class,'o_tree_link')]/a[span[contains(text(),'" + title + "')]]");
+		OOGraphene.waitElement(linkBy, browser);
+		return this;
+	}
+	
+	public MenuTreePageFragment assertWithTitleSelected(String title) {
+		By linkBy = By.xpath("//div[contains(@class,'o_tree')]//li[contains(@class,'active')]/div/span[contains(@class,'o_tree_link')]/a[span[contains(text(),'" + title + "')]]");
+		OOGraphene.waitElement(linkBy, browser);
 		return this;
 	}
 

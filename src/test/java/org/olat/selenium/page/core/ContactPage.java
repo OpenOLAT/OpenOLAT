@@ -62,8 +62,9 @@ public class ContactPage {
 	
 	public ContactPage send() {
 		By sendBy = By.cssSelector("fieldset.o_sel_contact_form button.btn-primary");
-		OOGraphene.clickAndWait(sendBy, browser);
-		OOGraphene.closeBlueMessageWindow(browser);
+		OOGraphene.moveAndClick(sendBy, browser);
+		OOGraphene.moveTop(browser);
+		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
 	}
 	

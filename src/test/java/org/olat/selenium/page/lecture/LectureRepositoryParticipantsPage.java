@@ -68,16 +68,15 @@ public class LectureRepositoryParticipantsPage {
 		By firstAdmissionBy = By.cssSelector("fieldset.o_sel_lecture_participant_summary_form div.o_sel_lecture_first_admission span.input-group-addon i");
 		OOGraphene.waitElement(firstAdmissionBy, browser);
 		browser.findElement(firstAdmissionBy).click();
-		OOGraphene.waitGui(browser);
-		
+
 		// a month before
 		By monthBeforeBy = By.cssSelector("a.ui-datepicker-prev.ui-corner-all");
+		OOGraphene.waitElement(monthBeforeBy, browser);
 		browser.findElement(monthBeforeBy).click();
-		OOGraphene.waitGui(browser);
 		
 		// select the 12
 		By dayBy = By.xpath("//div[@id='ui-datepicker-div']//td//a[normalize-space(text())='12']");
-		OOGraphene.waitElement(dayBy, 5, browser);
+		OOGraphene.waitElement(dayBy, browser);
 		browser.findElement(dayBy).click();
 
 		//wait until

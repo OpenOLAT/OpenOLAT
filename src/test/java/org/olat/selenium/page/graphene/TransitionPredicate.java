@@ -21,6 +21,8 @@ package org.olat.selenium.page.graphene;
 
 import java.util.function.Function;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 
@@ -33,11 +35,18 @@ import org.openqa.selenium.WebDriver;
  *
  */
 public class TransitionPredicate implements Function<WebDriver,Boolean> {
+
+	private static final Logger log = Tracing.createLoggerFor(TransitionPredicate.class);
 	
 	@Override
 	public Boolean apply(WebDriver driver) {
-        Object busy = ((JavascriptExecutor)driver)
-        		.executeScript("return (window.OPOL.navbar.state.sitesDirty || window.OPOL.navbar.state.tabsDirty || window.OPOL.navbar.state.toolsDirty)");
-        return Boolean.FALSE.equals(busy);
+        try {
+			Object busy = ((JavascriptExecutor)driver)
+					.executeScript("return (window === undefined || !('OPOL' in window) || !('navbar' in window.OPOL) || !('state' in window.OPOL.navbar) || window.OPOL.navbar.state.sitesDirty || window.OPOL.navbar.state.tabsDirty || window.OPOL.navbar.state.toolsDirty)");
+			return Boolean.FALSE.equals(busy);
+		} catch (Exception e) {
+			log.error("", e);
+			return Boolean.FALSE;
+		}
     }
 }

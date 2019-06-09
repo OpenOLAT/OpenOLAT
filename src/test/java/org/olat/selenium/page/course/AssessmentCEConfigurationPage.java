@@ -19,9 +19,6 @@
  */
 package org.olat.selenium.page.course;
 
-import java.util.List;
-
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -73,26 +70,12 @@ public class AssessmentCEConfigurationPage {
 		By saveBy = By.cssSelector(".o_sel_course_ms_form button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 	
 	private AssessmentCEConfigurationPage selectTab(By tabBy) {
-		List<WebElement> tabLinks = browser.findElements(CourseEditorPageFragment.navBarNodeConfiguration);
-
-		boolean found = false;
-		a_a:
-		for(WebElement tabLink:tabLinks) {
-			tabLink.click();
-			OOGraphene.waitBusy(browser);
-			List<WebElement> chooseRepoEntry = browser.findElements(tabBy);
-			if(chooseRepoEntry.size() > 0) {
-				found = true;
-				break a_a;
-			}
-		}
-
-		Assert.assertTrue("Found the tab", found);
+		OOGraphene.selectTab("o_node_config", tabBy, browser);
 		return this;
 	}
-
 }

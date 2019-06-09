@@ -27,8 +27,6 @@ import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.page.InitialPage;
-import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
@@ -67,8 +65,6 @@ public class LecturesTest extends Deployments {
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
-	@Page
-	private NavigationPage navBar;
 	
 	/**
 	 * An author create a course, enable the absence management,
@@ -84,15 +80,16 @@ public class LecturesTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void lecturesRollCall_authorizedAbsence(@InitialPage LoginPage loginPage,
-			@Drone @User WebDriver coachBrowser, @Drone @Participant WebDriver participantBrowser)
+	public void lecturesRollCall_authorizedAbsence(@Drone @User WebDriver coachBrowser,
+			@Drone @Participant WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
 		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs("administrator", "openolat")
 			.resume();
-		new NavigationPage(browser)
+		 NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
 			.configure(true, true, true, false, false)
@@ -105,10 +102,11 @@ public class LecturesTest extends Deployments {
 		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Rymou");
 
 		LoginPage
-			.getLoginPage(browser, deploymentUrl)
+			.load(browser, deploymentUrl)
 			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
 		AuthoringEnvPage authoringEnv = navBar
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment();
@@ -181,7 +179,7 @@ public class LecturesTest extends Deployments {
 			.save();
 		
 		//coach at work
-		LoginPage coachLoginPage = LoginPage.getLoginPage(coachBrowser, deploymentUrl);
+		LoginPage coachLoginPage = LoginPage.load(coachBrowser, deploymentUrl);
 		coachLoginPage
 			.loginAs(coach);
 		new RollCallInterceptorPage(coachBrowser)
@@ -192,7 +190,7 @@ public class LecturesTest extends Deployments {
 			.assertOnClosedTable();
 		
 		//participant check it roll call
-		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		participantLoginPage
 			.loginAs(participant1)
 			.resume();
@@ -222,15 +220,16 @@ public class LecturesTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void lectureMobileRollCall_authorizedAbsence(@InitialPage LoginPage loginPage,
-			@Drone @User WebDriver coachBrowser, @Drone @User WebDriver participantBrowser)
+	public void lectureMobileRollCall_authorizedAbsence(@Drone @User WebDriver coachBrowser,
+			@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
 		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs("administrator", "openolat")
 			.resume();
-		new NavigationPage(browser)
+		NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
 			.configure(true, true, true, false, false)
@@ -243,10 +242,11 @@ public class LecturesTest extends Deployments {
 		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Rymou");
 		
 		LoginPage
-			.getLoginPage(browser, deploymentUrl)
+			.load(browser, deploymentUrl)
 			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
 		AuthoringEnvPage authoringEnv = navBar
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment();
@@ -319,7 +319,7 @@ public class LecturesTest extends Deployments {
 			.save();
 		
 		//coach at work
-		LoginPage coachLoginPage = LoginPage.getLoginPage(coachBrowser, deploymentUrl);
+		LoginPage coachLoginPage = LoginPage.load(coachBrowser, deploymentUrl);
 		coachLoginPage
 			.loginAs(coach);
 		new RollCallInterceptorPage(coachBrowser)
@@ -335,7 +335,7 @@ public class LecturesTest extends Deployments {
 			.assertOnClosedTable();
 		
 		//participant check it roll call
-		LoginPage participantLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage participantLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		participantLoginPage
 			.loginAs(participant1)
 			.resume();
@@ -360,14 +360,15 @@ public class LecturesTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void lecturesRollCall(@InitialPage LoginPage loginPage)
+	public void lecturesRollCall()
 	throws IOException, URISyntaxException {
 
 		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs("administrator", "openolat")
 			.resume();
-		new NavigationPage(browser)
+		NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
 			.configure(true, true, false, false, false)
@@ -378,10 +379,11 @@ public class LecturesTest extends Deployments {
 		UserVO participant1 = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Rymou");
 		
-		LoginPage authorLoginPage = LoginPage.getLoginPage(browser, deploymentUrl);
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
 		AuthoringEnvPage authoringEnv = navBar
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment();
@@ -480,14 +482,15 @@ public class LecturesTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void lecturesRollCall_defaultAuthorizedAbsence(@InitialPage LoginPage loginPage)
+	public void lecturesRollCall_defaultAuthorizedAbsence()
 	throws IOException, URISyntaxException {
 		
 		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs("administrator", "openolat")
 			.resume();
-		new NavigationPage(browser)
+		NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
 			.configure(false, false, true, true, true)
@@ -499,10 +502,11 @@ public class LecturesTest extends Deployments {
 		UserVO participant2 = new UserRestClient(deploymentUrl).createRandomUser("Rymou");
 
 		LoginPage
-			.getLoginPage(browser, deploymentUrl)
+			.load(browser, deploymentUrl)
 			.loginAs(author.getLogin(), author.getPassword());
 		
 		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
 		AuthoringEnvPage authoringEnv = navBar
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment();
@@ -575,7 +579,7 @@ public class LecturesTest extends Deployments {
 			.save();
 		
 		//coach at work
-		LoginPage coachLoginPage = LoginPage.getLoginPage(browser, deploymentUrl);
+		LoginPage coachLoginPage = LoginPage.load(browser, deploymentUrl);
 		coachLoginPage
 			.loginAs(author);
 		new RollCallInterceptorPage(browser)
@@ -586,7 +590,7 @@ public class LecturesTest extends Deployments {
 			.assertOnClosedTable();
 		
 		//participant check it roll call
-		LoginPage participantLoginPage = LoginPage.getLoginPage(browser, deploymentUrl);
+		LoginPage participantLoginPage = LoginPage.load(browser, deploymentUrl);
 		participantLoginPage
 			.loginAs(participant1)
 			.resume();
@@ -610,16 +614,18 @@ public class LecturesTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void importLectures(@InitialPage LoginPage loginPage)
+	public void importLectures()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 
 		// configure the lectures module
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		
 		//go to authoring
+		NavigationPage navBar = NavigationPage.load(browser);
 		AuthoringEnvPage authoringEnv = navBar
 			.assertOnNavigationPage()
 			.openAuthoringEnvironment();

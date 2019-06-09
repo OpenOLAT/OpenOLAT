@@ -50,9 +50,14 @@ public class ScormPage {
 	
 	public ScormPage start() {
 		By startBy = By.cssSelector("button.o_sel_start_scorm");
-		WebElement startButton = browser.findElement(startBy);
-		startButton.click();
+		browser.findElement(startBy).click();
 		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
+	public ScormPage assertOnStart() {
+		By startBy = By.cssSelector("button.o_sel_start_scorm");
+		OOGraphene.waitElement(startBy, browser);
 		return this;
 	}
 	
@@ -116,6 +121,7 @@ public class ScormPage {
 	 */
 	public ScormPage back() {
 		By backBy = By.className("o_link_back");
+		OOGraphene.waitElement(backBy, browser);
 		browser.findElement(backBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;

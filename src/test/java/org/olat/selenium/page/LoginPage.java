@@ -24,8 +24,6 @@ import java.net.URL;
 import java.util.List;
 
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.Graphene;
-import org.jboss.arquillian.graphene.page.Location;
 import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
@@ -41,7 +39,6 @@ import org.openqa.selenium.WebElement;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Location("dmz")
 public class LoginPage {
 	
 	private static final String footerUserDivXPath = "//div[@id='o_footer_user']/span[@id='o_username']";
@@ -60,9 +57,10 @@ public class LoginPage {
 	@Drone
 	private WebDriver browser;
 	
-	public static LoginPage getLoginPage(WebDriver browser, URL deploymentUrl) {
+	public static LoginPage load(WebDriver browser, URL deploymentUrl) {
 		LoginPage page = new LoginPage(browser);
 		browser.navigate().to(deploymentUrl);
+		OOGraphene.waitElement(loginFormBy, browser);
 		return page;
 	}
 	
@@ -105,7 +103,7 @@ public class LoginPage {
 	
 	public LoginPage assertOnMembershipConfirmation() {
 		By reservationBy = By.cssSelector("div.o_reservation");
-		OOGraphene.waitElement(reservationBy, 5, browser);
+		OOGraphene.waitElement(reservationBy, 10, browser);
 		WebElement reservationEl = browser.findElement(reservationBy);
 		Assert.assertTrue(reservationEl.isDisplayed());
 		return this;
@@ -126,9 +124,8 @@ public class LoginPage {
 	 */
 	public void asGuest() {
 		By guestLinkBy = By.xpath("//a[contains(@href,'menu.guest')]");
-		WebElement guestLink = browser.findElement(guestLinkBy);
-		Graphene.guardHttp(guestLink).click();
-
+		OOGraphene.waitElement(guestLinkBy, browser);
+		browser.findElement(guestLinkBy).click();
 		By footerUserDivBy = By.id("o_footer_user");
 		OOGraphene.waitElement(footerUserDivBy, browser);
 	}

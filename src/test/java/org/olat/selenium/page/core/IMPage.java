@@ -19,11 +19,6 @@
  */
 package org.olat.selenium.page.core;
 
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-
-import org.jboss.arquillian.graphene.Graphene;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -84,21 +79,8 @@ public class IMPage {
 	 * @return
 	 */
 	public IMPage assertOnMessage(final String message) {
-		final By historyBy = By.cssSelector(".o_im_chat_history .o_im_body");
-		
-		Graphene.waitModel().withTimeout(10, TimeUnit.SECONDS).until(new Function<WebDriver,Boolean>(){
-			@Override
-			public Boolean apply(WebDriver bbrowser) {
-				boolean found = false;
-				List<WebElement> history = bbrowser.findElements(historyBy);
-				for(WebElement m:history) {
-					if(m.getText().contains(message)) {
-						found = true;
-					}
-				}
-				return found;
-			}
-		});
+		final By historyBy = By.xpath("//div[contains(@class,'o_im_body')][text()[contains(.,'" + message + "')]]");
+		OOGraphene.waitElement(historyBy, 10, browser);
 		return this;
 	}
 }

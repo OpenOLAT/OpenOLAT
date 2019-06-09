@@ -118,15 +118,13 @@ public class LectureAdminSettingsPage {
 	}
 	
 	private LectureAdminSettingsPage set(String name, String value, boolean enable) {
-		By enableLabelBy = By.xpath("//label[input[@name='" + name + "' and @value='" + value + "']]");
 		By enableCheckBy = By.xpath("//label/input[@name='" + name + "' and @value='" + value + "']");
 		
-		OOGraphene.waitElement(enableLabelBy, browser);
-		OOGraphene.scrollTo(enableLabelBy, browser);
+		OOGraphene.waitElement(enableCheckBy, browser);
+		OOGraphene.scrollTo(enableCheckBy, browser);
 		
-		WebElement enableLabelEl = browser.findElement(enableLabelBy);
 		WebElement enableCheckEl = browser.findElement(enableCheckBy);
-		OOGraphene.check(enableLabelEl, enableCheckEl, new Boolean(enable));
+		OOGraphene.check(enableCheckEl, new Boolean(enable));
 		OOGraphene.waitBusy(browser);
 		return this;
 		

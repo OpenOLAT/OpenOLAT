@@ -19,11 +19,7 @@
  */
 package org.olat.selenium.page.qti;
 
-import java.util.List;
-
-import org.junit.Assert;
 import org.olat.ims.qti21.QTI21AssessmentResultsOptions;
-import org.olat.selenium.page.course.CourseEditorPageFragment;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -52,6 +48,7 @@ public class QTI21ConfigurationCEPage {
 		By scoreBy = By.cssSelector(".o_sel_results_on_homepage input[type='checkbox']");
 		WebElement scoreEl = browser.findElement(scoreBy);
 		OOGraphene.check(scoreEl, showResults);
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
@@ -101,21 +98,7 @@ public class QTI21ConfigurationCEPage {
 	}
 	
 	private QTI21ConfigurationCEPage selectTab(By tabBy) {
-		List<WebElement> tabLinks = browser.findElements(CourseEditorPageFragment.navBarNodeConfiguration);
-
-		boolean found = false;
-		a_a:
-		for(WebElement tabLink:tabLinks) {
-			tabLink.click();
-			OOGraphene.waitBusy(browser);
-			List<WebElement> chooseRepoEntry = browser.findElements(tabBy);
-			if(chooseRepoEntry.size() > 0) {
-				found = true;
-				break a_a;
-			}
-		}
-
-		Assert.assertTrue("Found the tab", found);
+		OOGraphene.selectTab("o_node_config", tabBy, browser);
 		return this;
 	}
 

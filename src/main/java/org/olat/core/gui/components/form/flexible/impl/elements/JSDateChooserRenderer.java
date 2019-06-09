@@ -82,7 +82,7 @@ class JSDateChooserRenderer extends DefaultComponentRenderer {
 			sb.append("<span class='input-group-addon'>")
 			  .append("<i class='o_icon o_icon_calendar' id=\"").append(triggerId).append("\" title=\"").appendHtmlEscaped(sourceTranslator.translate("calendar.choose")).append("\"")
 			  .append(" onclick=\"jQuery('#").append(receiverId).append("').datepicker('show');\"")
-			  .append("></i></span>")
+			  .append(">\u00A0</i></span>")
 			  .append("</div></div>");//input-group
 			// date chooser javascript
 			sb.append("<script>\n /* <![CDATA[ */ \n")

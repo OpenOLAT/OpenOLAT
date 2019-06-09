@@ -50,7 +50,9 @@ public class ArquillianDeployments {
 	public static final String LIB_DIR   = "target/openolat-lms-14.0-SNAPSHOT/WEB-INF/lib";
 
 	public static WebArchive createDeployment() {
-		return createDeployment("openolat.war", new HashMap<>());
+		Map<String,String> overrideProperties = new HashMap<>();
+		overrideProperties.put("ldap.enable", "false");
+		return createDeployment("openolat.war", overrideProperties);
 	}
 	
 	public static WebArchive createDeployment(Map<String,String> overrideProperties) {

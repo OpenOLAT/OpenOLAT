@@ -68,7 +68,7 @@ public class MembersWizardPage {
 	public MembersWizardPage finish() {
 		try {
 			By contactFormBy = By.cssSelector("fieldset.o_sel_contact_form");
-			OOGraphene.waitElement(contactFormBy, 5, browser);
+			OOGraphene.waitElement(contactFormBy, browser);
 			OOGraphene.waitBusyAndScrollTop(browser);
 			OOGraphene.finishStep(browser);
 		} catch (Exception e) {
@@ -94,7 +94,7 @@ public class MembersWizardPage {
 
 		By searchBy = By.cssSelector(".o_sel_usersearch_searchform a.btn-default");
 		OOGraphene.clickAndWait(searchBy, browser);
-		
+
 		// select all
 		By selectAll = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'o_table_checkall')]/a[i[contains(@class,'o_icon_check_on')]]");
 		OOGraphene.waitElement(selectAll, browser);

@@ -19,13 +19,9 @@
  */
 package org.olat.selenium.page.qti;
 
-import java.util.List;
-
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 /**
  * 
@@ -44,21 +40,7 @@ public abstract class QTI21AssessmentItemEditorPage {
 	}
 	
 	protected QTI21AssessmentItemEditorPage selectTab(By tabBy) {
-		List<WebElement> tabLinks = browser.findElements(tabBarBy);
-
-		boolean found = false;
-		a_a:
-		for(WebElement tabLink:tabLinks) {
-			tabLink.click();
-			OOGraphene.waitBusy(browser);
-			List<WebElement> tabEls = browser.findElements(tabBy);
-			if(tabEls.size() > 0) {
-				found = true;
-				break a_a;
-			}
-		}
-
-		Assert.assertTrue("Found the tab", found);
+		OOGraphene.selectTab("o_sel_assessment_item_config", tabBy, browser);
 		return this;
 	}
 }

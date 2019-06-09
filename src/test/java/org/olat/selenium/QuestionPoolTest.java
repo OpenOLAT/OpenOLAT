@@ -26,8 +26,6 @@ import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.page.InitialPage;
-import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
@@ -58,8 +56,6 @@ public class QuestionPoolTest extends Deployments {
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
-	@Page
-	private NavigationPage navBar;
 	
 	/**
 	 * Smoke test: an author create a QTI 2.1 question,
@@ -71,15 +67,17 @@ public class QuestionPoolTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void questionPool(@InitialPage LoginPage loginPage)
+	public void questionPool()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Lili");
-		
+
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs(author.getLogin(), author.getPassword())
 			.resume();
 		
 		String questionTitle = "SC-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		QuestionPoolPage questionPool = navBar.assertOnNavigationPage()
 			.openQuestionPool();
 		questionPool
@@ -102,15 +100,16 @@ public class QuestionPoolTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void reviewProcess(@InitialPage LoginPage loginPage)
+	public void reviewProcess()
 	throws IOException, URISyntaxException {
 
 		UserVO reviewer = new UserRestClient(deploymentUrl).createAuthor("Albert");
 		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage
 			.loginAs("administrator", "openolat")
 			.resume();
-		AdministrationPage administration = new NavigationPage(browser)
+		AdministrationPage administration = NavigationPage.load(browser)
 			.openAdministration();
 		// configure the review process
 		administration
@@ -137,7 +136,9 @@ public class QuestionPoolTest extends Deployments {
 			.resume();
 		
 		String questionTitle = "SC-" + UUID.randomUUID();
-		QuestionPoolPage questionPool = navBar.assertOnNavigationPage()
+		NavigationPage navBar = NavigationPage.load(browser);
+		QuestionPoolPage questionPool = navBar
+			.assertOnNavigationPage()
 			.openQuestionPool();
 		questionPool
 			.selectMyQuestions()

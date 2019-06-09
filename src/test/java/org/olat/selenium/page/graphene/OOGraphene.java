@@ -21,22 +21,26 @@ package org.olat.selenium.page.graphene;
 
 import java.io.File;
 import java.text.DateFormat;
+import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
-import org.jboss.arquillian.graphene.Graphene;
 import org.junit.Assert;
+import org.olat.core.util.StringHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.WrapsElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
 /**
  * 
@@ -46,14 +50,31 @@ import org.openqa.selenium.firefox.FirefoxDriver;
  */
 public class OOGraphene {
 
-	private static final long poolingDuration = 100;//ms
-	private static final long waitTinyDuration = 50;//seconds
-	private static final long defaultTimeout = 5;//seconds
+	private static final Duration poolingDuration = Duration.ofMillis(100);//ms
+	private static final Duration waitTinyDuration = Duration.ofSeconds(50);//seconds
+	private static final long driverTimeout = 60;//seconds
+	private static final long movePause = 400;//milliseconds
+	private static final long moveToPause = 100;//milliseconds
+	
+	private static final Duration polling = Duration.ofMillis(100);
+	private static final Duration poolingSlow = Duration.ofMillis(200);
+	private static final Duration timeout = Duration.ofSeconds(5);
 
 	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close");
 	
 	public static final By wizardNextBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_next')]");
 	public static final By wizardFinishBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_finish') and not(contains(@class,'o_disabled'))]");
+	
+	
+	public static FluentWait<WebDriver> wait(WebDriver browser) {
+		return new WebDriverWait(browser, driverTimeout)
+				.withTimeout(timeout).pollingEvery(poolingSlow);	
+	}
+	
+	public static FluentWait<WebDriver> wait(WebDriver browser, Duration timeout) {
+		return new WebDriverWait(browser, driverTimeout)
+				.withTimeout(timeout).pollingEvery(poolingSlow);	
+	}
 	
 	/**
 	 * Wait until the busy flag is ok, the browser scrolled
@@ -63,9 +84,10 @@ public class OOGraphene {
 	 */
 	public static void waitModalDialog(WebDriver browser) {
 		waitBusyAndScrollTop(browser);
-		By modalBy = By.cssSelector("div.modal-dialog div.modal-body");
-		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
-			.pollingEvery(200, TimeUnit.MILLISECONDS).until().element(modalBy).is().visible();
+		By modalBy = By.cssSelector("div.o_layered_panel div.modal-dialog div.modal-body");
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(poolingSlow)
+			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
 	}
 	
 	/**
@@ -76,15 +98,17 @@ public class OOGraphene {
 	 */
 	public static void waitModalWizard(WebDriver browser) {
 		waitBusyAndScrollTop(browser);
-		By modalBy = By.cssSelector("div.modal-dialog div.modal-body");
-		Graphene.waitModel(browser).withTimeout(defaultTimeout, TimeUnit.SECONDS)
-			.pollingEvery(200, TimeUnit.MILLISECONDS).until().element(modalBy).is().visible();
+		By modalBy = By.cssSelector("div.o_layered_panel div.modal-dialog div.modal-body");
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(poolingSlow)
+			.until(ExpectedConditions.visibilityOfElementLocated(modalBy));
 	}
 	
 	public static void waitModalDialogDisappears(WebDriver browser) {
 		By modalBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]/div[contains(@class,'modal-content')]");
-		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
-			.pollingEvery(200, TimeUnit.MILLISECONDS).until().element(modalBy).is().not().present();
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(poolingSlow)
+			.until(ExpectedConditions.invisibilityOfElementLocated(modalBy));
 	}
 	
 	public static void waitCallout(WebDriver browser) {
@@ -93,13 +117,15 @@ public class OOGraphene {
 	}
 	
 	public static void waitBusy(WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(defaultTimeout, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(poolingDuration)
+			.until(new BusyPredicate());
 	}
 	
 	public static void waitBusy(WebDriver browser, int timeoutInSeconds) {
-		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new BusyPredicate());
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(poolingDuration)
+			.until(new BusyPredicate());
 	}
 	
 	/**
@@ -108,8 +134,15 @@ public class OOGraphene {
 	 * @param browser
 	 */
 	public static void waitElement(By element, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(polling)
+			.until(ExpectedConditions.visibilityOfElementLocated(element));
+	}
+	
+	public static void waitElementClickable(By element, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(polling)
+			.until(ExpectedConditions.elementToBeClickable(element));
 	}
 	
 	/**
@@ -120,8 +153,35 @@ public class OOGraphene {
 	 * @param browser The web driver
 	 */
 	public static void waitElement(By element, int timeoutInSeconds, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().visible();
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(polling)
+			.until(ExpectedConditions.visibilityOfElementLocated(element));
+	}
+	
+	/**
+	 * Wait until the element is visible.
+	 * 
+	 * @param element The selector for the element
+	 * @param timeoutInSeconds The timeout in seconds
+	 * @param browser The web driver
+	 */
+	public static void waitElement(By element, int timeoutInSeconds, int pollingInSeconds, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(Duration.ofSeconds(pollingInSeconds))
+			.until(ExpectedConditions.visibilityOfElementLocated(element));
+	}
+	
+	/**
+	 * Wait until the element is present in the DOM.
+	 * 
+	 * @param element
+	 * @param timeoutInSeconds
+	 * @param browser
+	 */
+	public static void waitElementPresence(By element, int timeoutInSeconds, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(polling)
+			.until(ExpectedConditions.presenceOfElementLocated(element));
 	}
 	
 	/**
@@ -132,8 +192,9 @@ public class OOGraphene {
 	 * @param browser The web driver
 	 */
 	public static void waitElementDisappears(By element, int timeoutInSeconds, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().not().present();
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(poolingDuration)
+			.until(ExpectedConditions.invisibilityOfElementLocated(element));
 	}
 	
 	/**
@@ -144,12 +205,9 @@ public class OOGraphene {
 	 * @param browser
 	 */
 	public static void waitElementUntilNotVisible(By element, int timeoutInSeconds, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(timeoutInSeconds, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(element).is().not().visible();
-	}
-	
-	public static void waitGui(WebDriver browser) {
-		Graphene.waitGui(browser);
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(poolingDuration)
+			.until(ExpectedConditions.invisibilityOfElementLocated(element));
 	}
 	
 	public static void nextStep(WebDriver browser) {
@@ -157,8 +215,11 @@ public class OOGraphene {
 	}
 	
 	public static void finishStep(WebDriver browser) {
-		clickAndWait(wizardFinishBy, browser);
-		OOGraphene.closeBlueMessageWindow(browser);
+		moveAndClick(wizardFinishBy, browser);
+		closeBlueMessageWindow(browser);
+		By wizardBy = By.cssSelector("div.o_layered_panel div.o_wizard");
+		waitElementUntilNotVisible(wizardBy, 10, browser);
+		waitBusyAndScrollTop(browser);
 	}
 	
 	/**
@@ -184,20 +245,46 @@ public class OOGraphene {
 	 * click it. After it wait until the window scroll to the top
 	 * and/or make a classic waitBusy
 	 * 
-	 * @param buttonBy
-	 * @param browser
+	 * @param buttonBy The button to click
+	 * @param browser The driver
 	 */
 	public static void clickAndWait(By buttonBy, WebDriver browser) {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			scrollTo(buttonBy, browser);
-		}
-		browser.findElement(buttonBy).click();
-		if(move) {
+			//scrollTo(buttonBy, browser);
+			new Actions(browser)
+				.moveToElement(buttonEl)
+				.pause(movePause)
+				.click(buttonEl)
+				.perform();
 			OOGraphene.waitBusyAndScrollTop(browser);
 		} else {
+			browser.findElement(buttonBy).click();
 			OOGraphene.waitBusy(browser);
+		}
+	}
+	
+	/**
+	 * Check the location of the button. If it's below the visible
+	 * window, it scrolls to the button, waits a little longer and
+	 * click it.
+	 * 
+	 * @param buttonBy The button to click
+	 * @param browser The driver
+	 */
+	public static void moveAndClick(By buttonBy, WebDriver browser) {
+		waitElement(buttonBy, browser);
+		WebElement buttonEl = browser.findElement(buttonBy);
+		boolean move = buttonEl.getLocation().getY() > 669;
+		if(move) {
+			new Actions(browser)
+				.moveToElement(buttonEl)
+				.pause(movePause)
+				.click(buttonEl)
+				.perform();
+		} else {
+			browser.findElement(buttonBy).click();
 		}
 	}
 	
@@ -212,6 +299,15 @@ public class OOGraphene {
 		OOGraphene.waitingALittleLonger();
 	}
 	
+	public static void moveTo(By by, WebDriver browser) {
+		waitElement(by, browser);
+		WebElement el = browser.findElement(by);
+		new Actions(browser)
+			.moveToElement(el)
+			.pause(moveToPause)
+			.perform();
+	}
+	
 	/**
 	 * Scroll to the top anchor.
 	 * 
@@ -223,30 +319,40 @@ public class OOGraphene {
 		OOGraphene.waitingALittleLonger();
 	}
 	
+	public static void moveTop(WebDriver browser) {
+		WebElement el = browser.findElement(By.id("o_top"));
+		new Actions(browser)
+			.moveToElement(el)
+			.pause(moveToPause)
+			.perform();
+	}
+	
 	// top.tinymce.get('o_fi1000000416').setContent('<p>Hacked</p>');
 	// <div id="o_fi1000000416_diw" class="o_richtext_mce"> <iframe id="o_fi1000000416_ifr">
 	public static final void tinymce(String content, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(waitTinyDuration, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+		new WebDriverWait(browser, driverTimeout)
+			.until(new TinyMCELoadedPredicate());
+		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
+			.pollingEvery(poolingDuration)
 			.until(new TinyMCELoadedPredicate());
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
 	public static final void tinymceExec(String content, WebDriver browser) {
-		Graphene.waitModel(browser).withTimeout(waitTinyDuration, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
+			.pollingEvery(poolingDuration)
 			.until(new TinyMCELoadedPredicate());
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.execCommand('mceInsertRawHTML', true, '" + content + "')");
 	}
 	
 	public static final void tinymce(String content, String containerCssSelector, WebDriver browser) {
 		By tinyIdBy = By.cssSelector(containerCssSelector + " div.o_richtext_mce");
-		waitElement(tinyIdBy, 5, browser);
+		waitElement(tinyIdBy, browser);
 		WebElement tinyIdEl = browser.findElement(tinyIdBy);
 		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
 
-		Graphene.waitModel(browser).withTimeout(waitTinyDuration, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
+			.pollingEvery(poolingDuration)
 			.until(new TinyMCELoadedByIdPredicate(tinyId));
 		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].setContent('" + content + "')");
 	}
@@ -260,12 +366,12 @@ public class OOGraphene {
 	 */
 	public static final void tinymceInsert(String content, String containerCssSelector, WebDriver browser) {
 		By tinyIdBy = By.cssSelector(containerCssSelector + " div.o_richtext_mce");
-		waitElement(tinyIdBy, 5, browser);
+		waitElement(tinyIdBy, browser);
 		WebElement tinyIdEl = browser.findElement(tinyIdBy);
 		String tinyId = tinyIdEl.getAttribute("id").replace("_diw", "");
 
-		Graphene.waitModel(browser).withTimeout(waitTinyDuration, TimeUnit.SECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
+			.pollingEvery(poolingDuration)
 			.until(new TinyMCELoadedByIdPredicate(tinyId));
 		((JavascriptExecutor)browser).executeScript("top.tinymce.editors['" + tinyId + "'].insertContent('" + content + "')");
 	}
@@ -276,23 +382,41 @@ public class OOGraphene {
 	 * @param formBy The selector to found the form
 	 * @param browser The browser
 	 */
-	public static final void selectTab(By tabsBy, By formBy, WebDriver browser) {
-		List<WebElement> tabLinks = browser.findElements(tabsBy);
-
+	public static final void selectTab(String ulClass, By formBy, WebDriver browser) {
+		selectTab(ulClass, (b) -> {
+			List<WebElement> chooseRepoEntry = browser.findElements(formBy);
+			return !chooseRepoEntry.isEmpty();
+		}, browser);
+	}
+	
+	/**
+	 * 
+	 * @param ulClass The class of the nav-tabs
+	 * @param selectTab A predicate to select the right tab
+	 * @param browser The driver
+	 */
+	public static final void selectTab(String ulClass, Predicate<WebDriver> selectTab, WebDriver browser) {
+		List<WebElement> tabLinks = browser.findElements(By.cssSelector("ul." + ulClass + ">li>a"));
+		int count = tabLinks.size();
 		boolean found = false;
 		a_a:
-		for(WebElement tabLink:tabLinks) {
-			tabLink.click();
-			OOGraphene.waitBusy(browser);
-			List<WebElement> chooseRepoEntry = browser.findElements(formBy);
-			if(chooseRepoEntry.size() > 0) {
+		for(int i=0; i<count; i++) {
+			By tabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "]/a");
+			WebElement tabEl = browser.findElement(tabLinkBy);
+			String tabClass = tabEl.getAttribute("onclick");
+			if(StringHelper.containsNonWhitespace(tabClass)) {
+				tabEl.click();
+				waitBusy(browser);
+				By activatedTabLinkBy = By.xpath("//ul[contains(@class,'" + ulClass + "')]/li[" + (i+1) + "][@class='active']/a");
+				waitElement(activatedTabLinkBy, browser);
+				if(selectTab.test(browser)) {
+					found = true;
+					break a_a;
+				}
+			} else if(selectTab.test(browser)) {
 				found = true;
 				break a_a;
 			}
-		}
-		
-		if(!found) {
-			System.out.println();
 		}
 
 		Assert.assertTrue("Found the tab", found);
@@ -314,21 +438,6 @@ public class OOGraphene {
 		} else {
 			if(checked != null) {
 				checkboxEl.click();
-			}
-		}
-	}
-	
-	public static final void check(WebElement labelEl, WebElement checkboxEl, Boolean val) {
-		if(val == null) return;
-		
-		String checked = checkboxEl.getAttribute("checked");
-		if(Boolean.TRUE.equals(val)) {
-			if(checked == null) {
-				labelEl.click();
-			}
-		} else {
-			if(checked != null) {
-				labelEl.click();
 			}
 		}
 	}
@@ -365,6 +474,9 @@ public class OOGraphene {
 		timeEls.get(0).sendKeys(Integer.toString(hour));
 		timeEls.get(1).clear();
 		timeEls.get(1).sendKeys(Integer.toString(minute));
+		
+		By datePickerBy = By.id("ui-datepicker-div");
+		waitElementDisappears(datePickerBy, 5, browser);
 	}
 	
 	public static final void flexiTableSelectAll(WebDriver browser) {
@@ -391,7 +503,9 @@ public class OOGraphene {
 	 * @param browser
 	 */
 	public static final void waitingTransition(WebDriver browser) {
-		Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until(new TransitionPredicate());
+		new WebDriverWait(browser, driverTimeout)
+			.pollingEvery(poolingDuration)
+			.until(new TransitionPredicate());
 		waitingALittleBit();
 	}
 	
@@ -441,13 +555,21 @@ public class OOGraphene {
 	 */
 	public static final void waitBusyAndScrollTop(WebDriver browser) {
 		try {
-			Graphene.waitModel(browser)
-				.ignoring(TimeoutException.class)
-				.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+			new WebDriverWait(browser, driverTimeout)
+				.pollingEvery(poolingDuration)
+				.withTimeout(timeout)
 				.until(new BusyScrollToPredicate());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static final void clickBreadcrumbBack(WebDriver browser) {
+		//By backBy = By.xpath("//ol[@class='breadcrumb']/li[contains(@class,'o_breadcrumb_back')]/following-sibling::li/a");
+		By backBy = By.xpath("//ol[@class='breadcrumb']/li[@class='o_breadcrumb_back']/a[i[contains(@class,'o_icon_back')]]");
+		waitElement(backBy, browser);
+		browser.findElement(backBy).click();
+		waitBusy(browser);
 	}
 	
 	public static final void closeErrorBox(WebDriver browser) {
@@ -470,8 +592,9 @@ public class OOGraphene {
 	
 	public static final void waitAndCloseBlueMessageWindow(WebDriver browser) {
 		try {
-			Graphene.waitModel(browser).withTimeout(5, TimeUnit.SECONDS)
-				.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS).until().element(closeBlueBoxButtonBy).is().visible();
+			new WebDriverWait(browser, driverTimeout)
+				.withTimeout(timeout).pollingEvery(poolingDuration)
+				.until(ExpectedConditions.visibilityOfElementLocated(closeBlueBoxButtonBy));
 		} catch (Exception e) {
 			//e.printStackTrace();
 		}
@@ -504,9 +627,8 @@ public class OOGraphene {
 	
 	private static final void clickCloseButton(WebDriver browser, WebElement closeButton) {
 		closeButton.click();
-		Graphene.waitModel(browser)
-			.withTimeout(1000, TimeUnit.MILLISECONDS)
-			.pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofMillis(1000)).pollingEvery(poolingDuration)
 			.until(new CloseAlertInfoPredicate());
 	}
 	
@@ -556,21 +678,11 @@ public class OOGraphene {
 	
 	public static final void waitNavBarTransition(WebDriver browser) {
 		try {
-			Graphene.waitModel(browser).pollingEvery(poolingDuration, TimeUnit.MILLISECONDS)
+			new WebDriverWait(browser, driverTimeout).pollingEvery(poolingDuration)
 					.until(new NavBarTransitionPredicate());
 			waitingALittleBit();
 		} catch (Exception e) {
 			//e.printStackTrace();
 		}
-	}
-	
-	public static final WebElement unwrap(WebElement element) {
-		if(element instanceof WrapsElement) {
-			WebElement wrappedCircleEl = ((WrapsElement)element).getWrappedElement();
-			if(wrappedCircleEl instanceof WrapsElement) {
-				element = ((WrapsElement)wrappedCircleEl).getWrappedElement();
-			}
-		}
-		return element;
 	}
 }

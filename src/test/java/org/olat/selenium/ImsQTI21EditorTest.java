@@ -27,8 +27,6 @@ import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.page.InitialPage;
-import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
@@ -73,14 +71,12 @@ public class ImsQTI21EditorTest extends Deployments {
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
-	@Page
-	private NavigationPage navBar;
 
 	/**
 	 * Create a test, import the CSV example, remove the
 	 * first single choice which come if someone create a
 	 * test. Change the delivery settings of the test to
-	 * show the detailled results.<br>
+	 * show the detailed results.<br>
 	 * Run the test and check the results. 
 	 * 
 	 * @param loginPage
@@ -89,13 +85,15 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void importQuestionsCSV(@InitialPage LoginPage authorLoginPage)
+	public void importQuestionsCSV()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "Excel QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -117,7 +115,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//remove the single choice which come from the creation
 		// of the test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		// go to options and show the results
@@ -168,13 +166,15 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void importQuestionsCSVMatchVariants(@InitialPage LoginPage authorLoginPage)
+	public void importQuestionsCSVMatchVariants()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "ExcelMatch QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -196,7 +196,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		//remove the single choice which come from the creation
 		// of the test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		// go to options and show the results
@@ -248,14 +248,15 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorSingleChoices(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void qti21EditorSingleChoices(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -267,7 +268,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a single choice: all answers score
@@ -345,11 +346,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage userNavBar = NavigationPage.load(ryomouBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -394,12 +395,14 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorSingleChoices_conditionalAttemptsFeedback(@InitialPage LoginPage authorLoginPage)
+	public void qti21EditorSingleChoices_conditionalAttemptsFeedback()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -410,7 +413,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 	
 		//add a single choice: all answers score
@@ -465,15 +468,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorMultipleChoices(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorMultipleChoices(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO eric = new UserRestClient(deploymentUrl).createRandomUser("Eric");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -485,7 +489,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a single choice: all answers score
@@ -565,11 +569,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -604,11 +608,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a second user search the content package
-		LoginPage ericLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage ericLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		ericLoginPage
 			.loginAs(eric.getLogin(), eric.getPassword())
 			.resume();
-		NavigationPage ericNavBar = new NavigationPage(participantBrowser);
+		NavigationPage ericNavBar = NavigationPage.load(participantBrowser);
 		ericNavBar
 			.openMyCourses()
 			.openSearch()
@@ -643,12 +647,14 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorMultipleChoices_complexConditionalFeedback(@InitialPage LoginPage authorLoginPage)
+	public void qti21EditorMultipleChoices_complexConditionalFeedback()
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -659,7 +665,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21EditorPage qtiEditor = qtiPage
 				.edit();
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 	
 		//add a single choice: all answers score
@@ -745,15 +751,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorKprim(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorKprim(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO melissa = new UserRestClient(deploymentUrl).createRandomUser("Melissa");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Kprim QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -765,7 +772,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a kprim
@@ -839,11 +846,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -878,11 +885,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a second user search the content package
-		LoginPage melLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage melLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		melLoginPage
 			.loginAs(melissa.getLogin(), melissa.getPassword())
 			.resume();
-		NavigationPage melNavBar = new NavigationPage(participantBrowser);
+		NavigationPage melNavBar = NavigationPage.load(participantBrowser);
 		melNavBar
 			.openMyCourses()
 			.openSearch()
@@ -921,15 +928,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorHotspot_singleChoice(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorHotspot_singleChoice(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		
 		String qtiTestTitle = "Hotspot QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -941,7 +949,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add an hotspot: all answers score
@@ -1021,11 +1029,11 @@ public class ImsQTI21EditorTest extends Deployments {
 
 
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1058,11 +1066,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a second user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1099,15 +1107,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorHotspot_multipleChoice(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorHotspot_multipleChoice(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		
 		String qtiTestTitle = "Hotspot QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -1119,7 +1128,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add an hotspot: all answers score
@@ -1201,11 +1210,11 @@ public class ImsQTI21EditorTest extends Deployments {
 
 
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1238,11 +1247,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a second user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1281,16 +1290,17 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorFib_text(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorFib_text(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 
 		String qtiTestTitle = "FIB QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -1302,7 +1312,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a gap entry: all answers score
@@ -1374,11 +1384,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1414,11 +1424,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a second user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1458,16 +1468,17 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorNumericalInput_exact(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorNumericalInput_exact(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 
 		String qtiTestTitle = "Numerical QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -1479,7 +1490,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a numerical input: all answers score, tolerance exact
@@ -1551,11 +1562,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1591,11 +1602,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a second user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1634,16 +1645,17 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorNumericalInput_absolut(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorNumericalInput_absolut(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 
 		String qtiTestTitle = "Numerical QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -1655,7 +1667,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a numerical input: 3.1 - 3.2
@@ -1720,11 +1732,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1762,11 +1774,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a second user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1806,15 +1818,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorHottext(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorHottext(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Hottext QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -1826,7 +1839,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a hot text with score: all answers
@@ -1870,11 +1883,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -1916,15 +1929,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorMatch(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorMatch(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO melissa = new UserRestClient(deploymentUrl).createRandomUser("Melissa");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Match QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -1936,7 +1950,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a match, multiple selection
@@ -2024,11 +2038,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2064,11 +2078,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertOnAssessmentTestScore(6);// 4 points from the first question, 2 from the second
 		
 		//a second user search the content package
-		LoginPage melLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage melLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		melLoginPage
 			.loginAs(melissa.getLogin(), melissa.getPassword())
 			.resume();
-		NavigationPage melNavBar = new NavigationPage(participantBrowser);
+		NavigationPage melNavBar = NavigationPage.load(participantBrowser);
 		melNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2113,15 +2127,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorMatch_distractors(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorMatch_distractors(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO melissa = new UserRestClient(deploymentUrl).createRandomUser("Melissa");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Match QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -2133,7 +2148,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a match, multiple selection
@@ -2217,11 +2232,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2257,11 +2272,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertOnAssessmentTestScore("4.5");// 4 points from the first question, 0.5 from the second
 		
 		//a second user search the content package
-		LoginPage melLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage melLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		melLoginPage
 			.loginAs(melissa.getLogin(), melissa.getPassword())
 			.resume();
-		NavigationPage melNavBar = new NavigationPage(participantBrowser);
+		NavigationPage melNavBar = NavigationPage.load(participantBrowser);
 		melNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2306,15 +2321,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorMatchDragAndDrop(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorMatchDragAndDrop(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO asuka = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
 		UserVO chara = new UserRestClient(deploymentUrl).createRandomUser("Chara");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Match DnD QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -2326,7 +2342,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a match, multiple selection
@@ -2416,11 +2432,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage asukaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage asukaLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		asukaLoginPage
 			.loginAs(asuka.getLogin(), asuka.getPassword())
 			.resume();
-		NavigationPage asukaNavBar = new NavigationPage(participantBrowser);
+		NavigationPage asukaNavBar = NavigationPage.load(participantBrowser);
 		asukaNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2456,11 +2472,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertOnAssessmentTestScore(9);
 		
 		//a second user search the content package
-		LoginPage charaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage charaLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		charaLoginPage
 			.loginAs(chara.getLogin(), chara.getPassword())
 			.resume();
-		NavigationPage charaNavBar = new NavigationPage(participantBrowser);
+		NavigationPage charaNavBar = NavigationPage.load(participantBrowser);
 		charaNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2501,15 +2517,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorMatchDragAndDrop_distractors(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorMatchDragAndDrop_distractors(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO asuka = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
 		UserVO chara = new UserRestClient(deploymentUrl).createRandomUser("Chara");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Match DnD QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -2521,7 +2538,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a match, multiple selection
@@ -2605,11 +2622,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage asukaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage asukaLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		asukaLoginPage
 			.loginAs(asuka.getLogin(), asuka.getPassword())
 			.resume();
-		NavigationPage asukaNavBar = new NavigationPage(participantBrowser);
+		NavigationPage asukaNavBar = NavigationPage.load(participantBrowser);
 		asukaNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2645,11 +2662,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertOnAssessmentTestScore("4.5");
 		
 		//a second user search the content package
-		LoginPage charaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage charaLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		charaLoginPage
 			.loginAs(chara.getLogin(), chara.getPassword())
 			.resume();
-		NavigationPage charaNavBar = new NavigationPage(participantBrowser);
+		NavigationPage charaNavBar = NavigationPage.load(participantBrowser);
 		charaNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2692,15 +2709,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorMatchTrueFalse(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorMatchTrueFalse(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
 		UserVO asuka = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "True false QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -2712,7 +2730,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add a match, score "all answers"
@@ -2792,11 +2810,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2832,11 +2850,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a second user search the content package
-		LoginPage asukaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage asukaLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		asukaLoginPage
 			.loginAs(asuka.getLogin(), asuka.getPassword())
 			.resume();
-		NavigationPage asukaNavBar = new NavigationPage(participantBrowser);
+		NavigationPage asukaNavBar = NavigationPage.load(participantBrowser);
 		asukaNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2872,15 +2890,16 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorUpload(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorUpload(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//make a test
 		String qtiTestTitle = "Upload QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -2892,7 +2911,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add an upload interaction
@@ -2931,11 +2950,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -2975,16 +2994,17 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorEssay(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorEssay(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 
 		//make a test
 		String qtiTestTitle = "Essai QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -2996,7 +3016,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add an essay interaction
@@ -3035,11 +3055,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -3077,16 +3097,17 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorDrawing(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorDrawing(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 
 		//make a test
 		String qtiTestTitle = "Drawing QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -3098,7 +3119,7 @@ public class ImsQTI21EditorTest extends Deployments {
 				.edit();
 		//start a blank test
 		qtiEditor
-			.selectNode("Single choice")
+			.selectNode("Single Choice")
 			.deleteNode();
 		
 		//add an essay interaction
@@ -3141,11 +3162,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()
@@ -3186,14 +3207,15 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorHiddenSection(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorHiddenSection(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -3255,11 +3277,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -3297,16 +3319,17 @@ public class ImsQTI21EditorTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti21EditorNegativePoints(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver participantBrowser)
+	public void qti21EditorNegativePoints(@Drone @User WebDriver participantBrowser)
 	throws IOException, URISyntaxException {
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO asuka = new UserRestClient(deploymentUrl).createRandomUser("Asuka");
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		String qtiTestTitle = "Choices QTI 2.1 " + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createQTI21Test(qtiTestTitle)
@@ -3412,11 +3435,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.save();
 		
 		//a user search the content package
-		LoginPage userLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage userLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		userLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
-		NavigationPage userNavBar = new NavigationPage(participantBrowser);
+		NavigationPage userNavBar = NavigationPage.load(participantBrowser);
 		userNavBar
 			.openMyCourses()
 			.openSearch()
@@ -3445,11 +3468,11 @@ public class ImsQTI21EditorTest extends Deployments {
 		
 
 		//a  second user search the content package
-		LoginPage asukaLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage asukaLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		asukaLoginPage
 			.loginAs(asuka.getLogin(), asuka.getPassword())
 			.resume();
-		NavigationPage asukaNavBar = new NavigationPage(participantBrowser);
+		NavigationPage asukaNavBar = NavigationPage.load(participantBrowser);
 		asukaNavBar
 			.openMyCourses()
 			.openSearch()
@@ -3477,11 +3500,11 @@ public class ImsQTI21EditorTest extends Deployments {
 			.assertOnAssessmentTestMaxScore(7);
 		
 		//a third user search the content package
-		LoginPage reiLoginPage = LoginPage.getLoginPage(participantBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(participantBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
-		NavigationPage reiNavBar = new NavigationPage(participantBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(participantBrowser);
 		reiNavBar
 			.openMyCourses()
 			.openSearch()

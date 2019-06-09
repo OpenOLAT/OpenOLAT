@@ -27,7 +27,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.Actions;
 
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
@@ -82,10 +81,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	public QTI21HotspotEditorPage moveToHotspotEditor() {
 		By editorBy = By.id("o_qti_hotspots_edit");
 		OOGraphene.waitElement(editorBy, browser);
-		
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.scrollTo(editorBy, browser);
-		}
+		OOGraphene.moveTo(editorBy, browser);
 		return this;
 	}
 	
@@ -96,8 +92,8 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	public QTI21HotspotEditorPage resizeCircle() {
 		By circleBy = By.cssSelector("div.o_draw_circle");
 		OOGraphene.waitElement(circleBy, browser);
+		
 		WebElement circleEl = browser.findElement(circleBy);
-		circleEl = OOGraphene.unwrap(circleEl);
 		Dimension dim = circleEl.getSize();
 		Position pos = Position.valueOf(10, 10, dim, browser);
 		new Actions(browser)
@@ -137,7 +133,6 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	private QTI21HotspotEditorPage moveElement(By elementBy, int xOffset, int yOffset) {
 		OOGraphene.waitElement(elementBy, browser);
 		WebElement element = browser.findElement(elementBy);
-		element = OOGraphene.unwrap(element);
 		Dimension size = element.getSize();
 		int centerX = size.getWidth() / 2;
 		int centerY = size.getHeight() / 2;

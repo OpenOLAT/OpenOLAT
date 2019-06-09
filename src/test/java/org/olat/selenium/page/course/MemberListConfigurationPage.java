@@ -40,7 +40,7 @@ public class MemberListConfigurationPage {
 	
 	public MemberListConfigurationPage selectSettings() {
 		By configBy = By.cssSelector("fieldset.o_sel_cmembers_settings");
-		OOGraphene.selectTab(CourseEditorPageFragment.navBarNodeConfiguration, configBy, browser);
+		OOGraphene.selectTab("o_node_config", configBy, browser);
 		return this;
 	}
 	
@@ -58,10 +58,8 @@ public class MemberListConfigurationPage {
 
 	private MemberListConfigurationPage setMembers(Boolean visible, String type) {
 		By checkboxBy = By.xpath("//fieldset[contains(@class,'o_sel_cmembers_settings')]//input[@type='checkbox'][@name='" + type + "']");
-		By labelBy = By.xpath("//fieldset[contains(@class,'o_sel_cmembers_settings')]//label[input[@type='checkbox'][@name='" + type + "']]");
 		WebElement checkboxEl = browser.findElement(checkboxBy);
-		WebElement labelEl = browser.findElement(labelBy);
-		OOGraphene.check(labelEl, checkboxEl, visible);
+		OOGraphene.check(checkboxEl, visible);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

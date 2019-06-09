@@ -127,29 +127,25 @@ public class AdministrationPage {
 	}
 	
 	public AdministrationPage setGroupConfirmationForUser(boolean mandatory) {
-		By userConfirmationBy = By.xpath("//label[input[@name='mandatory.membership' and @value='user']]");
 		By userConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='user']");
 		
-		OOGraphene.waitElement(userConfirmationBy, browser);
-		OOGraphene.scrollTo(userConfirmationBy, browser);
+		OOGraphene.waitElement(userConfirmationCheckBy, browser);
+		OOGraphene.scrollTo(userConfirmationCheckBy, browser);
 		
-		WebElement userConfirmationEl = browser.findElement(userConfirmationBy);
 		WebElement userConfirmationCheckEl = browser.findElement(userConfirmationCheckBy);
-		OOGraphene.check(userConfirmationEl, userConfirmationCheckEl, new Boolean(mandatory));
+		OOGraphene.check(userConfirmationCheckEl, Boolean.valueOf(mandatory));
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public AdministrationPage setGroupConfirmationForAuthor(boolean mandatory) {
-		By authorConfirmationBy = By.xpath("//label[input[@name='mandatory.membership' and @value='author']]");
 		By authorConfirmationCheckBy = By.xpath("//label/input[@name='mandatory.membership' and @value='author']");
 		
-		OOGraphene.waitElement(authorConfirmationBy, 5, browser);
-		OOGraphene.scrollTo(authorConfirmationBy, browser);
+		OOGraphene.waitElement(authorConfirmationCheckBy, browser);
+		OOGraphene.scrollTo(authorConfirmationCheckBy, browser);
 		
-		WebElement authorConfirmationEl = browser.findElement(authorConfirmationBy);
 		WebElement authorConfirmationCheckEl = browser.findElement(authorConfirmationCheckBy);
-		OOGraphene.check(authorConfirmationEl, authorConfirmationCheckEl, new Boolean(mandatory));
+		OOGraphene.check(authorConfirmationCheckEl, Boolean.valueOf(mandatory));
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

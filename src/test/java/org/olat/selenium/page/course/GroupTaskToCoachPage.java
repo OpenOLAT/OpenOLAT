@@ -85,7 +85,7 @@ public class GroupTaskToCoachPage {
 	public GroupTaskToCoachPage reviewed() {
 		By reviewBy = By.cssSelector("#o_step_review_content .o_sel_course_gta_reviewed");
 		OOGraphene.waitElement(reviewBy, browser);
-		OOGraphene.clickAndWait(reviewBy, browser);
+		OOGraphene.moveAndClick(reviewBy, browser);
 		confirm();
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;
@@ -109,10 +109,12 @@ public class GroupTaskToCoachPage {
 	}
 	
 	public GroupTaskToCoachPage confirm() {
+		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
-		WebElement yesLink = browser.findElement(By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]"));
-		yesLink.click();
+		By yes = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]");
+		browser.findElement(yes).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -139,6 +141,7 @@ public class GroupTaskToCoachPage {
 		By saveButtonBy = By.cssSelector(".o_sel_course_gta_upload_form button.btn-primary");
 		browser.findElement(saveButtonBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		By correctionUploaded = By.xpath("//table[contains(@class,'table')]//tr/td//a[text()[contains(.,'" + correctionFile.getName() + "')]]");
 		OOGraphene.waitElement(correctionUploaded, 5, browser);
 		return this;
@@ -203,19 +206,15 @@ public class GroupTaskToCoachPage {
 		By groupAssessmentPopupBy = By.cssSelector(".modal-body .o_sel_course_gta_group_assessment_form");
 		OOGraphene.waitElement(groupAssessmentPopupBy, 5, browser);
 		
-		By applyToAllBy = By.xpath("//div[contains(@class,'o_sel_course_gta_group_assessment_form')]//div[contains(@class,'o_sel_course_gta_apply_to_all')]//label[input[@type='checkbox']]");
 		By applyToAllCheckBy = By.xpath("//div[contains(@class,'o_sel_course_gta_group_assessment_form')]//div[contains(@class,'o_sel_course_gta_apply_to_all')]//input[@type='checkbox']");
-		WebElement applyToAllEl = browser.findElement(applyToAllBy);
 		WebElement applyToAllCheckEl = browser.findElement(applyToAllCheckBy);
-		OOGraphene.check(applyToAllEl, applyToAllCheckEl, Boolean.TRUE);
+		OOGraphene.check(applyToAllCheckEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		
 		if(passed != null) {
-			By passedBy = By.xpath("//div[contains(@class,'o_sel_course_gta_group_assessment_form')]//div[contains(@class,'o_sel_course_gta_group_passed')]//label[input[@type='checkbox']]");
 			By passedCheckBy = By.xpath("//div[contains(@class,'o_sel_course_gta_group_assessment_form')]//div[contains(@class,'o_sel_course_gta_group_passed')]//input[@type='checkbox']");
-			WebElement passedEl = browser.findElement(passedBy);
 			WebElement passedCheckEl = browser.findElement(passedCheckBy);
-			OOGraphene.check(passedEl, passedCheckEl, Boolean.TRUE);
+			OOGraphene.check(passedCheckEl, Boolean.TRUE);
 			OOGraphene.waitBusy(browser);
 		}
 		

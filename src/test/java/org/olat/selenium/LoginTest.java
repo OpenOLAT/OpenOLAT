@@ -26,7 +26,6 @@ import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.page.InitialPage;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Test;
@@ -60,9 +59,10 @@ public class LoginTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void loadIndex(@InitialPage LoginPage loginPage) {
+	public void loadIndex(LoginPage loginPage) {
 		//check that the login page, or dmz is loaded
-		loginPage.assertOnLoginPage();
+		LoginPage.load(browser, deploymentUrl)
+			.assertOnLoginPage();
 	}
 	
 	/**
@@ -72,9 +72,11 @@ public class LoginTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void loginAsAdministrator(@InitialPage LoginPage loginPage) {
+	public void loginAsAdministrator() {
 		//load dmz
-		loginPage.assertOnLoginPage();
+		LoginPage loginPage = LoginPage
+				.load(browser, deploymentUrl)
+				.assertOnLoginPage();
 		//login as administrator
 		loginPage
 			.loginAs("administrator", "openolat")
@@ -91,14 +93,16 @@ public class LoginTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void loginAsNewUser(@InitialPage LoginPage loginPage)
+	public void loginAsNewUser()
 	throws IOException, URISyntaxException {
 		//create a random user
 		UserRestClient userClient = new UserRestClient(deploymentUrl);
 		UserVO user = userClient.createRandomUser();
 
 		//load dmz
-		loginPage.assertOnLoginPage();
+		LoginPage loginPage = LoginPage
+				.load(browser, deploymentUrl)
+				.assertOnLoginPage();
 		//login
 		loginPage.loginAs(user.getLogin(), user.getPassword());
 	}
@@ -118,7 +122,7 @@ public class LoginTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void maintenanceMessage(@InitialPage LoginPage loginPage, 
+	public void maintenanceMessage( 
 			@Drone @Participant WebDriver reiBrowser,
 			@Drone @Student WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
@@ -127,24 +131,24 @@ public class LoginTest extends Deployments {
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		
 		//a first user log in
-		LoginPage kanuLogin = LoginPage.getLoginPage(kanuBrowser, deploymentUrl)
+		LoginPage kanuLogin = LoginPage.load(kanuBrowser, deploymentUrl)
 			.loginAs(kanu)
 			.resume();
 		
 		// administrator come in, and set a maintenance message
-		loginPage
+		LoginPage.load(browser, deploymentUrl)
 			.assertOnLoginPage()
 			.loginAs("administrator", "openolat")
 			.resume();
 		
 		String message = "Hello - " + UUID.randomUUID();
-		AdministrationMessagesPage messagesPage = new NavigationPage(browser)
+		AdministrationMessagesPage messagesPage = NavigationPage.load(browser)
 			.openAdministration()
 			.selectInfoMessages()
 			.newMaintenanceMessage(message);
 		
 		//A new user see the login page 	
-		LoginPage.getLoginPage(reiBrowser, deploymentUrl)
+		LoginPage.load(reiBrowser, deploymentUrl)
 			.waitOnMaintenanceMessage(message)
 			.loginAs(rei)
 			.resume()

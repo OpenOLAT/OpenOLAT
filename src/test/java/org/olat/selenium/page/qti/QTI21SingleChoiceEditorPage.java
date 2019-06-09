@@ -43,16 +43,18 @@ public class QTI21SingleChoiceEditorPage extends QTI21AssessmentItemEditorPage {
 	 */
 	public QTI21SingleChoiceEditorPage addChoice(int position) {
 		By addBy = By.xpath("//div[contains(@class,'o_sel_add_choice_" + position + "')]/a");
+		OOGraphene.waitElement(addBy, browser);
 		browser.findElement(addBy).click();
 		OOGraphene.waitBusy(browser);
 		//wait the next element
 		By addedBy = By.xpath("//div[contains(@class,'o_sel_add_choice_" + (position + 1) + "')]/a");
-		OOGraphene.waitElement(addedBy, 5, browser);
+		OOGraphene.waitElement(addedBy, browser);
 		return this;
 	}
 	
 	public QTI21SingleChoiceEditorPage setCorrect(int position) {
 		By correctBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//input[contains(@id,'oo_correct-')]");
+		OOGraphene.waitElement(correctBy, browser);
 		browser.findElement(correctBy).click();
 		return this;
 	}

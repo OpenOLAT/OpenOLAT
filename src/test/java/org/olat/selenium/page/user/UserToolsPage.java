@@ -21,7 +21,9 @@ package org.olat.selenium.page.user;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.core.FolderPage;
 import org.olat.selenium.page.graphene.OOGraphene;
@@ -38,6 +40,8 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class UserToolsPage {
+	
+	private static final Logger log = Tracing.createLoggerFor(UserToolsPage.class);
 	
 	public static final By mySettingsClassName = By.className("o_sel_user_tools-mysettings");
 
@@ -102,17 +106,22 @@ public class UserToolsPage {
 		List<WebElement> mySettingsLinks = browser.findElements(mySettingsClassName);
 		if(mySettingsLinks.isEmpty() || !mySettingsLinks.get(0).isDisplayed()) {
 			By toolbarCaretBy = By.id("o_sel_navbar_my_menu_caret");
+			
 			List<WebElement> toolbarCaretLinks = browser.findElements(toolbarCaretBy);
 			Assert.assertFalse(toolbarCaretLinks.isEmpty());
 			WebElement toolbarCaretLink = toolbarCaretLinks.get(0);
 			Assert.assertNotNull(toolbarCaretLink);
 			try {
-				toolbarCaretLink.click();
+				browser.findElement(toolbarCaretBy).click();
 			} catch (Exception e) {
-				e.printStackTrace();
+				log.error("", e);
 			}
 			OOGraphene.waitNavBarTransition(browser);
-			OOGraphene.waitElement(mySettingsClassName, browser);
+			try {
+				OOGraphene.waitElement(mySettingsClassName, browser);//TODO selenium
+			} catch (Exception e) {
+				log.error("", e);
+			}
 		}
 		assertOnUserTools();
 		return this;
@@ -174,6 +183,6 @@ public class UserToolsPage {
 
 		By logoutBy = By.className("o_logout");
 		browser.findElement(logoutBy).click();
-		OOGraphene.waitElement(LoginPage.loginFormBy, 5, browser);
+		OOGraphene.waitElement(LoginPage.loginFormBy, browser);
 	}
 }

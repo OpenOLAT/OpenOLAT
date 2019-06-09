@@ -29,8 +29,6 @@ import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
-import org.jboss.arquillian.graphene.page.InitialPage;
-import org.jboss.arquillian.graphene.page.Page;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
@@ -79,8 +77,6 @@ public class AssessmentTest extends Deployments {
 	private WebDriver browser;
 	@ArquillianResource
 	private URL deploymentUrl;
-	@Page
-	private NavigationPage navBar;
 	
 	/**
 	 * An author upload a test, create a course with a test course
@@ -92,16 +88,18 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti12Test(@InitialPage LoginPage authorLoginPage)
+	public void qti12Test()
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "QTI-Test-1.2-" + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/e4_test.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile);
@@ -184,18 +182,20 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void qti12CourseWithAssessment(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void qti12CourseWithAssessment(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "QTI-Test-1.2-" + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/e4_test.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile);
@@ -245,13 +245,13 @@ public class AssessmentTest extends Deployments {
 			.finish();
 		
 		//Ryomou open the course
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -313,6 +313,7 @@ public class AssessmentTest extends Deployments {
 			.selectUser(ryomou)
 			.assertPassed(ryomou);
 	}
+	
 	/**
 	 * An author upload a SCORM resource, create a course and use the
 	 * SCORM within. It publish the course, add a participant to the
@@ -328,18 +329,20 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void scormCourseWithAssessment(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void scormCourseWithAssessment(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String scormTitle = "SCORM - " + UUID.randomUUID();
 		URL scormUrl = JunitTestHelper.class.getResource("file_resources/very_simple_scorm.zip");
 		File scormFile = new File(scormUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(scormTitle, scormFile);
@@ -352,7 +355,7 @@ public class AssessmentTest extends Deployments {
 			.clickToolbarBack();
 		
 		//create a course element of type Scorm with the scorm that we create above
-		String scormNodeTitle = "SCORM";
+		String scormNodeTitle = "SCORM-Node";
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
 		courseEditor
@@ -385,13 +388,13 @@ public class AssessmentTest extends Deployments {
 			.finish();
 
 		//Ryomou open the course
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -454,19 +457,22 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void assessmentMode_manual(@InitialPage LoginPage authorLoginPage,
-			@Drone @Student WebDriver ryomouBrowser, @Drone @Participant WebDriver kanuBrowser)
+	public void assessmentMode_manual(@Drone @Student WebDriver ryomouBrowser,
+			@Drone @Participant WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
 
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//upload a test
 		String qtiTestTitle = "QTI-Test-1.2-" + UUID.randomUUID();
 		URL qtiTestUrl = JunitTestHelper.class.getResource("file_resources/e4_test.zip");
 		File qtiTestFile = new File(qtiTestUrl.toURI());
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.uploadResource(qtiTestTitle, qtiTestFile);
@@ -510,7 +516,7 @@ public class AssessmentTest extends Deployments {
 		courseRuntime.members().quickAdd(kanu);
 		
 		//Kanu log in 
-		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
+		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);
 		kanuLoginPage
 			.loginAs(kanu.getLogin(), kanu.getPassword())
 			.resume();
@@ -530,7 +536,7 @@ public class AssessmentTest extends Deployments {
 			.confirmStart();
 
 		//Ryomou opens the course
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword());
 		//start the assessment
@@ -597,16 +603,18 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void certificatesManuallyGenerated(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver reiBrowser)
+	public void certificatesManuallyGenerated(@Drone @User WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
-		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("Rei");
+		
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
+		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-With-Certificates-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		CoursePageFragment courseRuntime = navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -649,7 +657,7 @@ public class AssessmentTest extends Deployments {
 			.generateCertificate();
 		
 		//Participant log in
-		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(reiBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
@@ -677,8 +685,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void certificatesGeneratedByTest(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver reiBrowser)
+	public void certificatesGeneratedByTest(@Drone @User WebDriver reiBrowser)
 	throws IOException, URISyntaxException {
 		
 		//create an author and a participant
@@ -688,10 +695,12 @@ public class AssessmentTest extends Deployments {
 		URL testUrl = ArquillianDeployments.class.getResource("file_resources/e4_test.zip");
 		String testTitle = "E4Test-" + UUID.randomUUID();
 		new RepositoryRestClient(deploymentUrl, author).deployResource(new File(testUrl.toURI()), "-", testTitle);
-		
+
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		//create a course
 		String courseTitle = "Certif-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -741,13 +750,13 @@ public class AssessmentTest extends Deployments {
 			.clickToolbarBack();
 		
 		//Participant log in
-		LoginPage reiLoginPage = LoginPage.getLoginPage(reiBrowser, deploymentUrl);
+		LoginPage reiLoginPage = LoginPage.load(reiBrowser, deploymentUrl);
 		reiLoginPage
 			.loginAs(rei.getLogin(), rei.getPassword())
 			.resume();
 		
 		//open the course
-		NavigationPage reiNavBar = new NavigationPage(reiBrowser);
+		NavigationPage reiNavBar = NavigationPage.load(reiBrowser);
 		reiNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -787,17 +796,18 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void assessmentCourseElement(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void assessmentCourseElement(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
-		
+
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-Assessment-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -851,7 +861,7 @@ public class AssessmentTest extends Deployments {
 			.assertUserPassedCourseNode(assessmentNodeTitle);
 		
 		//Ryomou login
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou.getLogin(), ryomou.getPassword())
 			.resume();
@@ -888,19 +898,20 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithGroupsAndStandardSettings(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser,
+	public void taskWithGroupsAndStandardSettings(@Drone @User WebDriver ryomouBrowser,
 			@Drone @Participant WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
 			
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
-		
+
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-with-group-task-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -972,10 +983,12 @@ public class AssessmentTest extends Deployments {
 			.nextPermissions()
 			.finish();
 		
-		groupPage.close();
+		groupPage
+			.close();
 		
 		//go to the course
 		CoursePageFragment coursePage = membersPage
+			.assertMembersManagement()
 			.clickToolbarBack();
 		coursePage
 			.publish()// publish the course for the participants
@@ -983,13 +996,13 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -1007,13 +1020,13 @@ public class AssessmentTest extends Deployments {
 			.assertSubmissionAvailable();
 		
 		//Participant 2 log in
-		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
+		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);
 		kanuLoginPage
 			.loginAs(kanu)
 			.resume();
 		
 		//open the course
-		NavigationPage kanuNavBar = new NavigationPage(kanuBrowser);
+		NavigationPage kanuNavBar = NavigationPage.load(kanuBrowser);
 		kanuNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -1082,18 +1095,19 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithIndividualScoreAndRevision(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void taskWithIndividualScoreAndRevision(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
-		
+
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-with-individual-task-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -1155,13 +1169,13 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -1256,18 +1270,19 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithoutAssignment(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void taskWithoutAssignment(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
-		
+
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-with-task-alt-1-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -1317,13 +1332,13 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -1411,18 +1426,19 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithIndividualScoreNoRevision(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void taskWithIndividualScoreNoRevision(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
-		
+
+		LoginPage authorLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-with-individual-task-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -1484,13 +1500,13 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -1551,8 +1567,7 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void bulkAssessment(@InitialPage LoginPage loginPage,
-			@Drone @User WebDriver ryomouBrowser,
+	public void bulkAssessment(@Drone @User WebDriver ryomouBrowser,
 			@Drone @Participant WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
 		
@@ -1560,10 +1575,12 @@ public class AssessmentTest extends Deployments {
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("Ryomou");
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("Kanu");
 		
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
 		loginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-Assessment-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -1623,12 +1640,12 @@ public class AssessmentTest extends Deployments {
 			.finish();
 		
 		//Ryomou login
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -1640,12 +1657,12 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(assessmentNodeTitle);
 		
 		//Second login
-		LoginPage kanuLoginPage = LoginPage.getLoginPage(kanuBrowser, deploymentUrl);
+		LoginPage kanuLoginPage = LoginPage.load(kanuBrowser, deploymentUrl);
 		kanuLoginPage
 			.loginAs(kanu)
 			.resume();
 		
-		NavigationPage kanuNavBar = new NavigationPage(kanuBrowser);
+		NavigationPage kanuNavBar = NavigationPage.load(kanuBrowser);
 		kanuNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -1685,18 +1702,19 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskOptionalWithIndividualScore(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void taskOptionalWithIndividualScore(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
-		
+
+		LoginPage authorLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-with-auto-task-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -1763,13 +1781,13 @@ public class AssessmentTest extends Deployments {
 			.selectWithTitle(gtaNodeTitle);
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -1833,18 +1851,19 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskWithoutSubmission(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void taskWithoutSubmission(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
-		
+
+		LoginPage authorLoginPage = LoginPage.load(browser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-with-auto-task-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -1911,13 +1930,13 @@ public class AssessmentTest extends Deployments {
 			.assertPassed();
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);
@@ -1954,18 +1973,19 @@ public class AssessmentTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void taskOptionalWithoutSubmission(@InitialPage LoginPage authorLoginPage,
-			@Drone @User WebDriver ryomouBrowser)
+	public void taskOptionalWithoutSubmission(@Drone @User WebDriver ryomouBrowser)
 	throws IOException, URISyntaxException {
 						
-		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
+		UserVO author = new UserRestClient(deploymentUrl).createRandomAuthor();
 		UserVO kanu = new UserRestClient(deploymentUrl).createRandomUser("kanu");
 		UserVO ryomou = new UserRestClient(deploymentUrl).createRandomUser("ryomou");
 		
+		LoginPage authorLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		authorLoginPage.loginAs(author.getLogin(), author.getPassword());
 		
 		//create a course
 		String courseTitle = "Course-with-auto-task-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
 			.createCourse(courseTitle)
@@ -2035,13 +2055,13 @@ public class AssessmentTest extends Deployments {
 			.assertPassed();
 		
 		//Participant log in
-		LoginPage ryomouLoginPage = LoginPage.getLoginPage(ryomouBrowser, deploymentUrl);
+		LoginPage ryomouLoginPage = LoginPage.load(ryomouBrowser, deploymentUrl);
 		ryomouLoginPage
 			.loginAs(ryomou)
 			.resume();
 		
 		//open the course
-		NavigationPage ryomouNavBar = new NavigationPage(ryomouBrowser);
+		NavigationPage ryomouNavBar = NavigationPage.load(ryomouBrowser);
 		ryomouNavBar
 			.openMyCourses()
 			.select(courseTitle);

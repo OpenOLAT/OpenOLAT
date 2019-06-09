@@ -422,7 +422,7 @@ public class LTIConfigForm extends FormBasicController {
 		nameEl.setDisplaySize(16);
 		pair.setNameEl(nameEl);
 		
-		SingleSelection typeEl = uifactory.addDropdownSingleselect("typ_" + guid, customParamLayout, customTypeKeys, customTypeValues, null);
+		SingleSelection typeEl = uifactory.addDropdownSingleselect("typ_" + guid, null, customParamLayout, customTypeKeys, customTypeValues, null);
 		typeEl.setUserObject(pair);
 		typeEl.addActionListener(FormEvent.ONCHANGE);
 		pair.setCustomType(typeEl);
@@ -435,7 +435,7 @@ public class LTIConfigForm extends FormBasicController {
 			typeEl.select("free", true);
 		}
 		
-		SingleSelection userPropsChoice = uifactory.addDropdownSingleselect("userprops_" + guid, customParamLayout, userPropKeys, userPropValues, null);
+		SingleSelection userPropsChoice = uifactory.addDropdownSingleselect("userprops_" + guid, null, customParamLayout, userPropKeys, userPropValues, null);
 		userPropsChoice.setUserObject(pair);
 		userPropsChoice.setVisible(userprops);
 		if(userprops) {

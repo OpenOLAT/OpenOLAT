@@ -84,11 +84,13 @@ public class CourseWizardPage {
 		By checkAllBy = By.cssSelector("div.modal div.form-group input[type='checkbox']");
 		List<WebElement> checkAll = browser.findElements(checkAllBy);
 		Assert.assertFalse(checkAll.isEmpty());
-		for(WebElement check:checkAll) {
-			check.click();
+		int numOfCheckbox = checkAll.size();
+		for(int i=0;i<numOfCheckbox; i++) {
+			By checkbox = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'form-group')]//div[" + (i+1) + "]/div/label/input[@type='checkbox']");
+			OOGraphene.waitElement(checkbox, browser);
+			browser.findElement(checkbox).click();
 			OOGraphene.waitBusy(browser);
 		}
-		
 		return this;
 	}
 }

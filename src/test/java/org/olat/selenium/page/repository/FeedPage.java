@@ -155,8 +155,9 @@ public class FeedPage {
 	
 	public FeedPage publishPost() {
 		By publishButton = By.cssSelector(".o_sel_feed_form button.btn-primary");
-		browser.findElement(publishButton).click();
+		OOGraphene.moveAndClick(publishButton, browser);
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	

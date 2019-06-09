@@ -72,8 +72,7 @@ public class CalendarPage {
 	 * @return The calendar page
 	 */
 	public CalendarPage assertOnCalendar() {
-		List<WebElement> calendarToolbarsEl = browser.findElements(calendarToolbatBy);
-		Assert.assertFalse(calendarToolbarsEl.isEmpty());
+		OOGraphene.waitElement(calendarToolbatBy, browser);
 		return this;
 	}
 	
@@ -116,12 +115,10 @@ public class CalendarPage {
 	
 	public CalendarPage setAllDay(boolean allDay) {
 		By locationBy = By.xpath("//fieldset[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_all_day')]//input[@type='checkbox']");
-		By labelLocationBy = By.xpath("//fieldset[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_all_day')]//label[input[@type='checkbox']]");
 		
 		WebElement allDayEl = browser.findElement(locationBy);
-		WebElement allDayLabelEl = browser.findElement(labelLocationBy);
-		OOGraphene.scrollTo(labelLocationBy, browser);
-		OOGraphene.check(allDayLabelEl, allDayEl, new Boolean(allDay));
+		OOGraphene.scrollTo(locationBy, browser);
+		OOGraphene.check(allDayEl, new Boolean(allDay));
 		
 		if(!allDay) {
 			By hourBy = By.xpath("//fieldset[contains(@class,'o_sel_cal_entry_form')]//div[contains(@class,'o_sel_cal_begin')]//input[contains(@id,'o_dch_')]");
@@ -149,33 +146,28 @@ public class CalendarPage {
 		new Select(recurrenceEl).selectByValue(recur);
 		OOGraphene.waitBusy(browser);
 		
-		//By untilBy = By.cssSelector("fieldset.o_sel_cal_entry_form div.o_sel_cal_until input[type='text']");
 		By untilAltBy = By.cssSelector("fieldset.o_sel_cal_entry_form div.o_sel_cal_until span.input-group-addon i");
-		OOGraphene.waitElement(untilAltBy, 5, browser);
+		OOGraphene.waitElement(untilAltBy, browser);
 		browser.findElement(untilAltBy).click();
-		OOGraphene.waitGui(browser);
-
 		selectDayInDatePicker(day);
 		return this;
 	}
 	
 	private CalendarPage selectDayInDatePicker(int day) {
 		By datePickerBy = By.id("ui-datepicker-div");
-		OOGraphene.waitElement(datePickerBy, 5, browser);
+		OOGraphene.waitElement(datePickerBy, browser);
 		
 		By dayBy = By.xpath("//div[@id='ui-datepicker-div']//td//a[normalize-space(text())='" + day + "']");
-		OOGraphene.waitElement(dayBy, 5, browser);
+		OOGraphene.waitElement(dayBy, browser);
 		browser.findElement(dayBy).click();
-		
 		OOGraphene.waitElementUntilNotVisible(datePickerBy, 5, browser);
-		//OOGraphene.waitingALittleBit();
 		return this;
 	}
 	
 	public CalendarPage save() {
 		By saveBy = By.cssSelector("fieldset.o_sel_cal_entry_form button.btn.btn-primary span");
 		OOGraphene.waitElement(saveBy, 5, browser);
-		OOGraphene.clickAndWait(saveBy, browser);//TODO sel
+		OOGraphene.clickAndWait(saveBy, browser);//TODO selenium
 		return this;
 	}
 	

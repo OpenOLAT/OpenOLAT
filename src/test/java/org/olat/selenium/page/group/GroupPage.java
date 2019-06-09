@@ -46,7 +46,7 @@ import org.openqa.selenium.WebElement;
  */
 public class GroupPage {
 	
-	private static final By showOwners = By.className("o_sel_group_show_owners");
+	private static final By showOwners = By.className("o_sel_group_members_mgmt");
 	private static final By toolsBy = By.className("o_sel_collab_tools");
 	private static final By editDetails = By.className("o_sel_group_edit_title");
 	private static final By bookingConfigBy = By.className("o_sel_accesscontrol_create");
@@ -194,12 +194,14 @@ public class GroupPage {
 	}
 	
 	public void close() {
-		By closeBy = By.cssSelector("a i.o_icon_close_tool");
+		By closeBy = By.xpath("//li[@class='o_breadcrumb_close']/a[i[contains(@class,'o_icon_close_tool')]]");
+		OOGraphene.waitElementClickable(closeBy, browser);
 		browser.findElement(closeBy).click();
 		OOGraphene.waitBusy(browser);
 	}
 	
 	public GroupPage setVisibility(boolean owners, boolean participants, boolean waitingList) {
+		OOGraphene.waitElement(By.className("o_sel_group_members_visibility"), browser);
 		if(owners) {
 			By showOwnersBy = By.cssSelector(".o_sel_group_show_owners input[type='checkbox']");
 			browser.findElement(showOwnersBy).click();
@@ -224,11 +226,11 @@ public class GroupPage {
 	}
 	
 	public GroupPage setWaitingList() {
-		By waitingListBy = By.xpath("//div[contains(@class,'o_sel_group_edit_waiting_list')]//label[input[@type='checkbox']]");
 		By waitingListCheckBy = By.xpath("//div[contains(@class,'o_sel_group_edit_waiting_list')]//input[@type='checkbox']");
-		WebElement waitingListEl = browser.findElement(waitingListBy);
+		OOGraphene.moveTo(waitingListCheckBy, browser);
+		
 		WebElement waitingListCheckEl = browser.findElement(waitingListCheckBy);
-		OOGraphene.check(waitingListEl, waitingListCheckEl, Boolean.TRUE);
+		OOGraphene.check(waitingListCheckEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
@@ -282,22 +284,7 @@ public class GroupPage {
 	}
 	
 	private void openAdminTab(By marker) {
-		By navBarAdmin = By.cssSelector("div.o_tabbed_pane ul>li>a");
-		OOGraphene.waitElement(navBarAdmin, browser);
-		List<WebElement> tabLinks = browser.findElements(navBarAdmin);
-		Assert.assertFalse(tabLinks.isEmpty());
-
-		boolean found = false;
-		for(WebElement tabLink:tabLinks) {
-			tabLink.click();
-			OOGraphene.waitBusy(browser);
-			List<WebElement> markerEls = browser.findElements(marker);
-			if(markerEls.size() > 0) {
-				found = true;
-				break;
-			}
-		}
-		Assert.assertTrue(found);
+		OOGraphene.selectTab("nav-tabs", marker, browser);
 	}
 	
 	public GroupPage assertOnInfosPage(String name) {

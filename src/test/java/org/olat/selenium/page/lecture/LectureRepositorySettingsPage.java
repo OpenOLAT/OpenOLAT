@@ -40,12 +40,10 @@ public class LectureRepositorySettingsPage {
 	
 	public LectureRepositorySettingsPage enableLectures() {
 		By enableBy = By.xpath("//label/input[@name='lecture.admin.enabled' and @value='on']");
-		By enableLabelBy = By.xpath("//label[input[@name='lecture.admin.enabled' and @value='on']]");
 		OOGraphene.waitElement(enableBy, browser);
 		
 		WebElement checkboxEl = browser.findElement(enableBy);
-		WebElement labelEl = browser.findElement(enableLabelBy);
-		OOGraphene.check(labelEl, checkboxEl, Boolean.TRUE);
+		OOGraphene.check(checkboxEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);
 		
 		By overrideBy = By.cssSelector("div.o_sel_repo_lecture_override input[type=radio]");

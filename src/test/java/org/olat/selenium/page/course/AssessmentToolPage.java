@@ -21,7 +21,9 @@ package org.olat.selenium.page.course;
 
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -35,6 +37,7 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class AssessmentToolPage {
+	private static final Logger log = Tracing.createLoggerFor(AssessmentToolPage.class);
 	
 	private final WebDriver browser;
 	
@@ -171,8 +174,8 @@ public class AssessmentToolPage {
 	 * @return Itself
 	 */
 	public AssessmentToolPage assertProgress(UserVO user, int progress) {
-		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]/table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div[@class='progress']/div[@title='" + progress + "%']");
-		OOGraphene.waitElement(progressBy, 10, browser);
+		By progressBy = By.xpath("//div[contains(@class,'o_table_wrapper')]/table//tr[td/a[contains(.,'" + user.getFirstName() + "')]]/td/div[@class='progress'][div[@title='" + progress + "%']]");
+		OOGraphene.waitElement(progressBy, 15, 1, browser);
 		return this;
 	}
 	

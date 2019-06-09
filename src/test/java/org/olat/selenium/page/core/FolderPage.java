@@ -137,7 +137,7 @@ public class FolderPage {
 		
 		// tooltip of the image sometimes appears and block the click
 		By tooltipBy = By.cssSelector("div.tooltip-inner");
-		WebElement rootEl = OOGraphene.unwrap(browser.findElement(rootBy));
+		WebElement rootEl = browser.findElement(rootBy);
 		List<WebElement> tooltipEls = browser.findElements(tooltipBy);
 		if(tooltipEls.size() > 0) {
 			new Actions(browser)

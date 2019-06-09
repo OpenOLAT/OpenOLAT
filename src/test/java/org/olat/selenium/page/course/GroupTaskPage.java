@@ -106,7 +106,8 @@ public class GroupTaskPage {
 	
 	private GroupTaskPage uploadFile(String stepId, File file) {
 		By uploadButtonBy = By.cssSelector("#" + stepId + " .o_sel_course_gta_submit_file");
-		OOGraphene.clickAndWait(uploadButtonBy, browser);//TODO sel clickAndWait
+		OOGraphene.moveAndClick(uploadButtonBy, browser);
+		OOGraphene.waitBusyAndScrollTop(browser);
 		OOGraphene.waitModalDialog(browser);
 		
 		By inputBy = By.cssSelector(".o_fileinput input[type='file']");

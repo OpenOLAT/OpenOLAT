@@ -134,7 +134,7 @@ public class CoursePageFragment {
 	 * @return
 	 */
 	public MenuTreePageFragment clickTree() {
-		OOGraphene.waitElement(MenuTreePageFragment.treeBy, 2, browser);
+		OOGraphene.waitElement(MenuTreePageFragment.treeBy, browser);
 		MenuTreePageFragment menuTree = new MenuTreePageFragment(browser);
 		menuTree.selectRoot();
 		return menuTree;
@@ -146,7 +146,7 @@ public class CoursePageFragment {
 	 */
 	public CoursePageFragment openToolsMenu() {
 		browser.findElement(toolsMenuCaret).click();
-		OOGraphene.waitElement(toolsMenu, 5, browser);
+		OOGraphene.waitElement(toolsMenu, browser);
 		return this;
 	}
 	

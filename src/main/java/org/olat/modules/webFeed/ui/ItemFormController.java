@@ -130,7 +130,7 @@ public abstract class ItemFormController extends FormBasicController {
 		richTextConfig.disableMedia();
 		content.setVisible(hasContent());
 
-		file = uifactory.addFileElement(getWindowControl(), "file", flc);
+		file = uifactory.addFileElement(getWindowControl(), "file", null, flc);
 		file.setLabel("feed.item.file.label", null);
 		if (hasMandatoryMedia()) {
 			file.setMandatory(true, "feed.item.file.mandatory");

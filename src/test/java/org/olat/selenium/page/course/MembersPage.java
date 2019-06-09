@@ -52,7 +52,7 @@ public class MembersPage {
 		By addMemberBy = By.className("o_sel_course_add_member");
 		browser.findElement(addMemberBy).click();
 		OOGraphene.waitModalWizard(browser);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_usersearch_searchform"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_usersearch_searchform"), browser);
 		return new MembersWizardPage(browser);
 	}
 	
@@ -60,7 +60,7 @@ public class MembersPage {
 		By importMembersBy = By.className("o_sel_course_import_members");
 		browser.findElement(importMembersBy).click();
 		OOGraphene.waitModalWizard(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_sel_user_import textarea.form-control"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_user_import textarea.form-control"), browser);
 		return new MembersWizardPage(browser);
 	}
 	
@@ -189,6 +189,12 @@ public class MembersPage {
 		return this;
 	}
 	
+	public MembersPage assertMembersManagement() {
+		By membersBy = By.cssSelector("div.o_members_mgmt");
+		OOGraphene.waitElement(membersBy, browser);
+		return this;
+	}
+	
 	/**
 	 * Click back to the course
 	 * 
@@ -196,9 +202,7 @@ public class MembersPage {
 	 */
 	public CoursePageFragment clickToolbarBack() {
 		OOGraphene.closeBlueMessageWindow(browser);
-		By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
-		browser.findElement(toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickBreadcrumbBack(browser);
 		return new CoursePageFragment(browser);
 	}
 

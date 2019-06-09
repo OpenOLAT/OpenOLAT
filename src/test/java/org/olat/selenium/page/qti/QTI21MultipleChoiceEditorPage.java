@@ -43,20 +43,19 @@ public class QTI21MultipleChoiceEditorPage extends QTI21AssessmentItemEditorPage
 	 */
 	public QTI21MultipleChoiceEditorPage addChoice(int position) {
 		By addBy = By.xpath("//div[contains(@class,'o_sel_add_choice_" + position + "')]/a");
+		OOGraphene.waitElement(addBy, browser);
 		browser.findElement(addBy).click();
 		OOGraphene.waitBusy(browser);
 		//wait the next element
 		By addedBy = By.xpath("//div[contains(@class,'o_sel_add_choice_" + (position + 1) + "')]/a");
-		OOGraphene.waitElement(addedBy, 5, browser);
+		OOGraphene.waitElement(addedBy, browser);
 		return this;
 	}
 	
 	public QTI21MultipleChoiceEditorPage setCorrect(int position) {
-		By correctBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//label[input[contains(@id,'oo_correct-')]]");
 		By correctCheckBy = By.xpath("//div[contains(@class,'o_sel_choice_" + position + "')]//input[contains(@id,'oo_correct-')]");
-		WebElement correctEl = browser.findElement(correctBy);
 		WebElement correctCheckEl = browser.findElement(correctCheckBy);
-		OOGraphene.check(correctEl, correctCheckEl, true);
+		OOGraphene.check(correctCheckEl, true);
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

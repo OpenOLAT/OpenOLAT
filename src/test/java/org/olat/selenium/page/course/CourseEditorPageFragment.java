@@ -44,8 +44,6 @@ public class CourseEditorPageFragment {
 
 	public static final By toolbarBackBy = By.cssSelector("li.o_breadcrumb_back>a");
 	
-	public static final By navBarNodeConfiguration = By.cssSelector("ul.o_node_config>li>a");
-	
 	public static final By chooseCpButton = By.className("o_sel_cp_choose_repofile");
 	public static final By chooseWikiButton = By.className("o_sel_wiki_choose_repofile");
 	public static final By chooseTestButton = By.className("o_sel_test_choose_repofile");
@@ -105,7 +103,7 @@ public class CourseEditorPageFragment {
 		browser.findElement(rootNodeBy).click();
 		OOGraphene.waitBusy(browser);
 		By rootNodeActiveBy = By.cssSelector("span.o_tree_link.o_tree_l0.active");
-		OOGraphene.waitElement(rootNodeActiveBy, 5, browser);
+		OOGraphene.waitElement(rootNodeActiveBy, browser);
 		return this;
 	}
 	
@@ -149,25 +147,7 @@ public class CourseEditorPageFragment {
 	
 	private CourseEditorPageFragment selectTab(By tabBy) {
 		//make sure the tab bar is loaded
-		By navBarBy = By.cssSelector("ul.o_node_config");
-		OOGraphene.waitElement(navBarBy, 5, browser);
-		
-		List<WebElement> tabLinks = browser.findElements(navBarNodeConfiguration);
-
-		boolean found = false;
-		a_a:
-		for(WebElement tabLink:tabLinks) {
-			tabLink.click();
-			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(tabNavTabsBy, 5, browser);
-			List<WebElement> chooseRepoEntry = browser.findElements(tabBy);
-			if(chooseRepoEntry.size() > 0) {
-				found = true;
-				break a_a;
-			}
-		}
-
-		Assert.assertTrue("Found the tab", found);
+		OOGraphene.selectTab("o_node_config", tabBy, browser);
 		return this;
 	}
 	
@@ -215,18 +195,14 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment createNode(String nodeAlias) {
-		OOGraphene.waitElement(createNodeButton, 5, browser);
+		OOGraphene.waitElement(createNodeButton, browser);
 		browser.findElement(createNodeButton).click();
 		OOGraphene.waitModalDialog(browser);
 		
 		By nodeBy = By.xpath("//div[@id='o_course_editor_choose_nodetype']//a[contains(@class,'o_sel_course_editor_node-" + nodeAlias + "')]");
-		OOGraphene.waitElement(nodeBy, browser);
-		if("lti".equals(nodeAlias) || "co".equals(nodeAlias) || "cal".equals(nodeAlias)) {
-			OOGraphene.clickAndWait(nodeBy, browser);
-		} else {
-			browser.findElement(nodeBy).click();
-			OOGraphene.waitBusy(browser);
-		}
+		OOGraphene.moveAndClick(nodeBy, browser);
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	
@@ -238,7 +214,7 @@ public class CourseEditorPageFragment {
 	 */
 	public CourseEditorPageFragment nodeTitle(String title) {
 		By shortTitleBy = By.cssSelector("div.o_sel_node_editor_shorttitle input[type='text']");
-		OOGraphene.waitElement(shortTitleBy, 5, browser);
+		OOGraphene.waitElement(shortTitleBy, browser);
 		WebElement shortTitleEl = browser.findElement(shortTitleBy);
 		shortTitleEl.clear();
 		shortTitleEl.sendKeys(title);
@@ -324,23 +300,15 @@ public class CourseEditorPageFragment {
 	 * @return
 	 */
 	public CourseEditorPageFragment selectTabLearnContent() {
-		List<WebElement> tabLinks = browser.findElements(navBarNodeConfiguration);
-
-		boolean found = false;
-		a_a:
-		for(WebElement tabLink:tabLinks) {
-			tabLink.click();
-			OOGraphene.waitBusy(browser);
+		OOGraphene.selectTab("o_node_config", (b) -> {
 			for(By chooseRepoEntriesButton: chooseRepoEntriesButtonList) {
-				List<WebElement> chooseRepoEntry = browser.findElements(chooseRepoEntriesButton);
-				if(chooseRepoEntry.size() > 0) {
-					found = true;
-					break a_a;
+				List<WebElement> chooseRepoEntry = b.findElements(chooseRepoEntriesButton);
+				if(!chooseRepoEntry.isEmpty()) {
+					return true;
 				}
 			}
-		}
-
-		Assert.assertTrue("Found the tab learn content", found);
+			return false;
+		}, browser);
 		return this;
 	}
 	

@@ -40,7 +40,7 @@ public class LTIConfigurationPage {
 	
 	public LTIConfigurationPage selectConfiguration() {
 		By configBy = By.cssSelector("fieldset.o_sel_lti_config_form");
-		OOGraphene.selectTab(CourseEditorPageFragment.navBarNodeConfiguration, configBy, browser);
+		OOGraphene.selectTab("o_node_config", configBy, browser);
 		return this;
 	}
 	
@@ -59,10 +59,8 @@ public class LTIConfigurationPage {
 	
 	public LTIConfigurationPage enableScore(double scale, double cutValue) {
 		By assessableBy = By.xpath("//div[contains(@class,'o_sel_lti_config_assessable')]//input[@type='checkbox']");
-		By assessableLabelBy = By.xpath("//div[contains(@class,'o_sel_lti_config_assessable')]//label[input[@type='checkbox']]");
 		WebElement assessableEl = browser.findElement(assessableBy);
-		WebElement assessableLabelEl = browser.findElement(assessableLabelBy);
-		OOGraphene.check(assessableLabelEl, assessableEl, Boolean.TRUE);
+		OOGraphene.check(assessableEl, Boolean.TRUE);
 		
 		By scaleBy = By.cssSelector("div.o_sel_lti_config_scale input[type=text]");
 		OOGraphene.waitElement(scaleBy, browser);
@@ -79,6 +77,7 @@ public class LTIConfigurationPage {
 		By saveBy = By.cssSelector("fieldset.o_sel_lti_config_form button.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.moveTop(browser);
 		return this;
 	}
 

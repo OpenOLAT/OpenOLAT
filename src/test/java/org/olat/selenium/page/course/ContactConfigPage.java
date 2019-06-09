@@ -40,7 +40,7 @@ public class ContactConfigPage {
 	public ContactConfigPage selectConfiguration() {
 		OOGraphene.scrollTop(browser);
 		By configBy = By.className("o_sel_co_config_form");
-		OOGraphene.selectTab(CourseEditorPageFragment.navBarNodeConfiguration, configBy, browser);
+		OOGraphene.selectTab("o_node_config", configBy, browser);
 		return this;
 	}
 	

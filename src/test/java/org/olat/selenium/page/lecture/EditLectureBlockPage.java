@@ -50,9 +50,7 @@ public class EditLectureBlockPage {
 	public EditLectureBlockPage setTeacher(UserVO user) {
 		By checkboxBy = By.xpath("//div[contains(@class,'o_sel_repo_lecture_teachers')]//input[@type='checkbox'][@value='" + user.getKey() + "']");
 		WebElement checkboxEl = browser.findElement(checkboxBy);
-		By labelBy = By.xpath("//div[contains(@class,'o_sel_repo_lecture_teachers')]//label[input[@type='checkbox'][@value='" + user.getKey() + "']]");
-		WebElement labelEl = browser.findElement(labelBy);
-		OOGraphene.check(labelEl, checkboxEl, Boolean.TRUE);
+		OOGraphene.check(checkboxEl, Boolean.TRUE);
 		return this;
 	}
 	
@@ -85,7 +83,6 @@ public class EditLectureBlockPage {
 		
 		By untilAltBy = By.cssSelector("fieldset.o_sel_repo_edit_lecture_form div.o_sel_repo_lecture_date span.input-group-addon i");
 		browser.findElement(untilAltBy).click();
-		OOGraphene.waitGui(browser);
 		selectDayInDatePicker(day);
 		return this;
 	}
@@ -99,7 +96,6 @@ public class EditLectureBlockPage {
 		browser.findElement(dayBy).click();
 		
 		OOGraphene.waitElementUntilNotVisible(datePickerBy, 5, browser);
-		//OOGraphene.waitingALittleBit();
 		return this;
 	}
 	

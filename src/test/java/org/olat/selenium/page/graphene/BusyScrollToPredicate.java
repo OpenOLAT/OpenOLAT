@@ -44,6 +44,6 @@ public class BusyScrollToPredicate implements Function<WebDriver,Boolean> {
         } else if(y.intValue() == 0) {
         	count++;
         }
-        return count > 2;
+        return count > 3;
     }
 }

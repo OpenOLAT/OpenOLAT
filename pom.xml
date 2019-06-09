@@ -2548,6 +2548,12 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+	        <groupId>org.jboss.arquillian.extension</groupId>
+	        <artifactId>arquillian-drone-webdriver-depchain</artifactId>
+	        <type>pom</type>
+	        <scope>test</scope>
+	    </dependency>
+		<dependency>
 			<groupId>org.eu.ingwar.tools</groupId>
 			<artifactId>arquillian-suite-extension</artifactId>
 			<version>1.2.0</version>
@@ -2601,7 +2607,7 @@
 			<version>${version.selenium}</version>
 			<scope>test</scope>
 		</dependency>
-		<!--  Driver -->
+		<!-- Driver -->
 		<dependency>
 			<groupId>org.seleniumhq.selenium</groupId>
 			<artifactId>selenium-chrome-driver</artifactId>
@@ -2644,20 +2650,6 @@
 			<version>${version.selenium}</version>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.jboss.arquillian.graphene</groupId>
-			<artifactId>graphene-webdriver</artifactId>
-			<version>2.3.2</version>
-			<type>pom</type>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.seleniumhq.selenium</groupId>
-					<artifactId>htmlunit-driver</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<!-- End test dependencies -->
 	</dependencies>
 	

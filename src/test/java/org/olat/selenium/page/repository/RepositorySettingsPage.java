@@ -19,7 +19,6 @@
  */
 package org.olat.selenium.page.repository;
 
-import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -76,7 +75,6 @@ public class RepositorySettingsPage {
 	}
 	
 	public void back() {
-		browser.findElement(NavigationPage.toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickBreadcrumbBack(browser);
 	}
 }

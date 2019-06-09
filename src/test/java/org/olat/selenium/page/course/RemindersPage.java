@@ -85,6 +85,7 @@ public class RemindersPage {
 	 */
 	public RemindersPage sendReminders() {
 		By sendBy = By.cssSelector("div.o_callout_content ul.o_dropdown a.o_sel_course_reminder_send");
+		OOGraphene.waitElement(sendBy, browser);
 		browser.findElement(sendBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
