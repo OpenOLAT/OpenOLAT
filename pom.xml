@@ -1261,7 +1261,7 @@
 			<plugin>
 				<groupId>pl.project13.maven</groupId>
 				<artifactId>git-commit-id-plugin</artifactId>
-				<version>2.2.4</version>
+				<version>2.2.5</version>
 				<executions>
 					<execution>
 						<id>get-the-git-infos</id>
@@ -1314,7 +1314,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.1</version>
+				<version>2.22.2</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<skipTests>${skipTests}</skipTests>
@@ -1334,7 +1334,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.22.1</version>
+				<version>2.22.2</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<skipITs>${skipSeleniumTests}</skipITs>
@@ -1394,7 +1394,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.2.1</version>
+					<version>3.2.2</version>
 					<configuration>
 						<!--
 						<attachClasses>true</attachClasses>
@@ -1502,7 +1502,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>1.4</version>
+					<version>3.0.0-M2</version>
 					<executions>
 						<execution>
 							<id>show-versions</id>
@@ -1766,7 +1766,7 @@
 				<plugin>
 					<groupId>org.owasp</groupId>
 					<artifactId>dependency-check-maven</artifactId>
-					<version>3.3.2</version>
+					<version>4.0.0</version>
 					<executions>
 						<execution>
 							<goals>
@@ -2700,7 +2700,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>2.22.1</version>
+				<version>2.22.2</version>
 			</plugin>
 		</plugins>
 	</reporting>
