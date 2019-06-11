@@ -112,7 +112,8 @@ public interface AssessmentTestSession extends CreateInfo, ModifiedInfo {
 	
 	public String getAnonymousIdentifier();
 	
-
+	public boolean isAuthorMode();
+	
 	public AssessmentEntry getAssessmentEntry();
 	
 	public RepositoryEntry getTestEntry();
