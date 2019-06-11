@@ -89,9 +89,10 @@ public class AdobeConnectMeetingController extends FormBasicController {
 		this.readOnly = readOnly;
 		this.moderator = moderator;
 		this.administrator = administrator;
+		validMeeting = adobeConnectModule.getBaseUrl().equals(meeting.getEnvName());
+		
 		initForm(ureq);
 		
-		validMeeting = adobeConnectModule.getBaseUrl().equals(meeting.getEnvName());
 		if(validMeeting) {
 			AdobeConnectErrors error = new AdobeConnectErrors();
 			registered = adobeConnectManager.isRegistered(meeting, getIdentity(), getPermission(), error);
