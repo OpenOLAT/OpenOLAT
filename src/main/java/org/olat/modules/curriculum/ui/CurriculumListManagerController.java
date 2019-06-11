@@ -120,7 +120,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.externalId, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfElements));
 		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit.icon", CurriculumCols.edit.ordinal(), "edit",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"), null));		
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"),
+						new StaticFlexiCellRenderer(translate("select"), "edit")));		
 		editCol.setExportable(false);
 		columnsModel.addFlexiColumnModel(editCol);
 		if(secCallback.canEditCurriculum()) {
@@ -163,7 +164,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private CurriculumRow forgeManagedRow(CurriculumInfos curriculum) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		CurriculumRow row = new CurriculumRow(curriculum, toolsLink, true);
+		CurriculumRow row = new CurriculumRow(curriculum, toolsLink, secCallback.canEditCurriculum());
 		toolsLink.setUserObject(row);
 		return row;
 	}
