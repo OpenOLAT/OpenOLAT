@@ -70,10 +70,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class CoursesFoldersTest extends OlatJerseyTestCase {
 
-	private static ICourse course1;
-	private static CourseNode bcNode;
-	private static Identity admin, user;
-
 	private RestConnection conn;
 	
 	@Autowired
@@ -84,23 +80,6 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	@Before
 	public void setUp() throws Exception {
 		conn = new RestConnection();
-		
-		admin = securityManager.findIdentityByName("administrator");
-		user = JunitTestHelper.createAndPersistIdentityAsUser("rest-cf-one");
-		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
-		course1 = CourseFactory.loadCourse(courseEntry);
-		dbInstance.intermediateCommit();
-		
-		//create a folder
-		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");
-		bcNode = newNodeConfig.getInstance();
-		bcNode.setShortTitle("Folder");
-		bcNode.setLearningObjectives("Folder objectives");
-		bcNode.setNoAccessExplanation("You don't have access");
-		course1.getEditorTreeModel().addCourseNode(bcNode, course1.getRunStructure().getRootNode());
-
-		CourseFactory.publishCourse(course1, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
-		
 		dbInstance.intermediateCommit();
 	}
 	
@@ -118,10 +97,10 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetFolderInfo() throws IOException, URISyntaxException {
-		boolean loggedIN = conn.login("administrator", "openolat");
-		assertTrue(loggedIN);
-
-		URI uri = UriBuilder.fromUri(getNodeURI()).build();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		CourseWithBC courseWithBc = deployCourse();
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).build();
 		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(get);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -136,10 +115,11 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	 */
 	@Test
 	public void testGetFolderInfoByUser() throws IOException, URISyntaxException {
-		boolean loggedIN = conn.login(user.getName(), "A6B7C8");
-		assertTrue(loggedIN);
-
-		URI uri = UriBuilder.fromUri(getNodeURI()).build();
+		Identity user = JunitTestHelper.createAndPersistIdentityAsRndUser("rest-user-bc");
+		assertTrue(conn.login(user.getName(), "A6B7C8"));
+		
+		CourseWithBC courseWithBc = deployCourse();
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).build();
 		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(get);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -149,10 +129,10 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	
 	@Test
 	public void testGetFoldersInfo() throws IOException, URISyntaxException {
-		boolean loggedIN = conn.login("administrator", "openolat");
-		assertTrue(loggedIN);
+		assertTrue(conn.login("administrator", "openolat"));
+		CourseWithBC courseWithBc = deployCourse();
 
-		URI uri = UriBuilder.fromUri(getNodesURI()).build();
+		URI uri = UriBuilder.fromUri(getNodesURI(courseWithBc)).build();
 		HttpGet get = conn.createGet(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(get);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -166,8 +146,9 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	@Test
 	public void testUploadFile() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
+		CourseWithBC courseWithBc = deployCourse();
 		
-		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").build();
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").build();
 		
 		//create single page
 		URL fileUrl = CoursesFoldersTest.class.getResource("singlepage.html");
@@ -179,21 +160,46 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 
-		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
 		VFSItem item = folder.resolve(file.getName());
 		assertNotNull(item);
 	}
 	
 	@Test
+	public void testUploadFile_withSpecialCharacter() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		CourseWithBC courseWithBc = deployCourse();
+		
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").build();
+		
+		//create single page
+		URL fileUrl = CoursesFoldersTest.class.getResource("singlepage.html");
+		assertNotNull(fileUrl);
+		File file = new File(fileUrl.toURI());
+		String filename = "SingleP\u00E4ge.html";
+		
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		conn.addMultipart(method, filename, file);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
+		VFSItem item = folder.resolve(filename);
+		assertNotNull(item);
+		assertEquals(filename, item.getName());
+	}
+	
+	@Test
 	public void testCreateFolder() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
+		CourseWithBC courseWithBc = deployCourse();
 		
-		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("RootFolder").build();
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("RootFolder").build();
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
 		VFSItem item = folder.resolve("RootFolder");
 		assertNotNull(item);
 		assertTrue(item instanceof VFSContainer);
@@ -202,13 +208,14 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	@Test
 	public void testCreateFolders() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
+		CourseWithBC courseWithBc = deployCourse();
 		
-		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("NewFolder1").path("NewFolder2").build();
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("NewFolder1").path("NewFolder2").build();
 		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
 		
-		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
 		VFSItem item = folder.resolve("NewFolder1");
 		assertNotNull(item);
 		assertTrue(item instanceof VFSContainer);
@@ -222,8 +229,8 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	@Test
 	public void testCreateFolders_tooMany() throws IOException, URISyntaxException {
 		assertTrue(conn.login("administrator", "openolat"));
-		
-		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("RootFolder")
+		CourseWithBC courseWithBc = deployCourse();
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("RootFolder")
 				.path("Folder").path("Folder").path("Folder").path("Folder").path("Folder")
 				.path("Folder").path("Folder").path("Folder").path("Folder").path("Folder")
 				.path("Folder").path("Folder").path("Folder").path("Folder").path("Folder")
@@ -234,9 +241,29 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 	}
 	
 	@Test
+	public void testCreateFolders_withSpecialCharacters() throws IOException, URISyntaxException {
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		CourseWithBC courseWithBc = deployCourse();
+		
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("RootFolder")
+				.path("F\u00FClder").build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertEquals(200, response.getStatusLine().getStatusCode());
+		
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
+		VFSItem item = folder.resolve("RootFolder/F\u00FClder");
+		assertNotNull(item);
+		assertTrue(item instanceof VFSContainer);
+	}
+	
+	@Test
 	public void deleteFolder() throws IOException, URISyntaxException {
+		CourseWithBC courseWithBc = deployCourse();
+		
 		//add some folders
-		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)bcNode, course1.getCourseEnvironment());
+		VFSContainer folder = BCCourseNode.getNodeFolderContainer((BCCourseNode)courseWithBc.bcNode, courseWithBc.course.getCourseEnvironment());
 		VFSItem item = folder.resolve("FolderToDelete");
 		if(item == null) {
 			folder.createChildContainer("FolderToDelete");
@@ -244,7 +271,7 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		
 		assertTrue(conn.login("administrator", "openolat"));
 		
-		URI uri = UriBuilder.fromUri(getNodeURI()).path("files").path("FolderToDelete").build();
+		URI uri = UriBuilder.fromUri(getNodeURI(courseWithBc)).path("files").path("FolderToDelete").build();
 		HttpDelete method = conn.createDelete(uri, MediaType.APPLICATION_JSON);
 		HttpResponse response = conn.execute(method);
 		assertEquals(200, response.getStatusLine().getStatusCode());
@@ -253,13 +280,42 @@ public class CoursesFoldersTest extends OlatJerseyTestCase {
 		assertNull(deletedItem);
 	}
 	
-	private URI getNodeURI() {
-		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(course1.getResourceableId().toString())
-			.path("elements").path("folder").path(bcNode.getIdent()).build();
+	private URI getNodeURI(CourseWithBC courseWithBc) {
+		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseWithBc.course.getResourceableId().toString())
+			.path("elements").path("folder").path(courseWithBc.bcNode.getIdent()).build();
 	}
 	
-	private URI getNodesURI() {
-		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(course1.getResourceableId().toString())
+	private URI getNodesURI(CourseWithBC courseWithBc) {
+		return UriBuilder.fromUri(getContextURI()).path("repo").path("courses").path(courseWithBc.course.getResourceableId().toString())
 			.path("elements").path("folder").build();
+	}
+	
+	private CourseWithBC deployCourse() {
+		Identity admin = securityManager.findIdentityByName("administrator");
+		RepositoryEntry courseEntry = JunitTestHelper.deployBasicCourse(admin);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		dbInstance.intermediateCommit();
+		
+		//create a folder
+		CourseNodeConfiguration newNodeConfig = CourseNodeFactory.getInstance().getCourseNodeConfiguration("bc");
+		CourseNode bcNode = newNodeConfig.getInstance();
+		bcNode.setShortTitle("Folder");
+		bcNode.setLearningObjectives("Folder objectives");
+		bcNode.setNoAccessExplanation("You don't have access");
+		course.getEditorTreeModel().addCourseNode(bcNode, course.getRunStructure().getRootNode());
+
+		CourseFactory.publishCourse(course, RepositoryEntryStatusEnum.published, true, false, admin, Locale.ENGLISH);
+		return new CourseWithBC(course, bcNode);
+	}
+	
+	private static class CourseWithBC {
+		private final ICourse course;
+		private final CourseNode bcNode;
+		
+		public CourseWithBC(ICourse course, CourseNode bcNode) {
+			this.course = course;
+			this.bcNode = bcNode;
+		}
+		
 	}
 }
