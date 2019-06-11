@@ -97,6 +97,7 @@ import org.olat.ims.qti21.ui.ResponseInput.StringInput;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTimerFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTreeFormItem;
+import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -756,7 +757,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			case rubric:
 				toogleRubric(qe.getSubCommand());
 				break;
+			case restart:
+				restartTest(ureq);
+				break;
 		}
+	}
+	
+	private void restartTest(UserRequest ureq) {
+		if(!candidateSession.isAuthorMode()) return;
+		fireEvent(ureq, new RestartEvent());
 	}
 	
 	private void toogleMark(String itemRef) {

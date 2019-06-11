@@ -204,6 +204,11 @@ public class InMemoryAssessmentTestSession implements AssessmentTestSession {
 	}
 
 	@Override
+	public boolean isAuthorMode() {
+		return false;
+	}
+
+	@Override
 	public AssessmentEntry getAssessmentEntry() {
 		return null;
 	}

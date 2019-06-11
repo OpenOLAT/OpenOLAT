@@ -1518,7 +1518,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		if(!deleteAuthorSesssion) {
 			deleteAuthorSesssion = true;//delete sessions only once
-			qtiService.deleteAuthorAssessmentTestSession(testEntry);
+			qtiService.deleteAuthorsAssessmentTestSession(testEntry);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}
