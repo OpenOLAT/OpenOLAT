@@ -1358,7 +1358,7 @@
 					</systemPropertyVariables>
 					<testNGArtifactName>none:none</testNGArtifactName>
 					<includes>
-						<include>org/olat/selenium/SeleniumTest.java</include>
+						<include>org/olat/selenium/*Test.java</include>
 					</includes>
 				</configuration>
 				<executions>
