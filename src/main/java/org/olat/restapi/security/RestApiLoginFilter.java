@@ -20,6 +20,8 @@
 package org.olat.restapi.security;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -103,7 +105,7 @@ public class RestApiLoginFilter implements Filter {
 				HttpServletRequest httpRequest = (HttpServletRequest)request;
 				HttpServletResponse httpResponse = (HttpServletResponse)response;
 
-				String requestURI = httpRequest.getRequestURI();
+				String requestURI = getRequestURI(httpRequest);
 				RestModule restModule = (RestModule)CoreSpringFactory.getBean("restModule");
 				if(restModule == null || !restModule.isEnabled() && !isRequestURIAlwaysEnabled(requestURI)) {
 					httpResponse.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -294,11 +296,11 @@ public class RestApiLoginFilter implements Filter {
 			followToken(token, request, response, chain);
 			return;
 		}
-		//fxdiff FXOLAT-113: business path in DMZ
+		
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for
-			String requestURI = request.getRequestURI();
+			String requestURI = getRequestURI(request);
 			ureq = new UserRequestImpl(requestURI, request, response);
 		} catch(NumberFormatException nfe) {
 			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -337,7 +339,7 @@ public class RestApiLoginFilter implements Filter {
 		UserRequest ureq = null;
 		try{
 			//upon creation URL is checked for
-			String requestURI = request.getRequestURI();
+			String requestURI = getRequestURI(request);
 			ureq = new UserRequestImpl(requestURI, request, response);
 			ureq.getUserSession().putEntryInNonClearedStore(SYSTEM_MARKER, Boolean.TRUE);
 		} catch(NumberFormatException nfe) {
@@ -356,7 +358,7 @@ public class RestApiLoginFilter implements Filter {
 			UserRequest ureq = null;
 			try{
 				//upon creation URL is checked for
-				String requestURI = request.getRequestURI();
+				String requestURI = getRequestURI(request);
 				ureq = new UserRequestImpl(requestURI, request, response);
 			} catch(Exception e) {
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -386,7 +388,7 @@ public class RestApiLoginFilter implements Filter {
 			UserRequest ureq = null;
 			try{
 				//upon creation URL is checked for
-				String requestURI = request.getRequestURI();
+				String requestURI = getRequestURI(request);
 				ureq = new UserRequestImpl(requestURI, request, response);
 			} catch(NumberFormatException nfe) {
 				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -410,6 +412,18 @@ public class RestApiLoginFilter implements Filter {
 			return true;
 		}
 		return WebappHelper.getServletContextPath() != null;
+	}
+	
+	private String getRequestURI(HttpServletRequest request) {
+		String requestURI = request.getRequestURI();
+		if(StringHelper.containsNonWhitespace(requestURI)) {
+			try {
+				requestURI = URLDecoder.decode(requestURI, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				log.error("", e);
+			}
+		}
+		return requestURI;
 	}
 
 	private String getLoginUrl() {
