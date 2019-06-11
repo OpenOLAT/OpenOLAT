@@ -796,6 +796,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private void doInsert(UserRequest ureq, List<QuestionItemView> items) {
 		TreeNode selectedNode = menuTree.getSelectedNode();
 		TreeNode sectionNode = getNearestSection(selectedNode);
+		if(sectionNode == null) {
+			showWarning("error.missing.section");
+			return;
+		}
 
 		boolean allOk = true;
 		String firstItemId = null;
@@ -845,6 +849,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private void doInsert(UserRequest ureq, AssessmentItemsPackage importPackage) {
 		TreeNode selectedNode = menuTree.getSelectedNode();
 		TreeNode sectionNode = getNearestSection(selectedNode);
+		if(sectionNode == null) {
+			showWarning("error.missing.section");
+			return;
+		}
 		
 		String firstItemId = null;
 		boolean errorOnImport = false;
@@ -990,7 +998,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 			TreeNode rootNode = menuTree.getTreeModel().getRootNode();
 			AssessmentTest assessmentTest = (AssessmentTest)rootNode.getUserObject();
 			List<TestPart> parts = assessmentTest.getTestParts();
-			if(parts != null && parts.size() > 0) {
+			if(parts != null && !parts.isEmpty()) {
 				parentPart = parts.get(0);
 			} else {
 				showWarning("error.cannot.create.section");
@@ -1034,6 +1042,10 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 	private void doNewAssessmentItem(UserRequest ureq, TreeNode selectedNode, AssessmentItemBuilder itemBuilder) {
 		try {
 			TreeNode sectionNode = getNearestSection(selectedNode);
+			if(sectionNode == null) {
+				showWarning("error.missing.section");
+				return;
+			}
 			AssessmentSection section = (AssessmentSection)sectionNode.getUserObject();
 			
 			AssessmentItemRef itemRef = new AssessmentItemRef(section);
@@ -1508,7 +1520,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		
 		if(!deleteAuthorSesssion) {
 			deleteAuthorSesssion = true;//delete sessions only once
-			qtiService.deleteAuthorAssessmentTestSession(testEntry);
+			qtiService.deleteAuthorsAssessmentTestSession(testEntry);
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}
 	}

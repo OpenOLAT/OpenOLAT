@@ -35,10 +35,12 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.ims.qti21.AssessmentTestSession;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
+import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessableResource;
 import org.olat.modules.assessment.ui.AssessmentToolController;
@@ -105,6 +107,11 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 			if(event == Event.CHANGED_EVENT) {
 				reloadRuntime = true;
 			}
+		} else if(source instanceof AssessmentTestDisplayController) {
+			if(event instanceof RestartEvent) {
+				AssessmentTestDisplayController ctrl = (AssessmentTestDisplayController)source;
+				doRestartRunningRuntimeController(ureq, ctrl.getCandidateSession());
+			}
 		}
 		super.event(ureq, source, event);
 	}
@@ -135,11 +142,34 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		}
 		super.event(ureq, source, event);
 	}
+	
+	/**
+	 * The method will clean up only the test session of the author.
+	 * 
+	 * @param ureq The user request
+	 * @param candidateSession The test session of the author
+	 */
+	private void doRestartRunningRuntimeController(UserRequest ureq, AssessmentTestSession candidateSession) {
+		disposeRuntimeController();
+		if(reSecurity.isEntryAdmin()) {
+			qtiService.deleteAuthorAssessmentTestSession(getRepositoryEntry(), candidateSession);
+		}
+		launchContent(ureq, reSecurity);
+		if(toolbarPanel.getTools().isEmpty()) {
+			initToolbar();
+		}
+		reloadRuntime = false;
+	}
 
+	/**
+	 * The method will clean up all authors sessions.
+	 * 
+	 * @param ureq The user request
+	 */
 	private void doReloadRuntimeController(UserRequest ureq) {
 		disposeRuntimeController();
 		if(reSecurity.isEntryAdmin()) {
-			qtiService.deleteAuthorAssessmentTestSession(getRepositoryEntry());
+			qtiService.deleteAuthorsAssessmentTestSession(getRepositoryEntry());
 		}
 		launchContent(ureq, reSecurity);
 		if(toolbarPanel.getTools().isEmpty()) {

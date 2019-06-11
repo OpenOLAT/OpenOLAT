@@ -151,13 +151,23 @@ public interface QTI21Service {
 	 * Remove all test sessions in author mode, e.g. after an assessment test
 	 * was changed.
 	 * 
-	 * @param testEntry
+	 * @param testEntry The test repository entry
 	 * @return
 	 */
-	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry);
+	public boolean deleteAuthorsAssessmentTestSession(RepositoryEntryRef testEntry);
 	
 	/**
-	 * Delete a specific test session.
+	 * Remove a test sessions in author mode, e.g. after an assessment test
+	 * was changed.
+	 * 
+	 * @param testEntry The test repository entry
+	 * @param testSession The session of the author
+	 * @return
+	 */
+	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry, AssessmentTestSession testSession);
+	
+	/**
+	 * Delete a specific preview test session.
 	 * 
 	 * @param testSession
 	 * @return
