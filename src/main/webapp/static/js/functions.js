@@ -949,25 +949,27 @@ OPOL.getMainColumnsMaxHeight =  function(){
 };
 
 OPOL.adjustHeight = function() {
-	// Adjust the height of col1 2 and 3 based on the max column height. 
-	// This is necessary to implement layouts where the three columns have different
-	// backgounds and to enlarge the menu and content area to always show the whole 
-	// content. It is also required by the left menu offcanvas feature.
+	// Adjust the height of col1 and 3 based on the max column height. 
+	// This is necessary to implement layouts where the two columns have different
+	// backgrounds and to enlarge the menu and content area to always show the whole 
+	// content. It is also required by the left menu off-canvas feature.
 	try {
-		var contentHeight = 0;
-		col1 = jQuery('#o_main_left_content').outerHeight(true);
-		col2 = jQuery('#o_main_right_content').outerHeight(true);
-		col3 = jQuery('#o_main_center_content').outerHeight(true);
+		var col1El = jQuery('#o_main_left_content');
+		var col1 = col1El.length == 0 ? 0 : col1El.outerHeight(true);
+		var col2El = jQuery('#o_main_right_content');
+		var col2 = col2El.length == 0 ? 0 : col2El.outerHeight(true);
+		var col3El = jQuery('#o_main_center_content');
+		var col3 = col3El.length == 0 ? 0 : col3El.outerHeight(true);
 
-		contentHeight = Math.max(col1, col2, col3);
-		// Assign new col height
-		if (col1 != null){
+		var contentHeight = Math.max(col1, col2, col3);
+		// Assign new column height
+		if (col1El.length > 0) {
 			jQuery('#o_main_left').css({'min-height' : contentHeight + "px"});
 		}
-		if (col2 != null){
+		if (col2El.length > 0) {
 			jQuery('#o_main_right').css({'min-height' : contentHeight + "px"});
 		}
-		if (col3 != null){
+		if (col3El.length > 0) {
 			jQuery('#o_main_center').css({'min-height' : contentHeight + "px"});
 		}
 	} catch (e) {
