@@ -1,26 +1,34 @@
 /* OpenOLAT colors */
-$o-brand-turquoise				: rgb(0,163,173);
-$o-brand-red					: rgb(166,9,61);
-$o-brand-green					: rgb(0,106,82);
-$o-brand-orange					: rgb(255,184,28);
-$o-brand-grey					: rgb(90,90,90);
-$o-brand-black					: rgb(71,55,41);
+$o-brand-chocolate				: rgb(52,44,36);
+/* $o-brand-chocolate				: rgb(71,55,41);  more brownish */
+$o-brand-sprout					: rgb(178,207,66);
+$o-brand-forest					: rgb(17,98,79);
+$o-brand-sea					: rgb(32,157,158);
+$o-brand-peach					: rgb(242,175,64);
+$o-brand-berry					: rgb(143,31,64);
+
+$o-brand-red					: rgb(214,0,28);
+$o-brand-green					: rgb(120,190,32);
+$o-brand-yellow					: rgb(254,219,0);
+$o-brand-grey					: rgb(166,166,166);
+$o-brand-black					: rgb(45,41,38);
+
 
 /* General colors */
-$brand-primary 					: $o-brand-turquoise; 		
+$brand-primary 					: $o-brand-sea; 		
 $brand-success					: $o-brand-green;		
 $brand-info  					: $o-brand-grey;
-$brand-warning					: $o-brand-orange;	
+$brand-warning					: $o-brand-peach;	
 $brand-danger					: $o-brand-red;
 
 $text-color						: $o-brand-black;
-$link-color						: $o-brand-turquoise;
-$link-hover-color				: darken($o-brand-turquoise, 10%);
+$link-color						: $o-brand-sea;
+$link-hover-color				: darken($o-brand-sea, 10%);
 $o-content-link-color			: $link-color;
 $o-content-link-hover-color		: $link-hover-color;
 $o-content-link-decoration		: underline;
 
-$headings-color					: $o-brand-black;
+$headings-color					: $o-brand-chocolate;
 $o-content-header-base-color	: $headings-color;
 $o-content-fieldset-legend-color: $headings-color;
 $o-dialog-header-color			: $headings-color;
@@ -28,8 +36,8 @@ $jumbotron-heading-color		: $headings-color;
 $o-login-header-color			: $headings-color;
 $o-coursesite-meta-title-color	: $headings-color;
 
-$o-bookmark-color				: $o-brand-red;
-$o-button-dirty-bg				: $o-brand-orange;
+$o-bookmark-color				: $o-brand-berry;
+$o-button-dirty-bg				: $o-brand-peach;
 $o-portfolio-editor-border-color	: $brand-primary;
 
 /* Login screen */
@@ -41,21 +49,21 @@ $o-login-form-bg-gradient-steps	: rgba(255,255,255,0) 0.2%, rgba(255,255,255,0.3
 infinite.jpg
 Pixaby License by https://pixabay.com/photos/away-avenue-trees-nature-infinite-2414983/
 
-christian-bg.jpg
-florian-bg.jpg
-holger-bg.jpg
-oo-bg.jpg
+christian.jpg
+marco.jpg
+holger.jpg
+openolat_award.jpg
 CC by frentix GmbH http://www.frentix.com 
 */
 
 
 $o-login-btn-register-color		: #fff;
-$o-login-btn-register-bg		: $o-brand-orange;
-$o-login-btn-register-border	: $o-brand-orange;
+$o-login-btn-register-bg		: $o-brand-peach;
+$o-login-btn-register-border	: $o-brand-peach;
 
 /* Course site start button */
-$o-coursesite-start-bg			: $o-brand-turquoise; 
-$o-coursesite-book-bg			: $o-brand-turquoise;
+$o-coursesite-start-bg			: $o-brand-sea; 
+$o-coursesite-book-bg			: $o-brand-sea;
 $o-coursesite-details-bg		: $o-brand-grey;
 
 /* Font family */
