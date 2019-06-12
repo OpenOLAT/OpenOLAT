@@ -27,7 +27,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.interactions.Actions;
 
 import uk.ac.ed.ph.jqtiplus.value.Cardinality;
@@ -82,10 +81,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 	public QTI21HotspotEditorPage moveToHotspotEditor() {
 		By editorBy = By.id("o_qti_hotspots_edit");
 		OOGraphene.waitElement(editorBy, browser);
-		
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.scrollTo(editorBy, browser);
-		}
+		OOGraphene.scrollTo(editorBy, browser);
 		return this;
 	}
 	

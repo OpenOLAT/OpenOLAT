@@ -24,7 +24,6 @@ import java.util.List;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.openqa.selenium.Dimension;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -67,36 +66,28 @@ public class Position {
 			y = (y2 + y1) / 2;
 		}
 		
-		if(browser instanceof FirefoxDriver) {
-			x = x - Math.round(dimension.getWidth() / 2.0f);
-			y = y - Math.round(dimension.getHeight() / 2.0f);
-		}
+		x = x - Math.round(dimension.getWidth() / 2.0f);
+		y = y - Math.round(dimension.getHeight() / 2.0f);
 		return new Position(x, y);
 	}
 	
 	public static Position valueOf(int x, int y, Dimension dimension, WebDriver browser) {
-		if(browser instanceof FirefoxDriver) {
-			x = x - Math.round(dimension.getWidth() / 2.0f);
-			y = y - Math.round(dimension.getHeight() / 2.0f);
-		}
+		x = x - Math.round(dimension.getWidth() / 2.0f);
+		y = y - Math.round(dimension.getHeight() / 2.0f);
 		return new Position(x, y);
 	}
 	
 	public static Position valueOf(int x, int y, int firefoxCorrection, Dimension dimension, WebDriver browser) {
-		if(browser instanceof FirefoxDriver) {
-			x = x - Math.round(dimension.getWidth() / 2.0f);
-			y = y - Math.round(dimension.getHeight() / 2.0f);
-			x += firefoxCorrection;
-			y += firefoxCorrection;
-		}
+		x = x - Math.round(dimension.getWidth() / 2.0f);
+		y = y - Math.round(dimension.getHeight() / 2.0f);
+		x += firefoxCorrection;
+		y += firefoxCorrection;
 		return new Position(x, y);
 	}
 	
 	public static Position valueOf(int x, int y, int width, int height, WebDriver browser) {
-		if(browser instanceof FirefoxDriver) {
-			x = x - Math.round(width / 2.0f);
-			y = y - Math.round(height / 2.0f);
-		}
+		x = x - Math.round(width / 2.0f);
+		y = y - Math.round(height / 2.0f);
 		return new Position(x, y);
 	}
 
