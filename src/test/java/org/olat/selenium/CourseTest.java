@@ -644,7 +644,7 @@ public class CourseTest extends Deployments {
 		
 		navBar.openCourse(courseTitle);
 		
-		String calendarNodeTitle = "iCal-1";
+		String calendarNodeTitle = "iCalNode-1";
 		//create a course element of type calendar
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
@@ -759,7 +759,7 @@ public class CourseTest extends Deployments {
 		settings
 			.clickToolbarBack();
 		
-		String calendarNodeTitle = "iCal-2";
+		String calendarNodeTitle = "iCalNode-2";
 		//create a course element of type calendar
 		CourseEditorPageFragment courseEditor = CoursePageFragment.getCourse(browser)
 			.edit();
