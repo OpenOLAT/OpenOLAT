@@ -67,6 +67,7 @@ import org.olat.course.nodes.gta.model.TaskDefinition;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.nodes.gta.ui.events.TaskMultiUserEvent;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
@@ -696,17 +697,34 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	}
 
 	@Override
-	protected void nodeLog() {
-		if(businessGroupTask) {
-			String userLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, getIdentity());
-			if(StringHelper.containsNonWhitespace(userLog)) {
-				mainVC.contextPut("userLog", userLog);
+	protected void nodeLog(Task assignedTask) {
+		if(isResultVisible(assignedTask)) {
+			if(businessGroupTask) {
+				String userLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, getIdentity());
+				if(StringHelper.containsNonWhitespace(userLog)) {
+					mainVC.contextPut("userLog", userLog);
+				} else {
+					mainVC.contextRemove("userLog");
+				}
 			} else {
-				mainVC.contextRemove("userLog");
+				super.nodeLog(assignedTask);
 			}
 		} else {
-			super.nodeLog();
+			mainVC.contextRemove("userLog");
 		}
+	}
+	
+	private boolean isResultVisible(Task assignedTask) {
+		boolean isVisible = false;
+		if(config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
+			if (assignedTask != null && (assignedTask.getTaskStatus() == TaskProcess.grading || assignedTask.getTaskStatus() == TaskProcess.graded)) {
+				AssessmentEvaluation eval = gtaNode.getUserScoreEvaluation(getAssessedUserCourseEnvironment());
+				isVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
+			}
+		} else {
+			isVisible = true;
+		}
+		return isVisible;
 	}
 
 	private TaskDefinition getTaskDefinition(Task task) {
