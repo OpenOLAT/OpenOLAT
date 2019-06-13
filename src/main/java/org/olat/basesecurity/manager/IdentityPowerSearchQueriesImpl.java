@@ -44,6 +44,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -250,7 +251,13 @@ public class IdentityPowerSearchQueriesImpl implements IdentityPowerSearchQuerie
 			  .append(" )");
 		}
 		
-		if(params.getCurriculumRole() != null) {
+		if(params.getCurriculumRole() == CurriculumRoles.curriculumowner) {
+			needsAnd = checkAnd(sb, needsAnd);
+			sb.append(" exists (select cur.key from curriculum as cur")
+			  .append("  inner join cur.group as cGroup")
+			  .append("  inner join cGroup.members as cmember")
+			  .append("  where cmember.identity.key=ident.key and  cmember.role=:curriculumRole)");
+		} else if(params.getCurriculumRole() != null) {
 			needsAnd = checkAnd(sb, needsAnd);
 			sb.append(" exists (select curEl.key from curriculumelement as curEl")
 			  .append("  inner join curEl.group as cGroup")

@@ -240,6 +240,7 @@ public class AssessmentTestSessionImpl implements AssessmentTestSession, Persist
 		this.anonymousIdentifier = identifier;
 	}
 
+	@Override
 	public boolean isAuthorMode() {
 		return authorMode;
 	}

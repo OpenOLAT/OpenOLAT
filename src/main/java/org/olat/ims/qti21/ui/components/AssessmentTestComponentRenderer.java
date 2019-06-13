@@ -107,7 +107,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		TestSessionController testSessionController = cmp.getTestSessionController();
 
 		if(testSessionController.getTestSessionState().isEnded()) {
-			renderTerminated(sb, translator);
+			renderTestTerminated(sb, cmp, translator);
 		} else {
 	        /* Create appropriate options that link back to this controller */
 	        TestSessionState testSessionState = testSessionController.getTestSessionState();
@@ -117,7 +117,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	        if (candidateSession.isExploded()) {
 	            renderExploded(sb, translator);
 	        } else if (candidateSessionContext.isTerminated()) {
-	            renderTerminated(sb, translator);
+	        	renderTestTerminated(sb, cmp, translator);
 	        } else {
 				/* Touch the session's duration state if appropriate */
 				if (testSessionState.isEntered() && !testSessionState.isEnded()) {
@@ -147,7 +147,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
         /* If session has terminated, render appropriate state and exit */
         final TestSessionState testSessionState = testSessionController.getTestSessionState();
         if (candidateSessionContext.isTerminated() || testSessionState.isExited()) {
-        	renderTerminated(target, translator);
+        	renderTestTerminated(target, component, translator);
         } else if (testEventType == CandidateTestEventType.REVIEW_ITEM) {
         	renderer.setReviewMode(true);
         	TestPlanNodeKey itemKey = extractTargetItemKey(candidateEvent);
@@ -188,6 +188,21 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
         }
     }
 	
+	private void renderTestTerminated(StringOutput sb, AssessmentTestComponent component, Translator translator) {
+		renderTerminated(sb, translator);
+
+		CandidateSessionContext candidateSessionContext = component.getCandidateSessionContext();
+		final AssessmentTestSession candidateSession = candidateSessionContext.getCandidateSession();
+		if(candidateSession.isAuthorMode()) {
+			sb.append("<div class='o_button_group'>");
+			String title = translator.translate("assessment.test.restart.test");
+			String explanation = translator.translate("assessment.test.restart.test.explanation");
+			renderControl(sb, component, title, explanation, true, "o_sel_enter_test",
+					new NameValuePair("cid", Event.restart.name())); 
+			sb.append("</div>");
+		}
+	}
+	
 	private void renderTestEntry(StringOutput sb, AssessmentTestComponent component, Translator translator) {
 		int numOfParts = component.getAssessmentTest().getTestParts().size();
 		sb.append("<h4>").append(translator.translate("test.entry.page.title")).append("</h4>")
@@ -196,10 +211,22 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		  .append("</div><div class='o_button_group'>");
 		//precondition -> up to
 		String title = translator.translate("assessment.test.enter.test");
-		renderControl(sb, component, title, true, "o_sel_enter_test",
+		renderControl(sb, component, title, null, true, "o_sel_enter_test",
 				new NameValuePair("cid", Event.advanceTestPart.name())); 
 		
 		sb.append("</div>");
+	}
+	
+	private void renderControl(StringOutput sb, AssessmentTestComponent component, String title, String explanation, boolean primary, String cssClass, NameValuePair... pairs) {
+		Form form = component.getQtiItem().getRootForm();
+		String dispatchId = component.getQtiItem().getFormDispatchId();
+		sb.append("<button type='button' ")
+		  .onClickKeyEnter(FormJSHelper.getXHRFnCallFor(form, dispatchId, 1, true, true, pairs))
+		  .append(" class='btn ").append("btn-primary ", "btn-default ", primary).append(cssClass).append("'");
+		if(StringHelper.containsNonWhitespace(explanation)) {
+			sb.append(" title=\"").append(explanation).append("\"");
+		}
+		sb.append("><span>").append(title).append("</span></button>");
 	}
 	
 	private void renderTestItem(AssessmentRenderer renderer, StringOutput sb, AssessmentTestComponent component,
@@ -236,40 +263,40 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		//advanceTestItemAllowed /* && testSessionState.getCurrentItemKey() != null && testSessionController.mayAdvanceItemLinear() */
 		if(options.isAdvanceTestItemAllowed() ) {//TODO need to find if there is a next question
 			String title = translator.translate("assessment.test.nextQuestion");
-			renderControl(sb, component, title, false, "o_sel_next_question", new NameValuePair("cid", Event.finishItem.name()));
+			renderControl(sb, component, title, null, false, "o_sel_next_question", new NameValuePair("cid", Event.finishItem.name()));
 		}
 		//nextItem
 		if(options.isNextItemAllowed() && testSessionController.hasFollowingNonLinearItem()) {
 			String title = translator.translate("assessment.test.nextQuestion");
-			renderControl(sb, component, title, false, "o_sel_next_question", new NameValuePair("cid", Event.nextItem.name()));
+			renderControl(sb, component, title, null, false, "o_sel_next_question", new NameValuePair("cid", Event.nextItem.name()));
 		}
 		//testPartNavigationAllowed"
 		if(options.isTestPartNavigationAllowed() && component.isRenderNavigation()) {
 			String title = translator.translate("assessment.test.questionMenu");
-			renderControl(sb, component, title, false, "o_sel_question_menu", new NameValuePair("cid", Event.testPartNavigation.name()));
+			renderControl(sb, component, title, null, false, "o_sel_question_menu", new NameValuePair("cid", Event.testPartNavigation.name()));
 		}
 		//endTestPartAllowed
 		if(options.isEndTestPartAllowed()) {
 			String title = component.hasMultipleTestParts()
 					? translator.translate("assessment.test.end.testPart") : translator.translate("assessment.test.end.test");
-			renderControl(sb, component, title, false, "o_sel_end_testpart", new NameValuePair("cid", Event.endTestPart.name()));
+			renderControl(sb, component, title, null, false, "o_sel_end_testpart", new NameValuePair("cid", Event.endTestPart.name()));
 		}
 		
 		//reviewMode
 		if(options.isReviewMode()) {
 			String title = translator.translate("assessment.test.backToTestFeedback");
-			renderControl(sb, component, title, false, "o_sel_back_test_feedback", new NameValuePair("cid", Event.reviewTestPart.name()));
+			renderControl(sb, component, title, null, false, "o_sel_back_test_feedback", new NameValuePair("cid", Event.reviewTestPart.name()));
 		}
 		
 		// <xsl:variable name="provideItemSolutionButton" as="xs:boolean" select="$reviewMode and $showSolution and not($solutionMode)"/>
 		if(options.isReviewMode() && effectiveItemSessionControl.isShowSolution() && !options.isSolutionMode()) {
 			String title = translator.translate("assessment.solution.show");
-			renderControl(sb, component, title, false, "o_sel_show_solution",
+			renderControl(sb, component, title, null, false, "o_sel_show_solution",
 					new NameValuePair("cid", Event.itemSolution.name()), new NameValuePair("item", key));
 		}
 		if(options.isReviewMode() && options.isSolutionMode()) {
 			String title = translator.translate("assessment.solution.hide");
-			renderControl(sb, component, title, false, "o_sel_solution_hide",
+			renderControl(sb, component, title, null, false, "o_sel_solution_hide",
 					new NameValuePair("cid", Event.reviewItem.name()), new NameValuePair("item", key));
 		}
 		sb.append("</div>");//end controls

@@ -458,14 +458,24 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 	}
 
 	@Override
-	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry) {
-		log.info(Tracing.M_AUDIT, "Delete author assessment sessions for test: " + testEntry);
+	public boolean deleteAuthorsAssessmentTestSession(RepositoryEntryRef testEntry) {
+		log.info(Tracing.M_AUDIT, "Delete author assessment sessions for test: {}", testEntry);
 		List<AssessmentTestSession> sessions = testSessionDao.getAuthorAssessmentTestSession(testEntry);
 		for(AssessmentTestSession session:sessions) {
 			File fileStorage = testSessionDao.getSessionStorage(session);
 			testSessionDao.deleteTestSession(session);
 			FileUtils.deleteDirsAndFiles(fileStorage, true, true);
 		}
+		dbInstance.commit();// make sure it's flushed on the database 
+		return true;
+	}
+	
+	@Override
+	public boolean deleteAuthorAssessmentTestSession(RepositoryEntryRef testEntry, AssessmentTestSession session) {
+		log.info(Tracing.M_AUDIT, "Delete author assessment sessions for test: {}", testEntry);
+		File fileStorage = testSessionDao.getSessionStorage(session);
+		testSessionDao.deleteTestSession(session);
+		FileUtils.deleteDirsAndFiles(fileStorage, true, true);
 		dbInstance.commit();// make sure it's flushed on the database 
 		return true;
 	}

@@ -27,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -221,8 +222,8 @@ public class RestConnection {
 	
 	/**
 	 * Add an object (application/json)
-	 * @param put
-	 * @param obj
+	 * @param put The request
+	 * @param obj The object which will be serialized as json in UTF-8
 	 * @throws UnsupportedEncodingException
 	 */
 	public void addJsonEntity(HttpEntityEnclosingRequestBase put, Object obj)
@@ -234,12 +235,18 @@ public class RestConnection {
 		put.setEntity(myEntity);
 	}
 	
+	/**
+	 * @param post The request
+	 * @param filename The filename (will encoded as UTF-8)
+	 * @param file The file (application/octet-stream)
+	 * @throws UnsupportedEncodingException
+	 */
 	public void addMultipart(HttpEntityEnclosingRequestBase post, String filename, File file)
 	throws UnsupportedEncodingException {
 		
 		HttpEntity entity = MultipartEntityBuilder.create()
 				.setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-				.addTextBody("filename", filename)
+				.addTextBody("filename", filename, ContentType.create("text/plain", StandardCharsets.UTF_8))
 				.addBinaryBody("file", file, ContentType.APPLICATION_OCTET_STREAM, filename).build();
 		post.setEntity(entity);
 	}

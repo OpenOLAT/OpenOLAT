@@ -117,13 +117,10 @@ public class FIBEditorController extends FormBasicController {
 		if(!hasNumericals && !hasTexts) {
 			if(preferredType == QTI21QuestionType.numerical) {
 				hasNumericals = true;
-				hasTexts = false;
 			} else if(preferredType == QTI21QuestionType.fib) {
 				hasNumericals = false;
-				hasTexts = true;
 			} else {
 				hasNumericals = true;
-				hasTexts = true;
 			}
 		}
 		if(hasNumericals) {
@@ -131,7 +128,7 @@ public class FIBEditorController extends FormBasicController {
 		} else {
 			setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_fib");
 		}
-		richTextConfig.enableQTITools(hasTexts, hasNumericals, false);
+		richTextConfig.enableQTITools(true, true, false);
 		
 		// Submit Button
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());

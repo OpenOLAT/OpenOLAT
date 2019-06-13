@@ -70,6 +70,7 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.InMemoryOutcomeListener;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21OverrideOptions;
+import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQPreviewSecurityCallback;
@@ -326,6 +327,12 @@ public class IQConfigurationController extends BasicController {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if(source == previewQTI21Ctrl) {
+			if(event instanceof RestartEvent) {
+				stackPanel.popContent();
+				cleanUpQti21PreviewSession();
+				doPreview(urequest);
+			}
 		}
 	}
 	
@@ -383,10 +390,10 @@ public class IQConfigurationController extends BasicController {
 	
 	private void doPreview(UserRequest ureq) {
 		removeAsListenerAndDispose(previewLayoutCtr);
+		removeAsListenerAndDispose(previewQTI21Ctrl);
 		
 		RepositoryEntry re = getIQReference();
 		if(re != null) {
-			Controller previewController;
 			if(QTIResourceTypeModule.isOnyxTest(re.getOlatResource())) {
 				showError("error.onyx");
 			} else if(ImsQTI21Resource.TYPE_NAME.equals(re.getOlatResource().getResourceableTypeName())) {
@@ -402,7 +409,7 @@ public class IQConfigurationController extends BasicController {
 				stackPanel.pushController(translate("preview"), previewQTI21Ctrl);
 			} else {
 				long courseResId = course.getResourceableId().longValue();
-				previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
+				Controller previewController = iqManager.createIQDisplayController(moduleConfiguration, new IQPreviewSecurityCallback(), ureq, getWindowControl(), courseResId, courseNode.getIdent(), null);
 				previewLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), previewController);
 				stackPanel.pushController(translate("preview"), previewLayoutCtr);
 			}

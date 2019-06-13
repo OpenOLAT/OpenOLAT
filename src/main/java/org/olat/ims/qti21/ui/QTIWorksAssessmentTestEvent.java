@@ -56,7 +56,8 @@ public class QTIWorksAssessmentTestEvent extends FormEvent {
 		timesUp("times-up", "times-up"),
 		tmpResponse("response-tmp", "response-tmp"),
 		mark("mark", "mark"),
-		rubric("rubric", "rubric");
+		rubric("rubric", "rubric"),
+		restart("restart", "restart");
 		
 		private final String path;
 		private final String event;

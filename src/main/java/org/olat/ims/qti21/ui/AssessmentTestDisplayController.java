@@ -97,6 +97,7 @@ import org.olat.ims.qti21.ui.ResponseInput.StringInput;
 import org.olat.ims.qti21.ui.components.AssessmentTestFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTestTimerFormItem;
 import org.olat.ims.qti21.ui.components.AssessmentTreeFormItem;
+import org.olat.ims.qti21.ui.event.RestartEvent;
 import org.olat.ims.qti21.ui.event.RetrieveAssessmentTestSessionEvent;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
@@ -756,7 +757,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			case rubric:
 				toogleRubric(qe.getSubCommand());
 				break;
+			case restart:
+				restartTest(ureq);
+				break;
 		}
+	}
+	
+	private void restartTest(UserRequest ureq) {
+		if(!candidateSession.isAuthorMode()) return;
+		fireEvent(ureq, new RestartEvent());
 	}
 	
 	private void toogleMark(String itemRef) {
@@ -1788,6 +1797,7 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		private AssessmentTestTimerFormItem timerEl;
 		private ProgressBarItem scoreProgress, questionProgress;
 		private FormLink endTestPartButton, closeTestButton, cancelTestButton, suspendTestButton, closeResultsButton;
+		private FormLink restartTest;
 		
 		private String menuWidth;
 		private boolean resultsVisible = false;
@@ -1857,6 +1867,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 			closeResultsButton.setIconLeftCSS("o_icon o_icon-fw o_icon_qti_close_results");
 			closeResultsButton.setPrimary(true);
 			closeResultsButton.setVisible(false);
+			
+			restartTest = uifactory.addFormLink("restartTest", "assessment.test.restart.test", null, formLayout, Link.BUTTON);
+			restartTest.setTitle("assessment.test.restart.test.explanation");
+			restartTest.setElementCssClass("o_sel_restart_test");
+			restartTest.setVisible(false);
 
 			ResourceLocator fileResourceLocator = new PathResourceLocator(fUnzippedDirRoot.toPath());
 			final ResourceLocator inputResourceLocator = 
@@ -2041,6 +2056,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 			if(closeResultsButton == source) {
 				doCloseResults(ureq);
+			} else if(restartTest == source) {
+				restartTest(ureq);
 			} else if(!timeLimitBarrier(ureq)) {
 				if(endTestPartButton == source) {
 					doEndTestPart(ureq);
@@ -2172,7 +2189,6 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		 * @return true if the results are visible
 		 */
 		private boolean updateStatusAndResults(UserRequest ureq) {
-			//updateButtons();
 			resultsVisible = false;
 			if(testSessionController.getTestSessionState().isEnded()
 					&& deliveryOptions.isShowAssessmentResultsOnFinish()
@@ -2180,11 +2196,15 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					&& !deliveryOptions.getAssessmentResultsOptions().none()) {
 				removeAsListenerAndDispose(resultCtrl);
 				// show results in anonym mode to hide the user info table - user knows who he is (same as on test start page)
+				AssessmentTestSession candidateSession = AssessmentTestDisplayController.this.getCandidateSession();
 				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, true,
-						AssessmentTestDisplayController.this.getCandidateSession(),
-						fUnzippedDirRoot, mapperUri, null, deliveryOptions.getAssessmentResultsOptions(), false, true, true);
+						candidateSession, fUnzippedDirRoot, mapperUri, null,
+						deliveryOptions.getAssessmentResultsOptions(), false, true, true);
 				listenTo(resultCtrl);
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
+				if(candidateSession.isAuthorMode()) {
+					restartTest.setVisible(true);
+				}
 				resultsVisible = true;
 			}
 			
