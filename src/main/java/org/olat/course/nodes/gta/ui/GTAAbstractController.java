@@ -250,7 +250,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		
 		resetTask(ureq, task);
 		
-		nodeLog();
+		nodeLog(task);
 		collapsedContents(task);
 	}
 	
@@ -460,7 +460,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		return assignedTask;
 	}
 	
-	protected void nodeLog() {
+	protected void nodeLog(@SuppressWarnings("unused") Task assignedTask) {
 		if(businessGroupTask) {
 			String groupLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, assessedGroup);
 			if(StringHelper.containsNonWhitespace(groupLog)) {
