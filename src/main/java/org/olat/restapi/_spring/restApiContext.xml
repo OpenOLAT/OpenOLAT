@@ -8,12 +8,19 @@
                         http://www.springframework.org/schema/context 
                         http://www.springframework.org/schema/context/spring-context.xsd
                         http://cxf.apache.org/jaxrs http://cxf.apache.org/schemas/jaxrs.xsd">
+	<!-- CXF OpenApiFeature -->  
+	<bean id="openApiFeature" class="org.apache.cxf.jaxrs.openapi.OpenApiFeature">
+		<!-- customize some of the properties -->
+	</bean>
 
 	<jaxrs:server address="/" basePackages="org.olat">
 		<jaxrs:providers>
 			<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
 			<bean class="org.olat.restapi.security.OpenOLATContainerResponseFilter" />
 		</jaxrs:providers>
+		<jaxrs:features>
+			<ref bean="openApiFeature" />
+		</jaxrs:features>
 	</jaxrs:server>
 	<context:component-scan base-package="org.olat.restapi,org.olat.restapi.security,org.olat.restapi.system" />
 	

@@ -31,7 +31,6 @@ import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
 import java.io.File;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -52,8 +51,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.OrganisationRoles;
@@ -81,6 +78,11 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.restapi.support.vo.RepositoryEntryVOes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.*;
 
 /**
  * Description:<br>
@@ -117,46 +119,6 @@ public class RepositoryEntriesWebService {
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
 	}
-
-	/**
-	 * List all entries in the OLAT repository
-	 * @response.representation.200.qname {http://www.example.com}repositoryEntryVO
-	 * @response.representation.200.mediaType text/plain, text/html, application/xml, application/json
-	 * @response.representation.200.doc List all entries in the repository
-	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_REPOENTRYVOes}
-	 * @param uriInfo The URI information
-	 * @param httpRequest The HTTP request
-	 * @return
-	 */
-	@GET
-	@Produces({MediaType.TEXT_HTML, MediaType.TEXT_PLAIN})
-	public Response getEntriesText(@Context UriInfo uriInfo, @Context HttpServletRequest httpRequest) {
-		try {
-			// list of courses open for everybody
-			Roles roles = getRoles(httpRequest);
-			Identity identity = getIdentity(httpRequest);
-
-			SearchRepositoryEntryParameters params = new SearchRepositoryEntryParameters(identity, roles);
-			List<RepositoryEntry> coursRepos = repositoryManager.genericANDQueryWithRolesRestriction(params, 0, -1, false);
-			
-			StringBuilder sb = new StringBuilder();
-			sb.append("Course List\n");
-			for (RepositoryEntry repoE : coursRepos) {
-				UriBuilder baseUriBuilder = uriInfo.getBaseUriBuilder();
-				URI repoUri = baseUriBuilder.path(RepositoryEntriesWebService.class)
-					.path(repoE.getKey().toString())
-					.build();
-				
-				sb.append("<a href=\"").append(repoUri).append(">")
-					.append(repoE.getDisplayname()).append("(").append(repoE.getKey()).append(")")
-					.append("</a>").append("\n");
-			}
-			
-			return Response.ok(sb.toString()).build();
-		} catch(Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
 	
 	/**
 	 * List all entries in the OLAT repository
@@ -176,6 +138,17 @@ public class RepositoryEntriesWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+	@ApiResponses(value = {
+		@ApiResponse(responseCode = "200",
+			description = "JVM system properties of a particular host.",
+			content = {
+				@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO[].class)),
+				@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO[].class))
+			}
+		)}
+	)
+	@Operation(summary = "List all entries in the repository",
+		description = "List all entries in the OpenOLAT repository.")
 	public Response getEntries(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,
 			@QueryParam("managed") Boolean managed, @QueryParam("externalId") String externalId,

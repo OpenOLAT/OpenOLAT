@@ -425,6 +425,16 @@
 					<version>${apache.cxf}</version>
 				</dependency>
 				<dependency>
+					<groupId>org.apache.cxf</groupId>
+				    <artifactId>cxf-rt-rs-service-description-openapi-v3</artifactId>
+				    <version>${apache.cxf}</version>
+				</dependency>
+				<dependency>
+				    <groupId>org.webjars</groupId>
+				    <artifactId>swagger-ui</artifactId>
+				    <version>3.22.2</version>
+				</dependency>
+				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
 				    <artifactId>jakarta.xml.ws-api</artifactId>
 				    <version>2.3.2</version>
@@ -2482,6 +2492,11 @@
         <dependency>
         	<groupId>com.fasterxml.jackson.core</groupId>
         	<artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+        	<groupId>com.fasterxml.jackson.dataformat</groupId>
+        	<artifactId>jackson-dataformat-yaml</artifactId>
             <version>${jackson.version}</version>
         </dependency>
 		<!-- end Apache CXF dependency and Active MQ Broker -->
