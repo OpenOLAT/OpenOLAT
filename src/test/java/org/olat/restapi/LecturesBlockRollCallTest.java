@@ -49,7 +49,7 @@ import org.olat.modules.lecture.manager.LectureBlockRollCallDAO;
 import org.olat.modules.lecture.restapi.LectureBlockRollCallVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -61,7 +61,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LecturesBlockRollCallTest extends OlatJerseyTestCase {
+public class LecturesBlockRollCallTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;

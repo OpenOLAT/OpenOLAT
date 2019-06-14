@@ -65,10 +65,10 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class CoursesFoldersTest extends OlatJerseyTestCase {
+public class CoursesFoldersTest extends OlatRestTestCase {
 
 	private RestConnection conn;
 	

@@ -39,7 +39,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
 import org.junit.Test;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 
 /**
  * Description:<br>
@@ -49,7 +49,7 @@ import org.olat.test.OlatJerseyTestCase;
  * Initial Date:  14 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class I18nTest extends OlatJerseyTestCase {
+public class I18nTest extends OlatRestTestCase {
 	
 	@Test
 	public void testExecuteService() throws IOException, URISyntaxException {

@@ -78,7 +78,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.FileMetadataVO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -90,7 +90,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class GroupFoldersTest extends OlatJerseyTestCase {
+public class GroupFoldersTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(GroupFoldersTest.class);
 	
@@ -111,7 +111,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 	/**
 	 * Set up a course with learn group and group area
 	 * EXACTLY THE SAME AS GroupMgmTest
-	 * @see org.olat.test.OlatJerseyTestCase#setUp()
+	 * @see org.olat.test.OlatRestTestCase#setUp()
 	 */
 	@Before
 	public void setUp() throws Exception {
@@ -331,7 +331,7 @@ public class GroupFoldersTest extends OlatJerseyTestCase {
 		EntityUtils.consume(response.getEntity());
 	}
 
-	//@Test not working -> Jersey ignore the request and return 200 (why?)
+	@Test
 	public void testCreateFoldersWithSpecialCharacter() throws IOException, URISyntaxException {
 		assertTrue(conn.login("rest-one", "A6B7C8"));
 		URI request = UriBuilder.fromUri(getContextURI()).path("/groups/" + g1.getKey() + "/folder/New_folder_1/New_folder_1_1/New_folder_1 1 2").build();

@@ -56,7 +56,7 @@ import org.olat.modules.reminder.restapi.ReminderVO;
 import org.olat.modules.reminder.rule.DateRuleSPI;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -68,7 +68,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RemindersWebServiceTest extends OlatJerseyTestCase {
+public class RemindersWebServiceTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(RemindersWebServiceTest.class);
 

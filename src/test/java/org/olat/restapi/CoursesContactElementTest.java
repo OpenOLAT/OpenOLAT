@@ -60,7 +60,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -72,7 +72,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  6 mai 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class CoursesContactElementTest extends OlatJerseyTestCase {
+public class CoursesContactElementTest extends OlatRestTestCase {
 	
 	private Identity admin;
 	private ICourse course1;

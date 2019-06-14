@@ -54,7 +54,7 @@ import org.olat.course.ICourse;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -66,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  6 mai 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class CourseSecurityTest extends OlatJerseyTestCase {
+public class CourseSecurityTest extends OlatRestTestCase {
 
 	private static final Logger log = Tracing.createLoggerFor(CourseTest.class);
 	

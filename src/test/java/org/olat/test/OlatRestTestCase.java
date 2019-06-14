@@ -69,9 +69,9 @@ import io.undertow.servlet.api.DeploymentManager;
  * Initial Date:  14 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public abstract class OlatJerseyTestCase extends OlatTestCase {
+public abstract class OlatRestTestCase extends OlatTestCase {
 	
-	private static final Logger log = Tracing.createLoggerFor(OlatJerseyTestCase.class);
+	private static final Logger log = Tracing.createLoggerFor(OlatRestTestCase.class);
 	
 	protected static final JsonFactory jsonFactory = new JsonFactory();
 	
@@ -88,7 +88,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 	@Autowired
 	private RestModule restModule;
   
-	public OlatJerseyTestCase() {
+	public OlatRestTestCase() {
 		super();
 	}
 	
@@ -100,7 +100,7 @@ public abstract class OlatJerseyTestCase extends OlatTestCase {
 		if(webServer == null) {
 			try {
 				DeploymentInfo servletBuilder = deployment()
-				        .setClassLoader(OlatJerseyTestCase.class.getClassLoader())
+				        .setClassLoader(OlatRestTestCase.class.getClassLoader())
 				        .setContextPath("/" + CONTEXT_PATH)
 				        
 				        .setDeploymentName("rest.war")

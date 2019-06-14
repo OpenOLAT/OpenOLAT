@@ -50,7 +50,7 @@ import org.olat.basesecurity.RelationRoleManagedFlag;
 import org.olat.basesecurity.RelationRoleToRight;
 import org.olat.core.commons.persistence.DB;
 import org.olat.course.groupsandrights.CourseRightsEnum;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.RelationRoleVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -63,7 +63,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RelationRolesWebServiceTest extends OlatJerseyTestCase {
+public class RelationRolesWebServiceTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;

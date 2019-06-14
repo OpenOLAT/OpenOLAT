@@ -87,7 +87,7 @@ import org.olat.restapi.support.vo.GroupConfigurationVO;
 import org.olat.restapi.support.vo.GroupInfoVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,7 +103,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Initial Date:  7 mai 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class GroupMgmtTest extends OlatJerseyTestCase {
+public class GroupMgmtTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(GroupMgmtTest.class);
 	

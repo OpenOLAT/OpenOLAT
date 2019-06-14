@@ -48,7 +48,7 @@ import org.olat.basesecurity.OrganisationTypeManagedFlag;
 import org.olat.basesecurity.OrganisationTypeToType;
 import org.olat.basesecurity.model.OrganisationTypeRefImpl;
 import org.olat.core.commons.persistence.DB;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.OrganisationTypeVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -61,7 +61,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class OrganisationTypesWebServiceTest extends OlatJerseyTestCase {
+public class OrganisationTypesWebServiceTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;

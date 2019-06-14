@@ -47,7 +47,7 @@ import org.olat.course.assessment.model.EfficiencyStatementVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -56,7 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class EfficiencyStatementTest extends OlatJerseyTestCase {
+public class EfficiencyStatementTest extends OlatRestTestCase {
 
 	@Autowired
 	private DB dbInstance;

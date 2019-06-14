@@ -85,7 +85,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.notification.UsersSubscriptionManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -100,7 +100,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Initial Date:  26 aug. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class NotificationsTest extends OlatJerseyTestCase {
+public class NotificationsTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(NotificationsTest.class);
 

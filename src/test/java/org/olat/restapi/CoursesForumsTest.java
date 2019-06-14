@@ -50,7 +50,7 @@ import org.olat.modules.fo.restapi.MessageVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -62,7 +62,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CoursesForumsTest  extends OlatJerseyTestCase {
+public class CoursesForumsTest  extends OlatRestTestCase {
 
 	private static ICourse course1;
 	private static CourseNode forumNode;

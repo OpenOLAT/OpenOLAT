@@ -63,7 +63,7 @@ import org.olat.login.auth.OLATAuthManager;
 import org.olat.restapi.support.vo.AuthenticationVO;
 import org.olat.restapi.support.vo.ErrorVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -78,7 +78,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Initial Date:  15 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class UserAuthenticationMgmtTest extends OlatJerseyTestCase {
+public class UserAuthenticationMgmtTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(UserAuthenticationMgmtTest.class);
 	

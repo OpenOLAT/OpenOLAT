@@ -113,7 +113,7 @@ import org.olat.restapi.support.vo.GroupInfoVOes;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.GroupVOes;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.olat.user.restapi.ManagedUserVO;
@@ -135,7 +135,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Initial Date:  15 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class UserMgmtTest extends OlatJerseyTestCase {
+public class UserMgmtTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(UserMgmtTest.class);
 	

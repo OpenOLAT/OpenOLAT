@@ -61,7 +61,7 @@ import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,7 +69,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MyForumsTest extends OlatJerseyTestCase {
+public class MyForumsTest extends OlatRestTestCase {
 
 
 	@Autowired

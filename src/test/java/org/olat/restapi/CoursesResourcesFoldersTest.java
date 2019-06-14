@@ -62,10 +62,10 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.restapi.support.vo.LinkVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class CoursesResourcesFoldersTest extends OlatJerseyTestCase {
+public class CoursesResourcesFoldersTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(CoursesResourcesFoldersTest.class);
 

@@ -47,7 +47,7 @@ import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -58,7 +58,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class UserCoursesTest extends OlatJerseyTestCase {
+public class UserCoursesTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(UserCoursesTest.class);
 	

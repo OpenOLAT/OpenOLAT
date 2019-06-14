@@ -77,14 +77,14 @@ import org.olat.modules.fo.restapi.ReplyVO;
 import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ForumTest extends OlatJerseyTestCase {
+public class ForumTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(ForumTest.class);
 	

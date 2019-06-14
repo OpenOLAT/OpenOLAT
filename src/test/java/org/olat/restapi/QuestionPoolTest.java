@@ -58,7 +58,7 @@ import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.restapi.QuestionItemVO;
 import org.olat.modules.qpool.restapi.QuestionItemVOes;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -71,7 +71,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class QuestionPoolTest extends OlatJerseyTestCase {
+public class QuestionPoolTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;

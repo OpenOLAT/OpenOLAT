@@ -56,7 +56,7 @@ import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.restapi.support.vo.FileVO;
 import org.olat.restapi.support.vo.LinkVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -65,7 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SharedFolderTest extends OlatJerseyTestCase {
+public class SharedFolderTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(SharedFolderTest.class);
 	

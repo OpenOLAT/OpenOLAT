@@ -52,11 +52,11 @@ import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.ContactVOes;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class ContactsTest extends OlatJerseyTestCase {
+public class ContactsTest extends OlatRestTestCase {
 	
 	private static boolean initialized = false;
 

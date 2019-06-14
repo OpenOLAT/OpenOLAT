@@ -52,7 +52,7 @@ import org.junit.Test;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 
 /**
  * 
@@ -63,7 +63,7 @@ import org.olat.test.OlatJerseyTestCase;
  * Initial Date:  14 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class AuthenticationTest extends OlatJerseyTestCase {
+public class AuthenticationTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(AuthenticationTest.class);
 

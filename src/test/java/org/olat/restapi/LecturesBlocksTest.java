@@ -75,7 +75,7 @@ import org.olat.modules.taxonomy.restapi.TaxonomyLevelVO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -88,7 +88,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LecturesBlocksTest extends OlatJerseyTestCase {
+public class LecturesBlocksTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(LecturesBlocksTest.class);
 	

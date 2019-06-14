@@ -60,7 +60,7 @@ import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementVO;
 import org.olat.modules.curriculum.restapi.CurriculumVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -73,7 +73,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumsWebServiceTest extends OlatJerseyTestCase {
+public class CurriculumsWebServiceTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(CurriculumsWebServiceTest.class);
 	

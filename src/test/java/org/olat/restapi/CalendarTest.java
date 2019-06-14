@@ -69,7 +69,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.restapi.support.vo.CourseConfigVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -79,7 +79,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class CalendarTest extends OlatJerseyTestCase {
+public class CalendarTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(CalendarTest.class);
 

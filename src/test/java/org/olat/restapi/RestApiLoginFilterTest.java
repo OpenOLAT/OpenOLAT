@@ -49,7 +49,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.restapi.security.RestSecurityBean;
 import org.olat.restapi.security.RestSecurityBeanImpl;
 import org.olat.restapi.security.RestSecurityHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 
 /**
  * Description:<br>
@@ -59,7 +59,7 @@ import org.olat.test.OlatJerseyTestCase;
  * Initial Date:  14 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class RestApiLoginFilterTest extends OlatJerseyTestCase {
+public class RestApiLoginFilterTest extends OlatRestTestCase {
 	
 
 	
@@ -124,7 +124,7 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 		//path is protected
 		RestConnection c2 = new RestConnection();
 		URI uri2 = UriBuilder.fromUri(getContextURI()).path("/repo/entries").build();
-		HttpGet method2 = c2.createGet(uri2, MediaType.TEXT_HTML, false);
+		HttpGet method2 = c2.createGet(uri2, MediaType.APPLICATION_JSON, false);
 		method2.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
 		HttpResponse r2 = c2.execute(method2);
 		securityToken = c2.getSecurityToken(r2);
@@ -146,7 +146,7 @@ public class RestApiLoginFilterTest extends OlatJerseyTestCase {
 		//path is protected
 		RestConnection c4 = new RestConnection();
 		URI uri4 = UriBuilder.fromUri(getContextURI()).path("/repo/entries").build();
-		HttpGet method4 = c4.createGet(uri4, MediaType.TEXT_HTML, false);
+		HttpGet method4 = c4.createGet(uri4, MediaType.APPLICATION_XML, false);
 		method4.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
 		HttpResponse r4 = c4.execute(method4);
 		securityToken = c4.getSecurityToken(r4);

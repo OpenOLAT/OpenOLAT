@@ -50,7 +50,7 @@ import org.olat.modules.curriculum.CurriculumElementTypeToType;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.restapi.CurriculumElementTypeVO;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -62,7 +62,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CurriculumElementTypesWebServiceTest extends OlatJerseyTestCase {
+public class CurriculumElementTypesWebServiceTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;

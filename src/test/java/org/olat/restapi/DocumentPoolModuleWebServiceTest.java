@@ -31,7 +31,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.modules.docpool.restapi.DocumentPoolModuleConfigurationVO;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 
 /**
  * 
@@ -39,7 +39,7 @@ import org.olat.test.OlatJerseyTestCase;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class DocumentPoolModuleWebServiceTest extends OlatJerseyTestCase {
+public class DocumentPoolModuleWebServiceTest extends OlatRestTestCase {
 	
 	@Test
 	public void documentPoolModuleConfiguration()

@@ -47,7 +47,7 @@ import org.olat.restapi.system.vo.ThreadVO;
 import org.olat.restapi.system.vo.ThreadVOes;
 import org.olat.restapi.system.vo.ThreadsVO;
 import org.olat.restapi.system.vo.UserStatisticsVO;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 
 /**
  * 
@@ -58,7 +58,7 @@ import org.olat.test.OlatJerseyTestCase;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class SystemTest extends OlatJerseyTestCase {
+public class SystemTest extends OlatRestTestCase {
 	
 	@Test
 	public void testMonitoringStatus() throws IOException, URISyntaxException {

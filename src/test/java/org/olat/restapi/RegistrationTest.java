@@ -36,7 +36,7 @@ import org.junit.Test;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 
 /**
  * 
@@ -47,7 +47,7 @@ import org.olat.test.OlatJerseyTestCase;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class RegistrationTest extends OlatJerseyTestCase {
+public class RegistrationTest extends OlatRestTestCase {
 	
 	@Test
 	public void testRegistration() throws IOException, URISyntaxException {

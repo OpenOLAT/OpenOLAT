@@ -70,7 +70,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.support.vo.CatalogEntryVO;
 import org.olat.restapi.support.vo.CatalogEntryVOes;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,7 +86,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Initial Date:  6 mai 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class CatalogTest extends OlatJerseyTestCase {
+public class CatalogTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(CatalogTest.class);
 	

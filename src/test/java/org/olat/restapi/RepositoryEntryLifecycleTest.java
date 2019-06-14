@@ -45,7 +45,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -57,7 +57,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEntryLifecycleTest extends OlatJerseyTestCase  {
+public class RepositoryEntryLifecycleTest extends OlatRestTestCase  {
 	
 	private static final Logger log = Tracing.createLoggerFor(RepositoryEntryLifecycleTest.class);
 	

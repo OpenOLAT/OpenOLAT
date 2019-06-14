@@ -83,9 +83,9 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.restapi.support.vo.elements.SurveyConfigVO;
 import org.olat.restapi.support.vo.elements.TaskConfigVO;
 import org.olat.restapi.support.vo.elements.TestConfigVO;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 
-public class CoursesElementsTest extends OlatJerseyTestCase {
+public class CoursesElementsTest extends OlatRestTestCase {
 
 	private RestConnection conn;
 	

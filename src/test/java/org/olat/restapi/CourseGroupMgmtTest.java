@@ -63,7 +63,7 @@ import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.GroupVO;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -79,7 +79,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Initial Date:  6 mai 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
-public class CourseGroupMgmtTest extends OlatJerseyTestCase {
+public class CourseGroupMgmtTest extends OlatRestTestCase {
 	
 	private static final Logger log = Tracing.createLoggerFor(CourseGroupMgmtTest.class);
 	
@@ -100,7 +100,7 @@ public class CourseGroupMgmtTest extends OlatJerseyTestCase {
 	
 	/**
 	 * Set up a course with learn group and group area
-	 * @see org.olat.test.OlatJerseyTestCase#setUp()
+	 * @see org.olat.test.OlatRestTestCase#setUp()
 	 */
 	@Before
 	public void setUp() throws Exception {

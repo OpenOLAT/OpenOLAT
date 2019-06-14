@@ -57,7 +57,7 @@ import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.fo.Forum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -70,7 +70,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class NotificationsSubscribersTest extends OlatJerseyTestCase {
+public class NotificationsSubscribersTest extends OlatRestTestCase {
 
 	@Autowired
 	private DB dbInstance;

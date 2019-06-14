@@ -46,7 +46,7 @@ import org.olat.basesecurity.RelationRole;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.test.JunitTestHelper;
-import org.olat.test.OlatJerseyTestCase;
+import org.olat.test.OlatRestTestCase;
 import org.olat.user.restapi.IdentityToIdentityRelationVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,7 +59,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class IdentityToIdentityRelationsWebServiceTest extends OlatJerseyTestCase {
+public class IdentityToIdentityRelationsWebServiceTest extends OlatRestTestCase {
 	
 	@Autowired
 	private DB dbInstance;
