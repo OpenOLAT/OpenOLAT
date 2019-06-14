@@ -19,10 +19,13 @@
  */
 package org.olat.course.nodes.ms;
 
+import java.util.List;
+
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.RubricStatistic;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -45,6 +48,8 @@ public interface MSService {
 	boolean hasSessions(OLATResourceable ores, String nodeIdent);
 	
 	void deleteSessions(RepositoryEntry ores, String nodeIdent);
+	
+	List<RubricStatistic> getRubricStatistics(EvaluationFormSession session);
 	
 	/**
 	 * Calculates the possible minimum and maximum sum of all rubrics in the

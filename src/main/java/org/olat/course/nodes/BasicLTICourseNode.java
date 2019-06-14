@@ -450,6 +450,17 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		OLATResource resource = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		return new LTIResultDetailsController(ureq, wControl, assessedIdentity, resource, getIdent());
 	}
+
+	@Override
+	public boolean hasResultsDetails() {
+		return false;
+	}
+
+	@Override
+	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment assessedUserCourseEnv) {
+		return null;
+	}
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,

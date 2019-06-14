@@ -21,6 +21,7 @@ package org.olat.course.nodes.ms.manager;
 
 import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -35,6 +36,7 @@ import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.model.xml.AbstractElement;
@@ -118,6 +120,21 @@ public class MSServiceImpl implements MSService {
 		for (EvaluationFormSurvey survey : surveys) {
 			evaluationFormManager.deleteSurvey(survey);
 		}
+	}
+
+	@Override
+	public List<RubricStatistic> getRubricStatistics(EvaluationFormSession session) {
+		List<RubricStatistic> statistics = new ArrayList<>();
+		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
+		SessionFilter sessionFilter = SessionFilterFactory.create(session);
+		for (AbstractElement element : form.getElements()) {
+			if (Rubric.TYPE.equals(element.getType())) {
+				Rubric rubric = (Rubric) element;
+				RubricStatistic statistic = evaluationFormManager.getRubricStatistic(rubric, sessionFilter);
+				statistics.add(statistic);
+			}
+		}
+		return statistics;
 	}
 
 	@Override

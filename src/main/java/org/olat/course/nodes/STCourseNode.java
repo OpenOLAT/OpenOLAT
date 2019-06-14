@@ -629,11 +629,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		//do nothing
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
@@ -641,13 +636,21 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	}
 
 	@Override
+	public boolean hasResultsDetails() {
+		return false;
+	}
+
+	@Override
+	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment assessedUserCourseEnv) {
+		return null;
+	}
+
+	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
-	 */
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		throw new OLATRuntimeException(STCourseNode.class, "Details not available in ST nodes", null);

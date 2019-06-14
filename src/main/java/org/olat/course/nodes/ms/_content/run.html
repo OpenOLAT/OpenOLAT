@@ -145,6 +145,9 @@
 	</script>
 #end
 
+#if ($r.available("details"))
+	$r.render("details")
+#end
 #if ($r.available("highScore"))
 	$r.render("highScore")
 #end

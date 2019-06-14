@@ -1,0 +1,18 @@
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h4 class="panel-title">$r.translate("result.details.title")</h4>
+	</div>
+	<table class="table">
+	<tbody>
+		#foreach($rubric in $rubrics)
+			<tr>
+				<th>$rubric.getName()</th>
+				<td>$rubric.getValue()</td>
+			</tr>
+		#end
+	</tbody>
+	</table>
+</div>
+<div class="o_button_group">
+	$r.render("result.details.open")
+</div>

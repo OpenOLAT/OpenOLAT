@@ -673,6 +673,17 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		// prepare file component
 		return new DropboxScoringViewController(ureq, wControl, this, assessedUserCourseEnv);
 	}
+
+	@Override
+	public boolean hasResultsDetails() {
+		return false;
+	}
+
+	@Override
+	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment assessedUserCourseEnv) {
+		return null;
+	}
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,

@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.download.DisplayOrDownloadComponent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -64,6 +65,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 
 	private final VelocityContainer myContent;
 	private DisplayOrDownloadComponent download;
+	private Controller detailsCtrl;
 	
 	private String mapperUri;
 	private final boolean showLog;
@@ -117,7 +119,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
-				myContent.put("highScore", highScoreComponent);							
+				myContent.put("highScore", highScoreComponent);
 			}
 		}
 				
@@ -132,7 +134,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			if (learningObj != null) {
 				Component learningObjectives = ObjectivesHelper.createLearningObjectivesComponent(learningObj, ureq); 
 				myContent.put("learningObjectives", learningObjectives);
-				myContent.contextPut("hasObjectives", learningObj); // dummy value, just an exists operator					
+				myContent.contextPut("hasObjectives", learningObj); // dummy value, just an exists operator
 			}
 		} 
 		
@@ -180,9 +182,6 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if("show".equals(event.getCommand())) {
@@ -194,17 +193,20 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	
 	private void exposeConfigToVC(UserRequest ureq) {
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD));
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD));
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD));
-	    String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
-	    if(StringHelper.containsNonWhitespace(infoTextUser)) {
-	    		myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
-	    		myContent.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
-	    }
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE)));
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MIN, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN)));
-	    myContent.contextPut(MSCourseNode.CONFIG_KEY_SCORE_MAX, AssessmentHelper.getRoundedScore((Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX)));
+		myContent.contextPut("hasScoreField", courseNode.hasScoreConfigured());
+		myContent.contextPut("hasPassedField", courseNode.hasPassedConfigured());
+		myContent.contextPut("hasCommentField", courseNode.hasCommentConfigured());
+		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
+		if(StringHelper.containsNonWhitespace(infoTextUser)) {
+				myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
+				myContent.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
+		}
+		myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(courseNode.getCutValueConfiguration()));
+		if (courseNode.hasScoreConfigured()) {
+		myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(courseNode.getMinScoreConfiguration()));
+		myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(courseNode.getMaxScoreConfiguration()));
+			
+		}
 	}
 	
 	private void exposeUserDataToVC(UserRequest ureq) {
@@ -245,6 +247,12 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 						myContent.put("download", download);
 					}
 				}
+			}
+			
+			if (courseNode.hasResultsDetails()) {
+				detailsCtrl = courseNode.getResultDetailsController(ureq, getWindowControl(), userCourseEnv);
+				listenTo(detailsCtrl);
+				myContent.put("details", detailsCtrl.getInitialComponent());
 			}
 		}
 

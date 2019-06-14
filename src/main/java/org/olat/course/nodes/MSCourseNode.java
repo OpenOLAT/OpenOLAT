@@ -58,6 +58,7 @@ import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.nodes.ms.MSEvaluationFormExecutionController;
 import org.olat.course.nodes.ms.MSIdentityListCourseNodeController;
+import org.olat.course.nodes.ms.MSResultDetailsController;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
 import org.olat.course.properties.CoursePropertyManager;
@@ -520,6 +521,22 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		return new MSEvaluationFormExecutionController(ureq, wControl, assessedUserCourseEnv, this);
+	}
+
+	@Override
+	public boolean hasResultsDetails() {
+		ModuleConfiguration config = getModuleConfiguration();
+		String scoreConfig = config.getStringValue(CONFIG_KEY_SCORE);
+		return CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig) || CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig);
+	}
+
+	@Override
+	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment assessedUserCourseEnv) {
+		if (hasResultsDetails()) {
+			return new MSResultDetailsController(ureq, wControl, assessedUserCourseEnv, this);
+		}
+		return null;
 	}
 	
 	@Override

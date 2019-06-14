@@ -126,6 +126,11 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @return True if score, passed, attempts and comment are editable by the assessment tool
 	 */
 	public boolean isEditableConfigured();
+	
+	/**
+	 * @return True if this course node has additional result details.
+	 */
+	public boolean hasResultsDetails();
 
 	
 	/**
@@ -192,6 +197,9 @@ public interface AssessableCourseNode extends CourseNode {
 	 */
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
+	
+	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment assessedUserCourseEnv);
 	
 	/**
 	 * Returns the controller with the list of assessed identities for
