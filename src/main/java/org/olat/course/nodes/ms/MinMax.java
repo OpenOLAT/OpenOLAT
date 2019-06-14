@@ -17,34 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms;
-
-import java.util.List;
+package org.olat.course.nodes.ms;
 
 /**
  * 
- * Initial date: 29.08.2018<br>
+ * Initial date: 12 Jun 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface SliderStatistic {
-
-	public Long getNumberOfNoResponses();
-
-	public Long getNumberOfResponses();
+public interface MinMax {
 	
-	public Double getSum();
-
-	public Double getMedian();
-
-	public Double getAvg();
-
-	public Double getVariance();
-
-	public Double getStdDev();
-
-	public List<Long> getStepCounts();
+	Float getMin();
 	
-	public RubricRating getRating();
+	Float getMax();
 	
+	public static MinMax of(Float min, Float max) {
+		return new MinMaxImpl(min, max);
+	}
+	
+	static final class MinMaxImpl implements MinMax {
+		
+		private final Float min;
+		private final Float max;
+		
+		private MinMaxImpl(Float min, Float max) {
+			this.min = min;
+			this.max = max;
+		}
+
+		@Override
+		public Float getMin() {
+			return min;
+		}
+
+		@Override
+		public Float getMax() {
+			return max;
+		}
+		
+	}
+
 }

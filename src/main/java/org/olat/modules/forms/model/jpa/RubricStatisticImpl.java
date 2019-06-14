@@ -93,12 +93,12 @@ public class RubricStatisticImpl implements RubricStatistic {
 			List<Long> stepCounts = getStepCounts(slider);
 			Long numOfResponses = getNumOfResponses(stepCounts);
 			Double median = getMedian(stepCounts);
-			Double average = getAverage(stepCounts);
+			SumAverage sumAverage = getSumAverage(stepCounts);
 			Double variance = getVariance(stepCounts);
 			Double stdDev = getStdDev(stepCounts);
-			RubricRating rating = RubricRatingEvaluator.rate(rubric, average);
-			SliderStatisticImpl sliderStatistic = new SliderStatisticImpl(numOfNoRespones, numOfResponses, median,
-					average, variance, stdDev, stepCounts, rating);
+			RubricRating rating = RubricRatingEvaluator.rate(rubric, sumAverage.getAverage());
+			SliderStatisticImpl sliderStatistic = new SliderStatisticImpl(numOfNoRespones, numOfResponses,
+					sumAverage.getSum(), median, sumAverage.getAverage(), variance, stdDev, stepCounts, rating);
 			sliderToStatistic.put(slider, sliderStatistic);
 		}
 	}
@@ -160,8 +160,8 @@ public class RubricStatisticImpl implements RubricStatistic {
 		return median;
 	}
 	
-	private Double getAverage(List<Long> stepCounts) {
-		int sumValues = 0;
+	private SumAverage getSumAverage(List<Long> stepCounts) {
+		double sumValues = 0;
 		int sumResponses = 0;
 		for (int step = 1; step <= rubric.getSteps(); step++) {
 			Long count = stepCounts.get(step - 1);
@@ -171,11 +171,14 @@ public class RubricStatisticImpl implements RubricStatistic {
 				sumResponses += count;
 			}
 		}
-		return sumResponses > 0? (double)sumValues / sumResponses: null;
+		return sumResponses > 0
+				? new SumAverage(sumValues, sumValues / sumResponses)
+				: new SumAverage(null, null);
 	}
 	
 	private Double getVariance(List<Long> stepCounts) {
-		Double mean = getAverage(stepCounts);
+		SumAverage sumAverage = getSumAverage(stepCounts);
+		Double mean = sumAverage.getAverage();
 		if (mean == null) return null;
 		
 		List<Double> scaledValues = getScaledValues(stepCounts);
@@ -214,12 +217,12 @@ public class RubricStatisticImpl implements RubricStatistic {
 		List<Long> totalStepCounts = getTotalStepCounts();
 		Long numOfResponses = getNumOfResponses(totalStepCounts);
 		Double median = getMedian(totalStepCounts);
-		Double average = getAverage(totalStepCounts);
+		SumAverage sumAverage = getSumAverage(totalStepCounts);
 		Double variance = getVariance(totalStepCounts);
 		Double stdDev = getStdDev(totalStepCounts);
-		RubricRating rating = RubricRatingEvaluator.rate(rubric, average);
-		totalStatistic = new SliderStatisticImpl(numberOfNoResponses, numOfResponses, median, average, variance, stdDev,
-				totalStepCounts, rating);
+		RubricRating rating = RubricRatingEvaluator.rate(rubric, sumAverage.getAverage());
+		totalStatistic = new SliderStatisticImpl(numberOfNoResponses, numOfResponses, sumAverage.getSum(), median,
+				sumAverage.getAverage(), variance, stdDev, totalStepCounts, rating);
 	}
 
 	private List<Long> getTotalStepCounts() {
@@ -234,6 +237,27 @@ public class RubricStatisticImpl implements RubricStatistic {
 			totalStepCounts.add(Long.valueOf(totalStepCount));
 		}
 		return totalStepCounts;
+	}
+	
+	private static final class SumAverage {
+		
+		private final Double sum;
+		private final Double average;
+		
+		private SumAverage(Double sum, Double average) {
+			this.sum = sum;
+			this.average = average;
+		}
+
+		private Double getSum() {
+			return sum;
+		}
+
+		private Double getAverage() {
+			return average;
+		}
+		
+		
 	}
 
 }

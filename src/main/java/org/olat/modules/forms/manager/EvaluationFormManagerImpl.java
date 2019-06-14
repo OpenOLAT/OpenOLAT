@@ -35,7 +35,6 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.fileresource.FileResourceManager;
@@ -51,6 +50,7 @@ import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
@@ -111,18 +111,27 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	}
 
 	@Override
-	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry) {
-		return evaluationFormSurveyDao.createSurvey(ores, subIdent, formEntry, null);
+	public EvaluationFormSurvey createSurvey(EvaluationFormSurveyIdentifier identifier, RepositoryEntry formEntry) {
+		return evaluationFormSurveyDao.createSurvey(identifier.getOLATResourceable(), identifier.getSubident(),
+				identifier.getSubident2(), formEntry, null);
 	}
 	
 	@Override
-	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, EvaluationFormSurvey previous) {
-		return evaluationFormSurveyDao.createSurvey(ores, subIdent, previous.getFormEntry(), previous);
+	public EvaluationFormSurvey createSurvey(EvaluationFormSurveyIdentifier identifier, EvaluationFormSurvey previous) {
+		return evaluationFormSurveyDao.createSurvey(identifier.getOLATResourceable(), identifier.getSubident(),
+				identifier.getSubident2(), previous.getFormEntry(), previous);
 	}
 
 	@Override
-	public EvaluationFormSurvey loadSurvey(OLATResourceable ores, String subIdent) {
-		return evaluationFormSurveyDao.loadByResourceable(ores, subIdent);
+	public EvaluationFormSurvey loadSurvey(EvaluationFormSurveyIdentifier identifier) {
+		return evaluationFormSurveyDao.loadByResourceable(identifier.getOLATResourceable(), identifier.getSubident(),
+				identifier.getSubident2());
+	}
+	
+	@Override
+	public List<EvaluationFormSurvey> loadSurveys(EvaluationFormSurveyIdentifier identifier) {
+		return evaluationFormSurveyDao.loadSurveysByResourceable(identifier.getOLATResourceable(), identifier.getSubident(),
+				identifier.getSubident2());
 	}
 
 	@Override

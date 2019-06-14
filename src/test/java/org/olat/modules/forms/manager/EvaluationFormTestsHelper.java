@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.manager;
 
+import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
+
 import java.util.UUID;
 
 import org.olat.core.commons.persistence.DB;
@@ -120,7 +122,7 @@ public class EvaluationFormTestsHelper {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		String subIdent = UUID.randomUUID().toString();
 		RepositoryEntry formEntry = createFormEntry();
-		return evaluationFormManager.createSurvey(ores, subIdent, formEntry);
+		return evaluationFormManager.createSurvey(of(ores, subIdent), formEntry);
 	}
 	
 	EvaluationFormParticipation createParticipation() {

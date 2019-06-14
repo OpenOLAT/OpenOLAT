@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodes.survey;
 
+import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
+
 import java.util.UUID;
 
 import org.olat.core.gui.UserRequest;
@@ -99,7 +101,7 @@ public class SurveyRunController extends BasicController {
 			mainVC.contextPut("withCmds", Boolean.TRUE);
 		}
 		
-		survey = evaluationFormManager.loadSurvey(ores, subIdent);
+		survey = evaluationFormManager.loadSurvey(of(ores, subIdent));
 		doShowView(ureq);
 	}
 

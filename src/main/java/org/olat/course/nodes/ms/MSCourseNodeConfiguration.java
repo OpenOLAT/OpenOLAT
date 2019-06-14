@@ -34,12 +34,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.MSCourseNode;
-/**
- * 
- * Description:<br>
- * TODO: guido Class Description for MSCourseNodeConfiguration
- * 
- */
+
 public class MSCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
 	private MSCourseNodeConfiguration() {

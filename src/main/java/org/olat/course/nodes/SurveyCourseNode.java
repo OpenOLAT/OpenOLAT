@@ -19,12 +19,15 @@
  */
 package org.olat.course.nodes;
 
+import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -33,7 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -56,6 +58,7 @@ import org.olat.course.statistic.StatisticType;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.handler.EvaluationFormResource;
@@ -165,7 +168,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			RepositoryEntry ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			SurveyRunSecurityCallback secCallback = new SurveyRunSecurityCallback(getModuleConfiguration(), userCourseEnv);
 			Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-			return new SurveyStatisticResourceResult(ores, getIdent(), identity, secCallback);
+			return new SurveyStatisticResourceResult(of(ores, getIdent()), identity, secCallback);
 		}
 		return null;
 	}
@@ -241,9 +244,10 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, getIdent());
+		EvaluationFormSurveyIdentifier surveyIdent = of(ores, getIdent());
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
 		if (survey == null) {
-			survey = evaluationFormManager.createSurvey(ores, getIdent(), formEntry);
+			survey = evaluationFormManager.createSurvey(surveyIdent, formEntry);
 		} else {
 			boolean isFormUpdateable = evaluationFormManager.isFormUpdateable(survey);
 			if (isFormUpdateable) {
@@ -258,7 +262,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, getIdent());
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(ores, getIdent()));
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 		
@@ -282,7 +286,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, getIdent());
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(ores, getIdent()));
 		evaluationFormManager.deleteSurvey(survey);
 	}
 

@@ -34,6 +34,7 @@ public class SliderStatisticImpl implements SliderStatistic {
 
 	private final Long numberOfNoResponses;
 	private final Long numberOfResponses;
+	private final Double sum;
 	private final Double median;
 	private final Double avg;
 	private final Double variance;
@@ -41,11 +42,12 @@ public class SliderStatisticImpl implements SliderStatistic {
 	private final List<Long> stepCounts;
 	private final RubricRating rating;
 	
-	public SliderStatisticImpl(Long numberOfNoResponses, Long numberOfResponses, Double median, Double avg, Double variance,
-			Double stdDev, List<Long> stepCounts, RubricRating rating) {
+	public SliderStatisticImpl(Long numberOfNoResponses, Long numberOfResponses, Double sum, Double median, Double avg,
+			Double variance, Double stdDev, List<Long> stepCounts, RubricRating rating) {
 		super();
 		this.numberOfNoResponses = numberOfNoResponses;
 		this.numberOfResponses = numberOfResponses;
+		this.sum = sum;
 		this.median = median;
 		this.avg = avg;
 		this.variance = variance;
@@ -62,6 +64,11 @@ public class SliderStatisticImpl implements SliderStatistic {
 	@Override
 	public Long getNumberOfResponses() {
 		return numberOfResponses;
+	}
+
+	@Override
+	public Double getSum() {
+		return sum;
 	}
 
 	@Override

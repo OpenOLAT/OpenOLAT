@@ -22,6 +22,7 @@ package org.olat.modules.quality.manager;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
 import static org.olat.modules.quality.QualityDataCollectionStatus.FINISHED;
 import static org.olat.modules.quality.QualityDataCollectionStatus.PREPARATION;
 import static org.olat.modules.quality.QualityDataCollectionStatus.READY;
@@ -330,7 +331,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterExecutorParticipationsByEvaluationFormParticipation() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		EvaluationFormSurveyRef survey = evaManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurveyRef survey = evaManager.loadSurvey(of(dataCollection));
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
@@ -349,7 +350,7 @@ public class QualityParticipationDAOTest extends OlatTestCase {
 	@Test
 	public void shouldFilterExecutorParticipationsByParticipationStatus() {
 		QualityDataCollection dataCollection = qualityTestHelper.createDataCollection();
-		EvaluationFormSurveyRef survey = evaManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurveyRef survey = evaManager.loadSurvey(of(dataCollection));
 		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");
 		Identity identity3 = JunitTestHelper.createAndPersistIdentityAsRndUser("quality-");

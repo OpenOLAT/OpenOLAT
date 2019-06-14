@@ -27,6 +27,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.BaseFullWebappController;
@@ -41,7 +42,6 @@ import org.olat.core.gui.control.WindowBackOffice;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.helpers.Settings;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -113,7 +113,7 @@ public class EvaluationFormDispatcher implements Dispatcher {
 				.loadParticipationByIdentifier(identifier);
 		EvaluationFormStandaloneProvider standaloneProvider = CoreSpringFactory
 				.getImpl(EvaluationFormStandaloneProviderFactory.class)
-				.getProvider(participation.getSurvey().getOLATResourceable());
+				.getProvider(participation.getSurvey().getIdentifier().getOLATResourceable());
 		if (participation.getExecutor().equals(usess.getIdentity()) && standaloneProvider.hasBusinessPath(participation)) {
 			ChiefController chiefController = Windows.getWindows(usess).getChiefController();
 			WindowBackOffice windowBackOffice = chiefController.getWindow().getWindowBackOffice();

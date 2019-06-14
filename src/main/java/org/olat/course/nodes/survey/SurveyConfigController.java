@@ -51,6 +51,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.repository.RepositoryEntry;
@@ -102,6 +103,7 @@ public class SurveyConfigController extends FormBasicController {
 	private final ModuleConfiguration moduleConfiguration;
 	private final OLATResourceable ores;
 	private final String subIdent;
+	private EvaluationFormSurveyIdentifier surveyIdent;
 	private EvaluationFormSurvey survey;
 	
 	@Autowired
@@ -113,7 +115,8 @@ public class SurveyConfigController extends FormBasicController {
 		this.moduleConfiguration = surveyCourseNode.getModuleConfiguration();
 		this.ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		this.subIdent = surveyCourseNode.getIdent();
-		this.survey = evaluationFormManager.loadSurvey(ores, subIdent);
+		this.surveyIdent = EvaluationFormSurveyIdentifier.of(ores, subIdent);
+		this.survey = evaluationFormManager.loadSurvey(surveyIdent);
 		initForm(ureq);
 	}
 
@@ -234,7 +237,7 @@ public class SurveyConfigController extends FormBasicController {
 		RepositoryEntry formEntry = searchCtrl.getSelectedEntry();
 		if (formEntry != null) {
 			if (survey == null) {
-				survey = evaluationFormManager.createSurvey(ores, subIdent, formEntry);
+				survey = evaluationFormManager.createSurvey(surveyIdent, formEntry);
 			} else {
 				boolean isFormUpdateable = evaluationFormManager.isFormUpdateable(survey);
 				if (isFormUpdateable) {

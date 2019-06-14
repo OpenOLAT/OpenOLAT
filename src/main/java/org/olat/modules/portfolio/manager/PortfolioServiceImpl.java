@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.GroupDAO;
@@ -41,7 +42,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
@@ -69,6 +69,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.portfolio.AssessmentSection;
 import org.olat.modules.portfolio.Assignment;
@@ -1185,7 +1186,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				}
 				List<Identity> owners = getOwners(page, section);
 				for (Identity owner: owners) {
-					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getOLATResourceableForEvaluationForm(page.getBody()), null);
+					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getSurveyIdent(page.getBody()));
 					EvaluationFormParticipationRef participation = evaluationFormManager.loadParticipationByExecutor(survey, owner);
 					EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 					evaluationFormManager.finishSession(session);
@@ -1203,7 +1204,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				}
 				List<Identity> owners = getOwners(page, section);
 				for (Identity owner: owners) {
-					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getOLATResourceableForEvaluationForm(page.getBody()), null);
+					EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getSurveyIdent(page.getBody()));
 					EvaluationFormParticipationRef participation = evaluationFormManager.loadParticipationByExecutor(survey, owner);
 					EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 					evaluationFormManager.reopenSession(session);
@@ -1481,10 +1482,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 	
 	@Override
 	public EvaluationFormSurvey loadOrCreateSurvey(PageBody body, RepositoryEntry formEntry) {
-		OLATResourceable ores = getOLATResourceableForEvaluationForm(body);
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, null);
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdent(body);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
 		if (survey == null) {
-			survey = evaluationFormManager.createSurvey(ores, null, formEntry);
+			survey = evaluationFormManager.createSurvey(surveyIdent, formEntry);
 		}
 		return survey;
 	}
@@ -1510,11 +1511,15 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Override
 	public void deleteSurvey(PageBody body) {
-		OLATResourceable ores = getOLATResourceableForEvaluationForm(body);
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, null);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(body));
 		if (survey != null) {
 			evaluationFormManager.deleteSurvey(survey);
 		}
+	}
+	
+	private EvaluationFormSurveyIdentifier getSurveyIdent(PageBody body) {
+		OLATResourceable ores = getOLATResourceableForEvaluationForm(body);
+		return EvaluationFormSurveyIdentifier.of(ores);
 	}
 	
 }

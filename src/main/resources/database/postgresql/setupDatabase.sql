@@ -1895,6 +1895,7 @@ create table o_eva_form_survey (
    e_resname varchar(50) not null,
    e_resid bigint not null,
    e_sub_ident varchar(2048),
+   e_sub_ident2 varchar(2048),
    e_series_key bigint,
    e_series_index int,
    fk_form_entry bigint not null,
@@ -3690,7 +3691,7 @@ create index idx_wopi_ident_meta_idx on o_wopi_access(fk_identity, fk_metadata);
 
 -- evaluation form
 alter table o_eva_form_survey add constraint eva_surv_to_surv_idx foreign key (fk_series_previous) references o_eva_form_survey (id);
-create unique index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_sub_ident);
+create index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_sub_ident, e_sub_ident2);
 
 alter table o_eva_form_participation add constraint eva_part_to_surv_idx foreign key (fk_survey) references o_eva_form_survey (id);
 create unique index idx_eva_part_ident_idx on o_eva_form_participation (e_identifier_key, e_identifier_type, fk_survey);

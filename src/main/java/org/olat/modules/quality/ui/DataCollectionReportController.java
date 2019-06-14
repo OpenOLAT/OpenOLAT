@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.ui;
 
+import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -65,7 +67,7 @@ public class DataCollectionReportController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(dataCollection));
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 		DataStorage storage = evaluationFormManager.loadStorage(survey.getFormEntry());
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);

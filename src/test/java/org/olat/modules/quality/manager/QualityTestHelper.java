@@ -20,6 +20,7 @@
 package org.olat.modules.quality.manager;
 
 import static java.util.Collections.singletonList;
+import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
 
 import java.util.Calendar;
 import java.util.Collection;
@@ -203,13 +204,13 @@ public class QualityTestHelper {
 
 	EvaluationFormSurvey createSurvey(QualityDataCollection dataCollection) {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		return evaluationFormManager.createSurvey(dataCollection, null, entry);
+		return evaluationFormManager.createSurvey(of(dataCollection), entry);
 	}
 
 	EvaluationFormSurvey createRandomSurvey() {
 		OLATResource ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
-		return evaluationFormManager.createSurvey(ores, null, entry);
+		return evaluationFormManager.createSurvey(of(ores), entry);
 	}
 	
 	EvaluationFormParticipation createParticipation() {

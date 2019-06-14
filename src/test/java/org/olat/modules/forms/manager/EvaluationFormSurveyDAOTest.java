@@ -21,6 +21,7 @@ package org.olat.modules.forms.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.assertj.core.api.SoftAssertions;
@@ -60,17 +61,20 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldCreateSurvey() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		String subIdent = UUID.randomUUID().toString();
+		String subIdent2 = UUID.randomUUID().toString();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
 		EvaluationFormSurvey previous = evaTestHelper.createSurvey();
 		dbInstance.commitAndCloseSession();
 		
-		EvaluationFormSurvey survey = sut.createSurvey(ores, subIdent, formEntry, previous);
+		EvaluationFormSurvey survey = sut.createSurvey(ores, subIdent, subIdent2, formEntry, previous);
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
 		softly.assertThat(survey).isNotNull();
 		softly.assertThat(survey.getCreationDate()).isNotNull();
 		softly.assertThat(survey.getLastModified()).isNotNull();
+		softly.assertThat(survey.getIdentifier().getSubident()).isEqualTo(subIdent);
+		softly.assertThat(survey.getIdentifier().getSubident2()).isEqualTo(subIdent2);
 		softly.assertThat(survey.getFormEntry()).isEqualTo(formEntry);
 		softly.assertThat(survey.getSeriesKey()).isEqualTo(previous.getSeriesKey());
 		softly.assertThat(survey.getSeriesPrevious()).isEqualTo(previous);
@@ -82,11 +86,26 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldLoadByResourceableWithSubident() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		String subIdent = UUID.randomUUID().toString();
+		String subIdent2 = null;
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurveyRef survey = sut.createSurvey(ores, subIdent, formEntry, null);
+		EvaluationFormSurveyRef survey = sut.createSurvey(ores, subIdent, subIdent2, formEntry, null);
 		dbInstance.commitAndCloseSession();
 		
-		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, subIdent);
+		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, subIdent, subIdent2);
+		
+		assertThat(loadedSurvey).isEqualTo(survey);
+	}
+	
+	@Test
+	public void shouldLoadByResourceableWithSubident2() {
+		OLATResourceable ores = JunitTestHelper.createRandomResource();
+		String subIdent = UUID.randomUUID().toString();
+		String subIdent2 = UUID.randomUUID().toString();
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+		EvaluationFormSurveyRef survey = sut.createSurvey(ores, subIdent, subIdent2, formEntry, null);
+		dbInstance.commitAndCloseSession();
+		
+		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, subIdent, subIdent2);
 		
 		assertThat(loadedSurvey).isEqualTo(survey);
 	}
@@ -95,25 +114,48 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldLoadByResourceableWithoutSubident() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurveyRef survey = sut.createSurvey(ores, null, formEntry, null);
+		EvaluationFormSurveyRef survey = sut.createSurvey(ores, null, null, formEntry, null);
 		dbInstance.commitAndCloseSession();
 		
-		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, null);
+		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, null, null);
 		
 		assertThat(loadedSurvey).isEqualTo(survey);
+	}
+	
+	@Test
+	public void shouldLoadSurveysByResourceableWithoutSubident() {
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+		OLATResourceable oresA = JunitTestHelper.createRandomResource();
+		String subIdentA1 = UUID.randomUUID().toString();
+		EvaluationFormSurvey surveyA = sut.createSurvey(oresA, subIdentA1, null, formEntry, null);
+		String subIdentB1 = UUID.randomUUID().toString();
+		EvaluationFormSurvey surveyB = sut.createSurvey(oresA, subIdentB1, null, formEntry, null);
+		OLATResourceable oresOther = JunitTestHelper.createRandomResource();
+		EvaluationFormSurvey surveyOther = sut.createSurvey(oresOther, subIdentA1, null, formEntry, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<EvaluationFormSurvey> surveys = sut.loadSurveysByResourceable(oresA, null, null);
+		
+		assertThat(surveys)
+				.containsExactlyInAnyOrder(
+					surveyA,
+					surveyB)
+				.doesNotContain(
+					surveyOther
+				);
 	}
 	
 	@Test
 	public void shouldDeleteSurvey() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurveyRef survey = sut.createSurvey(ores, null, formEntry, null);
+		EvaluationFormSurveyRef survey = sut.createSurvey(ores, null, null, formEntry, null);
 		dbInstance.commitAndCloseSession();
 		
 		sut.delete(survey);
 		dbInstance.commitAndCloseSession();
 		
-		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, null);
+		EvaluationFormSurvey loadedSurvey = sut.loadByResourceable(ores, null, null);
 		assertThat(loadedSurvey).isNull();
 	}
 	
@@ -121,9 +163,9 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldUpdateSeriesPrevious() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurvey previous = sut.createSurvey(ores, null, formEntry, null);
-		EvaluationFormSurvey survey = sut.createSurvey(ores, null, formEntry, previous);
-		EvaluationFormSurvey newPrevious = sut.createSurvey(ores, null, formEntry, null);
+		EvaluationFormSurvey previous = sut.createSurvey(ores, null, null, formEntry, null);
+		EvaluationFormSurvey survey = sut.createSurvey(ores, null, null, formEntry, previous);
+		EvaluationFormSurvey newPrevious = sut.createSurvey(ores, null, null, formEntry, null);
 		dbInstance.commitAndCloseSession();
 		
 		survey = sut.updateSeriesPrevious(survey, newPrevious);
@@ -135,7 +177,7 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldCheckIfItHasNotSeriesNext() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurveyRef survey = sut.createSurvey(ores, null, formEntry, null);
+		EvaluationFormSurveyRef survey = sut.createSurvey(ores, null, null, formEntry, null);
 		dbInstance.commitAndCloseSession();
 		
 		boolean hasSeriesNext = sut.hasSeriesNext(survey);
@@ -147,8 +189,8 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldCheckIfItHasSeriesNext() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurvey survey = sut.createSurvey(ores, null, formEntry, null);
-		sut.createSurvey(ores, null, formEntry, survey);
+		EvaluationFormSurvey survey = sut.createSurvey(ores, null, null, formEntry, null);
+		sut.createSurvey(ores, null, null, formEntry, survey);
 		dbInstance.commitAndCloseSession();
 		
 		boolean hasSeriesNext = sut.hasSeriesNext(survey);
@@ -160,8 +202,8 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldLoadSeriesNext() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurvey survey = sut.createSurvey(ores, null, formEntry, null);
-		EvaluationFormSurvey next = sut.createSurvey(ores, null, formEntry, survey);
+		EvaluationFormSurvey survey = sut.createSurvey(ores, null, null, formEntry, null);
+		EvaluationFormSurvey next = sut.createSurvey(ores, null, null, formEntry, survey);
 		dbInstance.commitAndCloseSession();
 		
 		EvaluationFormSurvey loadedNext = sut.loadSeriesNext(survey);
@@ -173,10 +215,10 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 	public void shouldReindexSeries() {
 		OLATResourceable ores = JunitTestHelper.createRandomResource();
 		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
-		EvaluationFormSurvey survey1 = sut.createSurvey(ores, "1", formEntry, null);
-		EvaluationFormSurvey survey2 = sut.createSurvey(ores, "2", formEntry, survey1);
-		EvaluationFormSurvey survey3 = sut.createSurvey(ores, "3", formEntry, survey2);
-		EvaluationFormSurvey survey4 = sut.createSurvey(ores, "4", formEntry, survey3);
+		EvaluationFormSurvey survey1 = sut.createSurvey(ores, "1", null, formEntry, null);
+		EvaluationFormSurvey survey2 = sut.createSurvey(ores, "2", null, formEntry, survey1);
+		EvaluationFormSurvey survey3 = sut.createSurvey(ores, "3", null, formEntry, survey2);
+		EvaluationFormSurvey survey4 = sut.createSurvey(ores, "4", null, formEntry, survey3);
 		dbInstance.commitAndCloseSession();
 		EvaluationFormSurvey next = sut.loadSeriesNext(survey2);
 		EvaluationFormSurvey seriesPrevious = survey2.getSeriesPrevious();
@@ -189,11 +231,11 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SoftAssertions softly = new SoftAssertions();
-		survey1 = sut.loadByResourceable(ores, "1");
+		survey1 = sut.loadByResourceable(ores, "1", null);
 		softly.assertThat(survey1.getSeriesIndex()).isEqualTo(1);
-		survey3 = sut.loadByResourceable(ores, "3");
+		survey3 = sut.loadByResourceable(ores, "3", null);
 		softly.assertThat(survey3.getSeriesIndex()).isEqualTo(2);
-		survey4 = sut.loadByResourceable(ores, "4");
+		survey4 = sut.loadByResourceable(ores, "4", null);
 		softly.assertThat(survey4.getSeriesIndex()).isEqualTo(3);
 	}
 

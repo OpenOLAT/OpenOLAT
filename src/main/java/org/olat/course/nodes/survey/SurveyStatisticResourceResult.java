@@ -29,12 +29,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.SimpleMessageController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Util;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -45,18 +45,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SurveyStatisticResourceResult implements StatisticResourceResult {
 	
-	private final OLATResourceable ores;
-	private final String subIdent;
+	private final EvaluationFormSurveyIdentifier surveyIdent;
 	private final Identity identity;
 	private final SurveyRunSecurityCallback secCallback;
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 
-	public SurveyStatisticResourceResult(OLATResourceable ores, String subIdent, Identity identity,
+	public SurveyStatisticResourceResult(EvaluationFormSurveyIdentifier surveyIdent, Identity identity,
 			SurveyRunSecurityCallback secCallback) {
-		this.ores = ores;
-		this.subIdent = subIdent;
+		this.surveyIdent = surveyIdent;
 		this.identity = identity;
 		this.secCallback = secCallback;
 		CoreSpringFactory.autowireObject(this);
@@ -70,7 +68,7 @@ public class SurveyStatisticResourceResult implements StatisticResourceResult {
 	@Override
 	public Controller getController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			TreeNode selectedNode) {
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(ores, subIdent);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
 		EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, identity);
 		if (secCallback.canViewReporting(participation)) {
 			return new SurveyReportingController(ureq, wControl, survey);

@@ -22,7 +22,6 @@ package org.olat.core.gui.components.util;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 
@@ -103,7 +102,7 @@ public class KeyValues {
 	}
 	
 	public boolean containsKey(String key) {
-		return keyValues.stream().map(KeyValue::getKey).anyMatch(k -> Objects.equals(k, key));
+		return keyValues.stream().map(KeyValue::getKey).anyMatch(k -> k.equals(key));
 	}
 	
 	public int size() {

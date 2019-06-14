@@ -41,20 +41,25 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
-import org.olat.course.nodes.ms.MSEditFormController;
+import org.olat.course.nodes.ms.MSEvaluationFormExecutionController;
 import org.olat.course.nodes.ms.MSIdentityListCourseNodeController;
+import org.olat.course.nodes.ms.MSService;
+import org.olat.course.nodes.ms.MinMax;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -69,8 +74,14 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryImportExport;
+import org.olat.repository.RepositoryManager;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.resource.OLATResource;
 
 /**
@@ -80,16 +91,22 @@ import org.olat.resource.OLATResource;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class MSCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
+	
 	private static final long serialVersionUID = -7741172700015384397L;
+	
+	@SuppressWarnings("deprecation")
 	private static final String PACKAGE_MS = Util.getPackageName(MSCourseNodeRunController.class);
 
+	public static final int CURRENT_VERSION = 2;
 	private static final String TYPE = "ms";
 	/** configuration: score can be set */
 	public static final String CONFIG_KEY_HAS_SCORE_FIELD = "hasScoreField";
 	/** configuration: score min value */
 	public static final String CONFIG_KEY_SCORE_MIN = "scoreMin";
+	public static final Float CONFIG_DEFAULT_SCORE_MIN = Float.valueOf(0);
 	/** configuration: score max value */
 	public static final String CONFIG_KEY_SCORE_MAX = "scoreMax";
+	public static final Float CONFIG_DEFAULT_SCORE_MAX = Float.valueOf(0);
 	/** configuration: passed can be set */
 	public static final String CONFIG_KEY_HAS_PASSED_FIELD = "hasPassedField";
 	/** configuration: passed set to when score higher than cut value */
@@ -104,13 +121,23 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	public static final String CONFIG_KEY_INFOTEXT_COACH = "nfoTextCoach";
 	/** configuration: infotext for coach */
 	public static final String CONFIG_KEY_OPTIONAL = "cnOptional";
+	
+	public static final String CONFIG_KEY_SCORE = "score";
+	public static final String CONFIG_VALUE_SCORE_NONE = "score.none";
+	public static final String CONFIG_VALUE_SCORE_MANUAL = "score.manual";
+	public static final String CONFIG_VALUE_SCORE_EVAL_FORM_SUM = "score.evaluation.form.sum";
+	public static final String CONFIG_VALUE_SCORE_EVAL_FORM_AVG = "score.evaluation.form.avg";
+	public static final String CONFIG_KEY_EVAL_FORM_ENABLED = "evaluation.form.enabled";
+	public static final String CONFIG_KEY_EVAL_FORM_SOFTKEY = "evaluation.form.softkey";
+	public static final String CONFIG_KEY_EVAL_FORM_SCALE = "evaluation.form.scale";
+	public static final String CONFIG_DEFAULT_EVAL_FORM_SCALE = "1.0";
 
 	/**
 	 * Constructor for a course building block of type manual score
 	 */
 	public MSCourseNode() {
 		super(TYPE);
-		MSCourseNode.initDefaultConfig(getModuleConfiguration());
+		updateModuleConfigDefaults(true);
 	}
 
 	/**
@@ -121,32 +148,47 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	 */
 	public static void initDefaultConfig(ModuleConfiguration moduleConfiguration) {
 		moduleConfiguration.set(CONFIG_KEY_HAS_SCORE_FIELD, Boolean.FALSE);
-		moduleConfiguration.set(CONFIG_KEY_SCORE_MIN, Float.valueOf(0));
-		moduleConfiguration.set(CONFIG_KEY_SCORE_MAX, Float.valueOf(0));
+		moduleConfiguration.set(CONFIG_KEY_SCORE_MIN, CONFIG_DEFAULT_SCORE_MIN);
+		moduleConfiguration.set(CONFIG_KEY_SCORE_MAX, CONFIG_DEFAULT_SCORE_MAX);
 		moduleConfiguration.set(CONFIG_KEY_HAS_PASSED_FIELD, Boolean.TRUE);
 		// no preset for passed cut value -> manual setting of passed
 		moduleConfiguration.set(CONFIG_KEY_HAS_COMMENT_FIELD, Boolean.TRUE);
 		moduleConfiguration.set(CONFIG_KEY_INFOTEXT_USER, "");
 		moduleConfiguration.set(CONFIG_KEY_INFOTEXT_COACH, "");
 	}
+	
+	@Override
+	public void updateModuleConfigDefaults(boolean isNewNode) {
+		ModuleConfiguration config = getModuleConfiguration();
+		if (isNewNode) {
+			initDefaultConfig(config);
+			config.setStringValue(CONFIG_KEY_SCORE, CONFIG_VALUE_SCORE_NONE);
+		}
+		if (config.getConfigurationVersion() < 2) {
+			// migrate legacy configs
+			boolean hasScoreFiled = config.getBooleanSafe(CONFIG_KEY_HAS_SCORE_FIELD, false);
+			if (hasScoreFiled) {
+				config.setStringValue(CONFIG_KEY_SCORE, CONFIG_VALUE_SCORE_MANUAL);
+			} else {
+				config.setStringValue(CONFIG_KEY_SCORE, CONFIG_VALUE_SCORE_NONE);
+			}
+			// init configs from v1
+			config.setBooleanEntry(CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
+			// new configs
+			config.setBooleanEntry(CONFIG_KEY_EVAL_FORM_ENABLED, false);
+			config.setStringValue(CONFIG_KEY_EVAL_FORM_SCALE, CONFIG_DEFAULT_EVAL_FORM_SCALE);
+		}
+		config.setConfigurationVersion(CURRENT_VERSION);
+	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
+		updateModuleConfigDefaults(false);
 		MSCourseNodeEditController childTabCntrllr = new MSCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
@@ -166,64 +208,70 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return new NodeRunConstructionResult(wrappedCtrl);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
-		return null;
+		return getEvaluationForm(getModuleConfiguration());
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
-		return false;
+		return getReferencedRepositoryEntry() != null? true: false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
-	@Override
-	public StatusDescription isConfigValid() {
-		/*
-		 * first check the one click cache
-		 */
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
-
-		boolean isValid = MSEditFormController.isConfigValid(getModuleConfiguration());
-		StatusDescription sd = StatusDescription.NOERROR;
-		if (!isValid) {
-			// FIXME: refine statusdescriptions by moving the statusdescription
-			// generation to the MSEditForm
-			String shortKey = "error.missingconfig.short";
-			String longKey = "error.missingconfig.long";
-			String[] params = new String[] { this.getShortTitle() };
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, PACKAGE_MS);
-			sd.setDescriptionForUnit(getIdent());
-			// set which pane is affected by error
-			sd.setActivateableViewIdentifier(MSCourseNodeEditController.PANE_TAB_CONFIGURATION);
-		}
-		return sd;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
-		oneClickStatusCache = null;
-		// only here we know which translator to take for translating condition
-		// error messages
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, PACKAGE_MS, getConditionExpressions());
-		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
-		return oneClickStatusCache;
+		String translatorStr = Util.getPackageName(ConditionEditController.class);
+		List<StatusDescription> statusDescs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		return StatusDescriptionHelper.sort(statusDescs);
+	}
+	
+	@Override
+	public StatusDescription isConfigValid() {
+		return  StatusDescription.NOERROR;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
+	@Override
+	public void exportNode(File exportDirectory, ICourse course) {
+		RepositoryEntry re = getEvaluationForm(getModuleConfiguration());
+		if (re == null) return;
+		
+		File fExportDirectory = new File(exportDirectory, getIdent());
+		fExportDirectory.mkdirs();
+		RepositoryEntryImportExport reie = new RepositoryEntryImportExport(re, fExportDirectory);
+		reie.exportDoExport();
+	}
+	
+	@Override
+	public void importNode(File importDirectory, ICourse course, Identity owner, Organisation organisation, Locale locale, boolean withReferences) {
+		RepositoryEntryImportExport rie = new RepositoryEntryImportExport(importDirectory, getIdent());
+		if(withReferences && rie.anyExportedPropertiesAvailable()) {
+			RepositoryHandler handler = RepositoryHandlerFactory.getInstance().getRepositoryHandler(EvaluationFormResource.TYPE_NAME);
+			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
+				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
+			setEvaluationFormReference(re, getModuleConfiguration());
+		} else {
+			removeEvaluationFormReference(getModuleConfiguration());
+		}
+	}
+
+	public static RepositoryEntry getEvaluationForm(ModuleConfiguration config) {
+		if (config == null) return null;
+		
+		String repoSoftkey = config.getStringValue(CONFIG_KEY_EVAL_FORM_SOFTKEY);
+		if (!StringHelper.containsNonWhitespace(repoSoftkey)) return null;
+		
+		return RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoSoftkey, false);
+	}
+	
+	public static void setEvaluationFormReference(RepositoryEntry re, ModuleConfiguration moduleConfig) {
+		moduleConfig.set(CONFIG_KEY_EVAL_FORM_SOFTKEY, re.getSoftkey());
+	}
+	
+	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
+		moduleConfig.remove(CONFIG_KEY_EVAL_FORM_SOFTKEY);
+	}
+
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		if(hasPassedConfigured() || hasScoreConfigured() || hasCommentConfigured()) {
@@ -244,10 +292,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return am.getAssessmentEntry(this, mySelf);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#informOnDelete(org.olat.core.gui.UserRequest,
-	 *      org.olat.course.ICourse)
-	 */
 	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
@@ -257,10 +301,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return trans.translate("warn.nodedelete");
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(
-	 *      org.olat.course.ICourse)
-	 */
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
@@ -271,11 +311,13 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		
 		OLATResource resource = course.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 		CoreSpringFactory.getImpl(TaskExecutorManager.class).delete(resource, getIdent());
+		
+		// Delete the surveys
+		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+		msService.deleteSessions(ores, getIdent());
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
-	 */
 	@Override
 	public boolean hasCommentConfigured() {
 		ModuleConfiguration config = getModuleConfiguration();
@@ -289,9 +331,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
-	 */
 	@Override
 	public boolean hasPassedConfigured() {
 		ModuleConfiguration config = getModuleConfiguration();
@@ -300,20 +339,14 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return passed.booleanValue();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
-	 */
 	@Override
 	public boolean hasScoreConfigured() {
+		updateModuleConfigDefaults(false);
 		ModuleConfiguration config = getModuleConfiguration();
-		Boolean score = (Boolean) config.get(CONFIG_KEY_HAS_SCORE_FIELD);
-		if (score == null) return false;
-		return score.booleanValue();
+		String scoreKey = config.getStringValue(CONFIG_KEY_SCORE);
+		return !CONFIG_VALUE_SCORE_NONE.equals(scoreKey);
 	}
 	
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()
-	 */
 	@Override
 	public boolean hasStatusConfigured() {
 		return false;
@@ -324,31 +357,37 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
-	 */
 	@Override
 	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null); }
-		ModuleConfiguration config = getModuleConfiguration();
-		Float max = (Float) config.get(CONFIG_KEY_SCORE_MAX);
-		return max;
+		if (!hasScoreConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined", null); }
+		return getMinMax().getMax();
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
-	 */
 	@Override
 	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getMinScore not defined when hasScore set to false", null); }
+		if (!hasScoreConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getMinScore not defined", null); }
+		return getMinMax().getMin();
+	}
+	
+	private MinMax getMinMax() {
 		ModuleConfiguration config = getModuleConfiguration();
-		Float min = (Float) config.get(CONFIG_KEY_SCORE_MIN);
-		return min;
+		String scoreConfig = config.getStringValue(CONFIG_KEY_SCORE);
+		String scaleConfig = config.getStringValue(CONFIG_KEY_EVAL_FORM_SCALE);
+		
+		if (CONFIG_VALUE_SCORE_MANUAL.equals(scoreConfig)) {
+			Float min = (Float) config.get(CONFIG_KEY_SCORE_MIN);
+			Float max = (Float) config.get(CONFIG_KEY_SCORE_MAX);
+			return MinMax.of(min, max);
+		} else if (CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)) {
+			MSService msService = CoreSpringFactory.getImpl(MSService.class);
+			return  msService.calculateMinMaxSum(getEvaluationForm(config), Float.parseFloat(scaleConfig));
+		} else if (CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig)) {
+			MSService msService = CoreSpringFactory.getImpl(MSService.class);
+			return  msService.calculateMinMaxAvg(getEvaluationForm(config), Float.parseFloat(scaleConfig));
+		}
+		return MinMax.of(0.0f,  0.0f);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
-	 */
 	@Override
 	public Float getCutValueConfiguration() {
 		if (!hasPassedConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getCutValue not defined when hasPassed set to false", null); }
@@ -357,9 +396,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return cut;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserCoachComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -367,9 +403,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return coachCommentValue;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserUserComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -382,9 +415,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return am.getIndividualAssessmentDocuments(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserLog(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
@@ -392,19 +422,12 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return logValue;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
-	 */
 	@Override
 	public boolean isEditableConfigured() {
 		// manual scoring fields can be edited manually
 		return true;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserCoachComment(java.lang.String,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
 		if (coachComment != null) {
@@ -414,11 +437,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserScoreEvaluation(org.olat.course.run.scoring.ScoreEvaluation,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
 	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts, Role by) {
@@ -427,11 +445,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts, by);		
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserUserComment(java.lang.String,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
 	@Override
 	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
 		if (userComment != null) {
@@ -459,36 +472,22 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
 		throw new OLATRuntimeException(MSCourseNode.class, "No attempts available in MS nodes", null);
 
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
-	 */
 	@Override
 	public boolean hasAttemptsConfigured() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserAttempts(java.lang.Integer,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
 	@Override
 	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Attempts variable can't be updated in MS nodes", null);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
 		throw new OLATRuntimeException(MSCourseNode.class, "Attempts variable can't be updated in MS nodes", null);
@@ -517,15 +516,10 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			UserCourseEnvironment coachCourseenv, UserCourseEnvironment assessedUserCourseEnv) {
-		throw new OLATRuntimeException(MSCourseNode.class, "Details controler not available in MS nodes", null);
+			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
+		return new MSEvaluationFormExecutionController(ureq, wControl, assessedUserCourseEnv, this);
 	}
 	
 	@Override
@@ -541,20 +535,61 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsListViewHeaderKey()
-	 */
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		throw new OLATRuntimeException(MSCourseNode.class, "Details not available in MS nodes", null);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasDetails()
-	 */
 	@Override
 	public boolean hasDetails() {
-		return false;
+		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_EVAL_FORM_ENABLED);
 	}
-
+	
+	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv,
+			Identity assessedIdentity, Role by, EvaluationFormSession session) {
+		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
+		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		ModuleConfiguration config = getModuleConfiguration();
+		
+		// Get score
+		String scoreConfig = config.getStringValue(CONFIG_KEY_SCORE);
+		String scaleConfig = config.getStringValue(CONFIG_KEY_EVAL_FORM_SCALE);
+		float scale = Float.parseFloat(scaleConfig);
+		Float score = null;
+		if (CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig)) {
+			score = msService.calculateScoreByAvg(session);
+			score = msService.scaleScore(score, scale);
+		} else if (CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)) {
+			score = msService.calculateScoreBySum(session);
+			score = msService.scaleScore(score, scale);
+		} else if (CONFIG_VALUE_SCORE_MANUAL.equals(scoreConfig)) {
+			ScoreEvaluation currentEval = getUserScoreEvaluation(am.getAssessmentEntry(this, assessedIdentity));
+			score = currentEval.getScore();
+		}
+		
+		// Score has to be in configured range.
+		MinMax minMax = getMinMax();
+		if(score != null && minMax.getMax().floatValue() < score.floatValue()) {
+			score = minMax.getMax();
+		}
+		if(score != null && minMax.getMin().floatValue() > score.floatValue()) {
+			score = minMax.getMin();
+		}
+		
+		// Get passed
+		Float cutConfig = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		Boolean passed = null;
+		if (cutConfig != null && score != null) {
+			boolean aboveCutValue = score.floatValue() >= cutConfig.floatValue();
+			passed = Boolean.valueOf(aboveCutValue);
+		} else {
+			ScoreEvaluation currentEval = getUserScoreEvaluation(am.getAssessmentEntry(this, assessedIdentity));
+			passed = currentEval.getPassed();
+		}
+		
+		// save
+		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score, passed);
+		am.saveScoreEvaluation(this, identity, assessedIdentity, scoreEvaluation, assessedUserCourseEnv, false, by);
+	}
+	
 }

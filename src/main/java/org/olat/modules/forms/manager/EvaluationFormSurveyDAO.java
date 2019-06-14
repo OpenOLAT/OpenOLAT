@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.manager;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -47,14 +48,15 @@ class EvaluationFormSurveyDAO {
 	@Autowired
 	private DB dbInstance;
 
-	EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry,
-			EvaluationFormSurvey previous) {
+	EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, String subIdent2,
+			RepositoryEntry formEntry, EvaluationFormSurvey previous) {
 		EvaluationFormSurveyImpl survey = new EvaluationFormSurveyImpl();
 		survey.setCreationDate(new Date());
 		survey.setLastModified(survey.getCreationDate());
 		survey.setResName(ores.getResourceableTypeName());
 		survey.setResId(ores.getResourceableId());
-		survey.setSubident(subIdent);
+		survey.setResSubident(subIdent);
+		survey.setResSubident2(subIdent2);
 		survey.setFormEntry(formEntry);
 		dbInstance.getCurrentEntityManager().persist(survey);
 		Long seriesKey = previous != null? previous.getSeriesKey(): survey.getKey();
@@ -78,10 +80,15 @@ class EvaluationFormSurveyDAO {
 		surveyImpl.setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(surveyImpl);
 	}
+	
+	EvaluationFormSurvey loadByResourceable(OLATResourceable ores, String subIdent, String subIdent2) {
+		List<EvaluationFormSurvey> surveys = loadSurveysByResourceable(ores, subIdent, subIdent2);
+		return surveys.isEmpty() ? null : surveys.get(0);
+	}
 
-	EvaluationFormSurvey loadByResourceable(OLATResourceable ores, String subIdent) {
+	List<EvaluationFormSurvey> loadSurveysByResourceable(OLATResourceable ores, String subIdent, String subIdent2) {
 		if (ores == null || ores.getResourceableTypeName() == null || ores.getResourceableId() == null)
-			return null;
+			return Collections.emptyList();
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("select survey from evaluationformsurvey as survey");
@@ -89,6 +96,9 @@ class EvaluationFormSurveyDAO {
 		sb.append("   and survey.resId=:resId");
 		if (StringHelper.containsNonWhitespace(subIdent)) {
 			sb.append(" and survey.resSubident=:resSubident");
+		}
+		if (StringHelper.containsNonWhitespace(subIdent2)) {
+			sb.append(" and survey.resSubident2=:resSubident2");
 		}
 		
 		TypedQuery<EvaluationFormSurvey> query = dbInstance.getCurrentEntityManager()
@@ -98,8 +108,10 @@ class EvaluationFormSurveyDAO {
 		if (StringHelper.containsNonWhitespace(subIdent)) {
 			query.setParameter("resSubident", subIdent);
 		}
-		List<EvaluationFormSurvey> surveys = query.getResultList();
-		return surveys.isEmpty() ? null : surveys.get(0);
+		if (StringHelper.containsNonWhitespace(subIdent2)) {
+			query.setParameter("resSubident2", subIdent2);
+		}
+		return query.getResultList();
 	}
 
 	void delete(EvaluationFormSurveyRef survey) {

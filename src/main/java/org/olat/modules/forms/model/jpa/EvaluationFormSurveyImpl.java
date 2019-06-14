@@ -19,6 +19,8 @@
  */
 package org.olat.modules.forms.model.jpa;
 
+import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
+
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -37,6 +39,7 @@ import javax.persistence.TemporalType;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Persistable;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -69,6 +72,8 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	private Long resId;
 	@Column(name="e_sub_ident", nullable=true, insertable=true, updatable=false)
 	private String resSubident;
+	@Column(name="e_sub_ident2", nullable=true, insertable=true, updatable=false)
+	private String resSubident2;
 	@Column(name="e_series_key", nullable=true, insertable=true, updatable=true)
 	private Long seriesKey;
 	@Column(name="e_series_index", nullable=true, insertable=true, updatable=true)
@@ -124,9 +129,29 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 	public void setResId(Long resId) {
 		this.resId = resId;
 	}
-	
+
+	public String getResSubident() {
+		return resSubident;
+	}
+
+	public void setResSubident(String resSubident) {
+		this.resSubident = resSubident;
+	}
+
+	public String getResSubident2() {
+		return resSubident2;
+	}
+
+	public void setResSubident2(String resSubident2) {
+		this.resSubident2 = resSubident2;
+	}
+
 	@Override
-	public OLATResourceable getOLATResourceable() {
+	public EvaluationFormSurveyIdentifier getIdentifier() {
+		return of(getOLATResourceable() , resSubident, resSubident2);
+	}
+	
+	private OLATResourceable getOLATResourceable() {
 		return new OLATResourceable() {
 			
 			@Override
@@ -141,15 +166,6 @@ public class EvaluationFormSurveyImpl implements EvaluationFormSurvey, Persistab
 		};
 	}
 
-	@Override
-	public String getSubident() {
-		return resSubident;
-	}
-
-	public void setSubident(String subident) {
-		this.resSubident = subident;
-	}
-	
 	@Override
 	public RepositoryEntry getFormEntry() {
 		return formEntry;

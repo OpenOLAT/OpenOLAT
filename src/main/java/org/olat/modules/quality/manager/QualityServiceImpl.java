@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.Group;
@@ -46,11 +47,9 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumDataDeletable;
@@ -61,6 +60,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationRef;
 import org.olat.modules.forms.EvaluationFormParticipationStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
@@ -181,7 +181,7 @@ public class QualityServiceImpl
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations,
 			RepositoryEntry formEntry) {
 		QualityDataCollection dataCollection = dataCollectionDao.createDataCollection();
-		evaluationFormManager.createSurvey(dataCollection, null, formEntry);
+		evaluationFormManager.createSurvey(getSurveyIdent(dataCollection), formEntry);
 		createDataCollectionReferences(organisations, formEntry, dataCollection);
 		return dataCollection;
 	}
@@ -190,7 +190,7 @@ public class QualityServiceImpl
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, RepositoryEntry formEntry,
 			QualityGenerator generator, Long generatorProviderKey) {
 		QualityDataCollection dataCollection = createDataCollection(generator, generatorProviderKey);
-		evaluationFormManager.createSurvey(dataCollection, null, formEntry);
+		evaluationFormManager.createSurvey(getSurveyIdent(dataCollection), formEntry);
 		createDataCollectionReferences(organisations, formEntry, dataCollection);
 		return dataCollection;
 	}
@@ -199,8 +199,8 @@ public class QualityServiceImpl
 	public QualityDataCollection createDataCollection(Collection<Organisation> organisations, QualityDataCollection previous,
 			QualityGenerator generator, Long generatorProviderKey) {
 		QualityDataCollection dataCollection = createDataCollection(generator, generatorProviderKey);
-		EvaluationFormSurvey previousSurvey = evaluationFormManager.loadSurvey(previous, null);
-		evaluationFormManager.createSurvey(dataCollection, null, previousSurvey);
+		EvaluationFormSurvey previousSurvey = evaluationFormManager.loadSurvey(getSurveyIdent(previous));
+		evaluationFormManager.createSurvey(getSurveyIdent(dataCollection), previousSurvey);
 		createDataCollectionReferences(organisations, previousSurvey.getFormEntry(), dataCollection);
 		return dataCollection;
 	}
@@ -348,7 +348,7 @@ public class QualityServiceImpl
 	private List<RubricStatistic> getRubricsStatistics(QualityDataCollection dataCollection) {
 		RepositoryEntry formEntry = loadFormEntry(dataCollection);
 		Form form = evaluationFormManager.loadForm(formEntry);
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 		
 		List<Rubric> rubrics = form.getElements().stream()
@@ -381,7 +381,7 @@ public class QualityServiceImpl
 		for (QualityContext context: contexts) {
 			deleteContext(context);
 		}
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 		evaluationFormManager.deleteSurvey(survey);
 		deleteReferences(dataCollection);
 		resourceManager.deleteOLATResourceable(dataCollection);
@@ -394,24 +394,24 @@ public class QualityServiceImpl
 
 	@Override
 	public RepositoryEntry loadFormEntry(QualityDataCollectionLight dataCollection) {
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 		return survey.getFormEntry() != null? survey.getFormEntry(): null;
 	}
 	
 	@Override
 	public EvaluationFormSurvey loadSurvey(QualityDataCollectionLight dataCollection) {
-		return evaluationFormManager.loadSurvey(dataCollection, null);
+		return evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 	}
 
 	@Override
 	public boolean isFormEntryUpdateable(QualityDataCollection dataCollection) {
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 		return evaluationFormManager.isFormUpdateable(survey);
 	}
 
 	@Override
 	public void updateFormEntry(QualityDataCollection dataCollection, RepositoryEntry formEntry) {
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 		deleteReferences(dataCollection);
 		
 		evaluationFormManager.updateSurveyForm(survey, formEntry);
@@ -456,7 +456,7 @@ public class QualityServiceImpl
 	@Override
 	public List<EvaluationFormParticipation> addParticipations(QualityDataCollectionLight dataCollection, Collection<Identity> executors) {
 		List<EvaluationFormParticipation> participations = new ArrayList<>();
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 		for (Identity executor: executors) {
 			EvaluationFormParticipation participation = evaluationFormManager.loadParticipationByExecutor(survey, executor);
 			if (participation == null) {
@@ -594,8 +594,8 @@ public class QualityServiceImpl
 	private List<EvaluationFormParticipation> getParticipants(QualityReminder reminder) {
 		QualityReminderType type = reminder.getType();
 		EvaluationFormParticipationStatus status = type.getParticipationStatus();
-		OLATResourceable dataCollection = reminder.getDataCollection();
-		EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		QualityDataCollection dataCollection = reminder.getDataCollection();
+		EvaluationFormSurveyRef survey = evaluationFormManager.loadSurvey(getSurveyIdent(dataCollection));
 		return evaluationFormManager.loadParticipations(survey, status);
 	}
 
@@ -727,6 +727,10 @@ public class QualityServiceImpl
 			return groupDao.getMembers(reportAccess.getGroup(), REPORT_MEMBER_ROLE);
 		}
 		return Collections.emptyList();
+	}
+	
+	private EvaluationFormSurveyIdentifier getSurveyIdent(QualityDataCollectionLight dataCollection) {
+		return EvaluationFormSurveyIdentifier.of(dataCollection);
 	}
 	
 }

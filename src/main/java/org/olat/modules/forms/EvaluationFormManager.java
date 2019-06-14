@@ -28,7 +28,6 @@ import java.util.List;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
@@ -50,11 +49,27 @@ public interface EvaluationFormManager {
 	
 	public DataStorage loadStorage(RepositoryEntry formEntry);
 
-	public EvaluationFormSurvey createSurvey(OLATResourceable ores, String subIdent, RepositoryEntry formEntry);
+	public EvaluationFormSurvey createSurvey(EvaluationFormSurveyIdentifier identifier, RepositoryEntry formEntry);
 	
-	public EvaluationFormSurveyRef createSurvey(OLATResourceable ores, String subIdent, EvaluationFormSurvey previous);
+	public EvaluationFormSurveyRef createSurvey(EvaluationFormSurveyIdentifier identifier, EvaluationFormSurvey previous);
 
-	public EvaluationFormSurvey loadSurvey(OLATResourceable ores, String subIdent);
+	/**
+	 * Load a unique survey with a specific identifier. If more then one surveys are
+	 * found, only the "first" one is returned.
+	 *
+	 * @param identifier
+	 * @return
+	 */
+	public EvaluationFormSurvey loadSurvey(EvaluationFormSurveyIdentifier identifier);
+	
+	/**
+	 * Load all surveys of an identifier. The purpose of this method is to load all
+	 * surveys by cut the subIdent(s).
+	 * 
+	 * @param identifier
+	 * @return
+	 */
+	public List<EvaluationFormSurvey> loadSurveys(EvaluationFormSurveyIdentifier identifier);
 
 	/**
 	 * Checks whether a form of a survey can be updated or not. The form can not be

@@ -61,7 +61,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	private MSCourseNode msNode;
 	private VelocityContainer configurationVC;
-	private MSEditFormController modConfigController;
+	private MSConfigController configController;
 	private HighScoreEditController highScoreNodeConfigController;
 
 	private ConditionEditController accessibilityCondContr;
@@ -95,9 +95,9 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 				AssessmentHelper.getAssessableNodes(editorModel, msNode));		
 		this.listenTo(accessibilityCondContr);
 
-		modConfigController = new MSEditFormController(ureq, wControl, msNode.getModuleConfiguration());
-		listenTo(modConfigController);
-		configurationVC.put("mseditform", modConfigController.getInitialComponent());
+		configController = new MSConfigController(ureq, wControl, course, msNode);
+		listenTo(configController);
+		configurationVC.put("mseditform", configController.getInitialComponent());
 		
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, msNode.getModuleConfiguration());
 		listenTo(highScoreNodeConfigController);
@@ -107,26 +107,18 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		hasLogEntries = auditManager.hasUserNodeLogs(msNode);
 		configurationVC.contextPut("hasLogEntries", new Boolean(hasLogEntries));
 		if (hasLogEntries) {
-			modConfigController.setDisplayOnly(true);
+			configController.setDisplayOnly(true);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == editScoringConfigButton) {
-			modConfigController.setDisplayOnly(false);
+			configController.setDisplayOnly(false);
 			configurationVC.contextPut("isOverwriting", new Boolean(true));			
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessibilityCondContr) {
@@ -135,28 +127,11 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 				msNode.setPreConditionAccess(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == modConfigController) {
-			if (event == Event.CANCELLED_EVENT) {
-			// reset form
-				
-				if (modConfigController != null) {
-					removeAsListenerAndDispose(modConfigController);
-				}
-				modConfigController = new MSEditFormController(ureq, getWindowControl(), msNode.getModuleConfiguration());
-				listenTo(modConfigController);
-				configurationVC.put("mseditform", modConfigController.getInitialComponent());
-				if (hasLogEntries) {
-					modConfigController.setDisplayOnly(true);
-				}
-				configurationVC.contextPut("isOverwriting", new Boolean(false));
-				return;
-				
-			} else if (event == Event.DONE_EVENT) {
-				modConfigController.updateModuleConfiguration(msNode.getModuleConfiguration());
+		} else if (source == configController) {
+			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 			updateHighscoreTab();
-			
 		} else if (source == highScoreNodeConfigController){
 			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -165,13 +140,10 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 	
 	private void updateHighscoreTab() {
-		Boolean sf = msNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false);
-		myTabbedPane.setEnabled(4, sf);
+		myTabbedPane.setEnabled(4, msNode.hasScoreConfigured());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
@@ -181,12 +153,9 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
-    //child controllers registered with listenTo() get disposed in BasicController
+		//
 	}
 
 	@Override

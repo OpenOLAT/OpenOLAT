@@ -19,6 +19,8 @@
  */
 package org.olat.modules.quality.manager;
 
+import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -36,6 +38,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.pdf.PdfModule;
 import org.olat.core.commons.services.pdf.PdfService;
@@ -46,7 +49,6 @@ import org.olat.core.gui.util.WindowControlMocker;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.FileUtils;
@@ -382,7 +384,7 @@ class QualityMailing {
 		if (!pdfModule.isEnabled()) return null;
 		if (tempDir == null || !tempDir.toFile().exists()) return null;
 		
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(dataCollection, null);
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(dataCollection));
 		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
 		DataStorage storage = evaluationFormManager.loadStorage(survey.getFormEntry());
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.forms.ui;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -28,7 +29,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -76,7 +77,8 @@ public class StandaloneExecutionController extends BasicController implements Co
 			doShowAlreadyDone(ureq);
 			log.debug("Participation already done: " + identifier);
 		} else {
-			EvaluationFormStandaloneProvider standaloneProvider = standaloneProviderFactory.getProvider(participation.getSurvey().getOLATResourceable());
+			OLATResourceable surveyOres = participation.getSurvey().getIdentifier().getOLATResourceable();
+			EvaluationFormStandaloneProvider standaloneProvider = standaloneProviderFactory.getProvider(surveyOres);
 			if (standaloneProvider.isExecutable(participation)) {
 				doShowExecution(ureq, participation);
 				log.debug("Execute evaluation form with " + identifier);
@@ -113,7 +115,8 @@ public class StandaloneExecutionController extends BasicController implements Co
 	}
 
 	private void doShowExecution(UserRequest ureq, EvaluationFormParticipation participation) {
-		EvaluationFormStandaloneProvider standaloneProvider = standaloneProviderFactory.getProvider(participation.getSurvey().getOLATResourceable());
+		OLATResourceable surveyOres = participation.getSurvey().getIdentifier().getOLATResourceable();
+		EvaluationFormStandaloneProvider standaloneProvider = standaloneProviderFactory.getProvider(surveyOres);
 		headerCtrl = standaloneProvider.getExecutionHeader(ureq, getWindowControl(), participation);
 		listenTo(headerCtrl);
 		mainVC.put("header", headerCtrl.getInitialComponent());

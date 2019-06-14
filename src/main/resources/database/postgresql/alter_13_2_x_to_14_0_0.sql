@@ -166,3 +166,10 @@ create table o_aconnect_user (
 
 alter table o_aconnect_user add constraint aconn_ident_idx foreign key (fk_identity_id) references o_bs_identity (id);
 create index idx_aconn_ident_idx on o_aconnect_user (fk_identity_id);
+
+-- Evaluation form
+alter table o_eva_form_survey add e_sub_ident2 varchar(2048);
+
+drop index idx_eva_surv_ores_idx;
+create index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_sub_ident, e_sub_ident2);
+

@@ -21,7 +21,6 @@ package org.olat.modules.forms;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
-import org.olat.core.id.OLATResourceable;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -32,9 +31,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface EvaluationFormSurvey extends EvaluationFormSurveyRef, CreateInfo, ModifiedInfo {
 
-	public OLATResourceable getOLATResourceable();
-	
-	public String getSubident();
+	public EvaluationFormSurveyIdentifier getIdentifier();
 
 	/**
 	 *
