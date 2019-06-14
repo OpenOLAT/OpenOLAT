@@ -458,8 +458,8 @@ public class PortfolioV2Test extends Deployments {
 		//configure assessment
 		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
 		assessmentConfig
-			.selectConfiguration()
-			.setScoreAuto(1.0f, 6.0f, 4.0f);
+			.selectConfigurationWithRubric()
+			.setRubricScore(1.0f, 6.0f, 4.0f);
 		//set the score / passed calculation in root node and publish
 		courseEditor
 			.selectRoot()

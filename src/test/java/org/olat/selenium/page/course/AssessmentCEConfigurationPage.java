@@ -23,6 +23,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.Select;
 
 /**
  * 
@@ -40,6 +41,11 @@ public class AssessmentCEConfigurationPage {
 	
 	public AssessmentCEConfigurationPage selectConfiguration() {
 		By configBy = By.className("o_sel_course_ms_score");
+		return selectTab(configBy);
+	}
+	
+	public AssessmentCEConfigurationPage selectConfigurationWithRubric() {
+		By configBy = By.className("o_sel_course_ms");
 		return selectTab(configBy);
 	}
 	
@@ -68,6 +74,50 @@ public class AssessmentCEConfigurationPage {
 		cutValEl.sendKeys(Float.toString(cutVal));
 		
 		By saveBy = By.cssSelector(".o_sel_course_ms_form button.btn.btn-primary");
+		OOGraphene.click(saveBy, browser);
+		OOGraphene.waitBusy(browser);
+		OOGraphene.scrollTop(browser);
+		return this;
+	}
+	
+	/**
+	 * Give a score, set the min. and max. value and passed/failed
+	 * is automatically calculated with the cut value.
+	 * 
+	 * @param minVal
+	 * @param maxVal
+	 * @param cutVal
+	 * @return
+	 */
+	public AssessmentCEConfigurationPage setRubricScore(float minVal, float maxVal, float cutVal) {
+		By scoreBy = By.id("o_fioform_score_SELBOX");
+		OOGraphene.waitElement(scoreBy, browser);
+		WebElement scoreEl = browser.findElement(scoreBy);
+		new Select(scoreEl).selectByValue("score.manual");
+
+		OOGraphene.waitBusy(browser);
+		
+		By minValBy = By.cssSelector(".o_sel_course_ms_min input[type='text']");
+		OOGraphene.waitElement(minValBy, browser);
+		WebElement minValEl = browser.findElement(minValBy);
+		minValEl.clear();
+		minValEl.sendKeys(Float.toString(minVal));
+		
+		By maxValBy = By.cssSelector(".o_sel_course_ms_max input[type='text']");
+		WebElement maxValEl = browser.findElement(maxValBy);
+		maxValEl.clear();
+		maxValEl.sendKeys(Float.toString(maxVal));
+		
+		By displayAutoBy = By.cssSelector("#o_coform_passed_type input[type='radio'][value='true']");
+		browser.findElement(displayAutoBy).click();
+		OOGraphene.waitBusy(browser);
+
+		By cutValBy = By.cssSelector(".o_sel_course_ms_cut input[type='text']");
+		WebElement cutValEl = browser.findElement(cutValBy);
+		cutValEl.clear();
+		cutValEl.sendKeys(Float.toString(cutVal));
+		
+		By saveBy = By.cssSelector(".o_sel_course_ms button.btn.btn-primary");
 		OOGraphene.click(saveBy, browser);
 		OOGraphene.waitBusy(browser);
 		OOGraphene.scrollTop(browser);

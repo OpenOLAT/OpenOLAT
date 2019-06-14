@@ -207,10 +207,11 @@ public class CourseEditorPageFragment {
 	}
 	
 	/**
-	 * Set the course element title and short title
+	 * Set the course element title and short title, save
+	 * and wait that the dialog disappears.
 	 * 
-	 * @param title
-	 * @return
+	 * @param title The title of the course element
+	 * @return Itself
 	 */
 	public CourseEditorPageFragment nodeTitle(String title) {
 		By shortTitleBy = By.cssSelector("div.o_sel_node_editor_shorttitle input[type='text']");

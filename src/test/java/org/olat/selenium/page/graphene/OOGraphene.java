@@ -327,21 +327,21 @@ public class OOGraphene {
 			.perform();
 	}
 	
-	// top.tinymce.get('o_fi1000000416').setContent('<p>Hacked</p>');
-	// <div id="o_fi1000000416_diw" class="o_richtext_mce"> <iframe id="o_fi1000000416_ifr">
-	public static final void tinymce(String content, WebDriver browser) {
-		new WebDriverWait(browser, driverTimeout)
-			.until(new TinyMCELoadedPredicate());
+	public static final void waitTinymce(WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
 			.pollingEvery(poolingDuration)
 			.until(new TinyMCELoadedPredicate());
+	}
+	
+	// top.tinymce.get('o_fi1000000416').setContent('<p>Hacked</p>');
+	// <div id="o_fi1000000416_diw" class="o_richtext_mce"> <iframe id="o_fi1000000416_ifr">
+	public static final void tinymce(String content, WebDriver browser) {
+		waitTinymce(browser);
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.setContent('" + content + "')");
 	}
 	
 	public static final void tinymceExec(String content, WebDriver browser) {
-		new WebDriverWait(browser, driverTimeout).withTimeout(waitTinyDuration)
-			.pollingEvery(poolingDuration)
-			.until(new TinyMCELoadedPredicate());
+		waitTinymce(browser);
 		((JavascriptExecutor)browser).executeScript("top.tinymce.activeEditor.execCommand('mceInsertRawHTML', true, '" + content + "')");
 	}
 	

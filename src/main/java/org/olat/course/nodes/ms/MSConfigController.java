@@ -131,6 +131,7 @@ public class MSConfigController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_course_ms");
 		// Evaluation Form
 		evaluationFormEnabledEl = uifactory.addCheckboxesHorizontal("form.evaluation.enabled", formLayout,
 				ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
@@ -155,6 +156,7 @@ public class MSConfigController extends FormBasicController {
 		
 		// Points
 		scoreEl = uifactory.addDropdownSingleselect("form.score", formLayout, EMPTY_ARRAY, EMPTY_ARRAY);
+		scoreEl.setElementCssClass("o_sel_course_ms_score");
 		scoreEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// Scale
@@ -166,11 +168,13 @@ public class MSConfigController extends FormBasicController {
 		Float min = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
 		min = min != null? min: MSCourseNode.CONFIG_DEFAULT_SCORE_MIN;
 		minEl = uifactory.addTextElement("form.min", "form.min", 8, min.toString(), formLayout);
+		minEl.setElementCssClass("o_sel_course_ms_min");
 		
 		// Maximim
 		Float max = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
 		max = max != null? max: MSCourseNode.CONFIG_DEFAULT_SCORE_MAX;
 		maxEl = uifactory.addTextElement("form.max", "form.max", 8, max.toString(), formLayout);
+		maxEl.setElementCssClass("o_sel_course_ms_max");
 		
 		uifactory.addSpacerElement("spacer1", formLayout, false);
 		
@@ -196,6 +200,7 @@ public class MSConfigController extends FormBasicController {
 
 		// Passing grade cut value
 		cutEl = uifactory.addTextElement("form.cut", "form.cut", 8, cut.toString(), formLayout);
+		cutEl.setElementCssClass("o_sel_course_ms_cut");
 
 		uifactory.addSpacerElement("spacer2", formLayout, false);
 

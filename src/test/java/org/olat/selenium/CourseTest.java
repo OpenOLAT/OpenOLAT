@@ -1382,8 +1382,8 @@ public class CourseTest extends Deployments {
 		//configure assessment
 		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
 		assessmentConfig
-			.selectConfiguration()
-			.setScoreAuto(0.0f, 6.0f, 4.0f);
+			.selectConfigurationWithRubric()
+			.setRubricScore(0.0f, 6.0f, 4.0f);
 		
 		//wiki is assessment dependent
 		courseEditor

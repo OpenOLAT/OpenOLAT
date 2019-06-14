@@ -823,8 +823,8 @@ public class AssessmentTest extends Deployments {
 		//configure assessment
 		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
 		assessmentConfig
-			.selectConfiguration()
-			.setScoreAuto(0.1f, 10.0f, 5.0f);
+			.selectConfigurationWithRubric()
+			.setRubricScore(0.1f, 10.0f, 5.0f);
 		//set the score / passed calculation in root node and publish
 		courseEditor
 			.selectRoot()
@@ -1596,8 +1596,8 @@ public class AssessmentTest extends Deployments {
 		//configure assessment
 		AssessmentCEConfigurationPage assessmentConfig = new AssessmentCEConfigurationPage(browser);
 		assessmentConfig
-			.selectConfiguration()
-			.setScoreAuto(0.1f, 10.0f, 5.0f);
+			.selectConfigurationWithRubric()
+			.setRubricScore(0.1f, 10.0f, 5.0f);
 		//set the score / passed calculation in root node and publish
 		courseEditor
 			.selectRoot()
