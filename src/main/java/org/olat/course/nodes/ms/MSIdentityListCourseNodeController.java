@@ -19,18 +19,32 @@
  */
 package org.olat.course.nodes.ms;
 
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
+import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,6 +53,11 @@ import org.olat.repository.RepositoryEntry;
  *
  */
 public class MSIdentityListCourseNodeController extends IdentityListCourseNodeController {
+	
+	private Boolean hasEvaluationForm;
+	
+	@Autowired
+	private MSService msService;
 
 	public MSIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, MSCourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -49,11 +68,50 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	@Override
 	protected void initMultiSelectionTools(UserRequest ureq, FormLayoutContainer formLayout) {
 		if(!coachCourseEnv.isCourseReadOnly()) {
-			BulkAssessmentToolController bulkAssessmentTollCtrl = new BulkAssessmentToolController(ureq, getWindowControl(),
+			BulkAssessmentToolController bulkAssessmentToolCtrl = new BulkAssessmentToolController(ureq, getWindowControl(),
 					coachCourseEnv.getCourseEnvironment(), (MSCourseNode)courseNode);
-			listenTo(bulkAssessmentTollCtrl);
-			formLayout.put("bulk.assessment", bulkAssessmentTollCtrl.getInitialComponent());	
+			listenTo(bulkAssessmentToolCtrl);
+			formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());
 		}
 		super.initMultiSelectionTools(ureq, formLayout);
+	}
+	
+	@Override
+	protected void initScoreColumns(FlexiTableColumnModel columnsModel) {
+		if (hasEvaluationForm()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.details.ms",
+					IdentityCourseElementCols.details.ordinal(),
+					new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_lg o_icon_check"), null)));
+		}
+		super.initScoreColumns(columnsModel);
+	}
+	
+	@Override
+	protected void loadModel(UserRequest ureq) {
+		super.loadModel(ureq);
+		
+		if (hasEvaluationForm) {
+			List<EvaluationFormSession> sessions = msService.getDoneSessions(getCourseRepositoryEntry(), courseNode.getIdent());
+			Map<String, EvaluationFormSession> identToSesssion = sessions.stream()
+					.collect(Collectors.toMap(
+							s -> s.getSurvey().getIdentifier().getSubident2(),
+							Function.identity()));
+			
+			for (AssessedIdentityElementRow row : usersTableModel.getObjects()) {
+				String ident = row.getIdentityKey().toString();
+				Boolean sessionDone = identToSesssion.containsKey(ident);
+				row.setDetails(sessionDone);
+			}
+		}
+	}
+
+	private boolean hasEvaluationForm() {
+		if (hasEvaluationForm == null) {
+			ModuleConfiguration config = courseNode.getModuleConfiguration();
+			String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
+			hasEvaluationForm = MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)
+					|| MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig);
+		}
+		return hasEvaluationForm.booleanValue();
 	}
 }

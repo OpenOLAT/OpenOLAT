@@ -111,7 +111,7 @@ public class EvaluationFormTestsHelper {
 		dbInstance.commitAndCloseSession();
 	}
 
-	RepositoryEntry createFormEntry() {
+	public RepositoryEntry createFormEntry() {
 		EvaluationFormResource ores = new EvaluationFormResource();
 		OLATResource resource = OLATResourceManager.getInstance().findOrPersistResourceable(ores);
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser(UUID.randomUUID().toString());

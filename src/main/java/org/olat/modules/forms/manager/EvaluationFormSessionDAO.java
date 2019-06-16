@@ -94,7 +94,11 @@ class EvaluationFormSessionDAO {
 			SortKey... orderBy) {
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("select session from evaluationformsession as session");
+		sb.append("select session");
+		sb.append("  from evaluationformsession as session");
+		if (filter.fetchSurveys()) {
+			sb.append("       join fetch session.survey as survey");
+		}
 		sb.append(" where session.key in (").append(filter.getSelectKeys()).append(")");
 		
 		appendOrderBy(sb, orderBy);

@@ -34,5 +34,9 @@ public interface SessionFilter {
 	public String getSelectKeys();
 	
 	public void addParameters(Query query);
+	
+	public default boolean fetchSurveys() {
+		return false;
+	}
 
 }

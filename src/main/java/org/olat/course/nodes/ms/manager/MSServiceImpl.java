@@ -115,6 +115,12 @@ public class MSServiceImpl implements MSService {
 	}
 
 	@Override
+	public List<EvaluationFormSession> getDoneSessions(OLATResourceable ores, String nodeIdent) {
+		SessionFilter filter = SessionFilterFactory.createSelectDone(of(ores, nodeIdent));
+		return evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
+	}
+
+	@Override
 	public void deleteSessions(RepositoryEntry ores, String nodeIdent) {
 		List<EvaluationFormSurvey> surveys = evaluationFormManager.loadSurveys(of(ores, nodeIdent));
 		for (EvaluationFormSurvey survey : surveys) {

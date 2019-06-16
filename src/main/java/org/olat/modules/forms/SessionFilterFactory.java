@@ -22,9 +22,10 @@ package org.olat.modules.forms;
 import static java.util.Collections.singletonList;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.olat.modules.forms.model.jpa.SessionRefFilter;
-import org.olat.modules.forms.model.jpa.SurveyFilter;
+import org.olat.modules.forms.model.jpa.SurveysFilter;
 
 /**
  * 
@@ -43,7 +44,14 @@ public class SessionFilterFactory {
 	}
 
 	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey) {
-		return new SurveyFilter(survey);
+		return createSelectDone(Collections.singletonList(survey));
 	}
 
+	public static SessionFilter createSelectDone(Collection<? extends EvaluationFormSurveyRef> surveys) {
+		return new SurveysFilter(surveys, EvaluationFormSessionStatus.done);
+	}
+
+	public static SessionFilter createSelectDone(EvaluationFormSurveyIdentifier surveyIdentitfier) {
+		return new SurveysFilter(surveyIdentitfier, EvaluationFormSessionStatus.done);
+	}
 }
