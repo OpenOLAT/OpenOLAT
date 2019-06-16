@@ -19,7 +19,6 @@
  */
 package org.olat.selenium.page.course;
 
-import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.lecture.LectureRepositorySettingsPage;
 import org.olat.selenium.page.repository.RepositorySettingsPage;
@@ -72,8 +71,7 @@ public class CourseSettingsPage extends RepositorySettingsPage {
 	}
 	
 	public CoursePageFragment clickToolbarBack() {
-		browser.findElement(NavigationPage.toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickBreadcrumbBack(browser);
 		return CoursePageFragment.getCourse(browser);
 	}
 }

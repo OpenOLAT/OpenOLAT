@@ -252,7 +252,9 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
-			//scrollTo(buttonBy, browser);
+			if(browser instanceof FirefoxDriver) {
+				scrollTo(buttonBy, browser);
+			}
 			new Actions(browser)
 				.moveToElement(buttonEl)
 				.pause(movePause)
@@ -278,6 +280,9 @@ public class OOGraphene {
 		WebElement buttonEl = browser.findElement(buttonBy);
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
+			if(browser instanceof FirefoxDriver) {
+				scrollTo(buttonBy, browser);
+			}
 			new Actions(browser)
 				.moveToElement(buttonEl)
 				.pause(movePause)
@@ -301,6 +306,9 @@ public class OOGraphene {
 	
 	public static void moveTo(By by, WebDriver browser) {
 		waitElement(by, browser);
+		if(browser instanceof FirefoxDriver) {
+			scrollTo(by, browser);
+		}
 		WebElement el = browser.findElement(by);
 		new Actions(browser)
 			.moveToElement(el)
@@ -320,7 +328,11 @@ public class OOGraphene {
 	}
 	
 	public static void moveTop(WebDriver browser) {
-		WebElement el = browser.findElement(By.id("o_top"));
+		By topBy = By.id("o_top");
+		if(browser instanceof FirefoxDriver) {
+			scrollTo(topBy, browser);
+		}
+		WebElement el = browser.findElement(topBy);
 		new Actions(browser)
 			.moveToElement(el)
 			.pause(moveToPause)

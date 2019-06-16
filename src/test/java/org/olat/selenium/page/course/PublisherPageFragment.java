@@ -138,6 +138,7 @@ public class PublisherPageFragment {
 		OOGraphene.waitElement(selectCatalogYesNoBy, 5, browser);
 		WebElement select = browser.findElement(selectCatalogYesNoBy);
 		new Select(select).selectByValue(access ? "yes" : "no");
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
