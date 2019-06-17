@@ -322,7 +322,7 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 		
 		List<String> identifiers = rubrics.stream().map(Rubric::getSliders).flatMap(s -> s.stream()).map(Slider::getId).collect(toList());
 		List<RawGroupedStatistic> statisticsList = filterDao.loadGroupedStatistic(searchParams,
-				identifiers, true, groupBy, temporalGroupBy);
+				identifiers, false, groupBy, temporalGroupBy);
 		GroupedStatistics<RawGroupedStatistic> rawStatistics = new GroupedStatistics<>(statisticsList);
 		GroupedStatistics<GroupedStatistic> statistics = statisticsCalculator.getGroupedStatistics(rawStatistics, rubrics);
 		return statisticsCalculator.getTrendsByMultiKey(statistics, temporalGroupBy);
