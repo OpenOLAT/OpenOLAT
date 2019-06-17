@@ -20,6 +20,7 @@
 package org.olat.modules.adobeconnect;
 
 import java.util.Date;
+import java.util.List;
 
 import org.olat.core.id.CreateInfo;
 import org.olat.core.id.ModifiedInfo;
@@ -55,6 +56,10 @@ public interface AdobeConnectMeeting extends ModifiedInfo, CreateInfo {
 	public String getScoId();
 	
 	public String getFolderId();
+	
+	public List<String> getSharedDocumentIds();
+	
+	public void setSharedDocumentIds(List<String> ids);
 	
 	public String getEnvName();
 	

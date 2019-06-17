@@ -26,7 +26,17 @@
 	$r.render("meeting.join.button")
 #end
 </div>
+#if($r.visible("meeting.share.documents") || $r.visible("meetingContents"))
 <fieldset>
 	<legend>$r.translate("meetings.content")</legend>
+	#if($r.visible("meeting.share.documents"))
+	<div class="o_button_group o_button_group_right">
+		$r.render("meeting.share.documents")
+	</div>
+	#end
+	#if($r.isTrue($notRegistered))
+		<div class="o_warning">$r.translate("warning.not.registered.shared.documents")</div>
+	#end
 	$r.render("meetingContents")
 </fieldset>
+#end

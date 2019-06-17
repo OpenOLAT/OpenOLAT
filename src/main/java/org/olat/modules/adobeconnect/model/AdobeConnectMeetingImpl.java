@@ -19,7 +19,9 @@
  */
 package org.olat.modules.adobeconnect.model;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -34,6 +36,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import org.olat.core.id.Persistable;
+import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupImpl;
 import org.olat.modules.adobeconnect.AdobeConnectMeeting;
@@ -78,6 +81,9 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 	private String folderId;
 	@Column(name="a_env_name", nullable=true, insertable=true, updatable=false)
 	private String envName;
+	
+	@Column(name="a_shared_documents", nullable=true, insertable=true, updatable=true)
+	private String sharedDocuments;
 
 	@ManyToOne(targetEntity=RepositoryEntry.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_entry_id", nullable=true, insertable=true, updatable=false)
@@ -161,6 +167,7 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 		return startDate;
 	}
 
+	@Override
 	public void setStartDate(Date start) {
 		this.startDate = start;
 	}
@@ -170,6 +177,7 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 		return endDate;
 	}
 
+	@Override
 	public void setEndDate(Date end) {
 		this.endDate = end;
 	}
@@ -181,6 +189,42 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 
 	public void setEnvName(String envName) {
 		this.envName = envName;
+	}
+
+	public String getSharedDocuments() {
+		return sharedDocuments;
+	}
+
+	public void setSharedDocuments(String sharedDocuments) {
+		this.sharedDocuments = sharedDocuments;
+	}
+
+	@Override
+	public List<String> getSharedDocumentIds() {
+		List<String> ids = new ArrayList<>();
+		if(StringHelper.containsNonWhitespace(sharedDocuments)) {
+			String[] idArray = sharedDocuments.split("[,]");
+			for(String id:idArray) {
+				if(StringHelper.containsNonWhitespace(id)) {
+					ids.add(id);
+				}
+			}
+		}
+		return ids;
+	}
+
+	@Override
+	public void setSharedDocumentIds(List<String> ids) {
+		StringBuilder sb = new StringBuilder();
+		if(ids != null && !ids.isEmpty()) {
+			for(String id:ids) {
+				if(StringHelper.containsNonWhitespace(id)) {
+					if(sb.length() > 0) sb.append(",");
+					sb.append(id);
+				}
+			}
+		}
+		sharedDocuments = sb.length() == 0 ? null : sb.toString();
 	}
 
 	@Override

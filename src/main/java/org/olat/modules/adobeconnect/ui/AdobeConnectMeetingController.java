@@ -42,6 +42,7 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
 import org.olat.core.util.Formatter;
@@ -66,7 +67,7 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	private final boolean readOnly;
 	private final boolean moderator;
 	private final boolean administrator;
-	private final AdobeConnectMeeting meeting;
+	private AdobeConnectMeeting meeting;
 	
 	private boolean registered;
 	private final boolean validMeeting;
@@ -74,8 +75,12 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	private int counter;
 	private Link joinButton;
 	private FormLink registerButton;
+	private FormLink sharedDocumentButton;
 	private FlexiTableElement contentTableEl;
 	private AdobeConnectContentTableModel contentModel;
+	
+	private CloseableModalController cmc;
+	private AdobeConnectShareDocumentsController shareDocumentsCtrl;
 	
 	@Autowired
 	private AdobeConnectModule adobeConnectModule;
@@ -125,10 +130,12 @@ public class AdobeConnectMeetingController extends FormBasicController {
 		}
 
 		registerButton = uifactory.addFormLink("meeting.register.button", flc, Link.BUTTON);
+		sharedDocumentButton = uifactory.addFormLink("meeting.share.documents", flc, Link.BUTTON);
+		sharedDocumentButton.setVisible(administrator || moderator);
 
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
 		joinButton.setTarget("_blank");
-		
+
 		initContent(formLayout);
 	}
 	
@@ -143,24 +150,36 @@ public class AdobeConnectMeetingController extends FormBasicController {
 		contentTableEl = uifactory.addTableElement(getWindowControl(), "meetingContents", contentModel, 24, false, getTranslator(), formLayout);
 		contentTableEl.setCustomizeColumns(false);
 		contentTableEl.setNumOfRowsEnabled(false);
-		contentTableEl.setEmtpyTableMessageKey("no.contents");
+		contentTableEl.setEmtpyTableMessageKey("no.shared.contents");
 	}
 	
 	private void loadModel() {
-		AdobeConnectErrors error = new AdobeConnectErrors();
-		List<AdobeConnectSco> scos = adobeConnectManager.getRecordings(meeting, error);
-		List<AdobeConnectContentRow> rows = new ArrayList<>(scos.size());
-		for(AdobeConnectSco sco:scos) {
-			AdobeConnectContentRow row = new AdobeConnectContentRow(sco);
-			if(registered) {
-				MediaResource resource = new AdobeConnectContentRedirectResource(getIdentity(), sco);
-				DownloadLink openLink = uifactory.addDownloadLink("open-" + (++counter), translate("content.open"), null, resource, contentTableEl);
-				row.setOpenLink(openLink);
+		List<String> sharedDocumentIds = meeting.getSharedDocumentIds();
+		
+		if(!sharedDocumentIds.isEmpty() || administrator || moderator) {
+			AdobeConnectErrors error = new AdobeConnectErrors();
+			List<AdobeConnectSco> scos = adobeConnectManager.getRecordings(meeting, error);
+			List<AdobeConnectContentRow> rows = new ArrayList<>(scos.size());
+			for(AdobeConnectSco sco:scos) {
+				if(sharedDocumentIds.contains(sco.getScoId())) {
+					AdobeConnectContentRow row = new AdobeConnectContentRow(sco);
+					if(registered) {
+						MediaResource resource = new AdobeConnectContentRedirectResource(getIdentity(), sco);
+						DownloadLink openLink = uifactory.addDownloadLink("open-" + (++counter), translate("content.open"), null, resource, contentTableEl);
+						row.setOpenLink(openLink);
+					}
+					rows.add(row);
+				}
 			}
-			rows.add(row);
+			contentModel.setObjects(rows);
+			contentTableEl.reset(true, true, true);
+			contentTableEl.setVisible(true);
+			sharedDocumentButton.setVisible(!scos.isEmpty() && (administrator || moderator));
+			flc.contextPut("notRegistered", Boolean.valueOf(!registered));
+		} else {
+			contentTableEl.setVisible(false);
+			sharedDocumentButton.setVisible(false);
 		}
-		contentModel.setObjects(rows);
-		contentTableEl.reset(true, true, true);
 	}
 	
 	private void updateButtons() {
@@ -181,6 +200,28 @@ public class AdobeConnectMeetingController extends FormBasicController {
 		}
 		super.event(ureq, source, event);
 	}
+	
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(shareDocumentsCtrl == source) {
+			if(event == Event.CHANGED_EVENT) {
+				meeting = shareDocumentsCtrl.getMeeting();
+				loadModel();
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(cmc == source) {
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeControllerListener(shareDocumentsCtrl);
+		removeControllerListener(cmc);
+		shareDocumentsCtrl = null;
+		cmc = null;
+	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -191,6 +232,8 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(registerButton == source) {
 			doRegister();
+		} else if(sharedDocumentButton == source) {
+			doShareDocuments(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -217,6 +260,16 @@ public class AdobeConnectMeetingController extends FormBasicController {
 		} else {
 			showInfo("meeting.registration.failed");
 		}
+	}
+	
+	private void doShareDocuments(UserRequest ureq) {
+		shareDocumentsCtrl = new AdobeConnectShareDocumentsController(ureq, getWindowControl(), meeting);
+		listenTo(shareDocumentsCtrl);
+		
+		String title = translate("meeting.share.documents.of", new String[] { StringHelper.escapeHtml(meeting.getName() )});
+		cmc = new CloseableModalController(getWindowControl(), "close", shareDocumentsCtrl.getInitialComponent(), true, title);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private AdobeConnectMeetingPermission getPermission() {

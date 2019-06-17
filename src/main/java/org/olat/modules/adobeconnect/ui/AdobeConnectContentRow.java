@@ -48,4 +48,21 @@ public class AdobeConnectContentRow {
 	public void setOpenLink(DownloadLink openLink) {
 		this.openLink = openLink;
 	}
+
+	@Override
+	public int hashCode() {
+		return sco == null ? -21801 : sco.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof AdobeConnectContentRow) {
+			AdobeConnectContentRow row = (AdobeConnectContentRow)obj;
+			return sco != null && sco.equals(row.getSco());
+		}
+		return false;
+	}
 }

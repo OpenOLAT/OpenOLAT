@@ -56,6 +56,8 @@ public interface AdobeConnectManager {
 	public AdobeConnectMeeting updateMeeting(AdobeConnectMeeting meeting, String name, String description,
 			String templateId, Date startDate, Date endDate, AdobeConnectErrors error);
 	
+	public AdobeConnectMeeting shareDocuments(AdobeConnectMeeting meeting, List<AdobeConnectSco> documents);
+	
 	public boolean deleteMeeting(AdobeConnectMeeting meeting, AdobeConnectErrors error);
 	
 	public List<AdobeConnectSco> getTemplates();

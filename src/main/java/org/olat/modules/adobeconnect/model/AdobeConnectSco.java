@@ -110,4 +110,21 @@ public class AdobeConnectSco {
 	public void setDateModified(Date dateModified) {
 		this.dateModified = dateModified;
 	}
+
+	@Override
+	public int hashCode() {
+		return scoId == null ? 23657834 : scoId.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj == this) {
+			return true;
+		}
+		if(obj instanceof AdobeConnectSco) {
+			AdobeConnectSco sco = (AdobeConnectSco)obj;
+			return scoId != null && scoId.equals(sco.getScoId());
+		}
+		return false;
+	}
 }

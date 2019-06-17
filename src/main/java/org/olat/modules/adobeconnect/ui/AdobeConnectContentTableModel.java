@@ -52,6 +52,16 @@ implements SortableFlexiTableDataModel<AdobeConnectContentRow> {
 			super.setObjects(views);
 		}
 	}
+	
+	public Integer indexOf(String scoId) {
+		for(int i=getRowCount(); i-->0; ) {
+			AdobeConnectContentRow content = getObject(i);
+			if(scoId.equals(content.getSco().getScoId())) {
+				return Integer.valueOf(i);
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public Object getValueAt(int row, int col) {

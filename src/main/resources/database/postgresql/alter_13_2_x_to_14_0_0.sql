@@ -142,6 +142,7 @@ create table o_aconnect_meeting (
    a_description varchar(2000) default null,
    a_start_date timestamp default null,
    a_end_date timestamp default null,
+   a_shared_documents varchar(2000) default null,
    fk_entry_id int8 default null,
    a_sub_ident varchar(64) default null,
    fk_group_id int8 default null,
@@ -184,6 +185,5 @@ alter table o_as_mode_course add column fk_lecture_block int8 default null;
 
 alter table o_as_mode_course add constraint as_mode_to_lblock_idx foreign key (fk_lecture_block) references o_lecture_block (id);
 create index idx_as_mode_to_lblock_idx on o_as_mode_course (fk_lecture_block);
-
 
 

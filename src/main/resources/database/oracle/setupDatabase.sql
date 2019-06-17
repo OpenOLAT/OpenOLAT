@@ -1232,6 +1232,7 @@ create table o_aconnect_meeting (
    a_description varchar(2000) default null,
    a_start_date timestamp default null,
    a_end_date timestamp default null,
+   a_shared_documents varchar(2000) default null,
    fk_entry_id number(20) default null,
    a_sub_ident varchar(64) default null,
    fk_group_id number(20) default null,

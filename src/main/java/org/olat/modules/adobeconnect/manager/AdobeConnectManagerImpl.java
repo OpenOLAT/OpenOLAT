@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.core.UriBuilder;
 
@@ -187,6 +188,14 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 		return meeting;
 	}
 	
+	@Override
+	public AdobeConnectMeeting shareDocuments(AdobeConnectMeeting meeting, List<AdobeConnectSco> documents) {
+		meeting = adobeConnectMeetingDao.loadByKey(meeting.getKey());
+		List<String> scoIds = documents.stream().map(AdobeConnectSco::getScoId).collect(Collectors.toList());
+		meeting.setSharedDocumentIds(scoIds);
+		return adobeConnectMeetingDao.updateMeeting(meeting);
+	}
+
 	@Override
 	public List<AdobeConnectSco> getTemplates() {
 		List<AdobeConnectSco> templates = getAdapter().getTemplates();
