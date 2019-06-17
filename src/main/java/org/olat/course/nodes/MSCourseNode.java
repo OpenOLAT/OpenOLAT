@@ -59,6 +59,7 @@ import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.nodes.ms.MSEvaluationFormExecutionController;
 import org.olat.course.nodes.ms.MSIdentityListCourseNodeController;
 import org.olat.course.nodes.ms.MSResultDetailsController;
+import org.olat.course.nodes.ms.MSRunController;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
 import org.olat.course.properties.CoursePropertyManager;
@@ -202,7 +203,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			controller = new MSCourseNodeRunController(ureq, wControl, userCourseEnv, this, true, true);
+			controller = new MSRunController(ureq, wControl, userCourseEnv, this);
 		}
 		
 		Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ms_icon");
@@ -544,7 +545,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		return new MSIdentityListCourseNodeController(ureq, wControl, stackPanel,
-				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
+				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback, true);
 	}
 
 	@Override

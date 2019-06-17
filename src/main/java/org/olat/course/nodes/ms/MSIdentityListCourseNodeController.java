@@ -20,8 +20,6 @@
 package org.olat.course.nodes.ms;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -61,8 +59,11 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 
 	public MSIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, MSCourseNode courseNode, UserCourseEnvironment coachCourseEnv,
-			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
+			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback, boolean showTitle) {
 		super(ureq, wControl, stackPanel, courseEntry, group, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+
+		flc.contextPut("showTitle", Boolean.valueOf(showTitle));
+		flc.setDirty(true);
 	}
 
 	@Override
@@ -90,16 +91,15 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void loadModel(UserRequest ureq) {
 		super.loadModel(ureq);
 		
-		if (hasEvaluationForm) {
+		if (hasEvaluationForm()) {
 			List<EvaluationFormSession> sessions = msService.getDoneSessions(getCourseRepositoryEntry(), courseNode.getIdent());
-			Map<String, EvaluationFormSession> identToSesssion = sessions.stream()
-					.collect(Collectors.toMap(
-							s -> s.getSurvey().getIdentifier().getSubident2(),
-							Function.identity()));
+			List<String> idents = sessions.stream()
+					.map(s -> s.getSurvey().getIdentifier().getSubident2())
+					.collect(Collectors.toList());
 			
 			for (AssessedIdentityElementRow row : usersTableModel.getObjects()) {
 				String ident = row.getIdentityKey().toString();
-				Boolean sessionDone = identToSesssion.containsKey(ident);
+				Boolean sessionDone = idents.contains(ident);
 				row.setDetails(sessionDone);
 			}
 		}
