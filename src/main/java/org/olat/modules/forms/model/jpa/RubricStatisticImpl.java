@@ -146,7 +146,7 @@ public class RubricStatisticImpl implements RubricStatistic {
 		for (int step = 1; step <= rubric.getSteps(); step++) {
 			Long count = stepCounts.get(step - 1);
 			if (count != null) {
-				double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step);
+				double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step, rubric.getWeight());
 				for (int i = 0; i < count; i++) {
 					values[counter++] = stepValue;
 				}
@@ -166,7 +166,7 @@ public class RubricStatisticImpl implements RubricStatistic {
 		for (int step = 1; step <= rubric.getSteps(); step++) {
 			Long count = stepCounts.get(step - 1);
 			if (count != null) {
-				double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step);
+				double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step, rubric.getWeight());
 				sumValues += count * stepValue;
 				sumResponses += count;
 			}
@@ -202,7 +202,7 @@ public class RubricStatisticImpl implements RubricStatistic {
 		for (int step = 1; step <= rubric.getSteps(); step++) {
 			Long count = stepCounts.get(step - 1);
 			if (count != null) {
-				double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step);
+				double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step, rubric.getWeight());
 				for (int i = 0; i < count; i++) {
 					double scaledValue = stepValue * step;
 					scaledValues.add(Double.valueOf(scaledValue));

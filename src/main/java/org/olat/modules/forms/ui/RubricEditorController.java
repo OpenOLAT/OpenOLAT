@@ -94,6 +94,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private MultipleSelectionElement surveyConfigEl;
 	private SingleSelection sliderTypeEl;
 	private SingleSelection scaleTypeEl;
+	private TextElement scaleWeightEl;
 	private TextElement nameEl;
 	private MultipleSelectionElement nameDisplayEl;
 	private SingleSelection stepsEl;
@@ -211,6 +212,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 		if(!scaleSelected) {
 			scaleTypeEl.select(ScaleType.getKeys()[0], true);
 		}
+		
+		// scale weight
+		String scaleWeight = rubric.getWeight() != null? rubric.getWeight().toString(): "";
+		scaleWeightEl = uifactory.addTextElement("rubric.weight", 10, scaleWeight, settingsLayout);
+		scaleWeightEl.addActionListener(FormEvent.ONCHANGE);
 		
 		// good rating side
 		goodRatingEl = uifactory.addDropdownSingleselect("rubric.good.rating" + count.incrementAndGet(), "rubric.good.rating",
@@ -345,6 +351,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		}
 		
 		scaleTypeEl.setVisible(isSurveyConfig);
+		scaleWeightEl.setVisible(isSurveyConfig);
 		noAnswerEl.setVisible(isSurveyConfig);
 		noAnswerEl.select(noAnswerEl.getKey(0), rubric.isNoResponseEnabled());
 		insufficientCont.setVisible(isSurveyConfig);
@@ -378,6 +385,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		List<StepLabelColumn> stepLabelColumns = new ArrayList<>();
 		if (stepsEl.isVisible() && stepsEl.isOneSelected()
 				&& (sliderTypeEl.isSelected(0) || sliderTypeEl.isSelected(1))) {
+			Integer weight = getWeightOrNull();
 			int steps = Integer.parseInt(stepsEl.getSelectedKey());
 			for(int i=0; i<steps; i++) {
 				Integer step = new Integer(i);
@@ -396,7 +404,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 				if (scaleTypeEl.isOneSelected()) {
 					String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
 					ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
-					double stepValue = scaleType.getStepValue(steps, i + 1);
+					double stepValue = scaleType.getStepValue(steps, i + 1, weight);
 					col.setExampleText(String.valueOf(stepValue));
 				} else {
 					col.removeExampleText();
@@ -409,6 +417,13 @@ public class RubricEditorController extends FormBasicController implements PageE
 		}
 		stepLabels = stepLabelColumns;
 		flc.contextPut("stepLabels", stepLabelColumns);
+	}
+
+	private Integer getWeightOrNull() {
+		return StringHelper.containsNonWhitespace(scaleWeightEl.getValue())
+				&& isValidInteger(scaleWeightEl.getValue(), 1, 10000000)
+				? Integer.parseInt(scaleWeightEl.getValue())
+				: null;
 	}
 	
 	private void updateTypeSettings() {
@@ -438,8 +453,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
 		
 		int steps = sliderType == SliderType.continuous? 100: Integer.parseInt(stepsEl.getSelectedKey());
-		double leftValue = scaleType.getStepValue(steps, 1);
-		double rightValue = scaleType.getStepValue(steps, steps);
+		Integer weight = getWeightOrNull();
+		double leftValue = scaleType.getStepValue(steps, 1, weight);
+		double rightValue = scaleType.getStepValue(steps, steps, weight);
 		double highValue = rightValue > leftValue? rightValue: leftValue;
 		double lowValue = rightValue < leftValue? rightValue: leftValue;
 		int diff = sliderType == SliderType.continuous? 10: 1;
@@ -592,6 +608,10 @@ public class RubricEditorController extends FormBasicController implements PageE
 			updateSteps();
 			updateSliders();
 			updatePlaceholders();
+		} else if (scaleWeightEl == source) {
+			updateSteps();
+			updateSliders();
+			updatePlaceholders();
 		} else if (goodRatingEl == source) {
 			updatePlaceholders();
 		} else if(saveButton == source) {
@@ -679,12 +699,22 @@ public class RubricEditorController extends FormBasicController implements PageE
 		boolean allOk = true;
 		boolean surveyConfigOk = true;
 		
+		// slider type
 		sliderTypeEl.clearError();
 		if(!sliderTypeEl.isOneSelected()) {
 			sliderTypeEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
 		
+		// scale weight
+		scaleWeightEl.clearError();
+		if (StringHelper.containsNonWhitespace(scaleWeightEl.getValue())
+				&& isInvalidInteger(scaleWeightEl.getValue(), 1, 10000000)) {
+			scaleWeightEl.setErrorKey("error.wrong.int", null);
+			surveyConfigOk &= false;
+		}
+		
+		// bounds
 		double min = -101;
 		double max = 101;
 		int steps = 100;
@@ -695,8 +725,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 		if (sliderType != SliderType.continuous) {
 			steps = Integer.parseInt(stepsEl.getSelectedKey());
 		}
-		min = scaleType.getStepValue(steps, 1);
-		max = scaleType.getStepValue(steps, steps);
+		Integer weight = getWeightOrNull();
+		min = scaleType.getStepValue(steps, 1, weight);
+		max = scaleType.getStepValue(steps, steps, weight);
 		if (min > max) {
 			double temp = min;
 			min = max;
@@ -768,6 +799,27 @@ public class RubricEditorController extends FormBasicController implements PageE
 		return !inside;
 	}
 	
+	private boolean isValidInteger(String val, int min, int max) {
+		return !isInvalidDouble(val, min, max);
+	}
+	
+	private boolean isInvalidInteger(String val, int min, int max) {
+		boolean inside = true;
+		if (StringHelper.containsNonWhitespace(val)) {
+			try {
+				double value = Integer.parseInt(val);
+				if(min > value) {
+					inside =  false;
+				} else if(max < value) {
+					inside =  false;
+				}
+			} catch (NumberFormatException e) {
+				inside =  false;
+			}
+		}
+		return !inside;
+	}
+	
 	private boolean isOverlapping(TextElement range1Lower, TextElement range1Upper, TextElement range2Lower, TextElement range2Upper) {
 		if (!StringHelper.containsNonWhitespace(range1Lower.getValue())
 				|| !StringHelper.containsNonWhitespace(range1Upper.getValue())
@@ -827,6 +879,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 		String selectedScaleTypeKey = scaleTypeEl.getSelectedKey();
 		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
 		rubric.setScaleType(scaleType);
+		
+		Integer scaleWeight = StringHelper.containsNonWhitespace(scaleWeightEl.getValue())
+				? Integer.parseInt(scaleWeightEl.getValue())
+				: null;
+		rubric.setWeight(scaleWeight);
 		
 		for(Iterator<Slider> sliderIt=rubric.getSliders().iterator(); sliderIt.hasNext(); ) {
 			Slider slider = sliderIt.next();

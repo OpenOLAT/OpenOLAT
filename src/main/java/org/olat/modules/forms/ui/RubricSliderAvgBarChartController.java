@@ -69,8 +69,8 @@ public class RubricSliderAvgBarChartController extends BasicController {
 				: translate("report.overview.total.title");
 		mainVC.contextPut("title", title);
 		ResponsiveBarChartComponent chart = new ResponsiveBarChartComponent("o_eve_bc_" + CodeHelper.getRAMUniqueID());
-		double yMin = rubric.getScaleType().getStepValue(rubric.getSteps(), 1);
-		double yMax = rubric.getScaleType().getStepValue(rubric.getSteps(), rubric.getSteps());
+		double yMin = rubric.getScaleType().getStepValue(rubric.getSteps(), 1, rubric.getWeight());
+		double yMax = rubric.getScaleType().getStepValue(rubric.getSteps(), rubric.getSteps(), rubric.getWeight());
 		double yMinTemp = yMin;
 		if (yMax < yMin) {
 			yMin = yMax;

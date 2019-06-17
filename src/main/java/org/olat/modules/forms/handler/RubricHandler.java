@@ -98,6 +98,7 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 		rubric.setSteps(5);
 		rubric.setSliderType(SliderType.discrete);
 		rubric.setScaleType(ScaleType.oneToMax);
+		rubric.setWeight(1);
 		
 		Slider slider = new Slider();
 		slider.setId(UUID.randomUUID().toString());
