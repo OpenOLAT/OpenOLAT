@@ -239,10 +239,12 @@ public class OpenOLATPolicy {
 		
 		.allowElements("dd","tbody","dl","caption","hr","div","dt","ul","init","blockquote","pre","em","figcaption","sub",
 				"strong","img","thead","h1","h2","h3","h4","h5","h6","sup","ol","table","b","figure","strike","i","p",
-				"tfoot","td","s","th","u","li","tr","span")
+				"tfoot","td","s","th","u","li","tr", "span")
 		
 		.allowElements("hr")
 			.allowWithoutAttributes("hr")
+		.allowElements("br")
+			.allowWithoutAttributes("br")
 		.allowElements("a")
 			.allowWithoutAttributes("a")
 		.allowElements("img")
