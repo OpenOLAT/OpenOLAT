@@ -381,11 +381,12 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		
 		// add an assessment mode
 		AssessmentMode assessmentMode = assessmentModeManager.createAssessmentMode(lectureBlock, 5, 5, "", null);
+		assessmentMode = assessmentModeManager.persist(assessmentMode);
 		dbInstance.commitAndCloseSession();
 		
 		List<LectureBlockRef> assessedBlockRefs = lectureBlockDao.loadAssessedByTeacher(teacher, searchParams);
 		Assert.assertEquals(1, assessedBlockRefs.size());
-		Assert.assertEquals(lectureBlock, assessedBlockRefs.get(0));
+		Assert.assertEquals(lectureBlock.getKey(), assessedBlockRefs.get(0).getKey());
 		Assert.assertEquals(lectureBlock, assessmentMode.getLectureBlock());
 	}
 	
