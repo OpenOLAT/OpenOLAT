@@ -103,6 +103,16 @@ public class ADFSApi extends DefaultApi20 {
         }
 
 		@Override
+		public void signRequest(OAuth2AccessToken accessToken, OAuthRequest request) {
+			signRequest(accessToken.getAccessToken(), request);
+		}
+
+		@Override
+		public void signRequest(String accessToken, OAuthRequest request) {
+		    request.addQuerystringParameter(OAuthConstants.ACCESS_TOKEN, accessToken);
+		}
+
+		@Override
 		public OAuth2AccessToken getAccessToken(String code)
 		throws InterruptedException, ExecutionException, IOException {
 			OAuthRequest request = new OAuthRequest(Verb.POST, api.getAccessTokenEndpoint());
