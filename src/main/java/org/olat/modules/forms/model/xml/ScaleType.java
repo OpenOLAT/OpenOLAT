@@ -30,6 +30,12 @@ import org.olat.core.gui.translator.Translator;
  *
  */
 public enum ScaleType {
+	zeroToMax {
+		@Override
+		public double getStepValue(int numberOfSteps, int step) {
+			return step - 1;
+		}
+	},
 	oneToMax {
 		@Override
 		public double getStepValue(int numberOfSteps, int step) {
@@ -40,6 +46,12 @@ public enum ScaleType {
 		@Override
 		public double getStepValue(int numberOfSteps, int step) {
 			return numberOfSteps + 1 - step;
+		}
+	},
+	maxToZero {
+		@Override
+		public double getStepValue(int numberOfSteps, int step) {
+			return numberOfSteps - step;
 		}
 	},
 	zeroBallanced {
