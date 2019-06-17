@@ -1276,6 +1276,7 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		cal.add(Calendar.HOUR_OF_DAY, 2);
 		mode.setEnd(cal.getTime());
 		mode.setTargetAudience(Target.course);
+		mode.setManualBeginEnd(false);
 		return mode;
 	}
 	

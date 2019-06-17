@@ -224,7 +224,7 @@ public class AssessmentModeDAO {
 		
 		StringBuilder sb = new StringBuilder(512);
 		sb.append("select mode from courseassessmentmode mode")
-		  .append(" left join mode.lectureBlock block")
+		  .append(" left join fetch mode.lectureBlock block")
 		  .append(" where mode.repositoryEntry.key=:repoKey and (")
 		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
 		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
