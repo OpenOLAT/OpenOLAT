@@ -153,8 +153,9 @@ public class MSServiceImpl implements MSService {
 				Rubric rubric = (Rubric) element;
 				int numberOfSliders = rubric.getSliders().size();
 				int steps = rubric.getSteps();
-				double min = rubric.getScaleType().getStepValue(steps, 1);
-				double max = rubric.getScaleType().getStepValue(steps, steps);
+				Integer weight =  rubric.getWeight();
+				double min = rubric.getScaleType().getStepValue(steps, 1, weight);
+				double max = rubric.getScaleType().getStepValue(steps, steps, weight);
 				sumMin += numberOfSliders * min;
 				sumMax += numberOfSliders * max;
 			}
@@ -175,8 +176,9 @@ public class MSServiceImpl implements MSService {
 				Rubric rubric = (Rubric) element;
 				int numberOfSliders = rubric.getSliders().size();
 				int steps = rubric.getSteps();
-				double min = rubric.getScaleType().getStepValue(steps, 1);
-				double max = rubric.getScaleType().getStepValue(steps, steps);
+				Integer weight = rubric.getWeight();
+				double min = rubric.getScaleType().getStepValue(steps, 1, weight);
+				double max = rubric.getScaleType().getStepValue(steps, steps, weight);
 				sumMin += numberOfSliders * min;
 				sumMax += numberOfSliders * max;
 				numberAvgs += numberOfSliders;

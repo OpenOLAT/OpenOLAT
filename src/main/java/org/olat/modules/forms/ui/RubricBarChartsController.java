@@ -102,7 +102,7 @@ public abstract class RubricBarChartsController extends FormBasicController {
 		List<Long> stepCounts = sliderStatistic.getStepCounts();
 		for (int step = 1; step <= rubric.getSteps(); step++) {
 			Long count = stepCounts.get(step -1);
-			double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step);
+			double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step, rubric.getWeight());
 			String stepName = EvaluationFormFormatter.formatZeroOrOneDecimals(stepValue);
 			series.add(count, stepName);
 		}

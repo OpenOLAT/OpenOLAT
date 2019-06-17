@@ -83,7 +83,7 @@ public class RubricTableController extends FormBasicController {
 		if (!rubric.getSliderType().equals(SliderType.continuous)) {
 			ScaleType scaleType = rubric.getScaleType();
 			for (int step = 1; step <= rubric.getSteps(); step++) {
-				double stepValue = scaleType.getStepValue(rubric.getSteps(), step);
+				double stepValue = scaleType.getStepValue(rubric.getSteps(), step, rubric.getWeight());
 				String header = EvaluationFormFormatter.formatZeroOrOneDecimals(stepValue);
 				String label = rubric.getStepLabels() != null && ! rubric.getStepLabels().isEmpty()
 						? rubric.getStepLabels().get(step -1).getLabel()

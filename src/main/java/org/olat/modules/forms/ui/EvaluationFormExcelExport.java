@@ -30,8 +30,8 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.olat.core.CoreSpringFactory;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -326,7 +326,7 @@ public class EvaluationFormExcelExport {
 			if (response != null) {
 				BigDecimal value = response.getNumericalResponse();
 				if (value != null) {
-					double scaledValue = rubric.getScaleType().getStepValue(rubric.getSteps(), value.intValue());
+					double scaledValue = rubric.getScaleType().getStepValue(rubric.getSteps(), value.intValue(), rubric.getWeight());
 					row.addCell(col, scaledValue, null);
 				}
 			}
