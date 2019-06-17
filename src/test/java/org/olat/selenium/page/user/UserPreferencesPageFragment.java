@@ -81,6 +81,7 @@ public class UserPreferencesPageFragment {
 		}
 		
 		radio.click();
+		OOGraphene.waitBusy(browser);
 		
 		By saveSystemSettingsButton = By.cssSelector("div.o_sel_home_settings_gui_buttons.form-inline button[type='button']");
 		browser.findElement(saveSystemSettingsButton).click();
