@@ -33,11 +33,17 @@ import org.olat.modules.lecture.LectureBlock;
  */
 public class LectureBlockWithTeachers {
 	
+	private final boolean assessmentMode;
 	private final LectureBlock lectureBlock;
 	private final List<Identity> teachers = new ArrayList<>(3);
 	
-	public LectureBlockWithTeachers(LectureBlock lectureBlock) {
+	public LectureBlockWithTeachers(LectureBlock lectureBlock, boolean assessmentMode) {
 		this.lectureBlock = lectureBlock;
+		this.assessmentMode = assessmentMode;
+	}
+	
+	public boolean isAssessmentMode() {
+		return assessmentMode;
 	}
 	
 	public LectureBlock getLectureBlock() {

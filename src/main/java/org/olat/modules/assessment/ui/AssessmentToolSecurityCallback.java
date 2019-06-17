@@ -70,6 +70,10 @@ public class AssessmentToolSecurityCallback {
 	public boolean canAssessCurriculumMembers() {
 		return curriculumMembers || admin;
 	}
+	
+	public boolean canStartStopAllAssessments() {
+		return admin;
+	}
 
 	public List<BusinessGroup> getCoachedGroups() {
 		return coachedGroups;

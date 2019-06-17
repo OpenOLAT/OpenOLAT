@@ -35,6 +35,8 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -144,6 +146,8 @@ public class LectureListRepositoryController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, BlockCols.id));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.assessmentMode,
+				new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_assessment_mode"), null)));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.compulsory, new YesNoCellRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.location));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(BlockCols.date, new DateFlexiCellRenderer(getLocale())));
@@ -188,7 +192,8 @@ public class LectureListRepositoryController extends FormBasicController {
 				teachers.append(userManager.getUserDisplayName(teacher));
 			}
 
-			LectureBlockRow row = new LectureBlockRow(b, entry.getDisplayname(), entry.getExternalRef(), teachers.toString(), false);
+			LectureBlockRow row = new LectureBlockRow(b, entry.getDisplayname(), entry.getExternalRef(),
+					teachers.toString(), false, block.isAssessmentMode());
 			rows.add(row);
 			
 			String linkName = "tools-" + counter++;

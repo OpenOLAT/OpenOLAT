@@ -54,5 +54,44 @@ public class ConfigurationHelper {
 		}
 		return lectureModule.isRollCallCalculateAttendanceRateDefaultEnabled();
 	}
-
+	
+	public static boolean isAssessmentModeEnabled(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+		if(lectureConfig != null && lectureConfig.isOverrideModuleDefault()) {
+			return lectureConfig.getAssessmentModeEnabled() == null ?
+					lectureModule.isAssessmentModeEnabledDefault() : lectureConfig.getAssessmentModeEnabled().booleanValue();
+		}
+		return lectureModule.isAssessmentModeEnabledDefault();
+	}
+	
+	public static int getLeadTime(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+		if(lectureConfig != null && lectureConfig.isOverrideModuleDefault()) {
+			return lectureConfig.getAssessmentModeLeadTime() == null ?
+					lectureModule.getAssessmentModeLeadTime() : lectureConfig.getAssessmentModeLeadTime().intValue();
+		}
+		return lectureModule.getAssessmentModeLeadTime();
+	}
+	
+	public static int getFollowupTime(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+		if(lectureConfig != null && lectureConfig.isOverrideModuleDefault()) {
+			return lectureConfig.getAssessmentModeFollowupTime() == null ?
+					lectureModule.getAssessmentModeFollowupTime() : lectureConfig.getAssessmentModeFollowupTime().intValue();
+		}
+		return lectureModule.getAssessmentModeFollowupTime();
+	}
+	
+	public static String getAdmissibleIps(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+		if(lectureConfig != null && lectureConfig.isOverrideModuleDefault()) {
+			return lectureConfig.getAssessmentModeAdmissibleIps() == null ?
+					lectureModule.getAssessmentModeAdmissibleIps() : lectureConfig.getAssessmentModeAdmissibleIps();
+		}
+		return lectureModule.getAssessmentModeAdmissibleIps();
+	}
+	
+	public static String getSebKeys(RepositoryEntryLectureConfiguration lectureConfig, LectureModule lectureModule) {
+		if(lectureConfig != null && lectureConfig.isOverrideModuleDefault()) {
+			return lectureConfig.getAssessmentModeSebKeys() == null ?
+					lectureModule.getAssessmentModeSebKeys() : lectureConfig.getAssessmentModeSebKeys();
+		}
+		return lectureModule.getAssessmentModeSebKeys();
+	}
 }

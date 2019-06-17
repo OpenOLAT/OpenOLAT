@@ -24,7 +24,6 @@ import java.util.Collections;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.model.EnhancedStatus;
 
 /**
@@ -33,7 +32,7 @@ import org.olat.course.assessment.model.EnhancedStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeOverviewListTableModel extends DefaultFlexiTableDataModel<AssessmentMode> {
+public class AssessmentModeOverviewListTableModel extends DefaultFlexiTableDataModel<AssessmentModeOverviewRow> {
 	
 	public AssessmentModeOverviewListTableModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -41,20 +40,20 @@ public class AssessmentModeOverviewListTableModel extends DefaultFlexiTableDataM
 
 	@Override
 	public Object getValueAt(int row, int col) {
-		AssessmentMode mode = getObject(row);
+		AssessmentModeOverviewRow mode = getObject(row);
 		switch(ModeCols.values()[col]) {
-			case status: return new EnhancedStatus(mode.getStatus(), Collections.emptyList());
-			case name: return mode.getName();
-			case begin: return mode.getBegin();
-			case end: return mode.getEnd();
-			case leadTime: return mode.getLeadTime();
-			case followupTime: return mode.getFollowupTime();
+			case status: return new EnhancedStatus(mode.getAssessmentMode().getStatus(), Collections.emptyList());
+			case name: return mode.getAssessmentMode().getName();
+			case begin: return mode.getAssessmentMode().getBegin();
+			case end: return mode.getAssessmentMode().getEnd();
+			case leadTime: return mode.getAssessmentMode().getLeadTime();
+			case followupTime: return mode.getAssessmentMode().getFollowupTime();
 			default: return "ERROR";
 		}
 	}
 	
 	@Override
-	public DefaultFlexiTableDataModel<AssessmentMode> createCopyWithEmptyList() {
+	public AssessmentModeOverviewListTableModel createCopyWithEmptyList() {
 		return new AssessmentModeOverviewListTableModel(getTableColumnModel());
 	}
 	

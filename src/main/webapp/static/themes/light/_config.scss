@@ -459,7 +459,9 @@ $o-curriculum-style-course-title-padding		: $o-curriculum-l2-title-padding !defa
 $o-curriculum-style-course-lifecycle-bg			: $o-curriculum-l2-lifecycle-bg !default;
 $o-curriculum-style-course-lifecycle-padding	: $o-curriculum-l2-lifecycle-padding !default;
 
-
+/* Asssessment */
+$o-assessment-mode-today-bg						: $state-success-bg !default;
+$o-assessment-mode-today-border-color			: $state-success-text !default;
 
 /* Portfolio v2 */
 $o-portfolio-assignment-color						: $brand-danger !default;

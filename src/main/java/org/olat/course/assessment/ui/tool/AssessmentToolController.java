@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.tool;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -31,26 +32,36 @@ import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.EfficiencyStatementAssessmentController;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
+import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
+import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.assessment.ui.event.UserSelectionEvent;
+import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -62,25 +73,34 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssessmentToolController extends MainLayoutBasicController implements Activateable2 {
 
-
-	private RepositoryEntry courseEntry;
+	private final RepositoryEntry courseEntry;
+	private final UserCourseEnvironment coachUserEnv;
 	private final AssessmentToolSecurityCallback assessmentCallback;
 	
-	private Link overviewLink, usersLink, groupsLink;
-	private Link efficiencyStatementsLink, bulkAssessmentLink;
+	private Link usersLink;
+	private Link groupsLink;
+	private Link overviewLink;
+	private Link bulkAssessmentLink;
+	private Link efficiencyStatementsLink;
+	private Link stopAssessmentMode;
 	private final TooledStackedPanel stackPanel;
 	private final AssessmentToolContainer toolContainer;
 	private final ButtonGroupComponent segmentButtonsCmp;
-	
+
+	private DialogBoxController stopDialogBox;
 	private AssessmentCourseTreeController courseTreeCtrl;
 	private AssessmentCourseOverviewController overviewCtrl;
 	private BulkAssessmentOverviewController bulkAssessmentOverviewCtrl;
 	private EfficiencyStatementAssessmentController efficiencyStatementCtrl;
 	
-	private UserCourseEnvironment coachUserEnv;
-	
+	@Autowired
+	private DB dbInstance;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
+	@Autowired
+	private AssessmentModeCoordinationService assessmentModeCoordinationService;
 	
 	public AssessmentToolController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, UserCourseEnvironment coachUserEnv, AssessmentToolSecurityCallback assessmentCallback) {
@@ -102,10 +122,38 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	}
 	
 	public void assessmentModeMessage() {
-		if(assessmentModeManager.isInAssessmentMode(courseEntry, new Date())) {
-			stackPanel.setMessage(translate("assessment.mode.now"));
-			stackPanel.setMessageCssClass("o_warning");
+		List<AssessmentMode> modes = assessmentModeManager.getCurrentAssessmentMode(courseEntry, new Date());
+		if(!modes.isEmpty()) {
+			VelocityContainer warn = createVelocityContainer("assessment_mode_warn");
+			if(modes.size() == 1) {
+				AssessmentMode mode = modes.get(0);
+				warn.contextPut("message", translate("assessment.mode.now"));
+				if(canStopAssessmentMode(mode)) {
+					String modeName = mode.getName();
+					String label = translate("assessment.tool.stop", new String[] { StringHelper.escapeHtml(modeName) });
+					stopAssessmentMode = LinkFactory.createCustomLink("assessment.stop", "stop", label, Link.BUTTON_SMALL | Link.NONTRANSLATED, warn, this);
+					stopAssessmentMode.setIconLeftCSS("o_icon o_icon-fw o_as_mode_stop");
+					stopAssessmentMode.setUserObject(mode);
+				}
+			} else {
+				warn.contextPut("message", translate("assessment.mode.several.now"));
+			}
+			stackPanel.setMessageComponent(warn);
+		} else {
+			stackPanel.setMessageComponent(null);
 		}
+	}
+	
+	private boolean canStopAssessmentMode(AssessmentMode mode) {
+		if(assessmentCallback.canStartStopAllAssessments()) {
+			return mode.getStatus() == AssessmentMode.Status.assessment || mode.getStatus() == AssessmentMode.Status.leadtime;
+		} else if(mode.getLectureBlock() != null) {
+			List<Identity> teachers = lectureService.getTeachers(mode.getLectureBlock());
+			return teachers.contains(getIdentity())
+					&& (mode.getStatus() == AssessmentMode.Status.assessment
+						|| mode.getStatus() == AssessmentMode.Status.leadtime);
+		}
+		return false;
 	}
 	
 	public void initToolbar() {
@@ -140,7 +188,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 	
 	@Override
 	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
-		if(entries == null || entries.size() == 0) return;
+		if(entries == null || entries.isEmpty()) return;
 		
 		String resName = entries.get(0).getOLATResourceable().getResourceableTypeName();
 		if("Users".equalsIgnoreCase(resName)) {
@@ -170,6 +218,8 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		} else if(bulkAssessmentLink == source) {
 			cleanUp();
 			doBulkAssessmentView(ureq);
+		} else if(stopAssessmentMode == source) {
+			doConfirmStop(ureq, (AssessmentMode)stopAssessmentMode.getUserObject());
 		} else if(stackPanel == source) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
@@ -205,11 +255,22 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 							.createCEListFromResourceable(resource, new AssessedIdentityListState("inReview"));
 					doSelectUsersView(ureq, null).activate(ureq, entries, null);
 				} else {
-					OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", new Long(use.getCourseNodeIdents().get(0)));
+					OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(use.getCourseNodeIdents().get(0)));
 					OLATResourceable idRes = OresHelper.createOLATResourceableInstance("Identity", use.getIdentityKey());
 					List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(nodeRes, idRes);
 					doSelectUsersView(ureq, null).activate(ureq, entries, null);
 				}
+			} else if(event instanceof CourseNodeEvent) {
+				CourseNodeEvent cne = (CourseNodeEvent)event;
+				if(cne.getIdent() != null) {
+					doSelectNodeView(ureq, cne.getIdent());
+				}
+			} else if(event instanceof AssessmentModeStatusEvent) {
+				assessmentModeMessage();
+			}
+		} else if(stopDialogBox == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				doStop((AssessmentMode)stopDialogBox.getUserObject());
 			}
 		}
 		super.event(ureq, source, event);
@@ -240,7 +301,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			courseTreeCtrl = new AssessmentCourseTreeController(ureq, getWindowControl(), stackPanel, courseEntry, coachUserEnv, toolContainer, assessmentCallback);
 			listenTo(courseTreeCtrl);
 			TreeNode node = courseTreeCtrl.getSelectedCourseNode();
-			stackPanel.pushController(node.getTitle(), "o_icon " + node.getIconCssClass(), courseTreeCtrl);
+			stackPanel.pushController(node.getTitle(), "o_icon ".concat(node.getIconCssClass()), courseTreeCtrl);
 		}
 		courseTreeCtrl.switchToBusinessGroupsView(ureq);
 		segmentButtonsCmp.setSelectedButton(groupsLink);
@@ -259,5 +320,38 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 		courseTreeCtrl.switchToUsersView(ureq, stateUserList);
 		segmentButtonsCmp.setSelectedButton(usersLink);
 		return courseTreeCtrl;
+	}
+	
+	private AssessmentCourseTreeController doSelectNodeView(UserRequest ureq, String nodeIdent) {
+		if(courseTreeCtrl == null || courseTreeCtrl.isDisposed()) {
+			stackPanel.popUpToController(this);
+			
+			courseTreeCtrl = new AssessmentCourseTreeController(ureq, getWindowControl(), stackPanel, courseEntry, coachUserEnv, toolContainer, assessmentCallback);
+			listenTo(courseTreeCtrl);
+			OLATResourceable nodeRes = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(nodeIdent));
+			List<ContextEntry> entries = BusinessControlFactory.getInstance().createCEListFromString(nodeRes);
+			courseTreeCtrl.activate(ureq, entries, null);
+			
+			TreeNode node = courseTreeCtrl.getSelectedCourseNode();
+			stackPanel.pushController(node.getTitle(), "o_icon " + node.getIconCssClass(), courseTreeCtrl);
+		}
+		courseTreeCtrl.switchToUsersView(ureq, null);
+		segmentButtonsCmp.setSelectedButton(usersLink);
+		return courseTreeCtrl;
+	}
+	
+	private void doConfirmStop(UserRequest ureq, AssessmentMode mode) {
+		String title = translate("confirm.stop.title");
+		String text = translate("confirm.stop.text.details", new String[] { StringHelper.escapeHtml(mode.getName()) });
+		stopDialogBox = activateYesNoDialog(ureq, title, text, stopDialogBox);
+		stopDialogBox.setUserObject(mode);
+	}
+	
+	private void doStop(AssessmentMode mode) {
+		mode = assessmentModeManager.getAssessmentModeById(mode.getKey());
+		assessmentModeCoordinationService.stopAssessment(mode);
+		dbInstance.commit();
+		assessmentModeMessage();
+		overviewCtrl.reloadAssessmentModes();
 	}
 }

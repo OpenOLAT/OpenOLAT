@@ -96,7 +96,7 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				List<Tool> notAlignedTools = getTools(tools, null);
 				
 				if(panel.isToolbarEnabled() || (panel.isToolbarAutoEnabled()
-						&& (!leftTools.isEmpty() || !rightTools.isEmpty() || !rightTools.isEmpty() || !notAlignedTools.isEmpty() || !segmentsTools.isEmpty()))) {
+						&& (!leftTools.isEmpty() || !rightTools.isEmpty() || !notAlignedTools.isEmpty() || !segmentsTools.isEmpty()))) {
 					sb.append("<div class='o_tools_container'><div class='container-fluid'>");
 					
 					if(!leftTools.isEmpty()) {
@@ -147,6 +147,11 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 				sb.append(panel.getMessageCssClass());
 			}
 			sb.append("'>").append(panel.getMessage()).append("</div>");
+		}
+		if(panel.getMessageComponent() != null) {
+			Component messageCmp = panel.getMessageComponent();
+			URLBuilder cubu = ubu.createCopyFor(messageCmp);
+			messageCmp.getHTMLRendererSingleton().render(renderer, sb, messageCmp, cubu, translator, renderResult, args);
 		}
 		
 		Component toRender = panel.getContent();

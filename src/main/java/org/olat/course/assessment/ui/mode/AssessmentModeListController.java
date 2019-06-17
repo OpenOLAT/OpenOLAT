@@ -71,9 +71,11 @@ public class AssessmentModeListController extends FormBasicController implements
 	private FlexiTableElement tableEl;
 	private AssessmentModeListModel model;
 	private final TooledStackedPanel toolbarPanel;
-
-	private DialogBoxController startDialogBox, stopDialogBox, deleteDialogBox;
-	private AssessmentModeEditController editCtrl;
+	
+	private Controller editCtrl;
+	private DialogBoxController stopDialogBox;
+	private DialogBoxController startDialogBox;
+	private DialogBoxController deleteDialogBox;
 	
 	private final RepositoryEntry entry;
 	private final AssessmentModeSecurityCallback secCallback;
@@ -119,21 +121,17 @@ public class AssessmentModeListController extends FormBasicController implements
 		
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(),
-				true, Cols.status.name(), new ModeStatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, Cols.name.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin.i18nKey(), Cols.begin.ordinal(), true, Cols.begin.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end.i18nKey(), Cols.end.ordinal(), true, Cols.end.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.leadTime.i18nKey(), Cols.leadTime.ordinal(),
-				true, Cols.leadTime.name(), new TimeCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.followupTime.i18nKey(), Cols.followupTime.ordinal(),
-				true, Cols.followupTime.name(), new TimeCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target.i18nKey(), Cols.target.ordinal(),
-				true, Cols.target.name(), new TargetAudienceCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new ModeStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.leadTime, new TimeCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.followupTime, new TimeCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target, new TargetAudienceCellRenderer(getTranslator())));
 		
 		if(secCallback.canStartStopAssessment()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("start", Cols.start.ordinal(), "start",
-				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start"), null)));
+				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("start"), "start", "btn btn-default btn-sm", "o_icon o_icon-fw o_as_mode_assessment"), null)));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("stop", Cols.stop.ordinal(), "stop",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("stop"), "stop"), null)));
 		}
@@ -290,7 +288,13 @@ public class AssessmentModeListController extends FormBasicController implements
 	
 	private void doEdit(UserRequest ureq, AssessmentMode mode) {
 		removeAsListenerAndDispose(editCtrl);
-		editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
+		
+		AssessmentMode reloadedMode = assessmentModeMgr.getAssessmentModeById(mode.getKey());
+		if(reloadedMode.getLectureBlock() != null) {
+			editCtrl = new AssessmentModeForLectureEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
+		} else {
+			editCtrl = new AssessmentModeEditController(ureq, getWindowControl(), entry.getOlatResource(), mode);
+		}
 		listenTo(editCtrl);
 		
 		String title = translate("form.mode.title", new String[]{ mode.getName() });

@@ -43,6 +43,7 @@ import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.area.BGtoAreaRelationImpl;
+import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -68,8 +69,24 @@ public class AssessmentModeDAO {
 		return modes == null || modes.isEmpty() ? null : modes.get(0);
 	}
 	
+	public AssessmentMode getAssessmentModeByLecture(LectureBlock lectureBlock) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select mode from courseassessmentmode mode")
+		  .append(" inner join fetch mode.repositoryEntry v")
+		  .append(" inner join fetch v.olatResource res")
+		  .append(" inner join fetch mode.lectureBlock block")
+		  .append(" where block.key=:blockKey");
+		
+		List<AssessmentMode> modes = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), AssessmentMode.class)
+			.setParameter("blockKey", lectureBlock.getKey())
+			.getResultList();
+		
+		return modes == null || modes.isEmpty() ? null : modes.get(0);
+	}
+	
 	public List<AssessmentMode> findAssessmentMode(SearchAssessmentModeParams params) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select mode from courseassessmentmode mode")
 		  .append(" inner join fetch mode.repositoryEntry v")
 		  .append(" inner join fetch v.olatResource res");
@@ -143,16 +160,19 @@ public class AssessmentModeDAO {
 				.getResultList();
 	}
 	
-	public List<AssessmentMode> getPlannedAssessmentMode(RepositoryEntryRef entry, Date from) {
+	public List<AssessmentMode> getPlannedAssessmentMode(RepositoryEntryRef entry, Date from, Date to) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select mode from courseassessmentmode mode")
-		  .append(" where mode.repositoryEntry.key=:entryKey and mode.begin>=:from")
+		  .append(" left join fetch mode.lectureBlock block")
+		  .append(" where mode.repositoryEntry.key=:entryKey ")
+		  .append(" and ((mode.begin>=:from and mode.begin<=:to) or (mode.end>=:from and mode.end<=:to) or (mode.begin<=:from and mode.end >=:to))")
 		  .append(" order by mode.begin asc");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentMode.class)
 				.setParameter("entryKey", entry.getKey())
 				.setParameter("from", from)
+				.setParameter("to", to)
 				.getResultList();
 	}
 	
@@ -202,9 +222,10 @@ public class AssessmentModeDAO {
 		cal.set(Calendar.MILLISECOND, 0);
 		cal.set(Calendar.SECOND, 0);
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select mode from courseassessmentmode mode where ")
-		  .append(" mode.repositoryEntry.key=:repoKey and (")
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select mode from courseassessmentmode mode")
+		  .append(" left join mode.lectureBlock block")
+		  .append(" where mode.repositoryEntry.key=:repoKey and (")
 		  .append(" (mode.beginWithLeadTime<=:now and mode.endWithFollowupTime>=:now")
 		  .append("   and (mode.manualBeginEnd=false or (mode.manualBeginEnd=true and mode.leadTime>0)))")
 		  .append(" or mode.statusString in ('").append(Status.leadtime.name()).append("','")

@@ -193,6 +193,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		String desc = assessmentMode.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringData("mode.description", "mode.description",
 				desc, 6, -1, false, null, null, formLayout, ureq.getUserSession(), getWindowControl());
+		descriptionEl.getEditorConfiguration().setPathInStatusBar(false);
 		descriptionEl.setEnabled(status != Status.followup && status != Status.end);
 		
 		beginEl = uifactory.addDateChooser("mode.begin", assessmentMode.getBegin(), formLayout);

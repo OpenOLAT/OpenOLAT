@@ -80,6 +80,17 @@ public class RepositoryEntryLectureConfigurationImpl implements Persistable, Rep
 	@Column(name="l_sync_calendar_course", nullable=true, insertable=true, updatable=true)
 	private Boolean courseCalendarSyncEnabled;
 	
+	@Column(name="l_assessment_mode", nullable=true, insertable=true, updatable=true)
+	private Boolean assessmentModeEnabled;
+	@Column(name="l_assessment_mode_lead", nullable=true, insertable=true, updatable=true)
+	private Integer assessmentModeLeadTime;
+	@Column(name="l_assessment_mode_followup", nullable=true, insertable=true, updatable=true)
+	private Integer assessmentModeFollowupTime;
+	@Column(name="l_assessment_mode_ips", nullable=true, insertable=true, updatable=true)
+	private String assessmentModeAdmissibleIps;
+	@Column(name="l_assessment_mode_seb", nullable=true, insertable=true, updatable=true)
+	private String assessmentModeSebKeys;
+	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry", nullable=false, insertable=true, updatable=false, unique=true)
 	private RepositoryEntry entry;
@@ -186,6 +197,56 @@ public class RepositoryEntryLectureConfigurationImpl implements Persistable, Rep
 	@Override
 	public void setCourseCalendarSyncEnabled(Boolean courseCalendarSyncEnabled) {
 		this.courseCalendarSyncEnabled = courseCalendarSyncEnabled;
+	}
+
+	@Override
+	public Boolean getAssessmentModeEnabled() {
+		return assessmentModeEnabled;
+	}
+
+	@Override
+	public void setAssessmentModeEnabled(Boolean assessmentModeEnabled) {
+		this.assessmentModeEnabled = assessmentModeEnabled;
+	}
+
+	@Override
+	public Integer getAssessmentModeLeadTime() {
+		return assessmentModeLeadTime;
+	}
+
+	@Override
+	public void setAssessmentModeLeadTime(Integer assessmentModeLeadTime) {
+		this.assessmentModeLeadTime = assessmentModeLeadTime;
+	}
+
+	@Override
+	public Integer getAssessmentModeFollowupTime() {
+		return assessmentModeFollowupTime;
+	}
+
+	@Override
+	public void setAssessmentModeFollowupTime(Integer assessmentModeFollowupTime) {
+		this.assessmentModeFollowupTime = assessmentModeFollowupTime;
+	}
+
+	@Override
+	public String getAssessmentModeAdmissibleIps() {
+		return assessmentModeAdmissibleIps;
+	}
+
+	@Override
+	public void setAssessmentModeAdmissibleIps(String assessmentModeAdmissibleIps) {
+		this.assessmentModeAdmissibleIps = assessmentModeAdmissibleIps;
+	}
+
+	@Override
+	public String getAssessmentModeSebKeys() {
+		return assessmentModeSebKeys;
+	}
+
+	@Override
+	public void setAssessmentModeSebKeys(String assessmentModeSebKeys) {
+		this.assessmentModeSebKeys = assessmentModeSebKeys;
 	}
 
 	@Override

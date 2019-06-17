@@ -463,7 +463,7 @@ public class VelocityRenderDecorator implements Closeable {
 				String title = StringHelper.escapeHtml(renderer.getTranslator().translate("help.button"));
 				sb.append("<span class=\"o_chelp_wrapper\">")
 				  .append("<a href=\"").append(url)
-				  .append("\" class=\"o_chelp\" target=\"_blank\" title=\"").append(title).append("\"><i class='o_icon o_icon_help'></i> ")
+				  .append("\" class=\"o_chelp\" target=\"_blank\" title=\"").append(title).append("\"><i class='o_icon o_icon_help'> </i> ")
 				  .append(renderer.getTranslator().translate("help"))
 				  .append("</a></span>");
 			}

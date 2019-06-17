@@ -397,7 +397,7 @@ public class RepositoryEntryListController extends FormBasicController
 						selectedFilters.add((Filter)filter.getUserObject());
 					}
 				}
-				doFilter(ureq, selectedFilters);
+				doFilter(selectedFilters);
 				flc.setDirty(true);
 			}
 		} else if(source == mainForm.getInitialComponent()) {
@@ -505,7 +505,7 @@ public class RepositoryEntryListController extends FormBasicController
 		addToHistory(ureq, state);
 	}
 	
-	protected void doFilter(UserRequest ureq, List<Filter> filters) {	
+	private void doFilter(List<Filter> filters) {	
 		dataSource.setFilters(filters);
 		tableEl.reset();
 	}

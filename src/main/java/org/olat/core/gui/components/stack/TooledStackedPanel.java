@@ -48,6 +48,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	
 	private String message;
 	private String messageCssClass;
+	private Component messageCmp;
 	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
@@ -55,7 +56,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener, String cssClass) {
 		super(name, translator, listener, cssClass);
-		this.setDomReplacementWrapperRequired(false); // renders own div in Renderer
+		setDomReplacementWrapperRequired(false); // renders own div in Renderer
 	}
 
 	@Override
@@ -63,6 +64,9 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		List<Component> cmps = new ArrayList<>();
 		cmps.add(getBackLink());
 		cmps.add(getContent());
+		if(messageCmp != null) {
+			cmps.add(messageCmp);
+		}
 		for(Link crumb:stack) {
 			cmps.add(crumb);
 		}
@@ -292,7 +296,16 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		this.messageCssClass = messageCssClass;
 	}
 
+	public Component getMessageComponent() {
+		return messageCmp;
+	}
 
+	public void setMessageComponent(Component messageCmp) {
+		if(this.messageCmp != messageCmp) {
+			this.messageCmp = messageCmp;
+			setDirty(true);
+		}
+	}
 
 	public static class Tool {
 		private final  Align align;

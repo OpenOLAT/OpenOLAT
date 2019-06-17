@@ -446,6 +446,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.setMessageCssClass("o_warning");
 		} else {
 			toolbarPanel.setMessage(null);
+			toolbarPanel.setMessageComponent(null);
 		}
 	}
 	

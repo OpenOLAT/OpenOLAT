@@ -101,22 +101,17 @@ public class AssessmentModeAdminListController extends FormBasicController {
 
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(),
-				true, Cols.status.name(), new ModeStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new ModeStatusCellRenderer(getTranslator())));
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("select", new TextFlexiCellRenderer());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.course.i18nKey(), Cols.course.ordinal(), "select",
-				true, Cols.course.name(), renderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId.i18nKey(), Cols.externalId.ordinal(), true, Cols.externalId.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalRef.i18nKey(), Cols.externalRef.ordinal(), true, Cols.externalRef.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name.i18nKey(), Cols.name.ordinal(), true, Cols.name.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin.i18nKey(), Cols.begin.ordinal(), true, Cols.begin.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end.i18nKey(), Cols.end.ordinal(), true, Cols.end.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.leadTime.i18nKey(), Cols.leadTime.ordinal(),
-				true, Cols.leadTime.name(), new TimeCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.followupTime.i18nKey(), Cols.followupTime.ordinal(),
-				true, Cols.followupTime.name(), new TimeCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target.i18nKey(), Cols.target.ordinal(),
-				true, Cols.target.name(), new TargetAudienceCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.course, "select", renderer));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalId));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.externalRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.name));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.begin));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.end));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.leadTime, new TimeCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.followupTime, new TimeCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.target, new TargetAudienceCellRenderer(getTranslator())));
 		
 		model = new AssessmentModeListModel(columnsModel, getTranslator(), assessmentModeCoordinationService);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);

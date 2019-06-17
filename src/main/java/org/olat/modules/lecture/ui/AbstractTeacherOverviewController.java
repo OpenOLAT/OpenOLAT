@@ -68,7 +68,8 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	
 	protected BreadcrumbPanel stackPanel;
 	protected final VelocityContainer mainVC;
-	private final Link startButton, startWizardButton;
+	private final Link startButton;
+	private final Link startWizardButton;
 	protected final Link allTeachersSwitch;
 	
 	private TeacherRollCallController rollCallCtrl;
@@ -92,7 +93,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 	private LectureService lectureService;
 
 	AbstractTeacherOverviewController(UserRequest ureq, WindowControl wControl, boolean admin,
-			String switchPrefsId, boolean withRepositoryEntry, boolean withTeachers, boolean defaultShowAllLectures) {
+			String switchPrefsId, boolean withRepositoryEntry, boolean defaultShowAllLectures) {
 		super(ureq, wControl);
 		this.admin = admin;
 		this.switchPrefsId = switchPrefsId;
@@ -115,34 +116,35 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 			allTeachersSwitch.setIconLeftCSS("o_icon o_icon-lg o_icon_toggle_off");
 			allTeachersSwitch.setTooltip(translate("all.teachers.switch.tooltip.off"));
 		}
-		
+		putInitialPanel(mainVC);
+	}
+	
+	protected void initTables(UserRequest ureq, boolean withTeachers, boolean withAssessment) {
 		searchCtrl = new TeacherOverviewSearchController(ureq, getWindowControl(), withRepositoryEntry);
 		listenTo(searchCtrl);
 		mainVC.put("search", searchCtrl.getInitialComponent());
 		
 		currentLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.current.lectures.blocks", false, "current", withRepositoryEntry, withTeachers);
+				admin, "empty.table.current.lectures.blocks", false, "current", withRepositoryEntry, withTeachers, withAssessment);
 		listenTo(currentLecturesBlockCtrl);
 		mainVC.put("currentLectures", currentLecturesBlockCtrl.getInitialComponent());
 		
 		pendingLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.lectures.blocks", false, "pending", withRepositoryEntry, withTeachers);
+				admin, "empty.table.lectures.blocks", false, "pending", withRepositoryEntry, withTeachers, withAssessment);
 		listenTo(pendingLecturesBlockCtrl);
 		mainVC.put("pendingLectures", pendingLecturesBlockCtrl.getInitialComponent());
 		
 		nextLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.lectures.blocks", true, "next", withRepositoryEntry, withTeachers);
+				admin, "empty.table.lectures.blocks", true, "next", withRepositoryEntry, withTeachers, withAssessment);
 		nextLecturesBlockCtrl.setTablePageSize(5);
 		listenTo(nextLecturesBlockCtrl);
 		mainVC.put("nextLectures", nextLecturesBlockCtrl.getInitialComponent());
 		
 		closedLecturesBlockCtrl = new TeacherLecturesTableController(ureq, getWindowControl(),
-				admin, "empty.table.lectures.blocks", false, "closed", withRepositoryEntry, withTeachers);
+				admin, "empty.table.lectures.blocks", false, "closed", withRepositoryEntry, withTeachers, false);
 		closedLecturesBlockCtrl.setTablePageSize(10);
 		listenTo(closedLecturesBlockCtrl);
 		mainVC.put("closedLectures", closedLecturesBlockCtrl.getInitialComponent());
-
-		putInitialPanel(mainVC);
 	}
 
 	@Override

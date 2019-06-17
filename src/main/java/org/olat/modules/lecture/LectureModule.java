@@ -38,6 +38,13 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String LECTURE_ENABLED = "lecture.enabled";
 	private static final String LECTURE_MANAGED = "lecture.managed";
+	
+	private static final String ASSESSMENT_MODE_ENABLED = "lecture.assessment.mode.enabled";
+	private static final String ASSESSMENT_MODE_LEAD_TIME = "lecture.assessment.mode.lead.time";
+	private static final String ASSESSMENT_MODE_FOLLOWUP_TIME = "lecture.assessment.mode.followup.time";
+	private static final String ASSESSMENT_MODE_ADMISSIBLE_IPS = "lecture.assessment.mode.admissible.ips";
+	private static final String ASSESSMENT_MODE_SEB_KEYS = "lecture.assessment.mode.seb.keys";
+
 	private static final String CAN_OVERRIDE_STANDARD_CONFIGURATION = "lecture.can.override.standard.configuration";
 	private static final String STATUS_PARTIALLY_DONE_ENABLED = "lecture.status.partially.done.enabled";
 	private static final String STATUS_CANCELLED_ENABLED = "lecture.status.cancelled.enabled";
@@ -79,6 +86,17 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean absenceDefaultAuthorized;
 	@Value("${lecture.teacher.can.authorized.absence:true}")
 	private boolean teacherCanAuthorizedAbsence;
+	
+	@Value("${lecture.assessment.mode.enabled:true}")
+	private boolean assessmentModeEnabled;
+	@Value("${lecture.assessment.mode.lead.time:5}")
+	private int assessmentModeLeadTime;
+	@Value("${lecture.assessment.mode.followup.time:5}")
+	private int assessmentModeFollowupTime;
+	@Value("${lecture.assessment.mode.admissible.ips}")
+	private String assessmentModeAdmissibleIps;
+	@Value("${lecture.assessment.mode.seb.keys}")
+	private String assessmentModeSebKeys;
 	
 	@Value("${lecture.owner.can.view.all.courses.curriculum:true}")
 	private boolean ownerCanViewAllCoursesInCurriculum;
@@ -228,6 +246,24 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(showAllTeachersEnabledObj)) {
 			showLectureBlocksAllTeachersDefault = "true".equals(showAllTeachersEnabledObj);
 		}
+		
+		String assessmentModeEnabledObj = getStringPropertyValue(ASSESSMENT_MODE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(assessmentModeEnabledObj)) {
+			assessmentModeEnabled = "true".equals(assessmentModeEnabledObj);
+		}
+		
+		String leadTimeObj = getStringPropertyValue(ASSESSMENT_MODE_LEAD_TIME, true);
+		if(StringHelper.containsNonWhitespace(leadTimeObj)) {
+			assessmentModeLeadTime = Integer.parseInt(leadTimeObj);
+		}
+		
+		String followupTimeObj = getStringPropertyValue(ASSESSMENT_MODE_FOLLOWUP_TIME, true);
+		if(StringHelper.containsNonWhitespace(followupTimeObj)) {
+			assessmentModeFollowupTime = Integer.parseInt(followupTimeObj);
+		}
+		
+		assessmentModeAdmissibleIps = getStringPropertyValue(ASSESSMENT_MODE_ADMISSIBLE_IPS, assessmentModeAdmissibleIps);
+		assessmentModeSebKeys = getStringPropertyValue(ASSESSMENT_MODE_SEB_KEYS, assessmentModeSebKeys);
 	}
 
 	@Override
@@ -317,6 +353,51 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		setStringProperty(TEACHER_CAN_AUTHORIZED_ABSENCE, Boolean.toString(enable), true);
 	}
 
+	public boolean isAssessmentModeEnabledDefault() {
+		return assessmentModeEnabled;
+	}
+
+	public void setAssessmentModeEnabledDefault(boolean enable) {
+		this.assessmentModeEnabled = enable;
+		setStringProperty(ASSESSMENT_MODE_ENABLED, Boolean.toString(enable), true);
+	}
+
+	public int getAssessmentModeLeadTime() {
+		return assessmentModeLeadTime;
+	}
+
+	public void setAssessmentModeLeadTime(int assessmentModeLeadTime) {
+		this.assessmentModeLeadTime = assessmentModeLeadTime;
+		setStringProperty(ASSESSMENT_MODE_LEAD_TIME, Integer.toString(assessmentModeLeadTime), true);
+	}
+
+	public int getAssessmentModeFollowupTime() {
+		return assessmentModeFollowupTime;
+	}
+
+	public void setAssessmentModeFollowupTime(int assessmentModeFollowupTime) {
+		this.assessmentModeFollowupTime = assessmentModeFollowupTime;
+		setStringProperty(ASSESSMENT_MODE_FOLLOWUP_TIME, Integer.toString(assessmentModeFollowupTime), true);
+	}
+
+	public String getAssessmentModeAdmissibleIps() {
+		return assessmentModeAdmissibleIps;
+	}
+
+	public void setAssessmentModeAdmissibleIps(String assessmentModeAdmissibleIps) {
+		this.assessmentModeAdmissibleIps = assessmentModeAdmissibleIps;
+		setStringProperty(ASSESSMENT_MODE_ADMISSIBLE_IPS, assessmentModeAdmissibleIps, true);
+	}
+
+	public String getAssessmentModeSebKeys() {
+		return assessmentModeSebKeys;
+	}
+
+	public void setAssessmentModeSebKeys(String assessmentModeSebKeys) {
+		this.assessmentModeSebKeys = assessmentModeSebKeys;
+		setStringProperty(ASSESSMENT_MODE_SEB_KEYS, assessmentModeSebKeys, true);
+	}
+	
 	public boolean isOwnerCanViewAllCoursesInCurriculum() {
 		return ownerCanViewAllCoursesInCurriculum;
 	}

@@ -895,6 +895,11 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public List<LectureBlockRef> getAssessedLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams) {
+		return lectureBlockDao.loadAssessedByTeacher(teacher, searchParams);
+	}
+
+	@Override
 	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry) {
 		return lectureBlockDao.getLecturesBlockWithTeachers(entry);
 	}

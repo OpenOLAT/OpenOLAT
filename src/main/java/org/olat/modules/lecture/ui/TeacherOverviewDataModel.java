@@ -77,6 +77,7 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 				Date now = new Date();
 				return end.before(new Date()) || (row.isIamTeacher() && start.compareTo(now) <= 0);
 			}
+			case assessmentMode: return Boolean.valueOf(row.isAssessmentMode());
 			case tools: return row.getToolsLink();
 			default: return null;
 		}
@@ -99,7 +100,8 @@ public class TeacherOverviewDataModel extends DefaultFlexiTableDataModel<Lecture
 		status("table.header.status"),
 		details("table.header.details"),
 		tools("table.header.tools"),
-		compulsory("table.header.compulsory.long");
+		compulsory("table.header.compulsory.long"),
+		assessmentMode("table.header.assessment.mode");
 		
 		private final String i18nKey;
 		

@@ -67,4 +67,28 @@ public interface RepositoryEntryLectureConfiguration extends CreateInfo, Modifie
 
 	public void setCourseCalendarSyncEnabled(Boolean courseCalendarSyncEnabled);
 	
+	// assessment mode
+	public Boolean getAssessmentModeEnabled();
+	
+	public void setAssessmentModeEnabled(Boolean enabled);
+	
+	public Integer getAssessmentModeLeadTime();
+
+	public void setAssessmentModeLeadTime(Integer assessmentModeLeadTime);
+
+	public Integer getAssessmentModeFollowupTime();
+
+	public void setAssessmentModeFollowupTime(Integer assessmentModeFollowupTime);
+
+	public String getAssessmentModeAdmissibleIps();
+
+	public void setAssessmentModeAdmissibleIps(String assessmentModeAdmissibleIps);
+
+	public String getAssessmentModeSebKeys();
+
+	public void setAssessmentModeSebKeys(String assessmentModeSebKeys);
+	
+	
+	
+	
 }

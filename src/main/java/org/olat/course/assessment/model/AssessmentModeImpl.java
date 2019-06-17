@@ -31,7 +31,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -46,6 +45,8 @@ import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -56,10 +57,8 @@ import org.olat.repository.RepositoryEntry;
  */
 @Entity(name="courseassessmentmode")
 @Table(name="o_as_mode_course")
-@NamedQueries({
-	@NamedQuery(name="assessmentModeById", query="select mode from courseassessmentmode mode where mode.key=:modeKey"),
-	@NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode inner join fetch mode.repositoryEntry v inner join fetch v.olatResource res where mode.repositoryEntry.key=:entryKey order by mode.begin desc")
-})
+@NamedQuery(name="assessmentModeById", query="select mode from courseassessmentmode mode where mode.key=:modeKey")
+@NamedQuery(name="assessmentModeByRepoEntry", query="select mode from courseassessmentmode mode inner join fetch mode.repositoryEntry v inner join fetch v.olatResource res where mode.repositoryEntry.key=:entryKey order by mode.begin desc")
 public class AssessmentModeImpl implements Persistable, AssessmentMode {
 
 	private static final long serialVersionUID = 5208551950937018842L;
@@ -152,6 +151,10 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_entry", nullable=false, updatable=false)
 	private RepositoryEntry repositoryEntry;
+	
+	@ManyToOne(targetEntity=LectureBlockImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_lecture_block", nullable=true, updatable=false)
+	private LectureBlock lectureBlock;
 	
 	
 	@Override
@@ -423,6 +426,15 @@ public class AssessmentModeImpl implements Persistable, AssessmentMode {
 	@Override
 	public void setApplySettingsForCoach(boolean applySettingsForCoach) {
 		this.applySettingsForCoach = applySettingsForCoach;
+	}
+
+	@Override
+	public LectureBlock getLectureBlock() {
+		return lectureBlock;
+	}
+
+	public void setLectureBlock(LectureBlock lectureBlock) {
+		this.lectureBlock = lectureBlock;
 	}
 
 	@Override

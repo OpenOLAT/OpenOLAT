@@ -479,6 +479,25 @@ div.o_assessment_user_type_filter {
 	}
 }
 
+div.panel.o_assessment_modes {
+	.o_table_body {
+		margin-top: 0;
+	}
+	
+	.o_table_wrapper {
+		margin-bottom: 5px;
+	}
+}
+
+div.o_assessment_mode_row {
+	padding: 0 15px;
+	
+	&.o_assessment_today {
+		padding: 0 20px 0 12px;
+		border-left: 3px solid $o-assessment-mode-today-border-color;
+		background-color: $o-assessment-mode-today-bg;
+	}
+}
 
 /* vitero */
 .vitero_iframe {

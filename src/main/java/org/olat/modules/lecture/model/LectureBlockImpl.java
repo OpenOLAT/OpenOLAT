@@ -31,7 +31,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -59,9 +58,7 @@ import org.olat.repository.RepositoryEntry;
  */
 @Entity(name="lectureblock")
 @Table(name="o_lecture_block")
-@NamedQueries(
-	@NamedQuery(name="lectureBlocksByRepositoryEntry", query="select block from lectureblock block where block.entry.key=:repoEntryKey")
-)
+@NamedQuery(name="lectureBlocksByRepositoryEntry", query="select block from lectureblock block where block.entry.key=:repoEntryKey")
 public class LectureBlockImpl implements Persistable, LectureBlock {
 
 	private static final long serialVersionUID = -1010006683915268916L;

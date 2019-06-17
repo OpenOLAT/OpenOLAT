@@ -36,6 +36,7 @@ import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.assessment.AssessmentModeToArea;
 import org.olat.course.assessment.AssessmentModeToCurriculumElement;
 import org.olat.course.assessment.AssessmentModeToGroup;
+import org.olat.course.assessment.model.AssessmentModeImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGArea;
@@ -48,6 +49,8 @@ import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
@@ -67,6 +70,8 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private BGAreaManager areaMgr;
+	@Autowired
+	private LectureService lectureService;
 	@Autowired
 	private CurriculumService curriculumService;
 	@Autowired
@@ -218,6 +223,26 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void createAssessmentMode_lectureBlock() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		AssessmentMode mode = assessmentModeMgr.createAssessmentMode(lectureBlock, 5, 10, "192.168.1.203", "very-complicated-key");
+		mode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check
+		AssessmentMode lecturedMode = assessmentModeMgr.getAssessmentMode(lectureBlock);
+		Assert.assertNotNull(lecturedMode);
+		Assert.assertEquals(mode, lecturedMode);
+		Assert.assertEquals(lectureBlock, lecturedMode.getLectureBlock());
+		Assert.assertEquals(5, lecturedMode.getLeadTime());
+		Assert.assertEquals(10, lecturedMode.getFollowupTime());
+		Assert.assertEquals("192.168.1.203", lecturedMode.getIpList());
+		Assert.assertEquals("very-complicated-key", lecturedMode.getSafeExamBrowserKey());
+	}
+	
+	@Test
 	public void deleteAssessmentMode() {
 		//prepare the setup
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("as-mode-1");
@@ -264,6 +289,23 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		Assert.assertNotNull(currentModes);
 		Assert.assertEquals(1, currentModes.size());
 		Assert.assertTrue(currentModes.contains(mode));
+	}
+	
+	@Test
+	public void loadAssessmentMode_lectureBlock() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		AssessmentMode mode = createMinimalAssessmentmode(entry);
+		((AssessmentModeImpl)mode).setLectureBlock(lectureBlock);
+		mode = assessmentModeMgr.persist(mode);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(mode);
+		
+		//check
+		AssessmentMode lecturedMode = assessmentModeMgr.getAssessmentMode(lectureBlock);
+		Assert.assertNotNull(lecturedMode);
+		Assert.assertEquals(mode, lecturedMode);
+		Assert.assertEquals(lectureBlock, lecturedMode.getLectureBlock());
 	}
 	
 	@Test
@@ -1235,6 +1277,15 @@ public class AssessmentModeManagerTest extends OlatTestCase {
 		mode.setEnd(cal.getTime());
 		mode.setTargetAudience(Target.course);
 		return mode;
+	}
+	
+	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {
+		LectureBlock lectureBlock = lectureService.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecturers");
+		lectureBlock.setPlannedLecturesNumber(4);
+		return lectureService.save(lectureBlock, null);
 	}
 	
 }

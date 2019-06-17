@@ -1,7 +1,12 @@
 <div class="o_lectures_teacher_overview">
 	<div class="o_lectures_teacher_search clearfix" style="position:relative;">
 		$r.render("search")
+		
+		<div class="o_chelp_wrapper_and_buttons">#if($r.visible("assessment.tool"))
+			$r.render("assessment.tool")
+		#end
 		$r.contextHelpWithWrapper("Lectures - Teacher view")
+		</div>
 	</div>
 	#if($r.isNotNull($totalBlockSize) && $totalBlockSize > 0)
 		#if($r.isNotNull($currentBlockSize) && $currentBlockSize > 0)
@@ -47,8 +52,7 @@
 		</div>
 	#end
 </div>
-
-<script type="text/javascript">
+<script>
 /* <![CDATA[ */ 
 jQuery(function() {
 	var tables = jQuery('.o_lectures_teacher_overview table');

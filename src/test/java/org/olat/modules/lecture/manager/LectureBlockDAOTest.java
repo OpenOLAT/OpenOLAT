@@ -32,10 +32,13 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureRollCallStatus;
@@ -68,6 +71,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private AssessmentModeManager assessmentModeManager;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
@@ -357,6 +362,31 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertNotNull(futureBlocks);
 		Assert.assertEquals(1, futureBlocks.size());
 		Assert.assertEquals(lectureBlock, futureBlocks.get(0));
+	}
+	
+	@Test
+	public void loadAssessedByTeacher() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-23");
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commitAndCloseSession();
+
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+
+		// the lecture is not assessed -> return empty
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		List<LectureBlockRef> blockRefs = lectureBlockDao.loadAssessedByTeacher(teacher, searchParams);
+		Assert.assertTrue(blockRefs.isEmpty());
+		
+		// add an assessment mode
+		AssessmentMode assessmentMode = assessmentModeManager.createAssessmentMode(lectureBlock, 5, 5, "", null);
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlockRef> assessedBlockRefs = lectureBlockDao.loadAssessedByTeacher(teacher, searchParams);
+		Assert.assertEquals(1, assessedBlockRefs.size());
+		Assert.assertEquals(lectureBlock, assessedBlockRefs.get(0));
+		Assert.assertEquals(lectureBlock, assessmentMode.getLectureBlock());
 	}
 	
 	@Test

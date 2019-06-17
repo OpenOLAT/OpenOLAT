@@ -37,6 +37,8 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
+import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
+import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -64,7 +66,11 @@ public class AssessmentCourseOverviewController extends BasicController {
 	private final AssessmentModeOverviewListController assessmentModeListCtrl;
 	private final AssessmentCourseStatisticsSmallController statisticsCtrl;
 
-	private Link assessedIdentitiesLink, assessableCoureNodesLink, assessedGroupsLink, passedLink, failedLink;
+	private Link passedLink;
+	private Link failedLink;
+	private Link assessedGroupsLink;
+	private Link assessedIdentitiesLink;
+	private Link assessableCoureNodesLink;
 	
 	private final int numOfGroups;
 
@@ -158,7 +164,7 @@ public class AssessmentCourseOverviewController extends BasicController {
 			assessedGroupsLink.setIconLeftCSS("o_icon o_icon_group o_icon-fw");
 		}
 		
-		assessmentModeListCtrl = new AssessmentModeOverviewListController(ureq, getWindowControl(), courseEntry);
+		assessmentModeListCtrl = new AssessmentModeOverviewListController(ureq, getWindowControl(), courseEntry, assessmentCallback);
 		listenTo(assessmentModeListCtrl);
 		if(assessmentModeListCtrl.getNumOfAssessmentModes() > 0) {
 			mainVC.put("assessmentModes", assessmentModeListCtrl.getInitialComponent());
@@ -170,6 +176,10 @@ public class AssessmentCourseOverviewController extends BasicController {
 	public int getNumOfBusinessGroups() {
 		return numOfGroups;
 	}
+	
+	public void reloadAssessmentModes() {
+		assessmentModeListCtrl.loadModel();
+	}
 
 	@Override
 	protected void doDispose() {
@@ -180,6 +190,10 @@ public class AssessmentCourseOverviewController extends BasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(toReviewCtrl == source) {
 			if(event instanceof UserSelectionEvent) {
+				fireEvent(ureq, event);
+			}
+		} else if(assessmentModeListCtrl == source) {
+			if(event instanceof CourseNodeEvent || event instanceof AssessmentModeStatusEvent) {
 				fireEvent(ureq, event);
 			}
 		}

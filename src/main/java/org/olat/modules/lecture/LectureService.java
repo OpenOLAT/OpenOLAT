@@ -440,6 +440,8 @@ public interface LectureService {
 	 */
 	public List<LectureBlock> getLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams);
 	
+	public List<LectureBlockRef> getAssessedLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams);
+	
 	/**
 	 * Returns the lecture block for the specified learning resource
 	 * and the specified identity which has the "teacher" role for the

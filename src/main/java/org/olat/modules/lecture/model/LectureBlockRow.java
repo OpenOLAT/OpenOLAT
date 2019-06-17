@@ -36,15 +36,18 @@ public class LectureBlockRow implements LectureBlockRef {
 	private final String entryExternalRef;
 	private final String entryDisplayname;
 	private final LectureBlock lectureBlock;
+	private boolean assessmentMode;
 	
 	private FormLink toolsLink;
 	
-	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String externalRef, String teachers, boolean iamTeacher) {
+	public LectureBlockRow(LectureBlock lectureBlock, String entryDisplayname, String externalRef,
+			String teachers, boolean iamTeacher, boolean assessmentMode) {
 		this.lectureBlock = lectureBlock;
 		this.teachers = teachers;
 		this.iamTeacher = iamTeacher;
 		this.entryExternalRef = externalRef;
 		this.entryDisplayname = entryDisplayname;
+		this.assessmentMode = assessmentMode;
 	}
 	
 	@Override
@@ -70,6 +73,14 @@ public class LectureBlockRow implements LectureBlockRef {
 	
 	public String getTeachers() {
 		return teachers;
+	}
+	
+	public boolean isAssessmentMode() {
+		return assessmentMode;
+	}
+	
+	public void setAssessmentMode(boolean assessmentMode) {
+		this.assessmentMode = assessmentMode;
 	}
 	
 	public FormLink getToolsLink() {

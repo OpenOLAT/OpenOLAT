@@ -8,4 +8,10 @@
 	#if($r.available("attendance.list.to.sign"))
 	<li>$r.render("attendance.list.to.sign")</li>
 	#end
+	#if($r.available("add.assessment.mode"))
+	<li>$r.render("add.assessment.mode")</li>
+	#end
+	#if($r.available("edit.assessment.mode"))
+	<li>$r.render("edit.assessment.mode")</li>
+	#end
 </ul>

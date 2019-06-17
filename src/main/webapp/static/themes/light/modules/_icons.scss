@@ -524,6 +524,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_as_mode_assessment:before { content: $fa-var-play; }
 .o_as_mode_followup:before { content: $fa-var-ban; }
 .o_as_mode_closed:before { content: '-'; }
+.o_as_mode_stop:before { content: $fa-var-stop; }
 
 .o_icon_qti_notPresented:before { content: $fa-var-circle-thin; color: $o-qti-status-notPresented-color;}
 .o_icon_qti_notAnswered:before { content: $fa-var-play-circle; color: $o-qti-status-notAnswered-color;}

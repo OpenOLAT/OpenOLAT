@@ -1275,6 +1275,7 @@ create table o_as_mode_course (
    a_safeexambrowserhint longtext,
    a_applysettingscoach bit not null default 0,
    fk_entry bigint not null,
+   fk_lecture_block bigint,
    primary key (id)
 );
 
@@ -2505,6 +2506,11 @@ create table o_lecture_entry_config (
   l_sync_calendar_teacher bit default null,
   l_sync_calendar_participant bit default null,
   l_sync_calendar_course bit default null,
+  l_assessment_mode bool default null,
+  l_assessment_mode_lead bigint default null,
+  l_assessment_mode_followup bigint default null,
+  l_assessment_mode_ips varchar(2048),
+  l_assessment_mode_seb varchar(2048),
   fk_entry bigint not null,
   unique(fk_entry),
   primary key (id)
@@ -3761,6 +3767,7 @@ alter table o_lti_outcome add constraint idx_lti_outcome_rsrc_id foreign key (fk
 
 -- assessment mode
 alter table o_as_mode_course add constraint as_mode_to_repo_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_as_mode_course add constraint as_mode_to_lblock_idx foreign key (fk_lecture_block) references o_lecture_block (id);
 
 alter table o_as_mode_course_to_group add constraint as_modetogroup_group_idx foreign key (fk_group_id) references o_gp_business (group_id);
 alter table o_as_mode_course_to_group add constraint as_modetogroup_mode_idx foreign key (fk_assessment_mode_id) references o_as_mode_course (id);

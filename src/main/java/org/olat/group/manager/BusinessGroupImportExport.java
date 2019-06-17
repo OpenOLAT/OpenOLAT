@@ -207,7 +207,7 @@ public class BusinessGroupImportExport {
 		}
 		
 		BusinessGroupEnvironment env = new BusinessGroupEnvironment();
-		Set<BGArea> areaSet = new HashSet<BGArea>();
+		Set<BGArea> areaSet = new HashSet<>();
 		// get areas
 		
 		int dbCount = 0;

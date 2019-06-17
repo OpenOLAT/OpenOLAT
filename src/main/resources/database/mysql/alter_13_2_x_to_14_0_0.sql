@@ -176,4 +176,17 @@ alter table o_eva_form_survey add e_sub_ident2 varchar(2048);
 drop index idx_eva_surv_ores_idx on o_eva_form_survey;
 create index idx_eva_surv_ores_idx on o_eva_form_survey (e_resid, e_resname, e_sub_ident(255), e_sub_ident2(255));
 
+-- Assessment mode
+alter table o_lecture_entry_config add column l_assessment_mode bool default null;
+alter table o_lecture_entry_config add column l_assessment_mode_lead bigint default null;
+alter table o_lecture_entry_config add column l_assessment_mode_followup bigint default null;
+alter table o_lecture_entry_config add column l_assessment_mode_ips varchar(2048);
+alter table o_lecture_entry_config add column l_assessment_mode_seb varchar(2048);
+
+alter table o_as_mode_course add column fk_lecture_block bigint default null;
+
+alter table o_as_mode_course add constraint as_mode_to_lblock_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+
+
+
 

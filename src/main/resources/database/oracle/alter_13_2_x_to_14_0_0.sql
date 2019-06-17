@@ -170,3 +170,18 @@ create index idx_aconn_ident_idx on o_aconnect_user (fk_identity_id);
 
 -- Evaluation form
 alter table o_eva_form_survey add e_sub_ident2 varchar(2048);
+
+
+
+-- Assessment mode
+alter table o_lecture_entry_config add l_assessment_mode number default null;
+alter table o_lecture_entry_config add l_assessment_mode_lead number(20) default null;
+alter table o_lecture_entry_config add l_assessment_mode_followup number(20) default null;
+alter table o_lecture_entry_config add l_assessment_mode_ips varchar(2048);
+alter table o_lecture_entry_config add l_assessment_mode_seb varchar(2048);
+
+alter table o_as_mode_course add fk_lecture_block number(20) default null;
+
+alter table o_as_mode_course add constraint as_mode_to_lblock_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+create index idx_as_mode_to_lblock_idx on o_as_mode_course (fk_lecture_block);
+

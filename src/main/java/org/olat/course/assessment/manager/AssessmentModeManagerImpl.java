@@ -24,6 +24,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -31,6 +32,7 @@ import java.util.StringTokenizer;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
@@ -52,12 +54,17 @@ import org.olat.course.assessment.model.AssessmentModeToGroupImpl;
 import org.olat.course.assessment.model.SearchAssessmentModeParams;
 import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupOrder;
 import org.olat.group.area.BGArea;
 import org.olat.group.area.BGAreaManager;
+import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementRef;
 import org.olat.modules.curriculum.manager.CurriculumElementDAO;
+import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryRelationType;
@@ -85,9 +92,13 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	@Autowired
 	private CurriculumElementDAO curriculumElementDao;
 	@Autowired
+	private BusinessGroupDAO businessGroupDAO;
+	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	@Autowired
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
+	@Autowired
+	private LectureBlockToGroupDAO lectureBlockToGroupDao;
 	@Autowired
 	private AssessmentModeCoordinationServiceImpl assessmentModeCoordinationService;
 
@@ -98,10 +109,39 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 		mode.setLastModified(new Date());
 		mode.setRepositoryEntry(entry);
 		mode.setStatus(Status.none);
-		mode.setManualBeginEnd(false);
+		mode.setManualBeginEnd(true);
 		return mode;
 	}
 	
+	@Override
+	public AssessmentMode createAssessmentMode(LectureBlock lectureBlock,
+			int leadTime, int followupTime, String ips, String sebKeys) {
+		AssessmentModeImpl mode = new AssessmentModeImpl();
+		mode.setCreationDate(new Date());
+		mode.setLastModified(new Date());
+		mode.setName(lectureBlock.getTitle());
+		mode.setDescription(lectureBlock.getDescription());
+		mode.setBegin(lectureBlock.getStartDate());
+		mode.setEnd(lectureBlock.getEndDate());
+		mode.setLeadTime(leadTime);
+		mode.setFollowupTime(followupTime);
+		boolean restricIps = StringHelper.containsNonWhitespace(ips);
+		mode.setRestrictAccessIps(restricIps);
+		if(restricIps) {
+			mode.setIpList(ips);
+		}
+		boolean seb = StringHelper.containsNonWhitespace(sebKeys);
+		mode.setSafeExamBrowser(seb);
+		if(seb) {
+			mode.setSafeExamBrowserKey(sebKeys);
+		}
+		mode.setRepositoryEntry(lectureBlock.getEntry());
+		mode.setLectureBlock(lectureBlock);
+		mode.setStatus(Status.none);
+		mode.setManualBeginEnd(true);
+		return mode;
+	}
+
 	protected Date evaluateLeadTime(Date begin, int leadtime) {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(begin);
@@ -172,8 +212,86 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 
 	@Override
+	public void syncAssessmentModeToLectureBlock(AssessmentMode assessmentMode) {
+		LectureBlock lectureBlock = assessmentMode.getLectureBlock();
+		RepositoryEntry entry = assessmentMode.getRepositoryEntry();
+		assessmentMode.setBegin(lectureBlock.getStartDate());
+		assessmentMode.setEnd(lectureBlock.getEndDate());
+		
+		List<Group> groups = lectureBlockToGroupDao.getGroups(lectureBlock);
+		
+		Group defGroup = repositoryEntryRelationDao.getDefaultGroup(entry);
+		boolean hasCourse = groups.contains(defGroup);
+
+		List<AssessmentModeToCurriculumElement> currentCurriculumElements = new ArrayList<>(assessmentMode.getCurriculumElements());
+		for(Iterator<AssessmentModeToCurriculumElement> it=currentCurriculumElements.iterator(); it.hasNext(); ) {
+			AssessmentModeToCurriculumElement rel = it.next();
+			if(groups.contains(rel.getCurriculumElement().getGroup())) {
+				groups.remove(rel.getCurriculumElement().getGroup());
+			} else {
+				it.remove();
+			}
+		}
+
+		List<AssessmentModeToGroup> currentGroups = new ArrayList<>(assessmentMode.getGroups());
+		for(Iterator<AssessmentModeToGroup> it=currentGroups.iterator(); it.hasNext(); ) {
+			AssessmentModeToGroup rel = it.next();
+			if(groups.contains(rel.getBusinessGroup().getBaseGroup())) {
+				groups.remove(rel.getBusinessGroup().getBaseGroup());
+			} else {
+				it.remove();
+			}
+		}
+		
+		if(!groups.isEmpty()) {
+			List<CurriculumElement> curriculumElements = curriculumElementDao.loadElements(entry);
+			for(CurriculumElement curriculumElement:curriculumElements) {
+				if(groups.contains(curriculumElement.getGroup())) {
+					AssessmentModeToCurriculumElement rel = createAssessmentModeToCurriculumElement(assessmentMode, curriculumElement);
+					currentCurriculumElements.add(rel);
+				}
+			}
+
+			SearchBusinessGroupParams params = new SearchBusinessGroupParams();
+			List<BusinessGroup> businessGroups = businessGroupDAO.findBusinessGroups(params, entry, 0, -1, BusinessGroupOrder.nameAsc);
+			for(BusinessGroup businessGroup:businessGroups) {
+				if(groups.contains(businessGroup.getBaseGroup())) {
+					AssessmentModeToGroup rel = createAssessmentModeToGroup(assessmentMode, businessGroup);
+					currentGroups.add(rel);
+				}
+			}
+		}
+		
+		assessmentMode.getCurriculumElements().clear();
+		if(!currentCurriculumElements.isEmpty()) {
+			assessmentMode.getCurriculumElements().addAll(currentCurriculumElements);
+		}
+		assessmentMode.getGroups().clear();
+		if(!currentGroups.isEmpty()) {
+			assessmentMode.getGroups().addAll(currentGroups);
+		}
+		
+		Target target;
+		if(hasCourse && currentGroups.isEmpty() && currentCurriculumElements.isEmpty()) {
+			target = Target.course;
+		} else if(!hasCourse && !currentGroups.isEmpty() && currentCurriculumElements.isEmpty()) {
+			target = Target.groups;
+		} else if(!hasCourse && currentGroups.isEmpty() && !currentCurriculumElements.isEmpty()) {
+			target = Target.curriculumEls;
+		} else {
+			target = Target.courseAndGroups;
+		}
+		assessmentMode.setTargetAudience(target);
+	}
+
+	@Override
 	public void delete(AssessmentMode assessmentMode) {
 		assessmentModeDao.delete(assessmentMode);
+	}
+	
+	@Override
+	public AssessmentMode getAssessmentMode(LectureBlock lectureBlock) {
+		return assessmentModeDao.getAssessmentModeByLecture(lectureBlock);
 	}
 
 	@Override
@@ -192,8 +310,8 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	}
 	
 	@Override
-	public List<AssessmentMode> getPlannedAssessmentMode(RepositoryEntryRef entry, Date from) {
-		return assessmentModeDao.getPlannedAssessmentMode(entry, from);
+	public List<AssessmentMode> getPlannedAssessmentMode(RepositoryEntryRef entry, Date from, Date to) {
+		return assessmentModeDao.getPlannedAssessmentMode(entry, from, to);
 	}
 
 	@Override
@@ -277,7 +395,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date) {
 		return assessmentModeDao.isInAssessmentMode(entry, date);
 	}
-	
+
 	@Override
 	public List<AssessmentMode> getCurrentAssessmentMode(RepositoryEntryRef entry, Date now) {
 		return assessmentModeDao.getCurrentAssessmentMode(entry, now);

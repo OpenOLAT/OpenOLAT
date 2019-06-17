@@ -37,6 +37,12 @@ import org.olat.course.assessment.model.EnhancedStatus;
  *
  */
 public class ModeStatusCellRenderer implements FlexiCellRenderer {
+	
+	private final AssessmentModeHelper helper;
+	
+	public ModeStatusCellRenderer(Translator translator) {
+		helper = new AssessmentModeHelper(translator);
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object cellValue,
@@ -44,16 +50,16 @@ public class ModeStatusCellRenderer implements FlexiCellRenderer {
 
 		if(cellValue instanceof Status) {
 			Status status = (Status)cellValue;
-			renderStatus(status, sb);
+			render(status, sb);
 		} else if(cellValue instanceof EnhancedStatus) {
 			EnhancedStatus enStatus = (EnhancedStatus)cellValue;
 			renderWarning(enStatus.getWarnings(), sb);
-			renderStatus(enStatus.getStatus(), sb);
+			render(enStatus.getStatus(), sb);
 		}
 	}
 	
 	private void renderWarning(List<String> warnings, StringOutput sb) {
-		if(warnings != null && warnings.size() > 0) {
+		if(warnings != null && !warnings.isEmpty()) {
 			sb.append("<i class='o_icon o_icon_warn' title='");
 			for(String warning:warnings) {
 				sb.append(warning).append(" ");
@@ -61,18 +67,9 @@ public class ModeStatusCellRenderer implements FlexiCellRenderer {
 			sb.append("'> </i> ");
 		}
 	}
-	
-	private void renderStatus(Status status, StringOutput sb) {
-		switch(status) {
-			case none: render("o_as_mode_none", sb); break;
-			case leadtime: render("o_as_mode_leadtime", sb); break;
-			case assessment: render("o_as_mode_assessment", sb); break;
-			case followup: render("o_as_mode_followup", sb); break;
-			case end: render("o_as_mode_closed", sb); break;
-		}
-	}
-	
-	private void render(String iconCss, StringOutput sb) {
-		sb.append("<i class='o_icon ").append(iconCss).append("'> </i>");
+
+	private void render(Status status, StringOutput sb) {
+		String title = helper.getStatusLabel(status);
+		sb.append("<span title='").append(title).append("'><i class='o_icon ").append(status.cssClass()).append("'> </i></span>");
 	}
 }

@@ -21,12 +21,15 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureBlockRow;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
@@ -45,17 +48,22 @@ public class TeacherToolOverviewController extends AbstractTeacherOverviewContro
 	private LectureService lectureService;
 	
 	public TeacherToolOverviewController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, false, "Lectures::UserTools", true, false, false);
+		super(ureq, wControl, false, "Lectures::UserTools", true, false);
+		initTables(ureq, false, false);
 		loadModel(null);
 	}
 
 	@Override
 	protected List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams) {
-		List<LectureBlock> blocksWithTeachers = lectureService.getLectureBlocks(getIdentity(), searchParams);
-		List<LectureBlockRow> rows = new ArrayList<>(blocksWithTeachers.size());
-		for(LectureBlock block:blocksWithTeachers) {
+		List<LectureBlock> blocks = lectureService.getLectureBlocks(getIdentity(), searchParams);
+		List<LectureBlockRef> assessedBlockRefs = lectureService.getAssessedLectureBlocks(getIdentity(), searchParams);
+		Set<Long> assessedBlockKeys = assessedBlockRefs.stream()
+				.map(LectureBlockRef::getKey).collect(Collectors.toSet());
+		List<LectureBlockRow> rows = new ArrayList<>(blocks.size());
+		for(LectureBlock block:blocks) {
 			RepositoryEntry entry = block.getEntry();
-			rows.add(new LectureBlockRow(block, entry.getDisplayname(), entry.getExternalRef(), "", true));
+			rows.add(new LectureBlockRow(block, entry.getDisplayname(), entry.getExternalRef(),
+					"", true, assessedBlockKeys.contains(block.getKey())));
 		}
 		return rows;
 	}

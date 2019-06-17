@@ -22,8 +22,10 @@ package org.olat.modules.lecture.manager;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.persistence.TemporalType;
@@ -44,6 +46,7 @@ import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockImpl;
+import org.olat.modules.lecture.model.LectureBlockRefImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LectureReportRow;
@@ -202,6 +205,22 @@ public class LectureBlockDAO {
 		return query.getResultList();
 	}
 	
+	public List<LectureBlockRef> loadAssessedByTeacher(IdentityRef identityRef, LecturesBlockSearchParameters searchParams) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select distinct block.key from lectureblock block")
+		  .append(" inner join block.teacherGroup tGroup")
+		  .append(" inner join tGroup.members membership")
+		  .append(" inner join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
+		  .append(" where membership.identity.key=:teacherKey");
+		addSearchParametersToQuery(sb, true, searchParams);
+		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("teacherKey", identityRef.getKey());
+		addSearchParametersToQuery(query, searchParams);
+		List<Long> blockKeys = query.getResultList();
+		return blockKeys.stream().map(LectureBlockRefImpl::new).collect(Collectors.toList());
+	}
+	
 	public List<LectureReportRow> getLecturesBlocksReport(Date from, Date to, List<LectureRollCallStatus> status) {
 		// search blocks and coaches
 		QueryBuilder sb = new QueryBuilder(512);
@@ -314,9 +333,23 @@ public class LectureBlockDAO {
 	 */
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry) {
 		List<LectureBlock> blocks = getLectureBlocks(entry);
+		
+		// assessed lectures blocks
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select distinct block.key from lectureblock block")
+		  .append(" inner join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
+		  .append(" where block.entry.key=:entryKey");
+
+		List<Long> assessedBlockKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("entryKey", entry.getKey())
+				.getResultList();
+		Set<Long> assessedBlockKeySet = new HashSet<>(assessedBlockKeys);
+		
+		
 		Map<Long,LectureBlockWithTeachers> blockMap = new HashMap<>();
 		for(LectureBlock block:blocks) {
-			blockMap.put(block.getKey(), new  LectureBlockWithTeachers(block));
+			blockMap.put(block.getKey(), new  LectureBlockWithTeachers(block, assessedBlockKeySet.contains(block.getKey())));
 		}
 		
 		// append the coaches
@@ -354,13 +387,14 @@ public class LectureBlockDAO {
 	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry,
 			IdentityRef teacher, LecturesBlockSearchParameters searchParams) {
 		StringBuilder sc = new StringBuilder();
-		sc.append("select block, coach")
+		sc.append("select block, coach, mode.key")
 		  .append(" from lectureblock block")
 		  .append(" inner join block.entry entry")
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join membership.identity coach")
 		  .append(" inner join fetch coach.user usercoach")
+		  .append(" left join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
 		  .append(" where membership.role='").append("teacher").append("' and block.entry.key=:repoEntryKey");
 		addSearchParametersToQuery(sc, true, searchParams);
 		if(teacher != null) {
@@ -383,10 +417,11 @@ public class LectureBlockDAO {
 		for(Object[] rawCoach:rawCoachs) {
 			LectureBlock block = (LectureBlock)rawCoach[0];
 			Identity coach = (Identity)rawCoach[1];
+			Long assessmentModeKey = (Long)rawCoach[2];
 			
 			LectureBlockWithTeachers blockWith = blockMap.get(block.getKey());
 			if(blockWith == null) {
-				blockWith = new LectureBlockWithTeachers(block);
+				blockWith = new LectureBlockWithTeachers(block, assessmentModeKey != null);
 				blockMap.put(block.getKey(), blockWith);
 			}
 			blockWith.getTeachers().add(coach);
@@ -470,7 +505,7 @@ public class LectureBlockDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return firstKey != null && firstKey.size() > 0
+		return firstKey != null && !firstKey.isEmpty()
 				&& firstKey.get(0) != null && firstKey.get(0).longValue() > 0;
 	}
 	

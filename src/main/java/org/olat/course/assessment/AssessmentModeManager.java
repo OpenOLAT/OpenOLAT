@@ -31,6 +31,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.area.BGArea;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.lecture.LectureBlock;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 
@@ -49,6 +50,8 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentMode createAssessmentMode(RepositoryEntry entry);
 	
+	public AssessmentMode createAssessmentMode(LectureBlock lectureBlock, int leadTime, int followUpTime, String ips, String sebKeys);
+
 	/**
 	 * Create and persist a relation between the specified assessment mode
 	 * and a business group.
@@ -90,6 +93,8 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentMode merge(AssessmentMode assessmentMode, boolean forceStatus);
 	
+	public void syncAssessmentModeToLectureBlock(AssessmentMode assessmentMode);
+	
 	/**
 	 * Delete a specific assessment mode.
 	 * 
@@ -98,6 +103,8 @@ public interface AssessmentModeManager {
 	public void delete(AssessmentMode assessmentMode);
 	
 	public AssessmentMode getAssessmentModeById(Long key);
+	
+	public AssessmentMode getAssessmentMode(LectureBlock lectureBlock);
 	
 	/**
 	 * Search the whole assessment modes on the system.
@@ -122,7 +129,7 @@ public interface AssessmentModeManager {
 	 * @param from The date
 	 * @return A list of assessment modes
 	 */
-	public List<AssessmentMode> getPlannedAssessmentMode(RepositoryEntryRef entry, Date from);
+	public List<AssessmentMode> getPlannedAssessmentMode(RepositoryEntryRef entry, Date from, Date to);
 	
 	/**
 	 * Load the assessment mode for a specific user now.
@@ -141,11 +148,12 @@ public interface AssessmentModeManager {
 	
 	/**
 	 * Return true if the course is in assessment mode at the specified time.
-	 * @param entry
-	 * @param now
-	 * @return
+	 * @param entry The course
+	 * @param date The date
+	 * @return true if the course is in assessment mode
 	 */
-	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date now);
+	public boolean isInAssessmentMode(RepositoryEntryRef entry, Date date);
+
 	
 	/**
 	 * Returns the list of current assessment modes for the specified

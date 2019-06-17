@@ -22,7 +22,11 @@ package org.olat.modules.lecture.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
@@ -49,6 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TeacherOverviewController extends AbstractTeacherOverviewController implements TooledController {
 	
+	private Link assessmentToolButton;
 	private final TooledStackedPanel toolbarPanel;
 
 	private final RepositoryEntry entry;
@@ -63,13 +68,15 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 
 	public TeacherOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			RepositoryEntry entry, boolean admin, boolean defaultShowAllLectures) {
-		super(ureq, wControl, admin, "Lectures::" + entry.getKey(), false, true, defaultShowAllLectures);
+		super(ureq, wControl, admin, "Lectures::" + entry.getKey(), false, defaultShowAllLectures);
 		this.entry = entry;
 		entryConfig = lectureService.getRepositoryEntryLectureConfiguration(entry);
 		this.toolbarPanel = toolbarPanel;
 		toolbarPanel.addListener(this);
-		setBreadcrumbPanel(toolbarPanel);
+		initTables(ureq, true, ConfigurationHelper.isAssessmentModeEnabled(entryConfig, lectureModule));
 		loadModel(null);
+		setBreadcrumbPanel(toolbarPanel);
+		
 	}
 
 	@Override
@@ -78,11 +85,22 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 	}
 
 	@Override
+	protected void initTables(UserRequest ureq, boolean withTeachers, boolean withAssessment) {
+		assessmentToolButton = LinkFactory.createButton("assessment.tool", mainVC, this);
+		assessmentToolButton.setDomReplacementWrapperRequired(false);
+		assessmentToolButton.setIconLeftCSS("o_icon o_icon_assessment_tool");
+		assessmentToolButton.setVisible(false);
+		
+		super.initTables(ureq, withTeachers, withAssessment);
+	}
+
+	@Override
 	protected List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams) {
 		Identity filterByTeacher = ((Boolean)allTeachersSwitch.getUserObject()).booleanValue() ? null : getIdentity();
 		List<LectureBlockWithTeachers> blocksWithTeachers = lectureService
 				.getLectureBlocksWithTeachers(entry, filterByTeacher, searchParams);
 		
+		boolean assessmentMode = false;
 		// only show the start button if 
 		List<LectureBlockRow> rows = new ArrayList<>(blocksWithTeachers.size());
 		if(ConfigurationHelper.isRollCallEnabled(entryConfig, lectureModule)) {
@@ -98,12 +116,24 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 					teachers.append(userManager.getUserDisplayName(teacher));
 				}
 				
-				rows.add(new LectureBlockRow(block, entry.getDisplayname(), entry.getExternalRef(), teachers.toString(), teacherList.contains(getIdentity())));
+				assessmentMode |= blockWithTeachers.isAssessmentMode();
+				rows.add(new LectureBlockRow(block, entry.getDisplayname(), entry.getExternalRef(),
+						teachers.toString(), teacherList.contains(getIdentity()), blockWithTeachers.isAssessmentMode()));
 			}
 		}
+		
+		assessmentToolButton.setVisible(assessmentMode);
 		return rows;
 	}
 	
+	@Override
+	protected void event(UserRequest ureq, Component source, Event event) {
+		if(source == assessmentToolButton) {
+			doAssessmentTool(ureq);
+		}
+		super.event(ureq, source, event);
+	}
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		//reload table... first
@@ -114,5 +144,10 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 				stackPanel.popUpToController(this);
 			}
 		}
+	}
+	
+	private void doAssessmentTool(UserRequest ureq) {
+		String businessPath = "[RepositoryEntry:" + entry.getKey() + "][assessmentToolv2:0]";
+		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 }

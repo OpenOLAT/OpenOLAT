@@ -70,6 +70,7 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 			case status: return row.getLectureBlock();
 			case teachers: return row.getTeachers();
 			case tools: return row.getToolsLink();
+			case assessmentMode: return row.isAssessmentMode();
 			default: return null;
 		}
 	}
@@ -89,8 +90,8 @@ public class LectureListRepositoryDataModel extends DefaultFlexiTableDataModel<L
 		teachers("table.header.teachers"),
 		tools("table.header.actions"),
 		status("table.header.status"),
-		compulsory("table.header.compulsory.long")
-		;
+		compulsory("table.header.compulsory.long"),
+		assessmentMode("table.header.assessment.mode");
 		
 		private final String i18nKey;
 		
