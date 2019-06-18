@@ -83,7 +83,8 @@
 						|| jQuery(e.target).closest(".mce-container").length > 0
 						|| jQuery(e.target).closest(".mce-widget").length > 0
 						|| jQuery(e.target).closest(".o_layered_panel .popover").length > 0
-						|| jQuery(e.target).closest(".o_layered_panel .modal-dialog").length > 0;
+						|| jQuery(e.target).closest(".o_layered_panel .modal-dialog").length > 0
+						|| e.target.nodeName == 'BODY';
 					if(!edited && !excludedEls) {
 						o_XHREvent(componentUrl, false, false, 'cid', 'close_edit_fragment');
 					}
