@@ -551,9 +551,7 @@ public class QTI21Page {
 	public QTI21Page moveToVerticalSlider() {
 		By interactionBy = By.id("itemBody");
 		OOGraphene.waitElement(interactionBy, browser);
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.scrollTo(interactionBy, browser);
-		}
+		OOGraphene.scrollTo(interactionBy, browser);
 		return this;
 	}
 	
