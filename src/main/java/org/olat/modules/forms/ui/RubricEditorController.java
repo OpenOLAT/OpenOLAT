@@ -35,12 +35,14 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.RichTextElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.SliderElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.form.flexible.impl.elements.richText.TextMode;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.updown.UpDown;
 import org.olat.core.gui.components.updown.UpDownEvent;
@@ -493,11 +495,14 @@ public class RubricEditorController extends FormBasicController implements PageE
 
 	private SliderRow forgeSliderRow(Slider slider) {
 		String startLabel = slider.getStartLabel();
-		TextElement startLabelEl = uifactory.addTextElement("start.label." + count.incrementAndGet(), "start.label", 256, startLabel, flc);
-		startLabelEl.setDomReplacementWrapperRequired(false);
+		RichTextElement startLabelEl = uifactory.addRichTextElementForStringDataMinimalistic(
+				"start.label." + count.incrementAndGet(), null, startLabel, 4, -1, flc, getWindowControl());
+		startLabelEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
+
 		String endLabel = slider.getEndLabel();
-		TextElement endLabelEl = uifactory.addTextElement("end.label." + count.incrementAndGet(), "end.label", 256, endLabel, flc);
-		endLabelEl.setDomReplacementWrapperRequired(false);
+		RichTextElement endLabelEl = uifactory.addRichTextElementForStringDataMinimalistic(
+				"end.label." + count.incrementAndGet(), null, endLabel, 4, -1, flc, getWindowControl());
+		endLabelEl.getEditorConfiguration().setSimplestTextModeAllowed(TextMode.oneLine);
 
 		SliderRow row = new SliderRow(slider, startLabelEl, endLabelEl, createSliderEl());
 		if(!restrictedEdit) {

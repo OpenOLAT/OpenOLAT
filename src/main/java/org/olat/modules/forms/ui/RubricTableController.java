@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -31,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -78,7 +80,9 @@ public class RubricTableController extends FormBasicController {
 		List<LegendEntry> legendSigns = new ArrayList<>();
 		int columnIndex = 0;
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RubricReportCols.startLabel.i18nHeaderKey(), columnIndex++, false, null));
+		DefaultFlexiColumnModel startLabelModel = new DefaultFlexiColumnModel(RubricReportCols.startLabel.i18nHeaderKey(), columnIndex++, false, null);
+		startLabelModel.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.antisamy));
+		columnsModel.addFlexiColumnModel(startLabelModel);
 		
 		if (!rubric.getSliderType().equals(SliderType.continuous)) {
 			ScaleType scaleType = rubric.getScaleType();
@@ -101,6 +105,7 @@ public class RubricTableController extends FormBasicController {
 
 		if (hasEndLabel()) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel(RubricReportCols.endLabel.i18nHeaderKey(), columnIndex++, false, null);
+			columnModel.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.antisamy));
 			columnsModel.addFlexiColumnModel(columnModel);
 		}
 		if (rubric.isNoResponseEnabled()) {

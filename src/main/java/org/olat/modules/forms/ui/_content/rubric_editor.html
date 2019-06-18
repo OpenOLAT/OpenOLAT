@@ -62,9 +62,9 @@
 	#foreach($slider in $sliders)
 	<div class="row o_slider_editor">
 		<div class="$colSliderStart">$r.render($slider.startLabelEl)</div>
-		<div class="$colSliderPreview $slider.sliderCss">$r.render($slider.sliderEl)</div>
+		<div class="$colSliderPreview $slider.sliderCss o_slider_top">$r.render($slider.sliderEl)</div>
 		<div class="$colSliderEnd">$r.render($slider.endLabelEl)</div>
-		<div class="$colSliderButtons">
+		<div class="$colSliderButtons o_slider_top">
 			<div class="pull-right">
 				$r.render($slider.upDown)
 				#if($r.isNotNull($slider.deleteButton) && $r.visible($slider.deleteButton))

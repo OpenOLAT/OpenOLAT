@@ -343,6 +343,6 @@ public class EvaluationFormExcelExport {
 		} else if (StringHelper.containsNonWhitespace(slider.getEndLabel())) {
 			sb.append(slider.getEndLabel());
 		}
-		return sb.toString();
+		return FilterFactory.getHtmlTagAndDescapingFilter().filter(sb.toString());
 	}
 }

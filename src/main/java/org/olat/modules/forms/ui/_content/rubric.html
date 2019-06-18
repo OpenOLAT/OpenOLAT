@@ -3,7 +3,7 @@
 #set($hasRightLabels = $element.rightLabels)
 #set($isNoResponseEnabled = $element.noResponseEnabled)
 
-#if($hasLeftLabels || $hasRightLabels)
+#if($hasLeftLabels && $hasRightLabels)
 	#set($colLeft = "col-sm-3")
 	#if($isNoResponseEnabled)
 		#set($colMiddle = "col-sm-5")
@@ -14,25 +14,25 @@
 	#end
 	#set($colRight = "col-sm-3")
 #elseif($hasLeftLabels)
-	#set($colLeft = "col-sm-3")
+	#set($colLeft = "col-sm-6")
 	#if($isNoResponseEnabled)
-		#set($colMiddle = "col-sm-8")
+		#set($colMiddle = "col-sm-5")
 		#set($colNoResponse = "col-sm-1")
 	#else
-		#set($colMiddle = "col-sm-9")
+		#set($colMiddle = "col-sm-6")
 		#set($colNoResponse = "col-sm-0")
 	#end
 	#set($colRight = "col-sm-0")
 #elseif($hasRightLabels)
 	#set($colLeft = "col-sm-0")
 	#if($isNoResponseEnabled)
-		#set($colMiddle = "col-sm-8")
+		#set($colMiddle = "col-sm-5")
 		#set($colNoResponse = "col-sm-1")
 	#else
-		#set($colMiddle = "col-sm-9")
+		#set($colMiddle = "col-sm-6")
 		#set($colNoResponse = "col-sm-0")
 	#end
-	#set($colRight = "col-sm-3")
+	#set($colRight = "col-sm-6")
 #else
 	#set($colLeft = "col-sm-0")
 	#if($isNoResponseEnabled)

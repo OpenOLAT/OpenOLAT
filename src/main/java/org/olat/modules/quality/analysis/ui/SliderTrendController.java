@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -36,6 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -119,7 +121,9 @@ public class SliderTrendController extends FormBasicController {
 	private void updateTable(List<String> temporalHeaders) {
 		int columnIndex = 0;
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("slider.trend.table.title.question", columnIndex++));
+		DefaultFlexiColumnModel questionModel = new DefaultFlexiColumnModel("slider.trend.table.title.question", columnIndex++);
+		questionModel.setCellRenderer(new TextFlexiCellRenderer(EscapeMode.antisamy));
+		columnsModel.addFlexiColumnModel(questionModel);
 		for (String header: temporalHeaders) {
 			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("slider.trend.table.title.question", columnIndex++);
 			columnModel.setHeaderLabel(header);
