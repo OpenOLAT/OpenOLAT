@@ -21,6 +21,7 @@ package org.olat.modules.adobeconnect.manager;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,9 +39,10 @@ public class AdobeConnectProviderTest {
 		String dateStr = "2019-04-18T12:28:28.587+02:00";
 		Date date = AbstractAdobeConnectProvider.parseIsoDate(dateStr);
 		Assert.assertNotNull(date);
-		
+
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
+		cal.setTimeZone(TimeZone.getTimeZone("Europe/Zurich"));
 		Assert.assertEquals(12, cal.get(Calendar.HOUR_OF_DAY));
 	}
 
