@@ -181,13 +181,17 @@ public class RubricStatisticImpl implements RubricStatistic {
 		Double mean = sumAverage.getAverage();
 		if (mean == null) return null;
 		
-		List<Double> scaledValues = getScaledValues(stepCounts);
-		if (scaledValues.size() < 2) return null;
-		
 		double temp = 0;
-		for(double a: scaledValues)
-			temp += (a-mean)*(a-mean);
-		return temp/(scaledValues.size() - 1);
+		int size = 0;
+		for (int step = 1; step <= rubric.getSteps(); step++) {
+			double value = rubric.getScaleType().getStepValue(rubric.getSteps(), step, rubric.getWeight());
+			int count = stepCounts.get(step - 1).intValue();
+			for (int i = 0; i < count; i++) {
+				temp += (value-mean)*(value-mean);
+				size++;
+			}
+		}
+		return size > 2? temp/(size - 1): null;
 	}
 
 	private Double getStdDev(List<Long> stepCounts) {
@@ -197,21 +201,6 @@ public class RubricStatisticImpl implements RubricStatistic {
 		return Math.sqrt(getVariance(stepCounts));
 	}
 	
-	private List<Double> getScaledValues(List<Long> stepCounts) {
-		List<Double> scaledValues = new ArrayList<>();
-		for (int step = 1; step <= rubric.getSteps(); step++) {
-			Long count = stepCounts.get(step - 1);
-			if (count != null) {
-				double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step, rubric.getWeight());
-				for (int i = 0; i < count; i++) {
-					double scaledValue = stepValue * step;
-					scaledValues.add(Double.valueOf(scaledValue));
-				}
-			}
-		}
-		return scaledValues;
-	}
-
 	private void calculateTotalStatistics() {
 		Long numberOfNoResponses = countedNoResponses.stream().mapToLong(CalculatedLong::getValue).sum();
 		List<Long> totalStepCounts = getTotalStepCounts();

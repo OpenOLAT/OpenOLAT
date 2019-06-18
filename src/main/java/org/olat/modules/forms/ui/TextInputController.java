@@ -103,7 +103,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (textInput.isNumeric()) {
 			String val = singleRowEl.getValue();
@@ -117,7 +117,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

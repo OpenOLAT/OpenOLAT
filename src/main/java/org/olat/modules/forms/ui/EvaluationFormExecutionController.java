@@ -92,8 +92,6 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private boolean readOnly;
 	private boolean showDoneButton;
 
-	private boolean immediateSave = false;
-
 	private EvaluationFormSession session;
 	private final EvaluationFormResponses responses;
 	
@@ -268,11 +266,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (saveLink == source) {
-			immediateSave = true;
-			mainForm.submit(ureq);
-		} else if (doneLink == source) {
-			immediateSave = false;
-			mainForm.submit(ureq);
+			if(mainForm.validate(ureq)) {
+				doSaveResponses();
+			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -290,7 +286,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean responsesSaved = doSaveResponses();
-		if (!immediateSave && responsesSaved) {
+		if (responsesSaved) {
 			doConfirmDone(ureq);
 		}
 	}
@@ -340,7 +336,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 		List<ValidationMessage> messages = new ArrayList<>();
 		validate(ureq, messages);
-		if (messages.size() > 0) {
+		if (!messages.isEmpty()) {
 			for (ValidationMessage message : messages) {
 				sb.append("<p class='o_warning'>").append(message.getMessage()).append("</p>");
 			}

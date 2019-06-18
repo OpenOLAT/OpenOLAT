@@ -21,6 +21,8 @@
 package org.olat.course.editor;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +132,10 @@ public class MultiSPController extends FormBasicController {
 
 		if(item instanceof VFSContainer) {
 			VFSContainer container = (VFSContainer)item;
-			for(VFSItem subItem:container.getItems(new MultiSPVFSItemFilter())) {	
+			List<VFSItem> subItems = container.getItems(new MultiSPVFSItemFilter());
+			Collections.sort(subItems, new VFSItemNameComparator());
+			
+			for(VFSItem subItem:subItems) {	
 				MultipleSelectionElement sel = initTreeRec(level + 1, subItem, layoutcont);
 				node.getChildren().add(sel);
 			}
@@ -233,7 +238,8 @@ public class MultiSPController extends FormBasicController {
 		}
 		
 		//recurse
-		for(MultipleSelectionElement childElement:node.getChildren()) {
+		List<MultipleSelectionElement> childElements = node.getChildren();
+		for(MultipleSelectionElement childElement:childElements) {
 			create(childElement, course, parentNode);
 		}
 	}
@@ -336,11 +342,29 @@ public class MultiSPController extends FormBasicController {
 		}
 	}
 	
-	public class MultiSPVFSItemFilter implements VFSItemFilter {
+	public static class MultiSPVFSItemFilter implements VFSItemFilter {
 		@Override
 		public boolean accept(VFSItem vfsItem) {
 			String name = vfsItem.getName();
 			return !name.startsWith(".");
+		}
+	}
+	
+	public static class VFSItemNameComparator implements Comparator<VFSItem> {
+
+		@Override
+		public int compare(VFSItem o1, VFSItem o2) {
+			if(o1 == null && o2 == null) return 0;
+			if(o1 == null) return -1;
+			if(o2 == null) return 1;
+			
+			String n1 = o1.getName();
+			String n2 = o2.getName();
+			
+			if(n1 == null && n2 == null) return 0;
+			if(n1 == null) return -1;
+			if(n2 == null) return 1;
+			return n1.compareToIgnoreCase(n2);
 		}
 	}
 }

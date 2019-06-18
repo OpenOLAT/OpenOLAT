@@ -437,14 +437,21 @@ public class Form {
 	}
 	
 	private final void submit(UserRequest ureq, Event validationOkEvent) {	
+		boolean isValid = validate(ureq);
+		formWrapperComponent.fireValidation(ureq, isValid, validationOkEvent);
+		isValidAndSubmitted = isValid;
+		hasAlreadyFired = true;
+	}
+	
+	public boolean validate(UserRequest ureq) {
 		ValidatingFormComponentVisitor vfcv = new ValidatingFormComponentVisitor();
 		FormComponentTraverser ct = new FormComponentTraverser(vfcv, formLayout, false);
 		ct.visitAll(ureq);
 		// validate all form elements and gather validation status
 		ValidationStatus[] status = vfcv.getStatus();
-		//
+		
 		boolean isValid = status == null || status.length == 0;
-		// let the businesslogic validate this is implemented by the outside listener
+		// let the business logic validate this is implemented by the outside listener
 		
 		for (Iterator<FormBasicController> iterator = formListeners.iterator(); iterator.hasNext();) {
 			FormBasicController fbc = iterator.next();
@@ -452,10 +459,7 @@ public class Form {
 			//let further validate even if one fails.
 			isValid = fbc.validateFormLogic(ureq) && isValid;
 		}
-
-		formWrapperComponent.fireValidation(ureq, isValid, validationOkEvent);
-		isValidAndSubmitted = isValid;
-		hasAlreadyFired = true;
+		return isValid;
 	}
 	
 	
