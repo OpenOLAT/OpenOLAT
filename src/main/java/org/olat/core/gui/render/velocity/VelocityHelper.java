@@ -52,7 +52,7 @@ public class VelocityHelper {
 
 	private static final Logger log = Tracing.createLoggerFor(VelocityHelper.class);
 	private static final VelocityHelper INSTANCE = new VelocityHelper();
-
+	
 	private VelocityEngine ve;
 	
 	private Set<String> resourcesNotFound = ConcurrentHashMap.newKeySet();
@@ -82,21 +82,21 @@ public class VelocityHelper {
 			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
 
 			if (Settings.isDebuging()) {
-				p.setProperty(RuntimeConstants.RESOURCE_LOADER, "file, classpath");					
+				p.setProperty(RuntimeConstants.RESOURCE_LOADERS, "file, classpath");					
 				// config for file lookup from webapp classpath
-				p.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
+				p.setProperty("resource.loader.file.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
 				p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, WebappHelper.getSourcePath());
 				p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "false");								
-				p.setProperty("file.resource.loader.modificationCheckInterval", "3");
+				p.setProperty("resource.loader.file.modification_check_interval", "3");
 			} else {
-				p.setProperty(RuntimeConstants.RESOURCE_LOADER, "classpath");
+				p.setProperty(RuntimeConstants.RESOURCE_LOADERS, "classpath");
 				p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "true");
 			}
 			
 			//for jars: use the classpathloader
-			p.setProperty("classpath.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+			p.setProperty("resource.loader.classpath.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
 			// caching is on normally
-			p.setProperty("classpath.resource.loader.cache", Settings.isDebuging() ? "false" : "true");
+			p.setProperty("resource.loader.classpath.cache", Settings.isDebuging() ? "false" : "true");
 			
 			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_LOGWHENFOUND, "false");
 			p.setProperty(RuntimeConstants.VM_LIBRARY, "velocity/olat_velocimacros.vm");

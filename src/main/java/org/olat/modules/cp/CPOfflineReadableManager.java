@@ -90,7 +90,7 @@ public class CPOfflineReadableManager {
 			velocityEngine = new VelocityEngine();
 			p.setProperty(RuntimeConstants.RESOURCE_MANAGER_CACHE_CLASS, "org.olat.core.gui.render.velocity.InfinispanResourceCache");
 			p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
-			p.setProperty("classpath.resource.loader.cache", Settings.isDebuging() ? "false" : "true");
+			p.setProperty("resource.loader.classpath.cache", Settings.isDebuging() ? "false" : "true");
 			velocityEngine.init(p);
 		} catch (Exception e) {
 			throw new RuntimeException("config error " + p);

@@ -97,14 +97,14 @@ public class VelocityTemplateTest {
 		Properties p = new Properties();
 		p.setProperty(RuntimeConstants.INPUT_ENCODING, VelocityModule.getInputEncoding());
 
-		p.setProperty(RuntimeConstants.RESOURCE_LOADER, "file, classpath");					
-		p.setProperty("file.resource.loader.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
+		p.setProperty(RuntimeConstants.RESOURCE_LOADERS, "file, classpath");					
+		p.setProperty("resource.loader.file.class", "org.apache.velocity.runtime.resource.loader.FileResourceLoader");
 		p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_PATH, MAIN_JAVA);
 		p.setProperty(RuntimeConstants.FILE_RESOURCE_LOADER_CACHE, "false");								
-		p.setProperty("file.resource.loader.modificationCheckInterval", "3");
+		p.setProperty("resource.loader.file.modification_check_interval", "3");
 
-		p.setProperty("classpath.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
-		p.setProperty("classpath.resource.loader.cache", "false");
+		p.setProperty("resource.loader.classpath.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+		p.setProperty("resource.loader.classpath.cache", "false");
 		
 		p.setProperty(RuntimeConstants.RESOURCE_MANAGER_LOGWHENFOUND, "false");
 		p.setProperty(RuntimeConstants.VM_LIBRARY, "velocity/olat_velocimacros.vm");
