@@ -37,13 +37,13 @@ import org.olat.repository.RepositoryEntry;
 public interface MSService {
 	
 	EvaluationFormSession getOrCreateSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent,
-			Identity assessedIdentity);
+			Identity assessedIdentity, AuditEnv auditEnv);
 
 	EvaluationFormSession getSession(EvaluationFormSessionRef sessionRef);
 
-	EvaluationFormSession closeSession(EvaluationFormSession session);
+	EvaluationFormSession closeSession(EvaluationFormSession session, AuditEnv auditEnv);
 
-	EvaluationFormSession reopenSession(EvaluationFormSession session);
+	EvaluationFormSession reopenSession(EvaluationFormSession session, AuditEnv auditEnv);
 
 	boolean hasSessions(OLATResourceable ores, String nodeIdent);
 	

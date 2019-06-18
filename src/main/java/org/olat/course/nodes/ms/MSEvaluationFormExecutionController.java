@@ -31,6 +31,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
+import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -59,6 +60,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	private final ModuleConfiguration config;
 	private final MSCourseNode msCourseNode;
 
+	private final AuditEnv auditEnv;
 	private EvaluationFormSession session;
 	private boolean assessmentDone;
 
@@ -72,11 +74,14 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 		this.msCourseNode = msCourseNode;
 		this.config = msCourseNode.getModuleConfiguration();
 		
+		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+		UserNodeAuditManager auditManager = assessedUserCourseEnv.getCourseEnvironment().getAuditManager();
+		this.auditEnv = AuditEnv.of(auditManager , msCourseNode, assessedIdentity, getIdentity(), Role.coach);
+
 		RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(config);
 		RepositoryEntry ores = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		String nodeIdent = msCourseNode.getIdent();
-		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, assessedIdentity);
+		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, assessedIdentity, auditEnv);
 		
 		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
 		AssessmentEntry aEntry = am.getAssessmentEntry(msCourseNode, assessedIdentity);
@@ -118,21 +123,21 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	@Override
 	public void assessmentDone(UserRequest ureq) {
 		assessmentDone = true;
-		session = msService.closeSession(session);
+		session = msService.closeSession(session, auditEnv);
 		updateUI(ureq);
 	}
 
 	@Override
 	public void assessmentReopen(UserRequest ureq) {
 		assessmentDone = false;
-		session = msService.reopenSession(session);
+		session = msService.reopenSession(session, auditEnv);
 		updateUI(ureq);
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == reopenLink) {
-			session = msService.reopenSession(session);
+			session = msService.reopenSession(session, auditEnv);
 			updateUI(ureq);
 		}
 	}

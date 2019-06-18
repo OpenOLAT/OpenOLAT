@@ -26,6 +26,8 @@ import java.util.List;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.nodes.ms.AuditEnv;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -61,11 +63,11 @@ public class MSServiceImpl implements MSService {
 	
 	@Override
 	public EvaluationFormSession getOrCreateSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent,
-			Identity assessedIdentity) {
+			Identity assessedIdentity, AuditEnv auditEnv) {
 		EvaluationFormSurveyIdentifier surveyIdent = of(ores, nodeIdent, assessedIdentity.getKey().toString());
 		EvaluationFormSurvey survey = loadOrCreateSurvey(formEntry, surveyIdent);
 		EvaluationFormParticipation participation = loadOrCreateParticipation(survey);
-		return loadOrCreateSesssion(participation);
+		return loadOrCreateSesssion(participation, auditEnv);
 	}
 	
 	private EvaluationFormSurvey loadOrCreateSurvey(RepositoryEntry formEntry, EvaluationFormSurveyIdentifier surveyIdent) {
@@ -86,10 +88,11 @@ public class MSServiceImpl implements MSService {
 		return loadedParticipation;
 	}
 
-	private EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation) {
+	private EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation, AuditEnv auditEnv) {
 		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 		if (session == null) {
 			session = evaluationFormManager.createSession(participation);
+			logAudit(auditEnv, "Completion of evaluation form started");
 		}
 		return session;
 	}
@@ -100,13 +103,17 @@ public class MSServiceImpl implements MSService {
 	}
 
 	@Override
-	public EvaluationFormSession closeSession(EvaluationFormSession session) {
-		return evaluationFormManager.finishSession(session);
+	public EvaluationFormSession closeSession(EvaluationFormSession session, AuditEnv auditEnv) {
+		EvaluationFormSession finishSession = evaluationFormManager.finishSession(session);
+		logAudit(auditEnv, "Completion of evaluation form finished");
+		return finishSession;
 	}
 
 	@Override
-	public EvaluationFormSession reopenSession(EvaluationFormSession session) {
-		return evaluationFormManager.reopenSession(session);
+	public EvaluationFormSession reopenSession(EvaluationFormSession session, AuditEnv auditEnv) {
+		EvaluationFormSession reopenSession = evaluationFormManager.reopenSession(session);
+		logAudit(auditEnv, "Evaluation form reopened");
+		return reopenSession;
 	}
 
 	@Override
@@ -251,6 +258,16 @@ public class MSServiceImpl implements MSService {
 		if (score == null) return null;
 		
 		return scale * score.floatValue();
+	}
+
+	private void logAudit(AuditEnv auditEnv, String message) {
+		UserNodeAuditManager am = auditEnv.getAuditManager();
+		am.appendToUserNodeLog(
+				auditEnv.getCourseNode(),
+				auditEnv.getIdentity(),
+				auditEnv.getAssessedIdentity(),
+				message,
+				auditEnv.getBy());
 	}
 
 }

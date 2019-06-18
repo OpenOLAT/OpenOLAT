@@ -35,9 +35,11 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -74,7 +76,9 @@ public class MSResultDetailsController extends BasicController {
 		RepositoryEntry ores = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		String nodeIdent = msCourseNode.getIdent();
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		session = msService.getOrCreateSession(formEntry, ores, nodeIdent, assessedIdentity);
+		UserNodeAuditManager auditManager = assessedUserCourseEnv.getCourseEnvironment().getAuditManager();
+		AuditEnv auditEnv = AuditEnv.of(auditManager , msCourseNode, assessedIdentity, getIdentity(), Role.coach);
+		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, assessedIdentity, auditEnv);
 		List<RubricStatistic> statistics = msService.getRubricStatistics(session);
 		
 		String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
