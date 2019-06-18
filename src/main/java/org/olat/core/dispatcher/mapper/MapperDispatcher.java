@@ -98,14 +98,14 @@ public class MapperDispatcher implements Dispatcher {
 			m = mapperService.getMapperById(null, smappath);
 			if(m == null) {
 				log.warn("Call to mapped resource, but mapper does not exist for path::" + smappath);
-				DispatcherModule.sendNotFound(pathInfo, hres);
+				hres.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				return;
 			}
 		}
 		String mod = slashPos > 0 ? subInfo.substring(slashPos) : "";
 		if (mod.indexOf("..") != -1) {
 			log.warn("Illegal mapper path::" + mod + " contains '..'");
-			DispatcherModule.sendForbidden(pathInfo, hres);
+			hres.setStatus(HttpServletResponse.SC_FORBIDDEN);
 			return;
 		}
 		// /bla/blu.html
