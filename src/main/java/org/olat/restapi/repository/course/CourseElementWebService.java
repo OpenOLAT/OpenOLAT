@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -1218,7 +1219,7 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	//fxdiff FXOLAT-122: course management
-	public Response updateExternalPage(@PathParam("courseId") Long courseId, @PathParam("parentNodeId") String nodeId,
+	public Response updateExternalPage(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			@FormParam("shortTitle") @DefaultValue("undefined") String shortTitle,
 			@FormParam("longTitle") @DefaultValue("undefined") String longTitle, @FormParam("objectives") @DefaultValue("undefined") String objectives,
 			@FormParam("visibilityExpertRules") String visibilityExpertRules, @FormParam("accessExpertRules") String accessExpertRules,

@@ -48,11 +48,13 @@ a.o_chelp {
 	border: $o-drawing-border-width solid $o-drawing-border-color;
 	border-radius: 50%;
 	position: absolute !important;
+	box-sizing: border-box;
 }
 
 .o_draw_rectangle {
 	border: $o-drawing-border-width solid $o-drawing-border-color;
 	position: absolute !important;
+	box-sizing: border-box;
 }
 
 

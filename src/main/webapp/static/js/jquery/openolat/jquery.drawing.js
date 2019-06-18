@@ -74,12 +74,11 @@
 			width = height = "100px";
 			top = left = "5px";
 		} else {
-			//var borderWidth = jQuery("#" + id).css("border-left-width");
 			var parts = coords.split(',');
 			var radius = parseInt(parts[2]);//border
 			width = height = (2 * radius);
-			left = parseInt(parts[0]) - radius - 3;
-			top = parseInt(parts[1]) - radius - 3;
+			left = parseInt(parts[0]) - radius - 1;
+			top = parseInt(parts[1]) - radius - 1;
 		}
 
 		var nodes = jQuery("#" + id).height(height + 'px').width(width + 'px')
@@ -110,11 +109,13 @@
 			top = left = '5px';
 		} else {
 			var parts = coords.split(',');
-			left = parseInt(parts[0]) - 3;
-			top = parseInt(parts[1]) - 3;
-			width = parseInt(parts[2]) - left;
-			height = parseInt(parts[3]) - top;
+			left = parseInt(parts[0]) - 1;
+			top = parseInt(parts[1]) - 1;
+			width = parseInt(parts[2]) - left - 3;
+			height = parseInt(parts[3]) - top - 3;
 		}
+		
+		console.log(coords, left, top, width, height);
 		
 		var nodes = jQuery("#" + id).height(height + 'px').width(width + 'px')
 			.css('top', top + 'px').css('left', left + 'px');
@@ -154,7 +155,7 @@
 		var id = jQuery(spot).attr('id');
         var position = jQuery(spot).position();
         var radius = parseInt(jQuery(spot).width(), 10) / 2;
-        var coords = (position.left + radius) + "," + (position.top + radius) + "," + radius;
+        var coords = (position.left + radius + 1) + "," + (position.top + radius + 1) + "," + radius;
         jQuery("#" + id + "_shape").val("circle");
         jQuery("#" + id + "_coords").val(coords);
         return coords;
@@ -165,7 +166,7 @@
         var position = jQuery(spot).position();
         var width = parseInt(jQuery(spot).width(), 10);
         var height = parseInt(jQuery(spot).height(), 10);
-        var coords = position.left + "," + position.top + "," + (position.left + width) + "," + (position.top + height);
+        var coords = (position.left + 1) + "," + (position.top + 1) + "," + (position.left + width + 3) + "," + (position.top + height + 3);
         jQuery("#" + id + "_shape").val("rect");
         jQuery("#" + id + "_coords").val(coords);
         return coords;
