@@ -643,9 +643,9 @@ $o-radial-progress-percentage-danger-color	: $progress-bar-danger-bg !default;
 $o-radial-progress-circle-info-color		: $progress-bar-info-bg !default;
 $o-radial-progress-percentage-info-color	: $progress-bar-info-bg !default;
 
-/* Drawing */
+/* Drawing (border cannot be change without modifications of the jquery plugin and hotspot interaction) */
 $o-drawing-border-color		: $brand-primary;
-$o-drawing-border-width		: 4px !default;
+$o-drawing-border-width		: 2px !default;
 
 /* Placeholder panels */
 $o-panel-placeholder-border-width	: 2px !default;
