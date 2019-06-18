@@ -24,6 +24,7 @@ import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -74,6 +75,11 @@ public class BulkAssessmentPage {
 	}
 	
 	public BulkAssessmentPage nextData() {
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.waitingALittleLonger();
+			By modalFooterBy = By.cssSelector(".modal .modal-footer");
+			OOGraphene.moveTo(modalFooterBy, browser);
+		}
 		OOGraphene.nextStep(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_bulk_assessment_columns"), browser);

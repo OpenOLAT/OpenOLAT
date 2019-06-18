@@ -27,6 +27,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * Drive the group task course element.
@@ -101,6 +102,13 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage submitRevisedFile(File file) {
+		if(browser instanceof FirefoxDriver) {
+			// Firefox need to wait a little longer, but why?
+			By submitBy = By.id("o_step_revision_content");
+			OOGraphene.waitElement(submitBy, browser);
+			OOGraphene.waitingALittleLonger();
+			OOGraphene.moveTo(submitBy, browser);
+		}
 		return uploadFile("o_step_revision_content", file);
 	}
 	

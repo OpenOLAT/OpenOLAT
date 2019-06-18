@@ -396,7 +396,9 @@ public class LectureSettingsAdminController extends FormBasicController {
 		boolean allOk = true;
 		
 		el.clearError();
-		if(StringHelper.containsNonWhitespace(el.getValue()) && el.isVisible()) {
+		if(!el.isVisible()) {
+			// OK
+		} else if(StringHelper.containsNonWhitespace(el.getValue())) {
 			try {
 				int val = Integer.parseInt(el.getValue());
 				if(val <= 0) {

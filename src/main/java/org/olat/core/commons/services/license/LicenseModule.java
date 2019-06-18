@@ -96,8 +96,6 @@ public class LicenseModule extends AbstractSpringModule {
 		if (handlerInitialized) {
 			savePropertiesAndFireChangedEvent();
 		}
-
-		handlers.sort((LicenseHandler h1, LicenseHandler h2) -> h1.getType().compareTo(h2.getType()));
 	}
 	
 	private void initLicenseHandler(LicenseHandler handler) {
@@ -120,8 +118,13 @@ public class LicenseModule extends AbstractSpringModule {
 		init();
 	}
 	
+	/**
+	 * @return A copy of the list of license handlers
+	 */
 	public List<LicenseHandler> getHandlers() {
-		return handlers;
+		List<LicenseHandler> sortedHandlers = new ArrayList<>(handlers);
+		sortedHandlers.sort((LicenseHandler h1, LicenseHandler h2) -> h1.getType().compareTo(h2.getType()));
+		return sortedHandlers;
 	}
 	
 	public List<LicensorCreator> getLicenseCreators() {
@@ -139,7 +142,7 @@ public class LicenseModule extends AbstractSpringModule {
 	
 	public boolean isEnabled(LicenseHandler handler) {
 		Boolean enabled = enabledHandlers.get(handler.getType());
-		return enabled != null? enabled.booleanValue(): false;
+		return enabled != null && enabled.booleanValue();
 	}
 	
 	public void setEnabled(String handlerType, boolean enabled) {

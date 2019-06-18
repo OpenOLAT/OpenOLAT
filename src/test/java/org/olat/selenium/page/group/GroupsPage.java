@@ -43,11 +43,20 @@ public class GroupsPage {
 		this.browser = browser;
 	}
 	
+	public static GroupsPage getPage(WebDriver browser) {
+		return new GroupsPage(browser)
+				.assertOnGroupsPage();
+	}
+	
+	public GroupsPage assertOnGroupsPage() {
+		By myGroupsBy = By.cssSelector("div.o_segments a.o_sel_group_all_groups_seg");
+		OOGraphene.waitElement(myGroupsBy, browser);
+		return this;
+	}
+	
 	public GroupsPage assertOnMyGroupsSelected() {
 		By myGroupsBy = By.cssSelector("div.o_segments a.btn.btn-primary.o_sel_group_all_groups_seg");
-		OOGraphene.waitElement(myGroupsBy, 5, browser);
-		WebElement myGroupsEl = browser.findElement(myGroupsBy);
-		Assert.assertTrue(myGroupsEl.isDisplayed());
+		OOGraphene.waitElement(myGroupsBy, browser);
 		return this;
 	}
 	
@@ -131,18 +140,9 @@ public class GroupsPage {
 	}
 	
 	private GroupsPage selectGroupInTable(String name) {
-		By linkBy = By.cssSelector("div.o_table_wrapper td a");
-		
-		WebElement groupLink = null;
-		List<WebElement> links = browser.findElements(linkBy);
-		for(WebElement link:links) {
-			if(link.getText().contains(name)) {
-				groupLink = link;
-			}
-		}
-		
-		Assert.assertNotNull(groupLink);
-		groupLink.click();
+		By groupNameBy = By.xpath("//table//td/a[text()[contains(.,'" + name+ "')]][i[contains(@class,'o_icon_group')]]");
+		OOGraphene.waitElement(groupNameBy, browser);
+		browser.findElement(groupNameBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

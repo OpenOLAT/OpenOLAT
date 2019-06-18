@@ -145,6 +145,12 @@ public class OOGraphene {
 			.until(ExpectedConditions.elementToBeClickable(element));
 	}
 	
+	public static void waitElementClickable(WebElement element, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(timeout).pollingEvery(polling)
+			.until(ExpectedConditions.elementToBeClickable(element));
+	}
+	
 	/**
 	 * Wait until the element is visible.
 	 * 
@@ -212,6 +218,7 @@ public class OOGraphene {
 	
 	public static void nextStep(WebDriver browser) {
 		clickAndWait(wizardNextBy, browser);
+		//TODO moveTo modal-footer???
 	}
 	
 	public static void finishStep(WebDriver browser) {
@@ -281,7 +288,7 @@ public class OOGraphene {
 		boolean move = buttonEl.getLocation().getY() > 669;
 		if(move) {
 			if(browser instanceof FirefoxDriver) {
-				scrollTo(buttonBy, browser);
+				scrollTo(buttonEl, browser);
 			}
 			new Actions(browser)
 				.moveToElement(buttonEl)
@@ -295,21 +302,32 @@ public class OOGraphene {
 	
 	/**
 	 * Scroll to the element and wait a little longer.
-	 * @param by
-	 * @param browser
+	 * 
+	 * @param by The selector
+	 * @param browser The browser
 	 */
 	public static void scrollTo(By by, WebDriver browser) {
 		WebElement el = browser.findElement(by);
-		((JavascriptExecutor)browser).executeScript("return arguments[0].scrollIntoView({behavior:\"instant\", block: \"end\"});", el);
+		scrollTo(el, browser);
+	}
+	
+	/**
+	 * Scroll to the element and wait a little longer.
+	 * 
+	 * @param by The element
+	 * @param browser The browser
+	 */
+	public static void scrollTo(WebElement element, WebDriver browser) {
+		((JavascriptExecutor)browser).executeScript("return arguments[0].scrollIntoView({behavior:\"instant\", block: \"end\"});", element);
 		OOGraphene.waitingALittleLonger();
 	}
 	
 	public static void moveTo(By by, WebDriver browser) {
 		waitElement(by, browser);
-		if(browser instanceof FirefoxDriver) {
-			scrollTo(by, browser);
-		}
 		WebElement el = browser.findElement(by);
+		if(browser instanceof FirefoxDriver) {
+			scrollTo(el, browser);
+		}
 		new Actions(browser)
 			.moveToElement(el)
 			.pause(moveToPause)
@@ -586,18 +604,18 @@ public class OOGraphene {
 	
 	public static final void closeErrorBox(WebDriver browser) {
 		By errorBoxBy = By.cssSelector(".modal-body.alert.alert-danger");
-		waitElement(errorBoxBy, 5, browser);
+		waitElement(errorBoxBy, browser);
 		By closeButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//button[@class='close']");
-		waitElement(closeButtonBy, 5, browser);
+		waitElement(closeButtonBy, browser);
 		browser.findElement(closeButtonBy).click();
 		waitModalDialogDisappears(browser);
 	}
 	
 	public static final void closeWarningBox(WebDriver browser) {
 		By errorBoxBy = By.cssSelector(".modal-body.alert.alert-warning");
-		waitElement(errorBoxBy, 5, browser);
+		waitElement(errorBoxBy, browser);
 		By closeButtonBy = By.xpath("//div[not(@id='o_form_dirty_message')]/div[contains(@class,'modal-dialog')]//button[@class='close']");
-		waitElement(closeButtonBy, 5, browser);
+		waitElement(closeButtonBy, browser);
 		browser.findElement(closeButtonBy).click();
 		waitModalDialogDisappears(browser);
 	}

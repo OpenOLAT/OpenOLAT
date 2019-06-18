@@ -226,9 +226,10 @@ public class GroupPage {
 	}
 	
 	public GroupPage setWaitingList() {
+		By waitingListBy = By.xpath("//fieldset[contains(@class,'o_sel_group_edit_group_form')]");
+		OOGraphene.moveTo(waitingListBy, browser);
+
 		By waitingListCheckBy = By.xpath("//div[contains(@class,'o_sel_group_edit_waiting_list')]//input[@type='checkbox']");
-		OOGraphene.moveTo(waitingListCheckBy, browser);
-		
 		WebElement waitingListCheckEl = browser.findElement(waitingListCheckBy);
 		OOGraphene.check(waitingListCheckEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);

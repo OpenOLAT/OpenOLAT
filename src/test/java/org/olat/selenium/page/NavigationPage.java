@@ -123,7 +123,7 @@ public class NavigationPage {
 	
 	public GroupsPage openGroups(WebDriver currentBrowser) {
 		navigate(groupsBy);
-		return new GroupsPage(currentBrowser);
+		return GroupsPage.getPage(currentBrowser);
 	}
 	
 	private void navigate(By linkBy) {
