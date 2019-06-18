@@ -249,6 +249,13 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 				mode = ensureStatusOfMode(mode, Status.none);
 				sendEvent(AssessmentModeNotificationEvent.BEFORE, mode,
 						assessmentModeManager.getAssessedIdentityKeys(mode));
+			} else if(mode.getStatus() == Status.followup && mode.isManualBeginEnd() && !forceStatus) {
+				// close manual assessment mode in the follow-up time but started before the begin date
+				if(mode.getEndWithFollowupTime().compareTo(now) < 0) {
+					mode = ensureStatusOfMode(mode, Status.end);
+					sendEvent(AssessmentModeNotificationEvent.END, mode,
+							assessmentModeManager.getAssessedIdentityKeys(mode));
+				}
 			}
 		} else if(mode.getBeginWithLeadTime().compareTo(now) <= 0 && mode.getBegin().compareTo(now) > 0
 				&& mode.getBeginWithLeadTime().compareTo(mode.getBegin()) != 0) {
