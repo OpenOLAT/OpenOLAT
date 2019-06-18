@@ -103,31 +103,13 @@ public class StatisticsCalculator {
 		log.debug("Raw grouped statistic: " + rawStatistic.toString());
 		Double rawAvg = rawStatistic.getRawAvg();
 		boolean rawAvgMaxGood = !rubric.isStartGoodRating();
-		Double scaledAvg = getScaledAvg(rubric, rawAvg);
+		Double scaledAvg = rubric.getScaleType().getStepValue(rubric.getSteps(), rawAvg, rubric.getWeight());
 		RubricRating rating = evaluationFormManager.getRubricRating(rubric, scaledAvg);
 		int steps = rubric.getSteps();
 		GroupedStatistic statistic = new GroupedStatisticImpl(rawStatistic.getIdentifier(), rawStatistic.getMultiKey(),
 				rawStatistic.getTemporalKey(), rawStatistic.getCount(), rawAvg, rawAvgMaxGood, scaledAvg, rating, steps);
 		log.debug("Grouped statistic:        " + statistic.toString());
 		return statistic;
-	}
-
-	private Double getScaledAvg(Rubric rubric, Double rawAvg) {
-		Double scaledAvg = rawAvg;
-		switch (rubric.getScaleType()) {
-		case maxToOne: {
-			scaledAvg = rubric.getSteps() + 1 - rawAvg;
-			break;
-		}
-		case zeroBallanced: {
-			double offset = (rubric.getSteps() - 1) / 2.0;
-			scaledAvg = rawAvg - 1 - offset;
-			break;
-		}
-		default:
-			break;
-		}
-		return scaledAvg;
 	}
 
 	MultiTrendSeries<String> getTrendsByIdentifiers(GroupedStatistics<GroupedStatistic> statistics, TemporalGroupBy temporalGroupBy) {

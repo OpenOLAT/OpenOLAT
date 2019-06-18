@@ -32,31 +32,31 @@ import org.olat.core.gui.translator.Translator;
 public enum ScaleType {
 	zeroToMax {
 		@Override
-		public double getStepValue(int numberOfSteps, int step) {
+		public double getStepValue(int numberOfSteps, double step) {
 			return step - 1;
 		}
 	},
 	oneToMax {
 		@Override
-		public double getStepValue(int numberOfSteps, int step) {
+		public double getStepValue(int numberOfSteps, double step) {
 			return step;
 		}
 	},
 	maxToOne {
 		@Override
-		public double getStepValue(int numberOfSteps, int step) {
+		public double getStepValue(int numberOfSteps, double step) {
 			return numberOfSteps + 1 - step;
 		}
 	},
 	maxToZero {
 		@Override
-		public double getStepValue(int numberOfSteps, int step) {
+		public double getStepValue(int numberOfSteps, double step) {
 			return numberOfSteps - step;
 		}
 	},
 	zeroBallanced {
 		@Override
-		public double getStepValue(int numberOfSteps, int step) {
+		public double getStepValue(int numberOfSteps, double step) {
 			double offset = (numberOfSteps - 1) / 2.0;
 			return step - 1 - offset;
 		}
@@ -70,7 +70,7 @@ public enum ScaleType {
 	 * @param weight (optionl)
 	 * @return 
 	 */
-	public double getStepValue(int numberOfSteps, int step, Integer weight) {
+	public double getStepValue(int numberOfSteps, double step, Integer weight) {
 		double stepValue = getStepValue(numberOfSteps, step);
 		return weight != null
 				? stepValue * weight.intValue()
@@ -78,7 +78,7 @@ public enum ScaleType {
 		
 	};
 	
-	abstract double getStepValue(int numberOfSteps, int step);
+	abstract double getStepValue(int numberOfSteps, double step);
 
 	public String getKey() {
 		return name();
