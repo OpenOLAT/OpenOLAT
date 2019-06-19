@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.WebappHelper;
 import org.olat.group.BusinessGroupModule;
 import org.olat.repository.RepositoryModule;
 import org.olat.restapi.RestModule;
@@ -96,7 +97,8 @@ public class RestapiAdminController extends FormBasicController {
 			docLinkFlc.contextPut("docLink", link);
 			String openApiLink = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/openapi.json";
 			docLinkFlc.contextPut("openApiLink", openApiLink);
-			String swaggerUiLink = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/api-docs/?url=" + RestSecurityHelper.SUB_CONTEXT + "/openapi.json";
+			String swaggerUiLink = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/api-docs/?url="
+						+ WebappHelper.getServletContextPath() + RestSecurityHelper.SUB_CONTEXT + "/openapi.json";
 			docLinkFlc.contextPut("swaggerUiLink", swaggerUiLink);
 			
 			FormLayoutContainer accessDataFlc = FormLayoutContainer.createDefaultFormLayout("flc_access_data", getTranslator());
