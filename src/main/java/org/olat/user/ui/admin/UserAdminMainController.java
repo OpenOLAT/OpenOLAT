@@ -611,6 +611,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 			if(curriculumModule.isEnabled()) {
 				buildTreeNodeRole(accessNode, OrganisationRoles.curriculummanager);
 			}
+			buildTreeNodeRole(accessNode, OrganisationRoles.learnresourcemanager);
 			buildTreeNodeRole(accessNode, OrganisationRoles.linemanager);
 			buildTreeNodeRole(accessNode, OrganisationRoles.principal);
 			buildTreeNodeRole(accessNode, OrganisationRoles.administrator);

@@ -164,10 +164,16 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		tableEl.reset(reset, reset, true);
 	}
 	
+	/**
+	 * This create a row with management rights.
+	 * 
+	 * @param curriculum The curriculum informations
+	 * @return A curriculum row
+	 */
 	private CurriculumRow forgeManagedRow(CurriculumInfos curriculum) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		CurriculumRow row = new CurriculumRow(curriculum, toolsLink, secCallback.canEditCurriculum());
+		CurriculumRow row = new CurriculumRow(curriculum, toolsLink, true);
 		toolsLink.setUserObject(row);
 		return row;
 	}
