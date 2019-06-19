@@ -250,7 +250,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 				session = getAdapter().commonInfo(authentication, error);
 			}
 
-			if(session != null) {
+			if(session != null && StringHelper.containsNonWhitespace(session.getSession())) {
 				builder.queryParam("session", session.getSession());
 			} else {
 				String fullName = userManager.getUserDisplayName(identity);

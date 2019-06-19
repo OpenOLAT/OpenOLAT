@@ -541,8 +541,12 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		try(CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 			CloseableHttpResponse response = httpClient.execute(getLogin)) {
 			int statusCode = response.getStatusLine().getStatusCode();
-			if(statusCode == 200 && AdobeConnectUtils.isStatusOk(response.getEntity())) {
-				currentSession = session;
+			if(statusCode == 200) {
+				BreezeSession loginSession = AdobeConnectUtils.getBreezeSessionIfOk(response);
+				if(loginSession != null) {// OK
+					session = loginSession;
+					currentSession = loginSession;
+				}
 			}
 			EntityUtils.consumeQuietly(response.getEntity());
 		} catch(Exception e) {

@@ -35,6 +35,7 @@ import org.olat.basesecurity.Authentication;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
 import org.olat.modules.adobeconnect.model.AdobeConnectPrincipal;
 import org.olat.modules.adobeconnect.model.BreezeSession;
@@ -103,6 +104,14 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 	@Override
 	public BreezeSession commonInfo(Authentication authentication, AdobeConnectErrors error) {
 		if(authentication == null) {
+			return null;
+		}
+		
+		if(!StringHelper.containsNonWhitespace(authentication.getCredential())) {
+			// special case of the administrator which setup the adobe account
+			if(adobeConnectModule.getAdminLogin().equals(authentication.getAuthusername())) {
+				return getAdminSession(error);
+			}
 			return null;
 		}
 		

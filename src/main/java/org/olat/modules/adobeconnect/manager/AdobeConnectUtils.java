@@ -36,6 +36,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.adobeconnect.model.AdobeConnectError;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrorCodes;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
@@ -66,6 +67,26 @@ public class AdobeConnectUtils {
 		}
 	}
 	
+	protected static BreezeSession getBreezeSessionIfOk(HttpResponse response) {
+		BreezeSession session = null;
+		try {
+			HttpEntity entity = response.getEntity();
+			Document doc = getDocumentFromEntity(entity);
+			if(AdobeConnectUtils.isStatusOk(doc)) {
+				Header header = response.getFirstHeader("Set-Cookie");
+				if(header != null) {
+					session = BreezeSession.valueOf(header);
+				} else {
+					String cookie = getFirstElementValue(doc.getDocumentElement(), "cookie");
+					session = BreezeSession.valueOf(cookie);
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return session;
+	}
+	
 	protected static BreezeSession getBreezeSession(HttpResponse response) {
 		BreezeSession session = null;
 		try {
@@ -89,7 +110,9 @@ public class AdobeConnectUtils {
 		try {
 			Document doc = getDocumentFromEntity(response.getEntity());
 			String cookie = getFirstElementValue(doc.getDocumentElement(), "cookie");
-			session = BreezeSession.valueOf(cookie);
+			if(StringHelper.containsNonWhitespace(cookie)) {
+				session = BreezeSession.valueOf(cookie);
+			}
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -181,7 +204,7 @@ public class AdobeConnectUtils {
 	}
 	
 	protected static void print(Document document) {
-		if(log.isDebugEnabled()) {
+		if(log.isDebugEnabled() || true) {
 		    try(StringWriter writer = new StringWriter()) {
 				Transformer transformer = TransformerFactory.newInstance().newTransformer();
 				Source source = new DOMSource(document);
