@@ -57,6 +57,7 @@ import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSLockManager;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.lock.LockInfo;
+import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -314,16 +315,20 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	}
 
 	@Override
-	public void lock(VFSLeaf vfsLeaf, Identity identity, String lockToken) {
+	public boolean lock(VFSLeaf vfsLeaf, Identity identity, String lockToken) {
 		LockInfo lock = lockManager.getLock(vfsLeaf);
 		if (lock == null) {
-			lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP);
-			lock = lockManager.getLock(vfsLeaf);
-			lock.getTokens().clear(); // the generated, internal token for the identity
-			
+			LockResult lockResult = lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP);
+			if(lockResult.isAcquired()) {
+				lock = lockResult.getLockInfo();
+			} else {
+				return false;
+			}
+			lock.clearTokens(); // the generated, internal token for the identity
 			refreshLock(lock);
 		}
-		lock.getTokens().add(lockToken);
+		lock.addToken(lockToken);
+		return true;
 	}
 
 	@Override

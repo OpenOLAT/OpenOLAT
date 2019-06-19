@@ -67,7 +67,7 @@ public interface Office365Service {
 
 	String getLockToken(VFSLeaf vfsLeaf);
 
-	void lock(VFSLeaf vfsLeaf, Identity identity, String lockToken);
+	boolean lock(VFSLeaf vfsLeaf, Identity identity, String lockToken);
 
 	boolean canUnlock(VFSLeaf vfsLeaf, String lockToken);
 

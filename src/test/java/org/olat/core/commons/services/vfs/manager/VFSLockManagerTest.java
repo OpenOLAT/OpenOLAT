@@ -32,6 +32,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSLockApplicationType;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.lock.LockInfo;
 import org.olat.core.util.vfs.lock.LockResult;
 import org.olat.core.util.vfs.lock.VFSLockManagerImpl;
 import org.olat.test.JunitTestHelper;
@@ -300,6 +301,8 @@ public class VFSLockManagerTest extends OlatTestCase {
 		// second user, try to lock the file
 		LockResult locked = lockManager.lock(file, otherId, VFSLockApplicationType.vfs, null);
 		Assert.assertFalse(locked.isAcquired());
+		LockInfo lock = lockManager.getLock(file);
+		Assert.assertNotNull(lock);
 		// is locked
 		boolean lockedCollaboration = lockManager.isLockedForMe(file, otherId, VFSLockApplicationType.collaboration, "oo-collaboration");
 		Assert.assertTrue(lockedCollaboration);
@@ -327,6 +330,8 @@ public class VFSLockManagerTest extends OlatTestCase {
 		// Locked it
 		LockResult locked = lockManager.lock(file, id, VFSLockApplicationType.collaboration, "oo-collaboration");
 		Assert.assertTrue(locked.isAcquired());
+		LockInfo lock = lockManager.getLock(file);
+		Assert.assertNotNull(lock);
 		
 		// Try to lock it with an other app.
 		boolean lockedOtherApp = lockManager.isLockedForMe(file, id, VFSLockApplicationType.collaboration, "other-collaboration");

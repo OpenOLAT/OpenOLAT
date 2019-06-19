@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.Vector;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -36,6 +37,7 @@ import org.olat.core.commons.services.webdav.manager.VFSResource;
 import org.olat.core.commons.services.webdav.servlets.WebResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.vfs.LocalImpl;
@@ -48,6 +50,8 @@ import org.springframework.stereotype.Service;
 
 @Service("vfsLockManager")
 public class VFSLockManagerImpl implements VFSLockManager {
+	
+	private static final Logger log = Tracing.createLoggerFor(VFSLockManagerImpl.class);
 	
 	//one year is enough for a long loc
     private static final long vfsExpireAt = (System.currentTimeMillis() + (365 * 24 * 60 * 60 * 1000));
@@ -250,6 +254,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 	private LockInfo getLockInfo(VFSItem item, VFSMetadata metadata) {
 		final File file = extractFile(item);
 		if(file == null) {
+			log.debug("Lock only real file: {}", item);
 			return null;// we only lock real files
 		}
 		
@@ -280,6 +285,7 @@ public class VFSLockManagerImpl implements VFSLockManager {
 				lock.setExpiresAt(0l);
 				lock.clearTokens();
 			} else {
+				log.debug("Not VFS Lock has expired: {}", item);
 				fileLocks.remove(file);
             	lock = null;
 			}

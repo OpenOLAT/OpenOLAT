@@ -224,11 +224,17 @@ public class Office365WebService {
 		
 		String currentLockToken = office365Service.getLockToken(vfsLeaf);
 		if (currentLockToken == null) {
-			office365Service.lock(vfsLeaf, access.getIdentity(), lockToken);
-			String itemVersion = String.valueOf(access.getMetadata().getRevisionNr());
-			return Response.ok()
-					.header("X-WOPI-ItemVersion", itemVersion)
-					.build();
+			if(office365Service.lock(vfsLeaf, access.getIdentity(), lockToken)) {
+				String itemVersion = String.valueOf(access.getMetadata().getRevisionNr());
+				return Response.ok()
+						.header("X-WOPI-ItemVersion", itemVersion)
+						.build();
+			} else {
+				return Response.serverError()
+						.status(Status.CONFLICT)
+						.header("X-WOPI-Lock", currentLockToken)
+						.build();
+			}
 		}
 		
 		if (lockToken.equals(currentLockToken)) {
