@@ -849,12 +849,17 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 	 */
 	protected void evaluate(Context context, String template, StringWriter writer, MailerResult mailerResult) {
 		try {
-			boolean result = velocityEngine.evaluate(context, writer, "mailTemplate", template);
-			if (result) {
-				mailerResult.setReturnCode(MailerResult.OK);
+			if(StringHelper.containsNonWhitespace(template)) {
+				boolean result = velocityEngine.evaluate(context, writer, "mailTemplate", template);
+				if (result) {
+					mailerResult.setReturnCode(MailerResult.OK);
+				} else {
+					log.warn("can't send email from user template with no reason");
+					mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
+				}
 			} else {
-				log.warn("can't send email from user template with no reason");
-				mailerResult.setReturnCode(MailerResult.TEMPLATE_GENERAL_ERROR);
+				// template is empty
+				mailerResult.setReturnCode(MailerResult.OK);
 			}
 		} catch (ParseErrorException e) {
 			log.warn("can't send email from user template", e);

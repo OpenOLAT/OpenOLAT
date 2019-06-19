@@ -51,7 +51,6 @@ public class ArquillianDeployments {
 
 	public static WebArchive createDeployment() {
 		Map<String,String> overrideProperties = new HashMap<>();
-		overrideProperties.put("ldap.enable", "false");
 		return createDeployment("openolat.war", overrideProperties);
 	}
 	

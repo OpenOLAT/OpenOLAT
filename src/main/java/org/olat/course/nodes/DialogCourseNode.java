@@ -57,7 +57,6 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.dialog.DialogElement;
 import org.olat.course.nodes.dialog.DialogElementsManager;
-import org.olat.course.nodes.dialog.ui.DialogConfigForm;
 import org.olat.course.nodes.dialog.ui.DialogCourseNodeEditController;
 import org.olat.course.nodes.dialog.ui.DialogCourseNodeRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -147,7 +146,6 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 			// use defaults for new course building blocks
 			//REVIEW:pb version should go to 2 now and the handling for 1er should be to remove 
 			config.setConfigurationVersion(1);
-			config.set(DialogConfigForm.DIALOG_CONFIG_INTEGRATION, DialogConfigForm.CONFIG_INTEGRATION_VALUE_INLINE);
 		}
 	}
 	

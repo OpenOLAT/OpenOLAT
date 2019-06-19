@@ -65,7 +65,6 @@ public class DialogElementsEditController extends BasicController {
 	private final Link uploadButton;
 	private final VelocityContainer mainVC;
 	
-	private DialogConfigForm configForumLaunch;
 	private FileUploadController fileUplCtr;
 	private CloseableModalController cmc;
 	private DialogElementListEditController elementListCtrl;
@@ -91,10 +90,6 @@ public class DialogElementsEditController extends BasicController {
 		uploadButton.setIconLeftCSS("o_icon o_icon-fw o_icon_upload");
 		uploadButton.setElementCssClass("o_sel_dialog_upload");
 		
-		configForumLaunch = new DialogConfigForm(ureq, getWindowControl(), courseNode.getModuleConfiguration());
-		listenTo(configForumLaunch);
-		mainVC.put("showForumAsPopupConfigForm", configForumLaunch.getInitialComponent());
-		
 		elementListCtrl = new DialogElementListEditController(ureq, getWindowControl(), entry, courseNode);
 		listenTo(elementListCtrl);
 		mainVC.put("dialogElementsTable", elementListCtrl.getInitialComponent());
@@ -116,9 +111,7 @@ public class DialogElementsEditController extends BasicController {
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if(configForumLaunch == source) {
-			fireEvent(ureq, event);
-		} else if (source == fileUplCtr) {
+		if (source == fileUplCtr) {
 			if (event == Event.DONE_EVENT || event == Event.CANCELLED_EVENT) {
 				elementListCtrl.loadModel();
 			} else if (event.getCommand().equals(FolderEvent.UPLOAD_EVENT)) {

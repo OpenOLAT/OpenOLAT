@@ -55,13 +55,14 @@ public class Deployments {
 	
 	@Deployment(testable = false)
 	public static WebArchive createDeployment() {
-		Map<String,String> mailSettings = new HashMap<>();
+		Map<String,String> overrideSettings = new HashMap<>();
 		if(dumbster != null) {
-			mailSettings.put("smtp.port", String.valueOf(dumbster.getPort()));
-			mailSettings.put("smtp.host", "localhost");
+			overrideSettings.put("smtp.port", String.valueOf(dumbster.getPort()));
+			overrideSettings.put("smtp.host", "localhost");
 			log.info("Simple smtp server started on port: " + dumbster.getPort());
 		}
-		return ArquillianDeployments.createDeployment(mailSettings);
+		overrideSettings.put("ldap.enable", "false");
+		return ArquillianDeployments.createDeployment(overrideSettings);
 	}
 	
 	@After

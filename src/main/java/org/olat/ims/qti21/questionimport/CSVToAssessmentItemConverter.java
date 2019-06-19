@@ -684,20 +684,22 @@ public class CSVToAssessmentItemConverter {
 	}
 
 	private void processChoice_smc(String[] parts, SimpleChoiceAssessmentItemBuilder choiceBuilder) {
-		double point = parseFloat(parts[0], 1.0f);
-		String content = parts[1];
-
-		ChoiceInteraction interaction = choiceBuilder.getChoiceInteraction();
-		SimpleChoice newChoice = AssessmentItemFactory
-				.createSimpleChoice(interaction, content, choiceBuilder.getQuestionType().getPrefix());
-		choiceBuilder.addSimpleChoice(newChoice);
-		choiceBuilder.setMapping(newChoice.getIdentifier(), point);
-
-		if(point > 0.0) {
-			if (choiceBuilder instanceof MultipleChoiceAssessmentItemBuilder) {
-				((MultipleChoiceAssessmentItemBuilder)choiceBuilder).addCorrectAnswer(newChoice.getIdentifier());
-			} else {
-				((SingleChoiceAssessmentItemBuilder)choiceBuilder).setCorrectAnswer(newChoice.getIdentifier());
+		if(StringHelper.containsNonWhitespace(parts[0])) {
+			double point = parseFloat(parts[0], 1.0f);
+			String content = parts[1];
+	
+			ChoiceInteraction interaction = choiceBuilder.getChoiceInteraction();
+			SimpleChoice newChoice = AssessmentItemFactory
+					.createSimpleChoice(interaction, content, choiceBuilder.getQuestionType().getPrefix());
+			choiceBuilder.addSimpleChoice(newChoice);
+			choiceBuilder.setMapping(newChoice.getIdentifier(), point);
+	
+			if(point > 0.0) {
+				if (choiceBuilder instanceof MultipleChoiceAssessmentItemBuilder) {
+					((MultipleChoiceAssessmentItemBuilder)choiceBuilder).addCorrectAnswer(newChoice.getIdentifier());
+				} else {
+					((SingleChoiceAssessmentItemBuilder)choiceBuilder).setCorrectAnswer(newChoice.getIdentifier());
+				}
 			}
 		}
 	}
@@ -740,7 +742,7 @@ public class CSVToAssessmentItemConverter {
 				questionFragements = new ArrayList<>();
 			}
 			questionFragements.add(text);	
-		} else {
+		} else if(StringHelper.containsNonWhitespace(parts[0])) {
 			double score = parseFloat(parts[0], 1.0f);
 			String correctBlank = parts[1];
 			String responseId = fibBuilder.generateResponseIdentifier();

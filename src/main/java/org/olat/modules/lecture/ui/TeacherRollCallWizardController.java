@@ -69,7 +69,7 @@ public class TeacherRollCallWizardController extends BasicController {
 		this.secCallback = secCallback;
 		this.lectureBlock = lectureBlock;
 		this.participants = participants;
-		if(participants.size() > 0) {
+		if(!participants.isEmpty()) {
 			calledIdentity = participants.get(0);
 		}
 		
@@ -208,7 +208,7 @@ public class TeacherRollCallWizardController extends BasicController {
 				participantValues[i] = userManager.getUserDisplayName(participant);
 			}
 
-			participantsEl = uifactory.addDropdownSingleselect("participants", "participants", formLayout,
+			participantsEl = uifactory.addDropdownSingleselect("participants", null, formLayout,
 					participantKeys, participantValues, null);
 			participantsEl.setDomReplacementWrapperRequired(false);
 			participantsEl.addActionListener(FormEvent.ONCHANGE);
@@ -219,7 +219,7 @@ public class TeacherRollCallWizardController extends BasicController {
 				//last step
 				nextLink.setVisible(false);
 				participantsEl.setVisible(false);
-				previousLink.setEnabled(participants.size() > 0);
+				previousLink.setEnabled(!participants.isEmpty());
 			} else {
 				int index = participants.indexOf(callIdentity);
 				nextLink.setVisible(true);
@@ -246,7 +246,7 @@ public class TeacherRollCallWizardController extends BasicController {
 				doClose(ureq);
 			} else if(participantsEl == source) {
 				if(participantsEl.isOneSelected()) {
-					Long identityKey = new Long(participantsEl.getSelectedKey());
+					Long identityKey = Long.valueOf(participantsEl.getSelectedKey());
 					doSelect(ureq, identityKey);
 				}
 			}

@@ -435,7 +435,7 @@ public class PageMetadataController extends BasicController {
 			String[] values = new String[] {
 					translate("status.user.incoming"), translate("status.user.inProcess"), translate("status.user.done")
 				};
-			statusEl = uifactory.addDropdownSingleselect("user.status", formLayout, keys, values, null);
+			statusEl = uifactory.addDropdownSingleselect("user.status", "page.status", formLayout, keys, values, null);
 			statusEl.setDomReplacementWrapperRequired(false);
 			statusEl.addActionListener(FormEvent.ONCHANGE);
 			if(pageUserInfos != null && pageUserInfos.getStatus() != null) {

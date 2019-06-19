@@ -98,7 +98,7 @@ public class TitleEditorController extends FormBasicController implements PageEl
 		titleItem.getEditorConfiguration().setSendOnBlur(true);
 		titleItem.getEditorConfiguration().disableMenuAndMenuBar();
 		
-		staticItem = uifactory.addStaticTextElement(cmpId + "_static", contentOrExample(content), formLayout);
+		staticItem = uifactory.addStaticTextElement(cmpId.concat("_static"), null, contentOrExample(content), formLayout);
 		staticItem.setDomWrapperElement(DomWrapperElement.div); // content contains multiple P elements
 
 		flc.getFormItemComponent().contextPut("cmpId", cmpId);
