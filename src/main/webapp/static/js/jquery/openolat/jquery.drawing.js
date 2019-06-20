@@ -115,8 +115,6 @@
 			height = parseInt(parts[3]) - top - 3;
 		}
 		
-		console.log(coords, left, top, width, height);
-		
 		var nodes = jQuery("#" + id).height(height + 'px').width(width + 'px')
 			.css('top', top + 'px').css('left', left + 'px');
 		if(this.settings.resize) {
