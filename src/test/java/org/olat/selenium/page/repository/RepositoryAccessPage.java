@@ -45,7 +45,7 @@ public class RepositoryAccessPage {
 			browser.findElement(allUsersBy).click();
 			OOGraphene.waitBusy(browser);
 			
-			By guestsBy = By.xpath("//div[contains(@class,'o_sel_repositoryentry_access_guest')]//label[input[@name='entry.access.guest' and @value='on']]");
+			By guestsBy = By.xpath("//div[contains(@class,'o_sel_repositoryentry_access_guest')]//label/input[@name='entry.access.guest' and @value='on']");
 			OOGraphene.waitElement(guestsBy, browser);
 			
 			if(access == UserAccess.guest) {

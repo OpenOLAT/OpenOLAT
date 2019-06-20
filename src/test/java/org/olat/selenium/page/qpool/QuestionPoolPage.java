@@ -20,7 +20,6 @@
 package org.olat.selenium.page.qpool;
 
 import org.olat.ims.qti21.model.QTI21QuestionType;
-import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -127,6 +126,7 @@ public class QuestionPoolPage {
 		
 		By assessmentItemBy = By.cssSelector("ul.o_sel_assessment_item_config");
 		OOGraphene.waitElement(assessmentItemBy, browser);
+		OOGraphene.scrollTop(browser);
 		return this;
 	}
 	
@@ -174,7 +174,7 @@ public class QuestionPoolPage {
 	}
 	
 	public QuestionPoolPage clickToolbarBack() {
-		browser.findElement(NavigationPage.toolbarBackBy).click();
+		OOGraphene.clickBreadcrumbBack(browser);
 		OOGraphene.waitBusy(browser);
 		
 		By tableBy = By.cssSelector("div.o_table_flexi.o_rendertype_classic");
