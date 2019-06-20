@@ -149,11 +149,12 @@ public class ACOfferDAO {
 		return offer;
 	}
 
-	public void deleteOffer(Offer offer) {
+	public Offer deleteOffer(Offer offer) {
+		offer = loadOfferByKey(offer.getKey());
 		if(offer instanceof OfferImpl) {
 			((OfferImpl)offer).setValid(false);
 		}
-		saveOffer(offer);
+		return saveOffer(offer);
 	}
 
 	public Offer saveOffer(Offer offer) {
