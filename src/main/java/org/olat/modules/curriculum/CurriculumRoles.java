@@ -69,6 +69,6 @@ public enum CurriculumRoles {
 	 * @return true if the role is by default inherited in the curriculum tree
 	 */
 	public static boolean isInheritedByDefault(CurriculumRoles role) {
-		return role == CurriculumRoles.mastercoach;
+		return role == CurriculumRoles.mastercoach || role == CurriculumRoles.curriculumelementowner;
 	}
 }
