@@ -520,11 +520,9 @@
 						});
 						jQuery('#collapse_${itemResult.interactionResults.solutionFormItem.name} div.o_oo_hotcontainer>div').each(function(index, el) {
 							var jEl = jQuery(el);
-							if(jEl.css('height') == '0px') {
-								var containerEl = jEl.closest("div.o_oo_hotcontainer");
-								jEl.css('height', containerEl.css('height'));
-								jEl.css('background-size', containerEl.css('width') + " " + containerEl.css('height'));
-							}
+							var containerEl = jEl.closest("div.o_oo_hotcontainer");
+							jEl.css('height', containerEl.css('height'));
+							jEl.css('background-size', containerEl.css('width') + " " + containerEl.css('height'));
 						});
 					})
 				});
