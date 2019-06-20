@@ -21,6 +21,7 @@ package org.olat.user.ui.role;
 
 import java.util.Locale;
 
+import org.apache.logging.log4j.Level;
 import org.olat.basesecurity.IdentityRelationshipService;
 import org.olat.basesecurity.RelationRight;
 import org.olat.basesecurity.RelationRightProvider;
@@ -86,7 +87,7 @@ public class RelationRolesAndRightsUIFactory {
 	}
 
 	private static String getTranslated(Translator translator, String prefix, RelationRole role) {
-		String translatedRole = translator.translate(prefix.concat(role.getKey().toString()));
+		String translatedRole = translator.translate(prefix.concat(role.getKey().toString()), null, Level.OFF);
 		if (translatedRole.length() > 256 || translatedRole.startsWith(prefix)) {
 			translatedRole = role.getRole();
 		}

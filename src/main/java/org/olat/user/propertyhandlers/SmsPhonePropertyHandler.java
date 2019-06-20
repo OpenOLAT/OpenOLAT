@@ -44,8 +44,8 @@ public class SmsPhonePropertyHandler extends PhonePropertyHandler {
 			FormItemContainer formItemContainer) {
 		String name = getName();
 		SmsPhoneElement phoneEl = new SmsPhoneElement(name, this, user, locale);
-		phoneEl.setLabel("form.name." + name, null);
 		formItemContainer.add(phoneEl);
+		phoneEl.setLabel("form.name." + name, null);
 		
 		UserManager um = CoreSpringFactory.getImpl(UserManager.class);
 		if(um.isUserViewReadOnly(usageIdentifyer, this)) {

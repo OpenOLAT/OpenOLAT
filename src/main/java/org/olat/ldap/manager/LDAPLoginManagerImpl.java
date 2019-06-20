@@ -907,7 +907,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 				errors.insert("LDAP connection ERROR");
 				log.error("LDAP batch sync: LDAP connection empty");
 				freeSyncLock();
-				success = false;
 				return success;
 			}
 			Date timeBeforeSync = new Date();

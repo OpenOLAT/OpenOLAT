@@ -308,6 +308,13 @@ public class LectureRepositorySettingsController extends FormBasicController {
 			allOk &= false;
 		}
 		
+		if(assessmentFollowupTimeEl.isVisible() && assessmentFollowupTimeEl.isEnabled()) {
+			allOk &= validateInteger(assessmentFollowupTimeEl);
+		}
+		if(assessmentLeadTimeEl.isVisible() && assessmentLeadTimeEl.isEnabled()) {
+			allOk &= validateInteger(assessmentLeadTimeEl);
+		}
+		
 		//override -> check rate
 		attendanceRateEl.clearError();
 		if(overrideEl.isSelected(0)) {
@@ -331,6 +338,32 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		}
 		
 		return allOk;
+	}
+	
+	private boolean validateInteger(TextElement el) {
+		boolean allOk = true;
+		
+		el.clearError();
+		if(!StringHelper.containsNonWhitespace(el.getValue())) {
+			el.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		} else if(!StringHelper.isLong(el.getValue())) {
+			try {
+				int value = Integer.parseInt(el.getValue());
+				if(value < 0) {
+					el.setErrorKey("form.error.nointeger", null);
+					allOk &= false;
+				}
+			} catch (NumberFormatException e) {
+				el.setErrorKey("form.error.nointeger", null);
+				allOk &= false;
+			}
+		} else {
+			el.setErrorKey("error.wrong.int", null);
+			allOk &= false;
+		}
+		
+		return allOk;	
 	}
 
 	@Override
