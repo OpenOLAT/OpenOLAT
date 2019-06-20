@@ -79,8 +79,8 @@ public class UserInterestsPropertyHandler extends AbstractUserPropertyHandler {
 			FormItemContainer formItemContainer) {
 		String name = getName();
 		UserInterestsElement userInterestsElement = new UserInterestsElement(name, getInternalValue(user), locale);
-		userInterestsElement.setLabel("form.name." + name, null);
 		formItemContainer.add(userInterestsElement);
+		userInterestsElement.setLabel("form.name." + name, null);
 		return userInterestsElement;
 	}
 
