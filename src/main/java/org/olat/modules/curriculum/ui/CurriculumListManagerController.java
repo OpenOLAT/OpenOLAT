@@ -20,7 +20,9 @@
 package org.olat.modules.curriculum.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -52,6 +54,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
@@ -89,6 +92,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private int counter = 0;
+	private final Roles roles;
 	private final CurriculumSecurityCallback secCallback;
 
 	@Autowired
@@ -99,6 +103,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		super(ureq, wControl, "manage_curriculum");
 		this.toolbarPanel = toolbarPanel;
 		this.secCallback = secCallback;
+		roles = ureq.getUserSession().getRoles();
 		toolbarPanel.addListener(this);
 
 		initForm(ureq);
@@ -143,12 +148,29 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void loadModel(String searchString, boolean reset) {
+		
+		// curriculum owners, curriculum manages and administrators can edit curriculums
+		// principals can only view them
 		CurriculumSearchParameters managerParams = new CurriculumSearchParameters();
 		managerParams.setSearchString(searchString);
 		managerParams.setCurriculumAdmin(getIdentity());
 		List<CurriculumInfos> managerCurriculums = curriculumService.getCurriculumsWithInfos(managerParams);
 		List<CurriculumRow> rows = managerCurriculums.stream()
-				.map(this::forgeManagedRow).collect(Collectors.toList());
+				.map(cur -> forgeManagedRow(cur, true)).collect(Collectors.toList());
+		Set<CurriculumRow> deduplicateRows = new HashSet<>(rows);
+		
+		if(roles.isPrincipal()) {
+			CurriculumSearchParameters principalParams = new CurriculumSearchParameters();
+			principalParams.setSearchString(searchString);
+			principalParams.setCurriculumPrincipal(getIdentity());
+			List<CurriculumInfos> principalsCurriculums = curriculumService.getCurriculumsWithInfos(principalParams);
+			List<CurriculumRow> principalsRows = principalsCurriculums.stream()
+					.map(cur -> forgeManagedRow(cur, false))
+					.filter(row -> !deduplicateRows.contains(row))
+					.collect(Collectors.toList());
+			rows.addAll(principalsRows);
+			deduplicateRows.addAll(principalsRows);
+		}
 		
 		CurriculumSearchParameters ownerParams = new CurriculumSearchParameters();
 		ownerParams.setSearchString(searchString);
@@ -156,7 +178,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		List<CurriculumInfos> reOwnersCurriculums = curriculumService.getCurriculumsWithInfos(ownerParams);
 		List<CurriculumRow> reOwnerRows = reOwnersCurriculums.stream()
 				.filter(c -> !managerCurriculums.contains(c))
-				.map(CurriculumRow::new).collect(Collectors.toList());
+				.map(CurriculumRow::new)
+				.filter(row -> !deduplicateRows.contains(row))
+				.collect(Collectors.toList());
 		
 		rows.addAll(reOwnerRows);
 		
@@ -170,10 +194,10 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	 * @param curriculum The curriculum informations
 	 * @return A curriculum row
 	 */
-	private CurriculumRow forgeManagedRow(CurriculumInfos curriculum) {
+	private CurriculumRow forgeManagedRow(CurriculumInfos curriculum, boolean canManage) {
 		FormLink toolsLink = uifactory.addFormLink("tools_" + (++counter), "tools", "", null, null, Link.NONTRANSLATED);
 		toolsLink.setIconLeftCSS("o_icon o_icon_actions o_icon-lg");
-		CurriculumRow row = new CurriculumRow(curriculum, toolsLink, true);
+		CurriculumRow row = new CurriculumRow(curriculum, toolsLink, canManage);
 		toolsLink.setUserObject(row);
 		return row;
 	}

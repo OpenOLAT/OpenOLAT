@@ -36,6 +36,7 @@ public class CurriculumSearchParameters {
 	private String searchString;
 	private Identity elementOwner;
 	private Identity managerIdentity;
+	private Identity principalIdentity;
 	private List<? extends OrganisationRef> organisations;
 
 	public List<? extends OrganisationRef> getOrganisations() {
@@ -66,8 +67,16 @@ public class CurriculumSearchParameters {
 	 * 
 	 * @param managerIdentity
 	 */
-	public void setCurriculumAdmin(Identity managerIdentity) {
-		this.managerIdentity = managerIdentity;
+	public void setCurriculumAdmin(Identity identity) {
+		managerIdentity = identity;
+	}
+	
+	public Identity getCurriculumPrincipal() {
+		return principalIdentity;
+	}
+	
+	public void setCurriculumPrincipal(Identity identity) {
+		principalIdentity = identity;
 	}
 
 	public Identity getElementOwner() {
@@ -79,7 +88,7 @@ public class CurriculumSearchParameters {
 	 * 
 	 * @param elementOwner
 	 */
-	public void setElementOwner(Identity elementOwner) {
-		this.elementOwner = elementOwner;
+	public void setElementOwner(Identity identity) {
+		elementOwner = identity;
 	}
 }

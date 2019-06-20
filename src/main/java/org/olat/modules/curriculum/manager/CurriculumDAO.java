@@ -252,11 +252,14 @@ public class CurriculumDAO {
 			sb.append(")");	
 		}
 		
-		if(params.getElementOwner() != null || params.getCurriculumAdmin() != null) {
+		if(params.getElementOwner() != null || params.getCurriculumAdmin() != null || params.getCurriculumPrincipal() != null) {
 			sb.and()
 			  .append("(");
+			
+			boolean needOr = false;
 		
 			if(params.getElementOwner() != null) {
+				needOr = true;
 				sb.append("exists (select courseCurEl.key from curriculumelement as courseCurEl")
 				  .append(" inner join repoentrytogroup as curRelGroup on (courseCurEl.group.key=curRelGroup.group.key)")
 				  .append(" inner join repoentrytogroup as courseRelGroup on (courseRelGroup.entry.key=curRelGroup.entry.key)")
@@ -273,13 +276,25 @@ public class CurriculumDAO {
 			}
 			
 			if(params.getCurriculumAdmin() != null) {
-				if(params.getElementOwner() != null) {
+				if(needOr) {
 					sb.append(" or ");
 				}
+				needOr = true;
 				sb.append("exists (select membership.key from bgroupmember as membership")
 				  .append("  where membership.identity.key=:managerKey")
 				  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
-				  .append("  and role ").in(CurriculumRoles.curriculumowner, CurriculumRoles.curriculummanager, OrganisationRoles.administrator, OrganisationRoles.principal)
+				  .append("  and role ").in(CurriculumRoles.curriculumowner, CurriculumRoles.curriculummanager, OrganisationRoles.administrator)
+				  .append(")");
+			}
+			
+			if(params.getCurriculumPrincipal() != null) {
+				if(needOr) {
+					sb.append(" or ");
+				}
+				sb.append("exists (select membership.key from bgroupmember as membership")
+				  .append("  where membership.identity.key=:principalKey")
+				  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
+				  .append("  and role ").in(OrganisationRoles.principal)
 				  .append(")");
 			}
 			
@@ -304,6 +319,9 @@ public class CurriculumDAO {
 		}
 		if(params.getCurriculumAdmin() != null) {
 			query.setParameter("managerKey", params.getCurriculumAdmin().getKey());
+		}
+		if(params.getCurriculumPrincipal() != null) {
+			query.setParameter("principalKey", params.getCurriculumPrincipal().getKey());
 		}
 		if(params.getElementOwner() != null) {
 			query.setParameter("ownerKey", params.getElementOwner().getKey());
