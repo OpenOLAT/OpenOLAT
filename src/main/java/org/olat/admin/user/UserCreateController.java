@@ -323,6 +323,9 @@ class NewUserForm extends FormBasicController {
 		// special test on email address: validate if email is already used
 		String email = emailTextElement.getValue();
 		emailTextElement.clearError();
+		if(emailTextElement.isVisible() && emailTextElement.isEnabled()) {
+			emailTextElement.validate(new ArrayList<>());
+		}
 		if (!userManager.isEmailAllowed(email)) {
 			if (registrationManager.isRegistrationPending(email)) {
 				doConfirmDeletePendingRegistration(ureq, email);
