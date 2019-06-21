@@ -26,6 +26,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -67,7 +68,7 @@ public class CourseWizardPage {
 	public CourseWizardPage nextCatalog() {
 		OOGraphene.nextStep(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repo_access_configuration"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_repo_access_configuration"), browser);
 		return this;
 	}
 	
@@ -76,6 +77,10 @@ public class CourseWizardPage {
 	 * @return this
 	 */
 	public CourseWizardPage finish() {
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.waitingALittleLonger();
+			OOGraphene.scrollTo(OOGraphene.wizardFooterBy, browser);
+		}
 		OOGraphene.finishStep(browser);
 		return this;
 	}

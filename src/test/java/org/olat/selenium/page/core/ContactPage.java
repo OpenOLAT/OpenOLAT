@@ -26,6 +26,7 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -62,6 +63,9 @@ public class ContactPage {
 	
 	public ContactPage send() {
 		By sendBy = By.cssSelector("fieldset.o_sel_contact_form button.btn-primary");
+		if(browser instanceof FirefoxDriver) {
+			OOGraphene.scrollTo(sendBy, browser);
+		}
 		OOGraphene.moveAndClick(sendBy, browser);
 		OOGraphene.moveTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);

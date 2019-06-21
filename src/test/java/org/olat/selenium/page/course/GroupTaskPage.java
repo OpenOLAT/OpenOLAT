@@ -98,18 +98,26 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage submitFile(File file) {
+		moveToSubmit(By.id("o_step_submit_content"));
 		return uploadFile("o_step_submit_content", file);
 	}
 	
 	public GroupTaskPage submitRevisedFile(File file) {
+		moveToSubmit(By.id("o_step_revision_content"));
+		return uploadFile("o_step_revision_content", file);
+	}
+	
+	/**
+	 * Firefox need to wait a little longer, but why?
+	 * 
+	 * @param submitBy The step to move by
+	 */
+	private void moveToSubmit(By submitBy) {
 		if(browser instanceof FirefoxDriver) {
-			// Firefox need to wait a little longer, but why?
-			By submitBy = By.id("o_step_revision_content");
 			OOGraphene.waitElement(submitBy, browser);
 			OOGraphene.waitingALittleLonger();
 			OOGraphene.moveTo(submitBy, browser);
 		}
-		return uploadFile("o_step_revision_content", file);
 	}
 	
 	private GroupTaskPage uploadFile(String stepId, File file) {

@@ -563,6 +563,24 @@ function o_ainvoke(r) {
 									}
 								}
 								
+								var bTooltips = jQuery('body>div.tooltip.in');
+								for(var u=0; u<bTooltips.length; u++) {
+									try {
+										jQuery(bTooltips.get(u)).remove();
+									} catch(e) {
+										if(window.console) console.log(e);
+									}
+								}
+								
+								var jTooltips = jQuery('body>div.ui-tooltip');
+								for(var v=0; v<jTooltips.length; v++) {
+									try {
+										jQuery(jTooltips.get(v)).remove();
+									} catch(e) {
+										if(window.console) console.log(e);
+									}
+								}
+								
 								if(civis) { // needed only for ie 6/7 bug where an empty div requires space on screen
 									newc.css('display','');//.style.display="";//reset?
 								} else {

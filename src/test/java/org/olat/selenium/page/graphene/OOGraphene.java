@@ -62,6 +62,7 @@ public class OOGraphene {
 
 	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close");
 	
+	public static final By wizardFooterBy = By.xpath("//div[contains(@class,'modal')]//div[contains(@class,'modal-footer')]");
 	public static final By wizardNextBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_next')]");
 	public static final By wizardFinishBy = By.xpath("//div[contains(@class,'modal-footer')]//a[contains(@class,'o_wizard_button_finish') and not(contains(@class,'o_disabled'))]");
 	

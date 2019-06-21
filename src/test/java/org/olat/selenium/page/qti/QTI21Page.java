@@ -173,6 +173,7 @@ public class QTI21Page {
 		if(browser instanceof FirefoxDriver) {
 			String coords = areaEl.getAttribute("coords");
 			By hotspotBy = By.xpath("//div[contains(@class,'hotspotInteraction')]/div/div/img");
+			OOGraphene.waitElementPresence(hotspotBy, 5, browser);
 			WebElement element = browser.findElement(hotspotBy);
 			Dimension dim = element.getSize();
 			Position pos = Position.valueOf(coords, dim, browser);
@@ -628,12 +629,12 @@ public class QTI21Page {
 	 */
 	public QTI21Page saveGraphicAnswer() {
 		By saveAnswerBy = By.cssSelector("button.o_sel_assessment_item_submit");
-		browser.findElement(saveAnswerBy).click();
 		if(browser instanceof FirefoxDriver) {
-			OOGraphene.clickAndWait(saveAnswerBy, browser);
+			OOGraphene.moveAndClick(saveAnswerBy, browser);
 		} else {
-			OOGraphene.waitBusy(browser);
+			browser.findElement(saveAnswerBy).click();
 		}
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
