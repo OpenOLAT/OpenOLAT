@@ -19,6 +19,8 @@
  */
 package org.olat.admin.user.bulkChange;
 
+import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
+
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
@@ -42,7 +45,6 @@ import org.olat.core.id.Preferences;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -54,6 +56,8 @@ import org.olat.core.util.mail.MailPackage;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.validation.SyntaxValidator;
+import org.olat.login.validation.ValidationResult;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.GenderPropertyHandler;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -106,13 +110,13 @@ public class UserBulkChangeManager implements InitializingBean {
 		}
 	}
 
-
 	public void changeSelectedIdentities(List<Identity> selIdentities, UserBulkChanges userBulkChanges,
 			List<String> notUpdatedIdentities, boolean isAdministrativeUser,
 			Translator trans, Identity actingIdentity, Roles actingRoles) {
 
 		Translator transWithFallback = userManager.getPropertyHandlerTranslator(trans);
 		String usageIdentifyer = UserBulkChangeStep00.class.getCanonicalName();
+		SyntaxValidator syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 
 		notUpdatedIdentities.clear();
 		List<Identity> changedIdentities = new ArrayList<>();
@@ -142,18 +146,21 @@ public class UserBulkChangeManager implements InitializingBean {
 
 			// change pwd
 			if (attributeChangeMap.containsKey(CRED_IDENTIFYER)) {
-				String newPwd = attributeChangeMap.get(CRED_IDENTIFYER);
-				if (StringHelper.containsNonWhitespace(newPwd)) {
-					if (!userManager.syntaxCheckOlatPassword(newPwd)) {
-						errorDesc = transWithFallback.translate("error.password");
+				String password = attributeChangeMap.get(CRED_IDENTIFYER);
+				if (StringHelper.containsNonWhitespace(password)) {
+					ValidationResult validationResult = syntaxValidator.validate(password, identity);
+					if (!validationResult.isValid()) {
+						String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(),
+								transWithFallback.getLocale());
+						errorDesc = transWithFallback.translate("error.password", new String[] { descriptions });
 						updateError = true;
 					}
 				} else {
-					newPwd = null;
+					password = null;
 				}
 				
 				if (canManagedCritical) {
-					olatAuthManager.changePasswordAsAdmin(identity, newPwd);
+					olatAuthManager.changePasswordAsAdmin(identity, password);
 				} else {
 					errorDesc = transWithFallback.translate("error.password");
 				}

@@ -24,10 +24,13 @@
 */
 package org.olat.admin.user.imp;
 
+import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -56,6 +59,9 @@ import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.validation.SyntaxValidator;
+import org.olat.login.validation.ValidationResult;
 import org.olat.shibboleth.ShibbolethDispatcher;
 import org.olat.shibboleth.ShibbolethModule;
 import org.olat.user.UserManager;
@@ -104,6 +110,9 @@ class ImportStep00 extends BasicStep {
 		private List<UpdateIdentity> updateIdents;
 		private List<TransientIdentity> newIdents;
 		private List<UserPropertyHandler> userPropertyHandlers;
+		
+		private final SyntaxValidator passwordSyntaxValidator;
+		private final SyntaxValidator usernameSyntaxValidator;
 
 		@Autowired
 		private UserManager um;
@@ -112,6 +121,8 @@ class ImportStep00 extends BasicStep {
 		@Autowired
 		private I18nModule i18nModule;
 		@Autowired
+		private OLATAuthManager olatAuthManager;
+		@Autowired
 		private BaseSecurity securityManager;
 		@Autowired
 		private ShibbolethModule shibbolethModule;
@@ -119,6 +130,8 @@ class ImportStep00 extends BasicStep {
 		public ImportStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
 			flc.setTranslator(getTranslator());
+			this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
+			this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 			initForm(ureq);
 		}
 
@@ -192,11 +205,6 @@ class ImportStep00 extends BasicStep {
 				// login row
 				if (parts.length > columnId) {
 					login = parts[columnId].trim();
-					if (!UserManager.getInstance().syntaxCheckOlatLogin(login)) {
-						textAreaElement.setErrorKey("error.login", new String[] { String.valueOf(i + 1), login });
-						importDataError = true;
-						break;
-					}
 				} else {
 					textAreaElement.setErrorKey("error.columncount", new String[] { String.valueOf(i + 1) });
 					importDataError = true;
@@ -205,39 +213,33 @@ class ImportStep00 extends BasicStep {
 				columnId++;
 
 				// pwd row
+				pwd = null;
 				if (canCreateOLATPassword) {
 					if (parts.length > columnId) {
-						pwd = parts[columnId].trim();
-						if (StringHelper.containsNonWhitespace(pwd)) {
-							if(pwd.startsWith(UserImportController.SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
-								String authusername = pwd.substring(UserImportController.SHIBBOLETH_MARKER.length());
-								Authentication auth = securityManager.findAuthenticationByAuthusername(authusername, ShibbolethDispatcher.PROVIDER_SHIB);
-								if(auth != null) {
-									String authLogin = auth.getIdentity().getName();
-									if(!login.equals(authLogin)) {
-										textAreaElement.setErrorKey("error.shibbolet.name.inuse", new String[] { String.valueOf(i + 1), authusername });
-										importDataError = true;
-										break;
-									}
-								}
-							} else if (!UserManager.getInstance().syntaxCheckOlatPassword(pwd)) {
-								textAreaElement.setErrorKey("error.pwd", new String[] { String.valueOf(i + 1), pwd });
-								importDataError = true;
-								break;
-							}
-						} else {
-							// treat all white-space-only passwords as non-passwords.
-							// the user generation code below will then generate no
-							// authentication token for this user
-							pwd = null;
+						String trimmedPwd = parts[columnId].trim();
+						// treat all white-space-only passwords as non-passwords.
+						// the user generation code below will then generate no
+						// authentication token for this user.
+						if (StringHelper.containsNonWhitespace(trimmedPwd)) {
+							pwd = trimmedPwd;
 						}
 					} else {
 						textAreaElement.setErrorKey("error.columncount", new String[] { String.valueOf(i + 1) });
 						importDataError = true;
 						break;
 					}
-				} else {
-					pwd = null;
+				}
+				if(pwd != null && pwd.startsWith(UserImportController.SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
+					String authusername = pwd.substring(UserImportController.SHIBBOLETH_MARKER.length());
+					Authentication auth = securityManager.findAuthenticationByAuthusername(authusername, ShibbolethDispatcher.PROVIDER_SHIB);
+					if(auth != null) {
+						String authLogin = auth.getIdentity().getName();
+						if(!login.equals(authLogin)) {
+							textAreaElement.setErrorKey("error.shibbolet.name.inuse", new String[] { String.valueOf(i + 1), authusername });
+							importDataError = true;
+							break;
+						}
+					}
 				}
 				columnId++;
 
@@ -261,11 +263,14 @@ class ImportStep00 extends BasicStep {
 					// update existing accounts, add info message
 					
 					UpdateIdentity uIdentity = new UpdateIdentity(ident, pwd, lang);
-					idents.add(uIdentity);
-					updateIdents.add(uIdentity);
-
+					
 					importDataError = updateUserProperties(uIdentity, ident.getUser(), parts, i, columnId, importedEmails);
 					if(importDataError) break;
+					importDataError = !validatePassword(pwd, uIdentity, i);
+					if(importDataError) break;
+
+					idents.add(uIdentity);
+					updateIdents.add(uIdentity);
 				} else {
 					// no identity/user yet, create
 					// check that no user with same login name is already in list
@@ -278,16 +283,21 @@ class ImportStep00 extends BasicStep {
 						}
 					}
 
-					TransientIdentity ud = new TransientIdentity();
+					TransientIdentity uIdentity = new TransientIdentity();
 					// insert fix fields: login, pwd, lang from above
-					ud.setName(login);
-					ud.setPassword(pwd);
-					ud.setLanguage(lang);
-					importDataError = updateUserProperties(ud, null, parts, i, columnId, importedEmails);
+					uIdentity.setName(login);
+					uIdentity.setPassword(pwd);
+					uIdentity.setLanguage(lang);
+					
+					importDataError = updateUserProperties(uIdentity, null, parts, i, columnId, importedEmails);
+					if(importDataError) break;
+					importDataError = !validateUsername(login, uIdentity, i);
+					if(importDataError) break;
+					importDataError = !validatePassword(pwd, uIdentity, i);
 					if(importDataError) break;
 					
-					idents.add(ud);
-					newIdents.add(ud);
+					idents.add(uIdentity);
+					newIdents.add(uIdentity);
 				}
 			}
 
@@ -367,6 +377,30 @@ class ImportStep00 extends BasicStep {
 			}
 			return importDataError;
 		}
+		
+		private boolean validatePassword(String password, Identity userIdentity, int column) {
+			if (StringHelper.containsNonWhitespace(password)) {
+				ValidationResult validationResult = passwordSyntaxValidator.validate(password, userIdentity);
+				if (!validationResult.isValid()) {
+					String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
+					textAreaElement.setErrorKey("error.pwd", new String[] { String.valueOf(column + 1), descriptions });
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		private boolean validateUsername(String username, Identity userIdentity, int column) {
+			if (StringHelper.containsNonWhitespace(username)) {
+				ValidationResult validationResult = usernameSyntaxValidator.validate(username, userIdentity);
+				if (!validationResult.isValid()) {
+					String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
+					textAreaElement.setErrorKey("error.login", new String[] { String.valueOf(column + 1), descriptions });
+					return false;
+				}
+			}
+			return true;
+		}
 
 		@Override
 		protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -395,7 +429,13 @@ class ImportStep00 extends BasicStep {
 				mandatoryProperties += ", " + translate(userPropertyHandler.i18nColumnDescriptorLabelKey()) + mandatoryChar;
 			}
 			textContainer.contextPut("mandatoryProperties", mandatoryProperties);
-
+			
+			List<String> passwordRules = passwordSyntaxValidator.getAllDescriptions().stream()
+					.map(d -> d.getText(getLocale()))
+					.collect(Collectors.toList());
+			textContainer.contextPut("passwordRules", passwordRules);
+			textContainer.contextPut("passwordIntro", translate("form.password.validation.rules", new String[] { }));
+			
 			textAreaElement = uifactory.addTextAreaElement("importform", "form.importdata", -1, 10, 100, false, false, "", formLayout);
 			textAreaElement.setMandatory(true);
 			textAreaElement.setNotEmptyCheck("error.emptyform");

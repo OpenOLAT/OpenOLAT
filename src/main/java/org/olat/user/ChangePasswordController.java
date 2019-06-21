@@ -87,10 +87,6 @@ public class ChangePasswordController extends BasicController implements Support
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 */
 	public ChangePasswordController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 

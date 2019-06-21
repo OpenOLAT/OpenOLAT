@@ -90,7 +90,7 @@ public class CustomfieldsFormController extends FormBasicController {
 	}
 
 	/**
-	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest)
+	 * @see org.olat.core.gui.components.Form#validate(org.olat.core.gui.UserRequest, Identity)
 	 */
 	public boolean validate() {
 		return true;

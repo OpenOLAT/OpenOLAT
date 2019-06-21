@@ -26,14 +26,17 @@
 package org.olat.login;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
@@ -65,7 +68,26 @@ public class LoginModule extends AbstractSpringModule {
 		OrganisationRoles.poolmanager, OrganisationRoles.linemanager	
 	};
 	
+	public static final String DISABLED = "disabled";
+	public static final String FORBIDDEN = "forbiddden";
+	public static final String AT_LEAST_1 = "atLeast1";
+	public static final String AT_LEAST_2 = "atLeast2";
+	public static final String AT_LEAST_3 = "atLeast3";
+	public static final String VALIDATE_SEPARATELY = "validateSeparately";
+	
+	private static final String USERNAME_REGEX = "username.regex";
 	private static final String CHANGE_ONCE = "password.change.once";
+	private static final String MIN_LENGTH = "password.min.length";
+	private static final String MAX_LENGTH = "password.max.length";
+	private static final String LETTERS = "password.letters";
+	private static final String LETTERS_UPPER = "password.letters.upper";
+	private static final String LETTERS_LOWER = "password.letters.lower";
+	private static final String DIGITS_SPECIALS = "password.digits.specials";
+	private static final String DIGITS = "password.digits";
+	private static final String SPECIALS = "password.specials";
+	private static final String FORBIDDEN_USERNAME = "password.forbidden.username";
+	private static final String FORBIDDEN_FIRSTNAME = "password.forbidden.firstname";
+	private static final String FORBIDDEN_LASTNAME = "password.forbidden.lastname";
 	private static final String MAX_AGE = "password.max.age";
 	private static final String MAX_AGE_AUTHOR = "password.max.age.author";
 	private static final String MAX_AGE_GROUPMANAGER = "password.max.age.groupmanager";
@@ -91,6 +113,10 @@ public class LoginModule extends AbstractSpringModule {
 	private int attackPreventionMaxAttempts;
 	@Value("${login.AttackPreventionTimeoutmin:5}")
 	private int attackPreventionTimeout;
+	
+	@Value("${username.regex}")
+	private String usernameRegex;
+	private Pattern usernamePattern;
 
 	@Value("${password.change.valid.hours.gui}")
 	private Integer validUntilHoursGui;
@@ -99,6 +125,29 @@ public class LoginModule extends AbstractSpringModule {
 	
 	@Value("${password.change.once:false}")
 	private boolean passwordChangeOnce;
+	
+	@Value("${password.min.length}")
+	private int passwordMinLength;
+	@Value("${password.max.length}")
+	private int passwordMaxLength;
+	@Value("${password.letters}")
+	private String passwordLetters;
+	@Value("${password.letters.uppercase}")
+	private String passwordLettersUppercase;
+	@Value("${password.letters.lowercase}")
+	private String passwordLettersLowercase;
+	@Value("${password.digits.special.signs}")
+	private String passwordDigitsAndSpecialSigns;
+	@Value("${password.digits}")
+	private String passwordDigits;
+	@Value("${password.special.signs}")
+	private String passwordSpecialSigns;
+	@Value("${password.forbidden.username}")
+	private boolean passwordUsernameForbidden;
+	@Value("${password.forbidden.firstname}")
+	private boolean passwordFirstnameForbidden;
+	@Value("${password.forbidden.lastname}")
+	private boolean passwordLastnameForbidden;
 	
 	@Value("${password.max.age}")
 	private int passwordMaxAge;
@@ -161,6 +210,7 @@ public class LoginModule extends AbstractSpringModule {
 		failedLoginCache = coordinatorManager.getCoordinator().getCacher().getCache(LoginModule.class.getSimpleName(), "blockafterfailedattempts");
 				
 		updateProperties();
+		validateProperties();
 		
 		boolean defaultProviderFound = false;
 		for (Iterator<AuthenticationProvider> iterator = authenticationProviders.iterator(); iterator.hasNext();) {
@@ -175,6 +225,32 @@ public class LoginModule extends AbstractSpringModule {
 		if (!defaultProviderFound) {
 			throw new StartupException("Defined DefaultAuthProvider::" + defaultProviderName + " not existent or not enabled. Please fix.");
 		}
+	}
+
+	private void validateProperties() {
+		validateValidationConfig("password.letters", passwordLetters,
+				Arrays.asList(DISABLED, FORBIDDEN, AT_LEAST_1, AT_LEAST_2, AT_LEAST_3, VALIDATE_SEPARATELY));
+		validateValidationConfig("password.letters.uppercase", passwordLettersUppercase,
+				Arrays.asList(DISABLED, FORBIDDEN, AT_LEAST_1, AT_LEAST_2, AT_LEAST_3));
+		validateValidationConfig("password.letters.lowercase", passwordLettersLowercase,
+				Arrays.asList(DISABLED, FORBIDDEN, AT_LEAST_1, AT_LEAST_2, AT_LEAST_3));
+		validateValidationConfig("password.digits.special.signs", passwordDigitsAndSpecialSigns,
+				Arrays.asList(DISABLED, FORBIDDEN, AT_LEAST_1, AT_LEAST_2, AT_LEAST_3, VALIDATE_SEPARATELY));
+		validateValidationConfig("password.digits", passwordDigits,
+				Arrays.asList(DISABLED, FORBIDDEN, AT_LEAST_1, AT_LEAST_2, AT_LEAST_3));
+		validateValidationConfig("password.special.signs", passwordSpecialSigns,
+				Arrays.asList(DISABLED, FORBIDDEN, AT_LEAST_1, AT_LEAST_2, AT_LEAST_3));
+	}
+	
+	private void validateValidationConfig(String configName, String configValue, List<String> validValues) {
+		if (!validValues.contains(configValue)) {
+			logInvalidValidationConfig(configName, configValue, validValues);
+		}
+	}
+	
+	private void logInvalidValidationConfig(String configName, String configValue, List<String> validValues) {
+		log.error("Invalid configuration for " + configName + " (value = " + configValue + "). Valid values are: " 
+				+ validValues.stream().collect(Collectors.joining(", ")));
 	}
 
 	@Override
@@ -242,9 +318,69 @@ public class LoginModule extends AbstractSpringModule {
 			allowLoginUsingEmail = "true".equals(usernameOrEmailLogin);
 		}
 		
+		String usernameRegexObj = getStringPropertyValue(USERNAME_REGEX, true);
+		if(StringHelper.containsNonWhitespace(usernameRegexObj)) {
+			usernameRegex = usernameRegexObj;
+		}
+		
 		String changeOnce = getStringPropertyValue(CHANGE_ONCE, true);
 		if(StringHelper.containsNonWhitespace(changeOnce)) {
 			passwordChangeOnce = "true".equals(changeOnce);
+		}
+		
+		String passwordMinLengthObj = getStringPropertyValue(MIN_LENGTH, true);
+		if(StringHelper.containsNonWhitespace(passwordMinLengthObj)) {
+			passwordMinLength = Integer.parseInt(passwordMinLengthObj);
+		}
+		
+		String passwordMaxLengthObj = getStringPropertyValue(MAX_LENGTH, true);
+		if(StringHelper.containsNonWhitespace(passwordMaxLengthObj)) {
+			passwordMaxLength = Integer.parseInt(passwordMaxLengthObj);
+		}
+		
+		String passwordLettersObj = getStringPropertyValue(LETTERS, true);
+		if(StringHelper.containsNonWhitespace(passwordLettersObj)) {
+			passwordLetters = passwordLettersObj;
+		}
+		
+		String passwordLettersUppercaseObj = getStringPropertyValue(LETTERS_UPPER, true);
+		if(StringHelper.containsNonWhitespace(passwordLettersUppercaseObj)) {
+			passwordLettersUppercase = passwordLettersUppercaseObj;
+		}
+		
+		String passwordLettersLowercaseObj = getStringPropertyValue(LETTERS_LOWER, true);
+		if(StringHelper.containsNonWhitespace(passwordLettersLowercaseObj)) {
+			passwordLettersLowercase = passwordLettersLowercaseObj;
+		}
+		
+		String passwordDigitsAndSpecialSignsObj = getStringPropertyValue(DIGITS_SPECIALS, true);
+		if(StringHelper.containsNonWhitespace(passwordDigitsAndSpecialSignsObj)) {
+			passwordDigitsAndSpecialSigns = passwordDigitsAndSpecialSignsObj;
+		}
+		
+		String passwordDigitsObj = getStringPropertyValue(DIGITS, true);
+		if(StringHelper.containsNonWhitespace(passwordDigitsObj)) {
+			passwordDigits = passwordDigitsObj;
+		}
+		
+		String passwordSpecialSignsObj = getStringPropertyValue(SPECIALS, true);
+		if(StringHelper.containsNonWhitespace(passwordSpecialSignsObj)) {
+			passwordSpecialSigns = passwordSpecialSignsObj;
+		}
+		
+		String passwordUsernameForbiddenObj = getStringPropertyValue(FORBIDDEN_USERNAME, true);
+		if(StringHelper.containsNonWhitespace(passwordUsernameForbiddenObj)) {
+			passwordUsernameForbidden = "true".equals(passwordUsernameForbiddenObj);
+		}
+		
+		String passwordFirstnameForbiddenObj = getStringPropertyValue(FORBIDDEN_FIRSTNAME, true);
+		if(StringHelper.containsNonWhitespace(passwordFirstnameForbiddenObj)) {
+			passwordFirstnameForbidden = "true".equals(passwordFirstnameForbiddenObj);
+		}
+		
+		String passwordLastnameForbiddenObj = getStringPropertyValue(FORBIDDEN_LASTNAME, true);
+		if(StringHelper.containsNonWhitespace(passwordLastnameForbiddenObj)) {
+			passwordLastnameForbidden = "true".equals(passwordLastnameForbiddenObj);
 		}
 		
 		int validUntilHoursGuiInt = getIntPropertyValue("password.change.valid.hours.gui");
@@ -447,6 +583,23 @@ public class LoginModule extends AbstractSpringModule {
 		setStringProperty("login.using.username.or.email.enabled", Boolean.toString(allow), true);
 	}
 	
+	public String getUsernameRegex() {
+		return usernameRegex;
+	}
+
+	public void setUsernameRegex(String usernameRegex) {
+		this.usernameRegex = usernameRegex;
+		this.usernamePattern = null;
+		setStringProperty(USERNAME_REGEX, usernameRegex, true);
+	}
+
+	public Pattern getUsernamePattern() {
+		if (usernamePattern == null) {
+			usernamePattern = Pattern.compile(usernameRegex);
+		}
+		return usernamePattern;
+	}
+
 	public Integer getValidUntilHoursGui() {
 		return validUntilHoursGui;
 	}
@@ -474,6 +627,105 @@ public class LoginModule extends AbstractSpringModule {
 		setStringProperty(CHANGE_ONCE, passwordChangeOnce ? "true" : "false", true);
 	}
 	
+	public int getPasswordMinLength() {
+		return passwordMinLength;
+	}
+
+	public void setPasswordMinLength(int passwordMinLength) {
+		this.passwordMinLength = passwordMinLength;
+		setStringProperty(MIN_LENGTH, String.valueOf(passwordMinLength), true);
+	}
+
+	public int getPasswordMaxLength() {
+		return passwordMaxLength;
+	}
+
+	public void setPasswordMaxLength(int passwordMaxLength) {
+		this.passwordMaxLength = passwordMaxLength;
+		setStringProperty(MAX_LENGTH, String.valueOf(passwordMaxLength), true);
+	}
+
+	public String getPasswordLetters() {
+		return passwordLetters;
+	}
+
+	public void setPasswordLetters(String passwordLetters) {
+		this.passwordLetters = passwordLetters;
+		setStringProperty(LETTERS, String.valueOf(passwordLetters), true);
+	}
+
+	public String getPasswordLettersUppercase() {
+		return passwordLettersUppercase;
+	}
+
+	public void setPasswordLettersUppercase(String passwordLettersUppercase) {
+		this.passwordLettersUppercase = passwordLettersUppercase;
+		setStringProperty(LETTERS_UPPER, String.valueOf(passwordLettersUppercase), true);
+	}
+
+	public String getPasswordLettersLowercase() {
+		return passwordLettersLowercase;
+	}
+
+	public void setPasswordLettersLowercase(String passwordLettersLowercase) {
+		this.passwordLettersLowercase = passwordLettersLowercase;
+		setStringProperty(LETTERS_LOWER, String.valueOf(passwordLettersLowercase), true);
+	}
+
+	public String getPasswordDigitsAndSpecialSigns() {
+		return passwordDigitsAndSpecialSigns;
+	}
+
+	public void setPasswordDigitsAndSpecialSigns(String passwordDigitsAndSpecialSigns) {
+		this.passwordDigitsAndSpecialSigns = passwordDigitsAndSpecialSigns;
+		setStringProperty(DIGITS_SPECIALS, String.valueOf(passwordDigitsAndSpecialSigns), true);
+	}
+
+	public String getPasswordDigits() {
+		return passwordDigits;
+	}
+
+	public void setPasswordDigits(String passwordDigits) {
+		this.passwordDigits = passwordDigits;
+		setStringProperty(DIGITS, String.valueOf(passwordDigits), true);
+	}
+
+	public String getPasswordSpecialSigns() {
+		return passwordSpecialSigns;
+	}
+
+	public void setPasswordSpecialSigns(String passwordSpecialSigns) {
+		this.passwordSpecialSigns = passwordSpecialSigns;
+		setStringProperty(SPECIALS, String.valueOf(passwordSpecialSigns), true);
+	}
+
+	public boolean isPasswordUsernameForbidden() {
+		return passwordUsernameForbidden;
+	}
+
+	public void setPasswordUsernameForbidden(boolean passwordUsernameForbidden) {
+		this.passwordUsernameForbidden = passwordUsernameForbidden;
+		setStringProperty(FORBIDDEN_USERNAME, Boolean.toString(passwordUsernameForbidden), true);
+	}
+
+	public boolean isPasswordFirstnameForbidden() {
+		return passwordFirstnameForbidden;
+	}
+
+	public void setPasswordFirstnameForbidden(boolean passwordFirstnameForbidden) {
+		this.passwordFirstnameForbidden = passwordFirstnameForbidden;
+		setStringProperty(FORBIDDEN_FIRSTNAME, Boolean.toString(passwordFirstnameForbidden), true);
+	}
+
+	public boolean isPasswordLastnameForbidden() {
+		return passwordLastnameForbidden;
+	}
+
+	public void setPasswordLastnameForbidden(boolean passwordLastnameForbidden) {
+		this.passwordLastnameForbidden = passwordLastnameForbidden;
+		setStringProperty(FORBIDDEN_LASTNAME, Boolean.toString(passwordLastnameForbidden), true);
+	}
+
 	public boolean isPasswordAgePolicyConfigured() {
 		return passwordMaxAge > 0 || passwordMaxAgeAuthor > 0
 				|| passwordMaxAgeGroupManager > 0 || passwordMaxAgePoolManager > 0

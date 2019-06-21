@@ -9,10 +9,15 @@ $r.translate("formatexplanation.part2a")
 $r.translate("formatexplanation.part3")
 <p />	
 
-$r.translate("formatexplanation.conventions")
+<p>
+$r.translateWithPackage("org.olat.user", "form.checkUsername")
+</p>
+
+$r.translate("form.pwd.intro")
 <ul>
-	<li>$r.translateWithPackage("org.olat.user", "form.checkPassword")</li>
-	<li>$r.translateWithPackage("org.olat.user", "form.checkUsername")</li>
+#foreach($passwordRule in $passwordRules)
+	<li>$passwordRule</li>
+#end
 </ul>
 
 #o_togglebox_start("o_usermanagement_importexample" "$r.translate('import.example')")

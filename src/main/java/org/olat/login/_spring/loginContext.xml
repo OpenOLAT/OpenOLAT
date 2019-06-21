@@ -74,10 +74,10 @@
 		<property name="order" value="8810" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.login.ui.PasswordPolicyController"/>
+				<property name="className" value="org.olat.login.ui.PasswordAdminController"/>
 			</bean>
 		</property>
-		<property name="navigationKey" value="passwordpolicy" />
+		<property name="navigationKey" value="passwords" />
 		<property name="i18nActionKey" value="admin.password.menu.title"/>
 		<property name="i18nDescriptionKey" value="admin.password.menu.title.alt"/>
 		<property name="translationPackage" value="org.olat.login"/>

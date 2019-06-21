@@ -123,7 +123,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	}
 
 	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.AbstractTextElement#validate(java.util.List)
+	 * @see org.olat.core.gui.components.form.flexible.elements.AbstractTextElement#validate(java.util.List, Identity)
 	 */
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {

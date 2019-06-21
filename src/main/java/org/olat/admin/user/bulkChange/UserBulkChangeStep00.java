@@ -19,6 +19,8 @@
  */
 package org.olat.admin.user.bulkChange;
 
+import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -49,6 +51,9 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.validation.SyntaxValidator;
+import org.olat.login.validation.ValidationResult;
 import org.olat.user.ProfileFormController;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.GenericUnique127CharTextPropertyHandler;
@@ -96,6 +101,7 @@ class UserBulkChangeStep00 extends BasicStep {
 		private final List<MultipleSelectionElement> checkBoxes = new ArrayList<>();
 
 		private final boolean isAdministrativeUser;
+		private final SyntaxValidator syntaxValidator;
 		
 		@Autowired
 		private I18nManager i18nManager;
@@ -105,6 +111,8 @@ class UserBulkChangeStep00 extends BasicStep {
 		private UserBulkChangeManager ubcMan;
 		@Autowired
 		private BaseSecurityModule securityModule;
+		@Autowired
+		private OLATAuthManager olatAuthManager;
 		
 		public UserBulkChangeStepForm00(UserRequest ureq, WindowControl control, Form rootForm, StepsRunContext runContext) {
 			super(ureq, control, rootForm, runContext, LAYOUT_VERTICAL, null);
@@ -112,6 +120,7 @@ class UserBulkChangeStep00 extends BasicStep {
 			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 			flc.setTranslator(getTranslator());
 			isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
+			this.syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 
 			initForm(ureq);
 		}
@@ -187,8 +196,8 @@ class UserBulkChangeStep00 extends BasicStep {
 							if (handler.getName().equals(formItem.getName())) {
 								// first check on mandatoryness
 								if (userManager.isMandatoryUserProperty(usageIdentifyer, handler) && !StringHelper.containsNonWhitespace(evaluatedInputFieldValue)) {
-									formItem.setErrorKey("form.name." + handler.getName() + ".error.empty", null);				
-									return false;									
+									formItem.setErrorKey("form.name." + handler.getName() + ".error.empty", null);
+									return false;
 								}
 								// second check on property content
 								ValidationError valicationError = new ValidationError();
@@ -202,9 +211,15 @@ class UserBulkChangeStep00 extends BasicStep {
 						}
 
 						// special case: check password-syntax:
-						if (propertyField.getName().equals("password")&& !userManager.syntaxCheckOlatPassword(evaluatedInputFieldValue)) {
-							propertyField.setErrorKey("error.password", new String[] { evaluatedInputFieldValue });
-							return false;
+						if (propertyField.getName().equals("password")) {
+							String password = propertyField.getValue();
+							// No identity :-(
+							ValidationResult validationResult = syntaxValidator.validate(password);
+							if (!validationResult.isValid()) {
+								String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
+								propertyField.setErrorKey("error.password", new String[] { descriptions });
+								return false;
+							}
 						}
 					}
 				}

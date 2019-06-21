@@ -19,11 +19,12 @@
  */
 package org.olat.login.ui;
 
+import static org.olat.login.ui.LoginUIFactory.validateInteger;
+
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
-import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -44,7 +45,6 @@ public class PasswordPolicyController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
 	
-	private SingleSelection historyEl;
 	private MultipleSelectionElement changeOnceEl;
 	
 	private TextElement validUntilGuiEl;
@@ -76,7 +76,6 @@ public class PasswordPolicyController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		setFormTitle("password.policy.title");
 		setFormDescription("max.age.description");
 		
 		validUntilGuiEl = uifactory.addTextElement("password.change.valid.until.gui", 20, loginModule.getValidUntilHoursGui().toString(), formLayout);
@@ -89,22 +88,6 @@ public class PasswordPolicyController extends FormBasicController {
 		if(loginModule.isPasswordChangeOnce()) {
 			changeOnceEl.select(onKeys[0], true);
 		}
-		
-		String selectedVal = Integer.toString(loginModule.getPasswordHistory());
-		boolean hasVal = false;
-		String[] historyKeys = new String[] { "0", "1", "2", "5", "10", "15" };
-		for(String historyKey:historyKeys) {
-			if(selectedVal.equals(historyKey)) {
-				hasVal = true;
-			}
-		}
-		String[] historyValues = new String[] { translate("disable.history"), translate("password.after","1"), translate("password.after","2"), translate("password.after","5"), translate("password.after","10"), translate("password.after","15")};
-		if(!hasVal) {
-			historyKeys = append(historyKeys, selectedVal);
-			historyValues = append(historyValues, selectedVal);
-		}
-		historyEl = uifactory.addDropdownSingleselect("password.history", "password.history", formLayout, historyKeys, historyValues, null);
-		historyEl.select(selectedVal, true);
 
 		String maxAge = toMaxAgeAsString(loginModule.getPasswordMaxAge());
 		maxAgeEl = uifactory.addTextElement("max.age", "max.age", 5, maxAge, formLayout);
@@ -154,13 +137,6 @@ public class PasswordPolicyController extends FormBasicController {
 		uifactory.addFormSubmitButton("save", buttonsCont);
 	}
 	
-	private String[] append(String[] array, String val) {
-		String[] newArray = new String[array.length + 1];
-		System.arraycopy(array, 0, newArray, 0, array.length);
-		newArray[array.length] = val;
-		return newArray;
-	}
-	
 	private String toMaxAgeAsString(int maxAge) {
 		if(maxAge < 0) {
 			return "";
@@ -197,35 +173,7 @@ public class PasswordPolicyController extends FormBasicController {
 		allOk &= validateMaxAgeEl(maxAgeAdministratorEl);
 		allOk &= validateMaxAgeEl(maxAgeSysAdminEl);
 		
-		historyEl.clearError();
-		if(!historyEl.isOneSelected()) {
-			historyEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
 		return allOk;
-	}
-	
-	private boolean validateInteger(TextElement el, int min) {
-		boolean allOk = true;
-		el.clearError();
-		String val = el.getValue();
-		if(StringHelper.containsNonWhitespace(val)) {	
-			try {
-				double value = Integer.parseInt(val);
-				if(min > value) {
-					el.setErrorKey("error.wrong.int", null);
-					allOk = false;
-				}
-			} catch (NumberFormatException e) {
-				el.setErrorKey("error.wrong.int", null);
-				allOk = false;
-			}
-		} else {
-			el.setErrorKey("error.wrong.int", null);
-			allOk = false;
-		}
-		return allOk;	
 	}
 	
 	private boolean validateMaxAgeEl(TextElement el) {
@@ -244,9 +192,6 @@ public class PasswordPolicyController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		loginModule.setPasswordChangeOnce(changeOnceEl.isAtLeastSelected(1));
-		
-		int history = Integer.parseInt(historyEl.getSelectedKey());
-		loginModule.setPasswordHistory(history);
 		
 		Integer validUntilHoursGui = Integer.parseInt(validUntilGuiEl.getValue());
 		loginModule.setValidUntilHoursGui(validUntilHoursGui);

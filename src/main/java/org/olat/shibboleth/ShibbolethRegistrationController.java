@@ -262,7 +262,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 			}
 		} else if (source == regForm) {
 			if (event == Event.DONE_EVENT) {
-				String choosenLogin = regForm.getLogin();
+				String choosenLogin = regForm.getUsernameEl();
 				Identity identity = securityManager.findIdentityByName(choosenLogin);
 
 
@@ -304,7 +304,7 @@ public class ShibbolethRegistrationController extends DefaultController implemen
 					if(regForm == null ) {
 						choosenLogin = proposedUsername;
 					} else {
-						choosenLogin = regForm.getLogin();
+						choosenLogin = regForm.getUsernameEl();
 					}
 
 					// check if login has been taken by another user in the meantime...

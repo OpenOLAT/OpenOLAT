@@ -249,9 +249,6 @@
 		<property name="userPropertiesConfig">
                 <ref bean="org.olat.user.UserPropertiesConfig" />
         </property>
-        <property name="userNameAndPasswordSyntaxChecker">
-        	<ref bean="org.olat.user.UserNameAndPasswordSyntaxChecker"/>
-        </property>
 		<property name="userDisplayNameCreator">
 			 <ref bean="${userDisplayName}"/>
         </property>
@@ -259,14 +256,6 @@
 
 	<bean id="org.olat.core.commons.creator.UserAvatarDisplayControllerCreator"
 		class="org.olat.user.UserAvatarDisplayControllerCreatorImpl"/>
-
-	<!-- Generic regexp based email  and password checker. 
-	     If you customize this, make sure you adjusted the i18n keys                            
-	 	form.checkUsername
-		form.checkPassword
-	     of the package org.olat.user
-	-->
-	<bean id="org.olat.user.UserNameAndPasswordSyntaxChecker" class="org.olat.user.UserNameAndPasswordSyntaxCheckerWithEmail" />
 
 	<bean id="personalFolderManager" class="org.olat.user.PersonalFolderManager"/>
 	<bean class="org.olat.user.DisplayPortraitManager"/>

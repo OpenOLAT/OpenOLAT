@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
-import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.manager.AuthenticationDAO;
 import org.olat.core.commons.services.webdav.manager.WebDAVAuthManager;
@@ -41,7 +41,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder.Algorithm;
 import org.olat.core.util.StringHelper;
@@ -63,6 +62,9 @@ import org.olat.login.LoginModule;
 import org.olat.login.OLATAuthenticationController;
 import org.olat.login.oauth.OAuthLoginModule;
 import org.olat.login.oauth.OAuthSPI;
+import org.olat.login.validation.PasswordValidationRulesFactory;
+import org.olat.login.validation.SyntaxValidator;
+import org.olat.login.validation.UsernameValidationRulesFactory;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
 import org.olat.shibboleth.ShibbolethDispatcher;
@@ -99,6 +101,10 @@ public class OLATAuthManager implements AuthenticationSPI {
 	private AuthenticationDAO authenticationDao;
 	@Autowired
 	private RegistrationManager registrationManager;
+	@Autowired
+	private PasswordValidationRulesFactory passwordRulesFactory;
+	@Autowired
+	private UsernameValidationRulesFactory usernameRulesFactory;
 	
 	/**
 	 * 
@@ -195,7 +201,16 @@ public class OLATAuthManager implements AuthenticationSPI {
 				}
 			}
 		}
-		return null;		
+		return null;
+	}
+	
+	public SyntaxValidator createUsernameSytaxValidator() {
+		return new SyntaxValidator(usernameRulesFactory.createRules(), false);
+	}
+	
+	
+	public SyntaxValidator createPasswordSytaxValidator() {
+		return new SyntaxValidator(passwordRulesFactory.createRules(), true);
 	}
 	
 	/**
@@ -342,26 +357,6 @@ public class OLATAuthManager implements AuthenticationSPI {
 	 */
 	public boolean changePasswordByPasswordForgottenLink(Identity identity, String newPwd) {
 		return changePassword(identity, identity, newPwd);
-	}
-	
-
-	/**
-	 * Check the credential history if configured and if the user
-	 * has not a LDAP credential.
-	 * 
-	 * @param identity The identity
-	 * @param password The new password
-	 * @return true if the new password is valid against the history
-	 */
-	public boolean checkCredentialHistory(Identity identity, String password) {
-		boolean ok = true;
-		int historyLength = loginModule.getPasswordHistory();
-		if(historyLength > 0 && 
-				(!ldapLoginModule.isLDAPEnabled()
-						|| !authenticationDao.hasAuthentication(identity, LDAPAuthenticationController.PROVIDER_LDAP))) {
-			ok = securityManager.checkCredentialHistory(identity, BaseSecurityModule.getDefaultAuthProviderIdentifier(), password);
-		}
-		return ok;
 	}
 	
 }

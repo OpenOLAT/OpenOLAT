@@ -351,10 +351,12 @@ public interface BaseSecurity {
 	 * Check if the password is allowed.
 	 * 
 	 * @param identity
+	 * @param provider
 	 * @param password
+	 * @param historyLength
 	 * @return
 	 */
-	public boolean checkCredentialHistory(Identity identity, String provider, String password);
+	public boolean checkCredentialHistory(Identity identity, String provider, String password, int historyLength);
 	
 	/**
 	 * 

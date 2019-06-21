@@ -955,9 +955,8 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	}
 
 	@Override
-	public boolean checkCredentialHistory(Identity identity, String provider, String password) {
+	public boolean checkCredentialHistory(Identity identity, String provider, String password, int historyLength) {
 		boolean ok = true;
-		int historyLength = loginModule.getPasswordHistory();
 		if(historyLength > 0) {
 			List<AuthenticationHistory> credentialHistory = authenticationHistoryDao
 					.loadHistory(identity, provider, 0, historyLength);

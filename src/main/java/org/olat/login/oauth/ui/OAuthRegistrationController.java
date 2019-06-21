@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.olat.admin.user.delete.service.UserDeletionManager;
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
@@ -46,13 +47,16 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.i18n.I18nManager;
+import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.oauth.model.OAuthRegistration;
 import org.olat.login.oauth.model.OAuthUser;
+import org.olat.login.validation.SyntaxValidator;
+import org.olat.login.validation.ValidationResult;
 import org.olat.registration.DisclaimerController;
 import org.olat.registration.RegistrationForm2;
 import org.olat.registration.RegistrationManager;
+import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
-import org.olat.user.UserModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,6 +72,7 @@ public class OAuthRegistrationController extends FormBasicController {
 	
 	private final OAuthRegistration registration;
 	private final List<UserPropertyHandler> userPropertyHandlers;
+	private final SyntaxValidator usernameSyntaxValidator;
 
 	private TextElement usernameEl;
 	private SingleSelection langEl;
@@ -78,11 +83,11 @@ public class OAuthRegistrationController extends FormBasicController {
 	private Identity authenticatedIdentity;
 	
 	@Autowired
-	private UserModule userModule;
-	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private UserDeletionManager userDeletionManager;
 	@Autowired
@@ -94,7 +99,9 @@ public class OAuthRegistrationController extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RegistrationForm2.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
+		setTranslator(Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale(), getTranslator()));
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
+		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
 		
 		this.registration = registration;
 
@@ -180,18 +187,23 @@ public class OAuthRegistrationController extends FormBasicController {
 			}
 		}
 		
-		String login = usernameEl.getValue();
+		String username = usernameEl.getValue();
+		TransientIdentity newIdentity = new TransientIdentity();
+		newIdentity.setName(username);
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
+			newIdentity.setProperty(userPropertyHandler.getName(), userPropertyHandler.getStringValue(propertyItem));
+		}
+		
 		usernameEl.clearError();
-		if (!userManager.syntaxCheckOlatLogin(login)) {
-			usernameEl.setErrorKey("form.check3", null);
-			allOk &= false;
-		} else if (userModule.isLoginOnBlacklist(login)) {
-			usernameEl.setErrorKey("form.check6", null);
+		if (!StringHelper.containsNonWhitespace(username)) {
+			usernameEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		} else {
-			Identity s = securityManager.findIdentityByName(login);
-			if (s != null) {
-				usernameEl.setErrorKey("form.check6", null);
+			ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
+			if (!validationResult.isValid()) {
+				String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
+				usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
 				allOk &= false;
 			}
 		}

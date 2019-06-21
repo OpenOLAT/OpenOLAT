@@ -25,6 +25,8 @@
 
 package org.olat.registration;
 
+import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
+
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -36,8 +38,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.validation.SyntaxValidator;
+import org.olat.login.validation.ValidationResult;
 import org.olat.user.ChangePasswordForm;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -51,28 +54,26 @@ public class PwChangeForm extends FormBasicController {
 	private TextElement newpass2; // confirm
 	
 	private final TemporaryKey tempKey;
-	private Identity identityToChange;
+	private final Identity identityToChange;
+	private final SyntaxValidator syntaxValidator;
 	
 	@Autowired
 	private RegistrationManager rm;
 	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
-	private OLATAuthManager olatAuthenticationSpi;
+	private OLATAuthManager olatAuthManager;
 	
 	public PwChangeForm(UserRequest ureq, WindowControl wControl, Identity identityToChange, TemporaryKey tempKey) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		this.identityToChange = identityToChange;
 		this.tempKey = tempKey;
+		this.syntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		initForm(ureq);
 	}
 	
 	public PwChangeForm(UserRequest ureq, WindowControl wControl, TemporaryKey tempKey) {
-		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
-		this.tempKey = tempKey;
-		initForm(ureq);
+		this(ureq, wControl, null, tempKey);
 	}
 
 	@Override
@@ -80,11 +81,11 @@ public class PwChangeForm extends FormBasicController {
 		boolean allOk = super.validateFormLogic(ureq);
 		
 		newpass1.clearError();
-		if (!userManager.syntaxCheckOlatPassword(newpass1.getValue())) {
-			newpass1.setErrorKey("form.checkPassword", null);
-			allOk &= false;
-		} else if(!olatAuthenticationSpi.checkCredentialHistory(getIdentityToChange(), newpass1.getValue())) {
-			newpass1.setErrorKey("form.checkPassword.history", null);
+		String newPassword = newpass1.getValue();
+		ValidationResult validationResult = syntaxValidator.validate(newPassword, getIdentityToChange());
+		if (!validationResult.isValid()) {
+			String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
+			newpass1.setErrorKey("error.password.invalid", new String[] { descriptions });
 			allOk &= false;
 		}
 		
@@ -128,15 +129,18 @@ public class PwChangeForm extends FormBasicController {
 	 * @param s The identity to change the password.
 	 */
 	private boolean saveFormData(Identity s) {
-		return olatAuthenticationSpi.changePasswordByPasswordForgottenLink(s, newpass1.getValue());	
+		return olatAuthManager.changePasswordByPasswordForgottenLink(s, newpass1.getValue());	
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("form.password.enter.new");
-		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 128, "", formLayout);
+		String descriptions = formatDescriptionAsList(syntaxValidator.getAllDescriptions(), getLocale());
+		setFormDescription("form.password.rules", new String[] { descriptions });
+		
+		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
 		newpass1.setAutocomplete("new-password");
-		newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 128, "", formLayout);
+		newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 5000, "", formLayout);
 		newpass2.setAutocomplete("new-password");
 		uifactory.addFormSubmitButton("submit", formLayout);
 	}

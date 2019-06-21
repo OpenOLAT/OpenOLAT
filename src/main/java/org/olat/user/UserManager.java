@@ -54,7 +54,6 @@ public abstract class UserManager {
 	
 	// injected by spring configuration
 	protected UserPropertiesConfig userPropertiesConfig;
-	protected UserNameAndPasswordSyntaxChecker userNameAndPasswordSyntaxChecker;
 
 	/**
 	 * Use getInstance method
@@ -197,26 +196,6 @@ public abstract class UserManager {
 	 */
 	public abstract String getUserCharset(Identity identity);
 
-	/**
-	 * Validates an OLAT password on a syntactical level. 
-	 * 
-	 * @param password The passwort to validate
-	 * @return true if it is valid, false otherwhise
-	 */
-	public boolean syntaxCheckOlatPassword(String password) {
-		return userNameAndPasswordSyntaxChecker.syntaxCheckOlatPassword(password);
-	}
-
-	/**
-	 * Check if the login matches.
-	 * 
-	 * @param login
-	 * @return True if synatx is ok.
-	 */
-	public boolean syntaxCheckOlatLogin(String login) {
-		return userNameAndPasswordSyntaxChecker.syntaxCheckOlatLogin(login);
-	}
-
 	public UserPropertiesConfig getUserPropertiesConfig() {
 		return userPropertiesConfig;
 	}
@@ -245,14 +224,6 @@ public abstract class UserManager {
 		return userPropertiesConfig.isUserViewReadOnly(usageIdentifyer, propertyHandler);
 	}
 	
-	/**
-	 * Spring setter
-	 * @param userNameAndPasswordSyntaxChecker
-	 */
-	public void setUserNameAndPasswordSyntaxChecker(UserNameAndPasswordSyntaxChecker userNameAndPasswordSyntaxChecker) {
-		this.userNameAndPasswordSyntaxChecker = userNameAndPasswordSyntaxChecker;
-	}
-
 	/**
 	 * Spring setter
 	 * @param userPropertiesConfig

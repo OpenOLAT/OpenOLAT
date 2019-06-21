@@ -25,10 +25,14 @@
 
 package org.olat.admin.user;
 
+import static org.olat.login.ui.LoginUIFactory.formatDescriptionAsList;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -54,13 +58,16 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ArrayHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
+import org.olat.login.LoginModule;
+import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.validation.SyntaxValidator;
+import org.olat.login.validation.ValidationResult;
 import org.olat.registration.RegistrationManager;
 import org.olat.registration.TemporaryKey;
 import org.olat.user.ChangePasswordForm;
@@ -157,6 +164,8 @@ class NewUserForm extends FormBasicController {
 	
 	private DialogBoxController confirmRemoveCtrl;
 
+	private final SyntaxValidator passwordSyntaxValidator;
+	private final SyntaxValidator usernameSyntaxValidator;
 	
 	@Autowired
 	private UserModule userModule;
@@ -164,6 +173,8 @@ class NewUserForm extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private OLATAuthManager olatAuthManager;
 	@Autowired
 	private RegistrationManager registrationManager;
 	@Autowired
@@ -178,8 +189,11 @@ class NewUserForm extends FormBasicController {
 	 */
 	public NewUserForm(UserRequest ureq, WindowControl wControl, boolean showPasswordFields, Translator translator) {
 		super(ureq, wControl);
-		setTranslator(translator);
+		setTranslator(Util.createPackageTranslator(LoginModule.class, ureq.getLocale(), translator));
+		setTranslator(Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale(), getTranslator()));
 		this.showPasswordFields = showPasswordFields;
+		this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
+		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
 		
 		Roles managerRoles = ureq.getUserSession().getRoles();
 		if(managerRoles.isSystemAdmin()) {
@@ -243,7 +257,9 @@ class NewUserForm extends FormBasicController {
 		
 		//add password fields!!!
 		if (showPasswordFields) {
-			uifactory.addStaticTextElement("heading2", null, translate("new.form.please.enter.pwd"), formLayout);
+			String descriptions = formatDescriptionAsList(passwordSyntaxValidator.getAllDescriptions(), getLocale());
+			uifactory.addStaticTextElement("heading2", null,
+					translate("new.form.please.enter.pwd", new String[] { descriptions }), formLayout);
 
 			// checkBox: generate user with OLAT authentication or not
 			String[] authKeys = {"xx"};
@@ -253,14 +269,14 @@ class NewUserForm extends FormBasicController {
 			authCheckbox.addActionListener(FormEvent.ONCLICK);
 
 			// if OLAT authentication is used, use the pwd below
-			psw1TextElement = uifactory.addPasswordElement(FIELD_NEW1, "new.form.password.new1", 255, "", formLayout);
+			psw1TextElement = uifactory.addPasswordElement(FIELD_NEW1, "new.form.password.new1", 5000, "", formLayout);
 			psw1TextElement.setMandatory(true);
 			psw1TextElement.setDisplaySize(30);
 			psw1TextElement.setVisible(showPasswordFields);
 			psw1TextElement.setElementCssClass("o_sel_id_password1");
 			psw1TextElement.setAutocomplete("new-password");
 
-			psw2TextElement = uifactory.addPasswordElement(FIELD_NEW2, "new.form.password.new2", 255, "", formLayout);
+			psw2TextElement = uifactory.addPasswordElement(FIELD_NEW2, "new.form.password.new2", 5000, "", formLayout);
 			psw2TextElement.setMandatory(true);
 			psw2TextElement.setDisplaySize(30);		
 			psw2TextElement.setVisible(showPasswordFields);
@@ -295,21 +311,29 @@ class NewUserForm extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = super.validateFormLogic(ureq);
 		
+		// Transient identity for validations
+		String username = usernameTextElement.getValue();
+		TransientIdentity newIdentity = new TransientIdentity();
+		newIdentity.setName(username);
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
+			newIdentity.setProperty(userPropertyHandler.getName(), userPropertyHandler.getStringValue(propertyItem));
+		}
+		
 		// validate if username does match the syntactical login requirements
-		String loginName = usernameTextElement.getValue();
 		usernameTextElement.clearError();
-		if (usernameTextElement.isEmpty() || !userManager.syntaxCheckOlatLogin(loginName)) {
-			usernameTextElement.setErrorKey("new.error.loginname.empty", new String[]{});
+		if (!StringHelper.containsNonWhitespace(username)) {
+			usernameTextElement.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		} else {
-			// Check if login is still available
-			Identity identity = securityManager.findIdentityByName(loginName);
-			if (identity != null) {
-				usernameTextElement.setErrorKey("new.error.loginname.choosen", new String[]{});
+			ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
+			if (!validationResult.isValid()) {
+				String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
+				usernameTextElement.setErrorKey("error.username.invalid", new String[] { descriptions });
 				allOk &= false;
 			}
 		}
-
+		
 		// validate special rules for each user property
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			//we assume here that there are only textElements for the user properties
@@ -347,9 +371,15 @@ class NewUserForm extends FormBasicController {
 			String pwd = psw1TextElement.getValue();
 			if(psw1TextElement.isEmpty("new.form.mandatory") || psw1TextElement.hasError()) {
 				allOk &= false;
-			} else if (!userManager.syntaxCheckOlatPassword(pwd)) {
-				psw1TextElement.setErrorKey("form.checkPassword", new String[]{});
-				allOk &=  false;
+			} else {
+				String newPassword = psw1TextElement.getValue();
+				
+				ValidationResult validationResult = passwordSyntaxValidator.validate(newPassword, newIdentity);
+				if (!validationResult.isValid()) {
+					String descriptions = formatDescriptionAsList(validationResult.getInvalidDescriptions(), getLocale());
+					psw1TextElement.setErrorKey("error.password.invalid", new String[] { descriptions });
+					allOk &= false;
+				}
 			}
 			if(psw2TextElement.isEmpty("new.form.mandatory") || psw2TextElement.hasError()) {
 				allOk &= false;
@@ -377,7 +407,7 @@ class NewUserForm extends FormBasicController {
 	
 	@Override
 	protected void formResetted(UserRequest ureq) {
-		fireEvent(ureq, Event.CANCELLED_EVENT);      
+		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 	
 	private Identity doCreateAndPersistIdentity() {

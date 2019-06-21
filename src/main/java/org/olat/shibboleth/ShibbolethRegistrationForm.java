@@ -25,6 +25,7 @@
 
 package org.olat.shibboleth;
 
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
@@ -32,8 +33,12 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.user.UserManager;
-import org.olat.user.UserModule;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.login.auth.OLATAuthManager;
+import org.olat.login.validation.SyntaxValidator;
+import org.olat.login.validation.ValidationResult;
+import org.olat.user.ChangePasswordForm;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -47,42 +52,48 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class ShibbolethRegistrationForm extends FormBasicController {
 
-	private TextElement login;
+	private TextElement usernameEl;
 	private String proposedUsername;
-	
+
+	private final SyntaxValidator usernameSyntaxValidator;
+
 	@Autowired
-	private UserModule userModule;
-	@Autowired
-	private UserManager userManager;
-	/**
-	 * @param name
-	 * @param translator
-	 */
+	private OLATAuthManager olatAuthManager;
 
 	public ShibbolethRegistrationForm(UserRequest ureq, WindowControl wControl, String proposedUsername) {
 		super(ureq, wControl);
+		setTranslator(Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale(), getTranslator()));
 		this.proposedUsername = proposedUsername;
+		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
 		initForm(ureq);
 	}
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		if (login.isEmpty("srf.error.loginempty")) return false;
-		if (!userManager.syntaxCheckOlatLogin(getLogin())) {
-			login.setErrorKey("srf.error.loginregexp", null);
+		// validate if username does match the syntactical login requirements
+		usernameEl.clearError();
+		String username = usernameEl.getValue();
+		if (!StringHelper.containsNonWhitespace(username)) {
+			usernameEl.setErrorKey("form.legende.mandatory", null);
+			return false;
+		} 
+		
+		TransientIdentity newIdentity = new TransientIdentity();
+		newIdentity.setName(username);
+		ValidationResult validationResult = usernameSyntaxValidator.validate(username, newIdentity);
+		if (!validationResult.isValid()) {
+			String descriptions = validationResult.getInvalidDescriptions().get(0).getText(getLocale());
+			usernameEl.setErrorKey("error.username.invalid", new String[] { descriptions });
 			return false;
 		}
-		if (userModule.isLoginOnBlacklist(getLogin())) {
-			login.setErrorKey("srf.error.blacklist", null);
-			return false;
-		}
+		
 		return true;
 	}
 
 	/**
 	 * @return Login field.
 	 */
-	protected String getLogin() { return login.getValue(); }
+	protected String getUsernameEl() { return usernameEl.getValue(); }
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -92,8 +103,8 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String initialValue = proposedUsername == null ? "" : proposedUsername;
-		login = uifactory.addTextElement("srf_login", "srf.login", 128, initialValue, formLayout);
-		login.setExampleKey("srf.login.example", null);
+		usernameEl = uifactory.addTextElement("srf_login", "srf.login", 128, initialValue, formLayout);
+		usernameEl.setExampleKey("srf.login.example", null);
 		uifactory.addFormSubmitButton("save", formLayout);
 	}
 
