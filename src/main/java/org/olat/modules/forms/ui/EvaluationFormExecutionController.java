@@ -193,6 +193,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 				&& !session.getParticipation().isAnonymous();
 		boolean anonymous = !notAnonymous;
 		flc.contextPut("anonymous", Boolean.valueOf(showDoneButton && anonymous));
+		
+		// force it to have always the same settings
+		mainForm.setMultipartEnabled(true);
 
 		doneLink = uifactory.addFormSubmitButton("save.as.done", "save.as.done", formLayout);
 		saveLink = uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
@@ -267,6 +270,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (saveLink == source) {
 			if(mainForm.validate(ureq)) {
+				mainForm.forceSubmittedAndValid();
 				doSaveResponses();
 			}
 		}
