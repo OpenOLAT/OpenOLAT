@@ -20,11 +20,13 @@
 package org.olat.course.nodes.ms;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanNullCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
@@ -41,6 +43,7 @@ import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.forms.EvaluationFormSession;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,7 +85,10 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		if (hasEvaluationForm()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.details.ms",
 					IdentityCourseElementCols.details.ordinal(),
-					new BooleanCellRenderer(new CSSIconFlexiCellRenderer("o_icon_lg o_icon_check"), null)));
+					new BooleanNullCellRenderer(
+							new CSSIconFlexiCellRenderer("o_icon_lg o_icon_ms_done"),
+							new CSSIconFlexiCellRenderer("o_icon_lg o_icon_ms_pending"),
+							null)));
 		}
 		super.initScoreColumns(columnsModel);
 	}
@@ -92,14 +98,18 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		super.loadModel(ureq);
 		
 		if (hasEvaluationForm()) {
-			List<EvaluationFormSession> sessions = msService.getDoneSessions(getCourseRepositoryEntry(), courseNode.getIdent());
-			List<String> idents = sessions.stream()
-					.map(s -> s.getSurvey().getIdentifier().getSubident2())
-					.collect(Collectors.toList());
+			List<EvaluationFormSession> sessions = msService.getSessions(getCourseRepositoryEntry(), courseNode.getIdent());
+			Map<String, EvaluationFormSession> identToSesssion = sessions.stream()
+					.collect(Collectors.toMap(
+							s -> s.getSurvey().getIdentifier().getSubident2(),
+							Function.identity()));
 			
 			for (AssessedIdentityElementRow row : usersTableModel.getObjects()) {
 				String ident = row.getIdentityKey().toString();
-				Boolean sessionDone = idents.contains(ident);
+				EvaluationFormSession session = identToSesssion.get(ident);
+				Boolean sessionDone = session != null
+						? EvaluationFormSessionStatus.done.equals(session.getEvaluationFormSessionStatus())
+						: null;
 				row.setDetails(sessionDone);
 			}
 		}

@@ -43,15 +43,15 @@ public class SessionFilterFactory {
 		return new SessionRefFilter(sessionRefs);
 	}
 
+	public static SessionFilter create(EvaluationFormSurveyIdentifier surveyIdentitfier) {
+		return new SurveysFilter(surveyIdentitfier);
+	}
+
 	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey) {
 		return createSelectDone(Collections.singletonList(survey));
 	}
 
 	public static SessionFilter createSelectDone(Collection<? extends EvaluationFormSurveyRef> surveys) {
 		return new SurveysFilter(surveys, EvaluationFormSessionStatus.done);
-	}
-
-	public static SessionFilter createSelectDone(EvaluationFormSurveyIdentifier surveyIdentitfier) {
-		return new SurveysFilter(surveyIdentitfier, EvaluationFormSessionStatus.done);
 	}
 }
