@@ -631,9 +631,9 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public void removeMember(CurriculumElement element, IdentityRef member) {
-		groupDao.removeMembership(element.getGroup(), member);
-
 		List<GroupMembership> memberships = groupDao.getMemberships(element.getGroup(), member);
+		
+		groupDao.removeMembership(element.getGroup(), member);
 		
 		CurriculumElementNode elementNode = null;
 		for(GroupMembership membership:memberships) {
@@ -674,7 +674,21 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 
 	@Override
 	public void removeMember(CurriculumElement element, IdentityRef member, CurriculumRoles role) {
+		GroupMembership membership = groupDao.getMembership(element.getGroup(), member, role.name());
+		
 		groupDao.removeMembership(element.getGroup(), member, role.name());
+		
+		if(membership != null && (membership.getInheritanceMode() == GroupMembershipInheritance.root
+				|| membership.getInheritanceMode() == GroupMembershipInheritance.none)) {
+			groupDao.removeMembership(membership);
+			if(membership.getInheritanceMode() == GroupMembershipInheritance.root
+					|| membership.getInheritanceMode() == GroupMembershipInheritance.inherited) {
+				CurriculumElementNode elementNode = curriculumElementDao.getDescendantTree(element);
+				for(CurriculumElementNode child:elementNode.getChildrenNode()) {
+					removeInherithedMembership(child, member, role.name());
+				}
+			}
+		}
 	}
 
 	@Override
