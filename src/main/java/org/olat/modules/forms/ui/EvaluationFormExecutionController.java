@@ -33,7 +33,6 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
-import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -81,7 +80,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private final Map<String, EvaluationFormElementHandler> handlerMap = new HashMap<>();
 	private final List<ExecutionFragment> fragments = new ArrayList<>();
 	private FormLink saveLink;
-	private FormSubmit doneLink;
+	private FormLink doneLink;
 	private DialogBoxController confirmDoneCtrl;
 	private PageFragmentsElementImpl fragmentsEl;
 
@@ -91,6 +90,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	private final Component header;
 	private boolean readOnly;
 	private boolean showDoneButton;
+
+	private boolean immediateSave = false;
 
 	private EvaluationFormSession session;
 	private final EvaluationFormResponses responses;
@@ -196,7 +197,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 		boolean anonymous = !notAnonymous;
 		flc.contextPut("anonymous", Boolean.valueOf(showDoneButton && anonymous));
 
-		doneLink = uifactory.addFormSubmitButton("save.as.done", "save.as.done", formLayout);
+		doneLink = uifactory.addFormLink("save.as.done", "save.as.done", null, flc, Link.BUTTON);
+		doneLink.setPrimary(true);
 		saveLink = uifactory.addFormLink("save.intermediate", "save.intermediate", null, flc, Link.BUTTON);
 		showHideButtons();
 	}
@@ -268,9 +270,11 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (saveLink == source) {
-			if(mainForm.validate(ureq)) {
-				doSaveResponses();
-			}
+			immediateSave = true;
+			mainForm.submit(ureq);
+		} else if (doneLink == source) {
+			immediateSave = false;
+			mainForm.submit(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -288,7 +292,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 	@Override
 	protected void formOK(UserRequest ureq) {
 		boolean responsesSaved = doSaveResponses();
-		if (responsesSaved) {
+		if (!immediateSave && responsesSaved) {
 			doConfirmDone(ureq);
 		}
 	}
@@ -338,7 +342,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 		List<ValidationMessage> messages = new ArrayList<>();
 		validate(ureq, messages);
-		if (!messages.isEmpty()) {
+		if (messages.size() > 0) {
 			for (ValidationMessage message : messages) {
 				sb.append("<p class='o_warning'>").append(message.getMessage()).append("</p>");
 			}
