@@ -194,18 +194,19 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private void exposeConfigToVC(UserRequest ureq) {
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		myContent.contextPut("hasScoreField", courseNode.hasScoreConfigured());
+		if (courseNode.hasScoreConfigured()) {
+			myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(courseNode.getMinScoreConfiguration()));
+			myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(courseNode.getMaxScoreConfiguration()));
+		}
 		myContent.contextPut("hasPassedField", courseNode.hasPassedConfigured());
+		if (courseNode.hasPassedConfigured()) {
+			myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(courseNode.getCutValueConfiguration()));
+		}
 		myContent.contextPut("hasCommentField", courseNode.hasCommentConfigured());
 		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		if(StringHelper.containsNonWhitespace(infoTextUser)) {
 				myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
 				myContent.contextPut("indisclaimer", isPanelOpen(ureq, "disclaimer", true));
-		}
-		myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(courseNode.getCutValueConfiguration()));
-		if (courseNode.hasScoreConfigured()) {
-		myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(courseNode.getMinScoreConfiguration()));
-		myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(courseNode.getMaxScoreConfiguration()));
-			
 		}
 	}
 	
