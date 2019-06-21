@@ -19,7 +19,15 @@
  */
 package org.olat.course.assessment.ui.tool;
 
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.olat.admin.user.UserShortDescription;
+import org.olat.admin.user.UserShortDescription.Rows;
+import org.olat.admin.user.UserShortDescription.Rows.Builder;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -27,6 +35,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
+import org.olat.course.ICourse;
+import org.olat.group.BusinessGroup;
 import org.olat.user.DisplayPortraitController;
 
 /**
@@ -42,6 +52,10 @@ public class AssessedIdentityLargeInfosController extends BasicController {
 	private final UserShortDescription userShortDescrCtr;
 	
 	public AssessedIdentityLargeInfosController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity) {
+		this(ureq, wControl, assessedIdentity, null);
+	}
+	
+	public AssessedIdentityLargeInfosController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity, ICourse course) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("user_infos_large");
 		mainVC.contextPut("user", assessedIdentity.getUser());
@@ -49,8 +63,23 @@ public class AssessedIdentityLargeInfosController extends BasicController {
 		portraitCtr = new DisplayPortraitController(ureq, getWindowControl(), assessedIdentity, true, true);
 		mainVC.put("portrait", portraitCtr.getInitialComponent());
 		listenTo(portraitCtr);
-
-		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), assessedIdentity);
+		
+		List<BusinessGroup> participantGroups = course != null
+				? course.getCourseEnvironment().getCourseGroupManager().getParticipatingBusinessGroups(assessedIdentity)
+				: new ArrayList<>();
+		final Collator collator = Collator.getInstance(getLocale());
+		Collections.sort(participantGroups, (a, b) -> {
+			return collator.compare(a.getName(), b.getName());
+		});
+		Builder rowsBuilder = Rows.builder();
+		if (!participantGroups.isEmpty()) {
+			String groupNames = participantGroups.stream()
+					.map(BusinessGroup::getName)
+					.collect(Collectors.joining(", "));
+			rowsBuilder.addRow(translate("participantgroups.title"), groupNames);
+		}
+		Rows additionalRows = rowsBuilder.build();
+		userShortDescrCtr = new UserShortDescription(ureq, getWindowControl(), assessedIdentity, additionalRows);
 		mainVC.put("userShortDescription", userShortDescrCtr.getInitialComponent());
 		listenTo(userShortDescrCtr);
 		

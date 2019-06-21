@@ -32,5 +32,11 @@
 		<td>$identityKey</td>
 	</tr>
 	#end
+	#foreach($row in $additionalRows.getRows())
+		<tr class="o_prop">
+			<th>$row.getColumn1()</th>
+			<td>$row.getColumn2()</td>
+		</tr>
+	#end
 </table>
 </div>

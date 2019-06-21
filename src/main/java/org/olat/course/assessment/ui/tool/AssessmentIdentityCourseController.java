@@ -94,11 +94,11 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		identityAssessmentVC = createVelocityContainer("identity_personal_infos");
 		identityAssessmentVC.contextPut("user", assessedIdentity.getUser());
 		
-		infosController = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity);
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		infosController = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course);
 		listenTo(infosController);
 		identityAssessmentVC.put("identityInfos", infosController.getInitialComponent());
 		
-		ICourse course = CourseFactory.loadCourse(courseEntry);
 		CourseConfig courseConfig = course.getCourseConfig();
 		Roles roles = securityManager.getRoles(assessedIdentity);
 		IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, roles);
