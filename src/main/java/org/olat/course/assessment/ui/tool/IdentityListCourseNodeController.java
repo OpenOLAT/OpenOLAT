@@ -631,6 +631,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			} else if(event == Event.CHANGED_EVENT) {
 				loadModel(ureq);
 			} else if(event == Event.CANCELLED_EVENT) {
+				loadModel(ureq);
 				stackPanel.popController(currentIdentityCtrl);
 			}
 		} else if(bulkToolsList != null && bulkToolsList.contains(source)) {

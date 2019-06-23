@@ -49,6 +49,8 @@ public interface MSService {
 	
 	List<EvaluationFormSession> getSessions(OLATResourceable ores, String nodeIdent);
 	
+	void deleteSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity, AuditEnv auditEnv);
+
 	void deleteSessions(RepositoryEntry ores, String nodeIdent);
 	
 	List<RubricStatistic> getRubricStatistics(EvaluationFormSession session);

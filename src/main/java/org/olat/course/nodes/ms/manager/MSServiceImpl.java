@@ -64,10 +64,15 @@ public class MSServiceImpl implements MSService {
 	@Override
 	public EvaluationFormSession getOrCreateSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent,
 			Identity assessedIdentity, AuditEnv auditEnv) {
-		EvaluationFormSurveyIdentifier surveyIdent = of(ores, nodeIdent, assessedIdentity.getKey().toString());
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, assessedIdentity);
 		EvaluationFormSurvey survey = loadOrCreateSurvey(formEntry, surveyIdent);
 		EvaluationFormParticipation participation = loadOrCreateParticipation(survey);
 		return loadOrCreateSesssion(participation, auditEnv);
+	}
+
+	private EvaluationFormSurveyIdentifier getSurveyIdentitfier(RepositoryEntry ores, String nodeIdent,
+			Identity assessedIdentity) {
+		return of(ores, nodeIdent, assessedIdentity.getKey().toString());
 	}
 	
 	private EvaluationFormSurvey loadOrCreateSurvey(RepositoryEntry formEntry, EvaluationFormSurveyIdentifier surveyIdent) {
@@ -92,7 +97,7 @@ public class MSServiceImpl implements MSService {
 		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 		if (session == null) {
 			session = evaluationFormManager.createSession(participation);
-			logAudit(auditEnv, "Completion of evaluation form started");
+			logAudit(auditEnv, "Evaluation started");
 		}
 		return session;
 	}
@@ -105,14 +110,14 @@ public class MSServiceImpl implements MSService {
 	@Override
 	public EvaluationFormSession closeSession(EvaluationFormSession session, AuditEnv auditEnv) {
 		EvaluationFormSession finishSession = evaluationFormManager.finishSession(session);
-		logAudit(auditEnv, "Completion of evaluation form finished");
+		logAudit(auditEnv, "Evaluation finshed");
 		return finishSession;
 	}
 
 	@Override
 	public EvaluationFormSession reopenSession(EvaluationFormSession session, AuditEnv auditEnv) {
 		EvaluationFormSession reopenSession = evaluationFormManager.reopenSession(session);
-		logAudit(auditEnv, "Evaluation form reopened");
+		logAudit(auditEnv, "Evaluation reopened");
 		return reopenSession;
 	}
 
@@ -125,6 +130,14 @@ public class MSServiceImpl implements MSService {
 	public List<EvaluationFormSession> getSessions(OLATResourceable ores, String nodeIdent) {
 		SessionFilter filter = SessionFilterFactory.create(of(ores, nodeIdent));
 		return evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
+	}
+
+	@Override
+	public void deleteSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity, AuditEnv auditEnv) {
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, assessedIdentity);	
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
+		evaluationFormManager.deleteSurvey(survey);
+		logAudit(auditEnv, "Evaluation deleted");
 	}
 
 	@Override

@@ -444,7 +444,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			Identity coachingIdentity, boolean incrementAttempts, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts, by);		
+		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts, by);
 	}
 
 	@Override
