@@ -25,6 +25,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.repository.RepositoryEntry;
 
@@ -38,6 +39,9 @@ public interface MSService {
 	
 	EvaluationFormSession getOrCreateSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent,
 			Identity assessedIdentity, AuditEnv auditEnv);
+
+	EvaluationFormSession getSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity,
+			EvaluationFormSessionStatus status);
 
 	EvaluationFormSession getSession(EvaluationFormSessionRef sessionRef);
 

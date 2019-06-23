@@ -96,7 +96,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private MultipleSelectionElement surveyConfigEl;
 	private SingleSelection sliderTypeEl;
 	private SingleSelection scaleTypeEl;
-	private TextElement scaleWeightEl;
+	private TextElement weightEl;
 	private TextElement nameEl;
 	private MultipleSelectionElement nameDisplayEl;
 	private SingleSelection stepsEl;
@@ -215,10 +215,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 			scaleTypeEl.select(ScaleType.getKeys()[0], true);
 		}
 		
-		// scale weight
-		String scaleWeight = rubric.getWeight() != null? rubric.getWeight().toString(): "";
-		scaleWeightEl = uifactory.addTextElement("rubric.weight", 10, scaleWeight, settingsLayout);
-		scaleWeightEl.addActionListener(FormEvent.ONCHANGE);
+		// weight
+		String weight = rubric.getWeight() != null? rubric.getWeight().toString(): "";
+		weightEl = uifactory.addTextElement("rubric.weight", 10, weight, settingsLayout);
+		weightEl.addActionListener(FormEvent.ONCHANGE);
+		weightEl.setEnabled(!restrictedEdit);
 		
 		// good rating side
 		goodRatingEl = uifactory.addDropdownSingleselect("rubric.good.rating" + count.incrementAndGet(), "rubric.good.rating",
@@ -353,7 +354,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		}
 		
 		scaleTypeEl.setVisible(isSurveyConfig);
-		scaleWeightEl.setVisible(isSurveyConfig);
+		weightEl.setVisible(isSurveyConfig);
 		noAnswerEl.setVisible(isSurveyConfig);
 		noAnswerEl.select(noAnswerEl.getKey(0), rubric.isNoResponseEnabled());
 		insufficientCont.setVisible(isSurveyConfig);
@@ -422,9 +423,9 @@ public class RubricEditorController extends FormBasicController implements PageE
 	}
 
 	private Integer getWeightOrNull() {
-		return StringHelper.containsNonWhitespace(scaleWeightEl.getValue())
-				&& isValidInteger(scaleWeightEl.getValue(), 1, 10000000)
-				? Integer.parseInt(scaleWeightEl.getValue())
+		return StringHelper.containsNonWhitespace(weightEl.getValue())
+				&& isValidInteger(weightEl.getValue(), 1, 10000000)
+				? Integer.parseInt(weightEl.getValue())
 				: null;
 	}
 	
@@ -613,7 +614,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 			updateSteps();
 			updateSliders();
 			updatePlaceholders();
-		} else if (scaleWeightEl == source) {
+		} else if (weightEl == source) {
 			updateSteps();
 			updateSliders();
 			updatePlaceholders();
@@ -712,10 +713,10 @@ public class RubricEditorController extends FormBasicController implements PageE
 		}
 		
 		// scale weight
-		scaleWeightEl.clearError();
-		if (StringHelper.containsNonWhitespace(scaleWeightEl.getValue())
-				&& isInvalidInteger(scaleWeightEl.getValue(), 1, 10000000)) {
-			scaleWeightEl.setErrorKey("error.wrong.int", null);
+		weightEl.clearError();
+		if (StringHelper.containsNonWhitespace(weightEl.getValue())
+				&& isInvalidInteger(weightEl.getValue(), 1, 10000000)) {
+			weightEl.setErrorKey("error.wrong.int", null);
 			surveyConfigOk &= false;
 		}
 		
@@ -885,8 +886,8 @@ public class RubricEditorController extends FormBasicController implements PageE
 		ScaleType scaleType = ScaleType.getEnum(selectedScaleTypeKey);
 		rubric.setScaleType(scaleType);
 		
-		Integer scaleWeight = StringHelper.containsNonWhitespace(scaleWeightEl.getValue())
-				? Integer.parseInt(scaleWeightEl.getValue())
+		Integer scaleWeight = StringHelper.containsNonWhitespace(weightEl.getValue())
+				? Integer.parseInt(weightEl.getValue())
 				: null;
 		rubric.setWeight(scaleWeight);
 		

@@ -35,6 +35,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.RubricStatistic;
@@ -100,6 +101,15 @@ public class MSServiceImpl implements MSService {
 			logAudit(auditEnv, "Evaluation started");
 		}
 		return session;
+	}
+
+	@Override
+	public EvaluationFormSession getSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity,
+			EvaluationFormSessionStatus status) {
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, assessedIdentity);
+		SessionFilter filter = SessionFilterFactory.create(surveyIdent, status);
+		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
+		return !sessions.isEmpty()? sessions.get(0): null;
 	}
 
 	@Override
@@ -225,6 +235,8 @@ public class MSServiceImpl implements MSService {
 
 	@Override
 	public Float calculateScoreBySum(EvaluationFormSession session) {
+		if (session == null) return null;
+		
 		double sum = 0.0;
 		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
 		for (AbstractElement element : form.getElements()) {
@@ -242,6 +254,8 @@ public class MSServiceImpl implements MSService {
 
 	@Override
 	public Float calculateScoreByAvg(EvaluationFormSession session) {
+		if (session == null) return null;
+		
 		double sumAvgs = 0.0;
 		int numberAvgs = 0;
 		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());

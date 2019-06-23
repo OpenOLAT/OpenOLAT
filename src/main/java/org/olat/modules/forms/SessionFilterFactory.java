@@ -47,6 +47,11 @@ public class SessionFilterFactory {
 		return new SurveysFilter(surveyIdentitfier);
 	}
 
+	public static SessionFilter create(EvaluationFormSurveyIdentifier surveyIdentitfier,
+			EvaluationFormSessionStatus status) {
+		return new SurveysFilter(surveyIdentitfier, status);
+	}
+
 	public static SessionFilter createSelectDone(EvaluationFormSurveyRef survey) {
 		return createSelectDone(Collections.singletonList(survey));
 	}
