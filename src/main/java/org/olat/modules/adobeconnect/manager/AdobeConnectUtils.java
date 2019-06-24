@@ -22,6 +22,7 @@ package org.olat.modules.adobeconnect.manager;
 import java.io.InputStream;
 import java.io.StringWriter;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
@@ -67,18 +68,23 @@ public class AdobeConnectUtils {
 		}
 	}
 	
-	protected static BreezeSession getBreezeSessionIfOk(HttpResponse response) {
+	protected static BreezeSession getBreezeSessionIfOk(HttpResponse response, BreezeSession infoSession) {
 		BreezeSession session = null;
 		try {
 			HttpEntity entity = response.getEntity();
 			Document doc = getDocumentFromEntity(entity);
-			if(AdobeConnectUtils.isStatusOk(doc)) {
+			if(isStatusOk(doc)) {
+				print(doc);
 				Header header = response.getFirstHeader("Set-Cookie");
 				if(header != null) {
 					session = BreezeSession.valueOf(header);
 				} else {
 					String cookie = getFirstElementValue(doc.getDocumentElement(), "cookie");
-					session = BreezeSession.valueOf(cookie);
+					if(StringHelper.containsNonWhitespace(cookie)) {
+						session = BreezeSession.valueOf(cookie);
+					} else {
+						session = infoSession;
+					}
 				}
 			}
 		} catch (Exception e) {
@@ -122,6 +128,7 @@ public class AdobeConnectUtils {
     protected static Document getDocumentFromEntity(HttpEntity entity) throws Exception {
     	try(InputStream in=entity.getContent()) {
 	        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 	        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 	        return dBuilder.parse(in);
     	} catch(Exception e) {
@@ -204,9 +211,11 @@ public class AdobeConnectUtils {
 	}
 	
 	protected static void print(Document document) {
-		if(log.isDebugEnabled() || true) {
+		if(log.isDebugEnabled()) {
 		    try(StringWriter writer = new StringWriter()) {
-				Transformer transformer = TransformerFactory.newInstance().newTransformer();
+		    	TransformerFactory factory = TransformerFactory.newInstance();
+				factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+				Transformer transformer = factory.newTransformer();
 				Source source = new DOMSource(document);
 				transformer.transform(source, new StreamResult(writer));
 				writer.flush();

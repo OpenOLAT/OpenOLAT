@@ -44,6 +44,8 @@ import org.olat.course.ICourse;
 import org.olat.course.nodes.AdobeConnectCourseNode;
 import org.olat.modules.adobeconnect.AdobeConnectMeeting;
 import org.olat.modules.adobeconnect.AdobeConnectModule;
+import org.olat.modules.adobeconnect.model.AdobeConnectError;
+import org.olat.modules.adobeconnect.model.AdobeConnectErrorCodes;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
 import org.olat.modules.adobeconnect.model.AdobeConnectPermission;
 import org.olat.modules.adobeconnect.model.AdobeConnectPrincipal;
@@ -259,7 +261,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		UriBuilder builder = adobeConnectModule.getAdobeConnectUriBuilder();
 		builder
 			.queryParam("action", "sco-delete")
-			.queryParam("sco-id", "adahgf" /* meeting.getScoId() */);
+			.queryParam("sco-id", meeting.getScoId());
 		
 		boolean ok = false;
 		HttpGet get = createAdminMethod(builder, error);
@@ -542,10 +544,12 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 			CloseableHttpResponse response = httpClient.execute(getLogin)) {
 			int statusCode = response.getStatusLine().getStatusCode();
 			if(statusCode == 200) {
-				BreezeSession loginSession = AdobeConnectUtils.getBreezeSessionIfOk(response);
+				BreezeSession loginSession = AdobeConnectUtils.getBreezeSessionIfOk(response, session);
 				if(loginSession != null) {// OK
 					session = loginSession;
 					currentSession = loginSession;
+				} else {
+					errors.append(new AdobeConnectError(AdobeConnectErrorCodes.adminDenied));
 				}
 			}
 			EntityUtils.consumeQuietly(response.getEntity());

@@ -99,9 +99,12 @@ public class AdobeConnectMeetingController extends FormBasicController {
 		initForm(ureq);
 		
 		if(validMeeting) {
-			AdobeConnectErrors error = new AdobeConnectErrors();
-			registered = adobeConnectManager.isRegistered(meeting, getIdentity(), getPermission(), error);
+			AdobeConnectErrors errors = new AdobeConnectErrors();
+			registered = adobeConnectManager.isRegistered(meeting, getIdentity(), getPermission(), errors);
 			loadModel();
+			if(errors.hasErrors()) {
+				getWindowControl().setWarning(AdobeConnectErrorHelper.formatErrors(getTranslator(), errors));
+			}
 		}
 		updateButtons();
 	}

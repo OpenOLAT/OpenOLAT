@@ -136,35 +136,39 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	public void createMeeting(String name, String description, String templateId,
 			Date start, Date end, Locale locale, boolean allAccess,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
-			Identity actingIdentity, AdobeConnectErrors error) {
+			Identity actingIdentity, AdobeConnectErrors errors) {
 		
 		AdobeConnectSco folder;
 		String folderName = generateFolderName(entry, subIdent, businessGroup);
-		List<AdobeConnectSco> folderScos = getAdapter().getFolderByName(folderName, error);
+		List<AdobeConnectSco> folderScos = getAdapter().getFolderByName(folderName, errors);
 		if(folderScos == null || folderScos.isEmpty()) {
-			folder = getAdapter().createFolder(folderName, error);
+			folder = getAdapter().createFolder(folderName, errors);
 		} else {
 			folder = folderScos.get(0);
 		}
+
+		if(errors.hasErrors()) {
+			return;// we need a folder
+		}
 		
-		AdobeConnectSco sco = getAdapter().createScoMeeting(name, description, folder.getScoId(), templateId, start, end, locale, error);
+		AdobeConnectSco sco = getAdapter().createScoMeeting(name, description, folder.getScoId(), templateId, start, end, locale, errors);
 		if(sco != null) {
-			getAdapter().setPermissions(sco.getScoId(), true, error);
-			AdobeConnectPrincipal admin = getAdapter().adminCommonInfo(error);
+			getAdapter().setPermissions(sco.getScoId(), true, errors);
+			AdobeConnectPrincipal admin = getAdapter().adminCommonInfo(errors);
 			if(admin != null) {
-				getAdapter().setMember(sco.getScoId(), admin.getPrincipalId(), AdobeConnectMeetingPermission.host.permission(), error);
+				getAdapter().setMember(sco.getScoId(), admin.getPrincipalId(), AdobeConnectMeetingPermission.host.permission(), errors);
 			}
 
-			String actingUser = getOrCreateUser(actingIdentity, true, error);
+			String actingUser = getOrCreateUser(actingIdentity, true, errors);
 			if(actingUser != null) {
-				getAdapter().setMember(sco.getScoId(), actingUser, AdobeConnectMeetingPermission.host.permission(), error);
+				getAdapter().setMember(sco.getScoId(), actingUser, AdobeConnectMeetingPermission.host.permission(), errors);
 			}
 			
 			// try harder if the meeting hasn't a single host
 			if(actingUser == null && admin == null) {
-				admin = getAdapter().getPrincipalByLogin(adobeConnectModule.getAdminLogin(), error);
+				admin = getAdapter().getPrincipalByLogin(adobeConnectModule.getAdminLogin(), errors);
 				if(admin != null) {
-					getAdapter().setMember(sco.getScoId(), admin.getPrincipalId(), AdobeConnectMeetingPermission.host.permission(), error);
+					getAdapter().setMember(sco.getScoId(), admin.getPrincipalId(), AdobeConnectMeetingPermission.host.permission(), errors);
 				}
 			}
 			

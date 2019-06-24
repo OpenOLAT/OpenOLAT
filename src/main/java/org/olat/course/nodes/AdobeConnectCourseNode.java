@@ -125,8 +125,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 			boolean moderator = admin || userCourseEnv.isCoach();
 			// create run controller
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			boolean allowGuestAccess = getModuleConfiguration().getBooleanSafe(AdobeConnectEditController.GUEST_ACCESS_ALLOWED, false);
-			AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(allowGuestAccess);
+			AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(true);
 			controller = new AdobeConnectRunController(ureq, wControl, entry, getIdent(), null, configuration,
 					admin, moderator, userCourseEnv.isCourseReadOnly());
 		}

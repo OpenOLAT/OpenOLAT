@@ -38,9 +38,9 @@ public class AdobeConnectErrors implements Serializable {
 		return errors;
 	}
 	
-	public void append(AdobeConnectErrors errors) {
-		if(errors.hasErrors()) {
-			this.errors.addAll(errors.getErrors());
+	public void append(AdobeConnectErrors error) {
+		if(error.hasErrors()) {
+			this.errors.addAll(error.getErrors());
 		}
 	}
 	

@@ -27,6 +27,7 @@ package org.olat.modules.adobeconnect.model;
  */
 public enum AdobeConnectErrorCodes {
 	
+	adminDenied,
 	duplicateField,
 	invalidField,
 	formatError,
