@@ -79,7 +79,8 @@ public class AssessedIdentityOverviewController extends BasicController {
 		
 		mainVC = createVelocityContainer("user_assessment");
 		
-		AssessedIdentityLargeInfosController identityInfos = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity);
+		ICourse course = CourseFactory.loadCourse(assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry());
+		AssessedIdentityLargeInfosController identityInfos = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course);
 		listenTo(identityInfos);
 		mainVC.put("identityInfos", identityInfos.getInitialComponent());
 		

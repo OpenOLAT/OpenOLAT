@@ -25,11 +25,14 @@
 
 package org.olat.course.nodes;
 
+import static org.olat.modules.forms.EvaluationFormSessionStatus.done;
+
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -41,6 +44,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
@@ -53,6 +57,7 @@ import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
@@ -69,6 +74,7 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -444,7 +450,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			Identity coachingIdentity, boolean incrementAttempts, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts, by);		
+		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts, by);
 	}
 
 	@Override
@@ -567,36 +573,99 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			Identity assessedIdentity, Role by, EvaluationFormSession session) {
 		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
 		MSService msService = CoreSpringFactory.getImpl(MSService.class);
-		ModuleConfiguration config = getModuleConfiguration();
 		
-		// Get score
+		Float score = getScore(am, msService, assessedIdentity, session);
+		Boolean passed = getPassed(am, assessedIdentity, score);
+		
+		// save
+		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score, passed);
+		am.saveScoreEvaluation(this, identity, assessedIdentity, scoreEvaluation, assessedUserCourseEnv, false, by);
+	}
+
+	@Override
+	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
+		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
+		List<Identity> assessedUsers = pm.getAllIdentitiesWithCourseAssessmentData(null);
+
+		int count = 0;
+		for(Identity assessedIdentity: assessedUsers) {
+			updateScorePassedOnPublish(course, assessedIdentity, publisher);
+			if(++count % 10 == 0) {
+				DBFactory.getInstance().commitAndCloseSession();
+			}
+		}
+		DBFactory.getInstance().commitAndCloseSession();
+		super.updateOnPublish(locale, course, publisher, publishEvents);
+	}
+	
+	private void updateScorePassedOnPublish(ICourse course, Identity assessedIdentity, Identity coachIdentity) {
+		RepositoryEntry ores = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
+		MSService msService = CoreSpringFactory.getImpl(MSService.class);
+		
+		Float currentScore = am.getNodeScore(this, assessedIdentity);
+		Boolean currentPassed = am.getNodePassed(this, assessedIdentity);
+		
+		EvaluationFormSession session = msService.getSession(ores, getIdent(), assessedIdentity, done);
+		Float updatedScore = getScore(am, msService, assessedIdentity, session);
+		Boolean updatedPassed = getPassed(am, assessedIdentity, updatedScore);
+		
+		boolean needUpdate = false;
+		if((currentScore == null && updatedScore != null)
+				|| (currentScore != null && updatedScore == null)
+				|| (currentScore != null && !currentScore.equals(updatedScore))) {
+			needUpdate = true;
+		}
+		if((currentPassed == null && updatedPassed != null && updatedScore != null)
+				|| (currentPassed != null && updatedPassed == null)
+				|| (currentPassed != null && !currentPassed.equals(updatedPassed))) {
+			needUpdate = true;
+		}
+		
+		if(needUpdate) {
+			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
+			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
+			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
+			am.saveScoreEvaluation(this, coachIdentity, assessedIdentity, scoreEval, uce, false, Role.coach);
+		}
+	}
+
+	private Float getScore(AssessmentManager am, MSService msService, Identity assessedIdentity,
+			EvaluationFormSession session) {
+		Float score = null;
+		ModuleConfiguration config = getModuleConfiguration();
 		String scoreConfig = config.getStringValue(CONFIG_KEY_SCORE);
 		String scaleConfig = config.getStringValue(CONFIG_KEY_EVAL_FORM_SCALE);
 		float scale = Float.parseFloat(scaleConfig);
-		Float score = null;
 		if (CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig)) {
 			score = msService.calculateScoreByAvg(session);
 			score = msService.scaleScore(score, scale);
 		} else if (CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)) {
 			score = msService.calculateScoreBySum(session);
 			score = msService.scaleScore(score, scale);
-		} else if (CONFIG_VALUE_SCORE_MANUAL.equals(scoreConfig)) {
+		}
+		if (score == null) {
 			ScoreEvaluation currentEval = getUserScoreEvaluation(am.getAssessmentEntry(this, assessedIdentity));
 			score = currentEval.getScore();
 		}
 		
 		// Score has to be in configured range.
 		MinMax minMax = getMinMax();
-		if(score != null && minMax.getMax().floatValue() < score.floatValue()) {
-			score = minMax.getMax();
+		if (score != null) {
+			if(minMax.getMax().floatValue() < score.floatValue()) {
+				score = minMax.getMax();
+			}
+			if(minMax.getMin().floatValue() > score.floatValue()) {
+				score = minMax.getMin();
+			}
 		}
-		if(score != null && minMax.getMin().floatValue() > score.floatValue()) {
-			score = minMax.getMin();
-		}
-		
-		// Get passed
-		Float cutConfig = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
+		return score;
+	}
+
+	private Boolean getPassed(AssessmentManager am, Identity assessedIdentity, Float score) {
 		Boolean passed = null;
+		ModuleConfiguration config = getModuleConfiguration();
+		Float cutConfig = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 		if (cutConfig != null && score != null) {
 			boolean aboveCutValue = score.floatValue() >= cutConfig.floatValue();
 			passed = Boolean.valueOf(aboveCutValue);
@@ -604,10 +673,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			ScoreEvaluation currentEval = getUserScoreEvaluation(am.getAssessmentEntry(this, assessedIdentity));
 			passed = currentEval.getPassed();
 		}
-		
-		// save
-		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score, passed);
-		am.saveScoreEvaluation(this, identity, assessedIdentity, scoreEvaluation, assessedUserCourseEnv, false, by);
+		return passed;
 	}
 	
 }

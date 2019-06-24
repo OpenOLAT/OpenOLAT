@@ -623,8 +623,9 @@ public class UserTest extends Deployments {
 			.resume();
 		
 		String uuid = UUID.randomUUID().toString();
-		String username = "miku-" + uuid;
-		UserVO userVo = UserAdminPage.createUserVO(username, "Miku", "Hatsune", "miku-" + uuid + "@openolat.com", "miku01");
+		String username = ("miku-" + uuid).substring(0, 32);
+		String password = "Miku#hatsune#01";
+		UserVO userVo = UserAdminPage.createUserVO(username, "Miku", "Hatsune", username + "@openolat.com", password);
 
 		NavigationPage navBar = NavigationPage.load(browser);
 		UserAdminPage userAdminPage = navBar
@@ -644,7 +645,7 @@ public class UserTest extends Deployments {
 		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
 		//tools
 		userLoginPage
-			.loginAs(username, "miku01")
+			.loginAs(username, password)
 			.resume()
 			.assertLoggedIn(userVo);
 	}
@@ -671,9 +672,10 @@ public class UserTest extends Deployments {
 			.resume();
 		
 		String uuid = UUID.randomUUID().toString();
-		String username = "miku-" + uuid;
+		String username = ("miku-" + uuid).substring(0, 32);
 		String lastName = "Hatsune" + uuid;
-		UserVO userVo = UserAdminPage.createUserVO(username, "Miku", lastName, "miku-" + uuid + "@openolat.com", "miku01");
+		String password = "Miku#hatsune#02";
+		UserVO userVo = UserAdminPage.createUserVO(username, "Miku", lastName, username + "@openolat.com", password);
 
 		NavigationPage navBar = NavigationPage.load(browser);
 		UserAdminPage userAdminPage = navBar
@@ -686,7 +688,7 @@ public class UserTest extends Deployments {
 		LoginPage userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
 		//tools
 		userLoginPage
-			.loginAs(username, "miku01")
+			.loginAs(username, password)
 			.resume()
 			.assertLoggedIn(userVo);
 		//log out
@@ -702,7 +704,7 @@ public class UserTest extends Deployments {
 		//user try the login
 		userLoginPage = LoginPage.load(userBrowser, deploymentUrl);
 		userLoginPage
-			.loginDenied(username, "miku01");
+			.loginDenied(username, password);
 		//assert on error message
 		By errorMessageby = By.cssSelector("div.modal-body.alert.alert-danger");
 		OOGraphene.waitElement(errorMessageby, 2, userBrowser);
@@ -741,8 +743,8 @@ public class UserTest extends Deployments {
 		ImportUserPage importWizard = userAdminPage.startImport();
 		
 		String uuid = UUID.randomUUID().toString();
-		String username1 = "moka-" + uuid;
-		String username2 = "mizore-" + uuid;
+		String username1 = ("moka-" + uuid).substring(0, 32);
+		String username2 = ("mizore-" + uuid).substring(0, 32);
 		
 		StringBuilder csv = new StringBuilder();
 		UserVO user1 = importWizard.append(username1, "rosario01", "Moka", "Akashiya", csv);
@@ -799,11 +801,13 @@ public class UserTest extends Deployments {
 		ImportUserPage importWizard = userAdminPage.startImport();
 		
 		String uuid = UUID.randomUUID().toString();
-		String username1 = "moka-" + uuid;
+		String username1 = ("moka-" + uuid).substring(0, 32);
+		String password1 = "Rosario#02";
+		String password2 = "Openolat#2";
 
 		StringBuilder csv = new StringBuilder();
-		UserVO newUser = importWizard.append(username1, "rosario02", "Moka", "Akashiya", csv);
-		user1 = importWizard.append(user1, "Aono", "openolat2", csv);
+		UserVO newUser = importWizard.append(username1, password1, "Moka", "Akashiya", csv);
+		user1 = importWizard.append(user1, "Aono", password2, csv);
 		importWizard
 			.fill(csv.toString())
 			.nextData() // -> preview
@@ -821,7 +825,7 @@ public class UserTest extends Deployments {
 		LoginPage userLoginPage = LoginPage.load(existingUserBrowser, deploymentUrl);
 		//tools
 		userLoginPage
-			.loginAs(user1.getLogin(), "openolat2")
+			.loginAs(user1.getLogin(), password2)
 			.resume()
 			.assertLoggedInByLastName("Aono");
 		
@@ -829,7 +833,7 @@ public class UserTest extends Deployments {
 		LoginPage newLoginPage = LoginPage.load(newUserBrowser, deploymentUrl);
 		//tools
 		newLoginPage
-			.loginAs(newUser.getLogin(), "rosario02")
+			.loginAs(newUser.getLogin(), password1)
 			.resume()
 			.assertLoggedInByLastName("Akashiya");
 	}

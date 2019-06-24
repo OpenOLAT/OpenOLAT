@@ -98,7 +98,7 @@ public class ExceptionWindowController extends DefaultChiefController {
 		msg = new VelocityContainer("olatmain", VELOCITY_ROOT + "/exception_page.html", trans, this);
 
 		CSPModule securityModule = CoreSpringFactory.getImpl(CSPModule.class);
-		msg.contextPut("enforceTopFrame", new Boolean(securityModule.isForceTopFrame()));
+		msg.contextPut("enforceTopFrame", Boolean.valueOf(securityModule.isForceTopFrame()));
 		
 		// Disallow wrapping of divs around the panel and the main velocity page
 		// (since it contains the "<html><head... intro of the html page,
@@ -154,8 +154,6 @@ public class ExceptionWindowController extends DefaultChiefController {
 				Controller c = target.getLatestDispatchedController();
 				if (c != null) {
 					// can be null if the error occured in the component itself
-					// componentListenerInfo += c.toString();
-					//WindowControl control = c.getWindowControl();
 					// sorry, getting windowcontrol on a controller which does not have one (all should have one, legacy) throws an exception
 					try {
 						
@@ -180,7 +178,8 @@ public class ExceptionWindowController extends DefaultChiefController {
 		
 		Logger o3log = Tracing.createLoggerFor(o3e.getThrowingClazz());
 		String refNum = ureq.getUuid();
-		o3log.error("**RedScreen** "+o3e.getLogMsg() + " ::_::" + componentListenerInfo + " ::_::", o3e);
+		String componentListenerInfoFlat = componentListenerInfo.replace('\n', ' ').replace('\t', ' ');
+		o3log.error("**RedScreen** "+ o3e.getLogMsg() + " ::_::" + componentListenerInfoFlat + " ::_::", o3e);
 		// only if debug
 		if (Settings.isDebuging()) {
 			msg.contextPut("debug", Boolean.TRUE);

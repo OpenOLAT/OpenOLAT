@@ -25,20 +25,29 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanNullCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.AssessmentToolOptions;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -55,8 +64,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MSIdentityListCourseNodeController extends IdentityListCourseNodeController {
 	
-	private Boolean hasEvaluationForm;
+	private FormLink resetButton;
 	
+	private CloseableModalController cmc;
+	private MSResetDataController resetDataCtrl;
+
+	private Boolean hasEvaluationForm;
+
 	@Autowired
 	private MSService msService;
 
@@ -76,6 +90,11 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					coachCourseEnv.getCourseEnvironment(), (MSCourseNode)courseNode);
 			listenTo(bulkAssessmentToolCtrl);
 			formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());
+			
+			if (assessmentCallback.isAdmin()) {
+				resetButton = uifactory.addFormLink("tool.reset.data", formLayout, Link.BUTTON); 
+				resetButton.setIconLeftCSS("o_icon o_icon_delete_item");
+			}
 		}
 		super.initMultiSelectionTools(ureq, formLayout);
 	}
@@ -123,5 +142,48 @@ public class MSIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					|| MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig);
 		}
 		return hasEvaluationForm.booleanValue();
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if(resetButton == source) {
+			doConfirmResetData(ureq);
+		} else {
+			super.formInnerEvent(ureq, source, event);
+		}
+	}
+
+	@Override
+	public void event(UserRequest ureq, Controller source, Event event) {
+		if(source == resetDataCtrl) {
+			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				loadModel(ureq);
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else {
+			super.event(ureq, source, event);
+		}
+	}
+
+	@Override
+	protected void cleanUp() {
+		removeAsListenerAndDispose(resetDataCtrl);
+		removeAsListenerAndDispose(cmc);
+		resetDataCtrl = null;
+		cmc = null;
+		super.cleanUp();
+	}
+	
+	private void doConfirmResetData(UserRequest ureq) {
+		AssessmentToolOptions asOptions = getOptions();
+		CourseEnvironment courseEnv = getCourseEnvironment();
+		resetDataCtrl = new MSResetDataController(ureq, getWindowControl(), courseEnv, asOptions, (MSCourseNode)courseNode);
+		listenTo(resetDataCtrl);
+		
+		String title = translate("tool.reset.data.title");
+		cmc = new CloseableModalController(getWindowControl(), null, resetDataCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 }

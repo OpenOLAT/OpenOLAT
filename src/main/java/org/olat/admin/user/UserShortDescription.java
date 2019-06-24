@@ -25,6 +25,7 @@
 
 package org.olat.admin.user;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
@@ -63,6 +64,10 @@ public class UserShortDescription extends BasicController {
 	private BaseSecurityModule securityModule;
 
 	public UserShortDescription(UserRequest ureq, WindowControl wControl, Identity identity) {
+		this(ureq, wControl, identity, Rows.builder().build());
+	}
+	
+	public UserShortDescription(UserRequest ureq, WindowControl wControl, Identity identity, Rows additionalRows) {
 		super(ureq, wControl);
 		
 		String usernameLabel = translate("table.user.login");
@@ -90,6 +95,7 @@ public class UserShortDescription extends BasicController {
 			mainVC.contextPut("username", identity.getName());
 		}
 		mainVC.contextPut("usernameLabel", usernameLabel);
+		mainVC.contextPut("additionalRows", additionalRows);
 		
 		putInitialPanel(mainVC);
 	}
@@ -118,5 +124,60 @@ public class UserShortDescription extends BasicController {
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		// No event expected		
+	}
+	
+	public static class Rows {
+		
+		private final List<Row> rows;
+
+		private Rows(Builder builder) {
+			this.rows = new ArrayList<>(builder.rows);
+		}
+
+		public List<Row> getRows() {
+			return rows;
+		}
+
+		public static Builder builder() {
+			return new Builder();
+		}
+
+		public static final class Builder {
+			
+			private List<Row> rows = new ArrayList<>();
+
+			private Builder() {
+			}
+
+			public Builder addRow(String column1, String column2) {
+				rows.add(new Row(column1, column2));
+				return this;
+			}
+
+			public Rows build() {
+				return new Rows(this);
+			}
+		}
+		
+	}
+	
+	public static class Row {
+		
+		private final String column1;
+		private final String column2;
+		
+		private Row(String column1, String column2) {
+			this.column1 = column1;
+			this.column2 = column2;
+		}
+
+		public String getColumn1() {
+			return column1;
+		}
+
+		public String getColumn2() {
+			return column2;
+		}
+		
 	}
 }

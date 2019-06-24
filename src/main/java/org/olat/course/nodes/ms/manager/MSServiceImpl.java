@@ -35,6 +35,7 @@ import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
+import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.RubricStatistic;
@@ -64,10 +65,15 @@ public class MSServiceImpl implements MSService {
 	@Override
 	public EvaluationFormSession getOrCreateSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent,
 			Identity assessedIdentity, AuditEnv auditEnv) {
-		EvaluationFormSurveyIdentifier surveyIdent = of(ores, nodeIdent, assessedIdentity.getKey().toString());
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, assessedIdentity);
 		EvaluationFormSurvey survey = loadOrCreateSurvey(formEntry, surveyIdent);
 		EvaluationFormParticipation participation = loadOrCreateParticipation(survey);
 		return loadOrCreateSesssion(participation, auditEnv);
+	}
+
+	private EvaluationFormSurveyIdentifier getSurveyIdentitfier(RepositoryEntry ores, String nodeIdent,
+			Identity assessedIdentity) {
+		return of(ores, nodeIdent, assessedIdentity.getKey().toString());
 	}
 	
 	private EvaluationFormSurvey loadOrCreateSurvey(RepositoryEntry formEntry, EvaluationFormSurveyIdentifier surveyIdent) {
@@ -92,9 +98,18 @@ public class MSServiceImpl implements MSService {
 		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
 		if (session == null) {
 			session = evaluationFormManager.createSession(participation);
-			logAudit(auditEnv, "Completion of evaluation form started");
+			logAudit(auditEnv, "Evaluation started");
 		}
 		return session;
+	}
+
+	@Override
+	public EvaluationFormSession getSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity,
+			EvaluationFormSessionStatus status) {
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, assessedIdentity);
+		SessionFilter filter = SessionFilterFactory.create(surveyIdent, status);
+		List<EvaluationFormSession> sessions = evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
+		return !sessions.isEmpty()? sessions.get(0): null;
 	}
 
 	@Override
@@ -105,14 +120,14 @@ public class MSServiceImpl implements MSService {
 	@Override
 	public EvaluationFormSession closeSession(EvaluationFormSession session, AuditEnv auditEnv) {
 		EvaluationFormSession finishSession = evaluationFormManager.finishSession(session);
-		logAudit(auditEnv, "Completion of evaluation form finished");
+		logAudit(auditEnv, "Evaluation finshed");
 		return finishSession;
 	}
 
 	@Override
 	public EvaluationFormSession reopenSession(EvaluationFormSession session, AuditEnv auditEnv) {
 		EvaluationFormSession reopenSession = evaluationFormManager.reopenSession(session);
-		logAudit(auditEnv, "Evaluation form reopened");
+		logAudit(auditEnv, "Evaluation reopened");
 		return reopenSession;
 	}
 
@@ -125,6 +140,14 @@ public class MSServiceImpl implements MSService {
 	public List<EvaluationFormSession> getSessions(OLATResourceable ores, String nodeIdent) {
 		SessionFilter filter = SessionFilterFactory.create(of(ores, nodeIdent));
 		return evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
+	}
+
+	@Override
+	public void deleteSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity, AuditEnv auditEnv) {
+		EvaluationFormSurveyIdentifier surveyIdent = getSurveyIdentitfier(ores, nodeIdent, assessedIdentity);	
+		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
+		evaluationFormManager.deleteSurvey(survey);
+		logAudit(auditEnv, "Evaluation deleted");
 	}
 
 	@Override
@@ -212,6 +235,8 @@ public class MSServiceImpl implements MSService {
 
 	@Override
 	public Float calculateScoreBySum(EvaluationFormSession session) {
+		if (session == null) return null;
+		
 		double sum = 0.0;
 		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
 		for (AbstractElement element : form.getElements()) {
@@ -229,6 +254,8 @@ public class MSServiceImpl implements MSService {
 
 	@Override
 	public Float calculateScoreByAvg(EvaluationFormSession session) {
+		if (session == null) return null;
+		
 		double sumAvgs = 0.0;
 		int numberAvgs = 0;
 		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());

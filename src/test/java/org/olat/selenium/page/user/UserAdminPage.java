@@ -191,17 +191,8 @@ public class UserAdminPage {
 	}
 	
 	public UserAdminPage assertOnUserEditView(String username) {
-		By userInfoTdBy = By.cssSelector(".o_user_infos table tr td");
-		List<WebElement> tds = browser.findElements(userInfoTdBy);
-		boolean found = false;
-		for(WebElement td:tds) {
-			String text = td.getText();
-			if(text != null && text.equals(username)) {
-				found = true;
-				break;
-			}
-		}
-		Assert.assertTrue(found);
+		By userInfoBy = By.xpath("//div[contains(@class,'o_user_infos')]//table//tr/td[contains(text(),'" + username + "')]");
+		OOGraphene.waitElement(userInfoBy, browser);
 		return this;
 	}
 	

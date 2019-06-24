@@ -1120,8 +1120,7 @@
 						<property name="description" value="Short description of a user" />
 						<property name="propertyHandlers">
 							<list>
-								<ref bean="userPropertyFirstName" />
-								<ref bean="userPropertyLastName" />
+								<ref bean="userPropertyUserDisplayName" />
 								<ref bean="userPropertyEmail" />
 							</list>
 						</property>

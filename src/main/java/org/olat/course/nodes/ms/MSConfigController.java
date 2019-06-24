@@ -127,6 +127,9 @@ public class MSConfigController extends FormBasicController {
 		for (String formItemName : formItems.keySet()) {
 			formItems.get(formItemName).setEnabled(!displayOnly);
 		}
+		if (!displayOnly) {
+			updateUI();
+		}
 	}
 	
 	@Override
@@ -265,11 +268,11 @@ public class MSConfigController extends FormBasicController {
 		scoreEl.select(scoreKey, true);
 
 		// min / max
-		minEl.setEnabled(true);
-		maxEl.setEnabled(true);
 		boolean minMaxVisible = !MSCourseNode.CONFIG_VALUE_SCORE_NONE.equals(scoreKey);
 		minEl.setVisible(minMaxVisible);
 		maxEl.setVisible(minMaxVisible);
+		minEl.setEnabled(true);
+		maxEl.setEnabled(true);
 		if (MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreKey)
 				|| MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreKey)) {
 			minEl.setValue(formMinMax.getMin().toString());
