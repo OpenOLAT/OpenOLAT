@@ -75,10 +75,10 @@ public class AuthoringEnvPage {
 	}
 	
 	public CourseSettingsPage createCourse(String title) {
-		RepositorySettingsPage settings = openCreateDropDown()
+		openCreateDropDown()
 			.clickCreate(ResourceType.course)
-			.fillCreateForm(title);
-		settings.assertOnInfos();
+			.fillCreateForm(title)
+			.assertOnInfos();
 		return new CourseSettingsPage(browser);
 	}
 	
@@ -135,6 +135,7 @@ public class AuthoringEnvPage {
 		By submitBy = By.cssSelector("div.modal.o_sel_author_create_popup .o_sel_author_create_submit");
 		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy, browser);
 		return new RepositorySettingsPage(browser);
 	}

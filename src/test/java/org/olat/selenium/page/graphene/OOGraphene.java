@@ -28,11 +28,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Predicate;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -49,6 +52,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  *
  */
 public class OOGraphene {
+	
+	private static final Logger log = Tracing.createLoggerFor(OOGraphene.class);
 
 	private static final Duration poolingDuration = Duration.ofMillis(100);//ms
 	private static final Duration waitTinyDuration = Duration.ofSeconds(50);//seconds
@@ -596,10 +601,15 @@ public class OOGraphene {
 	}
 	
 	public static final void clickBreadcrumbBack(WebDriver browser) {
-		//By backBy = By.xpath("//ol[@class='breadcrumb']/li[contains(@class,'o_breadcrumb_back')]/following-sibling::li/a");
 		By backBy = By.xpath("//ol[@class='breadcrumb']/li[@class='o_breadcrumb_back']/a[i[contains(@class,'o_icon_back')]]");
 		waitElement(backBy, browser);
-		browser.findElement(backBy).click();
+		try {
+			browser.findElement(backBy).click();
+		} catch (StaleElementReferenceException e) {
+			log.error("", e);
+			waitingALittleLonger();
+			browser.findElement(backBy).click();
+		}
 		waitBusy(browser);
 	}
 	

@@ -19,6 +19,7 @@
  */
 package org.olat.selenium.page.repository;
 
+import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
@@ -41,7 +42,7 @@ public class RepositoryEditDescriptionPage {
 	}
 
 	public void clickToolbarBack() {
-		new RepositorySettingsPage(browser).back();
+		OOGraphene.clickBreadcrumbBack(browser);
 	}
 	
 }

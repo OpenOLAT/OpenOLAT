@@ -180,12 +180,12 @@ public class EntryPage {
 	 */
 	public EntryPage publishEntry() {
 		By publishBy = By.cssSelector("a.o_sel_pf_publish_entry");
-		OOGraphene.waitElement(publishBy, 5, browser);
+		OOGraphene.waitElement(publishBy, browser);
 		browser.findElement(publishBy).click();
 		OOGraphene.waitBusy(browser);
 		confirm();
 		By publishedBy = By.cssSelector("div.o_portfolio_status i.o_icon_pf_entry_published");
-		OOGraphene.waitElement(publishedBy, 5, browser);
+		OOGraphene.waitElement(publishedBy, browser);
 		return this;
 	}
 	
@@ -239,5 +239,6 @@ public class EntryPage {
 		OOGraphene.waitBusyAndScrollTop(browser);
 		browser.findElement(confirmButtonBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 	}
 }
