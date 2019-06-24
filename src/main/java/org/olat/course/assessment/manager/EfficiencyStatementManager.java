@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
@@ -56,12 +57,14 @@ import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.model.AssessmentNodesLastModified;
+import org.olat.course.assessment.model.UserEfficiencyStatementForCoaching;
 import org.olat.course.assessment.model.UserEfficiencyStatementImpl;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
 import org.olat.course.assessment.model.UserEfficiencyStatementStandalone;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
@@ -455,38 +458,29 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 				.getResultList();
 	}
 	
-	public List<UserEfficiencyStatement> getUserEfficiencyStatementLight(RepositoryEntry course) {
-		if(course == null) {
-			return Collections.emptyList();
-		}
+	public List<UserEfficiencyStatementForCoaching> getUserEfficiencyStatementForCoaching(RepositoryEntry course) {
+		if(course == null) return Collections.emptyList();
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select statement from effstatementlight as statement")
-		  .append(" inner join fetch statement.resource as resource")
-		  .append(" where resource.key=:resourcesKey");
+		Long resourceKey = course.getOlatResource().getKey();
+
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), UserEfficiencyStatement.class)
-				.setParameter("resourcesKey",course.getOlatResource().getKey())
+				.createNamedQuery("efficiencyStatemtForCoachingByResourceKeys", UserEfficiencyStatementForCoaching.class)
+				.setParameter("courseResourceKey", resourceKey)
 				.getResultList();
 	}
 	
-	public List<UserEfficiencyStatement> getUserEfficiencyStatementLight(List<RepositoryEntry> courses) {
-		if(courses == null || courses.isEmpty()) {
-			return Collections.emptyList();
-		}
-		
-		List<Long> resourcesKey = new ArrayList<>();
-		for(RepositoryEntry course:courses) {
-			resourcesKey.add(course.getOlatResource().getKey());
-		}
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append("select statement from effstatementlight as statement ")
-		  .append(" inner join fetch statement.resource as resource")
-		  .append(" where resource.key in (:courseResourcesKey)");
+	public List<UserEfficiencyStatementForCoaching> getUserEfficiencyStatementForCoaching(BusinessGroup group) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select distinct statement from effstatementcoaching as statement")
+		  .append(" inner join repositoryentry as v on (v.olatResource.key=statement.resourceKey)")
+		  .append(" inner join v.groups as relGroup ")
+		  .append(" inner join relGroup.group as baseGroup")
+		  .append(" inner join baseGroup.members as membership on membership.role='").append(GroupRoles.participant.name()).append("'")
+		  .append(" where baseGroup.key=:bGroupKey and statement.identityKey=membership.identity.key");
+
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), UserEfficiencyStatement.class)
-				.setParameter("courseResourcesKey", resourcesKey)
+				.createQuery(sb.toString(), UserEfficiencyStatementForCoaching.class)
+				.setParameter("bGroupKey", group.getBaseGroup().getKey())
 				.getResultList();
 	}
 	
@@ -507,15 +501,13 @@ public class EfficiencyStatementManager implements UserDataDeletable, UserDataEx
 	}
 	
 	public EfficiencyStatement getUserEfficiencyStatementByKey(Long key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select statement from effstatement as statement ")
-		  .append(" where statement.key=:key");
+		String query = "select statement from effstatement as statement where statement.key=:key";
 
 		List<UserEfficiencyStatementImpl> statement = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), UserEfficiencyStatementImpl.class)
+				.createQuery(query, UserEfficiencyStatementImpl.class)
 				.setParameter("key", key)
 				.getResultList();
-		if(statement.isEmpty()) {
+		if(statement.isEmpty() || !StringHelper.containsNonWhitespace(statement.get(0).getStatementXml())) {
 			return null;
 		}
 		return (EfficiencyStatement)xstream.fromXML(statement.get(0).getStatementXml());

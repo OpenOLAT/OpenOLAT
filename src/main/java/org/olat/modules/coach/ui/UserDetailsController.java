@@ -44,7 +44,6 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.EfficiencyStatement;
-import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseController;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementController;
@@ -242,9 +241,12 @@ public class UserDetailsController extends BasicController implements Activateab
 			removeAsListenerAndDispose(statementCtrl);
 
 			RepositoryEntry entry = statementEntry.getCourse();
-			UserEfficiencyStatement statement = statementEntry.getUserEfficencyStatement();
+			Long statementKey = statementEntry.getUserEfficiencyStatementKey();
 			EfficiencyStatement efficiencyStatement = null;
-			if(statement != null) {
+			if(statementKey != null) {
+				efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByKey(statementKey);
+			}
+			if(efficiencyStatement == null) {
 				RepositoryEntry re = statementEntry.getCourse();
 				efficiencyStatement = efficiencyStatementManager.getUserEfficiencyStatementByCourseRepositoryEntry(re, assessedIdentity);
 			}
