@@ -105,6 +105,7 @@
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementImpl</class>
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementLight</class>
 		<class>org.olat.course.assessment.model.UserEfficiencyStatementStandalone</class>
+		<class>org.olat.course.assessment.model.UserEfficiencyStatementForCoaching</class>
 		<class>org.olat.course.nodes.cl.model.DBCheckbox</class>
 		<class>org.olat.course.nodes.cl.model.DBCheck</class>
 		<class>org.olat.course.nodes.dialog.model.DialogElementImpl</class>

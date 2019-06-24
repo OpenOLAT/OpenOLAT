@@ -19,11 +19,12 @@
  */
 package org.olat.modules.coach.model;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
-import org.olat.course.assessment.UserEfficiencyStatement;
+import org.olat.course.assessment.UserEfficiencyStatementShort;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -40,14 +41,40 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public class EfficiencyStatementEntry extends UserPropertiesRow {
 	
 	private final RepositoryEntry course;
-	private final UserEfficiencyStatement efficencyStatement;
 	
-	public EfficiencyStatementEntry(Identity student, RepositoryEntry course, UserEfficiencyStatement efficencyStatement,
+	private final Long efficiencyStatementKey;
+	private final Float score;
+	private final Boolean passed;
+	private final Integer totalNodes;
+	private final Integer attemptedNodes;
+	private final Date lastModified;
+	private final Date lastUserModified;
+	private final Date lastCoachModified;
+	
+	public EfficiencyStatementEntry(Identity student, RepositoryEntry course, UserEfficiencyStatementShort efficiencyStatement,
 			List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(student, userPropertyHandlers, locale);
 		
 		this.course = course;
-		this.efficencyStatement = efficencyStatement;
+		if(efficiencyStatement == null) {
+			passed = null;
+			score = null;
+			totalNodes = null;
+			attemptedNodes = null;
+			lastModified = null;
+			lastUserModified = null;
+			lastCoachModified = null;
+			efficiencyStatementKey = null;
+		} else {
+			efficiencyStatementKey = efficiencyStatement.getKey();
+			passed = efficiencyStatement.getPassed();
+			score = efficiencyStatement.getScore();
+			totalNodes = efficiencyStatement.getTotalNodes();
+			attemptedNodes = efficiencyStatement.getAttemptedNodes();
+			lastModified = efficiencyStatement.getLastModified();
+			lastUserModified = efficiencyStatement.getLastUserModified();
+			lastCoachModified = efficiencyStatement.getLastCoachModified();
+		}
 	}
 
 	public String getCourseDisplayName() {
@@ -58,11 +85,35 @@ public class EfficiencyStatementEntry extends UserPropertiesRow {
 		return course;
 	}
 	
-	/**
-	 * Can return null
-	 * @return
-	 */
-	public UserEfficiencyStatement getUserEfficencyStatement() {
-		return efficencyStatement;
+	public Long getUserEfficiencyStatementKey() {
+		return efficiencyStatementKey;
+	}
+	
+	public Float getScore() {
+		return score;
+	}
+	
+	public Boolean getPassed() {
+		return passed;
+	}
+	
+	public Integer getTotalNodes() {
+		return totalNodes;
+	}
+	
+	public Integer getAttemptedNodes() {
+		return attemptedNodes;
+	}
+	
+	public Date getLastModified() {
+		return lastModified;
+	}
+	
+	public Date getLastUserModified() {
+		return lastUserModified;
+	}
+	
+	public Date getLastCoachModified() {
+		return lastCoachModified;
 	}
 }

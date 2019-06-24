@@ -25,39 +25,15 @@
 
 package org.olat.course.assessment;
 
-import java.util.Date;
-
 import org.olat.core.id.Identity;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public interface UserEfficiencyStatement {
-	
-	public Long getKey();
+public interface UserEfficiencyStatement extends UserEfficiencyStatementShort {
+
 
 	public Identity getIdentity();
 	
-	public Date  getLastModified();
-	
-	public Date getLastUserModified();
-	
-	public Date getLastCoachModified();
-	
-	public Date getCreationDate();
-	
-	public Long getCourseRepoKey();
-
-	public String getShortTitle();
-	
-	public Float getScore();
-	
-	public Boolean getPassed();
-	
-	public Integer getTotalNodes();
-
-	public Integer getAttemptedNodes();
-	
-	public Integer getPassedNodes();
 }

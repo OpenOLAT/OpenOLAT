@@ -30,6 +30,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
+import org.olat.course.assessment.model.UserEfficiencyStatementForCoaching;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.coach.CoachingService;
@@ -102,11 +103,11 @@ public class CoachingServiceImpl implements CoachingService {
 	public List<EfficiencyStatementEntry> getGroup(BusinessGroup group, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		List<Identity> students = businessGroupService.getMembers(group, GroupRoles.participant.name());
 		List<RepositoryEntry> courses = businessGroupService.findRepositoryEntries(Collections.singletonList(group), 0, -1);
-		List<UserEfficiencyStatement> statements = efficiencyStatementManager.getUserEfficiencyStatementLight(courses);
+		List<UserEfficiencyStatementForCoaching> statements = efficiencyStatementManager.getUserEfficiencyStatementForCoaching(group);
 		
-		Map<IdentityRepositoryEntryKey,UserEfficiencyStatement> identityToStatements = new HashMap<>();
-		for(UserEfficiencyStatement statement:statements) {
-			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(statement.getIdentity().getKey(), statement.getCourseRepoKey());
+		Map<IdentityRepositoryEntryKey,UserEfficiencyStatementForCoaching> identityToStatements = new HashMap<>();
+		for(UserEfficiencyStatementForCoaching statement:statements) {
+			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(statement.getIdentityKey(), statement.getCourseRepoKey());
 			identityToStatements.put(key, statement);
 		}
 		
@@ -114,7 +115,7 @@ public class CoachingServiceImpl implements CoachingService {
 		for(RepositoryEntry course:courses) {
 			for(Identity student:students) {
 				IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(student.getKey(), course.getKey());
-				UserEfficiencyStatement statement = identityToStatements.get(key);
+				UserEfficiencyStatementForCoaching statement = identityToStatements.get(key);
 				entries.add(new EfficiencyStatementEntry(student, course, statement, userPropertyHandlers, locale));
 			}
 		}
@@ -125,15 +126,15 @@ public class CoachingServiceImpl implements CoachingService {
 	public List<EfficiencyStatementEntry> getCourse(Identity coach, RepositoryEntry entry, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		List<Identity> students = coachingDao.getStudents(coach, entry);
 
-		List<UserEfficiencyStatement> statements = efficiencyStatementManager.getUserEfficiencyStatementLight(entry);
-		Map<Identity,UserEfficiencyStatement> identityToStatements = new HashMap<>();
-		for(UserEfficiencyStatement statement:statements) {
-			identityToStatements.put(statement.getIdentity(), statement);
+		List<UserEfficiencyStatementForCoaching> statements = efficiencyStatementManager.getUserEfficiencyStatementForCoaching(entry);
+		Map<Long,UserEfficiencyStatementForCoaching> identityToStatements = new HashMap<>();
+		for(UserEfficiencyStatementForCoaching statement:statements) {
+			identityToStatements.put(statement.getIdentityKey(), statement);
 		}
 		
 		List<EfficiencyStatementEntry> entries = new ArrayList<>(students.size());
 		for(Identity student:students) {
-			UserEfficiencyStatement statement = identityToStatements.get(student);
+			UserEfficiencyStatementForCoaching statement = identityToStatements.get(student.getKey());
 			entries.add(new EfficiencyStatementEntry(student, entry, statement, userPropertyHandlers, locale));
 		}
 		return entries;
