@@ -785,7 +785,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		if(courseNode.getParent() == null) {
 			currentIdentityCtrl = new AssessmentIdentityCourseController(ureq, bwControl, stackPanel,
-					courseEntry, coachCourseEnv, assessedIdentity);
+					courseEntry, coachCourseEnv, assessedIdentity, true);
 		} else {
 			currentIdentityCtrl = new AssessmentIdentityCourseNodeController(ureq, getWindowControl(), stackPanel,
 					courseEntry, courseNode, coachCourseEnv, assessedIdentity, true);

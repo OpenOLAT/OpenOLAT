@@ -98,7 +98,7 @@ public class MemberListWithOriginFilterController extends AbstractMemberListCont
 		
 		Identity assessedIdentity = securityManager.loadIdentityByKey(member.getIdentityKey());
 		identityAssessmentController = new AssessmentIdentityCourseController(ureq, getWindowControl(), toolbarPanel,
-				repoEntry, coachCourseEnv, assessedIdentity);
+				repoEntry, coachCourseEnv, assessedIdentity, true);
 		listenTo(identityAssessmentController);
 		
 		String displayName = userManager.getUserDisplayName(assessedIdentity);

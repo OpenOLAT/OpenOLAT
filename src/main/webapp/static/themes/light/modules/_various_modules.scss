@@ -274,26 +274,28 @@ Dummy is used for registered users which have no personal avatar image.
 - dummy_male is used for male users
 
 Anonymous is used for guest users and in anonymous chat / forum postings
+
+The "important!" avoids hiding the image by bootstrap.
 */
 .o_portrait_avatar,
 .o_portrait_dummy,
 .o_portrait_dummy_female_big,
 .o_portrait_dummy_male_big,
-.o_portrait_anonymous 			 {width: 100px; height: 100px;}
-.o_portrait_dummy				{background-image: url('#{$o-images-path}portrait/dummy.png');}
-.o_portrait_dummy_female_big	 {background-image: url('#{$o-images-path}portrait/dummy_female_big.png');}
-.o_portrait_dummy_male_big	{background-image: url('#{$o-images-path}portrait/dummy_male_big.png');}
-.o_portrait_anonymous 			 {background-image: url('#{$o-images-path}portrait/anonymous.png'); }
+.o_portrait_anonymous 			{width: 100px; height: 100px;}
+.o_portrait_dummy				{background-image: url('#{$o-images-path}portrait/dummy.png') !important;}
+.o_portrait_dummy_female_big	{background-image: url('#{$o-images-path}portrait/dummy_female_big.png') !important;}
+.o_portrait_dummy_male_big		{background-image: url('#{$o-images-path}portrait/dummy_male_big.png') !important;}
+.o_portrait_anonymous 			{background-image: url('#{$o-images-path}portrait/anonymous.png') !important; }
 
 .o_portrait_avatar_small,
 .o_portrait_dummy_small,
 .o_portrait_dummy_female_small,
 .o_portrait_dummy_male_small,
-.o_portrait_anonymous_small 	 {width: 30px; height: 30px;}
-.o_portrait_dummy_small		{background-image: url('#{$o-images-path}portrait/dummy_small.png');}
-.o_portrait_dummy_female_small{background-image: url('#{$o-images-path}portrait/dummy_female_small.png');}
-.o_portrait_dummy_male_small	 {background-image: url('#{$o-images-path}portrait/dummy_male_small.png');}
-.o_portrait_anonymous_small 	 {background-image: url('#{$o-images-path}portrait/anonymous_small.png'); } 
+.o_portrait_anonymous_small 	{width: 30px; height: 30px;}
+.o_portrait_dummy_small			{background-image: url('#{$o-images-path}portrait/dummy_small.png') !important;}
+.o_portrait_dummy_female_small	{background-image: url('#{$o-images-path}portrait/dummy_female_small.png') !important;}
+.o_portrait_dummy_male_small	{background-image: url('#{$o-images-path}portrait/dummy_male_small.png') !important;}
+.o_portrait_anonymous_small 	{background-image: url('#{$o-images-path}portrait/anonymous_small.png') !important; }
 
 /* Date component, used in info course element, blog etc */
 .o_datecomp {

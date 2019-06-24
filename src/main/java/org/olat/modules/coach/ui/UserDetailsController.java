@@ -268,7 +268,7 @@ public class UserDetailsController extends BasicController implements Activateab
 		if(assessmentCtrl == null) {
 			RepositoryEntry entry = statementEntry.getCourse();
 			UserCourseEnvironment coachCourseEnv = loadUserCourseEnvironment(ureq, entry);
-			assessmentCtrl = new AssessmentIdentityCourseController(ureq, getWindowControl(), stackPanel, entry, coachCourseEnv, assessedIdentity);
+			assessmentCtrl = new AssessmentIdentityCourseController(ureq, getWindowControl(), stackPanel, entry, coachCourseEnv, assessedIdentity, true);
 			listenTo(assessmentCtrl);
 		}
 		mainVC.put("segmentCmp", assessmentCtrl.getInitialComponent());

@@ -22,10 +22,13 @@ package org.olat.course.assessment.ui.tool;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.services.pdf.PdfModule;
+import org.olat.core.commons.services.pdf.PdfService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.stack.TooledController;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -33,12 +36,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.FileUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
@@ -60,12 +66,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentIdentityCourseController extends BasicController implements AssessedIdentityController {
-	
+public class AssessmentIdentityCourseController extends BasicController
+		implements AssessedIdentityController, TooledController {
 
 	private final TooledStackedPanel stackPanel;
 	private final VelocityContainer identityAssessmentVC;
 	private Link nextLink, previousLink, courseNodeSelectionLink;
+	private Link pdfLink;
 	
 	private IdentityCertificatesController certificateCtrl;
 	private AssessedIdentityLargeInfosController infosController;
@@ -81,9 +88,13 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 	
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private PdfModule pdfModule;
+	@Autowired
+	private PdfService pdfService;
 	
 	public AssessmentIdentityCourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity) {
+			RepositoryEntry courseEntry, UserCourseEnvironment coachCourseEnv, Identity assessedIdentity, boolean nodeSelectable) {
 		super(ureq, wControl);
 		
 		this.stackPanel = stackPanel;
@@ -110,7 +121,7 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 			listenTo(certificateCtrl);
 		}
 
-		treeOverviewCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessedUserCourseEnv, true, false, true);
+		treeOverviewCtrl = new IdentityAssessmentOverviewController(ureq, getWindowControl(), assessedUserCourseEnv, nodeSelectable, false, true);
 		listenTo(treeOverviewCtrl);
 		identityAssessmentVC.put("courseOverview", treeOverviewCtrl.getInitialComponent());
 
@@ -125,6 +136,15 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	@Override
+	public void initTools() {
+		if (pdfModule.isEnabled()) {
+			pdfLink = LinkFactory.createToolLink("output.pdf", translate("output.pdf"), this);
+			pdfLink.setIconLeftCSS("o_icon o_icon-fw o_icon_tool_pdf");
+			stackPanel.addTool(pdfLink, Align.right, false);
+		}
 	}
 
 	@Override
@@ -179,6 +199,8 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 			doNextNode(ureq);
 		} else if(courseNodeSelectionLink == source) {
 			doSelectCourseNode(ureq);
+		} else if (source == pdfLink) {
+			doExportPdf(ureq);
 		}
 	}
 	
@@ -299,4 +321,28 @@ public class AssessmentIdentityCourseController extends BasicController implemen
 		}
 		return false;
 	}
+	
+	private void doExportPdf(UserRequest ureq) {
+		ControllerCreator printControllerCreator = (lureq, lwControl) -> {
+			return new AssessmentIdentityCourseController(lureq, lwControl, stackPanel,
+			courseEntry, coachCourseEnv, assessedIdentity, false);
+		};
+		String title = getPdfTitle();
+		MediaResource resource = pdfService.convert(title, getIdentity(), printControllerCreator, getWindowControl());
+		ureq.getDispatchResult().setResultingMediaResource(resource);
+	}
+	
+	private String getPdfTitle() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(translate("output.pdf.prefix.user"));
+		sb.append("_");
+		sb.append(courseEntry.getDisplayname());
+		sb.append("_");
+		sb.append(assessedIdentity.getUser().getLastName());
+		sb.append("_");
+		sb.append(assessedIdentity.getUser().getFirstName());
+		sb.append("_");
+		return FileUtils.normalizeFilename(sb.toString());
+	}
+
 }
