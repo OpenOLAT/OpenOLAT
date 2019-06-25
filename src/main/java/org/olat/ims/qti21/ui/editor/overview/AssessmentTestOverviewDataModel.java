@@ -49,6 +49,7 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 			case type: return partRow.getType();
 			case identifier: return partRow.getIdentifier();
 			case feedback: return partRow.getFeedbacks();
+			case learningTime: return partRow.getLearningTime();
 			default: return "ERROR";
 		}
 	}
@@ -69,7 +70,8 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 		solution("table.header.solution"),
 		type("table.header.type"),
 		identifier("table.header.identifier"),
-		feedback("table.header.feedback");
+		feedback("table.header.feedback"),
+		learningTime("table.header.learning.time");
 		
 		private final String i18nKey;
 		
