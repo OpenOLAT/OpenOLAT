@@ -21,11 +21,16 @@ package org.olat.repository.ui.author;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
@@ -47,7 +52,12 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationNameComparator;
+import org.olat.core.id.OrganisationRef;
+import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
@@ -76,6 +86,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private MultipleSelectionElement types;
 	private SingleSelection closedEl;
 	private SingleSelection resourceUsageEl;
+	private MultipleSelectionElement organisationsEl;
 	private MultipleSelectionElement ownedResourcesOnlyEl;
 	private MultipleSelectionElement licenseEl;
 	private FormLink searchButton;
@@ -83,17 +94,22 @@ public class AuthorSearchController extends FormBasicController implements Exten
 	private String[] typeKeys;
 	private boolean cancelAllowed;
 	private boolean enabled = true;
+	private final Map<String,Organisation> organisationMap = new HashMap<>();
 	
 	@Autowired
 	private DB dbInstance;
-	@Autowired
-	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
 	private LicenseService licenseService;
 	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
+	@Autowired
 	private RepositoryEntryLicenseHandler licenseHandler;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	
 	public AuthorSearchController(UserRequest ureq, WindowControl wControl, boolean cancelAllowed) {
 		super(ureq, wControl, "search");
@@ -128,7 +144,11 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		
 		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", leftContainer);
 		description.setElementCssClass("o_sel_repo_search_description");
-
+		
+		if(organisationModule.isEnabled()) {
+			initFormOrganisations(leftContainer, ureq.getUserSession());
+		}
+		
 		// RIGHT part of form
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
 		rightContainer.setRootForm(mainForm);
@@ -185,6 +205,28 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		searchButton.setCustomEnabledLinkCSS("btn btn-primary");
 	}
 	
+	private void initFormOrganisations(FormItemContainer formLayout, UserSession usess) {
+		Roles roles = usess.getRoles();
+		List<Organisation> organisations = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.administrator, OrganisationRoles.principal, OrganisationRoles.learnresourcemanager, OrganisationRoles.author);
+		List<Organisation> organisationList = new ArrayList<>(organisations);
+		
+		Collections.sort(organisationList, new OrganisationNameComparator(getLocale()));
+		
+		List<String> keyList = new ArrayList<>();
+		List<String> valueList = new ArrayList<>();
+		for(Organisation organisation:organisationList) {
+			String key = organisation.getKey().toString();
+			keyList.add(key);
+			valueList.add(organisation.getDisplayName());
+			organisationMap.put(key, organisation);
+		}
+
+		organisationsEl = uifactory.addCheckboxesDropdown("organisations", "cif.organisations", formLayout,
+				keyList.toArray(new String[keyList.size()]), valueList.toArray(new String[valueList.size()]));
+		organisationsEl.setVisible(keyList.size() > 1);
+	}
+	
 	public void update(SearchEvent se) {
 		displayName.setValue(se.getDisplayname());
 		id.setValue(se.getId());
@@ -204,7 +246,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 			closedEl.select(statusKeys[0], true);
 		}
 		Set<String> selectedTypes = se.getTypes();
-		if(selectedTypes != null && selectedTypes.size() > 0) {
+		if(selectedTypes != null && !selectedTypes.isEmpty()) {
 			for(String typeKey: selectedTypes) {
 				types.select(typeKey, true);
 			}
@@ -289,6 +331,19 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		return status;
 	}
 	
+	public List<OrganisationRef> getEntryOrganisations() {
+		List<OrganisationRef> organisations = new ArrayList<>();
+		if(organisationsEl != null && organisationsEl.isVisible()) {
+			for(String selectedKey:organisationsEl.getSelectedKeys()) {
+				OrganisationRef org = organisationMap.get(selectedKey);
+				if(org != null) {
+					organisations.add(org);
+				}
+			}
+		}
+		return organisations;
+	}
+	
 	@Override
 	public void setEnabled(boolean enable) {
 		this.enabled = enable;
@@ -342,6 +397,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		e.setOwnedResourcesOnly(isOwnedResourcesOnly());
 		e.setResourceUsage(getResourceUsage());
 		e.setClosed(getClosed());
+		e.setEntryOrganisations(getEntryOrganisations());
 		if (licenseModule.isEnabled(licenseHandler)) {
 			Set<Long> licenceKeys = licenseEl.getSelectedKeys().stream().map(Long::valueOf).collect(Collectors.toSet());
 			e.setLicenseTypeKeys(licenceKeys);

@@ -22,9 +22,11 @@ package org.olat.repository.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -34,8 +36,8 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureModule;
@@ -204,6 +206,10 @@ public class RepositoryEntryAuthorQueries {
 			sb.append("  where license.resId=res.resId and license.resName=res.resName");
 			sb.append("    and license.licenseType.key in (:licenseTypeKeys))");
 		}
+		if (params.isEntryOrganisationsDefined()) {
+			sb.append(" and exists (select reToOrg.key from repoentrytoorganisation as reToOrg")
+			  .append("  where reToOrg.entry.key=v.key and reToOrg.organisation.key in (:organisationKeys))");
+		}
 		
 		String author = null;
 		if (StringHelper.containsNonWhitespace(params.getAuthor())) { // fuzzy author search
@@ -322,6 +328,11 @@ public class RepositoryEntryAuthorQueries {
 		}
 		if (params.isLicenseTypeDefined()) {
 			dbQuery.setParameter("licenseTypeKeys", params.getLicenseTypeKeys());
+		}
+		if(params.isEntryOrganisationsDefined()) {
+			List<Long> organisationKeys = params.getEntryOrganisation().stream()
+					.map(OrganisationRef::getKey).collect(Collectors.toList());
+			dbQuery.setParameter("organisationKeys", organisationKeys);
 		}
 		return dbQuery;
 	}
