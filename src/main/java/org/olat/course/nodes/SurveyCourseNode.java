@@ -239,8 +239,19 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		super.postCopy(envMapper, processType, course, sourceCrourse);
 		postImportCopy(course);
 	}
+	
+	@Override
+	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
+		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
+		postImportCopy(course, copyInstance.getIdent());
+		return copyInstance;
+	}
 
 	private void postImportCopy(ICourse course) {
+		postImportCopy(course, getIdent());
+	}
+	
+	private void postImportCopy(ICourse course, String nodeIdent) {
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());

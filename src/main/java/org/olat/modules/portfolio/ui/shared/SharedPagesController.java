@@ -148,7 +148,7 @@ public class SharedPagesController extends FormBasicController implements Activa
 				new SharedPageStatusCellRenderer(getTranslator())));
 		FlexiCellRenderer titleRenderer =  new BooleanCellRenderer(
 				new StaticFlexiCellRenderer("select", new PageTitleCellRenderer()), new PageTitleCellRenderer());
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "select",
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "select", null,
 				SharePageCols.pageName.ordinal(), "select", true, SharePageCols.pageName.sortKey(),
 				FlexiColumnModel.ALIGNMENT_LEFT, titleRenderer));
 		

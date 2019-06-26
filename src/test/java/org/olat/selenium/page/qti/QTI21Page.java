@@ -375,9 +375,7 @@ public class QTI21Page {
 	public QTI21Page moveToAssociateItems() {
 		By associateItemsBy = By.xpath("//div[@class='association'][3]");
 		OOGraphene.waitElement(associateItemsBy, browser);
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.scrollTo(associateItemsBy, browser);
-		}
+		OOGraphene.scrollTo(associateItemsBy, browser);
 		return this;
 	}
 	
