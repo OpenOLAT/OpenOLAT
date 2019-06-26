@@ -351,7 +351,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			reviewLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.review, entryStatus);
 			coachPublishLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.coachpublished, entryStatus);
 			publishLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.published, entryStatus);
-			closeLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.closed, entryStatus);
+			if(!RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.close)) {
+				closeLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.closed, entryStatus);
+			}
 		}
 	}
 	
