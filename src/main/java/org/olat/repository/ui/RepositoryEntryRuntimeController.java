@@ -505,6 +505,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			} else if("Settings".equalsIgnoreCase(type) || "EditDescription".equalsIgnoreCase(type)) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doSettings(ureq, subEntries);
+			} else if("Infos".equalsIgnoreCase(type)) {
+				doDetails(ureq);	
 			}
 		}
 
