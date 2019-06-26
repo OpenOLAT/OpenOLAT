@@ -326,7 +326,6 @@ public class PwChangeController extends BasicController {
 		wic.setCurStep(3);
 		pwf = new PwChangeForm(ureq, getWindowControl(), temporaryKey);
 		listenTo(pwf);
-		myContent.contextPut("pwdhelp", translate("pwdhelp"));
 		myContent.contextPut("text", translate("step3.pw.text"));
 		passwordPanel.setContent(pwf.getInitialComponent());
 	}
@@ -335,7 +334,6 @@ public class PwChangeController extends BasicController {
 		wic.setCurStep(3);
 		pwf = new PwChangeForm(ureq, getWindowControl(), identityToChange, tempKey);
 		listenTo(pwf);
-		myContent.contextPut("pwdhelp", translate("pwdhelp"));
 		myContent.contextPut("text", translate("step3.pw.text"));
 		passwordPanel.setContent(pwf.getInitialComponent());
 	}
@@ -348,7 +346,6 @@ public class PwChangeController extends BasicController {
 	private void showChangePasswordEnd() {
 		// validation was ok
 		wic.setCurStep(4);
-		myContent.contextPut("pwdhelp", "");
 		myContent.contextPut("text", translate("step4.pw.text"));
 		pwchangeHomelink = LinkFactory.createLink("pwchange.homelink", myContent, this);
 		pwchangeHomelink.setCustomEnabledLinkCSS("btn btn-primary");

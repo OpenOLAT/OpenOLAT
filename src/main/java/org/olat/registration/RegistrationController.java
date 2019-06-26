@@ -303,8 +303,6 @@ public class RegistrationController extends BasicController implements Activatea
 	private void displayDisclaimer(UserRequest ureq) {
 		if(registrationModule.isDisclaimerEnabled()) {
 			wizInfoController.setCurStep(2);
-			myContent.contextPut("pwdhelp", "");
-			myContent.contextPut("loginhelp", "");
 			myContent.contextPut("text", translate("step4.reg.text"));
 			
 			removeAsListenerAndDispose(disclaimerController);
@@ -406,8 +404,6 @@ public class RegistrationController extends BasicController implements Activatea
 	
 	private void displayRegistrationForm(UserRequest ureq) {
 		wizInfoController.setCurStep(4);
-		myContent.contextPut("pwdhelp", translate("pwdhelp"));
-		myContent.contextPut("loginhelp", translate("loginhelp"));
 		myContent.contextPut("text", translate("step3.reg.text"));
 		myContent.contextPut("email", tempKey.getEmailAddress());
 
@@ -448,8 +444,6 @@ public class RegistrationController extends BasicController implements Activatea
 	
 	private void displayRegistrationAdditionalForm(UserRequest ureq) {
 		wizInfoController.setCurStep(5);
-		myContent.contextPut("pwdhelp", "");
-		myContent.contextPut("loginhelp", "");
 		myContent.contextPut("text", translate("step.add.reg.text"));
 		myContent.contextPut("email", tempKey.getEmailAddress());
 
@@ -476,8 +470,6 @@ public class RegistrationController extends BasicController implements Activatea
 		wizInfoController.setCurStep(numOfSteps);
 		
 		// hide the text we don't need anymore 
-		myContent.contextPut("pwdhelp", "");
-		myContent.contextPut("loginhelp", "");
 		myContent.contextPut("text", "");
 		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER, false);

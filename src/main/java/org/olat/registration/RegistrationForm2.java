@@ -180,9 +180,11 @@ public class RegistrationForm2 extends FormBasicController {
 		lang.select(languageKey, true);
 		
 		uifactory.addSpacerElement("loginstuff", formLayout, true);
+
 		if(usernameReadonly) {
 			usernameStatic = uifactory.addStaticTextElement("username", "user.login", proposedUsername, formLayout);
 		} else {
+			uifactory.addStaticTextElement("form.username.rules", null, translate("form.username.rules"), formLayout);
 			usernameEl = uifactory.addTextElement("username",  "user.login", 128, "", formLayout);
 			usernameEl.setMandatory(true);
 		}
