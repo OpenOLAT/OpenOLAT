@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -30,5 +31,12 @@ public interface FlexiColumnDef {
 	public int ordinal();
 	
 	public String i18nHeaderKey();
+
+	/**
+	 * @return Replace the i18n header
+	 */
+	public default String iconHeader() {
+		return null;
+	}
 
 }

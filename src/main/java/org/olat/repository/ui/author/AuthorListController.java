@@ -344,7 +344,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				true, OrderBy.lectureEnabled.name(), FlexiColumnModel.ALIGNMENT_LEFT, new LectureInfosRenderer(getTranslator())));
 		
 		if (licenseModule.isEnabled(licenseHandler)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), null, Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
 		}
 		

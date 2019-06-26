@@ -135,7 +135,23 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 	
 	private String getHeader(FlexiColumnModel fcm, Translator translator) {
 		String header;
-		if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
+		if(StringHelper.containsNonWhitespace(fcm.getIconHeader())) {
+			StringBuilder sb = new StringBuilder(64);
+			sb.append("<i class=\"").append(fcm.getIconHeader()).append("\"");
+			
+			String title = null;
+			if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
+				title = fcm.getHeaderLabel();
+			} else {
+				title = translator.translate(fcm.getHeaderKey());
+			}
+			if(StringHelper.containsNonWhitespace(title)) {
+				sb.append(" title=\"").append(title).append("\"");
+			}
+			
+			sb.append("> </i>");
+			header = sb.toString();
+		} else if(StringHelper.containsNonWhitespace(fcm.getHeaderLabel())) {
 			header = fcm.getHeaderLabel();
 		} else {
 			header = translator.translate(fcm.getHeaderKey());

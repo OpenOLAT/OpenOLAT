@@ -398,7 +398,9 @@ public class IdentityListCourseNodeController extends FormBasicController
 	
 	protected void initCalloutColumns(FlexiTableColumnModel columnsModel) {
 		if(courseNode instanceof AssessableCourseNode) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.tools));
+			DefaultFlexiColumnModel toolsCol = new DefaultFlexiColumnModel(IdentityCourseElementCols.tools);
+			toolsCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(toolsCol);
 		}
 	}
 	

@@ -162,11 +162,11 @@ public class SharedBindersController extends FormBasicController implements Acti
 				new AssessmentEntryCellRenderer(getTranslator())));
 		StaticFlexiCellRenderer selectRenderer = new StaticFlexiCellRenderer(translate("select"), "select");
 		selectRenderer.setIconRightCSS("o_icon-sw o_icon_start");
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "select", -1, "select", false, null,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, true, "select", null, -1, "select", false, null,
 				FlexiColumnModel.ALIGNMENT_LEFT, selectRenderer));
 		StaticFlexiCellRenderer leaveRenderer = new StaticFlexiCellRenderer(translate("leave"), "leave");
 		leaveRenderer.setIconRightCSS("o_icon-sw o_icon_delete");
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, "leave", -2, "leave", false, null,
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, "leave", null, -2, "leave", false, null,
 				FlexiColumnModel.ALIGNMENT_LEFT, leaveRenderer));
 		
 		model = new SharedBindersDataModel(columnsModel, getLocale());

@@ -179,7 +179,7 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	public enum IdentityCourseElementCols implements FlexiSortableColumnDef {
 		username("table.header.name"),
 		attempts("table.header.attempts"),
-		userVisibility("table.header.userVisibility"),
+		userVisibility("table.header.userVisibility", "o_icon o_icon-fw o_icon_results_hidden"),
 		score("table.header.score"),
 		min("table.header.min"),
 		max("table.header.max"),
@@ -199,14 +199,25 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		cut("table.header.cut");
 		
 		private final String i18nKey;
-		
+		private final String icon;
+
 		private IdentityCourseElementCols(String i18nKey) {
+			this(i18nKey, null);
+		}
+		
+		private IdentityCourseElementCols(String i18nKey, String icon) {
 			this.i18nKey = i18nKey;
+			this.icon = icon;
 		}
 		
 		@Override
 		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public String iconHeader() {
+			return icon;
 		}
 
 		@Override
