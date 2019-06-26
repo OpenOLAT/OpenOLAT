@@ -326,7 +326,7 @@ public class EvaluationFormExcelExport {
 			if (response != null) {
 				BigDecimal value = response.getNumericalResponse();
 				if (value != null) {
-					double scaledValue = rubric.getScaleType().getStepValue(rubric.getSteps(), value.intValue(), rubric.getWeight());
+					double scaledValue = rubric.getScaleType().getStepValue(rubric.getSteps(), value.intValue());
 					row.addCell(col, scaledValue, null);
 				}
 			}

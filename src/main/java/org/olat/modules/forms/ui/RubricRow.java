@@ -19,11 +19,10 @@
  */
 package org.olat.modules.forms.ui;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.SliderStatistic;
+import org.olat.modules.forms.StepCounts;
+import org.olat.modules.forms.model.StepCountsImpl;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
@@ -39,13 +38,17 @@ public class RubricRow {
 	private final Rubric rubric;
 	private final String startLabel;
 	private final String endLabel;
+	private final boolean hasWeight;
+	private final Integer weight;
 	private final SliderStatistic sliderStatistic;
 
-	public RubricRow(Rubric rubric, Slider slider, SliderStatistic sliderStatistic) {
+	public RubricRow(Rubric rubric, Slider slider, SliderStatistic sliderStatistic, boolean hasWeight) {
 		super();
 		this.rubric = rubric;
 		this.startLabel = slider != null? slider.getStartLabel(): null;
 		this.endLabel = slider != null? slider.getEndLabel(): null;
+		this.hasWeight = hasWeight;
+		this.weight = slider != null? slider.getWeight(): null;
 		this.sliderStatistic = sliderStatistic;
 	}
 
@@ -78,6 +81,14 @@ public class RubricRow {
 	public Long getNumberOfResponses() {
 		return sliderStatistic.getNumberOfResponses();
 	}
+	
+	public boolean hasWeight() {
+		return this.hasWeight;
+	}
+	
+	public Integer getWeight() {
+		return this.weight;
+	}
 
 	public Double getMedian() {
 		return sliderStatistic.getMedian();
@@ -95,9 +106,9 @@ public class RubricRow {
 		return sliderStatistic.getStdDev();
 	}
 
-	public List<Long> getStepCounts() {
+	public StepCounts getStepCounts() {
 		if (rubric.getSliderType().equals(SliderType.continuous)) {
-			return Collections.emptyList();
+			return new StepCountsImpl(0);
 		}
 		return sliderStatistic.getStepCounts();
 	}

@@ -24,6 +24,7 @@ import org.olat.modules.ceditor.model.ImageSettings;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -36,6 +37,13 @@ public class FormXStream {
 	private static final XStream xstream = XStreamHelper.createXStreamInstance();
 
 	static {
+		XStream.setupDefaultSecurity(xstream);
+		Class<?>[] types = new Class[] { Choice.class,
+				Choices.class, Container.class, Disclaimer.class, FileStoredData.class, FileUpload.class, Form.class,
+				HTMLParagraph.class, HTMLRaw.class, Image.class, ImageSettings.class, InformationType.class,
+				MultipleChoice.class, Rubric.class, ScaleType.class, SessionInformations.class, SingleChoice.class,
+				Slider.class, Spacer.class, StepLabel.class, Table.class, TextInput.class, Title.class };
+		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.alias("form", Form.class);
 		xstream.alias("spacer", Spacer.class);
 		xstream.alias("title", Title.class);
@@ -53,6 +61,7 @@ public class FormXStream {
 		xstream.alias("image", Image.class);
 		xstream.alias("imageSettgins", ImageSettings.class);
 		xstream.alias("fileStoredData", FileStoredData.class);
+		xstream.ignoreUnknownElements();
 	}
 	
 	public static XStream getXStream() {

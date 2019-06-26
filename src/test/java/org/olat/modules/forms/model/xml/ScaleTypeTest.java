@@ -98,17 +98,5 @@ public class ScaleTypeTest {
 		softly.assertThat(ScaleType.zeroBallanced.getStepValue(7, 7)).isEqualTo(3);
 		softly.assertAll();
 	}
-	
-	@Test
-	public void shouldGetWeightedValue() {
-		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(ScaleType.oneToMax.getStepValue(6, 2, null)).isEqualTo(2);
-		softly.assertThat(ScaleType.oneToMax.getStepValue(6, 2, 2)).isEqualTo(4);
-		softly.assertThat(ScaleType.maxToOne.getStepValue(6, 3, 3)).isEqualTo(12);
-		softly.assertThat(ScaleType.zeroToMax.getStepValue(6, 2, 2)).isEqualTo(2);
-		softly.assertThat(ScaleType.maxToZero.getStepValue(6, 2, 1)).isEqualTo(4);
-		softly.assertThat(ScaleType.zeroBallanced.getStepValue(6, 3, 3)).isEqualTo(-1.5);
-		softly.assertAll();
-	}
 
 }

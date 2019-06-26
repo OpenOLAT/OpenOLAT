@@ -31,6 +31,7 @@ public class Slider {
 	
 	private String startLabel;
 	private String endLabel;
+	private Integer weight;
 	
 	public String getId() {
 		return id;
@@ -54,6 +55,17 @@ public class Slider {
 	
 	public void setEndLabel(String endLabel) {
 		this.endLabel = endLabel;
+	}
+
+	public Integer getWeight() {
+		if (weight == null) {
+			weight = 1;
+		}
+		return weight;
+	}
+
+	public void setWeight(Integer weight) {
+		this.weight = weight;
 	}
 
 	@Override

@@ -17,20 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms;
+package org.olat.modules.forms.model;
 
-import org.olat.modules.forms.model.xml.Rubric;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.olat.modules.forms.SlidersStatistic;
+import org.olat.modules.forms.SliderStatistic;
+import org.olat.modules.forms.model.xml.Slider;
 
 /**
  * 
- * Initial date: 29.08.2018<br>
+ * Initial date: 25 Jun 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface RubricStatistic extends SlidersStatistic {
-	
-	public Rubric getRubric();
+public class SlidersStatisticImpl implements SlidersStatistic {
 
-	public SliderStatistic getTotalStatistic();
+	private final Map<Slider, SliderStatistic> sliderToStatistic = new HashMap<>();
+	
+	public void put(Slider slider, SliderStatistic sliderStatistic) {
+		sliderToStatistic.put(slider, sliderStatistic);
+	}
+
+	@Override
+	public SliderStatistic getSliderStatistic(Slider slider) {
+		return sliderToStatistic.get(slider);
+	}
 
 }

@@ -59,7 +59,7 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 	}
 
 	public Object getValueAt(RubricRow rubricRow, int col) {
-		int offset = rubricRow.getStepCounts().size();
+		int offset = rubricRow.getStepCounts().getNumberOfSteps();
 		if (col == 0) {
 			return rubricRow.getStartLabel();
 		}
@@ -78,6 +78,12 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 		if (col - offset == 1) {
 			return rubricRow.getNumberOfResponses();
 		}
+		if (rubricRow.hasWeight()) {
+			if (col - offset == 2) {
+				return rubricRow.getWeight();
+			}
+			offset++;
+		}
 		if (col - offset == 2) {
 			return EvaluationFormFormatter.formatDouble(rubricRow.getMedian());
 		}
@@ -90,7 +96,7 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 		if (col - offset == 5) {
 			return rubricRow.getAvg();
 		}
-		return rubricRow.getStepCounts().get(col - 1);
+		return rubricRow.getStepCounts().getCount(col - 1);
 	}
 
 	@Override
@@ -108,6 +114,7 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 		endLabel("rubric.report.end.lable.title"),
 		numberOfNoResponses("rubric.report.number.no.responses.abrev"),
 		numberOfResponses("rubric.report.number.responses.abrev"),
+		weight("rubric.report.weight.abrev"),
 		median("rubric.report.median.abrev"),
 		variance("rubric.report.variance.abrev"),
 		stdDev("rubric.report.sdtdev.abrev"),

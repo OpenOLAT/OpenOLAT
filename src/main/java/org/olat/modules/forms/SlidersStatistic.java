@@ -19,18 +19,16 @@
  */
 package org.olat.modules.forms;
 
-import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Slider;
 
 /**
  * 
- * Initial date: 29.08.2018<br>
+ * Initial date: 25 Jun 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface RubricStatistic extends SlidersStatistic {
-	
-	public Rubric getRubric();
+public interface SlidersStatistic {
 
-	public SliderStatistic getTotalStatistic();
+	public SliderStatistic getSliderStatistic(Slider slider);
 
 }

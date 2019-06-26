@@ -62,23 +62,7 @@ public enum ScaleType {
 		}
 	};
 	
-	/**
-	 * Get the value of a step to use for calculations.
-	 *
-	 * @param numberOfSteps the total number of steps
-	 * @param step the index of the step (index starts with 1)
-	 * @param weight (optionl)
-	 * @return 
-	 */
-	public double getStepValue(int numberOfSteps, double step, Integer weight) {
-		double stepValue = getStepValue(numberOfSteps, step);
-		return weight != null
-				? stepValue * weight.intValue()
-				: stepValue;
-		
-	};
-	
-	abstract double getStepValue(int numberOfSteps, double step);
+	public abstract double getStepValue(int numberOfSteps, double step);
 
 	public String getKey() {
 		return name();

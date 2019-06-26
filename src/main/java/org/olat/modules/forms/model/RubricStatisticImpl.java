@@ -17,20 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms;
+package org.olat.modules.forms.model;
 
+import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.SliderStatistic;
+import org.olat.modules.forms.SlidersStatistic;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Slider;
 
 /**
  * 
- * Initial date: 29.08.2018<br>
+ * Initial date: 25 Jun 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface RubricStatistic extends SlidersStatistic {
+public class RubricStatisticImpl implements RubricStatistic {
 	
-	public Rubric getRubric();
+	private final Rubric rubric;
+	private final SlidersStatistic slidersStatistic;
+	private final SliderStatistic totalStatistic;
 
-	public SliderStatistic getTotalStatistic();
+	public RubricStatisticImpl(Rubric rubric, SlidersStatistic slidersStatistic, SliderStatistic totalStatistic) {
+		this.rubric = rubric;
+		this.slidersStatistic = slidersStatistic;
+		this.totalStatistic = totalStatistic;
+	}
+
+	@Override
+	public Rubric getRubric() {
+		return rubric;
+	}
+
+	@Override
+	public SliderStatistic getSliderStatistic(Slider slider) {
+		return slidersStatistic.getSliderStatistic(slider);
+	}
+
+	@Override
+	public SliderStatistic getTotalStatistic() {
+		return totalStatistic;
+	}
 
 }

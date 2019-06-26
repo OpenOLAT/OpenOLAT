@@ -103,7 +103,7 @@ public class StatisticsCalculator {
 		log.debug("Raw grouped statistic: " + rawStatistic.toString());
 		Double rawAvg = rawStatistic.getRawAvg();
 		boolean rawAvgMaxGood = !rubric.isStartGoodRating();
-		Double scaledAvg = rubric.getScaleType().getStepValue(rubric.getSteps(), rawAvg, rubric.getWeight());
+		Double scaledAvg = rubric.getScaleType().getStepValue(rubric.getSteps(), rawAvg);
 		RubricRating rating = evaluationFormManager.getRubricRating(rubric, scaledAvg);
 		int steps = rubric.getSteps();
 		GroupedStatistic statistic = new GroupedStatisticImpl(rawStatistic.getIdentifier(), rawStatistic.getMultiKey(),

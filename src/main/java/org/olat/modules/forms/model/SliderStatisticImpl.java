@@ -17,12 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.model.jpa;
-
-import java.util.List;
+package org.olat.modules.forms.model;
 
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.SliderStatistic;
+import org.olat.modules.forms.StepCounts;
 
 /**
  * 
@@ -39,11 +38,11 @@ public class SliderStatisticImpl implements SliderStatistic {
 	private final Double avg;
 	private final Double variance;
 	private final Double stdDev;
-	private final List<Long> stepCounts;
+	private final StepCounts stepCounts;
 	private final RubricRating rating;
 	
 	public SliderStatisticImpl(Long numberOfNoResponses, Long numberOfResponses, Double sum, Double median, Double avg,
-			Double variance, Double stdDev, List<Long> stepCounts, RubricRating rating) {
+			Double variance, Double stdDev, StepCounts stepCounts, RubricRating rating) {
 		super();
 		this.numberOfNoResponses = numberOfNoResponses;
 		this.numberOfResponses = numberOfResponses;
@@ -92,7 +91,7 @@ public class SliderStatisticImpl implements SliderStatistic {
 	}
 
 	@Override
-	public List<Long> getStepCounts() {
+	public StepCounts getStepCounts() {
 		return stepCounts;
 	}
 

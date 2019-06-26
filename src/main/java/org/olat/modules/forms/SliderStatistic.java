@@ -19,8 +19,6 @@
  */
 package org.olat.modules.forms;
 
-import java.util.List;
-
 /**
  * 
  * Initial date: 29.08.2018<br>
@@ -43,7 +41,7 @@ public interface SliderStatistic {
 
 	public Double getStdDev();
 
-	public List<Long> getStepCounts();
+	public StepCounts getStepCounts();
 	
 	public RubricRating getRating();
 	

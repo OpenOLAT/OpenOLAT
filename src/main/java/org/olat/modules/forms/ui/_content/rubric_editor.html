@@ -64,12 +64,18 @@
 		<div class="$colSliderStart">$r.render($slider.startLabelEl)</div>
 		<div class="$colSliderPreview $slider.sliderCss o_slider_top">$r.render($slider.sliderEl)</div>
 		<div class="$colSliderEnd">$r.render($slider.endLabelEl)</div>
-		<div class="$colSliderButtons o_slider_top">
+		<div class="$colSliderButtons o_slider_buttons">
 			<div class="pull-right">
-				$r.render($slider.upDown)
-				#if($r.isNotNull($slider.deleteButton) && $r.visible($slider.deleteButton))
-					$r.render($slider.deleteButton)
-				#end
+				<div class="help-block o_evaluation_example o_weight_example">
+					$r.render("${slider.weightEl.getComponent().getComponentName()}_EXAMPLE")
+					$r.render($slider.weightEl)
+					<div>
+						$r.render($slider.upDown)
+						#if($r.isNotNull($slider.deleteButton) && $r.visible($slider.deleteButton))
+							$r.render($slider.deleteButton)
+						#end
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>

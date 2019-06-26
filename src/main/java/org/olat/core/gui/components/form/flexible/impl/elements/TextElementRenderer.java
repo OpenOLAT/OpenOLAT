@@ -56,9 +56,9 @@ class TextElementRenderer extends DefaultComponentRenderer {
 		}
 		StringBuilder htmlVal = new StringBuilder();
 		htmlVal.append(StringHelper.escapeHtml(value));
+		String elementCSS = te.getElementCssClass();
 		if (source.isEnabled()) {
 			//read write view			
-			String elementCSS = te.getElementCssClass();
 			sb.append("<input type=\"").append(te.getHtmlInputType()).append("\" id=\"").append(id)
 			  .append("\" name=\"").append(id)
 			  .append("\" class='form-control ").append(elementCSS, elementCSS != null)
@@ -95,8 +95,8 @@ class TextElementRenderer extends DefaultComponentRenderer {
 			// use the longer from display size or real value length
 			int size = (te.displaySize > value.length() ? te.displaySize : value.length());
 			sb.append("<input id=\"").append(id).append("\" type=\"").append(te.getHtmlInputType())
-			  .append("\" disabled=\"disabled\" class=\"form-control o_disabled\" size=\"")
-			  .append(size)
+			  .append("\" disabled=\"disabled\" class='form-control o_disabled ").append(elementCSS, elementCSS != null)
+			  .append("' size=\"").append(size)
 			  .append("\" value=\"").append(htmlVal).append("\" />")
 			  .append("</span>");
 		}

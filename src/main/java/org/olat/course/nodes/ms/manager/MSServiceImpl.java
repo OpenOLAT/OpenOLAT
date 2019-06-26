@@ -42,6 +42,11 @@ import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.SliderStatistic;
+import org.olat.modules.forms.SlidersStatistic;
+import org.olat.modules.forms.StepCounts;
+import org.olat.modules.forms.model.SliderStatisticImpl;
+import org.olat.modules.forms.model.SlidersStatisticImpl;
+import org.olat.modules.forms.model.StepCountsImpl;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -175,62 +180,78 @@ public class MSServiceImpl implements MSService {
 
 	@Override
 	public MinMax calculateMinMaxSum(RepositoryEntry formEntry, float scalingFactor) {
+		Form form = evaluationFormManager.loadForm(formEntry);
+		MinMax minMax = calculateMinMaxSum(form);
+		return MinMax.of(scalingFactor * minMax.getMin(), scalingFactor * minMax.getMax());
+	}
+	
+	MinMax calculateMinMaxSum(Form form) {
 		float sumMin = 0.0f;
 		float sumMax = 0.0f;
-		Form form = evaluationFormManager.loadForm(formEntry);
 		for (AbstractElement element : form.getElements()) {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric) element;
-				MinMax minMaxStep = calculateMinMaxStep(rubric);
-				int numberOfSliders = rubric.getSliders().size();
-				sumMin += numberOfSliders * minMaxStep.getMin();
-				sumMax += numberOfSliders * minMaxStep.getMax();
+				float rubricSumMin = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, true))
+						.getTotalStatistic()
+						.getSum().floatValue();
+				// If no responses the min is 0
+				rubricSumMin = rubricSumMin > 0? 0: rubricSumMin;
+				sumMin += rubricSumMin;
+				float rubricSumMax = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, false))
+						.getTotalStatistic()
+						.getSum().floatValue();
+				sumMax += rubricSumMax;
 			}
 		}
-		sumMin = scalingFactor * sumMin;
-		sumMax = scalingFactor * sumMax;
 		return MinMax.of(sumMin, sumMax);
 	}
 
 	@Override
 	public MinMax calculateMinMaxAvg(RepositoryEntry formEntry, float scalingFactor) {
+		Form form = evaluationFormManager.loadForm(formEntry);
+		MinMax minMax = calculateMinMaxAvg(form);
+		return MinMax.of(scalingFactor * minMax.getMin(), scalingFactor * minMax.getMax());
+	}
+	
+	MinMax calculateMinMaxAvg(Form form) {
 		float sumMin = 0.0f;
 		float sumMax = 0.0f;
 		int numberAvgs = 0;
-		Form form = evaluationFormManager.loadForm(formEntry);
 		for (AbstractElement element : form.getElements()) {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric) element;
-				MinMax minMaxStep = calculateMinMaxStep(rubric);
+				float rubricAvgMin = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, true))
+						.getTotalStatistic()
+						.getAvg().floatValue();
+				// If no responses the min is 0
+				rubricAvgMin = rubricAvgMin > 0? 0: rubricAvgMin;
+				float rubricAvgMax = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, false))
+						.getTotalStatistic()
+						.getAvg().floatValue();
 				int numberOfSliders = rubric.getSliders().size();
-				sumMin += numberOfSliders * minMaxStep.getMin();
-				sumMax += numberOfSliders * minMaxStep.getMax();
+				sumMin += numberOfSliders * rubricAvgMin;
+				sumMax += numberOfSliders * rubricAvgMax;
 				numberAvgs += numberOfSliders;
 			}
 		}
 		if (numberAvgs > 0) {
 			float avgMin = sumMin / numberAvgs;
-			avgMin = scalingFactor * avgMin;
 			float avgMax = sumMax / numberAvgs;
-			avgMax = scalingFactor * avgMax;
 			return MinMax.of(avgMin, avgMax);
 		}
 		return MinMax.of(0.0f, 0.0f);
 	}
 	
-	private MinMax calculateMinMaxStep(Rubric rubric) {
-		int steps = rubric.getSteps();
-		Integer weight =  rubric.getWeight();
-		double min;
-		double max;
-		if (rubric.isStartGoodRating()) {
-			min = rubric.getScaleType().getStepValue(steps, steps, weight);
-			max = rubric.getScaleType().getStepValue(steps, 1, weight);
-		} else {
-			min = rubric.getScaleType().getStepValue(steps, 1, weight);
-			max = rubric.getScaleType().getStepValue(steps, steps, weight);
+	private SlidersStatistic getSlidersStatistic(Rubric rubric, boolean min) {
+		SlidersStatisticImpl slidersStatisticImpl = new SlidersStatisticImpl();
+		int step = min? 1: rubric.getSteps();
+		for (Slider slider : rubric.getSliders()) {
+			StepCounts stepCounts = new StepCountsImpl(rubric.getSteps());
+			stepCounts.setCount(step, Long.valueOf(1));
+			SliderStatistic sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, null, stepCounts, null);
+			slidersStatisticImpl.put(slider, sliderStatistic);
 		}
-		return MinMax.of(Float.valueOf((float)min), Float.valueOf((float)max));
+		return slidersStatisticImpl;
 	}
 
 	@Override

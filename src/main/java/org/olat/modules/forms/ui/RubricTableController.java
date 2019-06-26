@@ -87,7 +87,7 @@ public class RubricTableController extends FormBasicController {
 		if (!rubric.getSliderType().equals(SliderType.continuous)) {
 			ScaleType scaleType = rubric.getScaleType();
 			for (int step = 1; step <= rubric.getSteps(); step++) {
-				double stepValue = scaleType.getStepValue(rubric.getSteps(), step, rubric.getWeight());
+				double stepValue = scaleType.getStepValue(rubric.getSteps(), step);
 				String header = EvaluationFormFormatter.formatZeroOrOneDecimals(stepValue);
 				String label = rubric.getStepLabels() != null && ! rubric.getStepLabels().isEmpty()
 						? rubric.getStepLabels().get(step -1).getLabel()
@@ -121,6 +121,14 @@ public class RubricTableController extends FormBasicController {
 		responsesColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
 		columnsModel.addFlexiColumnModel(responsesColumn);
 		legendSigns.add(new LegendEntry(translate("rubric.report.number.responses.abrev"), translate("rubric.report.number.responses.title")));
+		
+		if (hasWeight()) {
+			DefaultFlexiColumnModel medianColumn = new DefaultFlexiColumnModel(RubricReportCols.weight.i18nHeaderKey(), columnIndex++, false, null);
+			medianColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+			medianColumn.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+			columnsModel.addFlexiColumnModel(medianColumn);
+			legendSigns.add(new LegendEntry(translate("rubric.report.weight.abrev"), translate("rubric.report.weight.title")));
+		}
 		
 		DefaultFlexiColumnModel medianColumn = new DefaultFlexiColumnModel(RubricReportCols.median.i18nHeaderKey(), columnIndex++, false, null);
 		medianColumn.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
@@ -175,12 +183,13 @@ public class RubricTableController extends FormBasicController {
 	private void loadModel() {
 		RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, filter);
 		List<RubricRow> rows = new ArrayList<>();
+		boolean hasWeight = hasWeight();
 		for (Slider slider: rubric.getSliders()) {
 			SliderStatistic sliderStatistic = rubricStatistic.getSliderStatistic(slider);
-			RubricRow rubricRow = new RubricRow(rubric, slider, sliderStatistic);
+			RubricRow rubricRow = new RubricRow(rubric, slider, sliderStatistic, hasWeight);
 			rows.add(rubricRow);
 		}
-		RubricRow totalRow = new RubricRow(rubric, null, rubricStatistic.getTotalStatistic());
+		RubricRow totalRow = new RubricRow(rubric, null, rubricStatistic.getTotalStatistic(), hasWeight);
 		dataModel.setObjects(rows, totalRow);
 		tableEl.reset();	
 	}
@@ -189,6 +198,15 @@ public class RubricTableController extends FormBasicController {
 		for (Slider slider: rubric.getSliders()) {
 			String endLabel = slider.getEndLabel();
 			if (StringHelper.containsNonWhitespace(endLabel)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean hasWeight() {
+		for (Slider slider: rubric.getSliders()) {
+			if (slider.getWeight().intValue() != 1) {
 				return true;
 			}
 		}

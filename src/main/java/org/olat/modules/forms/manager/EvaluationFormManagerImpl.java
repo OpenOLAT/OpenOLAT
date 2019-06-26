@@ -56,9 +56,9 @@ import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionStatusInformation;
+import org.olat.modules.forms.SlidersStatistic;
 import org.olat.modules.forms.handler.FormDataElementStorage;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
-import org.olat.modules.forms.model.jpa.RubricStatisticImpl;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -88,6 +88,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	private EvaluationFormStorage evaluationFormStorage;
 	@Autowired
 	private SessionStatusPublisher sessionStatusPublisher;
+	@Autowired
+	private RubricStatisticCalculator rubricStatisticCalculator;
 
 	@Override
 	public Form loadForm(RepositoryEntry formEntry) {
@@ -480,12 +482,18 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 
 	@Override
 	public RubricStatistic getRubricStatistic(Rubric rubric, SessionFilter filter) {
-		return new RubricStatisticImpl(rubric, filter);
+		SlidersStatistic slidersStatistic = rubricStatisticCalculator.calculateSlidersStatistic(rubric, filter);
+		return getRubricStatistic(rubric, slidersStatistic);
 	}
+
+	@Override
+	public RubricStatistic getRubricStatistic(Rubric rubric, SlidersStatistic slidersStatistic) {
+		return rubricStatisticCalculator.calculateRubricStatistics(rubric, slidersStatistic);
+	}
+	
 
 	@Override
 	public RubricRating getRubricRating(Rubric rubric, Double value) {
 		return RubricRatingEvaluator.rate(rubric, value);
 	}
-	
 }

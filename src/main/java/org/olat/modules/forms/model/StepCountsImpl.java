@@ -17,20 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms;
+package org.olat.modules.forms.model;
 
-import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.StepCounts;
 
 /**
  * 
- * Initial date: 29.08.2018<br>
+ * Initial date: 25 Jun 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface RubricStatistic extends SlidersStatistic {
+public class StepCountsImpl implements StepCounts {
 	
-	public Rubric getRubric();
+	private final Long[] counts;
+	
+	public StepCountsImpl(int numberOfSteps) {
+		this.counts = new Long[numberOfSteps + 1];
+	}
 
-	public SliderStatistic getTotalStatistic();
+	@Override
+	public void setCount(int step, Long count) {
+		counts[step] = count;
+	}
+	
+	@Override
+	public long getCount(int step) {
+		Long count = counts[step];
+		return count != null? count.longValue(): 0;
+	}
+	
+	@Override
+	public int getNumberOfSteps() {
+		return counts.length -1;
+	}
 
 }

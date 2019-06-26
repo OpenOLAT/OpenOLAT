@@ -41,6 +41,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SliderStatistic;
+import org.olat.modules.forms.StepCounts;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
@@ -99,10 +100,10 @@ public abstract class RubricBarChartsController extends FormBasicController {
 
 	private BarSeries createBarSeries(SliderStatistic sliderStatistic) {
 		BarSeries series = new BarSeries("o_eva_bar");
-		List<Long> stepCounts = sliderStatistic.getStepCounts();
+		StepCounts stepCounts = sliderStatistic.getStepCounts();
 		for (int step = 1; step <= rubric.getSteps(); step++) {
-			Long count = stepCounts.get(step -1);
-			double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step, rubric.getWeight());
+			Long count = stepCounts.getCount(step);
+			double stepValue = rubric.getScaleType().getStepValue(rubric.getSteps(), step);
 			String stepName = EvaluationFormFormatter.formatZeroOrOneDecimals(stepValue);
 			series.add(count, stepName);
 		}

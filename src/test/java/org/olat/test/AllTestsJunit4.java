@@ -455,6 +455,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.edusharing.manager.EdusharingSecurityImplTest.class,
 	org.olat.modules.fo.WordCountTest.class,
 	org.olat.modules.forms.manager.EvaluationFormMangerImplTest.class,
+	org.olat.modules.forms.manager.RubricStatisticCalculatorTest.class,
 	org.olat.modules.forms.model.xml.ScaleTypeTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolServiceImplTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolUserDataDeletableTest.class,
