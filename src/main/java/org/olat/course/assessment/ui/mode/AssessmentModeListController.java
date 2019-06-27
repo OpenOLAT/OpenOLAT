@@ -116,7 +116,7 @@ public class AssessmentModeListController extends FormBasicController implements
 			addLink.setIconLeftCSS("o_icon o_icon_add");
 			
 			deleteLink = uifactory.addFormLink("delete", "delete", "delete.mode", null, formLayout, Link.BUTTON);
-			deleteLink.setIconLeftCSS("o_icon o_icon_delete");
+			deleteLink.setIconLeftCSS("o_icon o_icon_delete_item");
 		}
 		
 		//add the table

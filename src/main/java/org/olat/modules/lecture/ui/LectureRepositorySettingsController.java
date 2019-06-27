@@ -347,7 +347,7 @@ public class LectureRepositorySettingsController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(el.getValue())) {
 			el.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
-		} else if(!StringHelper.isLong(el.getValue())) {
+		} else {
 			try {
 				int value = Integer.parseInt(el.getValue());
 				if(value < 0) {
@@ -358,9 +358,6 @@ public class LectureRepositorySettingsController extends FormBasicController {
 				el.setErrorKey("form.error.nointeger", null);
 				allOk &= false;
 			}
-		} else {
-			el.setErrorKey("error.wrong.int", null);
-			allOk &= false;
 		}
 		
 		return allOk;	

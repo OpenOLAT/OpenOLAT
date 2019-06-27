@@ -57,11 +57,14 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.modal.DialogBoxController;
+import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
@@ -100,6 +103,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 
 	private ToolsController toolsCtrl;
 	private TeacherRollCallController rollCallCtrl;
+	private DialogBoxController deleteAssessmentModeDialogBox;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private AssessmentModeForLectureEditController assessmentModeEditCtrl;
 	
@@ -274,10 +278,15 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			if(event == Event.CANCELLED_EVENT) {
 				toolbarPanel.popController(assessmentModeEditCtrl);
 				cleanUp();
-			} else if(event == Event.CHANGED_EVENT || event == Event.CHANGED_EVENT) {
+			} else if(event == Event.CHANGED_EVENT) {
 				toolbarPanel.popController(assessmentModeEditCtrl);
 				reloadRow(assessmentModeEditCtrl.getAssessmentMode());
 				cleanUp();
+			}
+		} else if(deleteAssessmentModeDialogBox == source) {
+			if(DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
+				LectureBlockRow row = (LectureBlockRow)deleteAssessmentModeDialogBox.getUserObject();
+				doDeleteAssessmentMode(row);
 			}
 		}
 		super.event(ureq, source, event);
@@ -401,6 +410,20 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 
 		toolbarPanel.pushController(block.getTitle(), assessmentModeEditCtrl);
 	}
+	
+	private void doConfirmDeleteAssessmentMode(UserRequest ureq, LectureBlockRow row) {
+		String names = StringHelper.escapeHtml(row.getLectureBlock().getTitle());
+		String title = translate("confirm.delete.assessment.mode.title");
+		String text = translate("confirm.delete.assessment.mode.text", names);
+		deleteAssessmentModeDialogBox = activateYesNoDialog(ureq, title, text, deleteAssessmentModeDialogBox);
+		deleteAssessmentModeDialogBox.setUserObject(row);
+	}
+	
+	private void doDeleteAssessmentMode(LectureBlockRow row) {
+		assessmentModeMgr.delete(row.getLectureBlock());
+		row.setAssessmentMode(false);
+		tableEl.reset(false, false, true);
+	}
 
 	private void doOpenTools(UserRequest ureq, LectureBlockRow row, FormLink link) {
 		if(toolsCtrl != null) return;
@@ -441,6 +464,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 			addLink("attendance.list.to.sign", "attendance.list.to.sign", "o_icon o_filetype_pdf", mainVC);
 			if(row.isAssessmentMode()) {
 				addLink("edit.assessment.mode", "add.assessment.mode", "o_icon o_icon_assessment_mode", mainVC);
+				addLink("delete.assessment.mode", "delete.assessment.mode", "o_icon o_icon_delete_item", mainVC);
 			} else if(withAssessment) {
 				addLink("add.assessment.mode", "add.assessment.mode", "o_icon o_icon_assessment_mode", mainVC);
 			}
@@ -473,6 +497,8 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 				} else if("add.assessment.mode".equals(cmd)) {
 					LectureBlock block = lectureService.getLectureBlock(row);
 					doAddAssessmentMode(ureq, block);
+				} else if("delete.assessment.mode".equals(cmd)) {
+					doConfirmDeleteAssessmentMode(ureq, row);
 				}
 			}
 		}

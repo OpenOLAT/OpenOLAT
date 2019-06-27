@@ -102,6 +102,8 @@ public interface AssessmentModeManager {
 	 */
 	public void delete(AssessmentMode assessmentMode);
 	
+	public void delete(LectureBlock lectureBlock);
+	
 	public AssessmentMode getAssessmentModeById(Long key);
 	
 	public AssessmentMode getAssessmentMode(LectureBlock lectureBlock);
