@@ -593,8 +593,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 				|| identityRoles.isPrincipal() || identityRoles.isUserManager() || identityRoles.isRolesManager();
 		// admin group and user manager group always restricted to admins
 		if (isAdministrator) {
-			appendNode("menu.usergroup", "menu.usergroup.alt", "usergroup", "o_sel_useradmin_usergroup", accessNode);
-			
+			buildTreeNodeRole(accessNode, OrganisationRoles.user);
 			buildTreeNodeRole(accessNode, OrganisationRoles.author);
 			buildTreeNodeRole(accessNode, OrganisationRoles.groupmanager);
 			if(lectureModule.isEnabled()) {
