@@ -111,6 +111,7 @@ public class AdobeConnectMeetingController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		boolean ended = isEnded();
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("title", meeting.getName());
@@ -124,7 +125,7 @@ public class AdobeConnectMeetingController extends FormBasicController {
 			if(meeting.getEndDate() != null) {
 				String end = Formatter.getInstance(getLocale()).formatDateAndTime(meeting.getEndDate());
 				layoutCont.contextPut("end", end);
-				if(new Date().after(meeting.getEndDate())) {
+				if(ended) {
 					layoutCont.contextPut("ended", Boolean.TRUE);
 				}
 			}
@@ -133,13 +134,19 @@ public class AdobeConnectMeetingController extends FormBasicController {
 		}
 
 		registerButton = uifactory.addFormLink("meeting.register.button", flc, Link.BUTTON);
+		registerButton.setVisible(!ended);
 		sharedDocumentButton = uifactory.addFormLink("meeting.share.documents", flc, Link.BUTTON);
 		sharedDocumentButton.setVisible(administrator || moderator);
 
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
 		joinButton.setTarget("_blank");
+		joinButton.setVisible(!ended || moderator || administrator);
 
 		initContent(formLayout);
+	}
+	
+	private boolean isEnded() {
+		return meeting != null && meeting.getEndDate() != null && new Date().after(meeting.getEndDate());
 	}
 	
 	protected void initContent(FormItemContainer formLayout) {
@@ -186,8 +193,9 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	}
 	
 	private void updateButtons() {
-		registerButton.setVisible(!registered && !readOnly && validMeeting);
-		joinButton.setVisible(registered);
+		boolean accessible = !isEnded() || administrator || moderator;	
+		registerButton.setVisible(accessible && !registered && !readOnly && validMeeting);
+		joinButton.setVisible(accessible && registered);
 		joinButton.setEnabled(!readOnly && validMeeting);
 	}
 
