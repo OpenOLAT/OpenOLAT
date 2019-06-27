@@ -77,6 +77,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	private FormLink groupAssessmentButton;
 	
 	private GroupAssessmentController assessmentCtrl;
+	private BulkAssessmentToolController bulkAssessmentToolCtrl;
 	
 	@Autowired
 	private GTAManager gtaManager;
@@ -136,10 +137,12 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	}
 	
 	private void initBulkAsssessmentTool(UserRequest ureq, FormLayoutContainer formLayout) {
-		BulkAssessmentToolController bulkAssessmentTollCtrl = new BulkAssessmentToolController(ureq, getWindowControl(),
+		removeAsListenerAndDispose(bulkAssessmentToolCtrl);
+		
+		bulkAssessmentToolCtrl = new BulkAssessmentToolController(ureq, getWindowControl(),
 				getCourseEnvironment(), (AssessableCourseNode)courseNode);
-		listenTo(bulkAssessmentTollCtrl);
-		formLayout.put("bulk.assessment", bulkAssessmentTollCtrl.getInitialComponent());	
+		listenTo(bulkAssessmentToolCtrl);
+		formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());	
 	}
 
 	@Override
@@ -181,6 +184,11 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 			}
 			cmc.deactivate();
 			cleanUp();
+		} else if(bulkAssessmentToolCtrl == source) {
+			if(event == Event.CHANGED_EVENT || event == Event.DONE_EVENT) {
+				loadModel(ureq);
+			}
+			cleanUp();
 		}
 		super.event(ureq, source, event);
 	}
@@ -198,7 +206,9 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 
 	@Override
 	protected void cleanUp() {
+		removeAsListenerAndDispose(bulkAssessmentToolCtrl);
 		removeAsListenerAndDispose(assessmentCtrl);
+		bulkAssessmentToolCtrl = null;
 		assessmentCtrl = null;
 		super.cleanUp();
 	}

@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -125,7 +126,7 @@ public class DataStepForm extends StepFormBasicController {
 		if(savedDatas != null && StringHelper.containsNonWhitespace(savedDatas.getDataBackupFile())) {
 			VFSLeaf file = VFSManager.olatRootLeaf(savedDatas.getDataBackupFile());
 			try(InputStream in = file.getInputStream()) {
-				dataVal = IOUtils.toString(in, "UTF-8");
+				dataVal = IOUtils.toString(in, StandardCharsets.UTF_8);
 			} catch (IOException e) {
 				logError("", e);
 			}
@@ -283,7 +284,7 @@ public class DataStepForm extends StepFormBasicController {
 		}
 
 		try(OutputStream out = inputFile.getOutputStream(false)) {
-			IOUtils.write(val, out, "UTF-8");
+			IOUtils.write(val, out, StandardCharsets.UTF_8);
 			datas.setDataBackupFile(inputFile.getRelPath());
 		} catch (IOException e) {
 			logError("", e);
