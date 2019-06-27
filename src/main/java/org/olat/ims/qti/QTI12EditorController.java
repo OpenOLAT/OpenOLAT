@@ -81,7 +81,7 @@ public class QTI12EditorController extends BasicController implements QPoolItemE
 				QTIDocument doc = new QTIDocument();
 				QTIEditorPackage qtiPackage = new QTI12ItemEditorPackage(item, doc, mapperUrl, leaf, directory, this);
 				editorsCtrl = new ItemNodeTabbedFormController(item, qtiPackage, ureq, getWindowControl(),
-						false, qtiModule.isEditResourcesEnabled());
+						false, !qtiModule.isEditResourcesEnabled());
 				editorsCtrl.addTabs(mainPanel);
 				listenTo(editorsCtrl);
 			}

@@ -106,6 +106,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private Link exportItemLink;
 	private Link copyItemLink;
 	private Link convertItemLink;
+	private Link convertItemButton;
 
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -250,6 +251,9 @@ public class QuestionItemDetailsController extends BasicController implements To
 			convertItemLink = LinkFactory.createToolLink("convert", translate("convert.item"), this);
 			convertItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_convert");
 			commandDropdown.addComponent(convertItemLink);
+			
+			convertItemButton = LinkFactory.createButton("convert.item.long", mainVC, this);
+			convertItemButton.setIconLeftCSS("o_icon o_icon-fw o_FileResource-IMSQTI21_icon");
 		}
 		
 		if (qItemSecurityCallback.canDelete()) {
@@ -436,7 +440,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 			doExport(ureq, metadatasCtrl.getItem());
 		} else if(source == copyItemLink) {
 			doConfirmCopy(ureq, metadatasCtrl.getItem());
-		} else if(source == convertItemLink) {
+		} else if(source == convertItemLink || source == convertItemButton) {
 			doConfirmConversion(ureq, metadatasCtrl.getItem());
 		} else if(source == exportLogLink) {
 			doExportLog(ureq, metadatasCtrl.getItem());

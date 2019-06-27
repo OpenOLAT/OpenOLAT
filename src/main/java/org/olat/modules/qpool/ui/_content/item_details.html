@@ -1,6 +1,15 @@
+
 <div class="clearfix">
 	$r.render("review")
 </div>
+#if($r.available("convert.item.long"))
+<div class="o_error">
+	$r.translate("error.qti.deprecated")
+	<div class="o_button_group">
+		$r.render("convert.item.long")
+	</div>
+</div>
+#end
 <div class="row">
 	#if($metadataSwitch)
 		<div class="col-md-8">
