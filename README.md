@@ -136,7 +136,7 @@ db.jndi to the name of the data source like this:
 
 ```
 db.source=jndi
-db.jndi=java:comp/env/jdbc/OpenOlatDS
+db.jndi=java:comp/env/jdbc/OpenOLATDS
 ```
 
 Next add the resource descriptor to your tomcat context descriptor.
@@ -146,7 +146,7 @@ Next add the resource descriptor to your tomcat context descriptor.
 ```xml
 <Resource auth="Container" driverClassName="com.mysql.jdbc.Driver" type="javax.sql.DataSource"
           maxIdle="4" maxTotal="16" maxWaitMillis="10000"
-          name="jdbc/OpenOlatDS"
+          name="jdbc/OpenOLATDS"
           password="olat" username="olat"
           url="jdbc:mysql://localhost:3306/openolat?useUnicode=true&amp;characterEncoding=UTF-8&amp;cachePrepStmts=true&amp;cacheCallableStmts=true&amp;autoReconnectForPools=true"
           testOnBorrow="true" testOnReturn="false"
@@ -158,7 +158,7 @@ Next add the resource descriptor to your tomcat context descriptor.
 ```xml
 <Resource auth="Container" driverClassName="org.postgresql.Driver" type="javax.sql.DataSource"
           maxIdle="4" maxTotal="16" maxWaitMillis="-1"
-          name="jdbc/OpenOlatPostgresDS"
+          name="jdbc/OpenOLATPostgresDS"
           username="postgres" password="postgres"
           url="jdbc:postgresql://localhost:5432/olat"
           testOnBorrow="true" testOnReturn="false"
@@ -398,12 +398,12 @@ We need Hibernate 5.2, you need to use the tutorial to update the version of hib
 in Widlfly: http://docs.jboss.org/hibernate/orm/5.2/topical/html_single/wildfly/Wildfly.html
 
 Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
-`java:jboss/datasources/OpenOlatDS` and set this JNDI name in olat.local.properties set
+`java:jboss/datasources/OpenOLATDS` and set this JNDI name in olat.local.properties set
 the following properties:
 
 ```
 db.source=jndi
-db.jndi=java:jboss/datasources/OpenOlatDS
+db.jndi=java:jboss/datasources/OpenOLATDS
 cluster.mode=Cluster
 ```
 
