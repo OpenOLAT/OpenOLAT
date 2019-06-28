@@ -123,7 +123,7 @@ public class PasswordValidationRulesFactory {
 		case LoginModule.FORBIDDEN: return ruleFactory.createLettersUppercaseForbiddenRule();
 		case LoginModule.DISABLED:
 		default:
-			return ruleFactory.createLettersPermittedRule();
+			return ruleFactory.createLettersUppercasePermittedRule();
 		}
 	}
 	
@@ -135,7 +135,7 @@ public class PasswordValidationRulesFactory {
 		case LoginModule.FORBIDDEN: return ruleFactory.createLettersLowercaseForbiddenRule();
 		case LoginModule.DISABLED:
 		default:
-			return ruleFactory.createLettersPermittedRule();
+			return ruleFactory.createLettersLowercasePermittedRule();
 		}
 	}
 	
