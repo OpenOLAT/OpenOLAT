@@ -40,6 +40,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -68,6 +70,8 @@ public class LectureBlocksWebService {
 	private LectureService lectureService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private AssessmentModeManager assessmentModeMgr;
 	
 	public LectureBlocksWebService(RepositoryEntry entry, boolean administrator) {
 		this.entry = entry;
@@ -215,6 +219,12 @@ public class LectureBlocksWebService {
 		}
 		if(autoclose) {
 			lectureService.syncParticipantSummariesAndRollCalls(savedLectureBlock, LectureBlockAuditLog.Action.autoclose);
+		}
+		
+		AssessmentMode assessmentMode = assessmentModeMgr.getAssessmentMode(savedLectureBlock);
+		if(assessmentMode != null) {
+			assessmentModeMgr.syncAssessmentModeToLectureBlock(assessmentMode);
+			assessmentModeMgr.merge(assessmentMode, false);
 		}
 		return savedLectureBlock;
 	}

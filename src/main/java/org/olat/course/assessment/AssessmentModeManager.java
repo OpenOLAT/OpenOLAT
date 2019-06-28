@@ -93,6 +93,13 @@ public interface AssessmentModeManager {
 	 */
 	public AssessmentMode merge(AssessmentMode assessmentMode, boolean forceStatus);
 	
+	/**
+	 * The method only sync the instance of the assessment mode. The assessment mode
+	 * will NOT be persisted and the status will NOT be changed. For that, call the 
+	 * the merge method above.
+	 * 
+	 * @param assessmentMode The assessment mode with a link to a lecture block
+	 */
 	public void syncAssessmentModeToLectureBlock(AssessmentMode assessmentMode);
 	
 	/**

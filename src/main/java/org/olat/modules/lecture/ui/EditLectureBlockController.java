@@ -54,6 +54,8 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupOrder;
 import org.olat.group.BusinessGroupService;
@@ -118,6 +120,8 @@ public class EditLectureBlockController extends FormBasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private AssessmentModeManager assessmentModeMgr;
 	@Autowired
 	private BusinessGroupService businessGroupService;
 
@@ -508,7 +512,7 @@ public class EditLectureBlockController extends FormBasicController {
 					}
 					
 					if(!found) {
-						Identity teacher = securityManager.loadIdentityByKey(new Long(selectedTeacherKey));
+						Identity teacher = securityManager.loadIdentityByKey(Long.valueOf(selectedTeacherKey));
 						lectureService.addTeacher(lectureBlock, teacher);
 						audit.append("add teacher: ").append(userManager.getUserDisplayName(teacher)).append(" (").append(teacher.getKey()).append(");");
 					}
@@ -524,6 +528,12 @@ public class EditLectureBlockController extends FormBasicController {
 		}
 		updateLocationsPrefs(ureq);
 		lectureService.syncCalendars(lectureBlock);
+		//update eventual assessment mode
+		AssessmentMode assessmentMode = assessmentModeMgr.getAssessmentMode(lectureBlock);
+		if(assessmentMode != null) {
+			assessmentModeMgr.syncAssessmentModeToLectureBlock(assessmentMode);
+			assessmentModeMgr.merge(assessmentMode, false);
+		}
 		fireEvent(ureq, Event.DONE_EVENT);
 
 		if(create) {

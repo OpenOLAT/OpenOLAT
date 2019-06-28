@@ -215,6 +215,7 @@ public class AssessmentModeManagerImpl implements AssessmentModeManager {
 	public void syncAssessmentModeToLectureBlock(AssessmentMode assessmentMode) {
 		LectureBlock lectureBlock = assessmentMode.getLectureBlock();
 		RepositoryEntry entry = assessmentMode.getRepositoryEntry();
+		assessmentMode.setName(lectureBlock.getTitle());
 		assessmentMode.setBegin(lectureBlock.getStartDate());
 		assessmentMode.setEnd(lectureBlock.getEndDate());
 		
