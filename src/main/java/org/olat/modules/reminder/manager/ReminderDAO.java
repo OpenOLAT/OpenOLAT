@@ -142,7 +142,7 @@ public class ReminderDAO {
 		sb.append("select rem from reminder rem")
 		  .append(" inner join rem.entry entry")
 		  .append(" where (rem.startDate is null or rem.startDate<=:startDate)")
-		  .append(" and entry.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
+		  .append(" and entry.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Reminder.class)
