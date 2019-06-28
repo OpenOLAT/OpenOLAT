@@ -13,6 +13,16 @@
                     pattern="%d{dd MMM yyyy HH:mm:ss.SSS} [%t] %-5level %marker %c{1} ^%%^ I%X{ref}-J%sn ^%%^ %logger{36} ^%%^ %X{identityKey} ^%%^ %X{ip} ^%%^ %X{referer} ^%%^ %X{userAgent} ^%%^ %msg%ex{full,separator( )}%n" />
 			-->
 		</Console>
+		<!--
+		<RollingFile name="RollingFile" fileName="/path_to_logs/logs/olat.log"
+			filePattern="/path_to_logs/logs/olat.log">
+			<PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %marker %c{1} ^%%^ I%X{ref}-J%sn ^%%^ %logger{36} ^%%^ %X{identity} ^%%^ %X{ip} ^%%^ %X{referer} ^%%^ %X{userAgent} ^%%^ %msg%ex{full,separator( )}%n" />
+			<Policies>
+				<TimeBasedTriggeringPolicy interval="1" />
+			</Policies>
+		</RollingFile>
+		-->
 	</Appenders>
 	<Loggers>
 		<Logger name="org.apache.commons.httpclient" additivity="false" level="warn">
