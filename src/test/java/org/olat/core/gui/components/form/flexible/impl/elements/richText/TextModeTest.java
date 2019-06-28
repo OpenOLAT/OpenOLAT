@@ -31,12 +31,27 @@ import org.junit.Test;
 public class TextModeTest {
 	
 	@Test
-	public void guessOneLine() {
-		TextMode mode1 = TextMode.guess("bla bla");
+	public void textModeOneLine_text() {
+		String text = "bla bla";
+		TextMode mode1 = TextMode.guess(text);
 		Assert.assertEquals(TextMode.oneLine, mode1);
 		
-		TextMode mode2 = TextMode.guess("<p>bla bla</p>");
+		String fromOneLine = TextMode.fromOneLine(text);
+		Assert.assertEquals("<p>bla bla</p>", fromOneLine);
+
+		String toOneLine = TextMode.toOneLine(text);
+		Assert.assertEquals("bla bla", toOneLine);
+	}
+	
+	@Test
+	public void textModeOneLine_paragraph() {
+		String paragraph = "<p>bla bla</p>"; 
+		
+		TextMode mode2 = TextMode.guess("paragraph");
 		Assert.assertEquals(TextMode.oneLine, mode2);
+
+		String toOneLine = TextMode.toOneLine(paragraph);
+		Assert.assertEquals("bla bla", toOneLine);
 	}
 	
 	@Test
