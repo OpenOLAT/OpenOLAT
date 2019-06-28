@@ -169,6 +169,9 @@ public enum TextMode {
 
 		public String getText() {
 			StringBuilder content = new StringBuilder(1024);
+			if(sb.length() > 0) {
+				content.append(sb);
+			}
 			for(String line:lines) {
 				line = line.trim();
 				if(StringHelper.containsNonWhitespace(line)) {

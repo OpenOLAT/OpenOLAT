@@ -40,6 +40,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
@@ -55,9 +56,15 @@ import org.olat.course.nodes.AssessableCourseNode;
 public class ChooseColumnsStepForm extends StepFormBasicController {
 
 	private int numOfColumns;
-	private SingleSelection userNameColumnEl, scoreColumnEl, passedColumnEl, commentColumnEl;
+	private SingleSelection scoreColumnEl;
+	private SingleSelection passedColumnEl;
+	private SingleSelection commentColumnEl;
+	private SingleSelection userNameColumnEl;
 	private final OverviewDataModel overviewDataModel;
 	private final BulkAssessmentColumnSettings columnsSettings;
+	
+	private final String translatedPassed;
+	private final String translatedFailed;
 
 	public ChooseColumnsStepForm(UserRequest ureq, WindowControl wControl, BulkAssessmentColumnSettings columnsSettings,
 			StepsRunContext runContext, Form rootForm) {
@@ -67,9 +74,12 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 
 		@SuppressWarnings("unchecked")
 		List<String[]> splittedRows = (List<String[]>)getFromRunContext("splittedRows");
-		if(splittedRows.size() > 0) {
+		if(!splittedRows.isEmpty()) {
 			numOfColumns = splittedRows.get(0).length;
 		}
+
+		translatedPassed = FilterFactory.getHtmlTagsFilter().filter(translate("passed.true")).trim();
+		translatedFailed = FilterFactory.getHtmlTagsFilter().filter(translate("passed.false")).trim();
 
 		overviewDataModel = new OverviewDataModel(splittedRows);
 		initForm(ureq);
@@ -160,15 +170,17 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
-		userNameColumnEl.clearError();
-		if(userNameColumnEl != null && !userNameColumnEl.isOneSelected()) {
-			userNameColumnEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
+		if(userNameColumnEl != null) {
+			userNameColumnEl.clearError();
+			if(!userNameColumnEl.isOneSelected()) {
+				userNameColumnEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -224,7 +236,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		}
 
 		String identifyer = values[settings.getUsernameColumn()];
-		identifyer.trim();
+		identifyer = identifyer.trim();
 		if (!StringHelper.containsNonWhitespace(identifyer)) {
 			identifyer = "-";
 		}
@@ -258,19 +270,24 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 
 		if(valuesLength > settings.getPassedColumn()) {
 			String passedStr = values[settings.getPassedColumn()];
-			passedStr= passedStr.trim();
+			passedStr = passedStr.trim();
+			
+			
+
 			Boolean passed;
 			if ("y".equalsIgnoreCase(passedStr)
 					|| "yes".equalsIgnoreCase(passedStr)
 					|| "passed".equalsIgnoreCase(passedStr)
 					|| "true".equalsIgnoreCase(passedStr)
-					|| "1".equalsIgnoreCase(passedStr)) {
+					|| "1".equalsIgnoreCase(passedStr)
+					|| translatedPassed.equalsIgnoreCase(passedStr)) {
 				passed = Boolean.TRUE;
 			} else if ("n".equalsIgnoreCase(passedStr)
 					|| "no".equalsIgnoreCase(passedStr)
 					|| "false".equalsIgnoreCase(passedStr)
 					|| "failed".equalsIgnoreCase(passedStr)
-					|| "0".equalsIgnoreCase(passedStr)) {
+					|| "0".equalsIgnoreCase(passedStr)
+					|| translatedFailed.equalsIgnoreCase(passedStr)) {
 				passed = Boolean.FALSE;
 			} else {
 				// only set defined values, ignore everything else

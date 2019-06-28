@@ -37,7 +37,6 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.assessment.manager.BulkAssessmentTask;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentFeedback;
@@ -94,6 +93,9 @@ public class BulkAssessmentToolController extends BasicController {
 				bulkAssessmentCtrl = null;
 				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 					doBulkAssessmentSynchronous(ureq, feedback);
+					fireEvent(ureq, Event.CHANGED_EVENT);
+				} else {
+					fireEvent(ureq, Event.DONE_EVENT);
 				}
 			}
 		}
@@ -101,15 +103,12 @@ public class BulkAssessmentToolController extends BasicController {
 	}
 
 	private void doOpen(UserRequest ureq) {
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl bwControl, StepsRunContext runContext) {
-				Date scheduledDate = (Date)runContext.get("scheduledDate");
-				BulkAssessmentDatas datas = (BulkAssessmentDatas)runContext.get("datas");
-				Feedback feedback = doBulkAssessment(scheduledDate, datas);
-				runContext.put("feedback", feedback);
-				return StepsMainRunController.DONE_MODIFIED;
-			}
+		StepRunnerCallback finish = (uureq, bwControl, runContext) -> {
+			Date scheduledDate = (Date)runContext.get("scheduledDate");
+			BulkAssessmentDatas datas = (BulkAssessmentDatas)runContext.get("datas");
+			Feedback feedback = doBulkAssessment(scheduledDate, datas);
+			runContext.put("feedback", feedback);
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		Step start = new BulkAssessment_2_DatasStep(ureq, courseNode);
