@@ -48,7 +48,6 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private static final String ONLYOFFICE_BASE_URL = "onlyoffice.baseUrl";
 	private static final String ONLYOFFICE_JWT_SECRET = "onlyoffice.jwt.secret";
 	private static final String ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED = "onlyoffice.data.transfer.confirmation.enabled";
-	private static final String ONLYOFFICE_USAGE_RESTRICTED = "onlyoffice.usage.restricted";
 	private static final String ONLYOFFICE_USAGE_AUTHORS = "onlyoffice.usage.authors";
 	private static final String ONLYOFFICE_USAGE_COACHES = "onlyoffice.usage.coaches";
 	private static final String ONLYOFFICE_USAGE_MANAGERS = "onlyoffice.usage.managers";
@@ -64,8 +63,6 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	private Key jwtSignKey;
 	@Value("${onlyoffice.data.transfer.confirmation.enabled:false}")
 	private boolean dataTransferConfirmationEnabled;
-	@Value("${onlyoffice.usage.restricted:false}")
-	private boolean usageRestricted;
 	@Value("${onlyoffice.usage.restricted.authors:false}")
 	private boolean usageRestrictedToAuthors;
 	@Value("${onlyoffice.usage.restricted.coaches:false}")
@@ -108,11 +105,6 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 		String dataTransferConfirmationEnabledObj = getStringPropertyValue(ONLYOFFICE_DATA_TRANSER_CONFIRMATION_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
 			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
-		}
-		
-		String usageRestrictedObj = getStringPropertyValue(ONLYOFFICE_USAGE_RESTRICTED, true);
-		if(StringHelper.containsNonWhitespace(usageRestrictedObj)) {
-			usageRestricted = "true".equals(usageRestrictedObj);
 		}
 		
 		String usageRestrictedToAuthorsObj = getStringPropertyValue(ONLYOFFICE_USAGE_AUTHORS, true);
@@ -190,12 +182,7 @@ public class OnlyOfficeModule extends AbstractSpringModule implements ConfigOnOf
 	}
 
 	public boolean isUsageRestricted() {
-		return usageRestricted;
-	}
-
-	public void setUsageRestricted(boolean usageRestricted) {
-		this.usageRestricted = usageRestricted;
-		setStringProperty(ONLYOFFICE_USAGE_RESTRICTED, Boolean.toString(usageRestricted), true);
+		return usageRestrictedToAuthors || usageRestrictedToCoaches || usageRestrictedToManagers;
 	}
 
 	public boolean isUsageRestrictedToAuthors() {

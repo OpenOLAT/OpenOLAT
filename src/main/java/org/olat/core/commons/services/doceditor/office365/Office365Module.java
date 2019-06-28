@@ -39,7 +39,6 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 	private static final String OFFICE365_ENABLED = "office365.enabled";
 	private static final String OFFICE365_BASE_URL = "office365.baseUrl";
 	private static final String OFFICE365_DATA_TRANSER_CONFIRMATION_ENABLED = "office365.data.transfer.confirmation.enabled";
-	private static final String OFFICE365_USAGE_RESTRICTED = "office365.usage.restricted";
 	private static final String OFFICE365_USAGE_AUTHORS = "office365.usage.authors";
 	private static final String OFFICE365_USAGE_COACHES = "office365.usage.coaches";
 	private static final String OFFICE365_USAGE_MANAGERS = "office365.usage.managers";
@@ -50,8 +49,6 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 	private String baseUrl;
 	@Value("${office365.data.transfer.confirmation.enabled:false}")
 	private boolean dataTransferConfirmationEnabled;
-	@Value("${office365.usage.restricted:false}")
-	private boolean usageRestricted;
 	@Value("${office365.usage.restricted.authors:false}")
 	private boolean usageRestrictedToAuthors;
 	@Value("${office365.usage.restricted.coaches:false}")
@@ -88,11 +85,6 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 		String dataTransferConfirmationEnabledObj = getStringPropertyValue(OFFICE365_DATA_TRANSER_CONFIRMATION_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
 			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
-		}
-		
-		String usageRestrictedObj = getStringPropertyValue(OFFICE365_USAGE_RESTRICTED, true);
-		if(StringHelper.containsNonWhitespace(usageRestrictedObj)) {
-			usageRestricted = "true".equals(usageRestrictedObj);
 		}
 		
 		String usageRestrictedToAuthorsObj = getStringPropertyValue(OFFICE365_USAGE_AUTHORS, true);
@@ -140,12 +132,7 @@ public class Office365Module extends AbstractSpringModule implements ConfigOnOff
 	}
 
 	public boolean isUsageRestricted() {
-		return usageRestricted;
-	}
-
-	public void setUsageRestricted(boolean usageRestricted) {
-		this.usageRestricted = usageRestricted;
-		setStringProperty(OFFICE365_USAGE_RESTRICTED, Boolean.toString(usageRestricted), true);
+		return usageRestrictedToAuthors || usageRestrictedToCoaches || usageRestrictedToManagers;
 	}
 
 	public boolean isUsageRestrictedToAuthors() {
