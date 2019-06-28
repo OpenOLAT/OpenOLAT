@@ -194,8 +194,8 @@ public class ExceptionWindowController extends DefaultChiefController {
 		msg.contextPut("username", curIdent == null? "n/a" : curIdent.getKey());
 		msg.contextPut("allowBackButton", Boolean.valueOf(allowBackButton));
 		msg.contextPut("detailedmessage", detailedmessage);
-		// Cluster NodeId + E-Nr
-		msg.contextPut("errnum", Settings.getNodeInfo() + "-E"+ refNum);
+		// Cluster request reference number
+		msg.contextPut("errnum", "I" + refNum + "-J");
 		msg.contextPut("supportaddress", WebappHelper.getMailConfig("mailError"));
 		msg.contextPut("time", formatter.formatDateAndTime(new Date()));
 

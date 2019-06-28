@@ -146,20 +146,9 @@ public class LogFileParser {
 	 * @param s
 	 * @return errormsg
 	 */
-	private static String extractError(String s[]) {
-		StringBuilder sb = new StringBuilder();
-
-		if (s.length == 6) {
-			// before refactoring of logging.Tracing
-			sb.append("Date: " + Formatter.truncate(s[0].trim(), 20) + "\n");
-			sb.append("Error#: " + s[1].trim() + "\n");
-			sb.append("Identity: " + s[3].trim() + "\n");
-			sb.append("Category/Class: " + s[2].trim() + "\n");
-			sb.append("Log msg: " + s[4].trim() + "\n");
-			sb.append("Cause: "
-					+ s[5].trim().replaceAll(" at ", "\nat ").replaceAll(">>>", "\n>>>") + "\n");
-		} else if (s.length == 9) {
-			// the new Tracing
+	private static String extractError(String[] s) {
+		StringBuilder sb = new StringBuilder(2048);
+		if (s.length == 8) {
 			sb.append("Date: " + Formatter.truncate(s[0].trim(), 20) + "\n");
 			sb.append("Error#: " + s[1].trim() + "\n");
 			sb.append("Identity: " + s[3].trim() + "\n");
@@ -167,11 +156,11 @@ public class LogFileParser {
 			sb.append("Remote IP: " + s[4].trim() + "\n");
 			sb.append("Referer: " + s[5].trim() + "\n");
 			sb.append("User-Agent: " + s[6].trim() + "\n");
-			sb.append("Log msg: " + s[7].trim() + "\n");
-			sb.append("Cause: "
-					+ s[8].trim().replaceAll(" at ", "\nat ").replaceAll(">>>", "\n\n"));
+			sb.append("Exception: " + s[7].trim().replaceAll(" at ", "\nat ").replaceAll(">>>", "\n\n"));
 		} else {
-			throw new AssertException("Unknown Logfile format");
+			for(String st:s) {
+				sb.append("Raw msg: " + st + "\n");
+			}
 		}
 		return sb.toString();
 	}
@@ -208,10 +197,10 @@ public class LogFileParser {
 		String line;
 		String line2;
 		String memoryline = "empty";
-		String em[] = new String[10];
-		Collection<String> errormsg = new ArrayList<String>();
+		String[] em = new String[10];
+		Collection<String> errormsg = new ArrayList<>();
 
-		SimpleDateFormat sdb = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat sdb = new SimpleDateFormat("dd MM yyyy");
 		
 		String logfilepath;
 		if(date == null) {
@@ -235,8 +224,7 @@ public class LogFileParser {
 			return errormsg;
 		}
 			
-		try {
-			BufferedReader br = new BufferedReader(new FileReader(logFile));
+		try(BufferedReader br = new BufferedReader(new FileReader(logFile))) {
 			while ((line = br.readLine()) != null) {
 				if (counter == 0) {
 					errormsg.add(line);
@@ -247,7 +235,7 @@ public class LogFileParser {
 				} else if ( line.matches(matchError) || line.matches(matchWarn) ) {
 					line2 = line.replaceAll("[/^]", "/");
 					em = line2.split("/%/");
-					if (errorNumber.equals(em[1].trim())) {
+					if (em[1].trim().startsWith(errorNumber)) {
 						founderror++;
 						if (asHTML) {
 							line2 = extractErrorAsHTML(em);
@@ -262,14 +250,11 @@ public class LogFileParser {
 				}
 				memoryline = line;
 			}
-			br.close();
 
-			if (founderror > 0) {
-				if (counter < linecount) {
-					while (counter > 0) {
-						errormsg.add("empty");
-						counter--;
-					}
+			if (founderror > 0 && counter < linecount) {
+				while (counter > 0) {
+					errormsg.add("empty");
+					counter--;
 				}
 			}
 			

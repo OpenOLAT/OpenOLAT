@@ -74,7 +74,7 @@ public class ErrorFeedbackMailer implements Dispatcher {
 	}
 
 	/**
-	 * send email to olat support with user submitted error informaition
+	 * send email to support with user submitted error information
 	 * 
 	 * @param request
 	 */
@@ -105,7 +105,6 @@ public class ErrorFeedbackMailer implements Dispatcher {
 			}
 		} catch (Exception e) {
 			handleException(request, e);
-			return;
 		}
 	}
 
@@ -116,10 +115,6 @@ public class ErrorFeedbackMailer implements Dispatcher {
 				+ username + " with content: " + feedback, e);
 	}
 
-	/**
-	 * @see org.olat.core.dispatcher.Dispatcher#execute(javax.servlet.http.HttpServletRequest,
-	 *      javax.servlet.http.HttpServletResponse, java.lang.String)
-	 */
 	@Override
 	public void execute(HttpServletRequest request, HttpServletResponse response) {
 		sendMail(request);
