@@ -533,6 +533,7 @@ public class AuthorListController extends FormBasicController implements Activat
 				searchParams.setOwnedResourcesOnly(false);
 				searchParams.setResourceUsage(ResourceUsage.all);
 				searchParams.setLicenseTypeKeys(null);
+				searchParams.setEntryOrganisations(null);
 			}
 		} else if(userSearchCtr == source) {
 			@SuppressWarnings("unchecked")
@@ -824,7 +825,7 @@ public class AuthorListController extends FormBasicController implements Activat
 	}
 	
 	private void doSearch(UserRequest ureq, SearchEvent se) {
-		if(se.getTypes() != null && se.getTypes().size() > 0) {
+		if(se.getTypes() != null && !se.getTypes().isEmpty()) {
 			searchParams.setResourceTypes(new ArrayList<>(se.getTypes()));
 		} else {
 			searchParams.setResourceTypes(null);
@@ -838,6 +839,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		searchParams.setDisplayname(se.getDisplayname());
 		searchParams.setDescription(se.getDescription());
 		searchParams.setLicenseTypeKeys(se.getLicenseTypeKeys());
+		searchParams.setEntryOrganisations(se.getEntryOrganisations());
 		tableEl.reset(true, true, true);
 		
 		AuthorListState stateEntry = new AuthorListState();

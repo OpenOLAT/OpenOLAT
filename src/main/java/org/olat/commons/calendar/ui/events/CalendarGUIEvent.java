@@ -35,6 +35,8 @@ public class CalendarGUIEvent extends Event {
 	public static final String IMPORT_SYNCHRONIZED_URL = "import-url";
 	public static final String DELETE_TOKEN = "delete-token";
 	public static final String DELETE_CALENDAR = "delete-calendar";
+	public static final String RESET_CALENDAR = "reset-calendar";
+	public static final String DELETE_IMPORTED_TO = "delete-imported-to";
 	
 	public CalendarGUIEvent(String cmd) {
 		super(cmd);

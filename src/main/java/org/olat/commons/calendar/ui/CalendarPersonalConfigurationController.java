@@ -21,11 +21,15 @@ package org.olat.commons.calendar.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.manager.ImportCalendarManager;
+import org.olat.commons.calendar.manager.ImportToCalendarManager;
+import org.olat.commons.calendar.model.ImportedToCalendar;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.CalendarPersonalConfigurationDataModel.ConfigCols;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.CalendarGUIEvent;
@@ -80,6 +84,8 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private InjectCalendarFileController injectCalendarFileCtrl;
 	private SynchronizedCalendarUrlController synchronizedCalendarUrlCtrl;
 	private CalendarColorChooserController colorChooserCtrl;
+	private ConfirmCalendarResetController confirmResetCalendarDialog;
+	private ConfirmDeleteImportedToCalendarController confirmDeleteImportedToCalendarDialog;
 
 	private int counter;
 	private final boolean allowImport;
@@ -90,6 +96,8 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	private CalendarManager calendarManager;
 	@Autowired
 	private ImportCalendarManager importCalendarManager;
+	@Autowired
+	private ImportToCalendarManager importToCalendarManager;
 
 	public CalendarPersonalConfigurationController(UserRequest ureq, WindowControl wControl,
 			List<KalendarRenderWrapper> calendars, List<KalendarRenderWrapper> alwaysVisibleKalendars, boolean allowImport) {
@@ -209,6 +217,22 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 				showInfo("cal.import.remove.info");
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
+		} else if(source == confirmResetCalendarDialog) {
+			if(event == Event.DONE_EVENT) {
+				doResetCalendar(confirmResetCalendarDialog.getCalendarRow());
+				showInfo("cal.reset.info");
+				fireEvent(ureq, Event.CHANGED_EVENT); 
+			}
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == confirmDeleteImportedToCalendarDialog) {
+			if(event == Event.DONE_EVENT) {
+				doDeleteImportedToCalendar(confirmDeleteImportedToCalendarDialog.getSelectedImportedToCalendars());
+				showInfo("cal.delete.imported.to.info");
+				fireEvent(ureq, Event.CHANGED_EVENT); 
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(calendarFileUploadCtrl == source) {
 			KalendarRenderWrapper calendar = calendarFileUploadCtrl.getImportedCalendar();
 			cmc.deactivate();
@@ -239,6 +263,10 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 				doConfirmDeleteToken(ureq, row);
 			} else if(CalendarGUIEvent.DELETE_CALENDAR.equals(event.getCommand())) {
 				doConfirmDeleteCalendar(ureq, row);
+			} else if(CalendarGUIEvent.RESET_CALENDAR.equals(event.getCommand())) {
+				doConfirmResetCalendar(ureq, row);
+			} else if(CalendarGUIEvent.DELETE_IMPORTED_TO.equals(event.getCommand())) {
+				doConfirmDeleteImportedToCalendar(ureq, row);
 			}
 
 		} else if(injectCalendarFileCtrl == source || synchronizedCalendarUrlCtrl == source) {
@@ -255,6 +283,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(confirmResetCalendarDialog);
 		removeAsListenerAndDispose(calendarFileUploadCtrl);
 		removeAsListenerAndDispose(calendarUrlImportCtrl);
 		removeAsListenerAndDispose(calendarToolsCtrl);
@@ -262,6 +291,7 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		removeAsListenerAndDispose(calloutCtrl);
 		removeAsListenerAndDispose(feedUrlCtrl);
 		removeAsListenerAndDispose(cmc);
+		confirmResetCalendarDialog = null;
 		calendarFileUploadCtrl = null;
 		calendarUrlImportCtrl = null;
 		calendarToolsCtrl = null;
@@ -388,6 +418,44 @@ public class CalendarPersonalConfigurationController extends FormBasicController
 		model.setObjects(currentRows);
 		tableEl.reloadData();
 		fireEvent(ureq, new CalendarGUIRemoveEvent(row.getWrapper()));
+	}
+	
+	private void doConfirmResetCalendar(UserRequest ureq, CalendarPersonalConfigurationRow row) {
+		confirmResetCalendarDialog = new ConfirmCalendarResetController(ureq, getWindowControl(), row);
+		listenTo(confirmResetCalendarDialog);
+		
+		String title = translate("cal.confirm.reset.title", new String[] { StringHelper.escapeHtml(row.getDisplayName() )});
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmResetCalendarDialog.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doResetCalendar(CalendarPersonalConfigurationRow row) {
+		Kalendar kalendar = row.getWrapper().getKalendar();
+		importToCalendarManager.deleteImportedCalendarsAndEvents(kalendar);
+		// reload the calendar without the deleted imported calendars
+		kalendar = calendarManager.getCalendar(kalendar.getType(), kalendar.getCalendarID());
+		List<KalendarEvent> events = kalendar.getEvents();
+		// filter managed events
+		List<KalendarEvent> eventsToDelete = events.stream()
+				.filter(e -> !e.isManaged()).collect(Collectors.toList());
+		calendarManager.removeEventsFrom(kalendar, eventsToDelete);
+	}
+	
+	private void doConfirmDeleteImportedToCalendar(UserRequest ureq, CalendarPersonalConfigurationRow row) {
+		confirmDeleteImportedToCalendarDialog = new ConfirmDeleteImportedToCalendarController(ureq, getWindowControl(), row);
+		listenTo(confirmDeleteImportedToCalendarDialog);
+		
+		String title = translate("cal.confirm.delete.imported.to.title", new String[] { StringHelper.escapeHtml(row.getDisplayName() )});
+		cmc = new CloseableModalController(getWindowControl(), "close", confirmDeleteImportedToCalendarDialog.getInitialComponent(), true, title);
+		cmc.activate();
+		listenTo(cmc);
+	}
+	
+	private void doDeleteImportedToCalendar(List<ImportedToCalendar> calendarsToDelete) {
+		for(ImportedToCalendar calendar:calendarsToDelete) {
+			importToCalendarManager.deleteImportedCalendarsAndEvents(calendar);
+		}
 	}
 
 	private void doOpenImportCalendarFile(UserRequest ureq) {

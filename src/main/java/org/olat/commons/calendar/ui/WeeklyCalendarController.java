@@ -118,7 +118,8 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 	 * 3. delete whole sequence
 	 */
 	private DialogBoxController dbcSequence;
-	private DialogBoxController deleteSingleYesNoController, deleteSequenceYesNoController;
+	private DialogBoxController deleteSingleYesNoController;
+	private DialogBoxController deleteSequenceYesNoController;
 	private String modifiedCalendarId;
 	private boolean modifiedCalenderDirty = false;
 	

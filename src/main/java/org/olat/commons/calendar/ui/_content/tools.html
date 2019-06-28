@@ -2,6 +2,9 @@
 #if($r.available("cal.import.type.file") && $r.available("cal.import.type.file"))
 	<li>$r.render("cal.import.type.file")</li>
 	<li>$r.render("cal.synchronize.type.url")</li>
+	#if($r.available("cal.delete.imported.to.calendar"))
+	<li>$r.render("cal.delete.imported.to.calendar")</li>
+	#end
 	<li class="divider"></li>
 #end
 #if($r.available("cal.icalfeed.subscribe.remove"))
@@ -9,5 +12,8 @@
 #end
 #if($r.available("cal.delete.imported.calendar"))
 	<li>$r.render("cal.delete.imported.calendar")</li>
+#end
+#if($r.available("cal.reset.calendar"))
+	<li>$r.render("cal.reset.calendar")</li>
 #end
 </ul>

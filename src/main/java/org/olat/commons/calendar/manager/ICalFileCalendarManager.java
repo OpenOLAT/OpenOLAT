@@ -1012,25 +1012,27 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new CalendarGUIModifiedEvent(cal), OresHelper.lookupType(CalendarManager.class));
 		return persistSuccessful.booleanValue();
 	}
-
+	
 	@Override
-	public boolean removeEventFrom(final Kalendar cal, final KalendarEvent kalendarEvent) {
+	public boolean removeEventsFrom(final Kalendar cal, final List<KalendarEvent> kalendarEvents) {
 		OLATResourceable calOres = getOresHelperFor(cal);
 		Boolean removeSuccessful = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync( calOres, () -> {
-			String uid = kalendarEvent.getID();
-			String recurrenceId = kalendarEvent.getRecurrenceID();
 			Kalendar loadedCal = getCalendarFromCache(cal.getType(), cal.getCalendarID());
-			if(StringHelper.containsNonWhitespace(recurrenceId)) {
-				loadedCal.removeEvent(kalendarEvent);
-				KalendarEvent rootEvent = loadedCal.getEvent(kalendarEvent.getID(), null);
-				if(rootEvent != null && kalendarEvent instanceof KalendarRecurEvent) {
-					Date recurrenceDate = ((KalendarRecurEvent)kalendarEvent).getOccurenceDate();
-					rootEvent.addRecurrenceExc(recurrenceDate);
-				}
-			} else {
-				for(KalendarEvent kEvent:loadedCal.getEvents()) {
-					if(uid.equals(kEvent.getID())) {
-						loadedCal.removeEvent(kEvent);
+			for(KalendarEvent kalendarEvent:kalendarEvents) {
+				String uid = kalendarEvent.getID();
+				String recurrenceId = kalendarEvent.getRecurrenceID();
+				if(StringHelper.containsNonWhitespace(recurrenceId)) {
+					loadedCal.removeEvent(kalendarEvent);
+					KalendarEvent rootEvent = loadedCal.getEvent(kalendarEvent.getID(), null);
+					if(rootEvent != null && kalendarEvent instanceof KalendarRecurEvent) {
+						Date recurrenceDate = ((KalendarRecurEvent)kalendarEvent).getOccurenceDate();
+						rootEvent.addRecurrenceExc(recurrenceDate);
+					}
+				} else {
+					for(KalendarEvent kEvent:loadedCal.getEvents()) {
+						if(uid.equals(kEvent.getID())) {
+							loadedCal.removeEvent(kEvent);
+						}
 					}
 				}
 			}
@@ -1040,6 +1042,11 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// inform all controller about calendar change for reload
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(new CalendarGUIModifiedEvent(cal), OresHelper.lookupType(CalendarManager.class));
 		return removeSuccessful.booleanValue();
+    }
+
+	@Override
+	public boolean removeEventFrom(final Kalendar cal, final KalendarEvent kalendarEvent) {
+		return removeEventsFrom(cal, Collections.singletonList(kalendarEvent));
     }
 	
 	@Override

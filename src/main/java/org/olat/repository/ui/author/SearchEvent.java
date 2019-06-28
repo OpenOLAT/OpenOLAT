@@ -19,10 +19,13 @@
  */
 package org.olat.repository.ui.author;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.olat.core.gui.control.Event;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.context.StateEntry;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams.ResourceUsage;
 
@@ -45,6 +48,7 @@ public class SearchEvent extends Event implements StateEntry {
 	private boolean ownedResourcesOnly;
 	private ResourceUsage resourceUsage;
 	private Set<Long> licenseTypeKeys;
+	private List<OrganisationRef> entryOrganisations;
 	
 	public SearchEvent() {
 		super("re-search");
@@ -122,6 +126,14 @@ public class SearchEvent extends Event implements StateEntry {
 		this.licenseTypeKeys = licenseTypeKeys;
 	}
 
+	public List<OrganisationRef> getEntryOrganisations() {
+		return entryOrganisations;
+	}
+
+	public void setEntryOrganisations(List<OrganisationRef> entryOrganisations) {
+		this.entryOrganisations = entryOrganisations;
+	}
+
 	@Override
 	public SearchEvent clone() {
 		SearchEvent clone = new SearchEvent();
@@ -134,6 +146,7 @@ public class SearchEvent extends Event implements StateEntry {
 		clone.resourceUsage = resourceUsage;
 		clone.closed = closed;
 		clone.licenseTypeKeys = (licenseTypeKeys == null ? null : new HashSet<>(licenseTypeKeys));
+		clone.entryOrganisations = (entryOrganisations == null ? null : new ArrayList<>(entryOrganisations));
 		return clone;
 	}
 }
