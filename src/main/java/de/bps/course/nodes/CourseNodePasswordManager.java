@@ -20,8 +20,7 @@
 package de.bps.course.nodes;
 
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.course.condition.additionalconditions.AdditionalConditionAnswerContainer;
+import org.olat.core.id.IdentityEnvironment;
 
 public interface CourseNodePasswordManager {
 	
@@ -30,9 +29,9 @@ public interface CourseNodePasswordManager {
 	 * @param identity
 	 * @return
 	 */
-	public AdditionalConditionAnswerContainer getAnswerContainer(Identity identity);
+	public String getAnswer(IdentityEnvironment identityEnv, Long courseId, String nodeIdentifier);
 	
-	public AdditionalConditionAnswerContainer removeAnswerContainerFromCache(Identity identity);
+	public void removeAnswerContainerFromCache(Identity identity);
 
 	/**
 	 * updates inputted password
@@ -41,12 +40,7 @@ public interface CourseNodePasswordManager {
 	 * @param courseId
 	 * @param value
 	 */
-	public void updatePwd(Identity identity, String nodeIdentifier, Long courseId, String value);
-	
-	/**
-	 * deletes password for a repository entry
-	 * @param key
-	 */
-	public void deleteAllPasswordsFor(OLATResourceable ores);
+	public void updatePwd(IdentityEnvironment identityEnv, String nodeIdentifier, Long courseId, String value);
+
 	
 }

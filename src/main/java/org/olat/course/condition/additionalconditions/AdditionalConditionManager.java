@@ -22,6 +22,7 @@ package org.olat.course.condition.additionalconditions;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -31,12 +32,12 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class AdditionalConditionManager {
 	
 	private AbstractAccessableCourseNode node ;
-	private final AdditionalConditionAnswerContainer answers;
+	private final IdentityEnvironment identityEnv;
 	private Long courseId;
 	
-	public AdditionalConditionManager(AbstractAccessableCourseNode node, Long courseId, AdditionalConditionAnswerContainer answers){
+	public AdditionalConditionManager(AbstractAccessableCourseNode node, Long courseId, IdentityEnvironment identityEnv) {
 		this.node = node;
-		this.answers = answers;
+		this.identityEnv = identityEnv;
 		this.courseId = courseId;
 	}
 	
@@ -45,7 +46,7 @@ public class AdditionalConditionManager {
 		for(AdditionalCondition cond : node.getAdditionalConditions()) {
 			cond.setNode(node);
 			cond.setCourseId(courseId);
-			retVal = cond.evaluate(answers);
+			retVal = cond.evaluate(identityEnv);
 			//otherwise all users on this node can enter the course if one user had known the correct answer 
 			if(!retVal) {
 				break;
@@ -66,7 +67,7 @@ public class AdditionalConditionManager {
 		for(AdditionalCondition cond : node.getAdditionalConditions()){
 			cond.setNode(node);
 			cond.setCourseId(courseId);
-			boolean retVal = cond.evaluate(answers);
+			boolean retVal = cond.evaluate(identityEnv);
 			if(!retVal) {
 				Controller ctrl = cond.getUserInputController(ureq, wControl, userCourseEnv);
 				CourseNodeConfiguration config = CourseNodeFactory.getInstance().getCourseNodeConfiguration(node.getType());
