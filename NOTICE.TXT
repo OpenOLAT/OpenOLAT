@@ -2,19 +2,19 @@ LICENSE CONCERNING THIS DISTRIBUTION
 
 Licensed under the Apache License, Version 2.0 (the "License")
 
-OpenOLAT (http://www.openolat.org) is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
+OpenOlat (http://www.openolat.org) is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
 OF ANY KIND, either expressed or implied. See the License for the specific language governing 
 permissions and limitations under the License. 
 
-You should have received a copy of the License along with OpenOLAT, see file LICENSE.TXT distributed 
+You should have received a copy of the License along with OpenOlat, see file LICENSE.TXT distributed 
 along with this release. You may also obtain a copy of the License at 
 http://www.apache.org/licenses/LICENSE-2.0
 
 
 Copyright openolat.org codebase since 2011:
 ======================================================================
-OpenOLAT is initiated by frentix GmbH [http://www.frentix.com], Zurich, Switzerland and contains code 
-contributed by other OpenOLAT open source community members [http://www.openolat.org]. All contributed code
+OpenOlat is initiated by frentix GmbH [http://www.frentix.com], Zurich, Switzerland and contains code 
+contributed by other OpenOlat open source community members [http://www.openolat.org]. All contributed code
 is copyrighted by their respective party and released under the Apache 2.0 License. 
 
 Contributors and copy right holders of openolat.org codebase since 2011:
@@ -33,9 +33,9 @@ Contributors and copy right holders of openolat.org codebase since 2011:
   Thomas Haselwanter, Guenter Krausgruber, Hermann Schwärzler, Daniel Haag
   
 
-OpenOLAT logo and icons
+OpenOlat logo and icons
 -----------------------------------------------------------------------
-The OpenOLAT logo and icons if not covered by another licenses mentioned below are released under 
+The OpenOlat logo and icons if not covered by another licenses mentioned below are released under 
 the Creative Commons Attribution-NoDerivs 2.5 license. 
 German license text  [http://creativecommons.org/licenses/by-nd/2.5/ch/]
 English license text [http://creativecommons.org/licenses/by-nd/2.5/]

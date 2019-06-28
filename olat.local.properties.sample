@@ -24,7 +24,7 @@ db.vendor=mysql
 # the alter scripts in /src/main/resources/database/**/alter**.sql are 
 # executed automatically. For most cases this is fine. If you set it to 
 # false however, you must execute those scripts yourself BEFORE starting
-# OpenOLAT after an update. 
+# OpenOlat after an update. 
 auto.upgrade.database=true
 
 # the name of the application database

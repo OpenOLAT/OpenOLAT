@@ -1,10 +1,10 @@
-# OpenOLAT
+# OpenOlat
 
-<a href="https://www.openolat.org"><img src="src/main/webapp/static/images/openolat/openolat_logo_72.png" align="left" hspace="10" vspace="6"></a>
+<a href="https://www.openolat.org"><img src="src/main/webapp/static/images/openolat/openolat_logo_claim_small_rgb.png" align="left"></a>
 
- **OpenOLAT** is a web-based e-learning platform for teaching, learning, assessment and communication, an LMS, a learning management system. OpenOLAT impresses with its simple and intuitive operation.
+ **OpenOlat** is a web-based e-learning platform for teaching, learning, assessment and communication, an LMS, a learning management system. OpenOlat impresses with its simple and intuitive operation.
 
-A sophisticated modular toolkit provides course authors with a wide range of didactic possibilities. Each OpenOLAT installation can be individually extended, adapted to organizational needs, and integrated into existing IT infrastructures. The architecture is designed for minimal resource consumption, scalability and security in order to guarantee high system reliability.
+A sophisticated modular toolkit provides course authors with a wide range of didactic possibilities. Each OpenOlat installation can be individually extended, adapted to organizational needs, and integrated into existing IT infrastructures. The architecture is designed for minimal resource consumption, scalability and security in order to guarantee high system reliability.
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -14,11 +14,11 @@ A sophisticated modular toolkit provides course authors with a wide range of did
 2. [Ressources](#ressources)
 3. [Community](#being-a-community-member)
 4. [Developers](#developers)
-    * [Setting up OpenOLAT in Eclipse](#setting-up-openolat-in-eclipse)
+    * [Setting up OpenOlat in Eclipse](#setting-up-openolat-in-eclipse)
     * [Compress javascript and CSS](#compress-javascript-and-css)
     * [REST API](#rest-api)
     * [Automated tests](#automated-tests)
-    * [Experimental: setting up OpenOLAT on Eclipse with an Application Server](#experimental-setting-up-openolat-on-eclipse-with-an-application-server)
+    * [Experimental: setting up OpenOlat on Eclipse with an Application Server](#experimental-setting-up-openolat-on-eclipse-with-an-application-server)
 
 ## Licensing
 
@@ -27,15 +27,15 @@ With regard to licensing and copyright please refer to the file [LICENSE](LICENS
 ## Ressources 
 
 * [Installation](https://www.openolat.com/fileadmin/adminwiki/_START_.html)
-* [About OpenOLAT](https://www.openolat.com)
+* [About OpenOlat](https://www.openolat.com)
 * [Mailing list](https://groups.google.com/forum/#!forum/openolat)
 * [Issues](https://jira.openolat.org/)
-* [OpenOLAT for the community](https://community.openolat.org) An OpenOLAT instance dedicated to the community
+* [OpenOlat for the community](https://community.openolat.org) An OpenOlat instance dedicated to the community
 
 
 ## Being a community member
 
-We strongly suggest to participate in the OpenOLAT community membership program. 
+We strongly suggest to participate in the OpenOlat community membership program. 
 Even though this software is free and open source, the development and management
 has to be funded by someone. If you like what we do and want the product to be
 maintained and developed in the long run you should consider purchasing a membership:
@@ -43,7 +43,7 @@ maintained and developed in the long run you should consider purchasing a member
 
 ## Developers
 
-### Setting up OpenOLAT in Eclipse
+### Setting up OpenOlat in Eclipse
 
 This is an installation guide for developers.
 
@@ -98,7 +98,7 @@ FLUSH PRIVILEGES;
 
 *For PostgreSQL*: please check their PostgreSQL manual how to create a user and database.
  
-Write the OpenOLAT database schema to the OpenOLAT database. Example for MySQL:
+Write the OpenOlat database schema to the OpenOlat database. Example for MySQL:
 
 ```bash
 mysql -u openolat -p openolat < src/main/resources/database/mysql/setupDatabase.sql
@@ -111,7 +111,7 @@ MySQL or `src/test/profile/postgresql/olat.local.properties` for PostgreSQL.
 
 #### 3. Setting up the Tomcat server in Eclipse
 
-Setup a tomcat server by clicking on OpenOLAT -> Run As -> "Run on Server". The
+Setup a tomcat server by clicking on OpenOlat -> Run As -> "Run on Server". The
 "Run on Server" wizard will pop up and you define define a new server. Look for
 Apache -> Tomcat v8.0.
 
@@ -136,7 +136,7 @@ db.jndi to the name of the data source like this:
 
 ```
 db.source=jndi
-db.jndi=java:comp/env/jdbc/OpenOLATDS
+db.jndi=java:comp/env/jdbc/OpenOlatDS
 ```
 
 Next add the resource descriptor to your tomcat context descriptor.
@@ -146,7 +146,7 @@ Next add the resource descriptor to your tomcat context descriptor.
 ```xml
 <Resource auth="Container" driverClassName="com.mysql.jdbc.Driver" type="javax.sql.DataSource"
           maxIdle="4" maxTotal="16" maxWaitMillis="10000"
-          name="jdbc/OpenOLATDS"
+          name="jdbc/OpenOlatDS"
           password="olat" username="olat"
           url="jdbc:mysql://localhost:3306/openolat?useUnicode=true&amp;characterEncoding=UTF-8&amp;cachePrepStmts=true&amp;cacheCallableStmts=true&amp;autoReconnectForPools=true"
           testOnBorrow="true" testOnReturn="false"
@@ -158,7 +158,7 @@ Next add the resource descriptor to your tomcat context descriptor.
 ```xml
 <Resource auth="Container" driverClassName="org.postgresql.Driver" type="javax.sql.DataSource"
           maxIdle="4" maxTotal="16" maxWaitMillis="-1"
-          name="jdbc/OpenOLATPostgresDS"
+          name="jdbc/OpenOlatPostgresDS"
           username="postgres" password="postgres"
           url="jdbc:postgresql://localhost:5432/olat"
           testOnBorrow="true" testOnReturn="false"
@@ -179,28 +179,28 @@ Have fun, give feedback and contribute!
   and pasting: `-XX:+UseG1GC -XX:+UseStringDeduplication -Xms256m -Xmx1024m -Djava.awt.headless=true`
 
 * Optional: create an empty olat.local.properties and save it to /yourTomcatDir/lib
-  (OpenOLAT searches for this file on the classpath and /tomcat/lib is part of it). But it
+  (OpenOlat searches for this file on the classpath and /tomcat/lib is part of it). But it
   should start with just the default config!
 
-* Usually you will get a timeout exception when you start a new OpenOLAT. After double clicking
+* Usually you will get a timeout exception when you start a new OpenOlat. After double clicking
   on the server entry you can increase the timeout for the startup.
 
-* If your tomcat starts very quickly but you cannot access OpenOLAT it might be that tomcat did
-  not find the OpenOLAT context. Right click the server entry and click publish to inform eclipse
+* If your tomcat starts very quickly but you cannot access OpenOlat it might be that tomcat did
+  not find the OpenOlat context. Right click the server entry and click publish to inform eclipse
   about a new or updated context.
 
 * If you run into problems with classes or resources not found e.g. "ClassNotFoundException" right click your 
   server config and run the "Clean..." Task to republish all resources. Problems comes mostly when switching 
   from eclipse to console and back with command like mvn clean, or eclipse clean and such. You will always get 
   a clean and working environment when you do the following: Eclipse clean, create eclipse settings with launch, 
-  Server publish resources and restart OpenOLAT.
+  Server publish resources and restart OpenOlat.
 
 ### Background (optional for further interest)
 
-There is only one spring context for the whole OpenOLAT which you can access via
+There is only one spring context for the whole OpenOlat which you can access via
 CoreSpringFactory. The context is configured with the files`serviceconfig/olat.properies`
 and can be overwritten with `olat.local.properties`. Changes in olat.local.properties are
-reflected upon each restart of Tomcat. You can further override OpenOLAT settings with
+reflected upon each restart of Tomcat. You can further override OpenOlat settings with
 JVM arguments `-Dmy.option=enabled`.
 
 ### Compress javascript and CSS
@@ -219,8 +219,8 @@ mvn compile -Pcompressjs,tomcat
 
 ### REST API 
 
-To read the OpenOLAT REST API documentation:
-1. start OpenOLAT
+To read the OpenOlat REST API documentation:
+1. start OpenOlat
 2. go to Administration -> Core configuration -> REST API
 3. Make sure the REST API ist enabled
 4. Click the documentation link in the admin panel or open YOURSERVERURL/restapi/api/doc in your browser
@@ -332,7 +332,7 @@ with the options:
 -Dtest.env.db.postgresql.pass=serial
 ```
 
-To only run the OpenOLAT test suite and exclude the unit tests of QtiWorks, add the following
+To only run the OpenOlat test suite and exclude the unit tests of QtiWorks, add the following
 option:
 
 ```bash
@@ -376,14 +376,14 @@ mvn clean verify -DskipTests=true -DskipSeleniumTests=true -Ptomcat
 
 Run single test as JUnit Test in Eclipse
 
-### Experimental: setting up OpenOLAT on Eclipse with an Application Server
+### Experimental: setting up OpenOlat on Eclipse with an Application Server
 
-OpenOLAT supports only Apache Tomcat officially, but it can also run on other application
+OpenOlat supports only Apache Tomcat officially, but it can also run on other application
 servers like JBoss AS / Wildfly. This section is intended for people who have
 some minimal experience with these servers and can install a JDBC driver, set some
 JMS resources...
 
-As of OpenOLAT 10, we need WildFly because of JPA 2.1 (Hibernate 5.2.x)
+As of OpenOlat 10, we need WildFly because of JPA 2.1 (Hibernate 5.2.x)
 
 The beginning of the installation is the same as Tomcat as described above. To create
  your eclipse project, use these commands instead of the default one:
@@ -398,12 +398,12 @@ We need Hibernate 5.2, you need to use the tutorial to update the version of hib
 in Widlfly: http://docs.jboss.org/hibernate/orm/5.2/topical/html_single/wildfly/Wildfly.html
 
 Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
-`java:jboss/datasources/OpenOLATDS` and set this JNDI name in olat.local.properties set
+`java:jboss/datasources/OpenOlatDS` and set this JNDI name in olat.local.properties set
 the following properties:
 
 ```
 db.source=jndi
-db.jndi=java:jboss/datasources/OpenOLATDS
+db.jndi=java:jboss/datasources/OpenOlatDS
 cluster.mode=Cluster
 ```
 
