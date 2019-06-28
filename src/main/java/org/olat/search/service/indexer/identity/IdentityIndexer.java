@@ -20,12 +20,18 @@
 package org.olat.search.service.indexer.identity;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.BaseSecurityManager;
+import org.olat.basesecurity.IdentityPowerSearchQueries;
+import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.SearchIdentityParams;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
@@ -46,11 +52,9 @@ import org.olat.search.service.indexer.OlatFullIndexer;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class IdentityIndexer extends AbstractHierarchicalIndexer {
-	public final static String TYPE = "type.identity";
+	public static final String TYPE = "type.identity";
 
-	/**
-	 * @see org.olat.search.service.indexer.Indexer#getSupportedTypeName()
-	 */
+	@Override
 	public String getSupportedTypeName() {
 		return Identity.class.getSimpleName();	
 	}
@@ -100,6 +104,14 @@ public class IdentityIndexer extends AbstractHierarchicalIndexer {
 		if(roles.isGuestOnly()) {
 			return false;
 		}
-		return true;
+		
+		Long identityKey = contextEntry.getOLATResourceable().getResourceableId();
+		List<OrganisationRef> organisations = roles.getOrganisationsWithRoles(OrganisationRoles.valuesWithoutGuestAndInvitee());
+		SearchIdentityParams params = new SearchIdentityParams(null, null, false, null, 
+				null, null, null, null, null, Identity.STATUS_VISIBLE_LIMIT);
+		params.setOrganisations(organisations);
+		params.setIdentityKeys(Collections.singletonList(identityKey));
+		List<Identity> ids = CoreSpringFactory.getImpl(IdentityPowerSearchQueries.class).getIdentitiesByPowerSearch(params, 0, 1);
+		return !ids.isEmpty();
 	}
 }
