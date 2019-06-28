@@ -64,7 +64,7 @@ public class CourseNodePasswordManagerImpl implements CourseNodePasswordManager 
 		Identity identity = identityEnv == null ? null : identityEnv.getIdentity();
 		
 		String value;
-		if(identityEnv == null) {
+		if(identityEnv == null || identityEnv.getAttributes() == null) {// REST calls
 			value = null;
 		} else {
 			String key = generateKey(courseId, Long.valueOf(nodeIdent));
