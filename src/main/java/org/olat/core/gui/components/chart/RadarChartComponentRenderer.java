@@ -30,6 +30,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 
 /**
  * 
@@ -118,7 +119,9 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 		
 		sb.append("[");
 		for(int i=0; i<numOfSeries; i++) {
-			String name = StringHelper.escapeJavaScript(axis.get(i));
+			String name = axis.get(i);
+			name = FilterFactory.getHtmlTagAndDescapingFilter().filter(name);
+			name = StringHelper.escapeJavaScript(name);
 			sb.append("\"").append(name).append("\"");
 			if(i < (numOfSeries - 1)) {
 				sb.append(",");
@@ -132,7 +135,9 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 		
 		sb.append("[");
 		for(int i=0; i<numOfSeries; i++) {
-			String name = StringHelper.escapeJavaScript(series.get(i).getName());
+			String name = series.get(i).getName();
+			name = FilterFactory.getHtmlTagAndDescapingFilter().filter(name);
+			name = StringHelper.escapeJavaScript(name);
 			sb.append("\"").append(name).append("\"");
 			if(i < (numOfSeries - 1)) {
 				sb.append(",");
@@ -152,7 +157,9 @@ public class RadarChartComponentRenderer extends DefaultComponentRenderer {
 			int numOfPoints = points.size();
 			for(int j=0; j<numOfPoints; j++) {
 				RadarPoint point = points.get(j);
-				String axis = StringHelper.escapeJavaScript(point.getAxis());
+				String axis = point.getAxis();
+				axis = FilterFactory.getHtmlTagAndDescapingFilter().filter(axis);
+				axis = StringHelper.escapeJavaScript(axis);
 				sb.append("{axis:\"").append(axis).append("\",value:").append(point.getValue()).append("}");
 				if(j < (numOfPoints - 1)) {
 					sb.append(",");
