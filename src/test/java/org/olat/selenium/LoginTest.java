@@ -59,7 +59,7 @@ public class LoginTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void loadIndex(LoginPage loginPage) {
+	public void loadIndex() {
 		//check that the login page, or dmz is loaded
 		LoginPage.load(browser, deploymentUrl)
 			.assertOnLoginPage();
