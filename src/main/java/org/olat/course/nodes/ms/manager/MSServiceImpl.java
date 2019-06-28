@@ -194,12 +194,18 @@ public class MSServiceImpl implements MSService {
 				float rubricSumMin = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, true))
 						.getTotalStatistic()
 						.getSum().floatValue();
-				// If no responses the min is 0
-				rubricSumMin = rubricSumMin > 0? 0: rubricSumMin;
-				sumMin += rubricSumMin;
 				float rubricSumMax = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, false))
 						.getTotalStatistic()
 						.getSum().floatValue();
+				if (rubricSumMin > rubricSumMax) {
+					float temp = rubricSumMin;
+					rubricSumMin = rubricSumMax;
+					rubricSumMax = temp;
+				}
+				// If no responses the min is 0
+				rubricSumMin = rubricSumMin > 0? 0: rubricSumMin;
+				
+				sumMin += rubricSumMin;
 				sumMax += rubricSumMax;
 			}
 		}
@@ -223,11 +229,17 @@ public class MSServiceImpl implements MSService {
 				float rubricAvgMin = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, true))
 						.getTotalStatistic()
 						.getAvg().floatValue();
-				// If no responses the min is 0
-				rubricAvgMin = rubricAvgMin > 0? 0: rubricAvgMin;
 				float rubricAvgMax = evaluationFormManager.getRubricStatistic(rubric, getSlidersStatistic(rubric, false))
 						.getTotalStatistic()
 						.getAvg().floatValue();
+				// switch if descending scale
+				if (rubricAvgMin > rubricAvgMax) {
+					float temp = rubricAvgMin;
+					rubricAvgMin = rubricAvgMax;
+					rubricAvgMax = temp;
+				}
+				// If no responses the min is 0
+				rubricAvgMin = rubricAvgMin > 0? 0: rubricAvgMin;
 				int numberOfSliders = rubric.getSliders().size();
 				sumMin += numberOfSliders * rubricAvgMin;
 				sumMax += numberOfSliders * rubricAvgMax;
