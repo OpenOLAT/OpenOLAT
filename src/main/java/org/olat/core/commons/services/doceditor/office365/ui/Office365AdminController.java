@@ -78,6 +78,7 @@ public class Office365AdminController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("admin.title");
 		setFormDescription("admin.desc");
+		setFormWarning("admin.certification");
 		
 		enabledEl = uifactory.addCheckboxesHorizontal("admin.enabled", formLayout, ENABLED_KEYS, translateAll(getTranslator(), ENABLED_KEYS));
 		enabledEl.select(ENABLED_KEYS[0], office365Module.isEnabled());
