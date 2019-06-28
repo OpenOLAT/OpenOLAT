@@ -63,7 +63,6 @@ public class Office365AdminController extends FormBasicController {
 	private TextElement baseUrlEl;
 	private FormLink refreshDiscoveryLink;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
-	private MultipleSelectionElement usageRestrictedEl;
 	private MultipleSelectionElement usageRolesEl;
 
 	@Autowired
@@ -95,21 +94,15 @@ public class Office365AdminController extends FormBasicController {
 				translateAll(getTranslator(), ENABLED_KEYS));
 		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], office365Module.isDataTransferConfirmationEnabled());
 		
-		usageRestrictedEl = uifactory.addCheckboxesHorizontal("admin.usage.restricted", formLayout, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS));
-		usageRestrictedEl.setHelpTextKey("admin.usage.restricted.help", null);
-		usageRestrictedEl.select(ENABLED_KEYS[0], office365Module.isUsageRestricted());
-		usageRestrictedEl.addActionListener(FormEvent.ONCHANGE);
-		
 		KeyValues usageRolesKV = new KeyValues();
 		usageRolesKV.add(entry(USAGE_AUTHOR, translate("admin.usage.roles.author")));
 		usageRolesKV.add(entry(USAGE_COACH, translate("admin.usage.roles.coach")));
 		usageRolesKV.add(entry(USAGE_MANAGERS, translate("admin.usage.roles.managers")));
 		usageRolesEl = uifactory.addCheckboxesVertical("admin.usage.roles", formLayout, usageRolesKV.keys(), usageRolesKV.values(), 1);
+		usageRolesEl.setHelpTextKey("admin.usage.roles.help", null);
 		usageRolesEl.select(USAGE_AUTHOR, office365Module.isUsageRestrictedToAuthors());
 		usageRolesEl.select(USAGE_COACH, office365Module.isUsageRestrictedToCoaches());
 		usageRolesEl.select(USAGE_MANAGERS, office365Module.isUsageRestrictedToManagers());
-		updateUsageUI();
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -120,15 +113,8 @@ public class Office365AdminController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == refreshDiscoveryLink) {
 			doRefreshDiscovery();
-		} else if (source == usageRestrictedEl) {
-			updateUsageUI();
 		}
 		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void updateUsageUI() {
-		boolean usageRestricted = usageRestrictedEl.isAtLeastSelected(1);
-		usageRolesEl.setVisible(usageRestricted);
 	}
 	
 	@Override
@@ -157,9 +143,6 @@ public class Office365AdminController extends FormBasicController {
 		
 		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
 		office365Module.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
-		
-		boolean usageRestricted = usageRestrictedEl.isAtLeastSelected(1);
-		office365Module.setUsageRestricted(usageRestricted);
 		
 		Collection<String> restrictionKeys = usageRolesEl.getSelectedKeys();
 		office365Module.setUsageRestrictedToAuthors(restrictionKeys.contains(USAGE_AUTHOR));

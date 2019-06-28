@@ -39,7 +39,6 @@ public class CollaboraModule extends AbstractSpringModule implements ConfigOnOff
 	private static final String COLLABORA_ENABLED = "collabora.enabled";
 	private static final String COLLABORA_BASE_URL = "collabora.baseUrl";
 	private static final String COLLABORA_DATA_TRANSER_CONFIRMATION_ENABLED = "collabora.data.transfer.confirmation.enabled";
-	private static final String COLLABORA_USAGE_RESTRICTED = "collabora.usage.restricted";
 	private static final String COLLABORA_USAGE_AUTHORS = "collabora.usage.authors";
 	private static final String COLLABORA_USAGE_COACHES = "collabora.usage.coaches";
 	private static final String COLLABORA_USAGE_MANAGERS = "collabora.usage.managers";
@@ -50,8 +49,6 @@ public class CollaboraModule extends AbstractSpringModule implements ConfigOnOff
 	private String baseUrl;
 	@Value("${collabora.data.transfer.confirmation.enabled:false}")
 	private boolean dataTransferConfirmationEnabled;
-	@Value("${collabora.usage.restricted:false}")
-	private boolean usageRestricted;
 	@Value("${collabora.usage.restricted.authors:false}")
 	private boolean usageRestrictedToAuthors;
 	@Value("${collabora.usage.restricted.coaches:false}")
@@ -88,11 +85,6 @@ public class CollaboraModule extends AbstractSpringModule implements ConfigOnOff
 		String dataTransferConfirmationEnabledObj = getStringPropertyValue(COLLABORA_DATA_TRANSER_CONFIRMATION_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(dataTransferConfirmationEnabledObj)) {
 			dataTransferConfirmationEnabled = "true".equals(dataTransferConfirmationEnabledObj);
-		}
-		
-		String usageRestrictedObj = getStringPropertyValue(COLLABORA_USAGE_RESTRICTED, true);
-		if(StringHelper.containsNonWhitespace(usageRestrictedObj)) {
-			usageRestricted = "true".equals(usageRestrictedObj);
 		}
 		
 		String usageRestrictedToAuthorsObj = getStringPropertyValue(COLLABORA_USAGE_AUTHORS, true);
@@ -140,12 +132,7 @@ public class CollaboraModule extends AbstractSpringModule implements ConfigOnOff
 	}
 
 	public boolean isUsageRestricted() {
-		return usageRestricted;
-	}
-
-	public void setUsageRestricted(boolean usageRestricted) {
-		this.usageRestricted = usageRestricted;
-		setStringProperty(COLLABORA_USAGE_RESTRICTED, Boolean.toString(usageRestricted), true);
+		return usageRestrictedToAuthors || usageRestrictedToCoaches || usageRestrictedToManagers;
 	}
 
 	public boolean isUsageRestrictedToAuthors() {

@@ -29,12 +29,10 @@ import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeModule;
 import org.olat.core.commons.services.doceditor.onlyoffice.OnlyOfficeSecurityService;
 import org.olat.core.commons.services.doceditor.ui.DocEditorController;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
@@ -59,7 +57,6 @@ public class OnlyOfficeAdminController extends FormBasicController {
 	private TextElement baseUrlEl;
 	private TextElement jwtSecretEl;
 	private MultipleSelectionElement dataTransferConfirmationEnabledEl;
-	private MultipleSelectionElement usageRestrictedEl;
 	private MultipleSelectionElement usageRolesEl;
 
 	@Autowired
@@ -94,37 +91,19 @@ public class OnlyOfficeAdminController extends FormBasicController {
 				translateAll(getTranslator(), ENABLED_KEYS));
 		dataTransferConfirmationEnabledEl.select(ENABLED_KEYS[0], onlyOfficeModule.isDataTransferConfirmationEnabled());
 		
-		usageRestrictedEl = uifactory.addCheckboxesHorizontal("admin.usage.restricted", formLayout, ENABLED_KEYS,
-				translateAll(getTranslator(), ENABLED_KEYS));
-		usageRestrictedEl.setHelpTextKey("admin.usage.restricted.help", null);
-		usageRestrictedEl.select(ENABLED_KEYS[0], onlyOfficeModule.isUsageRestricted());
-		usageRestrictedEl.addActionListener(FormEvent.ONCHANGE);
-		
 		KeyValues usageRolesKV = new KeyValues();
 		usageRolesKV.add(entry(USAGE_AUTHOR, translate("admin.usage.roles.author")));
 		usageRolesKV.add(entry(USAGE_COACH, translate("admin.usage.roles.coach")));
 		usageRolesKV.add(entry(USAGE_MANAGERS, translate("admin.usage.roles.managers")));
 		usageRolesEl = uifactory.addCheckboxesVertical("admin.usage.roles", formLayout, usageRolesKV.keys(), usageRolesKV.values(), 1);
+		usageRolesEl.setHelpTextKey("admin.usage.roles.help", null);
 		usageRolesEl.select(USAGE_AUTHOR, onlyOfficeModule.isUsageRestrictedToAuthors());
 		usageRolesEl.select(USAGE_COACH, onlyOfficeModule.isUsageRestrictedToCoaches());
 		usageRolesEl.select(USAGE_MANAGERS, onlyOfficeModule.isUsageRestrictedToManagers());
-		updateUsageUI();
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
 		uifactory.addFormSubmitButton("save", buttonLayout);
-	}
-	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == usageRestrictedEl) {
-			updateUsageUI();
-		}
-		super.formInnerEvent(ureq, source, event);
-	}
-	
-	private void updateUsageUI() {
-		boolean usageRestricted = usageRestrictedEl.isAtLeastSelected(1);
-		usageRolesEl.setVisible(usageRestricted);
 	}
 	
 	@Override
@@ -159,9 +138,6 @@ public class OnlyOfficeAdminController extends FormBasicController {
 		
 		boolean dataTransferConfirmationEnabled = dataTransferConfirmationEnabledEl.isAtLeastSelected(1);
 		onlyOfficeModule.setDataTransferConfirmationEnabled(dataTransferConfirmationEnabled);
-		
-		boolean usageRestricted = usageRestrictedEl.isAtLeastSelected(1);
-		onlyOfficeModule.setUsageRestricted(usageRestricted);
 		
 		Collection<String> restrictionKeys = usageRolesEl.getSelectedKeys();
 		onlyOfficeModule.setUsageRestrictedToAuthors(restrictionKeys.contains(USAGE_AUTHOR));
