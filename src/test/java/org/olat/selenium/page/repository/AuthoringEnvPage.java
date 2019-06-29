@@ -228,10 +228,7 @@ public class AuthoringEnvPage {
 	 * @return
 	 */
 	public CoursePageFragment clickToolbarRootCrumb() {
-		By toolbarBackBy = By.xpath("//div[contains(@class,'o_breadcrumb')]/ol[contains(@class,'breadcrumb')]/li/a[contains(@onclick,'crumb_0')]");
-		OOGraphene.waitingALittleBit();// firefox will click the button without effect
-		browser.findElement(toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickBreadcrumbBack(browser);
 		return new CoursePageFragment(browser);
 	}
 	

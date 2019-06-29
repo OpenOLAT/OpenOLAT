@@ -63,6 +63,7 @@ public class OOGraphene {
 	
 	private static final Duration polling = Duration.ofMillis(100);
 	private static final Duration poolingSlow = Duration.ofMillis(200);
+	private static final Duration poolingSlower = Duration.ofMillis(400);
 	private static final Duration timeout = Duration.ofSeconds(5);
 
 	private static final By closeBlueBoxButtonBy = By.cssSelector("div.o_alert_info div.o_sel_info_message a.o_alert_close.o_sel_info_close");
@@ -167,6 +168,21 @@ public class OOGraphene {
 	public static void waitElement(By element, int timeoutInSeconds, WebDriver browser) {
 		new WebDriverWait(browser, driverTimeout)
 			.withTimeout(Duration.ofSeconds(timeoutInSeconds)).pollingEvery(polling)
+			.until(ExpectedConditions.visibilityOfElementLocated(element));
+	}
+	
+	/**
+	 * Wait until the element is visible. But slowly poll if the
+	 * element exists (every 333ms instead of 100ms)
+	 * 
+	 * @param element The selector for the element
+	 * @param timeoutInSeconds The timeout in seconds
+	 * @param browser The web driver
+	 */
+	public static void waitElementSlowly(By element, int timeoutInSeconds, WebDriver browser) {
+		new WebDriverWait(browser, driverTimeout)
+			.withTimeout(Duration.ofSeconds(timeoutInSeconds))
+			.pollingEvery(poolingSlower)
 			.until(ExpectedConditions.visibilityOfElementLocated(element));
 	}
 	
@@ -600,9 +616,14 @@ public class OOGraphene {
 		}
 	}
 	
+	/**
+	 * Click the "<" of the bread crumbs and wait.
+	 * 
+	 * @param browser The browser
+	 */
 	public static final void clickBreadcrumbBack(WebDriver browser) {
 		By backBy = By.xpath("//ol[@class='breadcrumb']/li[@class='o_breadcrumb_back']/a[i[contains(@class,'o_icon_back')]]");
-		waitElement(backBy, browser);
+		waitElement(backBy, 10, browser);
 		try {
 			browser.findElement(backBy).click();
 		} catch (StaleElementReferenceException e) {

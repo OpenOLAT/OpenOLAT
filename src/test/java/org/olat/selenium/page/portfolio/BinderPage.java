@@ -174,7 +174,7 @@ public class BinderPage {
 		browser.findElement(tocBy).click();
 		OOGraphene.waitBusy(browser);
 		By binderPageListBy = By.cssSelector("div.o_portfolio_entries");
-		OOGraphene.waitElement(binderPageListBy, browser);
+		OOGraphene.waitElementSlowly(binderPageListBy, 10, browser);
 		return this;
 	}
 	
