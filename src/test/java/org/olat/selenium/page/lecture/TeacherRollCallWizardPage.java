@@ -46,6 +46,7 @@ public class TeacherRollCallWizardPage {
 	
 	public TeacherRollCallWizardPage setAbsence(String lecture) {
 		By checkBy = By.xpath("//div[contains(@class,'o_rollcall_wizard')]//table//tr[1]/td[count(//div[contains(@class,'o_rollcall_wizard')]//table//tr/th[a[text()='" + lecture + "']]/preceding-sibling::th)+1]/div/label/input");
+		OOGraphene.waitElement(checkBy, browser);
 		WebElement checkEl = browser.findElement(checkBy);
 		OOGraphene.check(checkEl, Boolean.TRUE);
 		OOGraphene.waitBusy(browser);

@@ -365,6 +365,11 @@ mvn clean verify -DskipTests=true -Dwith-mysql -Ptomcat
 mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.db.postgresql.pass=serial -Ptomcat
 ```
 
+Or with Firefox
+
+```bash
+mvn clean verify -DskipTests=true -Dwith-postgresql -Dtest.env.webdriver.browser=firefox -Dtest.env.db.postgresql.pass=serial -Ptomcat
+```
 
 #### Execute a single selenium functional integration test in Eclipse
 

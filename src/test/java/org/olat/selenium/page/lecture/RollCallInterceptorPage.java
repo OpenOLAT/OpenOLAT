@@ -53,6 +53,7 @@ public class RollCallInterceptorPage {
 		By startWizardBy = By.cssSelector("div.o_sel_lecture_start_wizard a.o_sel_lecture_start_wizard");
 		browser.findElement(startWizardBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.className("o_rollcall_wizard"), browser);
 		return new TeacherRollCallWizardPage(browser);
 	}
 

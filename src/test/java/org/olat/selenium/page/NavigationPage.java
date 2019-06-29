@@ -79,7 +79,6 @@ public class NavigationPage {
 	
 	public AuthoringEnvPage openAuthoringEnvironment() {
 		navigate(authoringEnvTabBy);
-		backToTheTop();
 		OOGraphene.closeBlueMessageWindow(browser);
 		return new AuthoringEnvPage(browser);
 	}
@@ -160,23 +159,7 @@ public class NavigationPage {
 		browser.findElement(openMoreBy).click();
 		//wait the small transition
 		By openedMoreMenuby = By.cssSelector("#o_navbar_more ul.dropdown-menu.dropdown-menu-right");
-		OOGraphene.waitElement(openedMoreMenuby, 5, browser);
-	}
-	
-	public NavigationPage backToTheTop() {
-		List<WebElement> backList = browser.findElements(toolbarBackBy);
-		
-		int count = 0;
-		while(backList.size() > 0) {
-			backList.get(count).click();
-			OOGraphene.waitBusy(browser);
-			backList = browser.findElements(toolbarBackBy);
-			
-			Assert.assertTrue(count++ < 3);
-		}
-
-		OOGraphene.closeBlueMessageWindow(browser);
-		return this;
+		OOGraphene.waitElement(openedMoreMenuby, browser);
 	}
 	
 	public NavigationPage closeTab() {
