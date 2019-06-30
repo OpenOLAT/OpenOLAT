@@ -100,7 +100,7 @@ public class QTI21Page {
 	
 	public QTI21Page assertOnAssessmentItem(String title) {
 		By itemTitleBy = By.xpath("//div[@class='o_assessmentitem_wrapper']/h4[contains(normalize-space(.),'" + title + "')]");
-		OOGraphene.waitElement(itemTitleBy, 5, browser);
+		OOGraphene.waitElement(itemTitleBy, browser);
 		return this;
 	}
 	
