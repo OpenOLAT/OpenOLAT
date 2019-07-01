@@ -28,18 +28,15 @@ package org.olat.course.nodes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
-import org.olat.course.condition.additionalconditions.AdditionalConditionAnswerContainer;
 import org.olat.course.condition.additionalconditions.AdditionalConditionManager;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.userview.NodeEvaluation;
-
-import de.bps.course.nodes.CourseNodePasswordManagerImpl;
 
 /**
  * Initial Date: May 28, 2004
@@ -120,21 +117,19 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		// </OLATCE-91>
 		// for this node: only one role: accessing the node
-		boolean accessible = (getPreConditionAccess().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionAccess()));
+		boolean accessible = getPreConditionAccess().getConditionExpression() == null || ci.evaluateCondition(getPreConditionAccess());
 		// <OLATCE-91>
 		if(accessible){
 			Long courseId = ci.getUserCourseEnvironment().getCourseEnvironment().getCourseResourceableId();
-			Identity identity = ci.getUserCourseEnvironment().getIdentityEnvironment().getIdentity();
-			AdditionalConditionAnswerContainer answers= CourseNodePasswordManagerImpl.getInstance().getAnswerContainer(identity);
-
+			IdentityEnvironment identityEnv = ci.getUserCourseEnvironment().getIdentityEnvironment();
 			nodeEval.putAccessStatus(BLOCKED_BY_ORIGINAL_ACCESS_RULES, false);
-			AdditionalConditionManager addMan = new AdditionalConditionManager(this, courseId, answers);
+			AdditionalConditionManager addMan = new AdditionalConditionManager(this, courseId, identityEnv);
 			accessible = addMan.evaluateConditions();
 		}
 		// </OLATCE-91>
 		nodeEval.putAccessStatus("access", accessible);
-		boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
-				.evaluateCondition(getPreConditionVisibility()));
+		boolean visible = getPreConditionVisibility().getConditionExpression() == null
+				|| ci.evaluateCondition(getPreConditionVisibility());
 		nodeEval.setVisible(visible);
 	}
 

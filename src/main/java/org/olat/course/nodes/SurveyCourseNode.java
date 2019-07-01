@@ -228,7 +228,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 			setEvaluationFormReference(re, getModuleConfiguration());
-			postImportCopy(course);
+			postImportCopy(course, getIdent());
 		} else {
 			removeEvaluationFormReference(getModuleConfiguration());
 		}
@@ -237,7 +237,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
 		super.postCopy(envMapper, processType, course, sourceCrourse);
-		postImportCopy(course);
+		postImportCopy(course, getIdent());
 	}
 	
 	@Override
@@ -247,10 +247,6 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		return copyInstance;
 	}
 
-	private void postImportCopy(ICourse course) {
-		postImportCopy(course, getIdent());
-	}
-	
 	private void postImportCopy(ICourse course, String nodeIdent) {
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);

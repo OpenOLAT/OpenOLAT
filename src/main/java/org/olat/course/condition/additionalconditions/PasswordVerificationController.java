@@ -91,7 +91,7 @@ public class PasswordVerificationController extends FormBasicController {
 			if (valid) {
 				CourseNodePasswordManager cnpm = CourseNodePasswordManagerImpl.getInstance();
 				//used the identity of the user course environment for the preview of courses
-				cnpm.updatePwd(userCourseEnv.getIdentityEnvironment().getIdentity(), condition.getNodeIdentifier(), condition.getCourseId(), pwElement.getValue());
+				cnpm.updatePwd(userCourseEnv.getIdentityEnvironment(), condition.getNodeIdentifier(), condition.getCourseId(), pwElement.getValue());
 			} else {
 				pwElement.setErrorKey("password.incorrect", new String[0]);
 			}

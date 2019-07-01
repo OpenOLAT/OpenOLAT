@@ -22,8 +22,11 @@ package org.olat.course.condition.additionalconditions;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+
+import de.bps.course.nodes.CourseNodePasswordManagerImpl;
 
 /**
  * Only a placeholder to import courses from other vendors
@@ -41,7 +44,7 @@ public class PasswordCondition extends AdditionalCondition {
 	@SuppressWarnings("unused") @Deprecated
 	private String answer;
 	
-	public final static String PASSWORD_ENDING = "password";
+	public static final String PASSWORD_ENDING = "password";
 	// </OLATCE-91>
 
 	public AbstractAccessableCourseNode getNode() {
@@ -52,17 +55,13 @@ public class PasswordCondition extends AdditionalCondition {
 	@Override
 	public boolean evaluate(Object userAnswerObj) {
 		String userAnswer = null;
-		if(userAnswerObj instanceof AdditionalConditionAnswerContainer) {
-			AdditionalConditionAnswerContainer answersContainer = (AdditionalConditionAnswerContainer)userAnswerObj;
-			Object obj = answersContainer.getAnswers(node.getIdent(), courseId); 
-			if(obj instanceof PasswordStore){
-				userAnswer = ((PasswordStore)obj).getPassword();
-			}
+		if(userAnswerObj instanceof IdentityEnvironment) {
+			IdentityEnvironment identityEnv = (IdentityEnvironment)userAnswerObj;
+			userAnswer = CourseNodePasswordManagerImpl.getInstance().getAnswer(identityEnv, courseId, node.getIdent());
 		} else if(userAnswerObj instanceof String) {
 			userAnswer = (String)userAnswerObj;
 		}
-
-		return password==null ? true : password.equals(userAnswer); 
+		return password == null || password.equals(userAnswer); 
 	}
 
 	@Override
