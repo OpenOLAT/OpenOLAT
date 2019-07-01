@@ -40,10 +40,13 @@ import org.apache.http.util.EntityUtils;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.GroupMembership;
+import org.olat.basesecurity.GroupMembershipInheritance;
 import org.olat.basesecurity.OrganisationManagedFlag;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.OrganisationType;
+import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -75,6 +78,8 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 	
 	@Autowired
 	private DB dbInstance;
+	@Autowired
+	private GroupDAO groupDao;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -319,6 +324,89 @@ public class OrganisationsWebServiceTest extends OlatJerseyTestCase {
 		Assert.assertEquals(savedVo.getKey(), savedOrganisation.getKey());
 		Assert.assertEquals(organisation2, savedOrganisation.getParent());
 		Assert.assertEquals(parentOrganisation, savedOrganisation.getRoot());
+	}
+	
+	@Test
+	public void updateAndMoveOrganisation_members()
+	throws IOException, URISyntaxException {
+		RestConnection conn = new RestConnection();
+		assertTrue(conn.login("administrator", "openolat"));
+		
+		Organisation parentOrganisation = organisationService.createOrganisation("REST Parent Organisation 4", "REST-p-4-organisation", "", null, null);
+		OrganisationType type = organisationService.createOrganisationType("REST Type", "rest-type", "A type for REST");
+		Organisation organisation1 = organisationService.createOrganisation("REST Organisation 1", "REST-p-5-organisation", "", parentOrganisation, type);
+		Organisation organisation2 = organisationService.createOrganisation("REST Organisation 2", "REST-p-6-organisation", "", parentOrganisation, type);
+		dbInstance.commitAndCloseSession();
+
+		Identity userManagerOrg1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-mgr-1");
+		Identity userManagerOrg2 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-mgr-2");
+		Identity user1 = JunitTestHelper.createAndPersistIdentityAsRndUser("user-1");
+		Identity user2 = JunitTestHelper.createAndPersistIdentityAsRndUser("user2");
+		organisationService.addMember(organisation1, userManagerOrg1, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation2, userManagerOrg2, OrganisationRoles.usermanager);
+		organisationService.addMember(organisation1, user1, OrganisationRoles.user);
+		organisationService.addMember(organisation2, user2, OrganisationRoles.user);
+		dbInstance.commitAndCloseSession();
+		
+		OrganisationVO organisationVo2 = OrganisationVO.valueOf(organisation2);
+		organisationVo2.setParentOrganisationKey(organisation1.getKey());
+
+		URI request = UriBuilder.fromUri(getContextURI()).path("organisations").build();
+		HttpPut method = conn.createPut(request, MediaType.APPLICATION_JSON, true);
+		conn.addJsonEntity(method, organisationVo2);
+		
+		HttpResponse response = conn.execute(method);
+		Assert.assertThat(response.getStatusLine().getStatusCode(), Matchers.either(Matchers.is(200)).or(Matchers.is(201)));
+		
+		// checked VO
+		OrganisationVO savedVo = conn.parse(response, OrganisationVO.class);
+		Assert.assertNotNull(savedVo);
+		Assert.assertNotNull(savedVo.getKey());
+		Assert.assertEquals(organisation2.getKey(), savedVo.getKey());
+		Assert.assertEquals(organisation1.getKey(), savedVo.getParentOrganisationKey());
+		Assert.assertEquals(parentOrganisation.getKey(), savedVo.getRootOrganisationKey());
+		
+		// checked database
+		Organisation savedOrganisation = organisationService.getOrganisation(new OrganisationRefImpl(savedVo.getKey()));
+		Assert.assertNotNull(savedOrganisation);
+		Assert.assertEquals(savedVo.getKey(), savedOrganisation.getKey());
+		Assert.assertEquals(organisation1, savedOrganisation.getParent());
+		Assert.assertEquals(parentOrganisation, savedOrganisation.getRoot());
+		
+		// check memberships
+		
+		// user manager of organization 1
+		GroupMembership userManagerOrg1Membership = groupDao.getMembership(organisation1.getGroup(), userManagerOrg1, OrganisationRoles.usermanager.name());
+		Assert.assertNotNull(userManagerOrg1Membership);
+		Assert.assertEquals(GroupMembershipInheritance.root, userManagerOrg1Membership.getInheritanceMode());
+		
+		GroupMembership userManagerOrg12Membership = groupDao.getMembership(organisation2.getGroup(), userManagerOrg1, OrganisationRoles.usermanager.name());
+		Assert.assertNotNull(userManagerOrg12Membership);
+		Assert.assertEquals(GroupMembershipInheritance.inherited, userManagerOrg12Membership.getInheritanceMode());
+		
+		// user manager of organization 2
+		GroupMembership userManagerOrg2Membership = groupDao.getMembership(organisation1.getGroup(), userManagerOrg2, OrganisationRoles.usermanager.name());
+		Assert.assertNull(userManagerOrg2Membership);
+		
+		GroupMembership userManagerOrg22Membership = groupDao.getMembership(organisation2.getGroup(), userManagerOrg2, OrganisationRoles.usermanager.name());
+		Assert.assertNotNull(userManagerOrg22Membership);
+		Assert.assertEquals(GroupMembershipInheritance.root, userManagerOrg22Membership.getInheritanceMode());
+		
+		// user 1
+		GroupMembership user1Membership = groupDao.getMembership(organisation1.getGroup(), user1, OrganisationRoles.user.name());
+		Assert.assertNotNull(user1Membership);
+		Assert.assertEquals(GroupMembershipInheritance.none, user1Membership.getInheritanceMode());
+		
+		GroupMembership user12Membership = groupDao.getMembership(organisation2.getGroup(), user1, OrganisationRoles.user.name());
+		Assert.assertNull(user12Membership);
+		
+		// user 2
+		GroupMembership user2Membership = groupDao.getMembership(organisation1.getGroup(), user2, OrganisationRoles.user.name());
+		Assert.assertNull(user2Membership);
+		
+		GroupMembership user22Membership = groupDao.getMembership(organisation2.getGroup(), user2, OrganisationRoles.user.name());
+		Assert.assertNotNull(user22Membership);
+		Assert.assertEquals(GroupMembershipInheritance.none, user22Membership.getInheritanceMode());
 	}
 	
 	@Test
