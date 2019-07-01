@@ -31,19 +31,19 @@ import org.olat.modules.quality.analysis.TemporalKey;
  */
 public class RawGroupedStatisticImpl implements RawGroupedStatistic {
 	
-	private final String identitfier;
+	private final String identifier;
 	private final MultiKey multiKey;
 	private final TemporalKey temporalKey;
 	private final Long count;
 	private final Double rawAvg;
 	
-	public RawGroupedStatisticImpl(String identitfier, String groupedKey1, String groupedKey2, String groupedKey3,
+	public RawGroupedStatisticImpl(String identifier, String groupedKey1, String groupedKey2, String groupedKey3,
 			String temporalKey, Long count, Double rawAvg) {
-		this(identitfier, MultiKey.of(groupedKey1, groupedKey2, groupedKey3), TemporalKey.parse(temporalKey), count, rawAvg);
+		this(identifier, MultiKey.of(groupedKey1, groupedKey2, groupedKey3), TemporalKey.parse(temporalKey), count, rawAvg);
 	}
 
-	public RawGroupedStatisticImpl(String identitfier, MultiKey multiKey, TemporalKey temporalKey, Long count, Double rawAvg) {
-		this.identitfier = identitfier;
+	public RawGroupedStatisticImpl(String identifier, MultiKey multiKey, TemporalKey temporalKey, Long count, Double rawAvg) {
+		this.identifier = identifier;
 		this.multiKey = multiKey;
 		this.temporalKey = temporalKey;
 		this.count = count;
@@ -52,7 +52,7 @@ public class RawGroupedStatisticImpl implements RawGroupedStatistic {
 
 	@Override
 	public String getIdentifier() {
-		return identitfier;
+		return identifier;
 	}
 
 	@Override
@@ -79,7 +79,7 @@ public class RawGroupedStatisticImpl implements RawGroupedStatistic {
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
 		builder.append("RawGroupedStatisticImpl [identitfier=");
-		builder.append(identitfier);
+		builder.append(identifier);
 		builder.append(", multiKey=");
 		builder.append(multiKey);
 		builder.append(", temporalKey=");
