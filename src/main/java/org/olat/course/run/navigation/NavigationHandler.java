@@ -47,7 +47,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.title.TitledWrapperController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
@@ -61,7 +61,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.course.condition.additionalconditions.AdditionalConditionAnswerContainer;
 import org.olat.course.condition.additionalconditions.AdditionalConditionManager;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
@@ -75,13 +74,8 @@ import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.util.logging.activity.LoggingResourceable;
 
-import de.bps.course.nodes.CourseNodePasswordManager;
-import de.bps.course.nodes.CourseNodePasswordManagerImpl;
-
 
 /**
- * Description: <br>
- * TODO: Felix Jost Class Description for NavigationHandler
  * Initial Date: 19.01.2005 <br>
  * @author Felix Jost
  */
@@ -93,9 +87,9 @@ public class NavigationHandler implements Disposable {
 	
 	private String selectedCourseNodeId;
 	private TreeFilter filter;
-	private Set<String> openCourseNodeIds = new HashSet<String>();
-	private List<String> openTreeNodeIds = new ArrayList<String>();
-	private Map<String,SubTree> externalTreeModels = new HashMap<String,SubTree>();
+	private Set<String> openCourseNodeIds = new HashSet<>();
+	private List<String> openTreeNodeIds = new ArrayList<>();
+	private Map<String,SubTree> externalTreeModels = new HashMap<>();
 
 	/**
 	 * @param userCourseEnv
@@ -181,7 +175,6 @@ public class NavigationHandler implements Disposable {
 			}
 			
 			if (subtreemodelListener == null) {
-				//throw new AssertException("no handler for subtreemodelcall!");
 				//reattach the subtreemodellistener
 				TreeNode internNode = getFirstInternParentNode(selTN);
 				NodeEvaluation prevEval = (NodeEvaluation) internNode.getUserObject();
@@ -374,10 +367,8 @@ public class NavigationHandler implements Disposable {
 			AdditionalConditionManager addMan = null;
 			if (courseNode instanceof AbstractAccessableCourseNode) {
 				Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-				CourseNodePasswordManager cnpm = CourseNodePasswordManagerImpl.getInstance();
-				Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-				AdditionalConditionAnswerContainer answerContainer = cnpm.getAnswerContainer(identity);
-				addMan = new AdditionalConditionManager( (AbstractAccessableCourseNode) courseNode, courseId, answerContainer);
+				IdentityEnvironment identityEnv = userCourseEnv.getIdentityEnvironment();
+				addMan = new AdditionalConditionManager((AbstractAccessableCourseNode)courseNode, courseId, identityEnv);
 			}
 			
 			if (!mayAccessWholeTreeUp|| (addMan != null && !addMan.evaluateConditions())) {
