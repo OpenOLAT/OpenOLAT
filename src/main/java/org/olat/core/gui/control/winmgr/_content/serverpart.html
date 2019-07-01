@@ -95,7 +95,24 @@ function tick () {
 						if (ts > sbtimestamp) {
 							window.onunload=null;
 							window.onbeforeunload=null;
-							window.location='$sburi/';
+							## First probe if the standby window mapper is available
+							jQuery.ajax({
+								method:'get',
+								url:'$sburi/',
+								cache: false,
+								success:function() {
+									## OK, so redirect to standby
+									window.location='$sburi/';
+								},
+								error: function() {
+									## NOK: standby not available. This happens when the other opened window can not be detected
+									## (e.g. in other browser or loaded from a bookmark etc). Normally this is already done by onPollFailure,
+									## but this does not catch all cases. 
+								  	## Only solution: stop poller as this triggers some fancy ***.dms file downloads
+									o_info.poller.cancel(); 
+								}
+							})();
+							
 						}
 					} catch (e) {
 						// does not matter
@@ -127,8 +144,14 @@ function onPollSuccess(content, s, response) {
 	}
 }
 
-function onPollFailure() {
+function onPollFailure(response) {
   pollError++;
+  if(response.status == 404) { 
+	  ## Not found - happens when user opened a second window and logged in while in the first window the poller is still running. 
+	  ## Note: when in standby-mode this does not happen as the user session is still valid and the standby document exists.
+	  ## Only solution: stop poller as this triggers some fancy ***.dms file downloads
+	  o_info.poller.cancel(); 
+  }
 }
 /* ]]> */
 </script>
