@@ -26,7 +26,8 @@
 
 package org.olat.core.util.vfs.filters;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.olat.core.util.vfs.VFSItem;
 
@@ -39,7 +40,7 @@ import org.olat.core.util.vfs.VFSItem;
  * 
  */
 public class VFSItemSuffixFilter implements VFSItemFilter {
-	private Hashtable<String,String> suffixes = new Hashtable<String,String>();
+	private Map<String,String> suffixes = new HashMap<>();
 
 	/**
 	 * Constructor
@@ -66,9 +67,7 @@ public class VFSItemSuffixFilter implements VFSItemFilter {
 		suffixes.remove(suffix.toLowerCase());
 	}
 
-	/**
-	 * @see org.olat.core.util.vfs.filters.VFSItemFilter#accept(org.olat.core.util.vfs.VFSItem)
-	 */
+	@Override
 	public boolean accept(VFSItem vfsItem) {
 		String name = vfsItem.getName().toLowerCase();
 		int idx = name.lastIndexOf('.');
