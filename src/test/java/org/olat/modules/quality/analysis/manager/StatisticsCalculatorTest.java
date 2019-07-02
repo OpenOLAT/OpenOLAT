@@ -20,7 +20,15 @@
 package org.olat.modules.quality.analysis.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
+import static org.olat.test.JunitTestHelper.random;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -29,6 +37,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.ScaleType;
+import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
 import org.olat.modules.quality.analysis.MultiKey;
@@ -310,5 +319,72 @@ public class StatisticsCalculatorTest {
 		Trend trend3 = series.getTrend(3);
 		assertThat(trend3.getDirection()).isEqualTo(DIRECTION.UP);
 	}
+	
+	@Test
+	public void shouldReduceIdentifier() {
+		// Rubric 1
+		List<Slider> sliders1 = new ArrayList<>();
+		Slider slider11 = new Slider();
+		slider11.setId(random());
+		slider11.setWeight(1);
+		sliders1.add(slider11);
+		Slider slider12 = new Slider();
+		slider12.setId(random());
+		slider12.setWeight(2);
+		sliders1.add(slider12);
+		Rubric rubric1 = new Rubric();
+		rubric1.setId(random());
+		rubric1.setSliders(sliders1);
+		// Rubric2
+		List<Slider> sliders2 = new ArrayList<>();
+		Slider slider21 = new Slider();
+		slider21.setId(random());
+		slider21.setWeight(3);
+		sliders2.add(slider21);
+		Rubric rubric2 = new Rubric();
+		rubric2.setId(random());
+		rubric2.setSliders(sliders2);
+		Set<Rubric> rubrics = new HashSet<>();
+		rubrics.add(rubric1);
+		rubrics.add(rubric2);
+		// Raw statistics
+		MultiKey multiKey1 = MultiKey.of("1");
+		MultiKey multiKey2 = MultiKey.of("2");
+		TemporalKey temporalKey1 = TemporalKey.of(1);
+		TemporalKey temporalKey2 = TemporalKey.of(2);
+		List<RawGroupedStatistic> statisticsList = new ArrayList<>();
+		statisticsList.add(new RawGroupedStatisticImpl(slider11.getId(), multiKey1, temporalKey1, 1l, 1.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey1, temporalKey1, 1l, 1.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider21.getId(), multiKey1, temporalKey1, 1l, 1.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider11.getId(), multiKey1, temporalKey2, 2l, 1.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey1, temporalKey2, 2l, 2.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider21.getId(), multiKey1, temporalKey2, 2l, 3.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey2, temporalKey1, 100l, 20.2));
+		statisticsList.add(new RawGroupedStatisticImpl(slider11.getId(), multiKey2, temporalKey2, 3l, 3.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey2, temporalKey2, 2l, 2.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider21.getId(), multiKey2, temporalKey2, 1l, 1.0));
+		
+		List<RawGroupedStatistic> reducedStatistics = sut.reduceIdentifier(statisticsList, rubrics);
+		
+		SoftAssertions softly = new SoftAssertions();
+		assertReducedIdentifier(softly, reducedStatistics, multiKey1, temporalKey1, 3l, 1);
+		assertReducedIdentifier(softly, reducedStatistics, multiKey1, temporalKey2, 6l, 2.33);
+		assertReducedIdentifier(softly, reducedStatistics, multiKey2, temporalKey1, 100l, 20.2);
+		assertReducedIdentifier(softly, reducedStatistics, multiKey2, temporalKey2, 6l, 2);
+		softly.assertAll();
+	}
+
+	private void assertReducedIdentifier(SoftAssertions softly, List<RawGroupedStatistic> statistics,
+			MultiKey multiKey, TemporalKey temporalKey, long expectedCount, double expectedAvg) {
+		for (RawGroupedStatistic statistic : statistics) {
+			if (multiKey.equals(statistic.getMultiKey()) && temporalKey.equals(statistic.getTemporalKey())) {
+				softly.assertThat(statistic.getCount()).as("Count of %s, %s is wrong", multiKey, temporalKey).isEqualTo(expectedCount);
+				softly.assertThat(statistic.getRawAvg()).as("Average of %s, %s is wrong", multiKey, temporalKey).isEqualTo(expectedAvg, offset(0.01));
+				return;
+			}
+		}
+		softly.fail("No statistic for %s, %s", multiKey, temporalKey);
+	}
+
 
 }

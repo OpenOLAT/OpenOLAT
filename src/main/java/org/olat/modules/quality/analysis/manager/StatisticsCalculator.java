@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -46,6 +47,7 @@ import org.olat.modules.quality.analysis.TemporalKey;
 import org.olat.modules.quality.analysis.Trend;
 import org.olat.modules.quality.analysis.Trend.DIRECTION;
 import org.olat.modules.quality.analysis.model.GroupedStatisticImpl;
+import org.olat.modules.quality.analysis.model.RawGroupedStatisticImpl;
 import org.olat.modules.quality.analysis.model.TrendImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -111,6 +113,58 @@ public class StatisticsCalculator {
 		log.debug("Grouped statistic:        " + statistic.toString());
 		return statistic;
 	}
+	
+	List<RawGroupedStatistic> reduceIdentifier(List<RawGroupedStatistic> statisticsList, Set<Rubric> rubrics) {
+		Map<String, Integer> sliderToWeight = rubrics.stream()
+				.map(Rubric::getSliders)
+				.flatMap(s -> s.stream())
+				.collect(Collectors.toMap(Slider::getId, Slider::getWeight));
+		List<MultiKey> multiKeys = statisticsList.stream()
+				.map(RawGroupedStatistic::getMultiKey)
+				.distinct()
+				.collect(Collectors.toList());
+		List<TemporalKey> temporalKeys = statisticsList.stream()
+				.map(RawGroupedStatistic::getTemporalKey)
+				.distinct()
+				.collect(Collectors.toList());
+		
+		List<RawGroupedStatistic> statistics = new ArrayList<>();
+		for (MultiKey multiKey: multiKeys) {
+			for (TemporalKey temporalKey: temporalKeys) {
+				List<RawGroupedStatistic> keysStatistics = filterByKey(statisticsList, multiKey, temporalKey);
+				CountAvg countAvg = getCountAvg(keysStatistics, sliderToWeight);
+				RawGroupedStatisticImpl reducedStatistic = new RawGroupedStatisticImpl(null, multiKey, temporalKey,
+						countAvg.getCount(), countAvg.getAvg());
+				statistics.add(reducedStatistic);
+			}
+		}
+		return statistics;
+	}
+
+	private List<RawGroupedStatistic> filterByKey(List<RawGroupedStatistic> statisticsList, MultiKey multiKey,
+			TemporalKey temporalKey) {
+		return statisticsList.stream()
+				.filter(s -> multiKey.equals(s.getMultiKey()) && temporalKey.equals(s.getTemporalKey()))
+				.collect(Collectors.toList());
+	}
+
+	private CountAvg getCountAvg(List<RawGroupedStatistic> keysStatistics, Map<String, Integer> sliderToWeight) {
+		long count = 0;
+		int sumCount = 0;
+		double sumValues = 0;
+		for (RawGroupedStatistic statistic : keysStatistics) {
+			long statisticCount = statistic.getCount()!= null? statistic.getCount().longValue(): 0;
+			count += statisticCount;
+			Integer weight = sliderToWeight.get(statistic.getIdentifier());
+			sumCount += statisticCount * weight;
+			double statisticAvg = statistic.getRawAvg()!= null? statistic.getRawAvg().doubleValue(): 0;
+			sumValues += statisticAvg * statisticCount * weight;
+		}
+		return count > 0
+				? new CountAvg(count, sumValues / sumCount)
+				: new CountAvg(null, null);
+	}
+
 
 	MultiTrendSeries<String> getTrendsByIdentifiers(GroupedStatistics<GroupedStatistic> statistics, TemporalGroupBy temporalGroupBy) {
 		Set<TemporalKey> temporalKeys = new HashSet<>();
@@ -208,6 +262,26 @@ public class StatisticsCalculator {
 			direction = rawAvgMaxGood? DIRECTION.DOWN: DIRECTION.UP;
 		}
 		return direction;
+	}
+	
+	private static class CountAvg {
+		
+		private final Long count;
+		private final Double avg;
+		
+		private CountAvg(Long count, Double avg) {
+			this.count = count;
+			this.avg = avg;
+		}
+
+		public Long getCount() {
+			return count;
+		}
+
+		public Double getAvg() {
+			return avg;
+		}
+
 	}
 
 }

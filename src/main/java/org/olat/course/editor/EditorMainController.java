@@ -942,16 +942,28 @@ public class EditorMainController extends MainLayoutBasicController implements G
 			position = atTheEnd ? -1 : 0;
 		} else {
 			CourseEditorTreeNode selectedNode = cetm.getCourseEditorNodeById(targetNodeId);
+			CourseEditorTreeNode droppedEditorNode = cetm.getCourseEditorNodeById(droppedNodeId);
 			if(selectedNode.getParent() == null) {
 				//root node
 				insertParent = selectedNode;
 				position = 0;
 			} else {
+				boolean currentlySiblings = droppedEditorNode != null && droppedEditorNode.getParent() != null
+						&& droppedEditorNode.getParent().getIdent().equals(selectedNode.getParent().getIdent());
+
 				insertParent = course.getEditorTreeModel().getCourseEditorNodeById(selectedNode.getParent().getIdent());
-				position = 0;
+				int currentDroppedNodePosition;
+				for(currentDroppedNodePosition=insertParent.getChildCount(); currentDroppedNodePosition-->0; ) {
+					if(insertParent.getChildAt(currentDroppedNodePosition).getIdent().equals(droppedNode.getIdent())) {
+						break;
+					}
+				}
+
 				for(position=insertParent.getChildCount(); position-->0; ) {
 					if(insertParent.getChildAt(position).getIdent().equals(selectedNode.getIdent())) {
-						position++;
+						if(!currentlySiblings || currentDroppedNodePosition > position) {
+							position++;
+						}
 						break;
 					}
 				}

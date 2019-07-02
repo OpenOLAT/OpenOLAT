@@ -211,9 +211,11 @@ public abstract class GroupByController extends FormBasicController implements F
 	}
 
 	protected Set<Rubric> getTrendRubrics() {
+		// All rubrics
 		if (!StringHelper.containsNonWhitespace(rubricId)) {
 			return getSliders().stream().map(SliderWrapper::getRubric).distinct().collect(toSet());
 		}
+		// Single rubric
 		Set<Rubric> rubrics = new HashSet<>();
 		rubrics.add(getRubricById(rubricId));
 		return rubrics;

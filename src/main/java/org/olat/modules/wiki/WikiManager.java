@@ -62,6 +62,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSItemSuffixFilter;
 import org.olat.core.util.vfs.filters.VFSLeafFilter;
 import org.olat.course.CourseModule;
@@ -204,7 +205,7 @@ public class WikiManager {
 	 * @param file
 	 * @param destFile
 	 */
-	private final static void resetAndCopyProperties(Path file, Path destFile) {
+	private static final void resetAndCopyProperties(Path file, Path destFile) {
 		Properties props = new Properties();
 		try (InputStream inStream = Files.newInputStream(file);
 				OutputStream outStream = Files.newOutputStream(destFile)) {
@@ -380,7 +381,7 @@ public class WikiManager {
 				element.delete();
 			}
 			//reset forum key and author references keys back to default as users and forums may not exist
-			List<VFSItem> propertyLeafs = wikiCtn.getItems(new VFSItemSuffixFilter(new String[] { WikiManager.WIKI_PROPERTIES_SUFFIX }));
+			List<VFSItem> propertyLeafs = wikiCtn.getItems(new PropertiesFilter());
 			for (Iterator<VFSItem> iter = propertyLeafs.iterator(); iter.hasNext();) {
 				VFSLeaf element = (VFSLeaf) iter.next();
 				WikiPage page = Wiki.assignPropertiesToPage(element);
@@ -435,7 +436,7 @@ public class WikiManager {
 			// folders should be present, create the wiki
 			Wiki wiki = new Wiki(getWikiRootContainer(ores));
 			// filter for xyz.properties files
-			List<VFSItem> wikiLeaves = folder.getItems(new VFSItemSuffixFilter(new String[] { WikiManager.WIKI_PROPERTIES_SUFFIX }));
+			List<VFSItem> wikiLeaves = folder.getItems(new PropertiesFilter());
 			for (Iterator<VFSItem> iter = wikiLeaves.iterator(); iter.hasNext();) {
 				VFSLeaf propertiesFile = (VFSLeaf) iter.next();
 				WikiPage page = Wiki.assignPropertiesToPage(propertiesFile);
@@ -455,7 +456,7 @@ public class WikiManager {
 
 				// due to a bug we have to rename some pages that start with an non
 				// ASCII lowercase letter
-				String idOutOfFileName = propertiesFile.getName().substring(0, propertiesFile.getName().indexOf("."));
+				String idOutOfFileName = propertiesFile.getName().substring(0, propertiesFile.getName().indexOf('.'));
 				if (!page.matchIds(idOutOfFileName)) {
 					// rename corrupt prop file
 					propertiesFile.rename(page.getPageId() + "." + WikiManager.WIKI_PROPERTIES_SUFFIX);
@@ -784,4 +785,11 @@ public class WikiManager {
 		return fileResourceManager;
 	}
 	
+	private static class PropertiesFilter implements VFSItemFilter {
+		@Override
+		public boolean accept(VFSItem vfsItem) {
+			return !vfsItem.isHidden() && vfsItem.getName().toLowerCase()
+					.endsWith(WIKI_DOT_PROPERTIES_SUFFIX);
+		}
+	}
 }

@@ -321,11 +321,25 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 		if (groupBy == null || temporalGroupBy == null || rubrics == null || rubrics.size() == 0) return new MultiTrendSeries<>();
 		
 		List<String> identifiers = rubrics.stream().map(Rubric::getSliders).flatMap(s -> s.stream()).map(Slider::getId).collect(toList());
-		List<RawGroupedStatistic> statisticsList = filterDao.loadGroupedStatistic(searchParams,
-				identifiers, false, groupBy, temporalGroupBy);
+		List<RawGroupedStatistic> statisticsList;
+		if (hasWeights(rubrics)) {
+			statisticsList = filterDao.loadGroupedStatistic(searchParams, identifiers, true, groupBy, temporalGroupBy);
+			statisticsList = statisticsCalculator.reduceIdentifier(statisticsList, rubrics);
+		} else {
+			statisticsList = filterDao.loadGroupedStatistic(searchParams, identifiers, false, groupBy, temporalGroupBy);
+		}
 		GroupedStatistics<RawGroupedStatistic> rawStatistics = new GroupedStatistics<>(statisticsList);
 		GroupedStatistics<GroupedStatistic> statistics = statisticsCalculator.getGroupedStatistics(rawStatistics, rubrics);
 		return statisticsCalculator.getTrendsByMultiKey(statistics, temporalGroupBy);
+	}
+
+	private boolean hasWeights(Set<Rubric> rubrics) {
+		return rubrics.stream()
+				.map(Rubric::getSliders)
+				.flatMap(s -> s.stream())
+				.filter(s -> s.getWeight().intValue() != 1)
+				.findAny()
+				.isPresent();
 	}
 
 	@Override
