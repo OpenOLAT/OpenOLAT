@@ -17,51 +17,45 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.fileresource.types;
+package org.olat.modules.video.spi.youtube.model;
+
+import org.olat.fileresource.types.ResourceEvaluation;
 
 /**
  * 
- * Initial date: 30.04.2014<br>
+ * Initial date: 2 juil. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ResourceEvaluation {
-
-	private boolean valid;
-	private String displayname;
+public class YoutubeMetadata {
+	
+	private String title;
 	private String description;
+	private String authors;
 	private String license;
 	private String licensor;
-	private String authors;
-	private Long duration;
-	private boolean references;
+	private long duration;
+	private String thumbnailUrl;
 	
-	public ResourceEvaluation() {
-		//
-	}
-	
-	public ResourceEvaluation(boolean valid) {
-		this.valid = valid;
-	}
-	
-	public static ResourceEvaluation notValid() {
-		return new ResourceEvaluation(false);
-	}
-	
-	public boolean isValid() {
-		return valid;
-	}
-
-	public void setValid(boolean valid) {
-		this.valid = valid;
-	}
-
-	public String getDisplayname() {
-		return displayname;
+	public ResourceEvaluation toResourceEvaluation() {
+		ResourceEvaluation eval = new ResourceEvaluation();
+		eval.setDisplayname(title);
+		eval.setDescription(description);
+		if(duration > 0) {
+			eval.setDuration(Long.valueOf(duration));
+		}
+		eval.setLicense(license);
+		eval.setLicensor(licensor);
+		eval.setAuthors(authors);
+		return eval;
 	}
 	
-	public void setDisplayname(String displayname) {
-		this.displayname = displayname;
+	public String getTitle() {
+		return title;
+	}
+	
+	public void setTitle(String title) {
+		this.title = title;
 	}
 	
 	public String getDescription() {
@@ -71,14 +65,6 @@ public class ResourceEvaluation {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
-	public boolean isReferences() {
-		return references;
-	}
-	
-	public void setReferences(boolean references) {
-		this.references = references;
-	}
 
 	public String getLicense() {
 		return license;
@@ -87,7 +73,7 @@ public class ResourceEvaluation {
 	public void setLicense(String license) {
 		this.license = license;
 	}
-
+	
 	public String getLicensor() {
 		return licensor;
 	}
@@ -96,19 +82,30 @@ public class ResourceEvaluation {
 		this.licensor = licensor;
 	}
 
+	/**
+	 * @return The duration in seconds
+	 */
+	public long getDuration() {
+		return duration;
+	}
+
+	public void setDuration(long duration) {
+		this.duration = duration;
+	}
+
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+
+	public void setThumbnailUrl(String thumbnailUrl) {
+		this.thumbnailUrl = thumbnailUrl;
+	}
+
 	public String getAuthors() {
 		return authors;
 	}
 
 	public void setAuthors(String authors) {
 		this.authors = authors;
-	}
-
-	public Long getDuration() {
-		return duration;
-	}
-
-	public void setDuration(Long duration) {
-		this.duration = duration;
 	}
 }

@@ -49,6 +49,7 @@ import javax.imageio.ImageIO;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.logging.log4j.Logger;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.FileChannelWrapper;
 import org.olat.core.commons.services.image.Crop;
@@ -56,7 +57,6 @@ import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.video.MovieService;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -89,6 +89,8 @@ import org.olat.modules.video.model.VideoMarkersImpl;
 import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.model.VideoMetadataImpl;
 import org.olat.modules.video.model.VideoQuestionsImpl;
+import org.olat.modules.video.spi.youtube.YoutubeProvider;
+import org.olat.modules.video.spi.youtube.model.YoutubeMetadata;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
@@ -138,6 +140,8 @@ public class VideoManagerImpl implements VideoManager {
 	private MovieService movieService;
 	@Autowired
 	private VideoModule videoModule;
+	@Autowired
+	private YoutubeProvider youtubeProvider;
 	@Autowired 
 	private RepositoryManager repositoryManager;
 	@Autowired
@@ -791,6 +795,21 @@ public class VideoManagerImpl implements VideoManager {
 			if(videoFile.exists()) {
 				videoFile.deleteSilently();
 			}
+		} else if(format == VideoFormat.youtube && youtubeProvider.isEnabled()) {
+			YoutubeMetadata metadata = youtubeProvider.getSnippet(url);
+			if(metadata != null) {
+				if(StringHelper.containsNonWhitespace(metadata.getThumbnailUrl())) {
+					uploadPoster(entry, metadata.getThumbnailUrl());
+				}
+				
+				
+				if(metadata.getDuration() > 0) {
+					String length = Formatter.formatTimecode(metadata.getDuration());
+					meta.setLength(length);
+					entry = repositoryManager.setExpenditureOfWork(entry, length);
+				}
+			}
+
 		} else {
 			meta.setSize(0l);
 			meta.setWidth(800);
@@ -798,6 +817,31 @@ public class VideoManagerImpl implements VideoManager {
 		}
 		videoMetadataDao.updateVideoMetadata(meta);
 		return entry;
+	}
+	
+	
+	private void uploadPoster(RepositoryEntry entry, String url) {
+		VFSLeaf oldPosterFile = getPosterframe(entry.getOlatResource());
+		if(oldPosterFile != null) {
+			oldPosterFile.delete();
+		}
+
+		VFSContainer masterContainer = getMasterContainer(entry.getOlatResource());
+		VFSLeaf posterFile = masterContainer.createChildLeaf(FILENAME_POSTER_JPG);
+		
+		HttpGet get = new HttpGet(url);
+		get.addHeader("Accept", "image/jpg");
+		
+		try(CloseableHttpClient httpClient = HttpClientFactory.getHttpClientInstance(true);
+				CloseableHttpResponse response = httpClient.execute(get)) {
+			download(response, posterFile);	
+		} catch(Exception e) {
+			log.error("", e);
+		}
+		
+		// Update also repository entry image, use new posterframe
+		RepositoryEntry repoEntry = repositoryManager.lookupRepositoryEntry(entry.getOlatResource(), true);
+		repositoryManager.setImage(posterFile, repoEntry);
 	}
 	
 	@Override

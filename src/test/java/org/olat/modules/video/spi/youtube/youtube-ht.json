@@ -1,0 +1,86 @@
+{
+ "kind": "youtube#videoListResponse",
+ "etag": "\"Bdx4f4ps3xCOOo1WZ91nTLkRZ_c/UJCVGg4EeI4vHUQ8_xFrJwEF5jY\"",
+ "pageInfo": {
+  "totalResults": 1,
+  "resultsPerPage": 1
+ },
+ "items": [
+  {
+   "kind": "youtube#video",
+   "etag": "\"Bdx4f4ps3xCOOo1WZ91nTLkRZ_c/yLT0Qct6zk6Jx8D_dcWGSUX_fYk\"",
+   "id": "T2rGplgQ3cA",
+   "snippet": {
+    "publishedAt": "2019-06-23T17:00:05.000Z",
+    "channelId": "UCfhW84xfA6gEc4hDK90rR1Q",
+    "title": "A Different Kind of Photography",
+    "description": "I received an invitation from fellow landscape photographer, Andy Gray, to try something a little different; ICM photography. The ICM stands for Intentional Camera Movement. I have tried this kind of photography in the past, but I have never taken the time to delve deep until now. Andy shows me some great techniques and gives me plenty of hints and tips which help create some unique and unusual images. \n\nMy Instagram: https://www.instagram.com/heatonthomas/\nMy Website: https://www.thomasheaton.co.uk\nT-Shirts: thomasheaton.co.uk/shop/t-shirts/\nAndy's Channel: https://www.youtube.com/user/andrewsgray\nAndy's Website: http://andrewsgray.photography\n\nMusic\nDear Dawn 1 - Patrik Almkvisth\nWhen Spring Is Coming - Ever Yearning\nThis Is Bait - Patrik Almkvisth\nStay Near - Henrik Olsson\n**All Downloaded from Here:  http://share.epidemicsound.com/t2V7R\n\nMy Gear blog: http://bit.ly/tomsgear\nMy E-Book: http://geni.us/onlocation\n\nSome kit used/seen in this video. These are Amazon affiliate links. If you use these links to purchase any item from Amazon, I get a small percentage which helps support my work x x x\n\nMy Vlogging Camera - http://geni.us/3SJDN\nMy Mic - http://geni.us/vidmicro\nMy Wide Lens - http://geni.us/16to35f4\nMy Medium Lens  -  http://geni.us/24to70L\nMy Long Lens - http://geni.us/200lens\n\nMy full kit list blog: http://bit.ly/tomsgear\n\n#LandscapePhotography #ICM",
+    "thumbnails": {
+     "default": {
+      "url": "https://i.ytimg.com/vi/T2rGplgQ3cA/default.jpg",
+      "width": 120,
+      "height": 90
+     },
+     "medium": {
+      "url": "https://i.ytimg.com/vi/T2rGplgQ3cA/mqdefault.jpg",
+      "width": 320,
+      "height": 180
+     },
+     "high": {
+      "url": "https://i.ytimg.com/vi/T2rGplgQ3cA/hqdefault.jpg",
+      "width": 480,
+      "height": 360
+     },
+     "standard": {
+      "url": "https://i.ytimg.com/vi/T2rGplgQ3cA/sddefault.jpg",
+      "width": 640,
+      "height": 480
+     },
+     "maxres": {
+      "url": "https://i.ytimg.com/vi/T2rGplgQ3cA/maxresdefault.jpg",
+      "width": 1280,
+      "height": 720
+     }
+    },
+    "channelTitle": "Thomas Heaton",
+    "tags": [
+     "icm",
+     "icm photography",
+     "intentional camera movement",
+     "landscape photography",
+     "abstract landscape photography",
+     "landscape photography tutorial",
+     "icm tutorial",
+     "landscape photography hints and tips",
+     "holy island landscape photography",
+     "lindisfarne photography",
+     "photography that looks like a painting",
+     "photography as art",
+     "canon 5dmk iv",
+     "best camera for landscape photography"
+    ],
+    "categoryId": "22",
+    "liveBroadcastContent": "none",
+    "localized": {
+     "title": "A Different Kind of Photography",
+     "description": "I received an invitation from fellow landscape photographer, Andy Gray, to try something a little different; ICM photography. The ICM stands for Intentional Camera Movement. I have tried this kind of photography in the past, but I have never taken the time to delve deep until now. Andy shows me some great techniques and gives me plenty of hints and tips which help create some unique and unusual images. \n\nMy Instagram: https://www.instagram.com/heatonthomas/\nMy Website: https://www.thomasheaton.co.uk\nT-Shirts: thomasheaton.co.uk/shop/t-shirts/\nAndy's Channel: https://www.youtube.com/user/andrewsgray\nAndy's Website: http://andrewsgray.photography\n\nMusic\nDear Dawn 1 - Patrik Almkvisth\nWhen Spring Is Coming - Ever Yearning\nThis Is Bait - Patrik Almkvisth\nStay Near - Henrik Olsson\n**All Downloaded from Here:  http://share.epidemicsound.com/t2V7R\n\nMy Gear blog: http://bit.ly/tomsgear\nMy E-Book: http://geni.us/onlocation\n\nSome kit used/seen in this video. These are Amazon affiliate links. If you use these links to purchase any item from Amazon, I get a small percentage which helps support my work x x x\n\nMy Vlogging Camera - http://geni.us/3SJDN\nMy Mic - http://geni.us/vidmicro\nMy Wide Lens - http://geni.us/16to35f4\nMy Medium Lens  -  http://geni.us/24to70L\nMy Long Lens - http://geni.us/200lens\n\nMy full kit list blog: http://bit.ly/tomsgear\n\n#LandscapePhotography #ICM"
+    }
+   },
+   "contentDetails": {
+    "duration": "PT11M40S",
+    "dimension": "2d",
+    "definition": "hd",
+    "caption": "false",
+    "licensedContent": true,
+    "projection": "rectangular"
+   },
+   "status": {
+    "uploadStatus": "processed",
+    "privacyStatus": "public",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true
+   }
+  }
+ ]
+}

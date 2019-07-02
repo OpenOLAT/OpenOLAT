@@ -53,6 +53,7 @@ import org.olat.fileresource.types.VideoFileResource;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoManager;
 import org.olat.modules.video.VideoMeta;
+import org.olat.modules.video.spi.youtube.YoutubeProvider;
 import org.olat.modules.video.ui.VideoDisplayController;
 import org.olat.modules.video.ui.VideoRuntimeController;
 import org.olat.repository.RepositoryEntry;
@@ -81,6 +82,8 @@ public class VideoHandler extends FileHandler {
 	private DB dbInstance;
 	@Autowired
 	private VideoManager videoManager;
+	@Autowired
+	private YoutubeProvider youtubeProvider;
 	@Autowired
 	private OLATResourceManager resourceManager;
 	@Autowired
@@ -135,8 +138,16 @@ public class VideoHandler extends FileHandler {
 
 	@Override
 	public ResourceEvaluation acceptImport(String url) {
-		ResourceEvaluation eval = new ResourceEvaluation();
-		if(VideoFormat.valueOfUrl(url) != null) {
+		ResourceEvaluation eval = null;
+		VideoFormat format = VideoFormat.valueOfUrl(url);
+		if(format == VideoFormat.youtube && youtubeProvider.isEnabled()) {
+			eval = youtubeProvider.evaluate(url);
+		}
+		
+		if(eval == null) {
+			eval = new ResourceEvaluation();
+		}
+		if(format != null) {
 			eval.setValid(true);
 		}
 		return eval;
@@ -198,7 +209,7 @@ public class VideoHandler extends FileHandler {
 		
 		if(format == VideoFormat.panopto) {
 			url = videoManager.toPodcastVideoUrl(url);
-		}
+		} 
 
 		// 3) Persist Meta data
 		videoManager.createVideoMetadata(repoEntry, url, format);

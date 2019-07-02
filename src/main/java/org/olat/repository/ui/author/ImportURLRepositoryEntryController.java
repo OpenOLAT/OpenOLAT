@@ -27,6 +27,9 @@ import org.olat.NewControllerFactory;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -41,6 +44,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
 import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.fileresource.types.ResourceEvaluation;
@@ -72,6 +76,8 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	private SingleSelection organisationEl;
 	
 	@Autowired
+	private LicenseService licenseService;
+	@Autowired
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private OrganisationService organisationService;
@@ -102,6 +108,7 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 		setFormDescription("cmd.import.ressource.url.desc");
 		
 		urlEl = uifactory.addTextElement("upload", "upload.url", 128, null, formLayout);
+		urlEl.setFocus(true);
 
 		SpacerElement spacerEl = uifactory.addSpacerElement("spacer1", formLayout, false);
 		spacerEl.setVisible(false);
@@ -159,13 +166,15 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	
 	private void updateHandlerForUrl() {
 		String url = urlEl.getValue();
+		ResourceEvaluation validEvaluation = null;
 		if(handlerForUrl == null || !handlerForUrl.equals(url)) {
 			List<ResourceHandler> handlers = new ArrayList<>(3);
 			for(String type:repositoryHandlerFactory.getSupportedTypes()) {
 				RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 				ResourceEvaluation eval = handler.acceptImport(url);
 				if(eval != null && eval.isValid()) {
-					handlers.add(new ResourceHandler(handler));
+					validEvaluation = eval;
+					handlers.add(new ResourceHandler(eval, handler));
 				}
 			}
 			
@@ -207,10 +216,23 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 				selectType.setVisible(true);
 			}
 		}
+		
+		if(validEvaluation != null && StringHelper.containsNonWhitespace(validEvaluation.getDisplayname())
+				&& !StringHelper.containsNonWhitespace(displaynameEl.getValue())) {
+			String displayname = validEvaluation.getDisplayname();
+			if(displayname != null) {
+				if(displayname.length() > 100) {
+					displayname = displayname.substring(0, 100);
+				}
+				displaynameEl.setValue(displayname);
+			}
+		}
 	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		updateHandlerForUrl();
+		
 		boolean allOk = super.validateFormLogic(ureq);
 
 		organisationEl.clearError();
@@ -283,10 +305,12 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 	
 	private void doImport() {
 		RepositoryHandler handler;
+		ResourceEvaluation evaluation = null;
 		if(handlerForUploadedResources == null || handlerForUploadedResources.isEmpty()) {
 			handler = null;
 		} else if(handlerForUploadedResources.size() == 1) {
 			handler = handlerForUploadedResources.get(0).getHandler();
+			evaluation = handlerForUploadedResources.get(0).getEvaluation();
 		} else if(selectType.isOneSelected()){
 			String type = selectType.getSelectedKey();
 			handler = repositoryHandlerFactory.getRepositoryHandler(type);
@@ -304,10 +328,27 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			}
 
 			String displayname = displaynameEl.getValue();
+			if(!StringHelper.containsNonWhitespace(displayname) && evaluation != null
+					&& StringHelper.containsNonWhitespace(evaluation.getDisplayname())) {
+				displayname = evaluation.getDisplayname();
+			}
+			if(displayname.length() > 100) {
+				displayname = displayname.substring(0, 100);
+			}
 			String url = urlEl.getValue();
-			
 			importedEntry = handler.importResource(getIdentity(), null, displayname,
 					"", organisation, getLocale(), url);
+			
+			if(evaluation != null) {
+				String expenditureOfWork = evaluation.getDuration() == null
+						? null : Formatter.formatTimecode(evaluation.getDuration().longValue() * 1000l);
+				importedEntry = repositoryManager.setDescriptionAndName(importedEntry, displayname, null,
+						evaluation.getAuthors(), evaluation.getDescription(), null, null, null, null,
+						null, expenditureOfWork, null, null, null);
+				if(StringHelper.containsNonWhitespace(evaluation.getLicense())) {
+					updateLicense(importedEntry, evaluation.getLicensor(), evaluation.getLicense());
+				}
+			}
 			
 			if(importedEntry == null) {
 				showWarning("error.import");
@@ -319,17 +360,33 @@ public class ImportURLRepositoryEntryController extends FormBasicController {
 			}
 		}
 	}
+
+	private void updateLicense(RepositoryEntry importedEntry, String licensor, String licenseName) {
+		LicenseType licenseType = licenseService.loadLicenseTypeByName(licenseName);
+		if(licenseType != null) {
+			ResourceLicense license = licenseService.loadOrCreateLicense(importedEntry.getOlatResource());
+			license.setLicenseType(licenseType);
+			license.setLicensor(licensor);
+			licenseService.update(license);
+		}
+	}
 	
 	private class ResourceHandler {
 		
 		private final RepositoryHandler handler;
+		private final ResourceEvaluation evaluation;
 
-		public ResourceHandler(RepositoryHandler handler) {
+		public ResourceHandler(ResourceEvaluation evaluation, RepositoryHandler handler) {
 			this.handler = handler;
+			this.evaluation = evaluation;
 		}
 
 		public RepositoryHandler getHandler() {
 			return handler;
+		}
+
+		public ResourceEvaluation getEvaluation() {
+			return evaluation;
 		}
 	}
 }
