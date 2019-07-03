@@ -100,7 +100,7 @@
 		<div id="collapseAssessmentDocuments" class="panel-collapse collapse #if($r.isTrue($inassessmentDocuments)) in #end"><div class="panel-body">
 			<ul class="list-unstyled">
 			#foreach($doc in $docs)
-				<li><a href="$docsMapperUri/$doc.name" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.name)"> </i> $r.escapeHtml($doc.name) ($r.formatBytes(${doc.length()}))</a></li>
+				<li><a href="$docsMapperUri/$r.encodeUrl($doc.name)" target="_blank"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($doc.name)"> </i> $r.escapeHtml($doc.name) ($r.formatBytes(${doc.length()}))</a></li>
 			#end
 			</ul>
   		</div></div>

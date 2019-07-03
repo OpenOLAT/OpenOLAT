@@ -641,6 +641,10 @@ public class VelocityRenderDecorator implements Closeable {
 	public String translateWithPackage(String bundleName, String key) {
 		return translateWithPackage(bundleName, key, null);
 	}
+	
+	public String encodeUrl(String url) {
+		return renderer.getUrlBuilder().encodeUrl(url);
+	}
 
 
 	/**escapes " entities in \"
