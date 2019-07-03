@@ -96,7 +96,7 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 		if (col - offset == 5) {
 			return rubricRow.getAvg();
 		}
-		return rubricRow.getStepCount(col - 1);
+		return rubricRow.getStepCount(col);
 	}
 
 	@Override

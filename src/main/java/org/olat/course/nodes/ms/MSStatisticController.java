@@ -45,7 +45,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.ui.tool.AssessmentToolConstants;
 import org.olat.course.nodes.MSCourseNode;
@@ -173,7 +172,6 @@ public class MSStatisticController extends FormBasicController {
 			String labelCode = translate("tool.stats.table.title.slider", new String[] { 
 					Integer.toString(rubricWrapper.getLabelIndex()), Integer.toString(counter) });
 			String label = EvaluationFormFormatter.formatSliderLabel(slider);
-			label = FilterFactory.getHtmlTagAndDescapingFilter().filter(label);
 			SliderWrapper sliderWrapper = new SliderWrapper(slider, labelCode, label);
 			rubricWrapper.addSlider(sliderWrapper);
 			counter++;
