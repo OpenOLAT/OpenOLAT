@@ -94,11 +94,12 @@ public class UserCreateController extends BasicController  {
 	 * @param ureq
 	 * @param wControl
 	 */
-	public UserCreateController (UserRequest ureq, WindowControl wControl, boolean canCreateOLATPassword) {
+	public UserCreateController (UserRequest ureq, WindowControl wControl,
+			Organisation preselectedOrganisation, boolean canCreateOLATPassword) {
 		super(ureq, wControl, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		
 		Translator pT = userManager.getPropertyHandlerTranslator(getTranslator());
-		createUserForm = new NewUserForm(ureq, wControl, canCreateOLATPassword, pT);
+		createUserForm = new NewUserForm(ureq, wControl, preselectedOrganisation, canCreateOLATPassword, pT);
 		listenTo(createUserForm);
 
 		putInitialPanel(createUserForm.getInitialComponent());
@@ -153,6 +154,7 @@ class NewUserForm extends FormBasicController {
 	private boolean showPasswordFields = false;
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private final List<Organisation> manageableOrganisations;
+	private Organisation preselectedOrganisation;
 	
 	private TextElement emailTextElement;
 	private TextElement usernameTextElement;
@@ -187,13 +189,15 @@ class NewUserForm extends FormBasicController {
 	 * @param showPasswordFields: true the password fields are used, the user can 
 	 * enter a password for the new user; false: the passwort is not used at all
 	 */
-	public NewUserForm(UserRequest ureq, WindowControl wControl, boolean showPasswordFields, Translator translator) {
+	public NewUserForm(UserRequest ureq, WindowControl wControl,
+			Organisation preselectedOrganisation, boolean showPasswordFields, Translator translator) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(LoginModule.class, ureq.getLocale(), translator));
 		setTranslator(Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale(), getTranslator()));
 		this.showPasswordFields = showPasswordFields;
 		this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
 		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
+		this.preselectedOrganisation = preselectedOrganisation;
 		
 		Roles managerRoles = ureq.getUserSession().getRoles();
 		if(managerRoles.isSystemAdmin()) {
@@ -251,7 +255,15 @@ class NewUserForm extends FormBasicController {
 		organisationsElement = uifactory.addDropdownSingleselect("new.form.organisations", formLayout,
 				organisationKeys.toArray(new String[organisationKeys.size()]), organisationValues.toArray(new String[organisationValues.size()]), null);
 		organisationsElement.setVisible(organisationKeys.size() > 1);
-		if(!organisationKeys.isEmpty()) {
+		boolean selected = false;
+		for(String organisationKey:organisationKeys) {
+			if(preselectedOrganisation.getKey().toString().equals(organisationKey)) {
+				organisationsElement.select(organisationKey, true);
+				selected = true;
+			}
+		}
+		
+		if(!selected && !organisationKeys.isEmpty()) {
 			organisationsElement.select(organisationKeys.get(0), true);
 		}
 		

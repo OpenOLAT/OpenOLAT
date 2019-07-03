@@ -74,6 +74,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
+import org.olat.core.id.OrganisationNameComparator;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -91,6 +92,8 @@ import org.olat.modules.quality.QualityModule;
 import org.olat.user.UserManager;
 import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * <pre>
@@ -121,6 +124,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 	private LayoutMain3ColsController columnLayoutCtr;
 
 	private final Roles identityRoles;
+	private GenericTreeNode organisationsNode;
 	private final List<Organisation> manageableOrganisations;
 
 	private LockResult lock;
@@ -255,10 +259,33 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		addToHistory(ureq, bwControl);
 		
-		createCtrl = new UserCreateController(ureq, bwControl, canCreateOLATPassword);
+		Organisation preselectedOrganisation = getPreselectedOrganisation();
+		createCtrl = new UserCreateController(ureq, bwControl, preselectedOrganisation, canCreateOLATPassword);
 		listenTo(createCtrl);
 		content.rootController(translate("menu.ucreate"), createCtrl);
 		menuTree.setSelectedNode(null);
+	}
+	
+	
+	private Organisation getPreselectedOrganisation() {
+		TreeNode selectedNode = menuTree.getSelectedNode();
+		Object uobject = selectedNode.getUserObject();
+		if(uobject instanceof Organisation) {
+			return (Organisation)uobject;
+		}
+		
+		if(organisationsNode != null && organisationsNode.getChildCount() > 0) {
+			TreeNode firstNode = (TreeNode)organisationsNode.getChildAt(0);
+			Object fobject = firstNode.getUserObject();
+			if(fobject instanceof Organisation) {
+				return (Organisation)fobject;
+			}
+		}
+		
+		if(!manageableOrganisations.isEmpty()) {
+			return manageableOrganisations.get(0);
+		}
+		return null;	
 	}
 	
 	private void doEditCreatedUser(UserRequest ureq, Identity newIdentity) {
@@ -501,7 +528,7 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		appendNode("menu.usearch", "menu.usearch.alt", "usearch", "o_sel_useradmin_search", root);
 		
 		// Sub menu with organizations
-		GenericTreeNode organisationsNode = appendNode("menu.organisations", "menu.organisations.alt",
+		organisationsNode = appendNode("menu.organisations", "menu.organisations.alt",
 				new Presentation("menu.organisations", "organisations.intro"), "o_sel_useradmin_organisations", root);
 		buildTreeOrganisationSubMenu(organisationsNode);
 
@@ -561,6 +588,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		} else {
 			organisations = organisationService.getOrganisations();
 		}
+		
+		Collections.sort(organisations, new OrganisationNameComparator(getLocale()));
 		
 		Map<Long,Organisation> keytoOrganisations = new HashMap<>();
 		for(Organisation organisation:organisations) {
