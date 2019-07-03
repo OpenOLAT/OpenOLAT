@@ -123,7 +123,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private int counter = 0;
 	protected final BusinessGroup group;
 	protected final CourseNode courseNode;
-	private final RepositoryEntry courseEntry;
+	protected final RepositoryEntry courseEntry;
 	private final RepositoryEntry referenceEntry;
 	private final CourseEnvironment courseEnv;
 	private final boolean isAdministrativeUser;
