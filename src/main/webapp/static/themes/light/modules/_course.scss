@@ -326,3 +326,17 @@ div.o_correction_navigation {
 		margin-top: 0px;
 	}
 }
+.o_ms_bold {
+	font-weight: bold;
+}
+.o_ms_legend {
+	padding: 5px;
+	
+	li {
+		display: block;
+		font-size: 90%;
+	}
+	.ident {
+		font-weight: bold;
+	}
+}

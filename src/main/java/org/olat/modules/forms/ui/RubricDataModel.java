@@ -59,7 +59,7 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 	}
 
 	public Object getValueAt(RubricRow rubricRow, int col) {
-		int offset = rubricRow.getStepCounts().getNumberOfSteps();
+		int offset = rubricRow.getNumberOfSteps();
 		if (col == 0) {
 			return rubricRow.getStartLabel();
 		}
@@ -96,7 +96,7 @@ public class RubricDataModel extends DefaultFlexiTableDataModel<RubricRow> imple
 		if (col - offset == 5) {
 			return rubricRow.getAvg();
 		}
-		return rubricRow.getStepCounts().getCount(col - 1);
+		return rubricRow.getStepCount(col);
 	}
 
 	@Override

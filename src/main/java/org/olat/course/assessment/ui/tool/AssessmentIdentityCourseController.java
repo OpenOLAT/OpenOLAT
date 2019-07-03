@@ -341,7 +341,6 @@ public class AssessmentIdentityCourseController extends BasicController
 		sb.append(assessedIdentity.getUser().getLastName());
 		sb.append("_");
 		sb.append(assessedIdentity.getUser().getFirstName());
-		sb.append("_");
 		return FileUtils.normalizeFilename(sb.toString());
 	}
 

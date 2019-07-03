@@ -166,6 +166,8 @@ public interface EvaluationFormManager {
 	public EvaluationFormSession reopenSession(EvaluationFormSession session);
 	
 	public long getCountOfSessions(EvaluationFormSurveyRef surveyRef);
+	
+	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter, Limit limit);
 
 	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session,
 			String value);
@@ -212,6 +214,10 @@ public interface EvaluationFormManager {
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry);
 	
 	public EvaluationFormStatistic getSessionsStatistic(SessionFilter filter);
+	
+	public SlidersStatistic calculateSlidersStatistic(Rubric rubric, SlidersStepCounts slidersStepCounts);
+	
+	public SliderStatistic calculateTotalStatistic(Rubric rubric, SlidersStepCounts slidersStepCounts);
 	
 	public RubricStatistic getRubricStatistic(Rubric rubric, SessionFilter filter);
 	

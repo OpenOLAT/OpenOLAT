@@ -22,8 +22,9 @@ package org.olat.modules.forms.model;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.modules.forms.SlidersStatistic;
 import org.olat.modules.forms.SliderStatistic;
+import org.olat.modules.forms.SlidersStatistic;
+import org.olat.modules.forms.StepCounts;
 import org.olat.modules.forms.model.xml.Slider;
 
 /**
@@ -38,6 +39,11 @@ public class SlidersStatisticImpl implements SlidersStatistic {
 	
 	public void put(Slider slider, SliderStatistic sliderStatistic) {
 		sliderToStatistic.put(slider, sliderStatistic);
+	}
+
+	@Override
+	public StepCounts getStepCounts(Slider slider) {
+		return sliderToStatistic.get(slider);
 	}
 
 	@Override

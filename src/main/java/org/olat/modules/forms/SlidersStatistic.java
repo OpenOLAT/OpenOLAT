@@ -27,7 +27,7 @@ import org.olat.modules.forms.model.xml.Slider;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface SlidersStatistic {
+public interface SlidersStatistic extends SlidersStepCounts {
 
 	public SliderStatistic getSliderStatistic(Slider slider);
 

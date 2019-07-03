@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.forms.model.xml.Slider;
 
 /**
@@ -101,13 +102,14 @@ public class EvaluationFormFormatter {
 	public static String formatSliderLabel(Slider slider) {
 		boolean hasStartLabel = StringHelper.containsNonWhitespace(slider.getStartLabel());
 		boolean hasEndLabel = StringHelper.containsNonWhitespace(slider.getEndLabel());
+		String label = null;
 		if (hasStartLabel && hasEndLabel) {
-			return slider.getStartLabel() + " ... " + slider.getEndLabel();
+			label = slider.getStartLabel() + " ... " + slider.getEndLabel();
 		} else if (hasStartLabel) {
-			return slider.getStartLabel();
+			label = slider.getStartLabel();
 		} else if (hasEndLabel) {
-			return slider.getEndLabel();
+			label = slider.getEndLabel();
 		}
-		return null;
+		return label != null? FilterFactory.getHtmlTagAndDescapingFilter().filter(label): null;
 	}
 }

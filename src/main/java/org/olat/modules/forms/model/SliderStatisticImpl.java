@@ -31,7 +31,6 @@ import org.olat.modules.forms.StepCounts;
  */
 public class SliderStatisticImpl implements SliderStatistic {
 
-	private final Long numberOfNoResponses;
 	private final Long numberOfResponses;
 	private final Double sum;
 	private final Double median;
@@ -41,10 +40,9 @@ public class SliderStatisticImpl implements SliderStatistic {
 	private final StepCounts stepCounts;
 	private final RubricRating rating;
 	
-	public SliderStatisticImpl(Long numberOfNoResponses, Long numberOfResponses, Double sum, Double median, Double avg,
+	public SliderStatisticImpl(Long numberOfResponses, Double sum, Double median, Double avg,
 			Double variance, Double stdDev, StepCounts stepCounts, RubricRating rating) {
 		super();
-		this.numberOfNoResponses = numberOfNoResponses;
 		this.numberOfResponses = numberOfResponses;
 		this.sum = sum;
 		this.median = median;
@@ -57,7 +55,7 @@ public class SliderStatisticImpl implements SliderStatistic {
 
 	@Override
 	public Long getNumberOfNoResponses() {
-		return numberOfNoResponses;
+		return stepCounts != null? stepCounts.getNumberOfNoResponses(): null;
 	}
 
 	@Override
@@ -91,13 +89,18 @@ public class SliderStatisticImpl implements SliderStatistic {
 	}
 
 	@Override
-	public StepCounts getStepCounts() {
-		return stepCounts;
+	public RubricRating getRating() {
+		return rating;
 	}
 
 	@Override
-	public RubricRating getRating() {
-		return rating;
+	public long getStepCount(int step) {
+		return stepCounts != null? stepCounts.getStepCount(step): 0;
+	}
+
+	@Override
+	public int getNumberOfSteps() {
+		return stepCounts != null? stepCounts.getNumberOfSteps(): 0;
 	}
 	
 }
