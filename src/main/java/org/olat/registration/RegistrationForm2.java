@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -43,7 +44,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -227,11 +227,16 @@ public class RegistrationForm2 extends FormBasicController {
 		}
 		
 		// Transient identity for validations
-		Identity newIdentity = getIdentity();
+		String username = usernameEl.getValue();
+		TransientIdentity newIdentity = new TransientIdentity();
+		newIdentity.setName(username);
+		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+			FormItem propertyItem = flc.getFormComponent(userPropertyHandler.getName());
+			newIdentity.setProperty(userPropertyHandler.getName(), userPropertyHandler.getStringValue(propertyItem));
+		}
 		
 		// validate if username does match the syntactical login requirements
 		usernameEl.clearError();
-		String username = usernameEl.getValue();
 		if (!StringHelper.containsNonWhitespace(username)) {
 			usernameEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
