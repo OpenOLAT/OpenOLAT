@@ -105,7 +105,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 			// maybe something else needs to be done
 			super.event(ureq, source, event);
 		}
-		doRefreshVideoPosterIfEntryAdmin();		
+		doRefreshVideoPosterIfEntryAdmin();
 	}
 	
 	@Override
@@ -116,6 +116,7 @@ public class VideoRuntimeController extends RepositoryEntryRuntimeController {
 				videoDisplayCtr.reloadVideo(ureq);
 			}
 		}
+		super.event(ureq, source, event);
 	}
 	
 	private void doReplaceVideo (UserRequest ureq) {
