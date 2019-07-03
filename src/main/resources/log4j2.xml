@@ -15,7 +15,7 @@
 		</Console>
 		<!--
 		<RollingFile name="RollingFile" fileName="/path_to_logs/logs/olat.log"
-			filePattern="/path_to_logs/logs/olat.log">
+			filePattern="/path_to_logs/logs/olat.log.%d{yyyy-MM-dd}">
 			<PatternLayout
                     pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %marker %c{1} ^%%^ I%X{ref}-J%sn ^%%^ %logger{36} ^%%^ %X{identity} ^%%^ %X{ip} ^%%^ %X{referer} ^%%^ %X{userAgent} ^%%^ %msg%ex{full,separator( )}%n" />
 			<Policies>
