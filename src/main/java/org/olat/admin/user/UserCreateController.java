@@ -196,12 +196,8 @@ class NewUserForm extends FormBasicController {
 		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
 		
 		Roles managerRoles = ureq.getUserSession().getRoles();
-		if(managerRoles.isSystemAdmin()) {
-			manageableOrganisations = organisationService.getOrganisations();
-		} else {
-			manageableOrganisations = organisationService.getOrganisations(getIdentity(), ureq.getUserSession().getRoles(),
-							OrganisationRoles.administrator, OrganisationRoles.rolesmanager, OrganisationRoles.usermanager);
-		}
+		manageableOrganisations = organisationService.getOrganisations(getIdentity(), managerRoles,
+				OrganisationRoles.administrator, OrganisationRoles.rolesmanager, OrganisationRoles.usermanager);
 		initForm(ureq);
 	}	 
 	

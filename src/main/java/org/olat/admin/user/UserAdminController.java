@@ -336,8 +336,7 @@ public class UserAdminController extends BasicController implements Activateable
 			return organisationService.hasRole(getIdentity(), defOrganisation,
 					OrganisationRoles.administrator, OrganisationRoles.rolesmanager);
 		}
-		return managerRoles.isSystemAdmin()
-				|| managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
+		return managerRoles.isManagerOf(OrganisationRoles.administrator, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.principal, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, identityRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.usermanager, identityRoles)
@@ -357,14 +356,13 @@ public class UserAdminController extends BasicController implements Activateable
 		// first Initialize the user details tabbed pane
 		userTabP = new TabbedPane("userTabP", ureq.getLocale());
 		userTabP.addListener(this);
-		
-		boolean isSysAdmin = managerRoles.isSystemAdmin();
+	
 		boolean isAdminOf = managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles);
 		boolean isPrincipalOf = managerRoles.isManagerOf(OrganisationRoles.principal, editedRoles);
 		boolean isUserManagerOf = managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles);
 		boolean isRolesManagerOf = managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles);
 
-		if(isAdminOf || isSysAdmin || isUserManagerOf || isRolesManagerOf) {
+		if(isAdminOf || isUserManagerOf || isRolesManagerOf) {
 			userProfileCtr = new ProfileAndHomePageEditController(ureq, getWindowControl(), identity, true);
 			listenTo(userProfileCtr);
 			userTabP.addTab(translate(NLS_EDIT_UPROFILE), userProfileCtr.getInitialComponent());
@@ -374,7 +372,7 @@ public class UserAdminController extends BasicController implements Activateable
 			userTabP.addTab(translate(NLS_EDIT_UPROFILE), profileCtr.getInitialComponent());
 		}
 
-		if(isAdminOf || isSysAdmin || isUserManagerOf || isRolesManagerOf) {
+		if(isAdminOf || isUserManagerOf || isRolesManagerOf) {
 			userTabP.addTab(translate(NLS_EDIT_UPREFS), uureq -> {
 				prefsCtr = new ChangePrefsController(uureq, getWindowControl(), identity);
 				listenTo(prefsCtr);
@@ -390,7 +388,7 @@ public class UserAdminController extends BasicController implements Activateable
 			});
 		}
 
-		if (isAdminOf || isSysAdmin) {
+		if (isAdminOf) {
 			userTabP.addTab(translate(NLS_EDIT_UAUTH),  uureq -> {
 				authenticationsCtr =  new UserAuthenticationsEditorController(uureq, getWindowControl(), identity);
 				listenTo(authenticationsCtr);
@@ -518,8 +516,7 @@ public class UserAdminController extends BasicController implements Activateable
 		if (managerRoles.isManagerOf(OrganisationRoles.administrator, editedRoles)
 				|| managerRoles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles)
 				|| (managerRoles.isManagerOf(OrganisationRoles.usermanager, editedRoles)
-						&& !editedRoles.isAdministrator() && !editedRoles.isSystemAdmin()
-						&& !editedRoles.isRolesManager())) {
+						&& !editedRoles.isAdministrator() && !editedRoles.isRolesManager())) {
 			// show pwd form only if user has also right to create new passwords in case
 			// of a user that has no password yet
 			if(ldapLoginModule.isLDAPEnabled() && ldapLoginManager.isIdentityInLDAPSecGroup(identity)) {

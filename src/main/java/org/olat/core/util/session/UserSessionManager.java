@@ -567,13 +567,10 @@ public class UserSessionManager implements GenericEventListener {
 		int invalidateCounter = 0;
 		// 1. Copy authUserSessions in sorted TreeMap
 		// This is the Comparator that will be used to sort the TreeSet:
-		Comparator<UserSession> sessionComparator = new Comparator<UserSession>() {
-			@Override
-			public int compare(UserSession o1, UserSession o2) {
-				Long long1 = Long.valueOf((o1).getSessionInfo().getLastClickTime());
-				Long long2 = Long.valueOf((o2).getSessionInfo().getLastClickTime());
-				return long1.compareTo(long2);
-			}
+		Comparator<UserSession> sessionComparator = (o1, o2) -> {
+			Long long1 = Long.valueOf((o1).getSessionInfo().getLastClickTime());
+			Long long2 = Long.valueOf((o2).getSessionInfo().getLastClickTime());
+			return long1.compareTo(long2);
 		};
 		// clusterNOK ?? invalidate only locale sessions ?
 		TreeSet<UserSession> sortedSet = new TreeSet<>(sessionComparator);

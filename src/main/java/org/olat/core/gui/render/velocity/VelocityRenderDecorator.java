@@ -766,7 +766,7 @@ public class VelocityRenderDecorator implements Closeable {
 	}
 	
 	public boolean isFalse(Object obj) {
-		if("falsse".equals(obj)) {
+		if("false".equals(obj)) {
 			return true;
 		}
 		if(obj instanceof Boolean) {

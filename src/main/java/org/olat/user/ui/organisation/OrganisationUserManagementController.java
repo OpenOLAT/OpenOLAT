@@ -290,7 +290,7 @@ public class OrganisationUserManagementController extends FormBasicController {
 	private void doSearchMember(UserRequest ureq, OrganisationRoles role) {
 		if(userSearchCtrl != null) return;
 
-		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
+		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false, true);
 		userSearchCtrl.setUserObject(role);
 		listenTo(userSearchCtrl);
 		
