@@ -29,12 +29,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.olat.core.configuration.AbstractSpringModule;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.configuration.AbstractSpringModule;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.mail.EmailAddressValidator;
+import org.olat.user.UserModule;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.olat.user.propertyhandlers.UserPropertyUsageContext;
+import org.olat.user.propertyhandlers.ui.UsrPropCfgManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,12 +62,16 @@ import org.springframework.stereotype.Service;
 public class RegistrationModule extends AbstractSpringModule {
 	private static final Logger log = Tracing.createLoggerFor(RegistrationModule.class);
 	
+	private static final String EMAIL_VLIDATION_ENABLED = "email.validation.enabled";
+	
 	@Value("${registration.enableSelfRegistration}")
 	private boolean selfRegistrationEnabled;
 	@Value("${registration.enableSelfRegistration.link}")
 	private boolean selfRegistrationLinkEnabled;
 	@Value("${registration.enableSelfRegistration.login}")
 	private boolean selfRegistrationLoginEnabled;
+	@Value("${registration.email.validation}")
+	private boolean emailValidationEnabled;;
 	@Value("${registration.valid.hours.gui}")
 	private Integer validUntilHoursGui;
 	@Value("${registration.valid.hours.rest}")
@@ -115,6 +124,11 @@ public class RegistrationModule extends AbstractSpringModule {
 	
 	@Autowired @Qualifier("usernamePresetBean")
 	private UserNameCreationInterceptor usernamePresetBean;
+
+	@Autowired
+	private UserModule userModule;
+	@Autowired
+	private UsrPropCfgManager usrPropCfgMng;
 	
 	@Autowired
 	public RegistrationModule(CoordinatorManager coordinatorManager) {
@@ -183,6 +197,37 @@ public class RegistrationModule extends AbstractSpringModule {
 		setStringProperty("registration.login.enabled", value, true);
 	}
 	
+	
+	public boolean isEmailValidationEnabled() {
+		return emailValidationEnabled;
+	}
+
+	public void setEmailValidationEnabled(boolean emailValidationEnabled) {
+		this.emailValidationEnabled = emailValidationEnabled;
+		setStringProperty(EMAIL_VLIDATION_ENABLED, Boolean.toString(emailValidationEnabled), true);
+		resetEmailUserProperty();
+	}
+	
+	public void resetEmailUserProperty() {
+		List<UserPropertyHandler> handlers = usrPropCfgMng.getUserPropertiesConfigObject().getPropertyHandlers();
+		
+		UserPropertyHandler emailHandler = null;
+		for(UserPropertyHandler handler:handlers) {
+			if(UserConstants.EMAIL.equals(handler.getName())) {
+				emailHandler = handler;
+			}
+		}
+		
+		if(emailHandler != null) {
+			UserPropertyUsageContext context = usrPropCfgMng.getUserPropertiesConfigObject()
+					.getUsageContexts().get(RegistrationForm2.USERPROPERTIES_FORM_IDENTIFIER);
+			context.addPropertyHandler(0, emailHandler);
+			context.setAsUserViewReadOnly(emailHandler, isEmailValidationEnabled());
+			context.setAsAdminstrativeUserOnly(emailHandler, false);
+			context.setAsMandatoryUserProperty(emailHandler, userModule.isEmailMandatory());
+		}
+	}
+
 	public Integer getValidUntilHoursGui() {
 		return validUntilHoursGui;
 	}
@@ -391,6 +436,12 @@ public class RegistrationModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(loginEnabledObj)) {
 			selfRegistrationLoginEnabled = "true".equals(loginEnabledObj);
 		}
+
+		String emailValidationObj = getStringPropertyValue(EMAIL_VLIDATION_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(emailValidationObj)) {
+			emailValidationEnabled = Boolean.parseBoolean(emailValidationObj);
+		}
+		resetEmailUserProperty();
 		
 		String enableNotificationEmailObj = getStringPropertyValue("registration.enableNotificationEmail", true);
 		if(StringHelper.containsNonWhitespace(enableNotificationEmailObj)) {

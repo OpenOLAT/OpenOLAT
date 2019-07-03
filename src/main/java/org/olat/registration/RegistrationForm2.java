@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -74,6 +75,7 @@ public class RegistrationForm2 extends FormBasicController {
 	private TextElement newpass2; // confirm
 	
 	private final String proposedUsername;
+	private final String email;
 	private final boolean userInUse;
 	private final boolean usernameReadonly;
 	private final SyntaxValidator passwordSyntaxValidator;
@@ -85,11 +87,13 @@ public class RegistrationForm2 extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
-	
-	public RegistrationForm2(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername, boolean userInUse, boolean usernameReadonly) {
+
+	public RegistrationForm2(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername,
+			String email, boolean userInUse, boolean usernameReadonly) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		this.languageKey = languageKey;
 		this.proposedUsername = proposedUsername;
+		this.email = email;
 		this.userInUse = userInUse;
 		this.usernameReadonly = usernameReadonly;
 		this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
@@ -108,13 +112,19 @@ public class RegistrationForm2 extends FormBasicController {
 	}
 	
 	protected String getFirstName() {
-		FormItem fi = propFormItems.get("firstName");
+		FormItem fi = propFormItems.get(UserConstants.FIRSTNAME);
 		TextElement fn = (TextElement) fi;
 		return fn.getValue().trim();
 	}
 	
 	protected String getLastName() {
-		FormItem fi = propFormItems.get("lastName");
+		FormItem fi = propFormItems.get(UserConstants.LASTNAME);
+		TextElement fn = (TextElement) fi;
+		return fn.getValue().trim();
+	}
+	
+	protected String getEmail() {
+		FormItem fi = propFormItems.get(UserConstants.EMAIL);
 		TextElement fn = (TextElement) fi;
 		return fn.getValue().trim();
 	}
@@ -168,6 +178,12 @@ public class RegistrationForm2 extends FormBasicController {
 					.addFormItem(getLocale(), null, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout);
 			fi.setTranslator(tr);
 			propFormItems.put(userPropertyHandler.getName(), fi);
+			
+			if (UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
+				if (fi instanceof TextElement) {
+					((TextElement)fi).setValue(email);
+				}
+			}
 		}
 		
 		uifactory.addSpacerElement("lang", formLayout, true);
