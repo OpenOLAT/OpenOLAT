@@ -94,8 +94,6 @@ import org.olat.user.UserManager;
 import org.olat.user.ui.role.RelationRolesAndRightsUIFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import edu.emory.mathcs.backport.java.util.Collections;
-
 /**
  * <pre>
  * Initial Date:  Jan 16, 2006
