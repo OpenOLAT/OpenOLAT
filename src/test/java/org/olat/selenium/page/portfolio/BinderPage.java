@@ -157,6 +157,7 @@ public class BinderPage {
 	 */
 	public BinderPage selectTableOfContent() {
 		By tocLinkBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_toc");
+		OOGraphene.waitElement(tocLinkBy, browser);
 		browser.findElement(tocLinkBy).click();
 		OOGraphene.waitBusy(browser);
 		By tocBy = By.cssSelector("div.o_portfolio_toc");
@@ -171,6 +172,7 @@ public class BinderPage {
 	 */
 	public BinderPage selectEntries() {
 		By tocBy = By.cssSelector("li.o_tool .o_sel_pf_binder_navigation .o_sel_pf_entries");
+		OOGraphene.waitElement(tocBy, browser);
 		browser.findElement(tocBy).click();
 		OOGraphene.waitBusy(browser);
 		By binderPageListBy = By.cssSelector("div.o_portfolio_entries");
@@ -256,11 +258,10 @@ public class BinderPage {
 	public BinderPage createEntry(String title, int sectionIndex) {
 		//click create button
 		By createBy = By.className("o_sel_pf_new_entry");
-		WebElement createButton = browser.findElement(createBy);
-		createButton.click();
+		browser.findElement(createBy).click();
 		OOGraphene.waitModalDialog(browser);
 		By popupBy = By.cssSelector("div.modal-content fieldset.o_sel_pf_edit_entry_form");
-		OOGraphene.waitElement(popupBy, 5, browser);
+		OOGraphene.waitElement(popupBy, browser);
 		
 		//fill the form
 		By nameBy = By.cssSelector(".o_sel_pf_edit_entry_title input[type='text']");
@@ -278,6 +279,7 @@ public class BinderPage {
 		WebElement submitButton = browser.findElement(submitBy);
 		submitButton.click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 	

@@ -53,9 +53,7 @@ public class QTI21Page {
 	
 	public static QTI21Page getQTI21Page(WebDriver browser) {
 		By mainBy = By.id("o_main_wrapper");
-		OOGraphene.waitElement(mainBy, 5, browser);
-		WebElement main = browser.findElement(mainBy);
-		Assert.assertTrue(main.isDisplayed());
+		OOGraphene.waitElement(mainBy, browser);
 		return new QTI21Page(browser);
 	}
 	
@@ -88,13 +86,13 @@ public class QTI21Page {
 		browser.findElement(startBy).click();
 		OOGraphene.waitBusy(browser);
 		By menuBy = By.id("o_qti_menu");
-		OOGraphene.waitElement(menuBy, 5, browser);
+		OOGraphene.waitElement(menuBy, browser);
 		return this;
 	}
 	
 	public QTI21Page assertOnAssessmentItem() {
 		By assessmentItemBy = By.cssSelector("div.qtiworks.o_assessmentitem.o_assessmenttest");
-		OOGraphene.waitElement(assessmentItemBy, 5, browser);
+		OOGraphene.waitElement(assessmentItemBy, browser);
 		return this;
 	}
 	
