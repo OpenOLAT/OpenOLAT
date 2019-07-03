@@ -27,10 +27,10 @@ package org.olat.modules.forms;
  */
 public interface StepCounts {
 
-	void setCount(int step, Long count);
-
-	long getCount(int step);
+	long getStepCount(int step);
 
 	int getNumberOfSteps();
+	
+	Long getNumberOfNoResponses();
 
 }

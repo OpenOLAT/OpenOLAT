@@ -20,6 +20,8 @@
 package org.olat.course.nodes.ms;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -27,6 +29,8 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.RubricStatistic;
+import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -59,6 +63,8 @@ public interface MSService {
 	
 	List<RubricStatistic> getRubricStatistics(EvaluationFormSession session);
 	
+	Map<String, Map<Rubric, RubricStatistic>> getRubricStatistics(RepositoryEntry ores, String nodeIdent, Form form);
+	
 	/**
 	 * Calculates the possible minimum and maximum sum of all rubrics in the
 	 * evaluation form of the formEntry.
@@ -78,8 +84,12 @@ public interface MSService {
 	MinMax calculateMinMaxAvg(RepositoryEntry formEntry, float scalingFactor);
 
 	Float calculateScoreBySum(EvaluationFormSession session);
+	
+	Float calculateScoreBySum(Form form, Function<Rubric, RubricStatistic> rubricFunction);
 
 	Float calculateScoreByAvg(EvaluationFormSession session);
+	
+	Float calculateScoreByAvg(Form form, Function<Rubric, RubricStatistic> rubricFunction);
 
 	Float scaleScore(Float score, float scalingFactor);
 

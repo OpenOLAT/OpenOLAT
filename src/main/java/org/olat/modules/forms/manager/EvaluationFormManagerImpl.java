@@ -31,6 +31,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.SortKey;
@@ -52,16 +53,24 @@ import org.olat.modules.forms.EvaluationFormStatistic;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
+import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionStatusInformation;
+import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.SlidersStatistic;
+import org.olat.modules.forms.SlidersStepCounts;
+import org.olat.modules.forms.StepCounts;
 import org.olat.modules.forms.handler.FormDataElementStorage;
+import org.olat.modules.forms.model.SlidersStepCountsImpl;
+import org.olat.modules.forms.model.StepCountsBuilder;
+import org.olat.modules.forms.model.jpa.CalculatedLong;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.model.xml.Rubric;
+import org.olat.modules.forms.model.xml.Slider;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +93,8 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 	private EvaluationFormSessionDAO evaluationFormSessionDao;
 	@Autowired
 	private EvaluationFormResponseDAO evaluationFormResponseDao;
+	@Autowired
+	private EvaluationFormReportDAO evaluationFormReportDao;
 	@Autowired
 	private EvaluationFormStorage evaluationFormStorage;
 	@Autowired
@@ -327,6 +338,11 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		return evaluationFormResponseDao.createResponse(responseIdentifier, null, filename, relativePath,
 				session);
 	}
+	
+	@Override
+	public List<EvaluationFormResponse> getResponses(List<String> responseIdentifiers, SessionFilter filter, Limit limit) {
+		return evaluationFormReportDao.getResponses(responseIdentifiers, filter, limit);
+	}
 
 	@Override
 	public EvaluationFormResponse createStringResponse(String responseIdentifier, EvaluationFormSession session,
@@ -479,11 +495,40 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		
 		return statistic;
 	}
+	
+	@Override
+	public SlidersStatistic calculateSlidersStatistic(Rubric rubric, SlidersStepCounts slidersStepCounts) {
+		return rubricStatisticCalculator.calculateSlidersStatistic(rubric, slidersStepCounts);
+	}
+	
+	@Override
+	public SliderStatistic calculateTotalStatistic(Rubric rubric, SlidersStepCounts slidersStepCounts) {
+		return rubricStatisticCalculator.calculateTotalStatistic(rubric, slidersStepCounts);
+	}
 
 	@Override
 	public RubricStatistic getRubricStatistic(Rubric rubric, SessionFilter filter) {
-		SlidersStatistic slidersStatistic = rubricStatisticCalculator.calculateSlidersStatistic(rubric, filter);
+		SlidersStepCounts slidersStepCounts = loadSlidersStepCounts(rubric, filter);
+		SlidersStatistic slidersStatistic = rubricStatisticCalculator.calculateSlidersStatistic(rubric, slidersStepCounts);
 		return getRubricStatistic(rubric, slidersStatistic);
+	}
+	
+	SlidersStepCounts loadSlidersStepCounts(Rubric rubric, SessionFilter filter) {
+		List<String> responseIdentifiers = rubric.getSliders().stream().map(Slider::getId).collect(Collectors.toList());
+		List<CalculatedLong> countedResponses = evaluationFormReportDao.getCountByIdentifiersAndNumerical(responseIdentifiers , filter);
+		List<CalculatedLong> countedNoResponses = rubric.isNoResponseEnabled()
+				? evaluationFormReportDao.getCountNoResponsesByIdentifiers(responseIdentifiers, filter)
+				: Collections.emptyList();
+				
+		SlidersStepCountsImpl slidersStepCounts = new SlidersStepCountsImpl();
+		for (Slider slider: rubric.getSliders()) {
+			StepCountsBuilder stepCountsBuilder = rubricStatisticCalculator.getStepCounts(slider, rubric.getSteps(), countedResponses);
+			Long numOfNoRespones = rubricStatisticCalculator.getCountNoResponses(slider, countedNoResponses);
+			stepCountsBuilder.withCountNoResponses(numOfNoRespones);
+			StepCounts stepCounts = stepCountsBuilder.build();
+			slidersStepCounts.put(slider, stepCounts);
+		}
+		return slidersStepCounts;
 	}
 
 	@Override

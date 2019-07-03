@@ -1,0 +1,14 @@
+<div class='o_ms_legend'>
+	#if(!$r.isEmpty($rubrics))
+		<ul class='list-inline'>
+		#foreach($rubric in $rubrics)
+			#if($showSliders)
+				#foreach($slider in $rubric.getSliders())
+					<li><span class='ident'>$slider.getLabelCode(): </span>$slider.getLabel()</li>
+				#end
+			#end
+			<li><span class='ident'>$rubric.getLabelCode(): </span>$rubric.getLabel()</li>
+		#end
+		</ul>
+	#end
+</div>

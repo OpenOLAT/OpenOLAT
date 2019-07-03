@@ -22,7 +22,13 @@ package org.olat.course.nodes.ms.manager;
 import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
@@ -33,20 +39,24 @@ import org.olat.course.nodes.ms.MinMax;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
+import org.olat.modules.forms.EvaluationFormResponse;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
+import org.olat.modules.forms.Limit;
 import org.olat.modules.forms.RubricStatistic;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
 import org.olat.modules.forms.SliderStatistic;
 import org.olat.modules.forms.SlidersStatistic;
+import org.olat.modules.forms.SlidersStepCounts;
 import org.olat.modules.forms.StepCounts;
 import org.olat.modules.forms.model.SliderStatisticImpl;
 import org.olat.modules.forms.model.SlidersStatisticImpl;
-import org.olat.modules.forms.model.StepCountsImpl;
+import org.olat.modules.forms.model.SlidersStepCountsImpl;
+import org.olat.modules.forms.model.StepCountsBuilder;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -165,8 +175,8 @@ public class MSServiceImpl implements MSService {
 
 	@Override
 	public List<RubricStatistic> getRubricStatistics(EvaluationFormSession session) {
-		List<RubricStatistic> statistics = new ArrayList<>();
 		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
+		List<RubricStatistic> statistics = new ArrayList<>();
 		SessionFilter sessionFilter = SessionFilterFactory.create(session);
 		for (AbstractElement element : form.getElements()) {
 			if (Rubric.TYPE.equals(element.getType())) {
@@ -176,6 +186,76 @@ public class MSServiceImpl implements MSService {
 			}
 		}
 		return statistics;
+	}
+	
+	@Override
+	public Map<String, Map<Rubric, RubricStatistic>> getRubricStatistics(RepositoryEntry ores, String nodeIdent, Form form) {
+		List<EvaluationFormSession> sessions = getSessions(ores, nodeIdent);
+		Map<String, EvaluationFormSession> identToSesssion = sessions.stream()
+				.collect(Collectors.toMap(
+						s -> s.getSurvey().getIdentifier().getSubident2(),
+						Function.identity()));
+		
+		if (!sessions.isEmpty()) {
+			List<Rubric> rubrics = form.getElements().stream()
+					.filter(e -> Rubric.TYPE.equals(e.getType()))
+					.map(e -> (Rubric)e)
+					.collect(Collectors.toList());
+			List<String> responseIdentifiers = rubrics.stream()
+					.flatMap(r -> r.getSliders().stream())
+					.map(Slider::getId)
+					.collect(Collectors.toList());
+			SessionFilter filter = SessionFilterFactory.create(of(ores, nodeIdent));
+			List<EvaluationFormResponse> responses = evaluationFormManager.getResponses(responseIdentifiers, filter , Limit.all());
+			Map<EvaluationFormSession, List<EvaluationFormResponse>> sessionToResponses = responses.stream()
+					.collect(Collectors.groupingBy(EvaluationFormResponse::getSession));
+			
+			Map<String, Map<Rubric, RubricStatistic>> identToStatistics = new HashMap<>();
+			for (Entry<String, EvaluationFormSession> entry : identToSesssion.entrySet()) {
+				EvaluationFormSession session = entry.getValue();
+				List<EvaluationFormResponse> list = sessionToResponses.get(session);
+				if (list != null && !list.isEmpty()) {
+					Map<Rubric, RubricStatistic> rubricToStatistic = new HashMap<>(); 
+					for (Rubric rubric: rubrics) {
+						SlidersStepCounts slidersStepCounts = getSlidersStepCounts(rubric, sessionToResponses.get(session));
+						SlidersStatistic slidersStatistic = evaluationFormManager.calculateSlidersStatistic(rubric, slidersStepCounts);
+						RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, slidersStatistic);
+						rubricToStatistic.put(rubric, rubricStatistic);
+					}
+					identToStatistics.put(entry.getKey(), rubricToStatistic);
+				}
+			}
+			return identToStatistics;
+		}
+		
+		return Collections.emptyMap();
+	}
+
+	private SlidersStepCounts getSlidersStepCounts(Rubric rubric, List<EvaluationFormResponse> responses) {
+		SlidersStepCountsImpl slidersStepCount = new SlidersStepCountsImpl();
+		for (Slider slider: rubric.getSliders()) {
+			EvaluationFormResponse response = getSliderResponse(slider, responses);
+			if (response != null) {
+				StepCounts stepCount = getStepCounts(rubric, response);
+				slidersStepCount.put(slider, stepCount);
+			}
+		}
+		return slidersStepCount;
+	}
+
+	private EvaluationFormResponse getSliderResponse(Slider slider, List<EvaluationFormResponse> responses) {
+		for (EvaluationFormResponse response: responses) {
+			if (slider.getId().equals(response.getResponseIdentifier())) {
+				return response;
+			}
+		}
+		return null;
+	}
+
+	private StepCounts getStepCounts(Rubric rubric, EvaluationFormResponse response) {
+		return StepCountsBuilder.builder(rubric.getSteps())
+				.withCount(response.getNumericalResponse().intValue(), Long.valueOf(1))
+				.build();
 	}
 
 	@Override
@@ -258,9 +338,10 @@ public class MSServiceImpl implements MSService {
 		SlidersStatisticImpl slidersStatisticImpl = new SlidersStatisticImpl();
 		int step = min? 1: rubric.getSteps();
 		for (Slider slider : rubric.getSliders()) {
-			StepCounts stepCounts = new StepCountsImpl(rubric.getSteps());
-			stepCounts.setCount(step, Long.valueOf(1));
-			SliderStatistic sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, null, stepCounts, null);
+			StepCounts stepCounts = StepCountsBuilder.builder(rubric.getSteps())
+					.withCount(step, Long.valueOf(1))
+					.build();
+			SliderStatistic sliderStatistic = new SliderStatisticImpl(null, null, null, null, null, null, stepCounts, null);
 			slidersStatisticImpl.put(slider, sliderStatistic);
 		}
 		return slidersStatisticImpl;
@@ -270,12 +351,20 @@ public class MSServiceImpl implements MSService {
 	public Float calculateScoreBySum(EvaluationFormSession session) {
 		if (session == null) return null;
 		
-		double sum = 0.0;
 		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
+		Function<Rubric, RubricStatistic> rubricFunction = rubric -> {
+			return evaluationFormManager.getRubricStatistic(rubric, SessionFilterFactory.create(session));
+		};
+		return calculateScoreBySum(form, rubricFunction);
+	}
+
+	@Override
+	public Float calculateScoreBySum(Form form, Function<Rubric, RubricStatistic> rubricFunction) {
+		double sum = 0.0;
 		for (AbstractElement element : form.getElements()) {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric) element;
-				RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, SessionFilterFactory.create(session));
+				RubricStatistic rubricStatistic = rubricFunction.apply(rubric);
 				Double rubricSum = rubricStatistic.getTotalStatistic().getSum();
 				if (rubricSum != null) {
 					sum += (float)rubricSum.doubleValue();
@@ -288,14 +377,22 @@ public class MSServiceImpl implements MSService {
 	@Override
 	public Float calculateScoreByAvg(EvaluationFormSession session) {
 		if (session == null) return null;
-		
+
+		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
+		Function<Rubric, RubricStatistic> rubricFunction = rubric -> {
+			return evaluationFormManager.getRubricStatistic(rubric, SessionFilterFactory.create(session));
+		};
+		return calculateScoreByAvg(form, rubricFunction);
+	}
+	
+	@Override
+	public Float calculateScoreByAvg(Form form, Function<Rubric, RubricStatistic> rubricFunction) {
 		double sumAvgs = 0.0;
 		int numberAvgs = 0;
-		Form form = evaluationFormManager.loadForm(session.getSurvey().getFormEntry());
 		for (AbstractElement element : form.getElements()) {
 			if (Rubric.TYPE.equals(element.getType())) {
 				Rubric rubric = (Rubric) element;
-				RubricStatistic rubricStatistic = evaluationFormManager.getRubricStatistic(rubric, SessionFilterFactory.create(session));
+				RubricStatistic rubricStatistic = rubricFunction.apply(rubric);
 				for (Slider slider : rubric.getSliders()) {
 					SliderStatistic sliderStatistic = rubricStatistic.getSliderStatistic(slider);
 					Double sliderAvg = sliderStatistic.getAvg();

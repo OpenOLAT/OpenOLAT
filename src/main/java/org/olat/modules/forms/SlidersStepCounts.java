@@ -17,38 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.model;
+package org.olat.modules.forms;
 
-import org.olat.modules.forms.StepCounts;
+import org.olat.modules.forms.model.xml.Slider;
 
 /**
  * 
- * Initial date: 25 Jun 2019<br>
+ * Initial date: 2 Jul 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class StepCountsImpl implements StepCounts {
-	
-	private final Long[] counts;
-	
-	public StepCountsImpl(int numberOfSteps) {
-		this.counts = new Long[numberOfSteps + 1];
-	}
+public interface SlidersStepCounts {
 
-	@Override
-	public void setCount(int step, Long count) {
-		counts[step] = count;
-	}
-	
-	@Override
-	public long getCount(int step) {
-		Long count = counts[step];
-		return count != null? count.longValue(): 0;
-	}
-	
-	@Override
-	public int getNumberOfSteps() {
-		return counts.length -1;
-	}
+	public StepCounts getStepCounts(Slider slider);
 
 }

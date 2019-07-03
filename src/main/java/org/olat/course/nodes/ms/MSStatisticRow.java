@@ -17,28 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms;
+package org.olat.course.nodes.ms;
+
+import java.util.List;
+import java.util.Locale;
+
+import org.olat.core.id.Identity;
+import org.olat.user.UserPropertiesRow;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
 
 /**
  * 
- * Initial date: 29.08.2018<br>
+ * Initial date: 1 Jul 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface SliderStatistic extends StepCounts {
-
-	public Long getNumberOfResponses();
+public class MSStatisticRow extends UserPropertiesRow {
 	
-	public Double getSum();
+	private final List<Double> rubricValues;
 
-	public Double getMedian();
-
-	public Double getAvg();
-
-	public Double getVariance();
-
-	public Double getStdDev();
-
-	public RubricRating getRating();
+	public MSStatisticRow(Identity identity, List<UserPropertyHandler> userPropertyHandlers, Locale locale, List<Double> rubricValues) {
+		super(identity, userPropertyHandlers, locale);
+		this.rubricValues = rubricValues;
+	}
 	
+	public Double getRubricValue(int index) {
+		return rubricValues.get(index);
+	}
+
+	public List<Double> getRubricValues() {
+		return rubricValues;
+	}
+
 }

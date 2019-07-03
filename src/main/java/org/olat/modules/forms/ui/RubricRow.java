@@ -21,8 +21,6 @@ package org.olat.modules.forms.ui;
 
 import org.olat.core.util.StringHelper;
 import org.olat.modules.forms.SliderStatistic;
-import org.olat.modules.forms.StepCounts;
-import org.olat.modules.forms.model.StepCountsImpl;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
@@ -106,11 +104,18 @@ public class RubricRow {
 		return sliderStatistic.getStdDev();
 	}
 
-	public StepCounts getStepCounts() {
+	public int getNumberOfSteps() {
 		if (rubric.getSliderType().equals(SliderType.continuous)) {
-			return new StepCountsImpl(0);
+			return 0;
 		}
-		return sliderStatistic.getStepCounts();
+		return sliderStatistic.getNumberOfSteps();
+	}
+
+	public Long getStepCount(int step) {
+		if (rubric.getSliderType().equals(SliderType.continuous)) {
+			return Long.valueOf(0);
+		}
+		return sliderStatistic.getStepCount(step);
 	}
 
 }
