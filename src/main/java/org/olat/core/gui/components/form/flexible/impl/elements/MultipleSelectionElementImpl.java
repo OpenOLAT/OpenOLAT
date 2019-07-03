@@ -41,9 +41,6 @@ import org.olat.core.util.ConsumableBoolean;
 import org.olat.core.util.ValidationStatus;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for MultipleSelectionElementImpl
- * <P>
  * Initial Date: 04.01.2007 <br>
  * 
  * @author patrickb
@@ -62,6 +59,7 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	protected MultipleSelectionComponent component;
 	private String[] original = null;
 	private boolean ajaxOnlyMode = false;
+	private boolean evaluationOnlyVisible = false;
 	private boolean originalIsDefined = false;
 	private boolean escapeHtml = true;
 	private boolean domReplacementWrapperRequired = true;
@@ -105,6 +103,16 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 	public void setAjaxOnly(boolean ajaxOnlyMode) {
 		this.ajaxOnlyMode = ajaxOnlyMode;
 		
+	}
+
+	@Override
+	public boolean isEvaluationOnlyVisible() {
+		return evaluationOnlyVisible;
+	}
+
+	@Override
+	public void setEvaluationOnlyVisible(boolean onlyVisible) {
+		evaluationOnlyVisible = onlyVisible;
 	}
 
 	public Layout getLayout() {
@@ -265,7 +273,9 @@ public class MultipleSelectionElementImpl extends FormItemImpl implements Multip
 					selected.remove(key);
 				}
 			}
-		} else if(isEnabled() ) {
+		} else if(evaluationOnlyVisible && !isVisible()) {
+			// ignore in this case
+		} else if(isEnabled()) {
 			// which one was selected?
 			// selection change?
 			// mark corresponding comps as dirty

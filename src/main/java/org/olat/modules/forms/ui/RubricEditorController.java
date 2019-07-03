@@ -192,6 +192,11 @@ public class RubricEditorController extends FormBasicController implements PageE
 		// name display
 		String[] nameDisplayValues = new String[] { translate("rubric.name.execution"), translate("rubric.name.report") };
 		nameDisplayEl = uifactory.addCheckboxesHorizontal("rubric.name.display", settingsLayout, nameDisplayKeys, nameDisplayValues);
+		nameDisplayEl.addActionListener(FormEvent.ONCHANGE);
+		nameDisplayEl.setEvaluationOnlyVisible(true);
+		for (NameDisplay nameDisplay : rubric.getNameDisplays()) {
+			nameDisplayEl.select(nameDisplay.name(), true);
+		}
 		
 		// scale type
 		scaleTypeEl = uifactory.addDropdownSingleselect("scale.type." + count.incrementAndGet(), "rubric.scale.type",
@@ -340,10 +345,6 @@ public class RubricEditorController extends FormBasicController implements PageE
 		boolean isSurveyConfig = surveyConfigEl.isAtLeastSelected(1);
 		nameEl.setVisible(isSurveyConfig);
 		nameDisplayEl.setVisible(isSurveyConfig);
-		for (NameDisplay nameDisplay : rubric.getNameDisplays()) {
-			nameDisplayEl.select(nameDisplay.name(), true);
-		}
-		
 		scaleTypeEl.setVisible(isSurveyConfig);
 		noAnswerEl.setVisible(isSurveyConfig);
 		noAnswerEl.select(noAnswerEl.getKey(0), rubric.isNoResponseEnabled());

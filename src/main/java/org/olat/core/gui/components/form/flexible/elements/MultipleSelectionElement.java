@@ -139,6 +139,11 @@ public interface MultipleSelectionElement extends SelectionElement {
 	 */
 	public void setAjaxOnly(boolean ajaxOnlyMode);
 	
+
+	public boolean isEvaluationOnlyVisible();
+	
+	public void setEvaluationOnlyVisible(boolean onlyVisible);
+	
 	public enum Layout {
 		horizontal,
 		vertical,
