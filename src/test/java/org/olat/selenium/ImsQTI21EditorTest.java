@@ -102,6 +102,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 			.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+			.assertOnAssessmentItem()
 			.edit();
 		
 		// import a single choice, a multiple and 2 gap texts
@@ -183,6 +184,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 			.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+			.assertOnAssessmentItem()
 			.edit();
 		
 		// import a single choice, a multiple and 2 gap texts
@@ -265,6 +267,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -411,6 +414,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		qtiEditor
 			.selectNode("Single Choice")
@@ -486,6 +490,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -663,6 +668,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		qtiEditor
 			.selectNode("Single Choice")
@@ -769,6 +775,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -946,6 +953,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -1125,6 +1133,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -1309,6 +1318,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -1487,6 +1497,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -1664,6 +1675,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -1836,6 +1848,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -1947,6 +1960,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -2145,6 +2159,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -2339,6 +2354,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -2535,6 +2551,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -2727,6 +2744,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -2908,6 +2926,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -3013,6 +3032,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -3116,6 +3136,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//start a blank test
 		qtiEditor
@@ -3224,6 +3245,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//customize the section
 		qtiEditor
@@ -3338,6 +3360,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		QTI21EditorPage qtiEditor = qtiPage
+				.assertOnAssessmentItem()
 				.edit();
 		//customize the section
 		qtiEditor

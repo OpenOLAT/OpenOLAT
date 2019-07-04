@@ -407,6 +407,7 @@ public class ContactForm extends FormBasicController {
 		tcpfrom = uifactory.addCheckboxesVertical("tcpfrom", "", formLayout, new String[]{"xx"}, new String[]{translate(NLS_CONTACT_SEND_CP_FROM)}, 1);
 		
 		FormLayoutContainer buttonGroupLayout = FormLayoutContainer.createButtonLayout("buttonGroupLayout", getTranslator());
+		buttonGroupLayout.setElementCssClass("o_sel_contact_buttons");
 		formLayout.add(buttonGroupLayout);
 		
 		if(hasMsgSave) {
