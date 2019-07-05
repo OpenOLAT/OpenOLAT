@@ -372,13 +372,13 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 		
 		String meetingUrl = null;
 		AdobeConnectErrors errors = new AdobeConnectErrors();
-		if(meeting.isOpened() || !moderatorStartMeeting) {
-			meetingUrl = adobeConnectManager.join(meeting, getIdentity(), errors);
-		} else if(moderator || administrator) {
+		if(moderator || administrator) {
 			meetingUrl = adobeConnectManager.open(meeting, getIdentity(), errors);
 			AdobeConnectEvent openEvent = new AdobeConnectEvent(AdobeConnectEvent.OPEN_MEETING, meeting.getKey(), getIdentity().getKey());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(openEvent, meetingOres);
-		}
+		} else if(meeting.isOpened() || !moderatorStartMeeting) {
+			meetingUrl = adobeConnectManager.join(meeting, getIdentity(), (administrator || moderator), errors);
+		} 
 
 		if(errors.hasErrors()) {
 			getWindowControl().setError(AdobeConnectErrorHelper.formatErrors(getTranslator(), errors));

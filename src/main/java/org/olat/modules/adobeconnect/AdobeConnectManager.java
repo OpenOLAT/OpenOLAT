@@ -133,7 +133,7 @@ public interface AdobeConnectManager {
 	 */
 	public String open(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error);
 	
-	public String join(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error);
+	public String join(AdobeConnectMeeting meeting, Identity identity, boolean moderator, AdobeConnectErrors error);
 	
 	public String linkTo(AdobeConnectSco content, Identity identity, AdobeConnectErrors error);
 	
