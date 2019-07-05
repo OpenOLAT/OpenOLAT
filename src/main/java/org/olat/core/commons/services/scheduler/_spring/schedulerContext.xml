@@ -55,6 +55,7 @@ How to add a new job:
             <ref bean="qualityTrigger"/>
             <ref bean="deleteUserDataExportTrigger"/>
             <ref bean="cspCleanupJob"/>
+            <ref bean="adobeCleanupTrigger"/>
         </list>
     </property>
 </bean>

@@ -74,7 +74,6 @@ public class AdobeConnectUtils {
 			HttpEntity entity = response.getEntity();
 			Document doc = getDocumentFromEntity(entity);
 			if(isStatusOk(doc)) {
-				print(doc);
 				Header header = response.getFirstHeader("Set-Cookie");
 				if(header != null) {
 					session = BreezeSession.valueOf(header);
@@ -86,6 +85,8 @@ public class AdobeConnectUtils {
 						session = infoSession;
 					}
 				}
+			} else {
+				print(doc);
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -162,6 +163,15 @@ public class AdobeConnectUtils {
 		if(permissionList != null && permissionList.getLength() == 1) {
 			Element status = (Element)permissionList.item(0);
 			return "ok".equalsIgnoreCase(status.getAttribute("code"));
+		}
+		return true;
+	}
+	
+	protected static final boolean isStatusNoData(Document doc) {
+		NodeList permissionList = doc.getElementsByTagName("status");
+		if(permissionList != null && permissionList.getLength() == 1) {
+			Element status = (Element)permissionList.item(0);
+			return "no-data".equalsIgnoreCase(status.getAttribute("code"));
 		}
 		return true;
 	}

@@ -66,6 +66,8 @@ public interface AdobeConnectSPI {
 	 */
 	public List<AdobeConnectSco> getFolderByName(String name, AdobeConnectErrors errors);
 	
+	public List<AdobeConnectSco> getMeetingByName(String name, AdobeConnectErrors errors);
+	
 	public List<AdobeConnectSco> getTemplates();
 	
 	public List<AdobeConnectSco> getRecordings(AdobeConnectMeeting meeting, AdobeConnectErrors error);

@@ -50,7 +50,11 @@ public class AdobeConnectModule extends AbstractSpringModule implements ConfigOn
 	private static final String ADMIN_CRED = "vc.adobe.adminpassword";
 	private static final String ACCOUNTID = "vc.adobe.accountid";
 	private static final String PROVIDERID = "vc.adobe.providerid";
-	
+	private static final String CLEAN_MEETINGS = "vc.adobe.cleanupMeetings";
+	private static final String DAYS_TO_KEEP = "vc.adobe.daysToKeep";
+	private static final String SINGLE_MEETING_MODE = "vc.adobe.single.meeting.mode";
+	private static final String CREATE_MEETING_IMMEDIATELY = "vc.adobe.createMeetingImmediately";
+
 	@Value("${vc.adobe.enabled}")
 	private boolean enabled;
 	@Value("${vc.adobe.protocol:https}")
@@ -73,6 +77,16 @@ public class AdobeConnectModule extends AbstractSpringModule implements ConfigOn
 	private String accountId;
 	@Value("${vc.adobe.provider:connect9}")
 	private String providerId;
+	@Value("${vc.adobe.cleanupMeetings:false}")
+	private String cleanupMeetings;
+	@Value("${vc.adobe.daysToKeep:}")
+	private String daysToKeep;
+	@Value("${vc.adobe.single.meeting.mode:true}")
+	private String singleMeetingMode;
+	@Value("${vc.adobe.createMeetingImmediately:true}")
+	private String createMeetingImmediately;
+	@Value("${vc.adobe.login.compatibility.mode:false}")
+	private String loginCompatibilityMode;
 	
 	@Autowired
 	public AdobeConnectModule(CoordinatorManager coordinatorManager) {
@@ -98,6 +112,10 @@ public class AdobeConnectModule extends AbstractSpringModule implements ConfigOn
 		contextPath = getStringPropertyValue(CONTEXTPATH, contextPath);
 		accountId = getStringPropertyValue(ACCOUNTID, accountId);
 		providerId = getStringPropertyValue(PROVIDERID, providerId);
+		cleanupMeetings = getStringPropertyValue(CLEAN_MEETINGS, cleanupMeetings);
+		daysToKeep = getStringPropertyValue(DAYS_TO_KEEP, daysToKeep);
+		singleMeetingMode = getStringPropertyValue(SINGLE_MEETING_MODE, singleMeetingMode);
+		createMeetingImmediately = getStringPropertyValue(CREATE_MEETING_IMMEDIATELY, createMeetingImmediately);
 	}
 
 	@Override
@@ -243,11 +261,62 @@ public class AdobeConnectModule extends AbstractSpringModule implements ConfigOn
 	}
 
 	public String getAccountId() {
+		if("-".equals(accountId)) {
+			return null;
+		}
 		return accountId;
 	}
 
 	public void setAccountId(String accountId) {
 		this.accountId = accountId;
-		setStringProperty(ACCOUNTID, accountId, true);
+		setStringProperty(ACCOUNTID, StringHelper.containsNonWhitespace(accountId) ? accountId : "-" , true);
+	}
+
+	public boolean isCleanupMeetings() {
+		return "true".equals(cleanupMeetings);
+	}
+
+	public void setCleanupMeetings(boolean enable) {
+		cleanupMeetings = enable ? "true" : "false";
+		setStringProperty(CLEAN_MEETINGS, cleanupMeetings, true);
+	}
+
+	public long getDaysToKeep() {
+		if(StringHelper.isLong(daysToKeep)) {
+			return Long.parseLong(daysToKeep);
+		}
+		return -1;
+	}
+
+	public void setDaysToKeep(String daysToKeep) {
+		this.daysToKeep = daysToKeep;
+		setStringProperty(DAYS_TO_KEEP, daysToKeep, true);
+	}
+
+	public boolean isSingleMeetingMode() {
+		return "true".equals(singleMeetingMode);
+	}
+
+	public void setSingleMeetingMode(boolean enable) {
+		singleMeetingMode = enable ? "true" : "false";
+		setStringProperty(SINGLE_MEETING_MODE, singleMeetingMode, true);
+	}
+
+	public boolean isCreateMeetingImmediately() {
+		return "true".equals(createMeetingImmediately);
+	}
+
+	public void setCreateMeetingImmediately(boolean enable) {
+		createMeetingImmediately = enable ? "true" : "false";
+		setStringProperty(CREATE_MEETING_IMMEDIATELY, createMeetingImmediately, true);
+	}
+
+	/**
+	 * 
+	 * @return true if the app. needs to be compatible with the
+	 * 		login and password format of the old implementation.
+	 */
+	public boolean isLoginCompatibilityMode() {
+		return "true".equals(loginCompatibilityMode);
 	}
 }

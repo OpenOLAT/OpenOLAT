@@ -168,6 +168,16 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 	}
 
 	@Override
+	public List<AdobeConnectSco> getMeetingByName(String name, AdobeConnectErrors errors) {
+		UriBuilder builder = adobeConnectModule.getAdobeConnectUriBuilder();
+		builder
+			.queryParam("action", "sco-search-by-field")
+			.queryParam("query", PREFIX + name)
+			.queryParam("filter-type", "meeting");
+		return sendScoRequest(builder, errors);
+	}
+
+	@Override
 	public boolean updateScoMeeting(String scoId, String name, String description, String templateId,
 			Date startDate, Date endDate, AdobeConnectErrors errors) {
 		String folderScoId = adminFolderScoId(errors);
@@ -476,6 +486,7 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 
 					AdobeConnectSco connectSco = new AdobeConnectSco();
 					connectSco.setScoId(sco.getAttribute("sco-id"));
+					connectSco.setFolderId(sco.getAttribute("folder-id"));
 					connectSco.setType(sco.getAttribute("type"));
 					connectSco.setIcon(sco.getAttribute("icon"));
 					String urlPath = AdobeConnectUtils.getFirstElementValue(sco, "url-path");
@@ -532,11 +543,15 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 		}
 		
 		UriBuilder builder = adobeConnectModule.getAdobeConnectUriBuilder();
-		URI uri = builder
+		builder = builder
 			.queryParam("action", "login")
 			.queryParam("login", adobeConnectModule.getAdminLogin())
 			.queryParam("password", adobeConnectModule.getAdminPassword())
-			.queryParam("session", session.getSession())
+			.queryParam("session", session.getSession());
+		if(StringHelper.containsNonWhitespace(adobeConnectModule.getAccountId())) {
+			builder = builder.queryParam("account-id", adobeConnectModule.getAccountId());
+		}
+		URI uri = builder
 			.build();
 		
 		HttpGet getLogin = new HttpGet(uri);
@@ -653,6 +668,8 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 					permission.setPermissionId(permissionEl.getAttribute("permission-id"));
 					permissions.add(permission);
 				}
+			} else if(AdobeConnectUtils.isStatusNoData(doc)) {
+				// ok, there isn't any permissions
 			} else {
 				AdobeConnectUtils.error(doc, errors);
 			}

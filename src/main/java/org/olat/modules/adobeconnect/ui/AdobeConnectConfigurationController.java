@@ -21,6 +21,7 @@ package org.olat.modules.adobeconnect.ui;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -54,14 +55,21 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AdobeConnectConfigurationController extends FormBasicController {
 	
+	private static final String[] CLEAN_KEYS = { "-", "1", "2", "3", "4", "5", "7", "14", "21", "30" };
+	private static final String[] CREATE_KEYS = { "immediately", "differed" };
+	private static final String[] SINGLE_KEYS = { "single", "perdate" };
 	private static final String PLACEHOLDER = "xxx-placeholder-xxx";
 	
 	private FormLink checkLink;
 	private TextElement urlEl;
 	private TextElement loginEl;
 	private TextElement passwordEl;
+	private TextElement accountIdEl;
 	private SpacerElement spacerEl;
 	private SingleSelection providerEl;
+	private SingleSelection cleanMeetingsEl;
+	private SingleSelection createMeetingEl;
+	private SingleSelection singleMeetingEl;
 	private MultipleSelectionElement moduleEnabled;
 
 	private static final String[] enabledKeys = new String[]{"on"};
@@ -128,6 +136,43 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 		}
 		passwordEl = uifactory.addPasswordElement("aconnect-password", "option.adminpassword", 32, credential, formLayout);
 		passwordEl.setAutocomplete("new-password");
+		
+		String accountId = adobeConnectModule.getAccountId();
+		accountIdEl = uifactory.addTextElement("aconnect-id", "option.accountid", 32, accountId, formLayout);
+		accountIdEl.setHelpTextKey("option.accountid.explain", null);
+		
+		// delete meeting
+		String[] cleanValues = Arrays.copyOf(CLEAN_KEYS, CLEAN_KEYS.length);
+		cleanValues[0] = translate("option.dont.clean.meetings");
+		cleanMeetingsEl = uifactory.addDropdownSingleselect("option.clean.meetings", formLayout, CLEAN_KEYS, cleanValues);
+		if(adobeConnectModule.isCleanupMeetings()) {
+			long days = adobeConnectModule.getDaysToKeep();
+			String dayStr = Long.toString(days);
+			for(String key:CLEAN_KEYS) {
+				if(dayStr.equals(key)) {
+					cleanMeetingsEl.select(key, true);
+				}
+			}
+		} else {
+			cleanMeetingsEl.select(CLEAN_KEYS[0], true);
+		}
+		
+		// create meeting ASAP
+		String[] createValues = new String[] { translate("option.create.meeting.immediately"), translate("option.create.meeting.differed") };
+		createMeetingEl = uifactory.addRadiosHorizontal("option.create.meeting", "option.create.meeting", formLayout, CREATE_KEYS, createValues);
+		if(adobeConnectModule.isCreateMeetingImmediately()) {
+			createMeetingEl.select(CREATE_KEYS[0], true);
+		} else {
+			createMeetingEl.select(CREATE_KEYS[1], true);
+		}
+		
+		String[] singleMeetingValues = new String[] { translate("option.single.meeting.single"), translate("option.single.meeting.perdate") };
+		singleMeetingEl = uifactory.addRadiosHorizontal("option.single.meeting", formLayout, SINGLE_KEYS, singleMeetingValues);
+		if(adobeConnectModule.isSingleMeetingMode()) {
+			singleMeetingEl.select(SINGLE_KEYS[0], true);
+		} else {
+			singleMeetingEl.select(SINGLE_KEYS[1], true);
+		}
 		
 		//buttons save - check
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("save", getTranslator());
@@ -247,6 +292,16 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 				adobeConnectModule.setAdobeConnectURI(new URI(url));
 				adobeConnectModule.setAdminLogin(loginEl.getValue());
 				adobeConnectModule.setProviderId(providerEl.getSelectedKey());
+				adobeConnectModule.setAccountId(accountIdEl.getValue());
+				if(cleanMeetingsEl.isSelected(0)) {
+					adobeConnectModule.setCleanupMeetings(false);
+					adobeConnectModule.setDaysToKeep(null);
+				} else {
+					adobeConnectModule.setCleanupMeetings(true);
+					adobeConnectModule.setDaysToKeep(cleanMeetingsEl.getSelectedKey());
+				}
+				adobeConnectModule.setSingleMeetingMode(singleMeetingEl.isSelected(0));
+				adobeConnectModule.setCreateMeetingImmediately(createMeetingEl.isSelected(0));
 				String credential = passwordEl.getValue();
 				if(!PLACEHOLDER.equals(credential)) {
 					adobeConnectModule.setAdminPassword(credential);
@@ -258,6 +313,7 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 				adobeConnectModule.setAdobeConnectURI(null);
 				adobeConnectModule.setAdminLogin(null);
 				adobeConnectModule.setAdminPassword(null);
+				adobeConnectModule.setAccountId(null);
 			}
 			CollaborationToolsFactory.getInstance().initAvailableTools();
 		} catch (URISyntaxException e) {

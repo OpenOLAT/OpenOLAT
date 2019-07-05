@@ -72,14 +72,33 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 	private String description;
 	@Column(name="a_start_date", nullable=true, insertable=true, updatable=true)
 	private Date startDate;
+	@Column(name="a_leadtime", nullable=true, insertable=true, updatable=true)
+	private long leadTime;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="a_start_with_leadtime", nullable=true, insertable=true, updatable=true)
+	private Date startWithLeadTime;
+	
 	@Column(name="a_end_date", nullable=true, insertable=true, updatable=true)
 	private Date endDate;
+	@Column(name="a_followuptime", nullable=true, insertable=true, updatable=true)
+	private long followupTime;
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="a_end_with_followuptime", nullable=true, insertable=true, updatable=true)
+	private Date endWithFollowupTime;
 	
-	@Column(name="a_sco_id", nullable=true, insertable=true, updatable=false)
+	@Column(name="a_permanent", nullable=false, insertable=true, updatable=true)
+	private boolean permanent;
+	
+	@Column(name="a_opened", nullable=false, insertable=true, updatable=true)
+	private boolean opened;
+	
+	@Column(name="a_template_id", nullable=true, insertable=true, updatable=true)
+	private String templateId;
+	@Column(name="a_sco_id", nullable=true, insertable=true, updatable=true)
 	private String scoId;
-	@Column(name="a_folder_id", nullable=true, insertable=true, updatable=false)
+	@Column(name="a_folder_id", nullable=true, insertable=true, updatable=true)
 	private String folderId;
-	@Column(name="a_env_name", nullable=true, insertable=true, updatable=false)
+	@Column(name="a_env_name", nullable=true, insertable=true, updatable=true)
 	private String envName;
 	
 	@Column(name="a_shared_documents", nullable=true, insertable=true, updatable=true)
@@ -143,6 +162,16 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 	}
 
 	@Override
+	public String getTemplateId() {
+		return templateId;
+	}
+
+	@Override
+	public void setTemplateId(String templateId) {
+		this.templateId = templateId;
+	}
+
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -163,6 +192,16 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 	}
 
 	@Override
+	public boolean isPermanent() {
+		return permanent;
+	}
+
+	@Override
+	public void setPermanent(boolean permanent) {
+		this.permanent = permanent;
+	}
+
+	@Override
 	public Date getStartDate() {
 		return startDate;
 	}
@@ -170,6 +209,25 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 	@Override
 	public void setStartDate(Date start) {
 		this.startDate = start;
+	}
+
+	@Override
+	public long getLeadTime() {
+		return leadTime;
+	}
+
+	@Override
+	public void setLeadTime(long leadTime) {
+		this.leadTime = leadTime;
+	}
+
+	@Override
+	public Date getStartWithLeadTime() {
+		return startWithLeadTime;
+	}
+
+	public void setStartWithLeadTime(Date startWithLeadTime) {
+		this.startWithLeadTime = startWithLeadTime;
 	}
 
 	@Override
@@ -183,12 +241,41 @@ public class AdobeConnectMeetingImpl implements Persistable, AdobeConnectMeeting
 	}
 
 	@Override
+	public long getFollowupTime() {
+		return followupTime;
+	}
+
+	@Override
+	public void setFollowupTime(long followupTime) {
+		this.followupTime = followupTime;
+	}
+
+	@Override
+	public Date getEndWithFollowupTime() {
+		return endWithFollowupTime;
+	}
+
+	public void setEndWithFollowupTime(Date endWithFollowupTime) {
+		this.endWithFollowupTime = endWithFollowupTime;
+	}
+
+	@Override
 	public String getEnvName() {
 		return envName;
 	}
 
 	public void setEnvName(String envName) {
 		this.envName = envName;
+	}
+
+	@Override
+	public boolean isOpened() {
+		return opened;
+	}
+
+	@Override
+	public void setOpened(boolean opened) {
+		this.opened = opened;
 	}
 
 	public String getSharedDocuments() {

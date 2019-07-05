@@ -51,4 +51,13 @@ public class AdobeConnectErrors implements Serializable {
 	public boolean hasErrors() {
 		return !errors.isEmpty();
 	}
+	
+	public String getErrorMessages() {
+		StringBuilder sb = new StringBuilder(256);
+		for(AdobeConnectError error:errors) {
+			if(sb.length() > 0) sb.append(", ");
+			sb.append(error.getCode() == null ? "UNKOWN" : error.getCode().name());
+		}
+		return sb.toString();
+	}
 }

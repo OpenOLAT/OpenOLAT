@@ -39,11 +39,14 @@ import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
+import org.olat.course.nodes.adobeconnect.compatibility.MeetingCompatibilityDate;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.adobeconnect.AdobeConnectManager;
@@ -52,6 +55,7 @@ import org.olat.modules.adobeconnect.AdobeConnectMeetingPermission;
 import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.adobeconnect.AdobeConnectUser;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
+import org.olat.modules.adobeconnect.model.AdobeConnectMeetingImpl;
 import org.olat.modules.adobeconnect.model.AdobeConnectPrincipal;
 import org.olat.modules.adobeconnect.model.AdobeConnectSco;
 import org.olat.modules.adobeconnect.model.BreezeSession;
@@ -76,6 +80,8 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 
 	private AdobeConnectSPI adapter;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private UserManager userManager;
 	@Autowired
@@ -102,6 +108,17 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	}
 
 	@Override
+	public AdobeConnectMeeting getMeeting(AdobeConnectMeeting meeting) {
+		if(meeting == null || meeting.getKey() == null) return meeting;
+		return adobeConnectMeetingDao.loadByKey(meeting.getKey());
+	}
+
+	@Override
+	public List<AdobeConnectMeeting> getMeetingsBefore(Date date) {
+		return adobeConnectMeetingDao.getMeetingsBefore(date);
+	}
+
+	@Override
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		adobeConnectUserDao.deleteAdobeConnectUser(identity);
 	}
@@ -110,11 +127,11 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	public boolean deleteGroupDataFor(BusinessGroup group) {
 		List<AdobeConnectMeeting> meetings = adobeConnectMeetingDao.getMeetings(group);
 		
-		AdobeConnectErrors erros = new AdobeConnectErrors();
+		AdobeConnectErrors errors = new AdobeConnectErrors();
 		for(AdobeConnectMeeting meeting:meetings) {
-			deleteMeeting(meeting, erros);
+			deleteMeeting(meeting, errors);
 		}
-		return erros.hasErrors();
+		return errors.hasErrors();
 	}
 
 	private String generateFolderName(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
@@ -133,8 +150,73 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	}
 
 	@Override
-	public void createMeeting(String name, String description, String templateId,
-			Date start, Date end, Locale locale, boolean allAccess,
+	public void createMeeting(String name, String description, String templateId, boolean permanent,
+			Date start, long leadtime, Date end, long followupTime, Locale locale, boolean allAccess,
+			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
+			Identity actingIdentity, AdobeConnectErrors errors) {
+		if(adobeConnectModule.isCreateMeetingImmediately()) {
+			createAdobeMeeting(name, description, templateId, permanent, start, leadtime, end, followupTime, locale,
+					allAccess, entry, subIdent, businessGroup, actingIdentity, errors);
+		} else {
+			adobeConnectMeetingDao.createMeeting(name, description, permanent,
+					start, leadtime, end, followupTime, templateId, null, null, null, entry, subIdent, businessGroup);
+		}
+	}
+	
+	@Override
+	public AdobeConnectMeeting createAdobeMeeting(AdobeConnectMeeting meeting, Locale locale, boolean allAccess, AdobeConnectErrors errors) {
+		AdobeConnectSco sco = null;
+		if(adobeConnectModule.isSingleMeetingMode()) {
+			sco = getSingleMeetingRoom(meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup(), errors);
+		} else if(meeting.isPermanent()) {
+			sco = getPermanentMeetingRoom(meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup(), errors);
+		}
+		if(sco == null) {
+			AdobeConnectSco folder;
+			String folderName = generateFolderName(meeting.getEntry(), meeting.getSubIdent(), meeting.getBusinessGroup());
+			List<AdobeConnectSco> folderScos = getAdapter().getFolderByName(folderName, errors);
+			if(folderScos == null || folderScos.isEmpty()) {
+				folder = getAdapter().createFolder(folderName, errors);
+			} else {
+				folder = folderScos.get(0);
+			}
+
+			if(!errors.hasErrors()) {
+				sco = getAdapter().createScoMeeting(meeting.getName(), meeting.getDescription(), folder.getScoId(),
+						meeting.getTemplateId(), meeting.getStartDate(), meeting.getEndDate(), locale, errors);	
+			}
+		}
+		if(sco != null) {
+			((AdobeConnectMeetingImpl)meeting).setFolderId(sco.getFolderId());
+			((AdobeConnectMeetingImpl)meeting).setScoId(sco.getScoId());
+			((AdobeConnectMeetingImpl)meeting).setEnvName(adobeConnectModule.getBaseUrl());
+			meeting = adobeConnectMeetingDao.updateMeeting(meeting);
+		}
+		dbInstance.commit();
+		return meeting;
+	}
+
+	/**
+	 * Create the Adobe Meeting first and the OpenOlat database object only
+	 * if the meeting was successfully scheduled.
+	 * 
+	 * @param name The name of the meeting
+	 * @param description The description of the meeting
+	 * @param templateId The template
+	 * @param start Date to start the meeting
+	 * @param leadtime Preparation time
+	 * @param end End of the meeting
+	 * @param followupTime Follow-up time
+	 * @param locale Language
+	 * @param allAccess 
+	 * @param entry The course
+	 * @param subIdent The course node identifier (for example)
+	 * @param businessGroup The business group
+	 * @param actingIdentity The user which create the meeting
+	 * @param errors Errors
+	 */
+	private void createAdobeMeeting(String name, String description, String templateId, boolean permanent,
+			Date start, long leadtime, Date end, long followupTime, Locale locale, boolean allAccess,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
 			Identity actingIdentity, AdobeConnectErrors errors) {
 		
@@ -151,13 +233,17 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			return;// we need a folder
 		}
 		
-		AdobeConnectSco sco = getAdapter().createScoMeeting(name, description, folder.getScoId(), templateId, start, end, locale, errors);
+		AdobeConnectSco sco = null;
+		if(adobeConnectModule.isSingleMeetingMode()) {
+			sco = getSingleMeetingRoom(entry, subIdent, businessGroup, errors);
+		} else if(permanent) {
+			sco = getPermanentMeetingRoom(entry, subIdent, businessGroup, errors);
+		}
+		if(sco == null) {
+			sco = getAdapter().createScoMeeting(name, description, folder.getScoId(), templateId, start, end, locale, errors);
+		}
 		if(sco != null) {
-			getAdapter().setPermissions(sco.getScoId(), true, errors);
-			AdobeConnectPrincipal admin = getAdapter().adminCommonInfo(errors);
-			if(admin != null) {
-				getAdapter().setMember(sco.getScoId(), admin.getPrincipalId(), AdobeConnectMeetingPermission.host.permission(), errors);
-			}
+			getAdapter().setPermissions(sco.getScoId(), allAccess, errors);
 
 			String actingUser = getOrCreateUser(actingIdentity, true, errors);
 			if(actingUser != null) {
@@ -165,8 +251,8 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			}
 			
 			// try harder if the meeting hasn't a single host
-			if(actingUser == null && admin == null) {
-				admin = getAdapter().getPrincipalByLogin(adobeConnectModule.getAdminLogin(), errors);
+			if(actingUser == null) {
+				AdobeConnectPrincipal admin = getAdapter().getPrincipalByLogin(adobeConnectModule.getAdminLogin(), errors);
 				if(admin != null) {
 					getAdapter().setMember(sco.getScoId(), admin.getPrincipalId(), AdobeConnectMeetingPermission.host.permission(), errors);
 				}
@@ -174,22 +260,68 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			
 			String scoId = sco.getScoId();
 			String envName = adobeConnectModule.getBaseUrl();
-			adobeConnectMeetingDao.createMeeting(name, description, start, end, scoId, folder.getScoId(), envName, entry, subIdent, businessGroup);
+			adobeConnectMeetingDao.createMeeting(name, description,
+					permanent, start, leadtime, end, followupTime,
+					templateId, scoId, folder.getScoId(), envName, entry, subIdent, businessGroup);
 		}
+	}
+	
+	/**
+	 * Search for a meeting room in single meeting mode.
+	 * 
+	 * @return The meeting or null if not found.
+	 */
+	private AdobeConnectSco getSingleMeetingRoom(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
+			AdobeConnectErrors errors) {
+		List<AdobeConnectMeeting> currentMeetings = getMeetings(entry, subIdent, businessGroup);	
+		if(currentMeetings != null && !currentMeetings.isEmpty()) {
+			AdobeConnectMeeting meeting = currentMeetings.get(0);
+			return getAdapter().getScoMeeting(meeting, errors);
+		}
+		return null;
+	}
+	
+	private AdobeConnectSco getPermanentMeetingRoom(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
+			AdobeConnectErrors errors) {
+		List<AdobeConnectMeeting> currentMeetings = getMeetings(entry, subIdent, businessGroup);
+		if(currentMeetings != null && !currentMeetings.isEmpty()) {
+			for(AdobeConnectMeeting meeting:currentMeetings) {
+				if(meeting.isPermanent()) {
+					return getAdapter().getScoMeeting(meeting, errors);
+				}
+			}
+		}
+		return null;
 	}
 	
 	@Override
 	public AdobeConnectMeeting updateMeeting(AdobeConnectMeeting meeting, String name, String description, String templateId,
-			Date start, Date end, AdobeConnectErrors errors) {
-		boolean ok = getAdapter().updateScoMeeting(meeting.getScoId(), name, description, templateId, start, end, errors);
-		if(ok) {
-			meeting.setName(name);
-			meeting.setDescription(description);
-			meeting.setStartDate(start);
-			meeting.setEndDate(end);
-			meeting = adobeConnectMeetingDao.updateMeeting(meeting);
+			boolean permanent, Date start, long leadTime, Date end, long followupTime, AdobeConnectErrors errors) {
+		if(StringHelper.containsNonWhitespace(meeting.getScoId())) {
+			boolean ok = getAdapter().updateScoMeeting(meeting.getScoId(), name, description, templateId, start, end, errors);
+			if(ok) {
+				meeting = updateMeeting(meeting, name, description, permanent, start, leadTime, end, followupTime);
+			}
+		} else {
+			meeting = updateMeeting(meeting, name, description, permanent, start, leadTime, end, followupTime);
 		}
 		return meeting;
+	}
+	
+	private AdobeConnectMeeting updateMeeting(AdobeConnectMeeting meeting, String name, String description,
+			boolean permanent, Date start, long leadTime, Date end, long followupTime) {
+		meeting.setName(name);
+		meeting.setDescription(description);
+		if(adobeConnectModule.isSingleMeetingMode()) {
+			meeting.setPermanent(true);
+		} else if(!StringHelper.containsNonWhitespace(meeting.getScoId())) {
+			meeting.setPermanent(permanent);
+		}
+		meeting.setStartDate(start);
+		meeting.setLeadTime(leadTime);
+		meeting.setEndDate(end);
+		meeting.setFollowupTime(followupTime);
+		return adobeConnectMeetingDao.updateMeeting(meeting);
 	}
 	
 	@Override
@@ -236,6 +368,14 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			registered = getAdapter().isMember(meeting.getScoId(), actingUser, permission.permission(), error);
 		}
 		return registered;
+	}
+
+	@Override
+	public String open(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error) {
+		meeting.setOpened(true);
+		meeting = adobeConnectMeetingDao.updateMeeting(meeting);
+		dbInstance.commit();
+		return join(meeting, identity, error);
 	}
 
 	@Override
@@ -299,14 +439,79 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	@Override
 	public boolean deleteMeeting(AdobeConnectMeeting meeting, AdobeConnectErrors errors) {
 		boolean deleted = false;
-		AdobeConnectErrors error = new AdobeConnectErrors();
-		if(getAdapter().deleteScoMeeting(meeting, error)) {
+		boolean deleteAdobeConnect = canDeleteAdobeMeeting(meeting);
+		if(deleteAdobeConnect) {
+			AdobeConnectErrors error = new AdobeConnectErrors();
+			if(getAdapter().deleteScoMeeting(meeting, error)) {
+				AdobeConnectMeeting reloadedMeeting = adobeConnectMeetingDao.loadByKey(meeting.getKey());
+				adobeConnectMeetingDao.deleteMeeting(reloadedMeeting);
+				deleted = true;
+			}
+			errors.append(error);
+		} else {
 			AdobeConnectMeeting reloadedMeeting = adobeConnectMeetingDao.loadByKey(meeting.getKey());
 			adobeConnectMeetingDao.deleteMeeting(reloadedMeeting);
 			deleted = true;
 		}
-		errors.append(error);
 		return deleted;
+	}
+	
+	private boolean canDeleteAdobeMeeting(AdobeConnectMeeting meeting) {
+		List<AdobeConnectMeeting> sharedMeetings;
+		if(meeting.getEntry() != null) {
+			sharedMeetings = adobeConnectMeetingDao.getMeetings(meeting.getEntry(), meeting.getSubIdent());
+		} else if(meeting.getBusinessGroup() != null) {
+			sharedMeetings = adobeConnectMeetingDao.getMeetings(meeting.getBusinessGroup());
+		} else {
+			return true;
+		}
+		
+		boolean foundSharedMeeting = false;
+		for(AdobeConnectMeeting sharedMeeting:sharedMeetings) {
+			if(!sharedMeeting.equals(meeting)
+					&& sharedMeeting.getScoId() != null
+					&& sharedMeeting.getScoId().equals(meeting.getScoId())) {
+				foundSharedMeeting |= true;
+			}
+		}
+		return !foundSharedMeeting;
+	}
+
+	@Override
+	public void convert(List<MeetingCompatibilityDate> meetingsData, RepositoryEntry entry, String subIdent) {
+		boolean hasMeetings = adobeConnectMeetingDao.hasMeetings(entry, subIdent);
+		if(hasMeetings) {
+			return; // do the conversion only once
+		}
+		
+		String scoId = null;
+		String folderId = null;
+		String envName = null;
+		
+		AdobeConnectErrors errors = new AdobeConnectErrors();
+		String roomId = entry.getOlatResource().getResourceableId() + "_" + subIdent;
+		List<AdobeConnectSco> meetings = getAdapter().getMeetingByName(roomId, errors);
+		if(meetings != null && !meetings.isEmpty()) {
+			AdobeConnectSco meeting = meetings.get(0);
+			scoId = meeting.getScoId();
+			folderId = meeting.getFolderId();
+			envName = adobeConnectModule.getBaseUrl();
+		}
+
+		for(MeetingCompatibilityDate meetingData:meetingsData) {
+			adobeConnectMeetingDao.createMeeting(meetingData.getTitle(), meetingData.getDescription(), true,
+					meetingData.getStart(), 15, meetingData.getEnd(), 15, null, scoId, folderId, envName, entry, subIdent, null);
+		}
+	}
+
+	@Override
+	public boolean hasMeetings(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
+		if(entry != null) {
+			return adobeConnectMeetingDao.hasMeetings(entry, subIdent);
+		} else if(businessGroup != null) {
+			return adobeConnectMeetingDao.hasMeetings(businessGroup);
+		}
+		return false;
 	}
 
 	@Override
@@ -328,12 +533,20 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 		String envName = adobeConnectModule.getBaseUrl();
 		AdobeConnectUser user = adobeConnectUserDao.getUser(identity, envName);
 		if(user == null && create) {
-			String login = identity.getUser().getEmail();
+			boolean compatible = adobeConnectModule.isLoginCompatibilityMode();
+			String login;
+			if(compatible) {
+				login = "olat-" + identity.getName();
+			} else {
+				login = identity.getUser().getEmail();
+			}
 			AdobeConnectPrincipal aUser = getAdapter().getPrincipalByLogin(login, error);
 			
 			String creds = null;
 			if(aUser == null) {
-				if(getAdapter().isManagedPassword()) {
+				if(compatible) {
+					creds = Encoder.md5hash(identity.getName() + "@" + Settings.getApplicationName());
+				} else if(getAdapter().isManagedPassword()) {
 					creds = UUID.randomUUID().toString().replace("-", "");
 					if(creds.length() > 32) {
 						creds = creds.substring(0, 32);

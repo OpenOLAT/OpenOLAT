@@ -45,8 +45,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.RedirectMediaResource;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.adobeconnect.AdobeConnectManager;
 import org.olat.modules.adobeconnect.AdobeConnectMeeting;
 import org.olat.modules.adobeconnect.AdobeConnectMeetingPermission;
@@ -62,7 +66,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AdobeConnectMeetingController extends FormBasicController {
+public class AdobeConnectMeetingController extends FormBasicController implements GenericEventListener {
 	
 	private final boolean readOnly;
 	private final boolean moderator;
@@ -70,11 +74,18 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	private AdobeConnectMeeting meeting;
 	
 	private boolean registered;
-	private final boolean validMeeting;
+	private boolean meetingCreated;
+	private boolean validMeeting;
+	private final boolean guestsAccess;
+	private final boolean userMeetingsDates;
+	private final boolean moderatorStartMeeting;
+	private final OLATResourceable meetingOres;
 
 	private int counter;
 	private Link joinButton;
+	
 	private FormLink registerButton;
+	private FormLink createMeetingButton;
 	private FormLink sharedDocumentButton;
 	private FlexiTableElement contentTableEl;
 	private AdobeConnectContentTableModel contentModel;
@@ -88,17 +99,25 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	private AdobeConnectManager adobeConnectManager;
 	
 	public AdobeConnectMeetingController(UserRequest ureq, WindowControl wControl,
-			AdobeConnectMeeting meeting, boolean administrator, boolean moderator, boolean readOnly) {
+			AdobeConnectMeeting meeting, AdobeConnectMeetingDefaultConfiguration configuration,
+			boolean administrator, boolean moderator, boolean readOnly) {
 		super(ureq, wControl, "meeting");
 		this.meeting = meeting;
 		this.readOnly = readOnly;
 		this.moderator = moderator;
 		this.administrator = administrator;
+		meetingOres = OresHelper.createOLATResourceableInstance(AdobeConnectMeeting.class.getSimpleName(), meeting.getKey());
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, getIdentity(), meetingOres);
+		
+		meetingCreated = StringHelper.containsNonWhitespace(meeting.getScoId());
 		validMeeting = adobeConnectModule.getBaseUrl().equals(meeting.getEnvName());
+		userMeetingsDates = configuration.isUseMeetingDates();
+		moderatorStartMeeting = configuration.isModeratorStartMeeting();
+		guestsAccess = configuration.isAllowGuestAccess();
 		
 		initForm(ureq);
 		
-		if(validMeeting) {
+		if(validMeeting && meetingCreated) {
 			AdobeConnectErrors errors = new AdobeConnectErrors();
 			registered = adobeConnectManager.isRegistered(meeting, getIdentity(), getPermission(), errors);
 			loadModel();
@@ -106,7 +125,7 @@ public class AdobeConnectMeetingController extends FormBasicController {
 				getWindowControl().setWarning(AdobeConnectErrorHelper.formatErrors(getTranslator(), errors));
 			}
 		}
-		updateButtons();
+		updateButtonsAndStatus();
 	}
 
 	@Override
@@ -125,18 +144,17 @@ public class AdobeConnectMeetingController extends FormBasicController {
 			if(meeting.getEndDate() != null) {
 				String end = Formatter.getInstance(getLocale()).formatDateAndTime(meeting.getEndDate());
 				layoutCont.contextPut("end", end);
-				if(ended) {
-					layoutCont.contextPut("ended", Boolean.TRUE);
-				}
 			}
-
-			layoutCont.contextPut("validMeeting", Boolean.valueOf(validMeeting));
 		}
 
 		registerButton = uifactory.addFormLink("meeting.register.button", flc, Link.BUTTON);
 		registerButton.setVisible(!ended);
+		
 		sharedDocumentButton = uifactory.addFormLink("meeting.share.documents", flc, Link.BUTTON);
 		sharedDocumentButton.setVisible(administrator || moderator);
+		
+		createMeetingButton = uifactory.addFormLink("meeting.create.button", flc, Link.BUTTON);
+		createMeetingButton.setVisible(!StringHelper.containsNonWhitespace(meeting.getScoId()));
 
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
 		joinButton.setTarget("_blank");
@@ -147,6 +165,82 @@ public class AdobeConnectMeetingController extends FormBasicController {
 	
 	private boolean isEnded() {
 		return meeting != null && meeting.getEndDate() != null && new Date().after(meeting.getEndDate());
+	}
+	
+	private boolean isValidDates() {
+		if(!userMeetingsDates) {
+			return true;
+		}
+		Date now = new Date();
+		Date start = meeting.getStartWithLeadTime();
+		Date end = meeting.getEndWithFollowupTime();
+		
+		if(start != null && start.compareTo(now) >= 0) {
+			return false;
+		}
+		if(end != null && end.compareTo(now) <= 0) {
+			return false;
+		}
+		return true;
+	}
+	
+	private void reloadButtonsAndStatus() {
+		meeting = adobeConnectManager.getMeeting(meeting);
+		updateButtonsAndStatus();
+	}
+	
+	private void updateButtonsAndStatus() {
+		boolean invalidProvider = meeting.getEnvName() != null && !meeting.getEnvName().equals(adobeConnectModule.getBaseUrl());
+		boolean meetingsExists = StringHelper.containsNonWhitespace(meeting.getScoId());
+		boolean isEnded = isEnded();
+
+		meetingCreated = StringHelper.containsNonWhitespace(meeting.getScoId());
+		validMeeting = adobeConnectModule.getBaseUrl().equals(meeting.getEnvName());
+		
+		flc.contextPut("invalidProvider", Boolean.valueOf(invalidProvider));
+		flc.contextPut("meetingsExists", Boolean.valueOf(meetingsExists));
+		flc.contextPut("ended", Boolean.valueOf(isEnded));
+		
+		boolean accessible = !isEnded() || administrator || moderator;
+		boolean canCreate = !StringHelper.containsNonWhitespace(meeting.getScoId())
+				&& (administrator || moderator);
+		createMeetingButton.setVisible(canCreate);
+		
+		if(canCreate) {
+			registerButton.setVisible(false);
+			joinButton.setVisible(false);
+		} else if(moderator || administrator) {
+			registerButton.setVisible(false);
+			
+			joinButton.setVisible(accessible);
+			joinButton.setEnabled(!readOnly && validMeeting);
+			
+			if(!meeting.isOpened() && moderatorStartMeeting) {
+				joinButton.setCustomDisplayText(translate("meeting.start.button"));
+			} else if(isValidDates()) {
+				joinButton.setCustomDisplayText(translate("meeting.join.button"));
+			} else {
+				joinButton.setCustomDisplayText(translate("meeting.go.button"));
+			}
+		} else {
+			registerButton.setVisible(accessible && !registered && !readOnly && validMeeting);
+			boolean validDates = isValidDates();
+
+			joinButton.setVisible(accessible && registered);
+			if(!meeting.isOpened() && moderatorStartMeeting) {
+				joinButton.setEnabled(false);
+			} else {
+				joinButton.setEnabled(!readOnly && validMeeting && validDates);
+			}
+
+			if(validDates && !meeting.isOpened() && moderatorStartMeeting) {
+				flc.contextPut("notStarted", Boolean.TRUE);	
+			} else if(validDates || isEnded) {
+				flc.contextPut("notStarted", Boolean.FALSE);
+			} else {
+				flc.contextPut("notStarted", Boolean.TRUE);
+			}
+		}
 	}
 	
 	protected void initContent(FormItemContainer formLayout) {
@@ -183,7 +277,7 @@ public class AdobeConnectMeetingController extends FormBasicController {
 			}
 			contentModel.setObjects(rows);
 			contentTableEl.reset(true, true, true);
-			contentTableEl.setVisible(true);
+			contentTableEl.setVisible(!rows.isEmpty() || administrator || moderator);
 			sharedDocumentButton.setVisible(!scos.isEmpty() && (administrator || moderator));
 			flc.contextPut("notRegistered", Boolean.valueOf(!registered));
 		} else {
@@ -191,17 +285,20 @@ public class AdobeConnectMeetingController extends FormBasicController {
 			sharedDocumentButton.setVisible(false);
 		}
 	}
-	
-	private void updateButtons() {
-		boolean accessible = !isEnded() || administrator || moderator;	
-		registerButton.setVisible(accessible && !registered && !readOnly && validMeeting);
-		joinButton.setVisible(accessible && registered);
-		joinButton.setEnabled(!readOnly && validMeeting);
-	}
 
 	@Override
 	protected void doDispose() {
-		//
+		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, meetingOres);
+	}
+
+	@Override
+	public void event(Event event) {
+		if(event instanceof AdobeConnectEvent) {
+			AdobeConnectEvent ace = (AdobeConnectEvent)event;
+			if(ace.getMeetingKey() != null && ace.getMeetingKey().equals(meeting.getKey())) {
+				reloadButtonsAndStatus();
+			}
+		}
 	}
 
 	@Override
@@ -245,18 +342,51 @@ public class AdobeConnectMeetingController extends FormBasicController {
 			doRegister();
 		} else if(sharedDocumentButton == source) {
 			doShareDocuments(ureq);
+		} else if(createMeetingButton == source) {
+			doCreateMeeting(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doJoin(UserRequest ureq) {
+	private void doCreateMeeting(UserRequest ureq) {
+		meeting = adobeConnectManager.getMeeting(meeting);
 		AdobeConnectErrors errors = new AdobeConnectErrors();
-		String meetingUrl = adobeConnectManager.join(meeting, getIdentity(), errors);
+		meeting = adobeConnectManager.createAdobeMeeting(meeting, getLocale(), guestsAccess, errors);
+		updateButtonsAndStatus();
+		
 		if(errors.hasErrors()) {
 			getWindowControl().setError(AdobeConnectErrorHelper.formatErrors(getTranslator(), errors));
 		} else {
+			AdobeConnectEvent createEvent = new AdobeConnectEvent(AdobeConnectEvent.CREATE_MEETING, meeting.getKey(), getIdentity().getKey());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(createEvent, meetingOres);
+		}
+	}
+	
+	private void doJoin(UserRequest ureq) {
+		meeting = adobeConnectManager.getMeeting(meeting);
+		if(meeting == null) {
+			showWarning("warning.no.meeting");
+			fireEvent(ureq, Event.BACK_EVENT);
+			return;
+		}
+		
+		String meetingUrl = null;
+		AdobeConnectErrors errors = new AdobeConnectErrors();
+		if(meeting.isOpened() || !moderatorStartMeeting) {
+			meetingUrl = adobeConnectManager.join(meeting, getIdentity(), errors);
+		} else if(moderator || administrator) {
+			meetingUrl = adobeConnectManager.open(meeting, getIdentity(), errors);
+			AdobeConnectEvent openEvent = new AdobeConnectEvent(AdobeConnectEvent.OPEN_MEETING, meeting.getKey(), getIdentity().getKey());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(openEvent, meetingOres);
+		}
+
+		if(errors.hasErrors()) {
+			getWindowControl().setError(AdobeConnectErrorHelper.formatErrors(getTranslator(), errors));
+		} else if(StringHelper.containsNonWhitespace(meetingUrl)) {
 			MediaResource redirect = new RedirectMediaResource(meetingUrl);
 			ureq.getDispatchResult().setResultingMediaResource(redirect);
+		} else {
+			showWarning("warning.no.access");
 		}
 	}
 	
@@ -265,7 +395,7 @@ public class AdobeConnectMeetingController extends FormBasicController {
 		registered = adobeConnectManager.registerFor(meeting, getIdentity(), getPermission(), errors);
 		if(registered) {
 			showInfo("meeting.successfully.registered");
-			updateButtons();
+			reloadButtonsAndStatus();
 		} else if(errors.hasErrors()) {
 			getWindowControl().setError(AdobeConnectErrorHelper.formatErrors(getTranslator(), errors));
 		} else {

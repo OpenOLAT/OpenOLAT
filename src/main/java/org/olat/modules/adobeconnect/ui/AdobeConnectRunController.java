@@ -101,7 +101,7 @@ public class AdobeConnectRunController extends BasicController implements Activa
 			doOpenMeetings(ureq);
 		} else {
 			mainVC = createVelocityContainer("run");
-			meetingsCtrl = new AdobeConnectMeetingsController(ureq, wControl, entry, subIdent, group);
+			meetingsCtrl = new AdobeConnectMeetingsController(ureq, wControl, entry, subIdent, group, admin, moderator);
 			listenTo(meetingsCtrl);
 			mainVC.put("meetings", meetingsCtrl.getInitialComponent());
 		}
@@ -123,14 +123,23 @@ public class AdobeConnectRunController extends BasicController implements Activa
 		if("Meetings".equalsIgnoreCase(type)) {
 			if(canView) {
 				doOpenMeetings(ureq);
+				if(segmentView != null) {
+					segmentView.select(meetingsLink);
+				}
 			}
 		} else if("Administration".equalsIgnoreCase(type)) {
 			if(administrator) {
 				doOpenAdmin(ureq);
+				if(segmentView != null) { 
+					segmentView.select(adminLink);
+				}
 			}
 		} else if("Meeting".equalsIgnoreCase(type)) {
 			if(canView) {
 				doOpenMeetings(ureq);
+				if(segmentView != null) {
+					segmentView.select(meetingsLink);
+				}
 				Long meetingKey = entries.get(0).getOLATResourceable().getResourceableId();
 				if(meetingsCtrl.hasMeetingByKey(meetingKey)) {
 					doSelectMeeting(ureq, meetingsCtrl.getMeetingByKey(meetingKey));
@@ -142,9 +151,7 @@ public class AdobeConnectRunController extends BasicController implements Activa
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(backLink == source) {
-			mainVC.remove(meetingCtrl.getInitialComponent());
-			removeAsListenerAndDispose(meetingCtrl);
-			meetingCtrl = null;
+			back();
 		} else if(source == segmentView) {
 			if(event instanceof SegmentViewEvent) {
 				SegmentViewEvent sve = (SegmentViewEvent)event;
@@ -166,14 +173,24 @@ public class AdobeConnectRunController extends BasicController implements Activa
 				SelectAdobeConnectMeetingEvent se = (SelectAdobeConnectMeetingEvent)event;
 				doSelectMeeting(ureq, se.getMeeting());
 			}
+		} else if(meetingCtrl == source) {
+			if(event == Event.BACK_EVENT) {
+				back();
+			}
 		}
+	}
+	
+	private void back() {
+		mainVC.remove(meetingCtrl.getInitialComponent());
+		removeAsListenerAndDispose(meetingCtrl);
+		meetingCtrl = null;
 	}
 	
 	private void doOpenMeetings(UserRequest ureq) {
 		if(meetingsCtrl == null) {
 			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Meetings", 0l), null);
 			meetingsCtrl = new AdobeConnectMeetingsController(ureq, bwControl,
-					entry, subIdent, group);
+					entry, subIdent, group, administrator, moderator);
 			listenTo(meetingsCtrl);
 		} else {
 			meetingsCtrl.updateModel();
@@ -196,10 +213,15 @@ public class AdobeConnectRunController extends BasicController implements Activa
 	
 	private void doSelectMeeting(UserRequest ureq, AdobeConnectMeeting meeting) {
 		removeAsListenerAndDispose(meetingCtrl);
-
-		WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Meeting", meeting.getKey()), null);
-		meetingCtrl = new AdobeConnectMeetingController(ureq, bwControl, meeting, administrator, moderator, readOnly);
-		listenTo(meetingCtrl);
-		mainVC.put("meeting", meetingCtrl.getInitialComponent());
+		meetingCtrl = null;
+		
+		if(meeting == null) {
+			showWarning("warning.no.meeting");
+		} else {
+			WindowControl bwControl = addToHistory(ureq, OresHelper.createOLATResourceableInstance("Meeting", meeting.getKey()), null);
+			meetingCtrl = new AdobeConnectMeetingController(ureq, bwControl, meeting, configuration, administrator, moderator, readOnly);
+			listenTo(meetingCtrl);
+			mainVC.put("meeting", meetingCtrl.getInitialComponent());
+		}
 	}
 }

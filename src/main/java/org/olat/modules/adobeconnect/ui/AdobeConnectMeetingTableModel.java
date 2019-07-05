@@ -64,6 +64,7 @@ implements SortableFlexiTableDataModel<AdobeConnectMeeting> {
 	public Object getValueAt(AdobeConnectMeeting row, int col) {
 		switch(ACMeetingsCols.values()[col]) {
 			case name: return row.getName();
+			case permanent: return row.isPermanent();
 			case start: return row.getStartDate();
 			case end: return row.getEndDate();
 			case resource: return getResourceName(row);
@@ -89,6 +90,7 @@ implements SortableFlexiTableDataModel<AdobeConnectMeeting> {
 	public enum ACMeetingsCols implements FlexiSortableColumnDef {
 		
 		name("meeting.name"),
+		permanent("table.header.permanent"),
 		start("meeting.start"),
 		end("meeting.end"),
 		resource("meeting.resource");

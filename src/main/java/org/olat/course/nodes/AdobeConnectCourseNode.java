@@ -41,6 +41,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.adobeconnect.AdobeConnectCourseNodeConfiguration;
 import org.olat.course.nodes.adobeconnect.AdobeConnectEditController;
 import org.olat.course.nodes.adobeconnect.compatibility.AdobeConnectCompatibilityConfiguration;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -71,15 +72,26 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 		super(TYPE);
 	}
 
-	@Override
-	public void updateModuleConfigDefaults(boolean isNewNode) {
+	private void updateModuleConfigDefaults(CourseEnvironment courseEnv, boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if(config.getConfigurationVersion() < 2) {
 			Object oldConfiguration = config.get(CONF_VC_CONFIGURATION);
 			if(oldConfiguration instanceof AdobeConnectCompatibilityConfiguration) {
 				AdobeConnectCompatibilityConfiguration oldConfig = (AdobeConnectCompatibilityConfiguration)oldConfiguration;
+				config.setBooleanEntry(AdobeConnectEditController.ACCESS_BY_DATES, oldConfig.isUseMeetingDates());
 				config.setBooleanEntry(AdobeConnectEditController.GUEST_ACCESS_ALLOWED, oldConfig.isGuestAccessAllowed());
 				config.setBooleanEntry(AdobeConnectEditController.MODERATOR_START_MEETING, !oldConfig.isGuestStartMeetingAllowed());
+				
+				if(courseEnv != null && oldConfig.getMeetingDatas() != null && !oldConfig.getMeetingDatas().isEmpty()) {
+					AdobeConnectManager adobeConnectManager = CoreSpringFactory.getImpl(AdobeConnectManager.class);
+					RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
+					boolean hasMeetings = adobeConnectManager.hasMeetings(courseEntry, getIdent(), null);
+					if(!hasMeetings) {
+						synchronized(this) {// enough
+							adobeConnectManager.convert(oldConfig.getMeetingDatas(), courseEntry, getIdent());
+						}
+					}
+				}
 			}
 		}
 		config.setConfigurationVersion(2);
@@ -94,7 +106,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
-		updateModuleConfigDefaults(false);
+		updateModuleConfigDefaults(userCourseEnv.getCourseEnvironment(), false);
 		
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// create edit controller
@@ -109,7 +121,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
-		updateModuleConfigDefaults(false);
+		updateModuleConfigDefaults(userCourseEnv.getCourseEnvironment(), false);
 		
 		String providerId = getModuleConfiguration().getStringValue("vc_provider_id");
 		
@@ -125,7 +137,12 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 			boolean moderator = admin || userCourseEnv.isCoach();
 			// create run controller
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(true);
+			
+			ModuleConfiguration config = getModuleConfiguration();
+			boolean onlyDates = config.getBooleanSafe(AdobeConnectEditController.ACCESS_BY_DATES, false);
+			boolean guestAccess = config.getBooleanSafe(AdobeConnectEditController.GUEST_ACCESS_ALLOWED, false);
+			boolean moderatorStart = config.getBooleanSafe(AdobeConnectEditController.MODERATOR_START_MEETING, false);
+			AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(onlyDates, guestAccess, moderatorStart);
 			controller = new AdobeConnectRunController(ureq, wControl, entry, getIdent(), null, configuration,
 					admin, moderator, userCourseEnv.isCourseReadOnly());
 		}

@@ -19,34 +19,35 @@
  */
 package org.olat.modules.adobeconnect.ui;
 
+import org.olat.core.util.event.MultiUserEvent;
+
 /**
  * 
- * Initial date: 23 avr. 2019<br>
+ * Initial date: 4 juil. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AdobeConnectMeetingDefaultConfiguration {
+public class AdobeConnectEvent extends MultiUserEvent {
+
+	private static final long serialVersionUID = 3199767160246830180L;
+
+	public static final String OPEN_MEETING = "adobe-connect-open-meeting";
+	public static final String CREATE_MEETING = "adobe-connect-create-meeting";
 	
-	private final boolean useMeetingDates;
-	private final boolean allowGuestAccess;
-	private final boolean moderatorStartMeeting;
+	private final Long meetingKey;
+	private final Long actingIdentityKey;
 	
-	public AdobeConnectMeetingDefaultConfiguration(boolean useMeetingDates,
-			boolean allowGuestAccess, boolean moderatorStartMeeting) {
-		this.allowGuestAccess = allowGuestAccess;
-		this.useMeetingDates = useMeetingDates;
-		this.moderatorStartMeeting = moderatorStartMeeting;
-	}
-	
-	public boolean isAllowGuestAccess() {
-		return allowGuestAccess;
+	public AdobeConnectEvent(String name, Long meetingKey, Long actingIdentityKey) {
+		super(name);
+		this.meetingKey = meetingKey;
+		this.actingIdentityKey = actingIdentityKey;
 	}
 
-	public boolean isUseMeetingDates() {
-		return useMeetingDates;
+	public Long getMeetingKey() {
+		return meetingKey;
 	}
 
-	public boolean isModeratorStartMeeting() {
-		return moderatorStartMeeting;
+	public Long getActingIdentityKey() {
+		return actingIdentityKey;
 	}
 }

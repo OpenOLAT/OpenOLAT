@@ -114,13 +114,16 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 			}
 			return null;
 		}
-		
+
 		String login = Encoder.decrypt(authentication.getCredential(), authentication.getSalt(), Encoder.Algorithm.aes);
 		UriBuilder builder = adobeConnectModule.getAdobeConnectUriBuilder();
 		builder
 			.queryParam("action", "login")
 			.queryParam("login", authentication.getAuthusername())
 			.queryParam("password", login);
+		if(StringHelper.containsNonWhitespace(adobeConnectModule.getAccountId())) {
+			builder = builder.queryParam("account-id", adobeConnectModule.getAccountId());
+		}
 		
 		URI uri = builder.build();
 		BreezeSession session = null;
