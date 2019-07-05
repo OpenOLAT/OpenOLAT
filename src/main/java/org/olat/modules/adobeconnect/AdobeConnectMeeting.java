@@ -45,17 +45,41 @@ public interface AdobeConnectMeeting extends ModifiedInfo, CreateInfo {
 	
 	public void setDescription(String description);
 	
+	public boolean isPermanent();
+
+	public void setPermanent(boolean permanent);
+	
 	public Date getStartDate();
 	
 	public void setStartDate(Date date);
+	
+	public long getLeadTime();
+
+	public void setLeadTime(long leadTime);
+	
+	public Date getStartWithLeadTime();
 	
 	public Date getEndDate();
 	
 	public void setEndDate(Date date);
 	
+	public long getFollowupTime();
+
+	public void setFollowupTime(long followupTime);
+	
+	public Date getEndWithFollowupTime();
+	
+	public boolean isOpened();
+	
+	public void setOpened(boolean open);
+
 	public String getScoId();
 	
 	public String getFolderId();
+	
+	public String getTemplateId();
+	
+	public void setTemplateId(String templateId);
 	
 	public List<String> getSharedDocumentIds();
 	

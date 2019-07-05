@@ -619,7 +619,7 @@ public class CollaborationTools implements Serializable {
 	}
 	
 	public Controller createAdobeConnectController(final UserRequest ureq, WindowControl wControl, final BusinessGroup group, boolean admin) {
-		AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(true);
+		AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(true, true, true);
 		return new AdobeConnectRunController(ureq, wControl, null, null, group, configuration, admin, admin, false);
 	}
 

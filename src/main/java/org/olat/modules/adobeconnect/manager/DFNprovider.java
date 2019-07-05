@@ -51,9 +51,11 @@ public class DFNprovider extends AbstractAdobeConnectProvider {
 	
 	private static final Logger log = Tracing.createLoggerFor(DFNprovider.class);
 	
+	public static final String DFN_ID = "dfn";
+	
 	@Override
 	public String getId() {
-		return "dfn";
+		return DFN_ID;
 	}
 
 	@Override

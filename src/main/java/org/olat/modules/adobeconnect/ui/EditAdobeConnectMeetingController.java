@@ -39,6 +39,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.adobeconnect.AdobeConnectManager;
 import org.olat.modules.adobeconnect.AdobeConnectMeeting;
+import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
 import org.olat.modules.adobeconnect.model.AdobeConnectSco;
 import org.olat.repository.RepositoryEntry;
@@ -56,6 +57,8 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 	
 	private TextElement nameEl;
 	private TextElement descriptionEl;
+	private TextElement leadTimeEl;
+	private TextElement followupTimeEl;
 	private DateChooser startDateEl;
 	private DateChooser endDateEl;
 	private MultipleSelectionElement permanentEl;
@@ -67,6 +70,8 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 	private final AdobeConnectMeetingDefaultConfiguration configuration;
 	private AdobeConnectMeeting meeting;
 	
+	@Autowired
+	private AdobeConnectModule adobeConnectModule;
 	@Autowired
 	private AdobeConnectManager adobeConnectManager;
 	
@@ -99,6 +104,10 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		String name = meeting == null ? "" : meeting.getName();
 		nameEl = uifactory.addTextElement("meeting.name", "meeting.name", 128, name, formLayout);
 		nameEl.setMandatory(true);
+		if(!StringHelper.containsNonWhitespace(name)) {
+			nameEl.setFocus(true);
+		}
+		
 		String description = meeting == null ? "" : meeting.getDescription();
 		descriptionEl = uifactory.addTextAreaElement("meeting.description", "meeting.description", 2000, 8, 72, false, false, description, formLayout);
 		
@@ -118,16 +127,31 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		String[] permValues = new String[] { translate("meeting.permanent.on") };
 		permanentEl = uifactory.addCheckboxesHorizontal("meeting.permanent", formLayout, permKeys, permValues);
 		permanentEl.addActionListener(FormEvent.ONCHANGE);
+		boolean permanent = meeting == null ? adobeConnectModule.isSingleMeetingMode() : meeting.isPermanent();
+		permanentEl.select(permKeys[0], permanent);
+		boolean permanentDisabled = adobeConnectModule.isSingleMeetingMode()
+				|| (meeting != null && StringHelper.containsNonWhitespace(meeting.getScoId()));
+		// if single mode -> always permanent
+		// if sco linked -> cannot changed it
+		permanentEl.setEnabled(!permanentDisabled);
+		permanentEl.setHelpTextKey("meeting.permanent.explain", null);
 
 		Date startDate = meeting == null ? null : meeting.getStartDate();
 		startDateEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
 		startDateEl.setMandatory(true);
 		startDateEl.setDateChooserTimeEnabled(true);
+		
+		String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
+		leadTimeEl = uifactory.addTextElement("meeting.leadTime", 8, leadtime, formLayout);
+		
 		Date endDate = meeting == null ? null : meeting.getEndDate();
 		endDateEl = uifactory.addDateChooser("meeting.end", "meeting.end", endDate, formLayout);
 		endDateEl.setMandatory(true);
 		endDateEl.setDefaultValue(startDateEl);
 		endDateEl.setDateChooserTimeEnabled(true);
+		
+		String followup = meeting == null ? null : Long.toString(meeting.getFollowupTime());
+		followupTimeEl = uifactory.addTextElement("meeting.followupTime", 8, followup, formLayout);
 		
 		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add("buttons", buttonLayout);
@@ -137,8 +161,8 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean permanent = permanentEl.isAtLeastSelected(1);
-		startDateEl.setVisible(!permanent);
-		endDateEl.setVisible(!permanent);
+		startDateEl.setMandatory(!permanent);
+		endDateEl.setMandatory(!permanent);
 	}
 	
 	@Override
@@ -178,6 +202,18 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 			}
 		}
 		
+		allOk &= validateTime(leadTimeEl);
+		allOk &= validateTime(followupTimeEl);
+		return allOk;
+	}
+	
+	private boolean validateTime(TextElement el) {
+		boolean allOk = true;
+		el.clearError();
+		if(StringHelper.containsNonWhitespace(el.getValue()) && !StringHelper.isLong(el.getValue())) {
+			el.setErrorKey("form.error.nointeger", null);
+			allOk &= false;
+		}
 		return allOk;
 	}
 
@@ -193,23 +229,36 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		AdobeConnectErrors errors = new AdobeConnectErrors();
 
-		Date startDate = null;
-		Date endDate = null;
-		if(!permanentEl.isAtLeastSelected(1)) {
-			startDate = startDateEl.getDate();
-			endDate = endDateEl.getDate();
+		Date startDate = startDateEl.getDate();
+		Date endDate = endDateEl.getDate();
+		boolean permanent;	
+		if(permanentEl.isVisible()) {
+			permanent = permanentEl.isAtLeastSelected(1);
+		} else {
+			permanent = true;
 		}
+		
+		long leadTime = 0;
+		if(leadTimeEl.isVisible() && StringHelper.isLong(leadTimeEl.getValue())) {
+			leadTime = Long.valueOf(leadTimeEl.getValue());
+		}
+		long followupTime = 0;
+		if(followupTimeEl.isVisible() && StringHelper.isLong(followupTimeEl.getValue())) {
+			followupTime = Long.valueOf(followupTimeEl.getValue());
+		}
+		
 		String templateId = null;
 		if(templateEl.isVisible() && StringHelper.containsNonWhitespace(templateEl.getSelectedKey())) {
 			templateId = templateEl.getSelectedKey();
 		}
-		
+
 		if(meeting == null) {
-			adobeConnectManager.createMeeting(nameEl.getValue(), descriptionEl.getValue(), templateId,
-					startDate, endDate, getLocale(), configuration.isAllowGuestAccess(), entry, subIdent, businessGroup, getIdentity(), errors);
+			adobeConnectManager.createMeeting(nameEl.getValue(), descriptionEl.getValue(), templateId, permanent,
+					startDate, leadTime, endDate, followupTime, getLocale(), configuration.isAllowGuestAccess(),
+					entry, subIdent, businessGroup, getIdentity(), errors);
 		} else {
 			adobeConnectManager.updateMeeting(meeting, nameEl.getValue(), descriptionEl.getValue(),
-					templateId, startDate, endDate, errors);
+					templateId, permanent, startDate, leadTime, endDate, followupTime, errors);
 		}
 		
 		if(errors.hasErrors()) {

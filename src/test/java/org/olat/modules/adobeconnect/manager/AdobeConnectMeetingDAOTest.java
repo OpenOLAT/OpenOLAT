@@ -19,6 +19,7 @@
  */
 package org.olat.modules.adobeconnect.manager;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -51,7 +52,7 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 	
 	@Test
 	public void createMeeting() {
-		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("New meeting", "Very interessant", new Date(), new Date(), "sco-id", "folder-id", "DFN", null, null, null);
+		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("New meeting", "Very interessant", false, new Date(), 15, new Date(), 15, null, "sco-id", "folder-id", "DFN", null, null, null);
 		dbInstance.commit();
 		Assert.assertNotNull(meeting);
 		Assert.assertNotNull(meeting.getKey());
@@ -70,7 +71,7 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("Course meeting", "Annoying", new Date(), new Date(), "sco-id", "folder-id", "DFN", entry, subIdent, null);
+		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("Course meeting", "Annoying", false, new Date(), 10, new Date(), 10, null, "sco-id", "folder-id", "DFN", entry, subIdent, null);
 		dbInstance.commit();
 		Assert.assertNotNull(meeting);
 		Assert.assertNotNull(meeting.getKey());
@@ -92,7 +93,7 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("Key meeting", "Primary", new Date(), new Date(), "sco-pid", "folder-id", null, entry, subIdent, null);
+		AdobeConnectMeeting meeting = adobeConnectMeetingDao.createMeeting("Key meeting", "Primary", false, new Date(), 10, new Date(), 10, null, "sco-pid", "folder-id", null, entry, subIdent, null);
 		dbInstance.commitAndCloseSession();
 		
 		// load the meeting
@@ -112,14 +113,29 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 		Assert.assertEquals(subIdent, meeting.getSubIdent());
 		Assert.assertNull(meeting.getBusinessGroup());
 	}
+	
+	@Test
+	public void getAllMeetings() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		
+		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", false, new Date(), 5, new Date(), 5, null, "sco-cid-1", "folder-id", null, entry, subIdent, null);
+		AdobeConnectMeeting meeting2 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", false, new Date(), 5, new Date(), 5, "tmp-id-1", "sco-cid-2", "folder-id", null, entry, subIdent, null);
+		dbInstance.commitAndCloseSession();
+		
+		List<AdobeConnectMeeting> allMeetings = adobeConnectMeetingDao.getAllMeetings();
+		Assert.assertTrue(allMeetings.size() >= 2);
+		Assert.assertTrue(allMeetings.contains(meeting1));
+		Assert.assertTrue(allMeetings.contains(meeting2));
+	}
 
 	@Test
 	public void getMeetings_repositoryEntry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
 		
-		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-1", "folder-id", null, entry, subIdent, null);
-		AdobeConnectMeeting meeting2 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-2", "folder-id", null, entry, subIdent, null);
+		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", true, new Date(), 5, new Date(), 5, null, "sco-cid-1", "folder-id", null, entry, subIdent, null);
+		AdobeConnectMeeting meeting2 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", true, new Date(), 5, new Date(), 5, "tmp-id-1", "sco-cid-2", "folder-id", null, entry, subIdent, null);
 		dbInstance.commitAndCloseSession();
 		
 		// load meetings
@@ -134,8 +150,8 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "Connected group", "Adobe connected group", -1, -1, false, false, false, false, false);
 		dbInstance.commit();
 		
-		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-1", "folder-id", null, null, null, group);
-		AdobeConnectMeeting meeting2 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", new Date(), new Date(), "sco-cid-2", "folder-id", null, null, null, group);
+		AdobeConnectMeeting meeting1 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", false, new Date(), 5, new Date(), 5, null, "sco-cid-1", "folder-id", null, null, null, group);
+		AdobeConnectMeeting meeting2 = adobeConnectMeetingDao.createMeeting("Course A", "Primary", false, new Date(), 5, new Date(), 5, null, "sco-cid-2", "folder-id", null, null, null, group);
 		dbInstance.commitAndCloseSession();
 		
 		// load meetings
@@ -145,5 +161,24 @@ public class AdobeConnectMeetingDAOTest extends OlatTestCase {
 		Assert.assertTrue(meetings.contains(meeting2));
 	}
 	
-	
+	@Test
+	public void getMeetingsBefore() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.add(Calendar.DATE, -3);
+		Date oldDate = cal.getTime();
+		AdobeConnectMeeting oldMeeting = adobeConnectMeetingDao.createMeeting("Course old", "Primary", false, oldDate, 5, oldDate, 5, null, "sco-cid-1", "folder-id", null, entry, subIdent, null);
+		AdobeConnectMeeting newMeeting = adobeConnectMeetingDao.createMeeting("Course new", "Primary", false, new Date(), 5, new Date(), 5, null, "sco-cid-1", "folder-id", null, entry, subIdent, null);
+		dbInstance.commitAndCloseSession();
+		
+		cal.setTime(new Date());
+		cal.add(Calendar.DATE, -1);
+		Date beforeDate = cal.getTime();
+		List<AdobeConnectMeeting> allMeetings = adobeConnectMeetingDao.getMeetingsBefore(beforeDate);
+		Assert.assertTrue(allMeetings.size() >= 1);
+		Assert.assertTrue(allMeetings.contains(oldMeeting));
+		Assert.assertFalse(allMeetings.contains(newMeeting));
+	}
 }

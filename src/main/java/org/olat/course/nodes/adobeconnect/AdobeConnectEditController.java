@@ -22,6 +22,7 @@ package org.olat.course.nodes.adobeconnect;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
@@ -34,6 +35,7 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.AdobeConnectCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -42,7 +44,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  *
  */
 public class AdobeConnectEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
-	
+
+	public static final String ACCESS_BY_DATES = "accessByDates";
 	public static final String GUEST_ACCESS_ALLOWED = "guestAccessAllowed";
 	public static final String MODERATOR_START_MEETING = "moderatorStartMeeting";
 	
@@ -51,17 +54,21 @@ public class AdobeConnectEditController extends ActivateableTabbableDefaultContr
 	private static final String[] paneKeys = { PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
 	
 	private TabbedPane tabPane;
-	
+	private final VelocityContainer myContent;
+
+	private AdobeConnectConfigForm configCtrl;
 	private ConditionEditController accessibilityCondContr;
 	
+	private final ModuleConfiguration config;
 	private final AdobeConnectCourseNode courseNode;
 	
 	public AdobeConnectEditController(UserRequest ureq, WindowControl wControl, AdobeConnectCourseNode courseNode,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
+		config = courseNode.getModuleConfiguration();	
 		
-		String providerId = courseNode.getModuleConfiguration().getStringValue("vc_provider_id");
+		String providerId = config.getStringValue("vc_provider_id");
 		if("wimba".equals(providerId)) {
 			showWarning("wimba.not.supported.message");
 		}
@@ -70,6 +77,12 @@ public class AdobeConnectEditController extends ActivateableTabbableDefaultContr
 		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv,
 				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
 		listenTo(accessibilityCondContr);
+		
+		myContent = createVelocityContainer("edit");
+		
+		configCtrl = new AdobeConnectConfigForm(ureq, getWindowControl(), config);
+		listenTo(configCtrl);
+		myContent.put("configuration", configCtrl.getInitialComponent());
 	}
 	
 	@Override
@@ -100,6 +113,12 @@ public class AdobeConnectEditController extends ActivateableTabbableDefaultContr
 				courseNode.setPreConditionAccess(cond);
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
+		} else if (source == configCtrl) {
+			if (event == Event.CANCELLED_EVENT) {
+				// do nothing
+			} else if (event == Event.DONE_EVENT || event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
 		}
 	}
 	
@@ -108,5 +127,6 @@ public class AdobeConnectEditController extends ActivateableTabbableDefaultContr
 		tabPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),
 				accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
+		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), myContent);
 	}
 }

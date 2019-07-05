@@ -45,6 +45,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.adobeconnect.AdobeConnectManager;
 import org.olat.modules.adobeconnect.AdobeConnectMeeting;
+import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
 import org.olat.modules.adobeconnect.ui.AdobeConnectMeetingTableModel.ACMeetingsCols;
 import org.olat.modules.gotomeeting.ui.GoToMeetingTableModel.MeetingsCols;
@@ -64,6 +65,8 @@ public class AdobeConnectAdminMeetingsController extends FormBasicController {
 	private DialogBoxController confirmDelete;
 	
 	@Autowired
+	private AdobeConnectModule adobeConnectModule;
+	@Autowired
 	private AdobeConnectManager adobeConnectManager;
 	
 	public AdobeConnectAdminMeetingsController(UserRequest ureq, WindowControl wControl) {
@@ -76,6 +79,9 @@ public class AdobeConnectAdminMeetingsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.name));
+		if(!adobeConnectModule.isSingleMeetingMode()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.permanent));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.end));
 		FlexiCellRenderer renderer = new StaticFlexiCellRenderer("resource", new TextFlexiCellRenderer());

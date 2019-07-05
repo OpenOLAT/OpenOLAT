@@ -30,6 +30,7 @@ import java.util.Date;
 public class AdobeConnectSco {
 	
 	private String scoId;
+	private String folderId;
 	private String type;
 	private String urlPath;
 	private String name;
@@ -45,6 +46,14 @@ public class AdobeConnectSco {
 
 	public void setScoId(String scoId) {
 		this.scoId = scoId;
+	}
+
+	public String getFolderId() {
+		return folderId;
+	}
+
+	public void setFolderId(String folderId) {
+		this.folderId = folderId;
 	}
 
 	public String getType() {

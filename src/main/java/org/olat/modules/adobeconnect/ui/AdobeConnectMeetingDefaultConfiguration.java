@@ -27,14 +27,26 @@ package org.olat.modules.adobeconnect.ui;
  */
 public class AdobeConnectMeetingDefaultConfiguration {
 	
+	private final boolean useMeetingDates;
 	private final boolean allowGuestAccess;
+	private final boolean moderatorStartMeeting;
 	
-	public AdobeConnectMeetingDefaultConfiguration(boolean allowGuestAccess) {
+	public AdobeConnectMeetingDefaultConfiguration(boolean useMeetingDates,
+			boolean allowGuestAccess, boolean moderatorStartMeeting) {
 		this.allowGuestAccess = allowGuestAccess;
+		this.useMeetingDates = useMeetingDates;
+		this.moderatorStartMeeting = moderatorStartMeeting;
 	}
 	
 	public boolean isAllowGuestAccess() {
 		return allowGuestAccess;
 	}
 
+	public boolean isUseMeetingDates() {
+		return useMeetingDates;
+	}
+
+	public boolean isModeratorStartMeeting() {
+		return moderatorStartMeeting;
+	}
 }

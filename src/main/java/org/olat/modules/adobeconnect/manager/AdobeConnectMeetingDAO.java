@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.core.commons.persistence.DB;
@@ -48,16 +49,19 @@ public class AdobeConnectMeetingDAO {
 	@Autowired
 	private DB dbInstance;
 	
-	public AdobeConnectMeeting createMeeting(String name, String description, Date start, Date end,
-			String scoId, String folderId, String envName,
+	public AdobeConnectMeeting createMeeting(String name, String description,
+			boolean permanent, Date start, long leadTime, Date end, long followupTime,
+			String templateId, String scoId, String folderId, String envName,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup) {
 		AdobeConnectMeetingImpl meeting = new AdobeConnectMeetingImpl();
 		meeting.setCreationDate(new Date());
 		meeting.setLastModified(meeting.getCreationDate());
 		meeting.setName(name);
 		meeting.setDescription(description);
-		meeting.setStartDate(cleanDate(start));
-		meeting.setEndDate(cleanDate(end));
+		meeting.setOpened(false);
+		meeting.setPermanent(permanent);
+		updateDates(meeting, start, leadTime, end, followupTime);
+		meeting.setTemplateId(templateId);
 		meeting.setScoId(scoId);
 		meeting.setFolderId(folderId);
 		meeting.setEnvName(envName);
@@ -74,9 +78,40 @@ public class AdobeConnectMeetingDAO {
 	public AdobeConnectMeeting updateMeeting(AdobeConnectMeeting meeting) {
 		AdobeConnectMeetingImpl meet = (AdobeConnectMeetingImpl)meeting;
 		meet.setLastModified(new Date());
-		meet.setStartDate(cleanDate(meet.getStartDate()));
-		meet.setEndDate(cleanDate(meet.getEndDate()));
+		updateDates(meet, meet.getStartDate(), meet.getLeadTime(), meet.getEndDate(), meet.getFollowupTime());
 		return dbInstance.getCurrentEntityManager().merge(meet);
+	}
+	
+	private void updateDates(AdobeConnectMeetingImpl meet, Date start, long leadTime, Date end, long followupTime) {
+		Calendar cal = Calendar.getInstance();
+		if(start == null) {
+			meet.setStartDate(null);
+			meet.setLeadTime(0);
+			meet.setStartWithLeadTime(null);
+		} else {
+			start = cleanDate(start);
+			if(leadTime > 0) {
+				cal.add(Calendar.MINUTE, -(int)leadTime);
+			}
+			meet.setStartDate(start);
+			meet.setLeadTime(leadTime);
+			meet.setStartWithLeadTime(cal.getTime());
+		}
+		
+		if(end == null) {
+			meet.setEndDate(null);
+			meet.setFollowupTime(0);
+			meet.setEndWithFollowupTime(null);
+		} else {
+			end = cleanDate(end);
+			cal.setTime(end);
+			if(followupTime > 0) {
+				cal.add(Calendar.MINUTE, (int)followupTime);
+			}
+			meet.setEndDate(end);
+			meet.setFollowupTime(followupTime);
+			meet.setEndWithFollowupTime(cal.getTime());
+		}
 	}
 	
 	/**
@@ -107,6 +142,19 @@ public class AdobeConnectMeetingDAO {
 		return meetings == null || meetings.isEmpty() ? null : meetings.get(0);
 	}
 	
+	public List<AdobeConnectMeeting> getMeetingsBefore(Date date) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select meeting from adobeconnectmeeting as meeting")
+		  .append(" inner join fetch meeting.entry as v")
+		  .append(" inner join fetch v.olatResource as resource")
+		  .append(" where meeting.endWithFollowupTime is not null and meeting.endWithFollowupTime<:date");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AdobeConnectMeeting.class)
+				.setParameter("date", date, TemporalType.TIMESTAMP)
+				.getResultList();
+	}
+	
 	public List<AdobeConnectMeeting> getMeetings(RepositoryEntryRef entry, String subIdent) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select meeting from adobeconnectmeeting as meeting")
@@ -126,6 +174,27 @@ public class AdobeConnectMeetingDAO {
 		return query.getResultList();
 	}
 	
+	public boolean hasMeetings(RepositoryEntryRef entry, String subIdent) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select meeting.key from adobeconnectmeeting as meeting")
+		  .append(" inner join meeting.entry as v")
+		  .append(" where v.key=:entryKey");
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			sb.append(" and meeting.subIdent=:subIdent");
+		}
+		
+		TypedQuery<Long> query= dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("entryKey", entry.getKey());
+		if(StringHelper.containsNonWhitespace(subIdent)) {
+			query.setParameter("subIdent", subIdent);
+		}
+		List<Long> keys = query.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() >= 0;
+	}
+	
 	public List<AdobeConnectMeeting> getMeetings(BusinessGroupRef businessGroup) {
 		StringBuilder sb = new StringBuilder(256);
 		sb.append("select meeting from adobeconnectmeeting as meeting")
@@ -136,6 +205,18 @@ public class AdobeConnectMeetingDAO {
 				.createQuery(sb.toString(), AdobeConnectMeeting.class)
 				.setParameter("groupKey", businessGroup.getKey())
 				.getResultList();
+	}
+	
+	public boolean hasMeetings(BusinessGroupRef businessGroup) {
+		StringBuilder sb = new StringBuilder(256);
+		sb.append("select meeting.key from adobeconnectmeeting as meeting")
+		  .append(" where meeting.businessGroup.key=:groupKey");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("groupKey", businessGroup.getKey())
+				.getResultList();
+		return keys != null && !keys.isEmpty() && keys.get(0) != null && keys.get(0).longValue() >= 0;
 	}
 	
 	public List<AdobeConnectMeeting> getAllMeetings() {

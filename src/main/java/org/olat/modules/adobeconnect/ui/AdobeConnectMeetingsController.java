@@ -41,6 +41,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.adobeconnect.AdobeConnectManager;
 import org.olat.modules.adobeconnect.AdobeConnectMeeting;
+import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.adobeconnect.ui.AdobeConnectMeetingTableModel.ACMeetingsCols;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,16 +62,20 @@ public class AdobeConnectMeetingsController extends FormBasicController {
 	private final RepositoryEntry entry;
 	private final String subIdent;
 	private final BusinessGroup businessGroup;
+	private final boolean showPermanentCol;
 	
+	@Autowired
+	private AdobeConnectModule adobeConnectModule;
 	@Autowired
 	private AdobeConnectManager adobeConnectManager;
 	
 	public AdobeConnectMeetingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry, String subIdent,
-			BusinessGroup businessGroup) {
+			BusinessGroup businessGroup, boolean administrator, boolean moderator) {
 		super(ureq, wControl, "meetings");
 		this.entry = entry;
 		this.subIdent = subIdent;
 		this.businessGroup = businessGroup;
+		showPermanentCol = (administrator || moderator) && !adobeConnectModule.isSingleMeetingMode();
 		
 		initForm(ureq);
 		updateModel();
@@ -81,6 +86,9 @@ public class AdobeConnectMeetingsController extends FormBasicController {
 		// upcoming meetings table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.name));
+		if(showPermanentCol) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.permanent));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.end));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
@@ -97,6 +105,9 @@ public class AdobeConnectMeetingsController extends FormBasicController {
 		// past meetings
 		FlexiTableColumnModel pastColumnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.name));
+		if(showPermanentCol) {
+			pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.permanent));
+		}
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.start));
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ACMeetingsCols.end));
 		pastColumnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));

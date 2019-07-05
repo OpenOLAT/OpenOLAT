@@ -87,7 +87,13 @@ public class CalendarUtils {
 		return cal;
 	}
 	
-	
+	public static Calendar getStartOfDay(Calendar cal)  {
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal;
+	}
 	
 	public static Date endOfDay(Date date) {
 		Calendar cal = Calendar.getInstance();
@@ -124,7 +130,7 @@ public class CalendarUtils {
 				String frequency = recur.getFrequency();
 				WeekDayList wdl = recur.getDayList();
 				Integer interval = recur.getInterval();
-				if((wdl != null && wdl.size() > 0)) {
+				if((wdl != null && !wdl.isEmpty())) {
 					// we only support one rule with daylist
 					return KalendarEvent.WORKDAILY;
 				} else if(interval != null && interval == 2) {
@@ -141,10 +147,6 @@ public class CalendarUtils {
 		
 		return null;
 	}
-	
-
-	
-
 	
 	/**
 	 * Create list with excluded dates based on the exclusion rule.
@@ -176,7 +178,7 @@ public class CalendarUtils {
 	 * @return string with exclude rule
 	 */
 	public static String getRecurrenceExcludeRule(List<Date> dates) {
-		if(dates != null && dates.size() > 0) {
+		if(dates != null && !dates.isEmpty()) {
 			DateList dl = new DateList();
 			for( Date date : dates ) {
 				net.fortuna.ical4j.model.Date dd = CalendarUtils.createDate(date);

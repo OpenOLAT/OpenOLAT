@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.id.Identity;
+import org.olat.course.nodes.adobeconnect.compatibility.MeetingCompatibilityDate;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
 import org.olat.modules.adobeconnect.model.AdobeConnectSco;
@@ -39,10 +40,21 @@ public interface AdobeConnectManager {
 	
 	public boolean checkConnection(String url, String login, String password, AdobeConnectErrors error);
 	
-	public void createMeeting(String name, String description, String templateId,
-			Date start, Date end, Locale locale, boolean allAccess,
+	public void createMeeting(String name, String description, String templateId, boolean permanent,
+			Date start, long leadTime, Date end, long followupTime, Locale locale, boolean allAccess,
 			RepositoryEntry entry, String subIdent, BusinessGroup businessGroup,
 			Identity actingIdentity, AdobeConnectErrors error);
+	
+	/**
+	 * The method creates only the Adobe Connect Meeting without membership.
+	 * 
+	 * @param meeting The meeting reference
+	 * @param locale The locale
+	 * @param allAccess If guests has access without confirmation of the moderator
+	 * @param error The error collector
+	 * @return An updated meeting reference
+	 */
+	public AdobeConnectMeeting createAdobeMeeting(AdobeConnectMeeting meeting, Locale locale, boolean allAccess, AdobeConnectErrors error);
 	
 	/**
 	 * 
@@ -53,10 +65,22 @@ public interface AdobeConnectManager {
 	 * @param endDate The end date to update or null
 	 * @param error
 	 */
-	public AdobeConnectMeeting updateMeeting(AdobeConnectMeeting meeting, String name, String description,
-			String templateId, Date startDate, Date endDate, AdobeConnectErrors error);
+	public AdobeConnectMeeting updateMeeting(AdobeConnectMeeting meeting, String name, String description, String templateId,
+			boolean permanent, Date startDate, long leadTime, Date endDate, long followupTime, AdobeConnectErrors error);
 	
 	public AdobeConnectMeeting shareDocuments(AdobeConnectMeeting meeting, List<AdobeConnectSco> documents);
+	
+	public void convert(List<MeetingCompatibilityDate> meetings, RepositoryEntry entry, String subIdent);
+	
+	/**
+	 * Reload the meeting.
+	 * 
+	 * @param meeting The meeting to reload.
+	 * @return A fresh meeting object
+	 */
+	public AdobeConnectMeeting getMeeting(AdobeConnectMeeting meeting);
+	
+	public List<AdobeConnectMeeting> getMeetingsBefore(Date date);
 	
 	public boolean deleteMeeting(AdobeConnectMeeting meeting, AdobeConnectErrors error);
 	
@@ -72,6 +96,8 @@ public interface AdobeConnectManager {
 	 * @return The list of meetings of the course element or the group
 	 */
 	public List<AdobeConnectMeeting> getMeetings(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
+	
+	public boolean hasMeetings(RepositoryEntry entry, String subIdent, BusinessGroup businessGroup);
 	
 	public List<AdobeConnectMeeting> getAllMeetings();
 	
@@ -95,6 +121,9 @@ public interface AdobeConnectManager {
 	 */
 	public boolean registerFor(AdobeConnectMeeting meeting, Identity identity,
 			AdobeConnectMeetingPermission permission, AdobeConnectErrors error);
+	
+
+	public String open(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error);
 	
 	public String join(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error);
 	
