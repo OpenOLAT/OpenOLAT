@@ -46,6 +46,7 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.adobeconnect.AdobeConnectManager;
+import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.adobeconnect.ui.AdobeConnectMeetingDefaultConfiguration;
 import org.olat.modules.adobeconnect.ui.AdobeConnectRunController;
 import org.olat.repository.RepositoryEntry;
@@ -139,11 +140,19 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 			boolean moderator = admin || userCourseEnv.isCoach();
 			// create run controller
 			RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			AdobeConnectModule adobeConnectModule = CoreSpringFactory.getImpl(AdobeConnectModule.class);
 			
 			ModuleConfiguration config = getModuleConfiguration();
 			boolean onlyDates = config.getBooleanSafe(AdobeConnectEditController.ACCESS_BY_DATES, false);
+			
 			boolean guestAccess = config.getBooleanSafe(AdobeConnectEditController.GUEST_ACCESS_ALLOWED, false);
-			boolean moderatorStart = config.getBooleanSafe(AdobeConnectEditController.MODERATOR_START_MEETING, false);
+			boolean moderatorStart;
+			if(adobeConnectModule.isCreateMeetingImmediately()) {
+				moderatorStart = config.getBooleanSafe(AdobeConnectEditController.MODERATOR_START_MEETING, false);
+			} else {
+				moderatorStart = config.getBooleanSafe(AdobeConnectEditController.MODERATOR_START_MEETING, true);
+			}
+			
 			AdobeConnectMeetingDefaultConfiguration configuration = new AdobeConnectMeetingDefaultConfiguration(onlyDates, guestAccess, moderatorStart);
 			controller = new AdobeConnectRunController(ureq, wControl, entry, getIdent(), null, configuration,
 					admin, moderator, userCourseEnv.isCourseReadOnly());

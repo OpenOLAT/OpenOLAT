@@ -30,6 +30,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.editor.NodeEditController;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.adobeconnect.AdobeConnectModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date: 3  juil. 2019<br>
@@ -44,6 +46,9 @@ public class AdobeConnectConfigForm extends FormBasicController {
 	private MultipleSelectionElement accessEl;
 	
 	private final ModuleConfiguration config;
+	
+	@Autowired
+	private AdobeConnectModule adobeConnectModule;
 
 	public AdobeConnectConfigForm(UserRequest ureq, WindowControl wControl, ModuleConfiguration config) {
 		super(ureq, wControl);
@@ -57,10 +62,15 @@ public class AdobeConnectConfigForm extends FormBasicController {
 		String[] accessValues = new String[] { translate("vc.access.dates"), translate("vc.access.open"), translate("vc.access.start") };
 		boolean onlyDates = config.getBooleanSafe(AdobeConnectEditController.ACCESS_BY_DATES, false);
 		boolean guestAccess = config.getBooleanSafe(AdobeConnectEditController.GUEST_ACCESS_ALLOWED, false);
-		boolean moderatorStart = config.getBooleanSafe(AdobeConnectEditController.MODERATOR_START_MEETING, false);
+		boolean moderatorStart;
+		if(adobeConnectModule.isCreateMeetingImmediately()) {
+			moderatorStart = config.getBooleanSafe(AdobeConnectEditController.MODERATOR_START_MEETING, false);
+		} else {
+			moderatorStart = config.getBooleanSafe(AdobeConnectEditController.MODERATOR_START_MEETING, true);
+		}
 		accessEl = uifactory.addCheckboxesVertical("vc.access.label", "vc.access.label", formLayout, accessKeys, accessValues, 1);
 		accessEl.select(accessKeys[0], onlyDates);
-		accessEl.select(accessKeys[1], guestAccess);
+		accessEl.select(accessKeys[1], !guestAccess);
 		accessEl.select(accessKeys[2], moderatorStart);
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
@@ -78,7 +88,7 @@ public class AdobeConnectConfigForm extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		Collection<String> selectedKeys = accessEl.getSelectedKeys();
 		config.setBooleanEntry(AdobeConnectEditController.ACCESS_BY_DATES, selectedKeys.contains(accessKeys[0]));
-		config.setBooleanEntry(AdobeConnectEditController.GUEST_ACCESS_ALLOWED, selectedKeys.contains(accessKeys[1]));
+		config.setBooleanEntry(AdobeConnectEditController.GUEST_ACCESS_ALLOWED, !selectedKeys.contains(accessKeys[1]));
 		config.setBooleanEntry(AdobeConnectEditController.MODERATOR_START_MEETING, selectedKeys.contains(accessKeys[2]));
 		fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 	}
