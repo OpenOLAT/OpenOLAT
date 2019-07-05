@@ -129,7 +129,7 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		permanentEl.addActionListener(FormEvent.ONCHANGE);
 		boolean permanent = meeting == null ? adobeConnectModule.isSingleMeetingMode() : meeting.isPermanent();
 		permanentEl.select(permKeys[0], permanent);
-		boolean permanentDisabled = adobeConnectModule.isCreateMeetingImmediately()
+		boolean permanentDisabled = adobeConnectModule.isSingleMeetingMode()
 				|| (meeting != null && StringHelper.containsNonWhitespace(meeting.getScoId()));
 		// if single mode -> always permanent
 		// if sco linked -> cannot changed it
