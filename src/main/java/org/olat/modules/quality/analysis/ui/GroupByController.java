@@ -654,10 +654,14 @@ public abstract class GroupByController extends FormBasicController implements F
 			if (statistic != null) {
 				Double avg = statistic.getAvg();
 				String identifier = statistic.getIdentifier();
-				Rubric rubric = getRubricByIdentifier(identifier);
-				boolean isInsufficient = analysisService.isInsufficient(rubric, avg);
-				if (isInsufficient) {
-					return false;
+				Rubric rubric = StringHelper.containsNonWhitespace(identifier)
+					? getRubricByIdentifier(identifier)
+					: getSelectedRubric();
+				if (rubric != null) {
+					boolean isInsufficient = analysisService.isInsufficient(rubric, avg);
+					if (isInsufficient) {
+						return false;
+					}
 				}
 			}
 		}
@@ -680,6 +684,11 @@ public abstract class GroupByController extends FormBasicController implements F
 			}
 		}
 		return null;
+	}
+
+	private Rubric getSelectedRubric() {
+		Set<Rubric> rubrics = getTrendRubrics();
+		return !rubrics.isEmpty()? rubrics.iterator().next(): null;
 	}
 	
 	private void doShowTrend(UserRequest ureq, GroupByRow row) {
