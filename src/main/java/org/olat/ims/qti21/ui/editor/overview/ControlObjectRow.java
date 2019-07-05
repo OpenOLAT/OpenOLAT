@@ -51,6 +51,9 @@ public class ControlObjectRow {
 	private final String iconCssClass;
 	private final ControlObject<?> part;
 	
+	private String license;
+	private String metadataIdentifier;
+	
 	private Double maxScore;
 	private Boolean feedbacks;
 	private QTI21QuestionType type;
@@ -116,11 +119,20 @@ public class ControlObjectRow {
 		configuration(row, itemRef);
 
 		ManifestMetadataBuilder metadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
-		if(metadata != null && metadata.getLom(false) != null) {
-			String learningTime = metadata.getEducationalLearningTime();
-			if(StringHelper.containsNonWhitespace(learningTime)) {
-				LOMDuration duration = MetadataConverterHelper.convertDuration(learningTime);
-				row.typicalLearningTime = Long.valueOf(MetadataConverterHelper.convertToSeconds(duration));
+		if(metadata != null) {
+			if(metadata.getLom(false) != null) {
+				String learningTime = metadata.getEducationalLearningTime();
+				if(StringHelper.containsNonWhitespace(learningTime)) {
+					LOMDuration duration = MetadataConverterHelper.convertDuration(learningTime);
+					row.typicalLearningTime = Long.valueOf(MetadataConverterHelper.convertToSeconds(duration));
+				}
+				
+				row.license = metadata.getLicense();
+			}
+			
+			row.metadataIdentifier = metadata.getOpenOLATMetadataIdentifier();
+			if(!StringHelper.containsNonWhitespace(row.metadataIdentifier)) {
+				row.metadataIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
 			}
 		}
 		
@@ -278,6 +290,18 @@ public class ControlObjectRow {
 	
 	public QTI21QuestionType getType() {
 		return type;
+	}
+	
+	public String getMetadataIdentifier() {
+		return metadataIdentifier;
+	}
+	
+	public String getLicense() {
+		return license;
+	}
+	
+	public void setLicense(String license) {
+		this.license = license;
 	}
 	
 	public Boolean getFeedbacks() {

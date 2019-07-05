@@ -231,6 +231,11 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	}
 
 	@Override
+	public List<QuestionItemShort> loadItemsByIdentifier(List<String> identifiers) {
+		return questionItemDao.loadShortItemsByIdentifier(identifiers);
+	}
+
+	@Override
 	public QuestionItem updateItem(QuestionItem item) {
 		QuestionItem previousItem = loadItemById(item.getKey());
 		QuestionStatus previousStatus = previousItem != null? previousItem.getQuestionStatus(): null;

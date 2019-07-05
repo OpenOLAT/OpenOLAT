@@ -81,6 +81,13 @@ public interface QPoolService {
 	 */
 	public List<QuestionItem> loadItemByIdentifier(String identifier);
 	
+	/**
+	 * 
+	 * @param identifiers A list of identifiers as defined in metadata
+	 * @return The question items with the corresponding identifiers
+	 */
+	public List<QuestionItemShort> loadItemsByIdentifier(List<String> identifiers);
+	
 	public List<QuestionItemFull> getAllItems(int firstResult, int maxResults);
 	
 	public QuestionItem updateItem(QuestionItem item);

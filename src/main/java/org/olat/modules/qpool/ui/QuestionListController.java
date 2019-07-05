@@ -32,6 +32,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -518,10 +519,11 @@ public class QuestionListController extends AbstractItemListController implement
 		} else if (source == createTestOverviewCtrl) {
 			List<QuestionItemShort> items = createTestOverviewCtrl.getExportableQuestionItems();
 			String typeFormat = createTestOverviewCtrl.getResourceTypeFormat();
+			LicenseType licenseType = createTestOverviewCtrl.getLicenseType();
 			cmc.deactivate();
 			cleanUp();
 			if (event == Event.DONE_EVENT) {
-				doOpenCreateRepositoryTest(ureq, items, typeFormat);
+				doOpenCreateRepositoryTest(ureq, items, typeFormat, licenseType);
 			}
 		} else if(source == exportWizard) {
 			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -1050,13 +1052,14 @@ public class QuestionListController extends AbstractItemListController implement
 		listenTo(cmc);
 	}
 	
-	private void doOpenCreateRepositoryTest(UserRequest ureq, List<QuestionItemShort> items, String type) {
+	private void doOpenCreateRepositoryTest(UserRequest ureq, List<QuestionItemShort> items, String type, LicenseType licenseType) {
 		removeAsListenerAndDispose(cmc);
 		removeAsListenerAndDispose(addController);
 
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(type);
 		addController = handler.createCreateRepositoryEntryController(ureq, getWindowControl());
 		addController.setCreateObject(new QItemList(items));
+		addController.setLicenseType(licenseType);
 		listenTo(addController);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"), addController.getInitialComponent());
 		listenTo(cmc);
@@ -1075,12 +1078,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private void doExport(UserRequest ureq, List<QuestionItemShort> items) {
 		removeAsListenerAndDispose(exportWizard);
 		Step start = new Export_1_TypeStep(ureq, items);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				return StepsMainRunController.DONE_MODIFIED;
-			}
-		};
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> StepsMainRunController.DONE_MODIFIED;
 		
 		exportWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
 				translate("export.item"), "o_sel_qpool_export_1_wizard");
@@ -1107,12 +1105,9 @@ public class QuestionListController extends AbstractItemListController implement
 		removeAsListenerAndDispose(importAuthorsWizard);
 
 		Step start = new ImportAuthor_1_ChooseMemberStep(ureq, items);
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
-				addAuthors(runContext);
-				return StepsMainRunController.DONE_MODIFIED;
-			}
+		StepRunnerCallback finish = (uureq, wControl, runContext) -> {
+			addAuthors(runContext);
+			return StepsMainRunController.DONE_MODIFIED;
 		};
 		
 		importAuthorsWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,

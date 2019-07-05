@@ -314,11 +314,11 @@ public class QuestionItemDAO {
 	 * the taxonomy level, license, item type and
 	 * educational context.
 	 * 
-	 * @param key The identifier of the item as defined in its metadata
+	 * @param identifier The identifier of the item as defined in its metadata
 	 * @return The question items with the corresponding identifier
 	 */
 	public List<QuestionItem> loadByIdentifier(String identifier) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select item from questionitem item")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.license license")
@@ -330,9 +330,25 @@ public class QuestionItemDAO {
 				.setParameter("identifier", identifier)
 				.getResultList();
 	}
+
+	/**
+	 * The method loads the question items.
+	 * 
+	 * @param identifiers A list of identifiers as defined in metadata's items
+	 * @return The question items with the corresponding identifier
+	 */
+	public List<QuestionItemShort> loadShortItemsByIdentifier(List<String> identifiers) {
+		if(identifiers == null || identifiers.isEmpty()) return new ArrayList<>();
+	
+		String q ="select item from questionitem item where item.identifier in (:identifiers)";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, QuestionItemShort.class)
+				.setParameter("identifiers", identifiers)
+				.getResultList();
+	}
 	
 	public List<QuestionItemFull> loadByIds(Collection<Long> key) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select item from questionitem item")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.license license")

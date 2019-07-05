@@ -16,6 +16,7 @@
  */
 package org.olat.repository.ui.author;
 
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.gui.control.Controller;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -25,6 +26,8 @@ public interface CreateEntryController extends Controller {
 	public RepositoryEntry getAddedEntry();
 	
 	public void setCreateObject(Object userObject);
+	
+	public void setLicenseType(LicenseType licenseType);
 	
 	public RepositoryHandler getHandler();
 	

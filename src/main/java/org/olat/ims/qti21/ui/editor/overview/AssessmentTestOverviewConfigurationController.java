@@ -22,7 +22,12 @@ package org.olat.ims.qti21.ui.editor.overview;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -56,6 +61,8 @@ import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 import org.olat.ims.qti21.ui.editor.overview.AssessmentTestOverviewDataModel.PartCols;
+import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -89,6 +96,10 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private QPoolService qpoolService;
+	@Autowired
+	private LicenseService licenseService;
 	
 	public AssessmentTestOverviewConfigurationController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder) {
@@ -204,6 +215,8 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		DefaultFlexiColumnModel feedbackCol = new DefaultFlexiColumnModel(PartCols.feedback, SelectionTarget.feedback.name(), new YesNoCellRenderer(getTranslator()));
 		feedbackCol.setDefaultVisible(false);
 		tableColumnModel.addFlexiColumnModel(feedbackCol);
+		// license
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PartCols.license));
 
 		tableModel = new AssessmentTestOverviewDataModel(tableColumnModel);
 		
@@ -243,9 +256,43 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		if(aggregatedValues.getLearningTime() != null) {
 			testRow.setLearningTime(aggregatedValues.getLearningTime());
 		}
+		loadLicenses(rows);
 
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
+	}
+	
+	private void loadLicenses(List<ControlObjectRow> rows) {
+		List<String> metadataIdentifiers = new ArrayList<>();
+		for(ControlObjectRow row:rows) {
+			if(StringHelper.containsNonWhitespace(row.getMetadataIdentifier())) {
+				metadataIdentifiers.add(row.getMetadataIdentifier());
+			}
+		}
+		
+		if(!metadataIdentifiers.isEmpty()) {
+			List<QuestionItemShort> items = qpoolService.loadItemsByIdentifier(metadataIdentifiers);
+			List<ResourceLicense> resourceLicenses = licenseService.loadLicenses(items);
+			Map<Long,ResourceLicense> resourceIdToLicenses = resourceLicenses.stream()
+					.collect(Collectors.toMap(ResourceLicense::getResId, l -> l, (u, v) -> u));
+			Map<String,Long> identifierToKey = items.stream()
+					.collect(Collectors.toMap(QuestionItemShort::getIdentifier, QuestionItemShort::getKey));
+			
+			for(ControlObjectRow row:rows) {
+				if(StringHelper.containsNonWhitespace(row.getMetadataIdentifier())) {
+					Long itemKey = identifierToKey.get(row.getMetadataIdentifier());
+					if(itemKey != null) {
+						ResourceLicense license = resourceIdToLicenses.get(itemKey);
+						if(license != null && license.getLicenseType() != null) {
+							String translatedLicense = LicenseUIFactory.translate(license.getLicenseType(), getLocale());
+							row.setLicense(translatedLicense);
+						} else if(license != null && StringHelper.containsNonWhitespace(license.getFreetext())) {
+							row.setLicense(license.getFreetext());
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	private AggregatedValues loadModel(TestPart part, int pos, List<ControlObjectRow> rows) {

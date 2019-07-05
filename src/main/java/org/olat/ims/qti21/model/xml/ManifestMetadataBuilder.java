@@ -208,7 +208,7 @@ public class ManifestMetadataBuilder {
 			if(type == null) {
 				type = mdObjectFactory.createStringType();
 				QName languageQNAME = new QName("http://www.imsglobal.org/xsd/imsmd_v1p2", "context");
-				JAXBElement<StringType> typeEl = new JAXBElement<StringType>(languageQNAME, StringType.class, null, type);
+				JAXBElement<StringType> typeEl = new JAXBElement<>(languageQNAME, StringType.class, null, type);
 				general.getContent().add(typeEl);
 			}
 			type.setLang(lang);

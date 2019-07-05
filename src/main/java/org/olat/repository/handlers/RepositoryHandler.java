@@ -26,8 +26,11 @@
 package org.olat.repository.handlers;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.services.license.License;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -293,10 +296,20 @@ public interface RepositoryHandler {
 	/**
 	 * Called when the repository entry of that Resourceable changed.
 	 * 
-	 * @param entry
+	 * @param entry The repository entry
 	 */
-	default public void onDescriptionChanged(RepositoryEntry entry) {
+	public default void onDescriptionChanged(RepositoryEntry entry) {
 		// nothing to do
 	}
-
+	
+	/**
+	 * Extract all licenses of parts, elements, bits of the
+	 * specified repository entry.
+	 * 
+	 * @param entry The repository entry
+	 * @return A list of licenses
+	 */
+	public default List<License> getElementsLicenses(RepositoryEntry entry) {
+		return new ArrayList<>();
+	}
 }
