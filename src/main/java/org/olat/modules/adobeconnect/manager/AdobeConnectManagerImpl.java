@@ -371,18 +371,27 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	}
 
 	@Override
-	public String open(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error) {
+	public String open(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors errors) {
 		meeting.setOpened(true);
 		meeting = adobeConnectMeetingDao.updateMeeting(meeting);
 		dbInstance.commit();
-		return join(meeting, identity, error);
+		
+		String actingUser = getOrCreateUser(identity, true, errors);
+		if(actingUser != null) {
+			getAdapter().setMember(meeting.getScoId(), actingUser, AdobeConnectMeetingPermission.host.permission(), errors);
+		}
+		return join(meeting, identity, true, errors);
 	}
 
 	@Override
-	public String join(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error) {
-		String actingUser = getOrCreateUser(identity, false, error);
+	public String join(AdobeConnectMeeting meeting, Identity identity, boolean moderator, AdobeConnectErrors errors) {
+		String actingUser = getOrCreateUser(identity, false, errors);
 		if(actingUser != null) {
-			AdobeConnectSco sco = getAdapter().getScoMeeting(meeting, error);
+			if(moderator) {// make sure the moderator can open the meeting
+				getAdapter().setMember(meeting.getScoId(), actingUser, AdobeConnectMeetingPermission.host.permission(), errors);
+			}
+			
+			AdobeConnectSco sco = getAdapter().getScoMeeting(meeting, errors);
 			String urlPath = sco.getUrlPath();
 			UriBuilder builder = adobeConnectModule
 					.getAdobeConnectHostUriBuilder()
@@ -391,7 +400,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			BreezeSession session = null;
 			Authentication authentication = securityManager.findAuthentication(identity, ACONNECT_PROVIDER);
 			if(authentication != null) {
-				session = getAdapter().commonInfo(authentication, error);
+				session = getAdapter().commonInfo(authentication, errors);
 			}
 
 			if(session != null && StringHelper.containsNonWhitespace(session.getSession())) {

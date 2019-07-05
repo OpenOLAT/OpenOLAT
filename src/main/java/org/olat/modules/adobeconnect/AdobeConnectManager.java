@@ -104,28 +104,36 @@ public interface AdobeConnectManager {
 	/**
 	 * Check if the user is already registered.
 	 * 
-	 * @param meeting
-	 * @param identity
-	 * @param error
-	 * @return
+	 * @param meeting The meeting
+	 * @param identity The user to check
+	 * @param error Collector of errors
+	 * @return true if the user is registered as host or participant
 	 */
 	public boolean isRegistered(AdobeConnectMeeting meeting, Identity identity,
 			AdobeConnectMeetingPermission permission, AdobeConnectErrors error);
 	
 	/**
+	 * Register to a meeting in advance.
 	 * 
-	 * @param meeting
-	 * @param identity
-	 * @param error
-	 * @return
+	 * @param meeting The meeting
+	 * @param identity The user to register
+	 * @param error Collector of errors
+	 * @return true if registration is successful
 	 */
 	public boolean registerFor(AdobeConnectMeeting meeting, Identity identity,
 			AdobeConnectMeetingPermission permission, AdobeConnectErrors error);
 	
-
+	/**
+	 * This open the meeting by setting the specified identity as host of the meeting.
+	 * 
+	 * @param meeting The meeting
+	 * @param identity The user which want open the meeting
+	 * @param error Collector of errors
+	 * @return The URL to jump in Adobe Connect
+	 */
 	public String open(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error);
 	
-	public String join(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error);
+	public String join(AdobeConnectMeeting meeting, Identity identity, boolean moderator, AdobeConnectErrors error);
 	
 	public String linkTo(AdobeConnectSco content, Identity identity, AdobeConnectErrors error);
 	
