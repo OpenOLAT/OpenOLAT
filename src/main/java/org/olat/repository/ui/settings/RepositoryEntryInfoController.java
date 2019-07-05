@@ -142,7 +142,7 @@ public class RepositoryEntryInfoController extends FormBasicController {
 		} else {
 			externalRef = uifactory.addTextElement("cif.externalref", "cif.externalref", 100, extRef, formLayout);
 			externalRef.setHelpText(translate("cif.externalref.hover"));
-			externalRef.setHelpUrlForManualPage("Info Page#_identification");
+			externalRef.setHelpUrlForManualPage("Set up info page");
 			externalRef.setDisplaySize(30);
 		}
 
