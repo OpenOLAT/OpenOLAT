@@ -371,11 +371,16 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 	}
 
 	@Override
-	public String open(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors error) {
+	public String open(AdobeConnectMeeting meeting, Identity identity, AdobeConnectErrors errors) {
 		meeting.setOpened(true);
 		meeting = adobeConnectMeetingDao.updateMeeting(meeting);
 		dbInstance.commit();
-		return join(meeting, identity, error);
+		
+		String actingUser = getOrCreateUser(identity, true, errors);
+		if(actingUser != null) {
+			getAdapter().setMember(meeting.getScoId(), actingUser, AdobeConnectMeetingPermission.host.permission(), errors);
+		}
+		return join(meeting, identity, errors);
 	}
 
 	@Override
