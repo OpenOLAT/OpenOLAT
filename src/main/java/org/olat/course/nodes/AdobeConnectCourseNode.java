@@ -41,7 +41,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.adobeconnect.AdobeConnectCourseNodeConfiguration;
 import org.olat.course.nodes.adobeconnect.AdobeConnectEditController;
 import org.olat.course.nodes.adobeconnect.compatibility.AdobeConnectCompatibilityConfiguration;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -72,7 +71,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 		super(TYPE);
 	}
 
-	private void updateModuleConfigDefaults(CourseEnvironment courseEnv, boolean isNewNode) {
+	private void updateModuleConfigDefaults(RepositoryEntry courseEntry, boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if(config.getConfigurationVersion() < 2) {
 			Object oldConfiguration = config.get(CONF_VC_CONFIGURATION);
@@ -82,9 +81,8 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 				config.setBooleanEntry(AdobeConnectEditController.GUEST_ACCESS_ALLOWED, oldConfig.isGuestAccessAllowed());
 				config.setBooleanEntry(AdobeConnectEditController.MODERATOR_START_MEETING, !oldConfig.isGuestStartMeetingAllowed());
 				
-				if(courseEnv != null && oldConfig.getMeetingDatas() != null && !oldConfig.getMeetingDatas().isEmpty()) {
+				if(courseEntry != null && oldConfig.getMeetingDatas() != null && !oldConfig.getMeetingDatas().isEmpty()) {
 					AdobeConnectManager adobeConnectManager = CoreSpringFactory.getImpl(AdobeConnectManager.class);
-					RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 					boolean hasMeetings = adobeConnectManager.hasMeetings(courseEntry, getIdent(), null);
 					if(!hasMeetings) {
 						synchronized(this) {// enough
@@ -106,7 +104,9 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment userCourseEnv) {
-		updateModuleConfigDefaults(userCourseEnv.getCourseEnvironment(), false);
+		RepositoryEntry courseEntry = course.getCourseEnvironment()
+				.getCourseGroupManager().getCourseEntry();
+		updateModuleConfigDefaults(courseEntry, false);
 		
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// create edit controller
@@ -121,7 +121,9 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
-		updateModuleConfigDefaults(userCourseEnv.getCourseEnvironment(), false);
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment()
+				.getCourseGroupManager().getCourseEntry();
+		updateModuleConfigDefaults(courseEntry, false);
 		
 		String providerId = getModuleConfiguration().getStringValue("vc_provider_id");
 		
