@@ -81,14 +81,16 @@ public class HeatMapController extends GroupByController {
 	}
 	
 	private int getMaxCount() {
-		long maxCount = 0;
+		long tempMaxCount = 0;
 		for (GroupedStatistic statistic : statistics.getStatistics()) {
-			Long count = statistic.getCount();
-			if (count > maxCount) {
-				maxCount = count;
+			if (!MultiKey.none().equals(statistic.getMultiKey())) {
+				Long count = statistic.getCount();
+				if (count > tempMaxCount) {
+					tempMaxCount = count;
+				}
 			}
 		}
-		return Long.valueOf(maxCount).intValue();
+		return Long.valueOf(tempMaxCount).intValue();
 	}
 	
 	@Override
