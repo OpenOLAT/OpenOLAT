@@ -17,18 +17,43 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.quality.analysis;
+package org.olat.modules.quality.analysis.model;
+
+import org.olat.modules.forms.RubricRating;
+import org.olat.modules.quality.analysis.HeatMapStatistic;
 
 /**
  * 
- * Initial date: 11.09.2018<br>
+ * Initial date: 8 Jul 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface GroupedStatistic extends RawGroupedStatistic, HeatMapStatistic {
+public class HeatMapStatisticImpl implements HeatMapStatistic {
 	
-	public int getSteps();
+	private final Long count;
+	private final Double avg;
+	private final RubricRating rating;
 	
-	public boolean isRawAvgMaxGood();
+	public HeatMapStatisticImpl(Long count, Double avg, RubricRating rating) {
+		this.count = count;
+		this.avg = avg;
+		this.rating = rating;
+	}
+
+	@Override
+	public Long getCount() {
+		return count;
+	}
+
+	@Override
+	public Double getAvg() {
+		return avg;
+	}
+
+	@Override
+	public RubricRating getRating() {
+		return rating;
+	}
 	
+
 }

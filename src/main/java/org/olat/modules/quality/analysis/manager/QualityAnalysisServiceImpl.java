@@ -55,6 +55,7 @@ import org.olat.modules.quality.analysis.EvaluationFormView;
 import org.olat.modules.quality.analysis.EvaluationFormViewSearchParams;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.HeatMapStatistic;
 import org.olat.modules.quality.analysis.MultiGroupBy;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.MultiTrendSeries;
@@ -340,6 +341,11 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 				.filter(s -> s.getWeight().intValue() != 1)
 				.findAny()
 				.isPresent();
+	}
+
+	@Override
+	public HeatMapStatistic calculateTotal(List<HeatMapStatistic> statistics, Rubric rubric) {
+		return statisticsCalculator.calculateTotal(statistics, rubric);
 	}
 
 	@Override

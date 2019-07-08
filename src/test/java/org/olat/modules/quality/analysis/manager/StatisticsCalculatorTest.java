@@ -21,6 +21,8 @@ package org.olat.modules.quality.analysis.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.ArrayList;
@@ -35,11 +37,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.HeatMapStatistic;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.MultiTrendSeries;
 import org.olat.modules.quality.analysis.RawGroupedStatistic;
@@ -49,6 +53,7 @@ import org.olat.modules.quality.analysis.Trend;
 import org.olat.modules.quality.analysis.Trend.DIRECTION;
 import org.olat.modules.quality.analysis.TrendSeries;
 import org.olat.modules.quality.analysis.model.GroupedStatisticImpl;
+import org.olat.modules.quality.analysis.model.HeatMapStatisticImpl;
 import org.olat.modules.quality.analysis.model.RawGroupedStatisticImpl;
 
 /**
@@ -386,5 +391,23 @@ public class StatisticsCalculatorTest {
 		softly.fail("No statistic for %s, %s", multiKey, temporalKey);
 	}
 
+	@Test
+	public void shouldCalculateTotal() {
+		when(evaluationFormManagerMock.getRubricRating(any(), any())).thenReturn(RubricRating.NEUTRAL);
+		
+		Rubric rubric = new Rubric();
+		List<HeatMapStatistic> statistic = new ArrayList<>();
+		statistic.add(new HeatMapStatisticImpl(2l, 3.0, null));
+		statistic.add(new HeatMapStatisticImpl(1l, 1.5, null));
+		statistic.add(new HeatMapStatisticImpl(3l, 5.0, null));
+		statistic.add(new HeatMapStatisticImpl(null, null, null));
+		
+		HeatMapStatistic total = sut.calculateTotal(statistic, rubric);
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(total.getCount()).isEqualTo(6);
+		softly.assertThat(total.getAvg()).isEqualTo(3.75, offset(0.001));
+		softly.assertThat(total.getRating()).isEqualTo(RubricRating.NEUTRAL);
+		softly.assertAll();
+	}
 
 }

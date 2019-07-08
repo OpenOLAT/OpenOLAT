@@ -112,6 +112,8 @@ public interface QualityAnalysisService {
 	 */
 	public MultiTrendSeries<MultiKey> calculateTrends(AnalysisSearchParameter searchParams,
 			Set<Rubric> rubrics, MultiGroupBy groupBy, TemporalGroupBy temporalGroupBy);
+	
+	public HeatMapStatistic calculateTotal(List<HeatMapStatistic> statistics, Rubric rubric);
 
 	public boolean isInsufficient(Rubric rubric, Double avg);
 }

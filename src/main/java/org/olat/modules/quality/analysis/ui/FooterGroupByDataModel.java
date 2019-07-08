@@ -22,57 +22,48 @@ package org.olat.modules.quality.analysis.ui;
 import java.util.List;
 import java.util.Locale;
 
-import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
 
 /**
  * 
- * Initial date: 11.09.2018<br>
+ * Initial date: 8 Jul 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class GroupByDataModel extends DefaultFlexiTableDataModel<GroupByRow>
-		implements SortableFlexiTableDataModel<GroupByRow> {
+class FooterGroupByDataModel extends GroupByDataModel implements FlexiTableFooterModel {
 	
-	protected final Locale locale;
+	private final String footerHeader;
+	private List<?> footerDataValues;
+
+	FooterGroupByDataModel(FlexiTableColumnModel columnsModel, Locale locale, String footerHeader) {
+		super(columnsModel, locale);
+		this.footerHeader = footerHeader;
+	}
 	
-	GroupByDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
-		super(columnsModel);
-		this.locale = locale;
+	public void setObjects(List<GroupByRow> objects, List<?> footerDataValues) {
+		super.setObjects(objects);
+		this.footerDataValues = footerDataValues;
 	}
 	
 	@Override
-	public void sort(SortKey orderBy) {
-		List<GroupByRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
-		super.setObjects(rows);
+	public DefaultFlexiTableDataModel<GroupByRow> createCopyWithEmptyList() {
+		return new FooterGroupByDataModel(getTableColumnModel(), locale, footerHeader);
 	}
 
 	@Override
-	public Object getValueAt(int row, int col) {
-		GroupByRow generator = getObject(row);
-		return getValueAt(generator, col);
+	public String getFooterHeader() {
+		return footerHeader;
 	}
 
 	@Override
-	public Object getValueAt(GroupByRow row, int col) {
-		if (col >= GroupByController.DATA_OFFSET) {
+	public Object getFooterValueAt(int col) {
+		if (footerDataValues != null && col >= GroupByController.DATA_OFFSET) {
 			int pos = col - GroupByController.DATA_OFFSET;
-			if (pos < row.getStatisticsSize()) {
-				return row.getStatistic(pos);
-			}
-		}
-		if (col < row.getGroupNamesSize()) {
-			return row.getGroupName(col);
+			return footerDataValues.get(pos);
 		}
 		return null;
 	}
 
-	@Override
-	public DefaultFlexiTableDataModel<GroupByRow> createCopyWithEmptyList() {
-		return new GroupByDataModel(getTableColumnModel(), locale);
-	}
-	
 }

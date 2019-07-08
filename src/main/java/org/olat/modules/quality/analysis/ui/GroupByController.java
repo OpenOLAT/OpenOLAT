@@ -53,6 +53,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -97,6 +98,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class GroupByController extends FormBasicController implements FilterableController {
 
+	public static final int DATA_OFFSET = 10;
+	
 	private static final String CMD_GROUP_PREFIX = "CLICKED_";
 	private static final String CMD_TREND = "TREND";
 	private static final String[] INSUFFICIENT_KEYS = new String[] {"heatmap.insufficient.select"};
@@ -114,7 +117,6 @@ public abstract class GroupByController extends FormBasicController implements F
 	private SingleSelection temporalGroupEl;
 	private SingleSelection differenceEl;
 	private SingleSelection rubricEl;
-	private GroupByDataModel dataModel;
 	private FlexiTableElement tableEl;
 	private FormLayoutContainer legendLayout;
 	
@@ -252,7 +254,15 @@ public abstract class GroupByController extends FormBasicController implements F
 	protected abstract List<? extends GroupedStatistic> getGroupedStatistcList(MultiKey multiKey);
 
 	protected abstract Set<MultiKey> getStatisticsMultiKeys();
-
+	
+	protected abstract boolean hasFooter();
+	
+	protected abstract void initModel(FlexiTableColumnModel columnsModel);
+	
+	protected abstract FlexiTableDataModel<GroupByRow> getModel();
+	
+	protected abstract void setModelOjects(List<GroupByRow> rows);
+	
 	void setToolComponents(ToolComponents toolComponents) {
 		this.toolComponents = toolComponents;
 		toolComponents.setPrintVisibility(false);
@@ -442,20 +452,21 @@ public abstract class GroupByController extends FormBasicController implements F
 			}
 		}
 		
-		columnIndex = addDataColumns(columnsModel, columnIndex);
+		addDataColumns(columnsModel, DATA_OFFSET);
 		
 		DefaultFlexiColumnModel trendColumn = new DefaultFlexiColumnModel("heatmap.table.title.trend", columnIndex++,
 				CMD_TREND, new StaticFlexiCellRenderer("", CMD_TREND, "o_icon o_icon-lg o_icon_qual_ana_trend", null));
 		trendColumn.setExportable(false);
 		columnsModel.addFlexiColumnModel(trendColumn);
 		
-		dataModel = new GroupByDataModel(columnsModel, getLocale());
+		initModel(columnsModel);
 		if (tableEl != null) flc.remove(tableEl);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, getTranslator(), flc);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", getModel(), getTranslator(), flc);
 		tableEl.setElementCssClass("o_qual_hm o_qual_trend");
 		tableEl.setEmtpyTableMessageKey("heatmap.empty");
 		tableEl.setNumOfRowsEnabled(false);
 		tableEl.setCustomizeColumns(false);
+		tableEl.setFooter(hasFooter());
 		
 		// legend
 		if (legendLayout != null) flc.remove(legendLayout);
@@ -498,7 +509,7 @@ public abstract class GroupByController extends FormBasicController implements F
 		} else if (source == tableEl && event instanceof SelectionEvent) {
 			SelectionEvent se = (SelectionEvent)event;
 			String cmd = se.getCommand();
-			GroupByRow row = dataModel.getObject(se.getIndex());
+			GroupByRow row = getModel().getObject(se.getIndex());
 			if (CMD_TREND.equals(cmd)) {
 				doShowTrend(ureq, row);
 			} else if (cmd.indexOf(CMD_GROUP_PREFIX) > -1) {
@@ -577,7 +588,10 @@ public abstract class GroupByController extends FormBasicController implements F
 		updateTable(columnConfigs);
 		
 		rows.sort(new GroupNameAlphabeticalComparator());
-		dataModel.setObjects(rows);
+		if (hasFooter()) {
+			
+		}
+		setModelOjects(rows);
 		tableEl.reset(true, true, true);
 	}
 
@@ -656,9 +670,7 @@ public abstract class GroupByController extends FormBasicController implements F
 			if (statistic != null) {
 				Double avg = statistic.getAvg();
 				String identifier = statistic.getIdentifier();
-				Rubric rubric = StringHelper.containsNonWhitespace(identifier)
-					? getRubricByIdentifier(identifier)
-					: getSelectedRubric();
+				Rubric rubric = getRubric(identifier);
 				if (rubric != null) {
 					boolean isInsufficient = analysisService.isInsufficient(rubric, avg);
 					if (isInsufficient) {
@@ -668,6 +680,12 @@ public abstract class GroupByController extends FormBasicController implements F
 			}
 		}
 		return true;
+	}
+
+	protected Rubric getRubric(String identifier) {
+		return StringHelper.containsNonWhitespace(identifier)
+			? getRubricByIdentifier(identifier)
+			: getSelectedRubric();
 	}
 
 	private Rubric getRubricByIdentifier(String identifier) {
