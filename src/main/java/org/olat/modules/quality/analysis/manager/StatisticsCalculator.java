@@ -115,8 +115,50 @@ public class StatisticsCalculator {
 		log.debug("Grouped statistic:        " + statistic.toString());
 		return statistic;
 	}
+
+	public HeatMapStatistic calculateRubricsTotal(List<? extends GroupedStatistic> statistics,
+			Collection<Rubric> rubrics) {
+		Rubric firstRubric = null;
+		HeatMapStatistic total;
+		long count = 0;
+		long sumCount = 0;
+		double sumValues = 0;
+		for (Rubric rubric: rubrics) {
+			if (firstRubric == null) {
+				firstRubric = rubric;
+			}
+			for (Slider slider: rubric.getSliders()) {
+				GroupedStatistic statistic = getStatistic(statistics, slider);
+				if (statistic != null) {
+					Long statisticCount = statistic.getCount();
+					if (statisticCount != null) {
+						count += statisticCount.longValue();
+						sumCount += statisticCount.longValue() * slider.getWeight().intValue();
+						sumValues += statisticCount.longValue() * statistic.getAvg().doubleValue() * slider.getWeight().intValue();
+					}
+				}
+			}
+		}
+		if (count == 0) {
+			total = new HeatMapStatisticImpl(null, null, null);
+		} else {
+			double avg = sumValues / sumCount;
+			RubricRating rating = evaluationFormManager.getRubricRating(firstRubric, avg);
+			total = new HeatMapStatisticImpl(count, avg, rating);
+		}
+		return total;
+	}
 	
-	HeatMapStatistic calculateTotal(List<HeatMapStatistic> statistics, Rubric rubric) {
+	private GroupedStatistic getStatistic(List<? extends GroupedStatistic> statistics, Slider slider) {
+		for (GroupedStatistic statistic : statistics) {
+			if (statistic != null && slider.getId().equals(statistic.getIdentifier())) {
+				return statistic;
+			}
+		}
+		return null;
+	}
+
+	HeatMapStatistic calculateSliderTotal(List<? extends HeatMapStatistic> statistics, Rubric rubric) {
 		HeatMapStatistic total;
 		long count = 0;
 		double sumValues = 0;

@@ -210,7 +210,7 @@ class AnalysisUIFactory {
 		return keyValues;
 	}
 	
-	private static boolean areIdenticalRubrics(List<Rubric> rubrics) {
+	static boolean areIdenticalRubrics(List<Rubric> rubrics) {
 		Rubric master = rubrics.get(0);
 		for (int i = 1; i < rubrics.size(); i++) {
 			Rubric rubric = rubrics.get(i);

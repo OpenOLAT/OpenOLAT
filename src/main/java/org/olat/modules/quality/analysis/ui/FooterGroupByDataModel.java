@@ -25,6 +25,7 @@ import java.util.Locale;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableFooterModel;
+import org.olat.modules.quality.analysis.HeatMapStatistic;
 
 /**
  * 
@@ -36,15 +37,17 @@ class FooterGroupByDataModel extends GroupByDataModel implements FlexiTableFoote
 	
 	private final String footerHeader;
 	private List<?> footerDataValues;
+	private Object footerTotal;
 
 	FooterGroupByDataModel(FlexiTableColumnModel columnsModel, Locale locale, String footerHeader) {
 		super(columnsModel, locale);
 		this.footerHeader = footerHeader;
 	}
 	
-	public void setObjects(List<GroupByRow> objects, List<?> footerDataValues) {
+	public void setObjects(List<GroupByRow> objects, List<?> footerDataValues, HeatMapStatistic footerTotal) {
 		super.setObjects(objects);
 		this.footerDataValues = footerDataValues;
+		this.footerTotal = footerTotal;
 	}
 	
 	@Override
@@ -62,6 +65,9 @@ class FooterGroupByDataModel extends GroupByDataModel implements FlexiTableFoote
 		if (footerDataValues != null && col >= GroupByController.DATA_OFFSET) {
 			int pos = col - GroupByController.DATA_OFFSET;
 			return footerDataValues.get(pos);
+		}
+		if (col == GroupByController.TOTAL_OFFSET) {
+			return footerTotal;
 		}
 		return null;
 	}

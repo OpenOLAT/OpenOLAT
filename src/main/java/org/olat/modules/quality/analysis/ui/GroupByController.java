@@ -98,7 +98,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class GroupByController extends FormBasicController implements FilterableController {
 
-	public static final int DATA_OFFSET = 10;
+	public static final int TOTAL_OFFSET = 99;
+	public static final int DATA_OFFSET = 100;
 	
 	private static final String CMD_GROUP_PREFIX = "CLICKED_";
 	private static final String CMD_TREND = "TREND";
@@ -106,7 +107,7 @@ public abstract class GroupByController extends FormBasicController implements F
 	private static final Collection<GroupBy> GROUP_BY_TOPICS = Arrays.asList(GroupBy.TOPIC_IDENTITY,
 			GroupBy.TOPIC_ORGANISATION, GroupBy.TOPIC_CURRICULUM, GroupBy.TOPIC_CURRICULUM_ELEMENT,
 			GroupBy.TOPIC_REPOSITORY);
-	
+
 	private TooledStackedPanel stackPanel;
 	private ToolComponents toolComponents;
 	private FormLayoutContainer groupingCont;
@@ -254,6 +255,8 @@ public abstract class GroupByController extends FormBasicController implements F
 	protected abstract List<? extends GroupedStatistic> getGroupedStatistcList(MultiKey multiKey);
 
 	protected abstract Set<MultiKey> getStatisticsMultiKeys();
+	
+	protected abstract void addTotalDataColumn(FlexiTableColumnModel columnsModel, int columnIndex);
 	
 	protected abstract boolean hasFooter();
 	
@@ -453,6 +456,7 @@ public abstract class GroupByController extends FormBasicController implements F
 		}
 		
 		addDataColumns(columnsModel, DATA_OFFSET);
+		addTotalDataColumn(columnsModel, TOTAL_OFFSET);
 		
 		DefaultFlexiColumnModel trendColumn = new DefaultFlexiColumnModel("heatmap.table.title.trend", columnIndex++,
 				CMD_TREND, new StaticFlexiCellRenderer("", CMD_TREND, "o_icon o_icon-lg o_icon_qual_ana_trend", null));
@@ -906,6 +910,10 @@ public abstract class GroupByController extends FormBasicController implements F
 			return rubric;
 		}
 		
+		public Slider getSlider() {
+			return slider;
+		}
+
 		public String getIdentifier() {
 			return slider.getId();
 		}

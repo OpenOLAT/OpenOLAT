@@ -64,6 +64,9 @@ class GroupByDataModel extends DefaultFlexiTableDataModel<GroupByRow>
 				return row.getStatistic(pos);
 			}
 		}
+		if (col == GroupByController.TOTAL_OFFSET) {
+			return row.getTotal();
+		}
 		if (col < row.getGroupNamesSize()) {
 			return row.getGroupName(col);
 		}

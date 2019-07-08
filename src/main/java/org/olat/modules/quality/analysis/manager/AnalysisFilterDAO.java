@@ -393,7 +393,7 @@ public class AnalysisFilterDAO {
 		sb.append(groupByIdentifier? " response.responseIdentifier": " cast(null as string)");
 		appendGroupBys(sb, multiGroupBy, true);
 		appendTemporalGroupBy(sb, temporalGroupBy, true);
-		sb.append("     , count(response)");
+		sb.append("     , count(distinct response.key)");
 		sb.append("     , avg(response.numericalResponse)");
 		sb.append("       )");
 		appendFrom(sb, searchParams);

@@ -20,6 +20,7 @@
 package org.olat.modules.quality.analysis.ui;
 
 import static java.util.stream.Collectors.toList;
+import static org.olat.modules.quality.analysis.ui.AnalysisUIFactory.areIdenticalRubrics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class HeatMapController extends GroupByController {
 	
+	private final boolean identicalRubrics;
 	private FooterGroupByDataModel dataModel;
 	private GroupedStatistics<GroupedStatistic> statistics;
 	private int maxCount;
@@ -64,7 +66,8 @@ public class HeatMapController extends GroupByController {
 			TrendDifference trendDifference, String rubricId) {
 		super(ureq, wControl, stackPanel, filterCtrl, evaluationForm, availableAttributes, multiGroupBy,
 				insufficientOnly, temporalGroupBy, trendDifference, rubricId);
-		
+		List<Rubric> rubrics = getSliders().stream().map(SliderWrapper::getRubric).distinct().collect(toList());
+		this.identicalRubrics = areIdenticalRubrics(rubrics);
 	}
 
 	@Override
@@ -109,6 +112,18 @@ public class HeatMapController extends GroupByController {
 		return columnIndex;
 	}
 	
+
+	@Override
+	protected void addTotalDataColumn(FlexiTableColumnModel columnsModel, int columnIndex) {
+		if (identicalRubrics) {
+			DefaultFlexiColumnModel columnModel = new DefaultFlexiColumnModel("", columnIndex,
+					HeatMapRenderer.variableSize(maxCount));
+			columnModel.setHeaderLabel(translate("heatmap.table.title.average"));
+			columnModel.setFooterCellRenderer(HeatMapRenderer.fixedSize());
+			columnsModel.addFlexiColumnModel(columnModel);
+		}
+	}
+	
 	@Override
 	protected List<? extends GroupedStatistic> getGroupedStatistcList(MultiKey multiKey) {
 		// Iterate over the identifiers to sort the statistics according to the headers.
@@ -142,6 +157,24 @@ public class HeatMapController extends GroupByController {
 
 	@Override
 	protected void setModelOjects(List<GroupByRow> rows) {
+		appendTotalColumn(rows);
+		List<HeatMapStatistic> footerStatistics = getFooterStatistics(rows);
+		HeatMapStatistic footerTotal = getFooterTotal(rows);
+		dataModel.setObjects(rows, footerStatistics, footerTotal);
+	}
+
+	private void appendTotalColumn(List<GroupByRow> rows) {
+		if (identicalRubrics) {
+			List<Rubric> rubrics = getSliders().stream().map(SliderWrapper::getRubric).distinct().collect(toList());
+			for (GroupByRow row : rows) {
+				List<? extends GroupedStatistic> rowStatistics = row.getStatistics();
+				HeatMapStatistic total = analysisService.calculateRubricsTotal(rowStatistics, rubrics);
+				row.setTotal(total);
+			}
+		}
+	}
+
+	private List<HeatMapStatistic> getFooterStatistics(List<GroupByRow> rows) {
 		List<HeatMapStatistic> footerStatistics = new ArrayList<>();
 		if (!rows.isEmpty()) {
 			int statisticsSize = rows.get(0).getStatisticsSize();
@@ -155,11 +188,27 @@ public class HeatMapController extends GroupByController {
 						rubric = getRubric(columnStatistic.getIdentifier());
 					}
 				}
-				HeatMapStatistic total = analysisService.calculateTotal(columnStatistics, rubric);
+				HeatMapStatistic total = analysisService.calculateSliderTotal(columnStatistics, rubric);
 				footerStatistics.add(total);
 			}
 		}
-		dataModel.setObjects(rows, footerStatistics);
+		return footerStatistics;
+	}
+
+	private HeatMapStatistic getFooterTotal(List<GroupByRow> rows) {
+		HeatMapStatistic total = null;
+		if (identicalRubrics) {
+			ArrayList<HeatMapStatistic> columnStatistics = new ArrayList<>(rows.size());
+			for (GroupByRow row : rows) {
+				Object rowTotal = row.getTotal();
+				if (rowTotal instanceof HeatMapStatistic) {
+					columnStatistics.add((HeatMapStatistic)rowTotal);
+				}
+			}
+			Rubric rubric = getSliders().stream().map(SliderWrapper::getRubric).findFirst().get();
+			total = analysisService.calculateSliderTotal(columnStatistics, rubric);
+		}
+		return total;
 	}
 
 }

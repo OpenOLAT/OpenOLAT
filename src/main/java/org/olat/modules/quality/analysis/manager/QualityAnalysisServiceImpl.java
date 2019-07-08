@@ -344,8 +344,14 @@ public class QualityAnalysisServiceImpl implements QualityAnalysisService {
 	}
 
 	@Override
-	public HeatMapStatistic calculateTotal(List<HeatMapStatistic> statistics, Rubric rubric) {
-		return statisticsCalculator.calculateTotal(statistics, rubric);
+	public HeatMapStatistic calculateRubricsTotal(List<? extends GroupedStatistic> statistics,
+			Collection<Rubric> rubric) {
+		return statisticsCalculator.calculateRubricsTotal(statistics, rubric);
+	}
+
+	@Override
+	public HeatMapStatistic calculateSliderTotal(List<? extends HeatMapStatistic> statistics, Rubric rubrics) {
+		return statisticsCalculator.calculateSliderTotal(statistics, rubrics);
 	}
 
 	@Override

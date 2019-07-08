@@ -87,6 +87,11 @@ public class TrendController extends GroupByController {
 		}
 		return 0;
 	}
+
+	@Override
+	protected void addTotalDataColumn(FlexiTableColumnModel columnsModel, int columnIndex) {
+		//
+	}
 	
 	private List<String> getTemporalHeaders() {
 		List<TemporalKey> temporalKeys = multiTrendSeries.getTemporalKeys();
