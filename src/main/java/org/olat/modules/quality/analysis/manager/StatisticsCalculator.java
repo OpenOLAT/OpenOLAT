@@ -133,8 +133,9 @@ public class StatisticsCalculator {
 					Long statisticCount = statistic.getCount();
 					if (statisticCount != null) {
 						count += statisticCount.longValue();
-						sumCount += statisticCount.longValue() * slider.getWeight().intValue();
-						sumValues += statisticCount.longValue() * statistic.getAvg().doubleValue() * slider.getWeight().intValue();
+						long weightedCount = statisticCount.longValue() * slider.getWeight().intValue();
+						sumCount += weightedCount;
+						sumValues += weightedCount * statistic.getAvg().doubleValue();
 					}
 				}
 			}
@@ -222,8 +223,8 @@ public class StatisticsCalculator {
 		double sumValues = 0;
 		for (RawGroupedStatistic statistic : keysStatistics) {
 			long statisticCount = statistic.getCount()!= null? statistic.getCount().longValue(): 0;
-			count += statisticCount;
 			Integer weight = sliderToWeight.get(statistic.getIdentifier());
+			count += weight != 0? statisticCount: 0;
 			sumCount += statisticCount * weight;
 			double statisticAvg = statistic.getRawAvg()!= null? statistic.getRawAvg().doubleValue(): 0;
 			sumValues += statisticAvg * statisticCount * weight;

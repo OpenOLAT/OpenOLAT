@@ -751,7 +751,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		for(SliderRow row:sliders) {
 			TextElement weightEl = row.getWeightEl();
 			weightEl.clearError();
-			if (isInvalidInteger(weightEl.getValue(), 1, 1000)) {
+			if (isInvalidInteger(weightEl.getValue(), 0, 1000)) {
 				weightEl.setErrorKey("error.wrong.int", null);
 				allOk = false;
 			}
@@ -993,7 +993,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	
 	private Integer getIntOrNull(TextElement weightEl) {
 		return StringHelper.containsNonWhitespace(weightEl.getValue())
-				&& isValidInteger(weightEl.getValue(), 1, 10000000)
+				&& isValidInteger(weightEl.getValue(), 0, 10000000)
 				? Integer.parseInt(weightEl.getValue())
 				: null;
 	}

@@ -98,7 +98,8 @@ class RubricStatisticCalculator {
 			long stepCount = 0;
 			for (Slider slider: rubric.getSliders()) {
 				Long sliderStepCount = sliderStepCounts.getStepCounts(slider).getStepCount(step);
-				long weightedCount = weighted
+				// Sliders with weight 0 are ignored even if it is not weighted
+				long weightedCount = weighted || slider.getWeight().intValue() == 0
 						? sliderStepCount.longValue() * slider.getWeight().intValue()
 						: sliderStepCount.longValue();
 				stepCount += weightedCount;
@@ -121,7 +122,7 @@ class RubricStatisticCalculator {
 		long noResponses = 0;
 		for (Slider slider: rubric.getSliders()) {
 			Long sliderNoResponses = slidersStepCounts.getStepCounts(slider).getNumberOfNoResponses();
-			if (sliderNoResponses != null ) {
+			if (sliderNoResponses != null && slider.getWeight().intValue() > 0) {
 				noResponses += sliderNoResponses.longValue();
 			}
 		}

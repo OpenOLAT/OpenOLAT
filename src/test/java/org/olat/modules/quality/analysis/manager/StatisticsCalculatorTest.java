@@ -347,6 +347,10 @@ public class StatisticsCalculatorTest {
 		slider21.setId(random());
 		slider21.setWeight(3);
 		sliders2.add(slider21);
+		Slider slider22 = new Slider();
+		slider22.setId(random());
+		slider22.setWeight(0);
+		sliders2.add(slider22);
 		Rubric rubric2 = new Rubric();
 		rubric2.setId(random());
 		rubric2.setSliders(sliders2);
@@ -362,13 +366,16 @@ public class StatisticsCalculatorTest {
 		statisticsList.add(new RawGroupedStatisticImpl(slider11.getId(), multiKey1, temporalKey1, 1l, 1.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey1, temporalKey1, 1l, 1.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider21.getId(), multiKey1, temporalKey1, 1l, 1.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider22.getId(), multiKey1, temporalKey1, 1l, 1.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider11.getId(), multiKey1, temporalKey2, 2l, 1.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey1, temporalKey2, 2l, 2.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider21.getId(), multiKey1, temporalKey2, 2l, 3.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider22.getId(), multiKey1, temporalKey2, 2l, 3.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey2, temporalKey1, 100l, 20.2));
 		statisticsList.add(new RawGroupedStatisticImpl(slider11.getId(), multiKey2, temporalKey2, 3l, 3.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey2, temporalKey2, 2l, 2.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider21.getId(), multiKey2, temporalKey2, 1l, 1.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider22.getId(), multiKey2, temporalKey2, 2l, 2.0));
 		
 		List<RawGroupedStatistic> reducedStatistics = sut.reduceIdentifier(statisticsList, rubrics);
 		

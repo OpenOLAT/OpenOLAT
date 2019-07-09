@@ -50,7 +50,7 @@ public class RubricStatisticCalculatorTest {
 	private RubricStatisticCalculator sut = new RubricStatisticCalculator();
 	
 	@Test
-	public void shouldCountNoResponses() {
+	public void shouldGetSliderCountNoResponses() {
 		long expectedCounts = 10;
 		Slider slider = new Slider();
 		String sliderId = random();
@@ -66,7 +66,7 @@ public class RubricStatisticCalculatorTest {
 	}
 	
 	@Test
-	public void shouldCountNoResponsesDefault() {
+	public void shouldGetSliderCountNoResponsesDefault() {
 		Slider slider = new Slider();
 		String sliderId = random();
 		slider.setId(sliderId);
@@ -151,7 +151,7 @@ public class RubricStatisticCalculatorTest {
 	}
 	
 	@Test
-	public void shouldCalculateMean() {
+	public void shouldCalculateSliderMedian() {
 		StepCountsBuilder stepCountsBuilder = StepCountsBuilder.builder(3);
 		stepCountsBuilder.withCount(1, Long.valueOf(3));
 		stepCountsBuilder.withCount(2, Long.valueOf(6));
@@ -163,7 +163,7 @@ public class RubricStatisticCalculatorTest {
 	}
 	
 	@Test
-	public void shouldCalculateMeanBetween() {
+	public void shouldCalculateSliderMedianBetween() {
 		StepCountsBuilder stepCountsBuilder = StepCountsBuilder.builder(3);
 		stepCountsBuilder.withCount(1, Long.valueOf(1));
 		stepCountsBuilder.withCount(2, Long.valueOf(1));
@@ -175,7 +175,7 @@ public class RubricStatisticCalculatorTest {
 	}
 	
 	@Test
-	public void shouldCalculateMeanNoValues() {
+	public void shouldCalculateSliderMedianNoValues() {
 		StepCountsBuilder stepCountsBuilder = StepCountsBuilder.builder(3);
 		stepCountsBuilder.withCount(1, Long.valueOf(0));
 		stepCountsBuilder.withCount(2, Long.valueOf(0));
@@ -187,7 +187,7 @@ public class RubricStatisticCalculatorTest {
 	}
 
 	@Test
-	public void shouldCalculateVariance() {
+	public void shouldCalculateSliderVariance() {
 		ScaleType scaleType = ScaleType.oneToMax;
 		StepCountsBuilder stepCountsBuilder = StepCountsBuilder.builder(4);
 		stepCountsBuilder.withCount(1, Long.valueOf(2));
@@ -202,7 +202,7 @@ public class RubricStatisticCalculatorTest {
 	}
 
 	@Test
-	public void shouldCalculateVarianceScaled() {
+	public void shouldCalculateSliderVarianceScaled() {
 		ScaleType scaleType = ScaleType.zeroBallanced;
 		StepCountsBuilder stepCountsBuilder = StepCountsBuilder.builder(4);
 		stepCountsBuilder.withCount(1, Long.valueOf(2));
@@ -245,6 +245,15 @@ public class RubricStatisticCalculatorTest {
 		stepCountsBuilder3.withCount(2, Long.valueOf(2));
 		stepCountsBuilder3.withCount(3, Long.valueOf(3));
 		stepCountsImpl.put(slider3, stepCountsBuilder3.build());
+		Slider slider4 = new Slider();
+		slider4.setId(random());
+		slider4.setWeight(0);
+		sliders.add(slider4);
+		StepCountsBuilder stepCountsBuilder4 = StepCountsBuilder.builder(4);
+		stepCountsBuilder4.withCount(1, Long.valueOf(1));
+		stepCountsBuilder4.withCount(2, Long.valueOf(2));
+		stepCountsBuilder4.withCount(3, Long.valueOf(4));
+		stepCountsImpl.put(slider4, stepCountsBuilder4.build());
 		Rubric rubric = new Rubric();
 		rubric.setSliders(sliders);
 		rubric.setSteps(3);
@@ -293,6 +302,16 @@ public class RubricStatisticCalculatorTest {
 		stepCountsBuilder3.withCount(3, Long.valueOf(5));
 		stepCountsBuilder3.withCountNoResponses(Long.valueOf(3));
 		slidersStepCountsImpl.put(slider3, stepCountsBuilder3.build());
+		Slider slider4 = new Slider();
+		slider4.setId(random());
+		slider4.setWeight(0);
+		sliders.add(slider4);
+		StepCountsBuilder stepCountsBuilder4 = StepCountsBuilder.builder(4);
+		stepCountsBuilder4.withCount(1, Long.valueOf(4));
+		stepCountsBuilder4.withCount(2, Long.valueOf(4));
+		stepCountsBuilder4.withCount(4, Long.valueOf(5));
+		stepCountsBuilder4.withCountNoResponses(Long.valueOf(4));
+		slidersStepCountsImpl.put(slider4, stepCountsBuilder4.build());
 		Rubric rubric = new Rubric();
 		rubric.setSliders(sliders);
 		rubric.setSteps(3);
@@ -300,13 +319,13 @@ public class RubricStatisticCalculatorTest {
 		SliderStatistic totalStatistic = sut.calculateTotalStatistic(rubric, slidersStepCountsImpl);
 		
 		SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(totalStatistic.getNumberOfNoResponses()).isEqualTo(6);
-		softly.assertThat(totalStatistic.getNumberOfResponses()).isEqualTo(21);
-		softly.assertThat(totalStatistic.getSum()).isEqualTo(96);
-		softly.assertThat(totalStatistic.getAvg()).isEqualTo(2.13, offset(0.01));
-		softly.assertThat(totalStatistic.getMedian()).isEqualTo(2);
-		softly.assertThat(totalStatistic.getVariance()).isEqualTo(0.663, offset(0.001));
-		softly.assertThat(totalStatistic.getStdDev()).isEqualTo(0.814, offset(0.001));
+		softly.assertThat(totalStatistic.getNumberOfNoResponses()).as("Number of no responses").isEqualTo(6);
+		softly.assertThat(totalStatistic.getNumberOfResponses()).as("Number of responses").isEqualTo(21);
+		softly.assertThat(totalStatistic.getSum()).as("Sum").isEqualTo(96);
+		softly.assertThat(totalStatistic.getAvg()).as("Avg").isEqualTo(2.13, offset(0.01));
+		softly.assertThat(totalStatistic.getMedian()).as("Median").isEqualTo(2);
+		softly.assertThat(totalStatistic.getVariance()).as("Variance").isEqualTo(0.663, offset(0.001));
+		softly.assertThat(totalStatistic.getStdDev()).as("StdDev").isEqualTo(0.814, offset(0.001));
 		softly.assertAll();
 	}
 
