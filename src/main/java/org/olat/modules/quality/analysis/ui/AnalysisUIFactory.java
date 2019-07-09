@@ -31,6 +31,7 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.forms.RubricsComparison;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.Rubric.NameDisplay;
 import org.olat.modules.forms.model.xml.Slider;
@@ -197,9 +198,10 @@ class AnalysisUIFactory {
 		return key;
 	}
 
-	static KeyValues getRubricKeyValue(Translator translator, List<Rubric> rubrics) {
+	static KeyValues getRubricKeyValue(Translator translator, List<Rubric> rubrics,
+			RubricsComparison.Attribute... attributes) {
 		KeyValues keyValues = new KeyValues();
-		boolean identicaRubrics = areIdenticalRubrics(rubrics);
+		boolean identicaRubrics = RubricsComparison.areIdentical(rubrics, attributes);
 		if (identicaRubrics) {
 			keyValues.add(entry(ALL_RUBRICS_KEY, translator.translate("trend.rubric.index.all")));
 		}
@@ -208,37 +210,6 @@ class AnalysisUIFactory {
 			keyValues.add(entry(getKey(rubric), getRubricName(translator, rubric, i)));
 		}
 		return keyValues;
-	}
-	
-	static boolean areIdenticalRubrics(List<Rubric> rubrics) {
-		Rubric master = rubrics.get(0);
-		for (int i = 1; i < rubrics.size(); i++) {
-			Rubric rubric = rubrics.get(i);
-			if (!equalsNull(master.getLowerBoundInsufficient(), rubric.getLowerBoundInsufficient())
-					|| !equalsNull(master.getLowerBoundNeutral(), rubric.getLowerBoundNeutral())
-					|| !equalsNull(master.getLowerBoundSufficient(), rubric.getLowerBoundSufficient())
-					|| !equalsNull(master.getUpperBoundInsufficient(), rubric.getUpperBoundInsufficient())
-					|| !equalsNull(master.getUpperBoundNeutral(), rubric.getUpperBoundNeutral())
-					|| !equalsNull(master.getUpperBoundSufficient(), rubric.getUpperBoundSufficient())
-					|| master.getScaleType() != rubric.getScaleType()
-					|| master.getSliderType() != rubric.getSliderType()
-					|| master.getSteps() != rubric.getSteps()
-					|| master.getStart() != rubric.getStart()
-					|| master.getEnd() != rubric.getEnd()
-					|| master.isStartGoodRating() != master.isStartGoodRating()
-					) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	@SuppressWarnings("null")
-	private static boolean equalsNull(Object o1, Object o2) {
-		if (o1 == null && o2 == null) return true;
-		if (o1 == null && o2 != null) return false;
-		if (o1 != null && o2 == null) return false;
-		return o1.equals(o2);
 	}
 
 	private static String getRubricName(Translator translator, Rubric rubric, int i) {

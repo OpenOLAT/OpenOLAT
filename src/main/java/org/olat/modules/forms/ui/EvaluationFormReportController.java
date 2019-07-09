@@ -30,12 +30,15 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.ceditor.DataStorage;
+import org.olat.modules.forms.RubricsComparison;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.handler.DefaultReportProvider;
 import org.olat.modules.forms.handler.EvaluationFormReportHandler;
 import org.olat.modules.forms.handler.EvaluationFormReportProvider;
+import org.olat.modules.forms.handler.RubricTableHandler;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
+import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
 
 /**
@@ -82,6 +85,7 @@ public class EvaluationFormReportController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		List<Rubric> rubrics = new ArrayList<>();
 		if (header != null) {
 			flc.put("header", header);
 		}
@@ -93,9 +97,17 @@ public class EvaluationFormReportController extends FormBasicController {
 				String cmpId = "cpt-" + CodeHelper.getRAMUniqueID();
 				flc.put(cmpId, reportElement.getReportComponent());
 				fragments.add(new ReportFragment(reportHandler.getType(), cmpId, reportElement));
+				if (RubricTableHandler.TYPE.equals(reportHandler.getType()) && Rubric.TYPE.equals(element.getType())) {
+					rubrics.add((Rubric) element);
+				}
 			}
 		}
 		flc.contextPut("fragments", fragments);
+		
+		// Would be better, if more generic
+		Boolean rubricsIdentical = rubrics.size() > 1
+				&& RubricsComparison.areIdentical(rubrics, RubricTableHandler.getAttributesColumnAlignemt());
+		flc.contextPut("alignRubricsTables", rubricsIdentical);
 	}
 
 	@Override
@@ -122,6 +134,14 @@ public class EvaluationFormReportController extends FormBasicController {
 			this.reportElement = reportElement;
 		}
 		
+		public String getType() {
+			return type;
+		}
+
+		public EvaluationFormReportElement getReportElement() {
+			return reportElement;
+		}
+
 		public String getCssClass() {
 			return "o_ed_".concat(type);
 		}

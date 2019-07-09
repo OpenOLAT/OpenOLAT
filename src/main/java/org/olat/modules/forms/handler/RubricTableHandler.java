@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.ceditor.PageElement;
+import org.olat.modules.forms.RubricsComparison.Attribute;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.ui.ReportHelper;
@@ -38,9 +39,15 @@ import org.olat.modules.forms.ui.model.EvaluationFormReportElement;
  */
 public class RubricTableHandler implements EvaluationFormReportHandler {
 
+	public static final String TYPE = "rubrictablehandler";
+	;
+	public static Attribute[] getAttributesColumnAlignemt() {
+		return RubricTableController.ATTRIBUTES_COLUMN_ALLIGNMENT;
+	}
+
 	@Override
 	public String getType() {
-		return "rubrictablehandler";
+		return TYPE;
 	}
 
 	@Override

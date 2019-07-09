@@ -66,6 +66,7 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
+import org.olat.modules.forms.RubricsComparison.Attribute;
 import org.olat.modules.forms.model.xml.AbstractElement;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
@@ -98,6 +99,23 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public abstract class GroupByController extends FormBasicController implements FilterableController {
 
+	protected final static Attribute[] identicalRubricsAttributes = {
+			Attribute.sliderType,
+			Attribute.scaleType,
+			Attribute.name,
+			Attribute.start,
+			Attribute.end,
+			Attribute.steps,
+			Attribute.noResponseEnabled,
+			Attribute.lowerBoundInsufficient,
+			Attribute.upperBoundInsufficient,
+			Attribute.lowerBoundNeutral,
+			Attribute.upperBoundNeutral,
+			Attribute.lowerBoundSufficient,
+			Attribute.upperBoundSufficient,
+			Attribute.startGoodRating
+	};
+	
 	public static final int TOTAL_OFFSET = 99;
 	public static final int DATA_OFFSET = 100;
 	
@@ -336,7 +354,7 @@ public abstract class GroupByController extends FormBasicController implements F
 			
 			List<Rubric> rubrics = getSliders().stream().map(SliderWrapper::getRubric).distinct().collect(toList());
 			if (rubrics.size() > 0) {
-				KeyValues rubricKV = AnalysisUIFactory.getRubricKeyValue(getTranslator(), rubrics);
+				KeyValues rubricKV = AnalysisUIFactory.getRubricKeyValue(getTranslator(), rubrics, identicalRubricsAttributes);
 				rubricEl = uifactory.addDropdownSingleselect("trend.rubrics", groupingCont, rubricKV.keys(), rubricKV.values());
 				rubricEl.addActionListener(FormEvent.ONCHANGE);
 				if (StringHelper.containsNonWhitespace(rubricId)) {

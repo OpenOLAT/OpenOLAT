@@ -20,7 +20,6 @@
 package org.olat.modules.quality.analysis.ui;
 
 import static java.util.stream.Collectors.toList;
-import static org.olat.modules.quality.analysis.ui.AnalysisUIFactory.areIdenticalRubrics;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.modules.forms.RubricsComparison;
 import org.olat.modules.forms.model.xml.Form;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.quality.analysis.AvailableAttributes;
@@ -67,7 +67,7 @@ public class HeatMapController extends GroupByController {
 		super(ureq, wControl, stackPanel, filterCtrl, evaluationForm, availableAttributes, multiGroupBy,
 				insufficientOnly, temporalGroupBy, trendDifference, rubricId);
 		List<Rubric> rubrics = getSliders().stream().map(SliderWrapper::getRubric).distinct().collect(toList());
-		this.identicalRubrics = areIdenticalRubrics(rubrics);
+		this.identicalRubrics = RubricsComparison.areIdentical(rubrics, identicalRubricsAttributes);
 	}
 
 	@Override
