@@ -82,6 +82,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private final Rubric rubric;
 	private boolean editMode = false;
 	private final boolean restrictedEdit;
+	private final boolean restrictedEditWeight;
 	private RubricController rubricCtrl;
 	
 	private final String[] nameDisplayKeys = new String[] { NameDisplay.execution.name(), NameDisplay.report.name() };
@@ -116,10 +117,12 @@ public class RubricEditorController extends FormBasicController implements PageE
 	private FormLink hideEndButton;
 	private FormLayoutContainer settingsLayout;
 
-	public RubricEditorController(UserRequest ureq, WindowControl wControl, Rubric rubric, boolean restrictedEdit) {
+	public RubricEditorController(UserRequest ureq, WindowControl wControl, Rubric rubric, boolean restrictedEdit,
+			boolean restrictedEditWeight) {
 		super(ureq, wControl, "rubric_editor");
 		this.rubric = rubric;
 		this.restrictedEdit = restrictedEdit;
+		this.restrictedEditWeight = restrictedEditWeight;
 		this.showEnd = initShowEnd();
 
 		initForm(ureq);
@@ -494,7 +497,7 @@ public class RubricEditorController extends FormBasicController implements PageE
 		TextElement weightEl = uifactory.addTextElement("weight" + count.incrementAndGet(), 4, weight, flc);
 		weightEl.setElementCssClass("o_slider_weight");
 		weightEl.setExampleKey("slider.weight", null);
-		weightEl.setEnabled(!restrictedEdit);
+		weightEl.setEnabled(!restrictedEditWeight);
 		
 		SliderRow row = new SliderRow(slider, startLabelEl, endLabelEl, weightEl, createSliderEl());
 		if(!restrictedEdit) {FormLink deleteButton = uifactory.addFormLink("del." + count.incrementAndGet(), "delete_slider", "", null, flc, Link.BUTTON | Link.NONTRANSLATED);

@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.ms.AuditEnv;
 import org.olat.course.nodes.ms.MSService;
@@ -88,7 +89,16 @@ public class MSServiceImpl implements MSService {
 
 	private EvaluationFormSurveyIdentifier getSurveyIdentitfier(RepositoryEntry ores, String nodeIdent,
 			Identity assessedIdentity) {
-		return of(ores, nodeIdent, assessedIdentity.getKey().toString());
+		OLATResourceable msOres = getMsOlatResourceable(ores);
+		return of(msOres, nodeIdent, assessedIdentity.getKey().toString());
+	}
+
+	private EvaluationFormSurveyIdentifier getSurveysIdentifier(RepositoryEntry ores, String nodeIdent) {
+		return of(getMsOlatResourceable(ores), nodeIdent);
+	}
+
+	private OLATResourceable getMsOlatResourceable(RepositoryEntry ores) {
+		return OresHelper.createOLATResourceableInstance(SURVEY_ORES_TYPE_NAME, ores.getKey());
 	}
 	
 	private EvaluationFormSurvey loadOrCreateSurvey(RepositoryEntry formEntry, EvaluationFormSurveyIdentifier surveyIdent) {
@@ -147,13 +157,13 @@ public class MSServiceImpl implements MSService {
 	}
 
 	@Override
-	public boolean hasSessions(OLATResourceable ores, String nodeIdent) {
-		return !evaluationFormManager.loadSurveys(of(ores, nodeIdent)).isEmpty();
+	public boolean hasSessions(RepositoryEntry ores, String nodeIdent) {
+		return !evaluationFormManager.loadSurveys(getSurveysIdentifier(ores, nodeIdent)).isEmpty();
 	}
 
 	@Override
-	public List<EvaluationFormSession> getSessions(OLATResourceable ores, String nodeIdent) {
-		SessionFilter filter = SessionFilterFactory.create(of(ores, nodeIdent));
+	public List<EvaluationFormSession> getSessions(RepositoryEntry ores, String nodeIdent) {
+		SessionFilter filter = SessionFilterFactory.create(getSurveysIdentifier(ores, nodeIdent));
 		return evaluationFormManager.loadSessionsFiltered(filter, 0, -1);
 	}
 
@@ -167,7 +177,7 @@ public class MSServiceImpl implements MSService {
 
 	@Override
 	public void deleteSessions(RepositoryEntry ores, String nodeIdent) {
-		List<EvaluationFormSurvey> surveys = evaluationFormManager.loadSurveys(of(ores, nodeIdent));
+		List<EvaluationFormSurvey> surveys = evaluationFormManager.loadSurveys(getSurveysIdentifier(ores, nodeIdent));
 		for (EvaluationFormSurvey survey : surveys) {
 			evaluationFormManager.deleteSurvey(survey);
 		}
@@ -205,7 +215,7 @@ public class MSServiceImpl implements MSService {
 					.flatMap(r -> r.getSliders().stream())
 					.map(Slider::getId)
 					.collect(Collectors.toList());
-			SessionFilter filter = SessionFilterFactory.create(of(ores, nodeIdent));
+			SessionFilter filter = SessionFilterFactory.create(getSurveysIdentifier(ores, nodeIdent));
 			List<EvaluationFormResponse> responses = evaluationFormManager.getResponses(responseIdentifiers, filter , Limit.all());
 			Map<EvaluationFormSession, List<EvaluationFormResponse>> sessionToResponses = responses.stream()
 					.collect(Collectors.groupingBy(EvaluationFormResponse::getSession));

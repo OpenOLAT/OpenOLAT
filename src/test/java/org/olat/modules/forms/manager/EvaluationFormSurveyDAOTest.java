@@ -20,6 +20,7 @@
 package org.olat.modules.forms.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.olat.test.JunitTestHelper.random;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.repository.RepositoryEntry;
@@ -143,6 +145,22 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 				.doesNotContain(
 					surveyOther
 				);
+	}
+	
+	@Test
+	public void shouldCheckIfSurveyOfOresTypeName() {
+		RepositoryEntry formEntry = evaTestHelper.createFormEntry();
+		String resNameA = random();
+		OLATResourceable oresA = OresHelper.createOLATResourceableInstance(resNameA, Long.valueOf(1));
+		String subIdentA1 = UUID.randomUUID().toString();
+		sut.createSurvey(oresA, subIdentA1, null, formEntry, null);
+		dbInstance.commitAndCloseSession();
+		
+		boolean hasSurvey = sut.hasSurvey(formEntry, resNameA);
+		assertThat(hasSurvey).isTrue();
+		
+		hasSurvey = sut.hasSurvey(formEntry, random());
+		assertThat(hasSurvey).isFalse();
 	}
 	
 	@Test

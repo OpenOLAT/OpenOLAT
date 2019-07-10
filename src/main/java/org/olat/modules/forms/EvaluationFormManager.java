@@ -212,6 +212,8 @@ public interface EvaluationFormManager {
 	 * @return
 	 */
 	public boolean isEvaluationFormActivelyUsed(RepositoryEntryRef formEntry);
+
+	public boolean isEvaluationFormWeightActivelyUsed(RepositoryEntryRef formEntry);
 	
 	public EvaluationFormStatistic getSessionsStatistic(SessionFilter filter);
 	

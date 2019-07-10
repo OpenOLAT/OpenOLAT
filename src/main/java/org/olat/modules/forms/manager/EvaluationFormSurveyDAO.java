@@ -33,6 +33,7 @@ import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyRef;
 import org.olat.modules.forms.model.jpa.EvaluationFormSurveyImpl;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -112,6 +113,25 @@ class EvaluationFormSurveyDAO {
 			query.setParameter("resSubident2", subIdent2);
 		}
 		return query.getResultList();
+	}
+
+	boolean hasSurvey(RepositoryEntryRef formEntrRef, String oresTypeName) {
+		if (formEntrRef == null) return false;
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select survey.key");
+		sb.append("  from evaluationformsurvey as survey");
+		sb.and().append("survey.formEntry.key = :formEntryKey");
+		sb.and().append("survey.resName = :oresTypeName");
+		
+		List<Long> keys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("formEntryKey", formEntrRef.getKey())
+				.setParameter("oresTypeName", oresTypeName)
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return keys == null || keys.isEmpty() || keys.get(0) == null ? false : true;
 	}
 
 	void delete(EvaluationFormSurveyRef survey) {

@@ -47,7 +47,7 @@ public class AllHandlerPageProvider implements PageProvider {
 		handlers.add(new HTMLParagraphHandler());
 		handlers.add(new ImageHandler(storage));
 		handlers.add(new TableHandler());
-		handlers.add(new RubricHandler(false));
+		handlers.add(new RubricHandler(false, false));
 		handlers.add(new TextInputHandler(false));
 		handlers.add(new FileUploadHandler(false));
 		handlers.add(new SingleChoiceHandler(false));

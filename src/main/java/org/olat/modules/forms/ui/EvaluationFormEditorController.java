@@ -71,14 +71,17 @@ public class EvaluationFormEditorController extends BasicController {
 	private final DataStorage storage;
 	private boolean changes = false;
 	private final boolean restrictedEdit;
+	private final boolean restrictedEditWeight;
 	
 	private PageEditorController pageEditCtrl;
 	
-	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, File formFile, DataStorage storage, boolean restrictedEdit) {
+	public EvaluationFormEditorController(UserRequest ureq, WindowControl wControl, File formFile, DataStorage storage,
+			boolean restrictedEdit, boolean restrictedEditWeight) {
 		super(ureq, wControl);
 		this.formFile = formFile;
 		this.storage = storage;
 		this.restrictedEdit = restrictedEdit;
+		this.restrictedEditWeight = restrictedEditWeight;
 		if(formFile.exists()) {
 			form = (Form)XStreamHelper.readObject(FormXStream.getXStream(), formFile);
 		} else {
@@ -146,7 +149,7 @@ public class EvaluationFormEditorController extends BasicController {
 			ImageHandler imageHandler = new ImageHandler(storage);
 			handlers.add(imageHandler);
 			// handler for rubric
-			RubricHandler rubricHandler = new RubricHandler(restrictedEdit);
+			RubricHandler rubricHandler = new RubricHandler(restrictedEdit, restrictedEditWeight);
 			handlers.add(rubricHandler);
 			// handler for text input
 			TextInputHandler textInputHandler = new TextInputHandler(restrictedEdit);
