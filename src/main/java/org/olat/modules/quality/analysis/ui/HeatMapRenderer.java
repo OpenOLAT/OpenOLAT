@@ -60,7 +60,7 @@ public class HeatMapRenderer implements FlexiCellRenderer {
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof HeatMapStatistic) {
 			HeatMapStatistic statistic = (HeatMapStatistic) cellValue;
-			if (statistic.getCount() == null) return;
+			if (statistic.getCount() == null || statistic.getAvg() == null || Double.isNaN(statistic.getAvg())) return;
 			
 			target.append("<div class='o_circle_container'>");
 			target.append("<div class='o_circle_box' style='width:").append(MAX_CIRCLE_SIZE).append("px;'>");
@@ -73,6 +73,7 @@ public class HeatMapRenderer implements FlexiCellRenderer {
 			target.append("</div>");
 			target.append("<div class='o_avg'>");
 			target.append(EvaluationFormFormatter.formatDouble(statistic.getAvg()));
+			target.append(" " + statistic.getAvg());
 			target.append("</div>");
 			target.append("</div>");
 			
