@@ -73,7 +73,6 @@ public class HeatMapRenderer implements FlexiCellRenderer {
 			target.append("</div>");
 			target.append("<div class='o_avg'>");
 			target.append(EvaluationFormFormatter.formatDouble(statistic.getAvg()));
-			target.append(" " + statistic.getAvg());
 			target.append("</div>");
 			target.append("</div>");
 			
