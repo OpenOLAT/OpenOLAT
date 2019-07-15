@@ -107,7 +107,7 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	
 	private static final OLog log = Tracing.createLoggerFor(QuestionPoolServiceImpl.class);
 	
-	private static final int MAX_NUMBER_DOCS = 990;
+	private static final int MAX_NUMBER_DOCS = 32000;
 	
 	@Autowired
 	private DB dbInstance;
