@@ -98,7 +98,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -145,7 +146,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -197,7 +199,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -247,7 +250,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -298,7 +302,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -347,7 +352,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -411,7 +417,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -460,7 +467,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -507,7 +515,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -558,7 +567,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -608,7 +618,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -655,7 +666,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -703,7 +715,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()
@@ -751,7 +764,8 @@ public class ImsQTI21InteractionsTest extends Deployments {
 			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
-				.getQTI21Page(browser);
+				.getQTI21Page(browser)
+				.assertOnAssessmentItem();
 		qtiPage
 			.settings()
 			.options()

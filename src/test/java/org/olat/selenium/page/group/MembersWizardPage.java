@@ -54,7 +54,7 @@ public class MembersWizardPage {
 	public MembersWizardPage nextOverview() {
 		OOGraphene.nextStep(browser);
 		OOGraphene.closeBlueMessageWindow(browser);
-		OOGraphene.waitElement(By.cssSelector("div.o_sel_edit_permissions"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("div.o_sel_edit_permissions"), browser);
 		return this;
 	}
 	
@@ -142,8 +142,9 @@ public class MembersWizardPage {
 	
 	public MembersWizardPage selectGroupAsParticipant(String groupName) {
 		By rolesBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td[text()='" + groupName + "']]//label[contains(@class,'o_sel_role_participant')]/input");
-		OOGraphene.waitElement(rolesBy, 5, browser);
+		OOGraphene.waitElement(rolesBy, browser);
 		browser.findElement(rolesBy).click();
+		OOGraphene.waitBusy(browser);
 		return this;
 	}
 }
