@@ -65,6 +65,9 @@ public class ContactPage {
 		OOGraphene.scrollTo(buttonsBy, browser);
 		By sendBy = By.cssSelector("fieldset.o_sel_contact_form button.btn-primary");
 		browser.findElement(sendBy).click();
+		By disabledBy = By.cssSelector("fieldset.o_sel_contact_form div.o_sel_contact_body div.o_disabled");
+		OOGraphene.waitElement(disabledBy, browser);
+		
 		OOGraphene.moveTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;

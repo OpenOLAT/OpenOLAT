@@ -101,10 +101,9 @@ public class AuthoringEnvPage {
 	 * @return
 	 */
 	public AuthoringEnvPage openCreateDropDown() {
-		WebElement createMenuCaret = browser.findElement(createMenuCaretBy);
-		Assert.assertTrue(createMenuCaret.isDisplayed());
-		createMenuCaret.click();
-		OOGraphene.waitElement(createMenuBy, 5, browser);
+		OOGraphene.waitElement(createMenuCaretBy, browser);
+		browser.findElement(createMenuCaretBy).click();
+		OOGraphene.waitElement(createMenuBy, browser);
 		return this;
 	}
 
