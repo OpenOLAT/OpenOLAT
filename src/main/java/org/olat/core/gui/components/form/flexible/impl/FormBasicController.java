@@ -575,6 +575,20 @@ public abstract class FormBasicController extends BasicController {
 	}
 	
 	/**
+	 * Set a warning. This will appear before the form, after the description.
+	 * If you use a custom template this will have no effect
+	 * 
+	 * @param translatedWarning The warning
+	 */
+	protected void setFormTranslatedWarning(String translatedWarning) {
+		if (translatedWarning == null) {
+			flc.contextRemove("off_warn");
+		} else {
+			flc.contextPut("off_warn", translatedWarning);
+		}
+	}
+	
+	/**
 	 * Set a message to be displayed in the form, after the description.
 	 * The form warning, if there is one, will be removed.
 	 * @see org.olat.core.gui.control.controller.BasicController#showInfo(java.lang.String)

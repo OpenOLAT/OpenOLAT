@@ -88,8 +88,9 @@ public class CourseLeaveDialogBoxController extends FormBasicController {
 		} else {
 			leaveText = translate("unsubscribe.withgroups.text", new String[]{identityName, repoEntryToLeaveNames.toString(), groupToLeaveNames.toString()});
 		}
+		
+		setFormTranslatedWarning(leaveText);
 
-		uifactory.addStaticTextElement("leaving.desc", null, leaveText, formLayout);
 		String[] values = new String[]{
 				translate("dialog.modal.bg.mail.text")
 		};
@@ -109,8 +110,8 @@ public class CourseLeaveDialogBoxController extends FormBasicController {
 		FormLayoutContainer buttonsContainer = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsContainer.setRootForm(mainForm);
 		formLayout.add(buttonsContainer);
-		uifactory.addFormSubmitButton("deleteButton", "ok", buttonsContainer);
 		uifactory.addFormCancelButton("cancel", buttonsContainer, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("deleteButton", "ok", buttonsContainer);
 	}
 	
 	@Override

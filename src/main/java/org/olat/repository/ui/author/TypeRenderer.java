@@ -66,15 +66,15 @@ public class TypeRenderer implements FlexiCellRenderer {
 		RepositoryEntryStatusEnum status = null;
 		if(cellValue instanceof AuthoringEntryRow) {
 			AuthoringEntryRow re = (AuthoringEntryRow) cellValue;
-			cssClass = RepositoyUIFactory.getIconCssClass(re);
+			cssClass = RepositoyUIFactory.getIconCssClass(re.getResourceType());
 			managed = re.isManaged();
 			status = re.getEntryStatus();
 		} else if (cellValue instanceof RepositoryEntryShort) {
 			RepositoryEntryShort re = (RepositoryEntryShort) cellValue;
-			cssClass = RepositoyUIFactory.getIconCssClass(re);
+			cssClass = RepositoyUIFactory.getIconCssClass(re.getResourceType());
 		} else if (cellValue instanceof RepositoryEntry) {
 			RepositoryEntry re = (RepositoryEntry) cellValue;
-			cssClass = RepositoyUIFactory.getIconCssClass(re);
+			cssClass = RepositoyUIFactory.getIconCssClass(re.getOlatResource().getResourceableTypeName());
 			managed = StringHelper.containsNonWhitespace(re.getManagedFlagsString());
 			status = re.getEntryStatus();
 		} else if (cellValue instanceof RepositoryEntryRow) {
@@ -93,8 +93,13 @@ public class TypeRenderer implements FlexiCellRenderer {
 			if (managed) {
 				target.append(" <i class='o_icon o_icon_managed' title=\"").append(translator.translate("cif.managedflags")).append("\"> </i> ");
 			}
-			if (status == null || status == RepositoryEntryStatusEnum.trash || status == RepositoryEntryStatusEnum.deleted) {
-				target.append(" <i class='o_icon o_icon-lg o_icon_deleted'> </i> ");
+
+			if (status == null || status == RepositoryEntryStatusEnum.deleted) {
+				target.append(" <i class='o_icon o_icon-lg o_icon_repo_status_deleted'> </i> ");
+			} else if(status == RepositoryEntryStatusEnum.trash) {
+				target.append(" <i class='o_icon o_icon-lg o_icon_repo_status_trash'> </i> ");
+			} else if (status == RepositoryEntryStatusEnum.closed) {
+				target.append(" <i class='o_icon o_icon-lg o_icon_repo_status_closed'> </i> ");
 			}
 			target.append("</div>");
 		}
