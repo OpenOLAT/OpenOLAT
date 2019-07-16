@@ -353,12 +353,11 @@ public class ImsQTI21Test extends Deployments {
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
-			.uploadResource(qtiTestTitle, qtiTestFile);
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
-		qtiPage
-			.clickToolbarBack();
 		//check simple time limit
 		qtiPage
 			.assertOnAssessmentItem("Single choice")

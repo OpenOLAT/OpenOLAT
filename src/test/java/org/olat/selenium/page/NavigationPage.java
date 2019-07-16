@@ -78,8 +78,8 @@ public class NavigationPage {
 	}
 	
 	public AuthoringEnvPage openAuthoringEnvironment() {
-		navigate(authoringEnvTabBy);
 		OOGraphene.closeBlueMessageWindow(browser);
+		navigate(authoringEnvTabBy);
 		return new AuthoringEnvPage(browser);
 	}
 	
