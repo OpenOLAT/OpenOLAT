@@ -56,11 +56,11 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.ui.RepositoryEntryACColumnDescriptor;
-import org.olat.repository.ui.RepositoryEntryIconRenderer;
 import org.olat.repository.ui.RepositoryFlexiTableModel;
 import org.olat.repository.ui.RepositoryFlexiTableModel.RepoCols;
 import org.olat.repository.ui.author.AccessRenderer;
 import org.olat.repository.ui.author.GuestAccessRenderer;
+import org.olat.repository.ui.author.TypeRenderer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -105,7 +105,7 @@ public class OrganisationResourceListController extends FormBasicController impl
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.ac, new RepositoryEntryACColumnDescriptor()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.repoEntry, new RepositoryEntryIconRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.repoEntry, new TypeRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.externalId));// visible if managed
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, RepoCols.externalRef));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RepoCols.lifecycleLabel));// visible if lifecycle

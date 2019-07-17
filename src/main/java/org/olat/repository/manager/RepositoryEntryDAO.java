@@ -32,8 +32,10 @@ import javax.persistence.TypedQuery;
 
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.util.StringHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -252,13 +254,21 @@ public class RepositoryEntryDAO {
 		return entries.get(0);
 	}
 
+	/**
+	 * Return the last used repository entries with the status review up to published.
+	 * 
+	 * @param resourceTypeName The resource type
+	 * @param firstResult The first result
+	 * @param maxResults The maximum number of returned entries
+	 * @return A list of repository entries
+	 */
 	public List<RepositoryEntry> getLastUsedRepositoryEntries(String resourceTypeName, int firstResult, int maxResults) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from ").append(RepositoryEntry.class.getName()).append(" as v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" left join fetch v.lifecycle as lifecycle")
-		  .append(" where ores.resName=:resourceTypeName")
+		  .append(" where ores.resName=:resourceTypeName and v.status").in(RepositoryEntryStatusEnum.preparationToPublished())
 		  .append(" order by statistics.lastUsage desc");
 
 		return dbInstance.getCurrentEntityManager()

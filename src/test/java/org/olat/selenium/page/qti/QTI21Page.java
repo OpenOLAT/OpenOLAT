@@ -24,7 +24,6 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.olat.repository.RepositoryEntryStatusEnum;
-import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.selenium.page.graphene.Position;
 import org.openqa.selenium.By;
@@ -984,9 +983,7 @@ public class QTI21Page {
 	}
 	
 	public QTI21Page clickToolbarBack() {
-		OOGraphene.closeBlueMessageWindow(browser);
-		browser.findElement(NavigationPage.toolbarBackBy).click();
-		OOGraphene.waitBusy(browser);
+		OOGraphene.clickBreadcrumbBack(browser);
 		return QTI21Page.getQTI21Page(browser);
 	}
 	

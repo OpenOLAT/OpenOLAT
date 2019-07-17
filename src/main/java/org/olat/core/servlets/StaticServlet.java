@@ -52,11 +52,11 @@ public class StaticServlet extends HttpServlet {
 
 	private static final long serialVersionUID = -2430002903299685192L;
 	private static final Logger log = Tracing.createLoggerFor(StaticServlet.class);
-	private final long CACHE_DURATION_IN_SECOND = 60 * 60 * 24 * 8; // 8 days
-	private final long CACHE_DURATION_IN_MS = CACHE_DURATION_IN_SECOND  * 1000;
+	private static final long CACHE_DURATION_IN_SECOND = 60l * 60l * 24l * 8l; // 8 days
+	private static final long CACHE_DURATION_IN_MS = CACHE_DURATION_IN_SECOND  * 1000;
 
-	public static String STATIC_DIR_NAME = "/static";
-	public static String NOVERSION = "_noversion_";
+	public static final String STATIC_DIR_NAME = "/static";
+	public static final String NOVERSION = "_noversion_";
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp)
@@ -148,7 +148,6 @@ public class StaticServlet extends HttpServlet {
 				String path = staticFile.getAbsolutePath();
 				path = path.substring(path.indexOf("/static/themes/") + 15);
 				staticFile = new File(customThemesDir, path);
-				expiration &= false;//themes can be update any time
 			} else if(normalizedRelPath.contains("/js/images/ui-")) {
 				normalizedRelPath = normalizedRelPath.replace("/js/images/ui-", "/js/jquery/ui/images/ui-");
 				staticFile = new File(staticAbsPath, normalizedRelPath);
@@ -163,7 +162,7 @@ public class StaticServlet extends HttpServlet {
 				if(fallbackAbsPath != null) {
 					staticFile = new File(fallbackAbsPath);
 					if (!staticFile.exists()) {
-						String realPath = request.getServletContext().getRealPath("/static" + normalizedRelPath);
+						String realPath = request.getServletContext().getRealPath(STATIC_DIR_NAME + normalizedRelPath);
 						staticFile = new File(realPath);
 						if(!staticFile.exists()) {
 							notFound = true;

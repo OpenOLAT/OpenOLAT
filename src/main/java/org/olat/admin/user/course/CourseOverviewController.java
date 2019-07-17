@@ -22,35 +22,35 @@ package org.olat.admin.user.course;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.NewControllerFactory;
+import org.olat.admin.user.course.CourseOverviewMembershipDataModel.MSCols;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.table.BooleanColumnDescriptor;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultTableDataModel;
-import org.olat.core.gui.components.table.StaticColumnDescriptor;
-import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
-import org.olat.core.gui.components.table.TableMultiSelectEvent;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
@@ -70,12 +70,9 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.MemberViewQueries;
 import org.olat.group.model.MemberView;
 import org.olat.group.ui.main.CourseMembership;
-import org.olat.group.ui.main.CourseMembershipComparator;
 import org.olat.group.ui.main.CourseRoleCellRenderer;
 import org.olat.group.ui.main.EditSingleMembershipController;
 import org.olat.group.ui.main.MemberPermissionChangeEvent;
-import org.olat.modules.curriculum.CurriculumElementManagedFlag;
-import org.olat.modules.curriculum.CurriculumElementShort;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -86,7 +83,7 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.controllers.RepositoryEntryFilter;
 import org.olat.repository.controllers.RepositorySearchController.Can;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
-import org.olat.repository.ui.RepositoryEntryIconRenderer;
+import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -96,19 +93,18 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseOverviewController extends BasicController  {
-	private static final String CONFIG = CourseOverviewController.class.getName();
+public class CourseOverviewController extends FormBasicController  {
+
 	private static final String TABLE_ACTION_LAUNCH = "reTblLaunch";
 	private static final String TABLE_ACTION_EDIT = "edit";
 	private static final String TABLE_ACTION_UNSUBSCRIBE = "unsubscribe";
 	
-	private final VelocityContainer vc;
-	private Link addAsOwner;
-	private Link addAsTutor;
-	private Link addAsParticipant;
-	private TableController courseListCtr;
-	private MembershipDataModel tableDataModel;
-	private final CourseMembershipComparator membershipComparator = new CourseMembershipComparator();
+	private FormLink addAsOwner;
+	private FormLink addAsTutor;
+	private FormLink addAsParticipant;
+	private FormLink leaveButton;
+	private FlexiTableElement tableEl;
+	private CourseOverviewMembershipDataModel tableDataModel;
 	
 	private CloseableModalController cmc;
 	private DialogBoxController confirmSendMailBox;
@@ -116,7 +112,9 @@ public class CourseOverviewController extends BasicController  {
 	private ReferencableEntriesSearchController repoSearchCtr;
 	private EditSingleMembershipController editSingleMemberCtrl;
 	
+	private final boolean canModify;
 	private final Identity editedIdentity;
+	private final boolean isLastVisitVisible;
 	
 	@Autowired
 	private DB dbInstance;
@@ -138,73 +136,68 @@ public class CourseOverviewController extends BasicController  {
 	private UserCourseInformationsManager userInfosMgr;
 	
 	public CourseOverviewController(UserRequest ureq, WindowControl wControl, Identity identity, boolean canModify) {
-		super(ureq, wControl, Util.createPackageTranslator(CourseMembership.class, ureq.getLocale()));
-		this.setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
+		super(ureq, wControl, "courseoverview", Util.createPackageTranslator(CourseMembership.class, ureq.getLocale()));
+		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 
 		editedIdentity = identity;
-
-		boolean isLastVisitVisible = securityModule.isUserLastVisitVisible(ureq.getUserSession().getRoles());
+		this.canModify = canModify;
+		isLastVisitVisible = securityModule.isUserLastVisitVisible(ureq.getUserSession().getRoles());
 		
-		vc = createVelocityContainer("courseoverview");
-		
-		TableGuiConfiguration config = new TableGuiConfiguration();
-		config.setPreferencesOffered(true, CONFIG);
-
-		courseListCtr = new TableController(config, ureq, wControl, getTranslator());
-		listenTo(courseListCtr);
-		courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.key.i18n(), MSCols.key.ordinal(),
-				TABLE_ACTION_LAUNCH, getLocale()));
-		
-		courseListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(MSCols.entry.i18n(), MSCols.entry.ordinal(),
-				null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, new RepositoryEntryIconRenderer(getLocale())));
-		
-		courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.title.i18n(), MSCols.title.ordinal(),
-				TABLE_ACTION_LAUNCH, getLocale()));
-		if(repositoryModule.isManagedRepositoryEntries()) {
-			courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.externalId.i18n(), MSCols.externalId.ordinal(),
-					TABLE_ACTION_LAUNCH, getLocale()));
-		}
-		courseListCtr.addColumnDescriptor(false, new DefaultColumnDescriptor(MSCols.externalRef.i18n(), MSCols.externalRef.ordinal(),
-				TABLE_ACTION_LAUNCH, getLocale()));
-		CourseRoleCellRenderer roleRenderer = new CourseRoleCellRenderer(getLocale());
-		courseListCtr.addColumnDescriptor(new CustomRenderColumnDescriptor(MSCols.role.i18n(), MSCols.role.ordinal(), null, getLocale(), ColumnDescriptor.ALIGNMENT_LEFT, roleRenderer){
-			@Override
-			public int compareTo(int rowa, int rowb) {
-				CourseMembership cmv1 = (CourseMembership)table.getTableDataModel().getValueAt(rowa,dataColumn);
-				CourseMembership cmv2 = (CourseMembership)table.getTableDataModel().getValueAt(rowb,dataColumn);
-				if(cmv1 == null) {
-					return -1;
-				} else if(cmv2 == null) {
-					return 1;
-				}
-				return membershipComparator.compare(cmv1, cmv2);
-			}
-		});
-		courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.firstTime.i18n(), MSCols.firstTime.ordinal(), null, getLocale()));
-		if(isLastVisitVisible) {
-			courseListCtr.addColumnDescriptor(new DefaultColumnDescriptor(MSCols.lastTime.i18n(), MSCols.lastTime.ordinal(), null, getLocale()));
-		}
-		if(canModify) {
-			courseListCtr.addColumnDescriptor(new StaticColumnDescriptor(TABLE_ACTION_EDIT, "table.header.edit", translate("table.header.edit")));
-			courseListCtr.addColumnDescriptor(new BooleanColumnDescriptor(MSCols.allowLeave.i18n(), MSCols.allowLeave.ordinal(), TABLE_ACTION_UNSUBSCRIBE, translate("table.header.leave"), null));
-			courseListCtr.setMultiSelect(true);
-			courseListCtr.addMultiSelectAction("table.leave", TABLE_ACTION_UNSUBSCRIBE);
-		}
-		tableDataModel = new MembershipDataModel();
-		courseListCtr.setTableDataModel(tableDataModel);
-		
+		initForm(ureq);
 		updateModel();
+	}
 
-		if(canModify) {
-			addAsOwner = LinkFactory.createButton("add.course.owner", vc, this);
-			addAsTutor = LinkFactory.createButton("add.course.tutor", vc, this);
-			addAsParticipant = LinkFactory.createButton("add.course.participant", vc, this);
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MSCols.key, TABLE_ACTION_LAUNCH));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MSCols.entry, new TypeRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MSCols.title, TABLE_ACTION_LAUNCH));
+		if(repositoryModule.isManagedRepositoryEntries()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MSCols.externalId, TABLE_ACTION_LAUNCH));
 		}
-		vc.put("table.courses", courseListCtr.getInitialComponent());	
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, MSCols.externalRef, TABLE_ACTION_LAUNCH));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MSCols.role, new CourseRoleCellRenderer(getLocale())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MSCols.firstTime));
+		if(isLastVisitVisible) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(MSCols.lastTime));
+		}
+		if(canModify) {
+			DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("table.header.edit", translate("table.header.edit"), TABLE_ACTION_EDIT);
+			editCol.setAlwaysVisible(true);
+			editCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(editCol);
+			DefaultFlexiColumnModel leaveCol = new DefaultFlexiColumnModel(MSCols.allowLeave.i18nHeaderKey(),
+					MSCols.allowLeave.ordinal(), TABLE_ACTION_UNSUBSCRIBE,
+					new BooleanCellRenderer(new StaticFlexiCellRenderer(translate(MSCols.allowLeave.i18nHeaderKey()), TABLE_ACTION_UNSUBSCRIBE), null));
+			leaveCol.setAlwaysVisible(true);
+			leaveCol.setExportable(false);
+			columnsModel.addFlexiColumnModel(leaveCol);
+		}
+
+		tableDataModel = new CourseOverviewMembershipDataModel(columnsModel, getLocale());
+		tableEl = uifactory.addTableElement(getWindowControl(), "table.courses", tableDataModel, 24, false, getTranslator(), formLayout);
+		tableEl.setElementCssClass("o_coursetable");
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setDefaultOrderBy(new SortKey(MSCols.entry.sortKey(), true));
+		tableEl.setSortSettings(options);
+		tableEl.setAndLoadPersistedPreferences(ureq, "course-overview-v2");
 		
-		putInitialPanel(vc);
+		if(canModify) {
+			tableEl.setMultiSelect(true);
+			leaveButton = uifactory.addFormLink("table.header.leave", formLayout, Link.BUTTON);
+			
+			addAsOwner = uifactory.addFormLink("add.course.owner", formLayout, Link.BUTTON);
+			addAsTutor = uifactory.addFormLink("add.course.tutor", formLayout, Link.BUTTON);
+			addAsParticipant = uifactory.addFormLink("add.course.participant", formLayout, Link.BUTTON);
+		}
 	}
 	
+	@Override
+	protected void doDispose() {
+		//
+	}
+
 	private void updateModel() {
 		List<MemberView> memberships = memberQueries.getIdentityMemberships(editedIdentity);
 
@@ -224,46 +217,46 @@ public class CourseOverviewController extends BasicController  {
 
 		List<CourseMemberView> views = new ArrayList<>(resourceToViewMap.values());
 		tableDataModel.setObjects(views);
-		courseListCtr.modelChanged();
+		tableEl.reset(true, true, true);
 	}
 	
 	@Override
-	protected void doDispose() {
+	protected void formOK(UserRequest ureq) {
 		//
 	}
 
 	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(source == addAsOwner) {
 			doSearchRepoEntries(ureq, SearchType.owner, translate("add.course.owner"));
 		} else if(source == addAsTutor) {
 			doSearchRepoEntries(ureq, SearchType.tutor, translate("add.course.tutor"));
 		} else if(source == addAsParticipant) {
 			doSearchRepoEntries(ureq, SearchType.participant, translate("add.course.participant"));
+		} else if(source == leaveButton) {
+			List<CourseMemberView> items = getSelectedViews();
+			tableEl.getMultiSelectedIndex();
+			doLeave(ureq, items);
+		} else if(source == tableEl) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if (TABLE_ACTION_LAUNCH.equals(se.getCommand())) {
+					CourseMemberView item = tableDataModel.getObject(se.getIndex());
+					launch(ureq, item.getRepoKey());
+				} else if (TABLE_ACTION_UNSUBSCRIBE.equals(se.getCommand())) {
+					CourseMemberView item = tableDataModel.getObject(se.getIndex());
+					doLeave(ureq, Collections.singletonList(item));
+				} else if (TABLE_ACTION_EDIT.equals(se.getCommand())) {
+					CourseMemberView item = tableDataModel.getObject(se.getIndex());
+					doOpenEdit(ureq, item);
+				}
+			}
 		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == courseListCtr){
-			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent) event;
-				CourseMemberView item = tableDataModel.getObject(te.getRowId());
-				if (TABLE_ACTION_LAUNCH.equals(te.getActionId())) {
-					launch(ureq, item.getRepoKey());
-				} else if (TABLE_ACTION_UNSUBSCRIBE.equals(te.getActionId())){
-					doLeave(ureq, Collections.singletonList(item));
-				} else if (TABLE_ACTION_EDIT.equals(te.getActionId())){
-					doOpenEdit(ureq, item);
-				}
-			} else if (event instanceof TableMultiSelectEvent) {
-				TableMultiSelectEvent mse = (TableMultiSelectEvent)event;
-				List<CourseMemberView> items = tableDataModel.getObjects(mse.getSelection());
-				if (TABLE_ACTION_UNSUBSCRIBE.equals(mse.getAction())){
-					doLeave(ureq, items);
-				}
-			}
-		} else if(source == repoSearchCtr) {
+		if(source == repoSearchCtr) {
 			SearchType type = (SearchType)repoSearchCtr.getUserObject();
 			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
 				// repository search controller done
@@ -321,6 +314,18 @@ public class CourseOverviewController extends BasicController  {
 		removeFromCourseDlg = null;
 		repoSearchCtr = null;
 		cmc = null;
+	}
+	
+	public List<CourseMemberView> getSelectedViews() {
+		Set<Integer> selectedIndexes = tableEl.getMultiSelectedIndex();
+		List<CourseMemberView> selectedViews = new ArrayList<>(selectedIndexes.size());
+		for(Integer selectedIndex:selectedIndexes) {
+			CourseMemberView view = tableDataModel.getObject(selectedIndex.intValue());
+			if(view != null) {
+				selectedViews.add(view);
+			}
+		}
+ 		return selectedViews;
 	}
 	
 	private void launch(UserRequest ureq, Long repoKey) {
@@ -527,28 +532,6 @@ public class CourseOverviewController extends BasicController  {
 		owner, tutor, participant
 	}
 	
-	public enum MSCols {
-		key("table.header.key"),
-		entry("table.header.typeimg"),
-		title("cif.displayname"),
-		externalId("table.header.externalid"),
-		externalRef("table.header.externalref"),
-		role("table.header.role"),
-		lastTime("table.header.lastTime"),
-		firstTime("table.header.firstTime"),
-		allowLeave("table.header.leave");
-		
-		private final String i18n;
-		
-		private MSCols(String i18n) {
-			this.i18n = i18n;
-		}
-		
-		public String i18n() {
-			return i18n;
-		}
-	}
-	
 	private static class ConfirmAdd {
 		private final SearchType type;
 		private final Collection<RepositoryEntry> entries;
@@ -584,127 +567,6 @@ public class CourseOverviewController extends BasicController  {
 			return e;
 		}
 	}
-
-	private static class MembershipDataModel extends DefaultTableDataModel<CourseMemberView> {
-		public MembershipDataModel() {
-			super(Collections.<CourseMemberView>emptyList());
-		}
-
-		@Override
-		public int getColumnCount() {
-			return 4;
-		}
-
-		@Override
-		public Object getValueAt(int row, int col) {
-			CourseMemberView  view = getObject(row);
-			switch(MSCols.values()[col]) {
-				case key: return view.getRepoKey();
-				case entry: return view.getEntry();
-				case title: return view.getDisplayName();
-				case externalId: return view.getExternalId();
-				case externalRef: return view.getExternalRef();
-				case role: return view.getMembership();
-				case firstTime: return view.getFirstTime();
-				case lastTime: return view.getLastTime();
-				case allowLeave: return view.isFullyManaged() ? Boolean.FALSE : Boolean.TRUE;
-				default: return "ERROR";
-			}
-		}
-	}
-	
-	private class CourseMemberView {
-		private Date firstTime;
-		private Date lastTime;
-		private final MemberView memberView;
-
-		
-		public CourseMemberView(MemberView view) {
-			this.memberView = view;
-		}
-		
-		public Long getRepoKey() {
-			return memberView.getRepositoryEntryKey();
-		}
-		
-		public String getDisplayName() {
-			return memberView.getRepositoryEntryDisplayName();
-		}
-		
-		public String getExternalId() {
-			return memberView.getRepositoryEntryExternalId() ;
-		}
-
-		public String getExternalRef() {
-			return memberView.getRepositoryEntryExternalRef();
-		}
-		
-		public RepositoryEntry getEntry() {
-			return memberView.getRepositoryEntry();
-		}
-
-		public Date getFirstTime() {
-			return firstTime;
-		}
-
-		public void setFirstTime(Date firstTime) {
-			if(firstTime == null) return;
-			if(this.firstTime == null || this.firstTime.compareTo(firstTime) > 0) {
-				this.firstTime = firstTime;
-			}
-		}
-
-		public Date getLastTime() {
-			return lastTime;
-		}
-
-		public void setLastTime(Date lastTime) {
-			if(lastTime == null) return;
-			if(this.lastTime == null || this.lastTime.compareTo(lastTime) < 0) {
-				this.lastTime = lastTime;
-			}
-		}
-
-		public CourseMembership getMembership() {
-			return memberView.getMemberShip();
-		}
-		
-		public List<BusinessGroupShort> getGroups() {
-			return memberView.getGroups();
-		}
-		
-		public List<CurriculumElementShort> getCurriculumElements() {
-			return memberView.getCurriculumElements();
-		}
-		
-		public boolean isFullyManaged() {
-			CourseMembership membership = getMembership();
-			if(membership != null && !membership.isManagedMembersRepo() &&
-					(membership.isRepositoryEntryOwner() || membership.isRepositoryEntryCoach() || membership.isRepositoryEntryParticipant())) {
-				return false;
-			}
-
-			List<BusinessGroupShort> groups = getGroups();
-			if(groups != null) {
-				for(BusinessGroupShort group:groups) {
-					if(!BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement)) {
-						return false;
-					}
-				}
-			}
-			
-			List<CurriculumElementShort> elements = getCurriculumElements();
-			if(elements != null) {
-				for(CurriculumElementShort element:elements) {
-					if(!CurriculumElementManagedFlag.isManaged(element.getManagedFlags(), CurriculumElementManagedFlag.members)) {
-						return false;
-					}
-				}
-			}
-
-			return true;
-		}
-	}
 	
 	private static class ManagedEntryfilter implements RepositoryEntryFilter {
 		@Override
@@ -712,5 +574,4 @@ public class CourseOverviewController extends BasicController  {
 			return !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.membersmanagement);
 		}
 	}
-
 }

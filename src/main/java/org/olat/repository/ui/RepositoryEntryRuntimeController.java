@@ -246,8 +246,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		toolbarPanel.setShowCloseLink(!assessmentLock, !assessmentLock);
 		toolbarPanel.getBackLink().setEnabled(!assessmentLock);
 		putInitialPanel(toolbarPanel);
-		doRun(ureq, reSecurity);
-		loadRights(reSecurity);
+		doRun(ureq, this.reSecurity);
+		loadRights(this.reSecurity);
 		initToolbar();
 		
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
@@ -904,6 +904,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 					ACResultAndSecurity autoResult = tryAutoBooking(ureq, acResult, security);
 					acResult = autoResult.getAcResult();
 					security = autoResult.getSecurity();
+					loadRights(security);
 					if(acResult.isAccessible()) {
 						launchContent(ureq, security);
 					} else {

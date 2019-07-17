@@ -461,18 +461,25 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 			int index = path.indexOf('/', start + 1);
 			if(index >= 0 && start < path.length()) {
 				String username = path.substring(start, index);
-				Identity editedIdentity = securityManager.findIdentityByName(username);
-				Roles editedRoles = securityManager.getRoles(editedIdentity);
-				return (roles.isAdministrator() && roles.isManagerOf(OrganisationRoles.administrator, editedRoles))
-						|| (roles.isSystemAdmin() && roles.isManagerOf(OrganisationRoles.sysadmin, editedRoles))
-						|| (roles.isRolesManager() && roles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles))
-						|| (roles.isUserManager() && roles.isManagerOf(OrganisationRoles.usermanager, editedRoles));
+				return canEditUsername(username, roles);
+			} else if(index == -1 && path.length() > start) {
+				String username = path.substring(start);
+				return canEditUsername(username, roles);
 			}
 			return false;
 		} catch (NumberFormatException e) {
 			log.error("Cannot parse this quota path: " + path, e);
 			return false;
 		}
+	}
+	
+	private boolean canEditUsername(String username, Roles roles) {
+		Identity editedIdentity = securityManager.findIdentityByName(username);
+		Roles editedRoles = securityManager.getRoles(editedIdentity);
+		return (roles.isAdministrator() && roles.isManagerOf(OrganisationRoles.administrator, editedRoles))
+				|| (roles.isSystemAdmin() && roles.isManagerOf(OrganisationRoles.sysadmin, editedRoles))
+				|| (roles.isRolesManager() && roles.isManagerOf(OrganisationRoles.rolesmanager, editedRoles))
+				|| (roles.isUserManager() && roles.isManagerOf(OrganisationRoles.usermanager, editedRoles));
 	}
 	
 	private boolean canEditRepositoryResources(String path, Identity identity, Roles roles) {

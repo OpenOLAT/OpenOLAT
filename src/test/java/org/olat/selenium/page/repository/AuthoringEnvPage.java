@@ -198,6 +198,7 @@ public class AuthoringEnvPage {
 			OOGraphene.waitBusy(browser);
 			OOGraphene.waitModalDialogDisappears(browser);
 			OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy, browser);
+			OOGraphene.waitTinymce(browser);
 		}
 		return this;
 	}
