@@ -62,16 +62,18 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.1.7.RELEASE</org.springframework.version>
+		<org.springframework.version>5.1.8.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.3.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<apache.cxf>3.3.2</apache.cxf>
-		<apache.pdfbox>2.0.15</apache.pdfbox>
+		<apache.pdfbox>2.0.16</apache.pdfbox>
 		<apache.poi>4.1.0</apache.poi>
-		<apache.log4j>2.11.2</apache.log4j>
+		<apache.log4j>2.12.0</apache.log4j>
+		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
+		<io.undertow>2.0.22.Final</io.undertow>
 		<jackson.version>2.9.9</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
-		<org.postgresql.version>42.2.5</org.postgresql.version>
+		<org.postgresql.version>42.2.6</org.postgresql.version>
 		<org.infinispan.version>9.2.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
@@ -1976,18 +1978,18 @@
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
-			<version>0.10.6</version>
+			<version>${io.jsonwebtoken}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
-			<version>0.10.6</version>
+			<version>${io.jsonwebtoken}</version>
 			 <scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
-			<version>0.10.6</version>
+			<version>${io.jsonwebtoken}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -2187,12 +2189,12 @@
 		<dependency>
 			<groupId>nu.validator</groupId>
 			<artifactId>htmlparser</artifactId>
-			<version>1.4.13</version>
+			<version>1.4.14</version>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
 			<artifactId>owasp-java-html-sanitizer</artifactId>
-			<version>20190503.1</version>
+			<version>20190610.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
@@ -2243,7 +2245,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.8</version>
+			<version>4.5.9</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2254,7 +2256,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.5.8</version>
+			<version>4.5.9</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -2264,7 +2266,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.6</version>
+			<version>1.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>
@@ -2359,7 +2361,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20080701</version>
+			<version>20180813</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2537,13 +2539,13 @@
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-core</artifactId>
-		    <version>2.0.21.Final</version>
+		    <version>${io.undertow}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-servlet</artifactId>
-		    <version>2.0.21.Final</version>
+		    <version>${io.undertow}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

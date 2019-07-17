@@ -130,13 +130,12 @@ public class UsrPropHandlerCfgFactory extends AbstractSpringModule {
 	}
 	
 	private static Map<String, String> deserializeConfig(String handlerConfig) {
-		Map<String,String> conf = new HashMap<String, String>();
+		Map<String,String> conf = new HashMap<>();
 		
 		try {
 			if(StringHelper.containsNonWhitespace(handlerConfig)) {
 				JSONObject jsonObject = new JSONObject(handlerConfig);
-				@SuppressWarnings("unchecked")
-				Iterator<String> jsonIterator = jsonObject.sortedKeys();
+				Iterator<String> jsonIterator = jsonObject.keys();
 				while(jsonIterator.hasNext()){
 					String key = jsonIterator.next();
 					conf.put(key, jsonObject.getString(key));
