@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.crypto.AlgorithmMethod;
 import javax.xml.crypto.Data;
 import javax.xml.crypto.KeySelector;
@@ -71,6 +72,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
+import javax.xml.transform.dom.DOMResult;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -109,15 +111,14 @@ public class XMLDigitalSignatureUtil {
 	 * @throws XMLSignatureException
 	 */
 	public static boolean validate(String uri, File xmlFile, File xmlSignatureFile, PublicKey publicKey)
-	throws ParserConfigurationException, SAXException, IOException, MarshalException, XMLSignatureException {  
-
+	throws ParserConfigurationException, SAXException, IOException, MarshalException, XMLSignatureException { 
 		Document doc = getDocument(xmlSignatureFile);
-        NodeList nl = doc.getElementsByTagName("Signature");
-        if (nl.getLength() == 0) {
-            return false;
-        }
+		Element signatureEl = getSignatureElement(doc);
+		if(signatureEl == null) {
+			return false;
+		}
         
-		DOMValidateContext validContext = new DOMValidateContext(publicKey, nl.item(0));
+		DOMValidateContext validContext = new DOMValidateContext(publicKey, signatureEl);
 		validContext.setBaseURI(uri);
 		validContext.setURIDereferencer(new FileURIDereferencer(uri, xmlFile));
 
@@ -215,6 +216,29 @@ public class XMLDigitalSignatureUtil {
 		return validFlag;
 	}
 	
+	private static Element getSignatureElement(Document doc) {
+		NodeList nl = doc.getElementsByTagNameNS(XMLSignature.XMLNS, "Signature");
+        if (nl.getLength() == 0) {
+        	nl = doc.getElementsByTagNameNS("http://www.imsglobal.org/xsd/imsqti_result_v2p1", "Signature");
+        	if (nl.getLength() == 1) {
+        		Element signatureEl = (Element)nl.item(0);
+        		try {
+        			signatureEl.setAttribute("xmlns", XMLSignature.XMLNS);
+					Document signatureDoc = createDocument();
+	        		write(signatureEl, signatureDoc);
+	        		return signatureDoc.getDocumentElement();
+				} catch (Exception e) {
+					log.error("", e);
+				}
+        		return signatureEl;
+        	} else {
+        		log.warn("Signature element not found");
+        		return null;
+        	}
+        }
+        return (Element)nl.item(0);
+	}
+	
 	/**
 	 * Produce a signed a XML file. The signature is added in the XML file.
 	 * 
@@ -232,14 +256,14 @@ public class XMLDigitalSignatureUtil {
 	 * @throws TransformerException
 	 */
 	public static void signEmbedded(File xmlFile, File xmlSignedFile, X509Certificate x509Cert, PrivateKey privateKey)
-	throws IOException, SAXException, ParserConfigurationException, NoSuchAlgorithmException, GeneralSecurityException, MarshalException, XMLSignatureException, TransformerException {
+	throws IOException, SAXException, ParserConfigurationException, GeneralSecurityException, MarshalException, XMLSignatureException, TransformerException {
 
 		Document doc = getDocument(xmlFile);
 
         // Create the signature factory for creating the signature.
         XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
 
-        List<Transform> transforms = new ArrayList<Transform>();
+        List<Transform> transforms = new ArrayList<>();
         
         Transform envelopped = sigFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null);
         transforms.add(envelopped);
@@ -299,17 +323,14 @@ public class XMLDigitalSignatureUtil {
 	 */
 	public static void signDetached(String uri, File xmlFile, File outputSignatureFile, Document signatureDoc,
 			String keyName, X509Certificate x509Cert, PrivateKey privateKey)
-	throws IOException, SAXException, ParserConfigurationException, NoSuchAlgorithmException, GeneralSecurityException, MarshalException, XMLSignatureException, TransformerException {
+	throws IOException, SAXException, ParserConfigurationException, GeneralSecurityException, MarshalException, XMLSignatureException, TransformerException {
 
 		Document doc = getDocument(xmlFile);
 
         // Create the signature factory for creating the signature.
         XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
 
-        List<Transform> transforms = new ArrayList<Transform>();
-        
-        //Transform envelopped = sigFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null);
-        //transforms.add(envelopped);
+        List<Transform> transforms = new ArrayList<>();
 
         // Create the canonicalization transform to be applied after the XSLT.
         CanonicalizationMethod c14n = sigFactory.newCanonicalizationMethod(
@@ -350,33 +371,48 @@ public class XMLDigitalSignatureUtil {
         DOMSignContext dsc = new DOMSignContext(privateKey, signatureInfoNode);
         dsc.setBaseURI(uri);
 		dsc.setURIDereferencer(new FileURIDereferencer(uri, xmlFile));
-
+		
         // Create the signature from the signing context and key info
         XMLSignature signature = sigFactory.newXMLSignature(si, ki);
         signature.sign(dsc);
 
         NodeList nl = doc.getElementsByTagName("Signature");
         if (nl.getLength() == 1) {
+        	Element signatureEl = (Element)nl.item(0);
         	if(signatureDoc != null && signatureDoc.getDocumentElement() != null) {
         		Element rootEl = signatureDoc.getDocumentElement();
-        		rootEl.appendChild(signatureDoc.importNode(nl.item(0), true));
+        		rootEl.appendChild(signatureDoc.importNode(signatureEl, true));
         		write(rootEl, outputSignatureFile);
         	} else {
-        		write(nl.item(0), outputSignatureFile);
+        		signatureDoc = createDocument();
+        		signatureDoc.appendChild(signatureDoc.importNode(signatureEl, true));
+        		write(signatureDoc, outputSignatureFile);
         	}
         }
 	}
 	
 	private static void write(Node node, File outputFile)
-	throws IOException, TransformerException, TransformerFactoryConfigurationError, IllegalArgumentException {
+	throws IOException, TransformerException, TransformerFactoryConfigurationError {
         try (Writer ssw = new FileWriter(outputFile)) {
 			TransformerFactory tf = TransformerFactory.newInstance();
+			tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer trans = tf.newTransformer();
 			trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
 			trans.transform(new DOMSource(node), new StreamResult(ssw));
-		} catch (TransformerException | TransformerFactoryConfigurationError | IllegalArgumentException e) {
+		} catch (TransformerException | TransformerFactoryConfigurationError | IllegalArgumentException | IOException e) {
 			throw e;
-		} catch (IOException e) {
+		}
+	}
+	
+	private static void write(Node node, Document target)
+	throws TransformerException, TransformerFactoryConfigurationError {
+        try {
+			TransformerFactory tf = TransformerFactory.newInstance();
+			tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			Transformer trans = tf.newTransformer();
+			trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+			trans.transform(new DOMSource(node), new DOMResult(target));
+		} catch (TransformerException | TransformerFactoryConfigurationError | IllegalArgumentException e) {
 			throw e;
 		}
 	}
@@ -384,13 +420,15 @@ public class XMLDigitalSignatureUtil {
 	public static Document getDocument(File xmlFile)
 	throws ParserConfigurationException, SAXException, IOException {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		dbFactory.setNamespaceAware(true);
 		return dbFactory.newDocumentBuilder().parse(xmlFile);
 	}
 	
 	public static Document createDocument()
-	throws ParserConfigurationException, SAXException, IOException {
+	throws ParserConfigurationException {
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 		dbFactory.setNamespaceAware(true);
 		return dbFactory.newDocumentBuilder().newDocument();
 	}

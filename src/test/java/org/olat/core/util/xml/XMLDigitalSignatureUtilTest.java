@@ -65,12 +65,11 @@ public class XMLDigitalSignatureUtilTest {
 		
 		URL xmlUrl = XMLDigitalSignatureUtilTest.class.getResource("assessmentResult.xml");
 		File xmlFile = new File(xmlUrl.toURI());
-		String xmlUri = xmlUrl.toURI().toString();
+		String xmlUri = xmlUrl.toURI().toString().replace("ws_sidedfeatures", "ws_14_branches");
 
 		File xmlSignatureFile = File.createTempFile("assessment-result", "_signature.xml");
 		XMLDigitalSignatureUtil.signDetached(xmlUri, xmlFile, xmlSignatureFile, null,
 				null, certificateInfo.getX509Cert(), certificateInfo.getPrivateKey());
-
 		Assert.assertTrue(xmlSignatureFile.length() > 0);
 		
 		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
@@ -79,6 +78,67 @@ public class XMLDigitalSignatureUtilTest {
 
 		//clean up
 		Files.deleteIfExists(xmlSignatureFile.toPath());
+	}
+	
+	/**
+	 * Check if we can validate a signature with the wrong namespace (http://www.imsglobal.org/xsd/imsqti_result_v2p1)
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void validateDetached_version13x() throws Exception {
+		X509CertificatePrivateKeyPair certificateInfo = getCertificatePrivateKeyPair();
+		
+		URL xmlUrl = XMLDigitalSignatureUtilTest.class.getResource("assessmentResult.xml");
+		File xmlFile = new File(xmlUrl.toURI());
+
+		URL xmlSignatureUrl = XMLDigitalSignatureUtilTest.class.getResource("signature_13x.xml");
+		File xmlSignatureFile = new File(xmlSignatureUrl.toURI());
+		String xmlUri = "file:/Users/srosse/Developer/Work/ws_14_branches/OpenOLAT/target/test-classes/org/olat/core/util/xml/assessmentResult.xml";
+
+		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
+				certificateInfo.getX509Cert().getPublicKey());
+		Assert.assertTrue(valid);
+	}
+	
+	/**
+	 * Check if we can validate a signature produced by OpenOlat with the right namespace
+	 * @throws Exception
+	 */
+	@Test
+	public void validateDetached_version14x() throws Exception {
+		X509CertificatePrivateKeyPair certificateInfo = getCertificatePrivateKeyPair();
+		
+		URL xmlUrl = XMLDigitalSignatureUtilTest.class.getResource("assessmentResult.xml");
+		File xmlFile = new File(xmlUrl.toURI());
+
+		URL xmlSignatureUrl = XMLDigitalSignatureUtilTest.class.getResource("signature_14x.xml");
+		File xmlSignatureFile = new File(xmlSignatureUrl.toURI());
+		String xmlUri = "file:/Users/srosse/Developer/Work/ws_14_branches/OpenOLAT/target/test-classes/org/olat/core/util/xml/assessmentResult.xml";
+		
+		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
+				certificateInfo.getX509Cert().getPublicKey());
+		Assert.assertTrue(valid);
+	}
+	
+	/**
+	 * Check if we can validate a signature produced by Java 11
+	 * @throws Exception
+	 */
+	@Test
+	public void validateDetached_version14x_java11() throws Exception {
+		X509CertificatePrivateKeyPair certificateInfo = getCertificatePrivateKeyPair();
+		
+		URL xmlUrl = XMLDigitalSignatureUtilTest.class.getResource("assessmentResult.xml");
+		File xmlFile = new File(xmlUrl.toURI());
+
+		URL xmlSignatureUrl = XMLDigitalSignatureUtilTest.class.getResource("signature_14x_java11.xml");
+		File xmlSignatureFile = new File(xmlSignatureUrl.toURI());
+		String xmlUri = "file:/Users/srosse/Developer/Work/ws_sidedfeatures/OpenOLAT/target/test-classes/org/olat/core/util/xml/assessmentResult.xml";
+		
+		boolean valid = XMLDigitalSignatureUtil.validate(xmlUri, xmlFile, xmlSignatureFile,
+				certificateInfo.getX509Cert().getPublicKey());
+		Assert.assertTrue(valid);
 	}
 	
 	@Test
@@ -185,6 +245,39 @@ public class XMLDigitalSignatureUtilTest {
 
 		//clean up
 		Files.deleteIfExists(xmlSignedFile.toPath());
+	}
+	
+	@Test
+	public void validateEmbedded_version13x() throws Exception {
+		X509CertificatePrivateKeyPair certificateInfo = getCertificatePrivateKeyPair();
+		URL xmlSignedUrl = XMLDigitalSignatureUtilTest.class.getResource("embeddedSignature_13x.xml");
+		File xmlSignedFile = new File(xmlSignedUrl.toURI());
+
+		boolean valid = XMLDigitalSignatureUtil.validate(xmlSignedFile,
+				certificateInfo.getX509Cert().getPublicKey());
+		Assert.assertTrue(valid);
+	}
+	
+	@Test
+	public void validateEmbedded_version14x() throws Exception {
+		X509CertificatePrivateKeyPair certificateInfo = getCertificatePrivateKeyPair();
+		URL xmlSignedUrl = XMLDigitalSignatureUtilTest.class.getResource("embeddedSignature_14x.xml");
+		File xmlSignedFile = new File(xmlSignedUrl.toURI());
+
+		boolean valid = XMLDigitalSignatureUtil.validate(xmlSignedFile,
+				certificateInfo.getX509Cert().getPublicKey());
+		Assert.assertTrue(valid);
+	}
+	
+	@Test
+	public void validateEmbedded_version14x_java11() throws Exception {
+		X509CertificatePrivateKeyPair certificateInfo = getCertificatePrivateKeyPair();
+		URL xmlSignedUrl = XMLDigitalSignatureUtilTest.class.getResource("embeddedSignature_14x_java11.xml");
+		File xmlSignedFile = new File(xmlSignedUrl.toURI());
+		
+		boolean valid = XMLDigitalSignatureUtil.validate(xmlSignedFile,
+				certificateInfo.getX509Cert().getPublicKey());
+		Assert.assertTrue(valid);
 	}
 	
 	/**

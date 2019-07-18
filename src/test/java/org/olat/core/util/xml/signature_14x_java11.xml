@@ -1,0 +1,20 @@
+<Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI="file:/Users/srosse/Developer/Work/ws_sidedfeatures/OpenOLAT/target/test-classes/org/olat/core/util/xml/assessmentResult.xml"><Transforms><Transform Algorithm="http://www.w3.org/2001/10/xml-exc-c14n#"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><DigestValue>kZtaqo6Au6L9eiGVghQYQsR+AkKn9MXtTebsAbgx9O8=</DigestValue></Reference></SignedInfo><SignatureValue>DKoHj/Xl62ti/3o6LomZkJNgAjzTtU6xW9UN8Whj3CqNtA3gaKtGrjIDLDDktAnVQeSGCFxP6vvX&#xD;
+IwMPr5Ecu56kXRDiviiSCx/6HJXXZVN5wZ4vrI212OFAljBNp2KuxcEFKhY/jJFGew91Gd5tj+9t&#xD;
+EO6pOybxV0T/I1623RjifUiJHHvFSRTQ7kGo4ZjmZ+2TMCS1eJz7giXHY7o6HSOOUtWURiF3nODU&#xD;
+Xka4/c/MgN+LA2sbDl4XcHNmebvfC2c6KlfC1bKvynvAMLSVuvHoCOKdTLLhhPuSIG0v783ukhXO&#xD;
+7b7xZkiFSy/MLvR/KPh7spELXPwUKd8cxRd4bQ==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIDgTCCAmmgAwIBAgIJAMIi622nJ/aJMA0GCSqGSIb3DQEBCwUAMFcxCzAJBgNVBAYTAkNIMRQw&#xD;
+EgYDVQQIDAtTd2l0emVybGFuZDEPMA0GA1UEBwwGWnVyaWNoMSEwHwYDVQQKDBhJbnRlcm5ldCBX&#xD;
+aWRnaXRzIFB0eSBMdGQwHhcNMTcwMjE1MTQzMDE1WhcNMTgwMjE1MTQzMDE1WjBXMQswCQYDVQQG&#xD;
+EwJDSDEUMBIGA1UECAwLU3dpdHplcmxhbmQxDzANBgNVBAcMBlp1cmljaDEhMB8GA1UECgwYSW50&#xD;
+ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvnt5&#xD;
+KQo6mUvMu4Ck/CoESGY2WDXBj/MQWFtF1J2wAjNIZ0Mgx1vRQA/bhXe91C3uncazS0QotVMAjzZh&#xD;
+oBJFiBCqQthqaFeZYKiT1AJ0x6yuh5WHurO/dVGZqHgZLpCAC1prtuA6SJ+y1xqSSeAzrdDV7P43&#xD;
+Vxpl6ZL1F3Zz3kv5u8HwThtGJl8pW3kOLpkflC/6h7CaypBKmjdcDnSp4sqf79m1KGCF1CA9nwGa&#xD;
+lMWcdj8ymCOEv09aXpHinhD/jn3BtvXZZDROcuEBiDRDkI8rsrSiOYEWb2B1nL+UKD7DmVqw7vMX&#xD;
+DEZU8yGPd2BP9K9xsnRzghYitBwO7o9b1wIDAQABo1AwTjAdBgNVHQ4EFgQUMJrItZcudUBYX+8v&#xD;
+CpE/GINHU4gwHwYDVR0jBBgwFoAUMJrItZcudUBYX+8vCpE/GINHU4gwDAYDVR0TBAUwAwEB/zAN&#xD;
+BgkqhkiG9w0BAQsFAAOCAQEAcUl/BXv93YTAk3mlPwHKKHZtjNFlSCkVQgZVcIEDEEpELtVuMEep&#xD;
+QW3WkKLVP06g/B8yFAoR9P3WJqzkzCWMWDrYYMIx02aGCeKQAo8ITWIfTBUUDSypVfLpDH/HRI02&#xD;
+wc4zPzB6JL+uLK4ikJWC9XR1+zovFYCaeK6OPB3vDs/iufNjjsWREhvAgCTvl7JjxAub543TjhJN&#xD;
+u8RsSFQU6x27dgk6TvlKOKB7p/b191E0Zo2uFxAUtAlX1pvQc9JjEjLKkpQT0apRpFnBbRg97qkt&#xD;
+oilrK9xHukKPlz2i7WX+je62koICx2U85RwdneK9ZYivaPSk/zqpL1XFuLHG8Q==</X509Certificate></X509Data></KeyInfo></Signature>

@@ -1,0 +1,206 @@
+<assessmentResult xmlns="http://www.imsglobal.org/xsd/imsqti_result_v2p1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_result_v2p1 http://www.imsglobal.org/xsd/imsqti_result_v2p1.xsd">
+  <context>
+    <sessionIdentifier identifier="testsession/2038" sourceID="http://localhost:8081/auth/RepositoryEntry/720863232/TestSession/2038"/>
+  </context>
+  <testResult datestamp="2017-02-08T16:54:49" identifier="test7501c21c-c3db-468d-b5b8-c40339aaf323.xml">
+    <outcomeVariable baseType="float" cardinality="single" identifier="SCORE">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="boolean" cardinality="single" identifier="PASS">
+      <value>true</value>
+    </outcomeVariable>
+  </testResult>
+  <itemResult datestamp="2017-02-08T16:54:49" identifier="sc144e214a9f4cfe90d2ecf0781c291f" sequenceIndex="1" sessionStatus="final">
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="completionStatus">
+      <value>unknown</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="FEEDBACKBASIC" view="testConstructor">
+      <value>incorrect</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="multiple" identifier="FEEDBACKMODAL" view="testConstructor">
+      <value>Feedback95140378493387</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="SOLUTIONMODAL" view="testConstructor">
+      <value>Feedback95140378493385</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="float" cardinality="single" identifier="SCORE">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="float" cardinality="single" identifier="MAXSCORE">
+      <value>1.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="HINTFEEDBACKMODAL"/>
+    <outcomeVariable baseType="float" cardinality="single" identifier="MINSCORE" view="testConstructor">
+      <value>0.0</value>
+    </outcomeVariable>
+    <responseVariable baseType="float" cardinality="single" identifier="duration">
+      <candidateResponse>
+        <value>701.727</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable baseType="integer" cardinality="single" identifier="numAttempts">
+      <candidateResponse>
+        <value>12</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable baseType="identifier" cardinality="single" identifier="HINTREQUEST">
+      <candidateResponse>
+        <value>false</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable baseType="identifier" cardinality="single" identifier="RESPONSE_1">
+      <correctResponse>
+        <value>sccde3ab0fdd487ea26a3f9594ebf40f</value>
+      </correctResponse>
+      <candidateResponse>
+        <value>sc3a3fd5e8cb4cdba7199e984202437d</value>
+      </candidateResponse>
+    </responseVariable>
+  </itemResult>
+  <itemResult datestamp="2017-02-08T16:54:49" identifier="mce58c219bae4156adf4e0e02803512f" sequenceIndex="1" sessionStatus="initial">
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="completionStatus">
+      <value>unknown</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="FEEDBACKBASIC" view="testConstructor">
+      <value>none</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="multiple" identifier="FEEDBACKMODAL" view="testConstructor"/>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="SOLUTIONMODAL" view="testConstructor"/>
+    <outcomeVariable baseType="float" cardinality="single" identifier="SCORE">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="float" cardinality="single" identifier="MAXSCORE">
+      <value>1.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="HINTFEEDBACKMODAL"/>
+    <outcomeVariable baseType="float" cardinality="single" identifier="MINSCORE" view="testConstructor">
+      <value>0.0</value>
+    </outcomeVariable>
+    <responseVariable baseType="float" cardinality="single" identifier="duration">
+      <candidateResponse>
+        <value>0.0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable baseType="integer" cardinality="single" identifier="numAttempts">
+      <candidateResponse>
+        <value>0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable baseType="identifier" cardinality="single" identifier="HINTREQUEST">
+      <candidateResponse/>
+    </responseVariable>
+    <responseVariable baseType="identifier" cardinality="multiple" identifier="RESPONSE_1">
+      <correctResponse>
+        <value>mca7d05a516a4d1c9dbe4963b766a517</value>
+        <value>mc746c767ff24f3891f93546cbe4ef51</value>
+      </correctResponse>
+      <candidateResponse/>
+    </responseVariable>
+  </itemResult>
+  <itemResult datestamp="2017-02-08T16:54:49" identifier="kprimeeceecc4d94b08c9d0ea6f0a9eb" sequenceIndex="1" sessionStatus="initial">
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="completionStatus">
+      <value>unknown</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="FEEDBACKBASIC" view="testConstructor">
+      <value>none</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="multiple" identifier="FEEDBACKMODAL" view="testConstructor"/>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="SOLUTIONMODAL" view="testConstructor"/>
+    <outcomeVariable baseType="float" cardinality="single" identifier="SCORE">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="float" cardinality="single" identifier="MAXSCORE">
+      <value>1.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="HINTFEEDBACKMODAL"/>
+    <outcomeVariable baseType="float" cardinality="single" identifier="MINSCORE" view="testConstructor">
+      <value>0.0</value>
+    </outcomeVariable>
+    <responseVariable baseType="float" cardinality="single" identifier="duration">
+      <candidateResponse>
+        <value>0.0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable baseType="integer" cardinality="single" identifier="numAttempts">
+      <candidateResponse>
+        <value>0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable baseType="identifier" cardinality="single" identifier="HINTREQUEST">
+      <candidateResponse/>
+    </responseVariable>
+    <responseVariable baseType="directedPair" cardinality="multiple" identifier="KPRIM_RESPONSE_1">
+      <correctResponse>
+        <value>d95140378493395 wrong</value>
+        <value>a95140378493392 wrong</value>
+        <value>b95140378493393 wrong</value>
+        <value>c95140378493394 wrong</value>
+      </correctResponse>
+      <candidateResponse/>
+    </responseVariable>
+  </itemResult>
+  <itemResult datestamp="2017-02-08T16:54:49" identifier="fib1e0afaf7f48bcbf2c7410df0a9062" sequenceIndex="1" sessionStatus="initial">
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="completionStatus">
+      <value>unknown</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="FEEDBACKBASIC" view="testConstructor">
+      <value>none</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="multiple" identifier="FEEDBACKMODAL" view="testConstructor"/>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="SOLUTIONMODAL" view="testConstructor"/>
+    <outcomeVariable baseType="float" cardinality="single" identifier="SCORE">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="float" cardinality="single" identifier="MAXSCORE">
+      <value>1.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="float" cardinality="single" identifier="MINSCORE_RESPONSE_1">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="identifier" cardinality="single" identifier="HINTFEEDBACKMODAL"/>
+    <outcomeVariable baseType="float" cardinality="single" identifier="MINSCORE" view="testConstructor">
+      <value>0.0</value>
+    </outcomeVariable>
+    <outcomeVariable baseType="float" cardinality="single" identifier="SCORE_RESPONSE_1">
+      <value>0.0</value>
+    </outcomeVariable>
+    <responseVariable baseType="float" cardinality="single" identifier="duration">
+      <candidateResponse>
+        <value>0.0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable baseType="integer" cardinality="single" identifier="numAttempts">
+      <candidateResponse>
+        <value>0</value>
+      </candidateResponse>
+    </responseVariable>
+    <responseVariable baseType="identifier" cardinality="single" identifier="HINTREQUEST">
+      <candidateResponse/>
+    </responseVariable>
+    <responseVariable baseType="string" cardinality="single" identifier="RESPONSE_1">
+      <correctResponse>
+        <value>gap</value>
+      </correctResponse>
+      <candidateResponse/>
+    </responseVariable>
+  </itemResult>
+<Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"/><Reference URI=""><Transforms><Transform Algorithm="http://www.w3.org/2000/09/xmldsig#enveloped-signature"/><Transform Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"/></Transforms><DigestMethod Algorithm="http://www.w3.org/2001/04/xmlenc#sha256"/><DigestValue>kZtaqo6Au6L9eiGVghQYQsR+AkKn9MXtTebsAbgx9O8=</DigestValue></Reference></SignedInfo><SignatureValue>ab5QOVZO7w0kQpPDA74ozC6YTSBXE6myZHKQcUadB77qBFk7cQMNX3B48FGtn8at1KBJsjKJndWC
+kYKXmwGbKXUr+ASgo5FTwtz9Zbm4289jklUGOB1twPTw3gv/LNyHhl4bG5p/0qENcgA66NwHhJhV
+4wrU7YZJqHc1R23TNngxcZMFkKjLtbWj2SK3IbFubr/mQTrNvCnxNKEANDUcH57kO7xA1+LsVMB3
+1ENuysScjf4/xcxB0AJaEHaI7wRz5RE0hpxDOLmlYmf3zRvvefFFsCc6uhC9O5AVR4dUyuutOzQy
+VRf5Jylrxu/o8dXyZLcRdcVlCDZ0nE+Q/icQrw==</SignatureValue><KeyInfo><X509Data><X509Certificate>MIIDgTCCAmmgAwIBAgIJAMIi622nJ/aJMA0GCSqGSIb3DQEBCwUAMFcxCzAJBgNVBAYTAkNIMRQw
+EgYDVQQIDAtTd2l0emVybGFuZDEPMA0GA1UEBwwGWnVyaWNoMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+aWRnaXRzIFB0eSBMdGQwHhcNMTcwMjE1MTQzMDE1WhcNMTgwMjE1MTQzMDE1WjBXMQswCQYDVQQG
+EwJDSDEUMBIGA1UECAwLU3dpdHplcmxhbmQxDzANBgNVBAcMBlp1cmljaDEhMB8GA1UECgwYSW50
+ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvnt5
+KQo6mUvMu4Ck/CoESGY2WDXBj/MQWFtF1J2wAjNIZ0Mgx1vRQA/bhXe91C3uncazS0QotVMAjzZh
+oBJFiBCqQthqaFeZYKiT1AJ0x6yuh5WHurO/dVGZqHgZLpCAC1prtuA6SJ+y1xqSSeAzrdDV7P43
+Vxpl6ZL1F3Zz3kv5u8HwThtGJl8pW3kOLpkflC/6h7CaypBKmjdcDnSp4sqf79m1KGCF1CA9nwGa
+lMWcdj8ymCOEv09aXpHinhD/jn3BtvXZZDROcuEBiDRDkI8rsrSiOYEWb2B1nL+UKD7DmVqw7vMX
+DEZU8yGPd2BP9K9xsnRzghYitBwO7o9b1wIDAQABo1AwTjAdBgNVHQ4EFgQUMJrItZcudUBYX+8v
+CpE/GINHU4gwHwYDVR0jBBgwFoAUMJrItZcudUBYX+8vCpE/GINHU4gwDAYDVR0TBAUwAwEB/zAN
+BgkqhkiG9w0BAQsFAAOCAQEAcUl/BXv93YTAk3mlPwHKKHZtjNFlSCkVQgZVcIEDEEpELtVuMEep
+QW3WkKLVP06g/B8yFAoR9P3WJqzkzCWMWDrYYMIx02aGCeKQAo8ITWIfTBUUDSypVfLpDH/HRI02
+wc4zPzB6JL+uLK4ikJWC9XR1+zovFYCaeK6OPB3vDs/iufNjjsWREhvAgCTvl7JjxAub543TjhJN
+u8RsSFQU6x27dgk6TvlKOKB7p/b191E0Zo2uFxAUtAlX1pvQc9JjEjLKkpQT0apRpFnBbRg97qkt
+oilrK9xHukKPlz2i7WX+je62koICx2U85RwdneK9ZYivaPSk/zqpL1XFuLHG8Q==</X509Certificate></X509Data></KeyInfo></Signature></assessmentResult>
