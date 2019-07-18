@@ -52,6 +52,9 @@ public class TaxonomyTreePage {
 	 * @return Itself
 	 */
 	public TaxonomyTreePage atLeastOneLevel(String identifier, String name) {
+		By tableTreeBy = By.cssSelector("div.o_sel_taxonomy_levels_tree table");
+		OOGraphene.waitElement(tableTreeBy, browser);
+		
 		By tableBy = By.xpath("//div[contains(@class,'o_sel_taxonomy_levels_tree')]//table//tr/td[text()[contains(.,'" + identifier + "')]]");
 		List<WebElement> tableEls = browser.findElements(tableBy);
 		if(tableEls.isEmpty()) {
@@ -83,6 +86,7 @@ public class TaxonomyTreePage {
 		
 		By identifierBy = By.cssSelector("div.o_sel_taxonomy_level_identifier input[type='text']");
 		OOGraphene.waitElement(identifierBy, browser);
+		OOGraphene.waitTinymce(browser);// to be nice to firefox
 		browser.findElement(identifierBy).sendKeys(identifier);
 		
 		By nameBy = By.cssSelector("div.o_sel_taxonomy_level_name input[type='text']");
@@ -92,6 +96,10 @@ public class TaxonomyTreePage {
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
+		
+		// wait update in the table
+		By editTabsBy = By.className("o_sel_taxonomy_level_tabs");
+		OOGraphene.waitElement(editTabsBy, browser);
 		return this;
 	}
 

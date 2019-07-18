@@ -42,6 +42,7 @@ public class AuthoringEnvPage {
 	
 	public static final By createMenuCaretBy = By.cssSelector("a.o_sel_author_create");
 	public static final By createMenuBy = By.cssSelector("ul.o_sel_author_create");
+	public static final By generaltabBy = By.className("o_sel_edit_repositoryentry");
 	
 	private WebDriver browser;
 	
@@ -135,7 +136,8 @@ public class AuthoringEnvPage {
 		browser.findElement(submitBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
-		OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy, browser);
+		OOGraphene.waitElement(generaltabBy, browser);
+		OOGraphene.waitTinymce(browser);
 		return new RepositorySettingsPage(browser);
 	}
 	
@@ -197,7 +199,7 @@ public class AuthoringEnvPage {
 			saveButton.click();
 			OOGraphene.waitBusy(browser);
 			OOGraphene.waitModalDialogDisappears(browser);
-			OOGraphene.waitElement(RepositoryEditDescriptionPage.generaltabBy, browser);
+			OOGraphene.waitElement(generaltabBy, browser);
 			OOGraphene.waitTinymce(browser);
 		}
 		return this;

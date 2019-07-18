@@ -56,6 +56,7 @@ public class ContactPage {
 		browser.findElement(subjectBy).sendKeys(subject);
 		
 		String containerCssSelector = "div.o_sel_contact_body";
+		OOGraphene.waitTinymce(browser);
 		OOGraphene.tinymce(body, containerCssSelector, browser);
 		return this;
 	}
