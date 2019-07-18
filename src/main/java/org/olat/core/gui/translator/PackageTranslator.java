@@ -26,16 +26,17 @@
 
 package org.olat.core.gui.translator;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Locale;
 
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.i18n.I18nManager;
 import org.olat.core.util.i18n.I18nModule;
@@ -123,7 +124,7 @@ public class PackageTranslator implements Translator {
 		// if still null -> fallback to default locale (if not in debug mode)
 		if (val == null) {
 			if (Settings.isDebuging()) {
-				val = getErrorMessage(key);
+				val = getErrorMessageWithTrace(key);
 			} else {
 				// try with fallBackToDefaultLocale 
 				val = translate(key, args, 0, true);
@@ -139,15 +140,8 @@ public class PackageTranslator implements Translator {
 			val = getErrorMessage(key);
 			// Workaround to prevent the warning about shibboleth-attribute
 			if (!packageName.startsWith("org.olat.course.condition")
-					&& missingTranslationLogLevel!=null
-					&& !missingTranslationLogLevel.equals(Level.OFF)) {
-				if (missingTranslationLogLevel.equals(Level.ERROR)) {
-					log.error(val);
-				} else if (missingTranslationLogLevel.equals(Level.WARN)) {
-					log.warn(val);
-				} else if (missingTranslationLogLevel.equals(Level.INFO)) {
-					log.info(val);
-				}
+					&& missingTranslationLogLevel != null && !missingTranslationLogLevel.equals(Level.OFF)) {
+				log.log(missingTranslationLogLevel, getErrorMessage(key), new OLATRuntimeException("transl dummy", null));
 			}
 			// don't use error message in GUI for production, use key instead (OLAT-5896)
 			if (!Settings.isDebuging()) { 
@@ -191,9 +185,23 @@ public class PackageTranslator implements Translator {
 	 * @param key
 	 * @return
 	 */
+	private String getErrorMessageWithTrace(String key) {
+		String msg = getErrorMessage(key);
+		OLATRuntimeException ore = new OLATRuntimeException("transl dummy");
+		//use stracktrace to find out more where the missing translation comes from
+		try(Writer result = new StringWriter();
+				PrintWriter printWriter = new PrintWriter(result)) {
+			printWriter.write(msg);
+			ore.printStackTrace(printWriter);
+			return result.toString();
+		} catch(IOException e) {
+			log.error("", e);
+			return msg;
+		}
+	}
+	
 	private String getErrorMessage(String key) {
-
-		StringBuilder sb = new StringBuilder(150);
+		StringBuilder sb = new StringBuilder(256);
 		sb.append(NO_TRANSLATION_ERROR_PREFIX).append(key)
 		  .append(": in ").append(packageName);
 
@@ -205,13 +213,6 @@ public class PackageTranslator implements Translator {
 		}
 		sb.append(", fallBackTranslator:").append(babel);
 		sb.append(") for locale ").append(locale);
-		OLATRuntimeException ore = new OLATRuntimeException("transl dummy",null);
-		//use stracktrace to find out more where the missing translation comes from
-		final Writer result = new StringWriter();
-		final PrintWriter printWriter = new PrintWriter(result);
-		ore.printStackTrace(printWriter);
-		
-		sb.append(result.toString());
 		return sb.toString();
 	}
 
@@ -245,7 +246,7 @@ public class PackageTranslator implements Translator {
 	
 	@Override
 	public String toString(){		
-		return "PackageTranslator for package: " + packageName + " is fallback: " + (fallBackTranslator == null) + " next child if any: \n " + ((fallBackTranslator != null && fallBackTranslator == this) ? "recurse itself !" : fallBackTranslator);
+		return "PackageTranslator for package: " + packageName + " is fallback: " + (fallBackTranslator == null) + " next child if any: " + ((fallBackTranslator != null && fallBackTranslator == this) ? "recurse itself !" : fallBackTranslator);
 	}
 	
 	public boolean isStacked(){

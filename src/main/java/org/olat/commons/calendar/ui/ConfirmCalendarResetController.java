@@ -19,7 +19,10 @@
  */
 package org.olat.commons.calendar.ui;
 
+import java.util.List;
+
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
@@ -64,6 +67,14 @@ public class ConfirmCalendarResetController extends FormBasicController {
 		
 		String confirmValue = translate("cal.confirm.reset.check");
 		confirmEl = uifactory.addCheckboxesHorizontal("confirm", "cal.confirm", layoutCont, confirmKeys, new String[] { confirmValue });
+		
+		List<KalendarEvent> events = calendarRow.getWrapper().getKalendar().getEvents();
+		long numberToDelete = events.stream().filter(e -> !e.isManaged()).count();
+
+		String msg = translate("cal.confirm.reset.confirmation_message", new String[] { Long.toString(numberToDelete) });
+		if(formLayout instanceof FormLayoutContainer) {
+			((FormLayoutContainer)formLayout).contextPut("msg", msg);
+		}
 		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		layoutCont.add(buttonsCont);
