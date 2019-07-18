@@ -45,11 +45,11 @@ public class MySQLTempStatTableDropper implements IStatisticUpdater {
 	/** the jdbcTemplate is used to allow access to other than the default database and 
 	 * allow raw sql code
 	 */
-	private JdbcTemplate jdbcTemplate_;
+	private JdbcTemplate jdbcTemplate;
 
 	/** set via spring **/
-	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-		jdbcTemplate_ = jdbcTemplate;
+	public void setJdbcTemplate(JdbcTemplate template) {
+		jdbcTemplate = template;
 	}
 	
 	@Override
@@ -59,16 +59,12 @@ public class MySQLTempStatTableDropper implements IStatisticUpdater {
 		// create temp table
 		final long startTime = System.currentTimeMillis();
 		try{
-			jdbcTemplate_.execute("drop table o_stat_temptable;");
-
-		} catch(RuntimeException e) {
+			jdbcTemplate.execute("drop table o_stat_temptable;");
+		} catch(Exception e) {
 			log.error("", e);
-		} catch(Error er) {
-			log.error("", er);
 		} finally {
 			final long diff = System.currentTimeMillis() - startTime;
 			log.info("updateStatistic: END. duration=" + diff);
 		}
 	}
-
 }

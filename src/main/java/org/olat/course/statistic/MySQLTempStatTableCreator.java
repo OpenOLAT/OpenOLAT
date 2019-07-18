@@ -24,16 +24,14 @@
 */
 package org.olat.course.statistic;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Calendar;
 import java.util.Date;
-
-import javax.sql.DataSource;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.SqlParameterValue;
 
 /**
  * MySQL specific class which creates a temporary table with the
@@ -45,26 +43,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class MySQLTempStatTableCreator implements IStatisticUpdater {
 
 	/** the logging object used in this class **/
-	private static final Logger log_ = Tracing.createLoggerFor(MySQLTempStatTableCreator.class);
+	private static final Logger log = Tracing.createLoggerFor(MySQLTempStatTableCreator.class);
 
 	/** the jdbcTemplate is used to allow access to other than the default database and 
 	 * allow raw sql code
 	 */
-	private JdbcTemplate jdbcTemplate_;
+	private JdbcTemplate jdbcTemplate;
 	
 	/** set via spring **/
-	public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
-		jdbcTemplate_ = jdbcTemplate;
-		DataSource dataSource = jdbcTemplate==null ? null : jdbcTemplate.getDataSource();
-		Connection connection = null;
-		try{
-			if (dataSource!=null) {
-				connection = dataSource.getConnection();
-			}
-		} catch(SQLException e) {
-			log_.warn("setJdbcTemplate: SQLException while trying to get connection for logging", e);
-		}
-		log_.info("setJdbcTemplate: jdbcTemplate="+jdbcTemplate+", dataSource="+dataSource+", connection="+connection);
+	public void setJdbcTemplate(JdbcTemplate template) {
+		jdbcTemplate = template;
 	}
 	
 	@Override
@@ -72,17 +60,17 @@ public class MySQLTempStatTableCreator implements IStatisticUpdater {
 		// create temp table
 		final long startTime = System.currentTimeMillis();
 		try{
-			log_.info("updateStatistic: dropping o_stat_temptable if still existing");
-			jdbcTemplate_.execute("drop table if exists o_stat_temptable;");
+			log.info("updateStatistic: dropping o_stat_temptable if still existing");
+			jdbcTemplate.execute("drop table if exists o_stat_temptable;");
 			
-			log_.info("updateStatistic: creating o_stat_temptable");
-			jdbcTemplate_.execute(
+			log.info("updateStatistic: creating o_stat_temptable");
+			jdbcTemplate.execute(
 					"create table o_stat_temptable (" +
 						"creationdate datetime not null," +
 						"businesspath varchar(2048) not null" +
 					");");
 			
-			log_.info("updateStatistic: inserting logging actions from "+from+" until "+until);
+			log.info("updateStatistic: inserting logging actions from "+from+" until "+until);
 			
 			// same month optimization
 			Calendar lastUpdatedCalendar = Calendar.getInstance();
@@ -93,20 +81,18 @@ public class MySQLTempStatTableCreator implements IStatisticUpdater {
 			long fromSeconds = from.getTime() / 1000l;
 			long untilSeconds = until.getTime() / 1000l;
 
-			long numLoggingActions = jdbcTemplate_.update(
+			long numLoggingActions = jdbcTemplate.update(
 					"insert into o_stat_temptable (creationdate,businesspath) " +
 						"select creationdate,businesspath" +
 						" from o_loggingtable" + 
-						" where actionverb='launch' and actionobject='node' and creationdate>from_unixtime('"+ fromSeconds +"') and creationdate<=from_unixtime('"+ untilSeconds +"');");
-			
-			log_.info("updateStatistic: insert done. number of logging actions: " + numLoggingActions);
-		} catch(RuntimeException e) {
-			log_.warn("updateStatistic: ran into a RuntimeException: "+e, e);
-		} catch(Error er) {
-			log_.warn("updateStatistic: ran into an Error: "+er, er);
+						" where actionverb='launch' and actionobject='node' and creationdate>from_unixtime(?) and creationdate<=from_unixtime(?);",
+						new SqlParameterValue(Types.VARCHAR, Long.toString(fromSeconds)), new SqlParameterValue(Types.VARCHAR, Long.toString(untilSeconds)));
+			log.info("updateStatistic: insert done. number of logging actions: {}", numLoggingActions);
+		} catch(Exception e) {
+			log.warn("updateStatistic: ran into a RuntimeException: ", e);
 		} finally {
 			final long diff = System.currentTimeMillis() - startTime;
-			log_.info("updateStatistic: END. duration="+diff);
+			log.info("updateStatistic: END. duration="+diff);
 		}
 	}
 
