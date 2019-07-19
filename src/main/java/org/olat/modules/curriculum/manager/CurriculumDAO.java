@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.OrganisationRoles;
@@ -340,6 +341,13 @@ public class CurriculumDAO {
 	public Curriculum update(Curriculum curriculum) {
 		((CurriculumImpl)curriculum).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(curriculum);
+	}
+	
+	public void delete(CurriculumImpl curriculum) {
+		Group group = curriculum.getGroup();
+		groupDao.removeMemberships(group);
+		dbInstance.getCurrentEntityManager().remove(curriculum);
+		groupDao.removeGroup(group);
 	}
 	
 	public List<Identity> getMembersIdentity(CurriculumRef curriculum, String role) {

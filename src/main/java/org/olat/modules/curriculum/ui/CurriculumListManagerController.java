@@ -58,6 +58,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElementMembership;
@@ -93,6 +94,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private EditCurriculumController newCurriculumCtrl;
 	private ImportCurriculumController importCurriculumCtrl;
 	private EditCurriculumOverviewController editCurriculumCtrl;
+	private ConfirmCurriculumDeleteController deleteCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private int counter = 0;
@@ -254,7 +256,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(editCurriculumCtrl == source || importCurriculumCtrl == source) {
+		} else if(editCurriculumCtrl == source || importCurriculumCtrl == source
+				|| deleteCurriculumCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(tableEl.getQuickSearchString(), false);
 			}
@@ -268,9 +271,11 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private void cleanUp() {
 		removeAsListenerAndDispose(importCurriculumCtrl);
+		removeAsListenerAndDispose(deleteCurriculumCtrl);
 		removeAsListenerAndDispose(newCurriculumCtrl);
 		removeAsListenerAndDispose(cmc);
 		importCurriculumCtrl = null;
+		deleteCurriculumCtrl = null;
 		newCurriculumCtrl = null;
 		cmc = null;
 	}
@@ -355,6 +360,23 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			editCurriculumCtrl = new EditCurriculumOverviewController(ureq, getWindowControl(), curriculum, secCallback);
 			listenTo(editCurriculumCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), editCurriculumCtrl);
+		}
+	}
+	
+	private void doDeleteCurriculum(UserRequest ureq, CurriculumRow row) {
+		removeAsListenerAndDispose(deleteCurriculumCtrl);
+		
+		Curriculum curriculum = curriculumService.getCurriculum(row);
+		if(curriculum == null) {
+			showWarning("warning.curriculum.deleted");
+		} else {
+			deleteCurriculumCtrl = new ConfirmCurriculumDeleteController(ureq, getWindowControl(), row);
+			listenTo(deleteCurriculumCtrl);
+			
+			String title = translate("delete.curriculum.title", new String[] { StringHelper.escapeHtml(row.getDisplayName()) });
+			cmc = new CloseableModalController(getWindowControl(), "close", deleteCurriculumCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
 		}
 	}
 	
@@ -453,7 +475,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 				doEditCurriculum(ureq, row);
 			} else if(deleteLink == source) {
 				close();
-				showWarning("Not implemented");
+				doDeleteCurriculum(ureq, row);
 			} else if(exportLink == source) {
 				close();
 				doExportCurriculum(ureq, row);
