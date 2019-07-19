@@ -52,7 +52,7 @@ public class TaxonomyTreePage {
 	 * @return Itself
 	 */
 	public TaxonomyTreePage atLeastOneLevel(String identifier, String name) {
-		By tableTreeBy = By.cssSelector("div.o_sel_taxonomy_levels_tree table");
+		By tableTreeBy = By.cssSelector("div.o_sel_taxonomy_levels_tree div.o_table_flexi_breadcrumb");
 		OOGraphene.waitElement(tableTreeBy, browser);
 		
 		By tableBy = By.xpath("//div[contains(@class,'o_sel_taxonomy_levels_tree')]//table//tr/td[text()[contains(.,'" + identifier + "')]]");
