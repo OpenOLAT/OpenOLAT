@@ -1,0 +1,328 @@
+<org.olat.modules.curriculum.model.CurriculumImpl>
+  <key>1</key>
+  <creationDate class="sql-timestamp">2018-07-13 14:04:18.723</creationDate>
+  <lastModified class="sql-timestamp">2018-07-13 14:04:18.723</lastModified>
+  <identifier>Physik</identifier>
+  <displayName>Physik</displayName>
+  <description></description>
+  <rootElements>
+    <org.olat.modules.curriculum.model.CurriculumElementImpl>
+      <key>1</key>
+      <creationDate class="sql-timestamp">2018-07-13 14:04:36.1</creationDate>
+      <lastModified class="sql-timestamp">2018-10-22 12:38:22.917</lastModified>
+      <posCurriculum>0</posCurriculum>
+      <identifier>Astrophysik</identifier>
+      <displayName>Astrophysik</displayName>
+      <description></description>
+      <calendarsEnabledString>disabled</calendarsEnabledString>
+      <status>active</status>
+      <materializedPathKeys>/1/</materializedPathKeys>
+      <children>
+        <org.olat.modules.curriculum.model.CurriculumElementImpl>
+          <key>8</key>
+          <creationDate class="sql-timestamp">2018-07-18 16:33:55.543</creationDate>
+          <lastModified class="sql-timestamp">2019-02-19 10:39:31.199</lastModified>
+          <pos>0</pos>
+          <identifier>Solar system</identifier>
+          <displayName>Solar system</displayName>
+          <description></description>
+          <calendarsEnabledString>disabled</calendarsEnabledString>
+          <lecturesEnabledString>enabled</lecturesEnabledString>
+          <status>active</status>
+          <beginDate class="sql-timestamp">2019-02-11 23:00:00</beginDate>
+          <endDate class="sql-timestamp">2019-02-27 23:00:00</endDate>
+          <materializedPathKeys>/1/8/</materializedPathKeys>
+          <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+          <children>
+            <org.olat.modules.curriculum.model.CurriculumElementImpl>
+              <key>10</key>
+              <creationDate class="sql-timestamp">2018-07-18 16:34:29.45</creationDate>
+              <lastModified class="sql-timestamp">2018-10-22 12:37:33.456</lastModified>
+              <pos>0</pos>
+              <identifier>Saturn</identifier>
+              <displayName>Saturn</displayName>
+              <description></description>
+              <calendarsEnabledString>enabled</calendarsEnabledString>
+              <status>active</status>
+              <materializedPathKeys>/1/8/10/</materializedPathKeys>
+              <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+              <children/>
+              <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../../../.."/>
+              <type class="org.olat.modules.curriculum.model.CurriculumElementTypeImpl">
+                <key>4</key>
+                <creationDate class="sql-timestamp">2018-10-22 12:35:23.921</creationDate>
+                <lastModified class="sql-timestamp">2018-10-22 12:35:23.923</lastModified>
+                <identifier>Seminar</identifier>
+                <displayName>Seminar</displayName>
+                <description></description>
+                <cssClass></cssClass>
+                <calendarsEnabledString>enabled</calendarsEnabledString>
+                <allowedSubTypes>
+                  <isTempSession>false</isTempSession>
+                  <initialized>false</initialized>
+                  <owner class="org.olat.modules.curriculum.model.CurriculumElementTypeImpl" reference="../.."/>
+                  <cachedSize>-1</cachedSize>
+                  <role>org.olat.modules.curriculum.model.CurriculumElementTypeImpl.allowedSubTypes</role>
+                  <key class="long">4</key>
+                  <dirty>false</dirty>
+                  <elementRemoved>false</elementRemoved>
+                  <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+                </allowedSubTypes>
+              </type>
+            </org.olat.modules.curriculum.model.CurriculumElementImpl>
+            <org.olat.modules.curriculum.model.CurriculumElementImpl>
+              <key>11</key>
+              <creationDate class="sql-timestamp">2018-07-18 16:34:42.244</creationDate>
+              <lastModified class="sql-timestamp">2018-10-11 08:20:32.406</lastModified>
+              <pos>1</pos>
+              <identifier>Jupiter</identifier>
+              <displayName>Jupiter</displayName>
+              <description></description>
+              <calendarsEnabledString>disabled</calendarsEnabledString>
+              <status>active</status>
+              <beginDate class="sql-timestamp">2018-10-05 22:00:00</beginDate>
+              <endDate class="sql-timestamp">2018-10-26 22:00:00</endDate>
+              <materializedPathKeys>/1/8/11/</materializedPathKeys>
+              <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+              <children/>
+              <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../../../.."/>
+            </org.olat.modules.curriculum.model.CurriculumElementImpl>
+          </children>
+          <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../.."/>
+          <type class="org.olat.modules.curriculum.model.CurriculumElementTypeImpl">
+            <key>2</key>
+            <creationDate class="sql-timestamp">2018-10-22 12:34:59.867</creationDate>
+            <lastModified class="sql-timestamp">2019-02-13 14:08:32.946</lastModified>
+            <identifier>Semester</identifier>
+            <displayName>Semester</displayName>
+            <description></description>
+            <cssClass></cssClass>
+            <calendarsEnabledString>enabled</calendarsEnabledString>
+            <lecturesEnabledString>enabled</lecturesEnabledString>
+            <allowedSubTypes>
+              <isTempSession>false</isTempSession>
+              <initialized>false</initialized>
+              <owner class="org.olat.modules.curriculum.model.CurriculumElementTypeImpl" reference="../.."/>
+              <cachedSize>-1</cachedSize>
+              <role>org.olat.modules.curriculum.model.CurriculumElementTypeImpl.allowedSubTypes</role>
+              <key class="long">2</key>
+              <dirty>false</dirty>
+              <elementRemoved>false</elementRemoved>
+              <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+            </allowedSubTypes>
+          </type>
+        </org.olat.modules.curriculum.model.CurriculumElementImpl>
+        <org.olat.modules.curriculum.model.CurriculumElementImpl>
+          <key>9</key>
+          <creationDate class="sql-timestamp">2018-07-18 16:34:14.697</creationDate>
+          <lastModified class="sql-timestamp">2018-10-15 14:27:47.814</lastModified>
+          <pos>1</pos>
+          <identifier>Galaxy</identifier>
+          <displayName>Galaxy</displayName>
+          <description></description>
+          <calendarsEnabledString>disabled</calendarsEnabledString>
+          <status>active</status>
+          <beginDate class="sql-timestamp">2018-09-30 22:00:00</beginDate>
+          <endDate class="sql-timestamp">2018-10-02 22:00:00</endDate>
+          <materializedPathKeys>/1/9/</materializedPathKeys>
+          <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+          <children/>
+          <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../.."/>
+        </org.olat.modules.curriculum.model.CurriculumElementImpl>
+      </children>
+      <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../.."/>
+      <type class="org.olat.modules.curriculum.model.CurriculumElementTypeImpl">
+        <key>1</key>
+        <creationDate class="sql-timestamp">2018-10-05 07:18:24.409</creationDate>
+        <lastModified class="sql-timestamp">2018-10-22 12:35:04.245</lastModified>
+        <identifier>Bildungsgang</identifier>
+        <displayName>Bildungsgang</displayName>
+        <description></description>
+        <cssClass></cssClass>
+        <calendarsEnabledString>enabled</calendarsEnabledString>
+        <allowedSubTypes>
+          <isTempSession>false</isTempSession>
+          <initialized>false</initialized>
+          <owner class="org.olat.modules.curriculum.model.CurriculumElementTypeImpl" reference="../.."/>
+          <cachedSize>-1</cachedSize>
+          <role>org.olat.modules.curriculum.model.CurriculumElementTypeImpl.allowedSubTypes</role>
+          <key class="long">1</key>
+          <dirty>false</dirty>
+          <elementRemoved>false</elementRemoved>
+          <allowLoadOutsideTransaction>false</allowLoadOutsideTransaction>
+        </allowedSubTypes>
+      </type>
+    </org.olat.modules.curriculum.model.CurriculumElementImpl>
+    <org.olat.modules.curriculum.model.CurriculumElementImpl>
+      <key>2</key>
+      <creationDate class="sql-timestamp">2018-07-18 16:31:54.842</creationDate>
+      <lastModified class="sql-timestamp">2018-10-16 12:57:04.003</lastModified>
+      <posCurriculum>1</posCurriculum>
+      <identifier>Quantum Physik</identifier>
+      <displayName>Quantum Physik</displayName>
+      <description></description>
+      <calendarsEnabledString>enabled</calendarsEnabledString>
+      <status>active</status>
+      <materializedPathKeys>/2/</materializedPathKeys>
+      <children>
+        <org.olat.modules.curriculum.model.CurriculumElementImpl>
+          <key>25</key>
+          <creationDate class="sql-timestamp">2018-10-16 12:57:29.674</creationDate>
+          <lastModified class="sql-timestamp">2018-10-16 13:01:11.316</lastModified>
+          <pos>0</pos>
+          <identifier>Chromodynamique quantique</identifier>
+          <displayName>Chromodynamique quantique</displayName>
+          <description></description>
+          <calendarsEnabledString>enabled</calendarsEnabledString>
+          <status>active</status>
+          <materializedPathKeys>/2/25/</materializedPathKeys>
+          <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+          <children>
+            <org.olat.modules.curriculum.model.CurriculumElementImpl>
+              <key>27</key>
+              <creationDate class="sql-timestamp">2018-10-16 13:00:48.07</creationDate>
+              <lastModified class="sql-timestamp">2019-02-19 10:57:29.496</lastModified>
+              <pos>0</pos>
+              <identifier>Chromodynamique quantique aspects pratiques</identifier>
+              <displayName>Chromodynamique quantique aspects pratiques</displayName>
+              <description></description>
+              <calendarsEnabledString>disabled</calendarsEnabledString>
+              <lecturesEnabledString>enabled</lecturesEnabledString>
+              <status>active</status>
+              <materializedPathKeys>/2/25/27/</materializedPathKeys>
+              <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+              <children/>
+              <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../../../.."/>
+            </org.olat.modules.curriculum.model.CurriculumElementImpl>
+            <org.olat.modules.curriculum.model.CurriculumElementImpl>
+              <key>28</key>
+              <creationDate class="sql-timestamp">2018-10-16 13:01:04.464</creationDate>
+              <lastModified class="sql-timestamp">2018-10-16 13:01:04.464</lastModified>
+              <pos>1</pos>
+              <identifier>Chromodynamique quantique théorie math.</identifier>
+              <displayName>Chromodynamique quantique théorie math.</displayName>
+              <calendarsEnabledString>disabled</calendarsEnabledString>
+              <status>active</status>
+              <materializedPathKeys>/2/25/28/</materializedPathKeys>
+              <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+              <children/>
+              <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../../../.."/>
+            </org.olat.modules.curriculum.model.CurriculumElementImpl>
+          </children>
+          <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../.."/>
+        </org.olat.modules.curriculum.model.CurriculumElementImpl>
+        <org.olat.modules.curriculum.model.CurriculumElementImpl>
+          <key>26</key>
+          <creationDate class="sql-timestamp">2018-10-16 12:58:20.489</creationDate>
+          <lastModified class="sql-timestamp">2018-10-16 12:58:20.489</lastModified>
+          <pos>1</pos>
+          <identifier>Mécanique quantique relativiste</identifier>
+          <displayName>Mécanique quantique relativiste</displayName>
+          <calendarsEnabledString>disabled</calendarsEnabledString>
+          <status>active</status>
+          <materializedPathKeys>/2/26/</materializedPathKeys>
+          <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+          <children/>
+          <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../.."/>
+        </org.olat.modules.curriculum.model.CurriculumElementImpl>
+      </children>
+      <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../.."/>
+    </org.olat.modules.curriculum.model.CurriculumElementImpl>
+    <org.olat.modules.curriculum.model.CurriculumElementImpl>
+      <key>3</key>
+      <creationDate class="sql-timestamp">2018-07-18 16:32:22.429</creationDate>
+      <lastModified class="sql-timestamp">2018-07-18 16:32:22.429</lastModified>
+      <posCurriculum>2</posCurriculum>
+      <identifier>Math</identifier>
+      <displayName>Math</displayName>
+      <status>active</status>
+      <materializedPathKeys>/3/</materializedPathKeys>
+      <children>
+        <org.olat.modules.curriculum.model.CurriculumElementImpl>
+          <key>4</key>
+          <creationDate class="sql-timestamp">2018-07-18 16:32:39.837</creationDate>
+          <lastModified class="sql-timestamp">2018-07-18 16:32:39.837</lastModified>
+          <pos>0</pos>
+          <identifier>Topology</identifier>
+          <displayName>Topology</displayName>
+          <status>active</status>
+          <materializedPathKeys>/3/4/</materializedPathKeys>
+          <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+          <children/>
+          <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../.."/>
+        </org.olat.modules.curriculum.model.CurriculumElementImpl>
+        <org.olat.modules.curriculum.model.CurriculumElementImpl>
+          <key>5</key>
+          <creationDate class="sql-timestamp">2018-07-18 16:32:59.384</creationDate>
+          <lastModified class="sql-timestamp">2018-07-18 16:32:59.384</lastModified>
+          <pos>1</pos>
+          <identifier>Numerische Simulation</identifier>
+          <displayName>Numerische Simulation</displayName>
+          <status>inactive</status>
+          <materializedPathKeys>/3/5/</materializedPathKeys>
+          <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+          <children>
+            <org.olat.modules.curriculum.model.CurriculumElementImpl>
+              <key>6</key>
+              <creationDate class="sql-timestamp">2018-07-18 16:33:16.646</creationDate>
+              <lastModified class="sql-timestamp">2018-07-18 16:33:16.646</lastModified>
+              <pos>0</pos>
+              <identifier>R Software</identifier>
+              <displayName>R Software</displayName>
+              <status>active</status>
+              <materializedPathKeys>/3/5/6/</materializedPathKeys>
+              <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+              <children/>
+              <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../../../.."/>
+            </org.olat.modules.curriculum.model.CurriculumElementImpl>
+            <org.olat.modules.curriculum.model.CurriculumElementImpl>
+              <key>7</key>
+              <creationDate class="sql-timestamp">2018-07-18 16:33:39.025</creationDate>
+              <lastModified class="sql-timestamp">2018-10-15 14:27:58.13</lastModified>
+              <pos>1</pos>
+              <identifier>Fortran</identifier>
+              <displayName>Fortran</displayName>
+              <description></description>
+              <calendarsEnabledString>disabled</calendarsEnabledString>
+              <status>active</status>
+              <beginDate class="sql-timestamp">2018-09-30 22:00:00</beginDate>
+              <endDate class="sql-timestamp">2018-10-02 22:00:00</endDate>
+              <materializedPathKeys>/3/5/7/</materializedPathKeys>
+              <parent class="org.olat.modules.curriculum.model.CurriculumElementImpl" reference="../../.."/>
+              <children/>
+              <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../../../.."/>
+            </org.olat.modules.curriculum.model.CurriculumElementImpl>
+          </children>
+          <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../../../.."/>
+        </org.olat.modules.curriculum.model.CurriculumElementImpl>
+      </children>
+      <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../.."/>
+    </org.olat.modules.curriculum.model.CurriculumElementImpl>
+    <org.olat.modules.curriculum.model.CurriculumElementImpl>
+      <key>17</key>
+      <creationDate class="sql-timestamp">2018-07-26 16:46:33.362</creationDate>
+      <lastModified class="sql-timestamp">2018-07-26 16:58:46.45</lastModified>
+      <pos>0</pos>
+      <posCurriculum>3</posCurriculum>
+      <identifier>To delete 5</identifier>
+      <displayName>To delete 5</displayName>
+      <status>deleted</status>
+      <materializedPathKeys>/17/</materializedPathKeys>
+      <children/>
+      <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../.."/>
+    </org.olat.modules.curriculum.model.CurriculumElementImpl>
+    <org.olat.modules.curriculum.model.CurriculumElementImpl>
+      <key>20</key>
+      <creationDate class="sql-timestamp">2018-07-26 19:32:10.768</creationDate>
+      <lastModified class="sql-timestamp">2018-07-26 19:36:07.528</lastModified>
+      <pos>0</pos>
+      <posCurriculum>4</posCurriculum>
+      <identifier>To delete 8</identifier>
+      <displayName>To delete 8</displayName>
+      <status>deleted</status>
+      <materializedPathKeys>/20/</materializedPathKeys>
+      <children/>
+      <curriculum class="org.olat.modules.curriculum.model.CurriculumImpl" reference="../../.."/>
+    </org.olat.modules.curriculum.model.CurriculumElementImpl>
+  </rootElements>
+</org.olat.modules.curriculum.model.CurriculumImpl>

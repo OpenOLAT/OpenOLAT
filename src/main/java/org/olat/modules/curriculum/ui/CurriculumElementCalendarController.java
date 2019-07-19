@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
+import org.olat.commons.calendar.ui.CalendarController;
 import org.olat.commons.calendar.ui.WeeklyCalendarController;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
@@ -84,7 +85,7 @@ public class CurriculumElementCalendarController extends BasicController impleme
 		calendars = loadCalendars(ureq, entries);
 
 		callerOres = OresHelper.createOLATResourceableInstance(CurriculumElement.class, element.getKey());
-		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_CURRICULUM,
+		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, CalendarController.CALLER_CURRICULUM,
 				callerOres, false);
 		calendarController.setDifferentiateManagedEvent(CourseCalendars.needToDifferentiateManagedEvents(calendars));
 		listenTo(calendarController);

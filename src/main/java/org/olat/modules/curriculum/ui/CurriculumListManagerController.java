@@ -54,6 +54,7 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -65,6 +66,7 @@ import org.olat.modules.curriculum.CurriculumManagedFlag;
 import org.olat.modules.curriculum.CurriculumSecurityCallback;
 import org.olat.modules.curriculum.CurriculumSecurityCallbackFactory;
 import org.olat.modules.curriculum.CurriculumService;
+import org.olat.modules.curriculum.manager.ExportCurriculumMediaResource;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -81,6 +83,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private FlexiTableElement tableEl;
 	private Link newCurriculumButton;
+	private Link importCurriculumButton;
 	private CurriculumManagerDataModel tableModel;
 	private final TooledStackedPanel toolbarPanel;
 	
@@ -88,6 +91,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	private CloseableModalController cmc;
 	private CurriculumComposerController composerCtrl;
 	private EditCurriculumController newCurriculumCtrl;
+	private ImportCurriculumController importCurriculumCtrl;
 	private EditCurriculumOverviewController editCurriculumCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
@@ -113,6 +117,10 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	@Override
 	public void initTools() {
 		if(secCallback.canNewCurriculum()) {
+			importCurriculumButton = LinkFactory.createToolLink("import.curriculum", translate("import.curriculum"), this, "o_icon_import");
+			importCurriculumButton.setElementCssClass("o_sel_import_curriculum");
+			toolbarPanel.addTool(importCurriculumButton, Align.left);
+			
 			newCurriculumButton = LinkFactory.createToolLink("add.curriculum", translate("add.curriculum"), this, "o_icon_add");
 			newCurriculumButton.setElementCssClass("o_sel_add_curriculum");
 			toolbarPanel.addTool(newCurriculumButton, Align.left);
@@ -246,7 +254,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			}
 			cmc.deactivate();
 			cleanUp();
-		} else if(editCurriculumCtrl == source) {
+		} else if(editCurriculumCtrl == source || importCurriculumCtrl == source) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				loadModel(tableEl.getQuickSearchString(), false);
 			}
@@ -259,8 +267,10 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void cleanUp() {
+		removeAsListenerAndDispose(importCurriculumCtrl);
 		removeAsListenerAndDispose(newCurriculumCtrl);
 		removeAsListenerAndDispose(cmc);
+		importCurriculumCtrl = null;
 		newCurriculumCtrl = null;
 		cmc = null;
 	}
@@ -269,6 +279,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(newCurriculumButton == source) {
 			doNewCurriculum(ureq);
+		} else if(importCurriculumButton == source) {
+			doImportCurriculum(ureq);
 		} else if(toolbarPanel == source) {
 			if(event instanceof PopEvent) {
 				PopEvent pe = (PopEvent)event;
@@ -311,6 +323,17 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		loadModel(event.getSearch(), true);
 	}
 	
+	private void doImportCurriculum(UserRequest ureq) {
+		if(importCurriculumCtrl != null) return;
+
+		importCurriculumCtrl = new ImportCurriculumController(ureq, getWindowControl());
+		listenTo(importCurriculumCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), "close", importCurriculumCtrl.getInitialComponent(), true, translate("import.curriculum"));
+		listenTo(cmc);
+		cmc.activate();
+	}
+	
 	private void doNewCurriculum(UserRequest ureq) {
 		if(newCurriculumCtrl != null) return;
 
@@ -333,6 +356,12 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			listenTo(editCurriculumCtrl);
 			toolbarPanel.pushController(row.getDisplayName(), editCurriculumCtrl);
 		}
+	}
+	
+	private void doExportCurriculum(UserRequest ureq, CurriculumRow row) {
+		Curriculum curriculum = curriculumService.getCurriculum(row);
+		MediaResource mr = new ExportCurriculumMediaResource(curriculum);
+		ureq.getDispatchResult().setResultingMediaResource(mr);
 	}
 	
 	private void doSelectCurriculum(UserRequest ureq, CurriculumRow row, List<ContextEntry> entries) {
@@ -378,6 +407,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		
 		private Link editLink;
 		private Link deleteLink;
+		private Link exportLink;
 		private final VelocityContainer mainVC;
 
 		private CurriculumRow row;
@@ -392,6 +422,8 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			
 			//edit
 			editLink = addLink("edit", "o_icon_edit", links);
+			exportLink = addLink("export", "o_icon_export", links);
+			
 			if(!CurriculumManagedFlag.isManaged(curriculum, CurriculumManagedFlag.delete)) {
 				links.add("-");
 				deleteLink = addLink("delete", "o_icon_delete_item", links);
@@ -422,6 +454,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 			} else if(deleteLink == source) {
 				close();
 				showWarning("Not implemented");
+			} else if(exportLink == source) {
+				close();
+				doExportCurriculum(ureq, row);
 			}
 		}
 		

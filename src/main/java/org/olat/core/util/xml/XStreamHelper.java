@@ -178,8 +178,7 @@ public class XStreamHelper {
 	 */
 	public static Object xstreamClone(Object in) {
 		String data = unconfiguredXStream.toXML(in);
-		Object out = unconfiguredXStream.fromXML(data);
-		return out;
+		return unconfiguredXStream.fromXML(data);
 	}
 
 	/**

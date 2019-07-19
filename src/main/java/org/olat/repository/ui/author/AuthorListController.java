@@ -1064,7 +1064,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		boolean isAlreadyLocked = typeToDownload.isLocked(ores);
 		try {			
 		  lockResult = typeToDownload.acquireLock(ores, ureq.getIdentity());
-		  if(lockResult == null || (lockResult !=null && lockResult.isSuccess() && !isAlreadyLocked)) {
+		  if(lockResult == null || (lockResult.isSuccess() && !isAlreadyLocked)) {
 		    MediaResource mr = typeToDownload.getAsMediaResource(ores);
 		    if(mr!=null) {
 		      repositoryService.incrementDownloadCounter(entry);

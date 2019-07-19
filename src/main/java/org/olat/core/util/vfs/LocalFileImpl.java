@@ -168,10 +168,12 @@ public class LocalFileImpl extends LocalImpl implements VFSLeaf {
 	private VFSStatus deleteBasefile() {
 		VFSStatus status = VFSConstants.NO;
 		try {
-			Files.delete(getBasefile().toPath());
+			if(!Files.deleteIfExists(getBasefile().toPath())) {
+				log.debug("Cannot delete base file because it doesn't exist: {}", this);
+			}
 			status = VFSConstants.YES;
 		} catch(IOException e) {
-			log.error("Cannot delete base file: " + this, e);
+			log.error("Cannot delete base file: {}", this, e);
 		}
 		return status;
 	}
