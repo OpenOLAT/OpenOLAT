@@ -94,7 +94,7 @@ public class SearchModule extends AbstractSpringModule {
 	private long indexInterval = 0;
 	@Value("${generate.index.at.startup:true}")
 	private boolean generateAtStartup;
-	private int maxHits = 1000;
+	private int maxHits = 32000;
 	private int maxResults = 100;
 
 	@Value("${search.timeout:15}")
