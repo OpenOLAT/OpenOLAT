@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Publisher;
@@ -31,16 +32,10 @@ import org.olat.core.commons.services.notifications.SubscriptionInfo;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
-import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GTARunController;
-import org.olat.group.BusinessGroupService;
-import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.RepositoryService;
-import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,17 +52,7 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 	protected static final String CSS_CLASS_ICON = "o_gta_icon";
 	
 	@Autowired
-	private GTAManager gtaManager;
-	@Autowired
-	private UserManager userManager;
-	@Autowired
 	private RepositoryManager repositoryManager;
-	@Autowired
-	private RepositoryService repositoryService;
-	@Autowired
-	private BusinessGroupService businessGroupService;
-	@Autowired
-	private AssessmentEntryDAO courseNodeAssessmentDao;
 	@Autowired
 	private NotificationsManager notificationsManager;
 
@@ -80,8 +65,7 @@ public class GTANotificationsHandler implements NotificationsHandler  {
 		// there could be news for me, investigate deeper
 		try {
 			if (notificationsManager.isPublisherValid(p) && compareDate.before(latestNews)) {
-				GTANotifications notifications = new GTANotifications(subscriber, false, locale, compareDate,
-						repositoryService, gtaManager, businessGroupService, userManager, courseNodeAssessmentDao);
+				GTANotifications notifications = new GTANotifications(subscriber, false, locale, compareDate);
 				List<SubscriptionListItem> items = notifications.getItems();
 				if(items.isEmpty()) {
 					si = notificationsManager.getNoSubscriptionInfo();

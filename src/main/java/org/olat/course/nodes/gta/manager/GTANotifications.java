@@ -29,13 +29,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.Publisher;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -71,8 +74,11 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRelationType;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -97,21 +103,23 @@ class GTANotifications {
 	private final Translator translator;
 	private final Formatter formatter;
 	
-	private final GTAManager gtaManager;
-	private final UserManager userManager;
-	private final RepositoryService repositoryService;
-	private final BusinessGroupService businessGroupService;
-	private final AssessmentEntryDAO courseNodeAssessmentDao;
+	@Autowired
+	private GTAManager gtaManager;
+	@Autowired
+	private UserManager userManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryService repositoryService;
+	@Autowired
+	private BusinessGroupService businessGroupService;
+	@Autowired
+	private AssessmentEntryDAO courseNodeAssessmentDao;
 	
-	public GTANotifications(Subscriber subscriber, boolean markedOnly, Locale locale, Date compareDate,
-			RepositoryService repositoryService, GTAManager gtaManager,
-			BusinessGroupService businessGroupService, UserManager userManager,
-			AssessmentEntryDAO courseNodeAssessmentDao) {
-		this.gtaManager = gtaManager;
-		this.userManager = userManager;
-		this.repositoryService = repositoryService;
-		this.businessGroupService = businessGroupService;
-		this.courseNodeAssessmentDao = courseNodeAssessmentDao;
+	public GTANotifications(Subscriber subscriber, boolean markedOnly, Locale locale, Date compareDate) {
+		CoreSpringFactory.autowireObject(this);
 		this.markedOnly = markedOnly;
 		this.subscriber = subscriber;
 		this.compareDate = compareDate;
@@ -179,10 +187,11 @@ class GTANotifications {
 	
 	private void createIndividualSubscriptionInfo(Identity subscriberIdentity, Set<Long> marks) {
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
-		List<String> roles = repositoryService.getRoles(subscriberIdentity, entry);
+		Roles roles = securityManager.getRoles(subscriberIdentity);
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(subscriberIdentity, roles, entry);
 		
-		boolean owner = roles.contains(GroupRoles.owner.name());
-		boolean coach = roles.contains(GroupRoles.coach.name());
+		boolean owner = reSecurity.isOwner() || reSecurity.isEntryAdmin();
+		boolean coach = reSecurity.isCourseCoach() || reSecurity.isCurriculumCoach() || reSecurity.isGroupCoach();
 		if(owner || coach) {
 			Set<Identity> duplicateKiller = new HashSet<>();
 			List<Identity> assessableIdentities = new ArrayList<>();
@@ -229,7 +238,8 @@ class GTANotifications {
 			}
 		}
 		
-		if(roles.contains(GroupRoles.participant.name())) {
+		boolean participant = reSecurity.isCourseParticipant() || reSecurity.isCurriculumParticipant() || reSecurity.isGroupParticipant();
+		if(participant) {
 			createIndividualSubscriptionInfo(subscriberIdentity, false);
 			Task task = gtaManager.getTask(subscriberIdentity, taskList);
 			if(isSolutionVisible(subscriberIdentity, null, task)) {
@@ -256,18 +266,18 @@ class GTANotifications {
 				File[] submissions = submitDirectory.listFiles(SystemFileFilter.FILES_ONLY);
 				if(submissions.length == 0) {
 					String[] params = new String[] {
-							getTaskName(task),		// {0}
-							displayName,				// {1}
-							fullName					// {2}
+							getTaskName(task),		// 0
+							displayName,			// 1
+							fullName				// 2
 					};
 					appendSubscriptionItem("notifications.submission.individual", params, assessedIdentity, submissionDate, coach);
 				} else {
 					for(File submission:submissions) {
 						String[] params = new String[] {
-								getTaskName(task),		// {0}
-								displayName,				// {1}
-								submission.getName(),	// {2}
-								fullName					// {3}
+								getTaskName(task),		// 0
+								displayName,			// 1
+								submission.getName(),	// 2
+								fullName				// 3
 						};
 						appendSubscriptionItemForFile("notifications.submission.individual.doc", params, assessedIdentity,
 								"[submit:0]", submission, submissionDate, coach);
@@ -284,7 +294,10 @@ class GTANotifications {
 		RepositoryEntry entry = courseEnv.getCourseGroupManager().getCourseEntry();
 
 		Membership membership = gtaManager.getMembership(subscriberIdentity, entry, gtaNode);
-		boolean owner = repositoryService.hasRole(subscriberIdentity, entry, GroupRoles.owner.name());
+		Roles roles = securityManager.getRoles(subscriberIdentity);
+		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(subscriberIdentity, roles, entry);
+		
+		boolean owner = reSecurity.isOwner() || reSecurity.isEntryAdmin();
 		if(owner) {
 			List<BusinessGroup> groups = gtaManager.getBusinessGroups(gtaNode);
 			for(BusinessGroup group:groups) {
@@ -342,11 +355,11 @@ class GTANotifications {
 					for(File submission:submisssions) {
 						String author = getAuthor(submission, submitContainer);
 						String[] params = new String[] {
-								getTaskName(task),		// {0}
-								displayName,				// {1}
-								submission.getName(),		// {2}
-								author,					// {3}
-								group.getName()					// {3}
+								getTaskName(task),		// 0
+								displayName,			// 1
+								submission.getName(),	// 2
+								author,					// 3
+								group.getName()			// 4
 						};
 						appendSubscriptionItemForFile("notifications.submission.group.doc", params, group,
 								"[submit:0]", submission, submissionDate, coach);

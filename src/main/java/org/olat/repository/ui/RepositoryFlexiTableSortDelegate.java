@@ -19,11 +19,16 @@
  */
 package org.olat.repository.ui;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryStatusEnum;
+import org.olat.repository.ui.RepositoryFlexiTableModel.RepoCols;
 
 /**
  * 
@@ -35,6 +40,53 @@ public class RepositoryFlexiTableSortDelegate extends SortableFlexiTableModelDel
 	
 	public RepositoryFlexiTableSortDelegate(SortKey orderBy, RepositoryFlexiTableModel tableModel, Locale locale) {
 		super(orderBy, tableModel, locale);
+	}
+	
+	@Override
+	protected void sort(List<RepositoryEntry> rows) {
+		int columnIndex = getColumnIndex();
+		RepoCols column = RepoCols.values()[columnIndex];
+		switch(column) {
+			case repoEntry: Collections.sort(rows, new TypeComparator()); break;
+			default: super.sort(rows); break;
+		}
+	}
+	
+	private class TypeComparator implements Comparator<RepositoryEntry> {
+
+		@Override
+		public int compare(RepositoryEntry o1, RepositoryEntry o2) {
+			if(o1 == null || o2 == null) {
+				return compareNullObjects(o1, o2);
+			}
+			RepositoryEntryStatusEnum s1 = o1.getEntryStatus();
+			RepositoryEntryStatusEnum s2 = o2.getEntryStatus();
+			
+			int st1 = getStatusScore(s1);
+			int st2 = getStatusScore(s2);
+			int c = Integer.compare(st1, st2);
+			if(c == 0) {
+				String r1 = o1.getOlatResource().getResourceableTypeName();
+				String r2 = o2.getOlatResource().getResourceableTypeName();
+				c = compareString(r1, r2);
+			}
+			if(c == 0) {
+				c = compareString(o1.getDisplayname(), o2.getDisplayname());
+			}
+			if(c == 0) {
+				c = compareLongs(o1.getKey(), o2.getKey());
+			}
+			return c;
+		}
+		
+		private int getStatusScore(RepositoryEntryStatusEnum status) {
+			switch(status) {
+				case closed: return 1;
+				case trash:
+				case deleted: return 2;
+				default: return 0;
+			}
+		}
 	}
 
 }

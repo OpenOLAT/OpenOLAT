@@ -19,7 +19,6 @@
  */
 package org.olat.ldap;
 
-import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.LdapContext;
 
@@ -68,7 +67,7 @@ public class LDAPLoginTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void testUserBind() throws NamingException {
+	public void testUserBind() throws Exception {
 		Assume.assumeTrue(ldapLoginModule.isLDAPEnabled());
 
 		LDAPError errors = new LDAPError();

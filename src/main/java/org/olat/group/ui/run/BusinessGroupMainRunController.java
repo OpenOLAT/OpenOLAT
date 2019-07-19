@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.olat.NewControllerFactory;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.collaboration.CollaborationTools;
 import org.olat.collaboration.CollaborationToolsFactory;
@@ -42,10 +41,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.components.table.Table;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.MenuTree;
@@ -58,7 +53,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
@@ -97,9 +91,6 @@ import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.wiki.WikiManager;
 import org.olat.modules.wiki.WikiModule;
 import org.olat.portfolio.PortfolioModule;
-import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
-import org.olat.repository.ui.RepositoryTableModel;
 import org.olat.resource.OLATResource;
 import org.olat.resource.accesscontrol.ACService;
 import org.olat.resource.accesscontrol.AccessControlModule;
@@ -177,9 +168,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	public static final String ACTIVITY_MENUSELECT_AC = "MENU_SHOW_AC";
 
 	private Panel mainPanel;
-	private VelocityContainer main, vc_sendToChooserForm, resourcesVC;
+	private VelocityContainer main;
+	private VelocityContainer vc_sendToChooserForm;
 	private final TooledStackedPanel toolbarPanel;
-	private Translator resourceTrans;
 
 	private BusinessGroup businessGroup;
 
@@ -190,7 +181,7 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	
 	private BusinessGroupEditController bgEditCntrllr;
 	private Controller bgACHistoryCtrl;
-	private TableController resourcesCtr;
+	private BusinessGroupResourceController resourcesCtr;
 	private GroupMembersRunController groupMembersToggleViewController;
 
 	private BusinessGroupSendToChooserForm sendToChooserForm;
@@ -325,7 +316,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		// package translator with default group fallback translators and type
 		// translator
 		setTranslator(Util.createPackageTranslator(BGControllerFactory.class, getLocale(), getTranslator()));
-		resourceTrans = Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator());
 
 		// main component layed out in panel
 		main = createVelocityContainer("bgrun");
@@ -470,23 +460,6 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 				mainPanel.setContent(main);
 			}
 
-		} else if (source == resourcesCtr) {
-			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
-				TableEvent te = (TableEvent) event;
-				String actionid = te.getActionId();
-				int rowid = te.getRowId();
-				RepositoryTableModel repoTableModel = (RepositoryTableModel) resourcesCtr.getTableDataModel();
-				if (RepositoryTableModel.TABLE_ACTION_SELECT_LINK.equals(actionid)) {
-
-					RepositoryEntry currentRepoEntry = repoTableModel.getObject(rowid);
-					OLATResource ores = currentRepoEntry.getOlatResource();
-					if (ores == null) throw new AssertException("repoEntry had no olatresource, repoKey = " + currentRepoEntry.getKey());
-					addLoggingResourceable(LoggingResourceable.wrap(ores, OlatResourceableType.genRepoEntry));
-
-					String businessPath = "[RepositoryEntry:" + currentRepoEntry.getKey() + "]";
-					NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
-				}
-			}
 		} else if (source == sendToChooserForm) {
 			if (event == Event.DONE_EVENT) {
 				removeAsListenerAndDispose(collabToolCtr);
@@ -1072,25 +1045,13 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 	}
 
 	private void doShowResources(UserRequest ureq) {
-		// always refresh data model, maybe it has changed
-		RepositoryTableModel repoTableModel = new RepositoryTableModel(getLocale());
-		List<RepositoryEntry> repoTableModelEntries = businessGroupService.findRepositoryEntries(Collections.singletonList(businessGroup), 0, -1);
-		repoTableModel.setObjects(repoTableModelEntries);
-		// init table controller only once
 		if (resourcesCtr == null) {
-			TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-			tableConfig.setTableEmptyMessage(translate("resources.noresources"));
-			//removeAsListenerAndDispose(resourcesCtr);
-			resourcesCtr = new TableController(tableConfig, ureq, getWindowControl(), resourceTrans);
+			resourcesCtr = new BusinessGroupResourceController(ureq, getWindowControl(), businessGroup);
 			listenTo(resourcesCtr);
-			
-			resourcesVC = createVelocityContainer("resources");
-			repoTableModel.addColumnDescriptors(resourcesCtr, true, false, false, false);
-			resourcesVC.put("resources", resourcesCtr.getInitialComponent());
+		} else {
+			resourcesCtr.loadModel();
 		}
-		// add table model to table
-		resourcesCtr.setTableDataModel(repoTableModel);
-		mainPanel.setContent(resourcesVC);
+		mainPanel.setContent(resourcesCtr.getInitialComponent());
 		addToHistory(ureq, ORES_TOOLRESOURCES, null);
 	}
 

@@ -20,7 +20,6 @@
 package org.olat.selenium.page.repository;
 
 import org.olat.selenium.page.graphene.OOGraphene;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
 /**
@@ -32,8 +31,6 @@ import org.openqa.selenium.WebDriver;
  *
  */
 public class RepositoryEditDescriptionPage {
-	
-	public static final By generaltabBy = By.className("o_sel_edit_repositoryentry");
 
 	private final WebDriver browser;
 	
