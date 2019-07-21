@@ -405,11 +405,22 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			sb.append("<div class='o_table_footer'><div class='o_table_checkall input-sm'>");
 
 			if(ftE.isSelectAllEnable()) {
+				FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
+				int numOfRows = dataModel.getRowCount();
+				
 				sb.append("<a id='")
 				  .append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
 				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
 						  new NameValuePair("select", "checkall")))
-				  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>").append(translator.translate("form.checkall"))
+				  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>")
+				  .append(translator.translate("form.checkall.numbered", new String[] { Integer.toString(numOfRows) }))
+				  .append("</span></a>");
+				
+				sb.append("<a id='")
+				  .append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
+				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
+						  new NameValuePair("select", "checkpage")))
+				  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>").append(translator.translate("form.checkpage"))
 				  .append("</span></a>");
 	
 				sb.append("<a id='")

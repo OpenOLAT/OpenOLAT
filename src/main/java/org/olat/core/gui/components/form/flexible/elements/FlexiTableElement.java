@@ -231,6 +231,11 @@ public interface FlexiTableElement extends FormItem {
 	public void selectAll();
 	
 	/**
+	 * Select all rows visible on the current page.
+	 */
+	public void selectPage();
+	
+	/**
 	 * Remove all multi selected index.
 	 */
 	public void deselectAll();
