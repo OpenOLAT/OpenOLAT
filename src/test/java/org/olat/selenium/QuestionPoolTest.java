@@ -120,6 +120,7 @@ public class QuestionPoolTest extends Deployments {
 		administration
 			.openTaxonomy()
 			.selectTaxonomy("QPOOL")
+			.assertOnMetadata()
 			.selectTaxonomyTree()
 			.atLeastOneLevel("at-least-one", "At least one")
 			.selectTaxonomyLevel("at-least-one")

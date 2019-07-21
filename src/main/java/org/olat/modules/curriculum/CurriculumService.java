@@ -66,6 +66,9 @@ public interface CurriculumService {
 	public Curriculum getCurriculum(CurriculumRef ref);
 	
 	public Curriculum updateCurriculum(Curriculum curriculum);
+
+	public void deleteCurriculum(CurriculumRef curriculum);
+	
 	
 	public List<Curriculum> getCurriculums(Collection<? extends CurriculumRef> refs);
 	

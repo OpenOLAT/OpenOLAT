@@ -50,6 +50,13 @@ public class QTI21Page {
 		this.browser = browser;
 	}
 	
+	/**
+	 * Get only the page. You need to assert on start or assessment item
+	 * to make it reliable.
+	 * 
+	 * @param browser The browser
+	 * @return The QTI 2.1 page
+	 */
 	public static QTI21Page getQTI21Page(WebDriver browser) {
 		By mainBy = By.id("o_main_wrapper");
 		OOGraphene.waitElement(mainBy, browser);
@@ -64,8 +71,8 @@ public class QTI21Page {
 	
 	public QTI21Page start() {
 		By startBy = By.cssSelector("a.o_sel_start_qti21assessment");
-		WebElement startButton = browser.findElement(startBy);
-		startButton.click();
+		OOGraphene.waitElement(startBy, browser);
+		browser.findElement(startBy).click();
 		OOGraphene.waitBusy(browser);
 		By mainBy = By.cssSelector("div.qtiworks.o_assessmenttest");
 		OOGraphene.waitElement(mainBy, browser);
@@ -82,6 +89,7 @@ public class QTI21Page {
 	
 	public QTI21Page startTestPart() {
 		By startBy = By.xpath("//button[contains(@onclick,'advanceTestPart')]");
+		OOGraphene.waitElement(startBy, browser);
 		browser.findElement(startBy).click();
 		OOGraphene.waitBusy(browser);
 		By menuBy = By.id("o_qti_menu");
@@ -960,6 +968,8 @@ public class QTI21Page {
 	}
 	
 	public QTI21SettingsPage settings() {
+		By toolsLinkBy = By.cssSelector("ul.o_tools li.o_tool_dropdown a.o_sel_repository_tools");
+		OOGraphene.waitElement(toolsLinkBy, browser);
 		if(!browser.findElement(toolsMenu).isDisplayed()) {
 			openToolsMenu();
 		}

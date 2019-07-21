@@ -163,7 +163,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		for(int i=dataModel.getTableColumnModel().getColumnCount(); i-->0; ) {
 			FlexiColumnModel col = dataModel.getTableColumnModel().getColumnModel(i);
 			if(col.isDefaultVisible()) {
-				enabledColumnIndex.add(new Integer(col.getColumnIndex()));
+				enabledColumnIndex.add(Integer.valueOf(col.getColumnIndex()));
 			}
 		}
 
@@ -923,6 +923,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			doExport(ureq);
 		} else if(dispatchuri != null && select != null && select.equals("checkall")) {
 			selectAll();
+		} else if(dispatchuri != null && select != null && select.equals("checkpage")) {
+			selectPage();
 		} else if(dispatchuri != null && select != null && select.equals("uncheckall")) {
 			doUnSelectAll();
 		} else if(customButton != null
@@ -998,7 +1000,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		} else if(searchFieldEl.getComponent() == source) {
 			if(event instanceof AutoCompleteEvent) {
 				AutoCompleteEvent ace = (AutoCompleteEvent)event;
-				doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH_KEY_SELECTION, ace.getKey(), null);
+				doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH_KEY_SELECTION, ace.getKey(), null);
 			}
 		}
 	}
@@ -1081,7 +1083,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		for(int i=dataModel.getRowCount(); i-->0; ) {
 			Object obj = dataModel.getObject(i);
 			if(obj != null && selectedObjects.contains(obj)) {
-				multiSelectedIndex.put(new Integer(i), obj);
+				multiSelectedIndex.put(Integer.valueOf(i), obj);
 			}
 		}
 		
@@ -1184,7 +1186,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		component.setDirty(true);
 		
-		getRootForm().fireFormEvent(ureq, new FlexiTableFilterEvent(FlexiTableFilterEvent.FILTER, this,
+		getRootForm().fireFormEvent(ureq, new FlexiTableFilterEvent(FlexiTableReduceEvent.FILTER, this,
 				getQuickSearchString(), getSelectedFilters(), getSelectedExtendedFilters(), null, FormEvent.ONCLICK));
 	}
 	
@@ -1213,7 +1215,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			}
 		}
 
-		getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(FlexiTableSearchEvent.EXTENDED_FILTER, this,
+		getRootForm().fireFormEvent(ureq, new FlexiTableSearchEvent(FlexiTableReduceEvent.EXTENDED_FILTER, this,
 				getSearchText(), getSelectedFilters(), getSelectedExtendedFilters(), getConditionalQueries(), FormEvent.ONCLICK));
 	}
 	
@@ -1512,7 +1514,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			search = searchFieldEl.getValue();
 		}
 		List<String> condQueries = extendedSearchCtrl.getConditionalQueries();
-		doSearch(ureq, FlexiTableSearchEvent.SEARCH, search, condQueries);
+		doSearch(ureq, FlexiTableReduceEvent.SEARCH, search, condQueries);
 	}
 	
 	protected void evalSearchRequest(UserRequest ureq) {
@@ -1528,9 +1530,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String search = searchFieldEl.getValue();
 
 		if(key != null) {
-			doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH_KEY_SELECTION, key, null);
+			doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH_KEY_SELECTION, key, null);
 		} else if(StringHelper.containsNonWhitespace(search)) {
-			doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH, search, null);
+			doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH, search, null);
 		} else {
 			resetSearch(ureq);
 		}
@@ -1559,7 +1561,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		if(StringHelper.containsNonWhitespace(search)) {
 			searchFieldEl.setValue(search);
-			doSearch(ureq, FlexiTableSearchEvent.QUICK_SEARCH, search, null);
+			doSearch(ureq, FlexiTableReduceEvent.QUICK_SEARCH, search, null);
 		}
 	}
 	
@@ -1574,9 +1576,28 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		int numOfRows = getRowCount();
 		for(int i=0; i<numOfRows;i++) {
 			Object objectRow = dataModel.getObject(i);
-			multiSelectedIndex.put(new Integer(i), objectRow);
+			multiSelectedIndex.put(Integer.valueOf(i), objectRow);
 		}
 		allSelectedNeedLoadOfWholeModel = true;
+	}
+	
+	@Override
+	public void selectPage() {
+		if(multiSelectedIndex != null) {
+			multiSelectedIndex.clear();
+		} else {
+			multiSelectedIndex = new HashMap<>();
+		}
+		
+		int firstRow = getFirstRow();
+		int maxRows = getMaxRows();
+		int rows = dataModel.getRowCount();
+		int lastRow = Math.min(rows, firstRow + maxRows);
+		for (int i = firstRow; i < lastRow; i++) {
+			Object objectRow = dataModel.getObject(i);
+			multiSelectedIndex.put(Integer.valueOf(i), objectRow);
+		}
+		allSelectedNeedLoadOfWholeModel = false;
 	}
 	
 	protected void doUnSelectAll() {
@@ -1668,7 +1689,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 
 	@Override
 	public boolean isMultiSelectedIndex(int index) {
-		return multiSelectedIndex != null && multiSelectedIndex.containsKey(new Integer(index));
+		return multiSelectedIndex != null && multiSelectedIndex.containsKey(Integer.valueOf(index));
 	}
 	
 	protected void toogleSelectIndex(String selection) {
@@ -1685,7 +1706,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		try {
-			Integer row = new Integer(rowStr);
+			Integer row = Integer.valueOf(rowStr);
 			if(multiSelectedIndex.containsKey(row)) {
 				if(multiSelectedIndex.remove(row) != null && allSelectedNeedLoadOfWholeModel) {
 					allSelectedNeedLoadOfWholeModel = false;
@@ -1703,12 +1724,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		if(multiSelectedIndex == null) {
 			multiSelectedIndex = new HashMap<>();
 		}
-		//selection format row_{formDispId}-{index}
+		// selection format row_{formDispId}-{index}
 		if(selections != null && selections.length > 0) {
 			int firstIndex = getPageSize() * getPage();
 			int lastResult = firstIndex + getPageSize() -1;
 			for(int i=firstIndex; i<lastResult; i++) {
-				multiSelectedIndex.remove(new Integer(i));
+				multiSelectedIndex.remove(Integer.valueOf(i));
 			}
 
 			for(String selection:selections) {	
@@ -1717,7 +1738,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					String rowStr = selection.substring(index+1);
 					int row = Integer.parseInt(rowStr);
 					Object objectRow = dataModel.getObject(row);
-					multiSelectedIndex.put(new Integer(row), objectRow);
+					multiSelectedIndex.put(Integer.valueOf(row), objectRow);
 				}
 			}
 		}

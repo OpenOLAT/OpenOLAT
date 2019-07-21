@@ -320,7 +320,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 
 		String displayName = "";
 		boolean references = false;
-		if (handlers != null && handlers.size() > 0) { // add image and typename code
+		if (handlers != null && !handlers.isEmpty()) { // add image and typename code
 			ResourceHandler handler = handlers.get(0);
 			displayName = handler.getEval().getDisplayname();
 			references = handler.getEval().isReferences();
@@ -358,7 +358,7 @@ public class ImportRepositoryEntryController extends FormBasicController {
 		if(references) {
 			referencesEl.select(refKeys[0], true);
 		}
-		importButton.setEnabled(handlers.size() > 0);
+		importButton.setEnabled(!handlers.isEmpty());
 	}
 	
 	private class ResourceHandler {

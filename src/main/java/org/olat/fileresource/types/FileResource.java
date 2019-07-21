@@ -69,12 +69,12 @@ public class FileResource implements OLATResourceable {
 	
 	public FileResource() {
 		typeName = GENERIC_TYPE_NAME;
-		typeId = new Long(CodeHelper.getForeverUniqueID());
+		typeId = Long.valueOf(CodeHelper.getForeverUniqueID());
 	}
 	
 	public FileResource(String typeName) {
 		this.typeName = typeName;
-		typeId = new Long(CodeHelper.getForeverUniqueID());
+		typeId = Long.valueOf(CodeHelper.getForeverUniqueID());
 	}
 
 	/**

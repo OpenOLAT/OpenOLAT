@@ -1,0 +1,95 @@
+<org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRefs>
+  <entryRefs>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>319913984</repositoryEntryKey>
+      <repositoryEntryDisplayname>4 Generate courses</repositoryEntryDisplayname>
+      <repositoryEntryDescription>Training&lt;br /&gt;</repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>1</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>1201504256</repositoryEntryKey>
+      <repositoryEntryDisplayname>Assessment docs</repositoryEntryDisplayname>
+      <repositoryEntryDescription></repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>1</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>1408073728</repositoryEntryKey>
+      <repositoryEntryDisplayname>Curriculum course</repositoryEntryDisplayname>
+      <repositoryEntryDescription></repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>1</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>1529020417</repositoryEntryKey>
+      <repositoryEntryDisplayname>Refactoring 3 (book)</repositoryEntryDisplayname>
+      <repositoryEntryDescription></repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>1</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>321880064</repositoryEntryKey>
+      <repositoryEntryDisplayname>Course with members list</repositoryEntryDisplayname>
+      <repositoryEntryDescription></repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>10</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>819789824</repositoryEntryKey>
+      <repositoryEntryDisplayname>Lectures</repositoryEntryDisplayname>
+      <repositoryEntryDescription>&lt;p&gt;Bla bla&lt;/p&gt;</repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>10</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>1495105536</repositoryEntryKey>
+      <repositoryEntryDisplayname>Curriculum calendar</repositoryEntryDisplayname>
+      <repositoryEntryDescription>&lt;p&gt;This is a course in a curriculum with calender&lt;/p&gt;</repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>10</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>1496940544</repositoryEntryKey>
+      <repositoryEntryDisplayname>Course curriculum Reï</repositoryEntryDisplayname>
+      <repositoryEntryDescription></repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>rei</repositoryEntryInitialAuthor>
+      <curriculumElementKey>10</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>1603698688</repositoryEntryKey>
+      <repositoryEntryDisplayname>Optional Tasks</repositoryEntryDisplayname>
+      <repositoryEntryDescription></repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>10</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>1495105536</repositoryEntryKey>
+      <repositoryEntryDisplayname>Curriculum calendar</repositoryEntryDisplayname>
+      <repositoryEntryDescription>&lt;p&gt;This is a course in a curriculum with calender&lt;/p&gt;</repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>27</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>1495105536</repositoryEntryKey>
+      <repositoryEntryDisplayname>Curriculum calendar</repositoryEntryDisplayname>
+      <repositoryEntryDescription>&lt;p&gt;This is a course in a curriculum with calender&lt;/p&gt;</repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>26</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>330956800</repositoryEntryKey>
+      <repositoryEntryDisplayname>Assessment mode</repositoryEntryDisplayname>
+      <repositoryEntryDescription></repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>4</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+    <org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+      <repositoryEntryKey>977698816</repositoryEntryKey>
+      <repositoryEntryDisplayname>Participants folders</repositoryEntryDisplayname>
+      <repositoryEntryDescription></repositoryEntryDescription>
+      <repositoryEntryInitialAuthor>kanu</repositoryEntryInitialAuthor>
+      <curriculumElementKey>4</curriculumElementKey>
+    </org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRef>
+  </entryRefs>
+</org.olat.modules.curriculum.model.CurriculumElementToRepositoryEntryRefs>

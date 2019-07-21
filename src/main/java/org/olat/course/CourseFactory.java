@@ -552,11 +552,11 @@ public class CourseFactory {
 		CourseConfigManager courseConfigMgr = CoreSpringFactory.getImpl(CourseConfigManager.class);
 		courseConfigMgr.deleteConfigOf(newCourse);
 
-		// Unzip course strucure in new course
+		// Unzip course structure in new course
 		LocalFolderImpl courseBaseContainer = newCourse.getCourseBaseContainer();
 		File fCanonicalCourseBasePath = courseBaseContainer.getBasefile();
 		if (ZipUtil.unzip(zipFile, fCanonicalCourseBasePath)) {
-			// Load course strucure now
+			// Load course structure now
 			try {
 				newCourse.load();
 				CourseConfig cc = courseConfigMgr.loadConfigFor(newCourse);

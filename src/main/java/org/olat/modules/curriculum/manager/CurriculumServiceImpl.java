@@ -72,6 +72,7 @@ import org.olat.modules.curriculum.model.CurriculumElementRepositoryEntryViews;
 import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
 import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumElementWebDAVInfos;
+import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
@@ -141,6 +142,18 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		return curriculumDao.update(curriculum);
 	}
 	
+	@Override
+	public void deleteCurriculum(CurriculumRef curriculumRef) {
+		CurriculumImpl curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
+		for(CurriculumElement rootElement:curriculum.getRootElements()) {
+			deleteCurriculumElement(rootElement);
+		}
+		dbInstance.commit();
+		curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
+		curriculumDao.delete(curriculum);
+		dbInstance.commit();
+	}
+
 	@Override
 	public List<Curriculum> getCurriculums(Collection<? extends CurriculumRef> refs) {
 		return curriculumDao.loadByKeys(refs);

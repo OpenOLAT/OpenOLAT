@@ -643,7 +643,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 	}
 	
-	protected void processPopEvent(@SuppressWarnings("unused") UserRequest ureq, PopEvent pop) {
+	protected void processPopEvent(UserRequest ureq, PopEvent pop) {
 		if(pop.getController() == settingsCtrl && settingsChanged) {
 			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
 			refreshRepositoryEntry(entry);
@@ -674,8 +674,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				//
 			} else if(event == Event.CLOSE_EVENT) {
 				doClose(ureq);
-			} else if(event instanceof ReloadSettingsEvent) {
-				processReloadSettingsEvent((ReloadSettingsEvent)event);
 			} else if(event instanceof ReloadSettingsEvent) {
 				processReloadSettingsEvent((ReloadSettingsEvent)event);
 			} else if (event == RepositoryEntryLifeCycleChangeController.closedEvent
