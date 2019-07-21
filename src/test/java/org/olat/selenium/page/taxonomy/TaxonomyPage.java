@@ -38,6 +38,18 @@ public class TaxonomyPage {
 	}
 	
 	/**
+	 * Assert on the edit page of the taxonomy.
+	 * 
+	 * @return Itsefl
+	 */
+	public TaxonomyPage assertOnMetadata() {
+		By selectLevelsBy = By.cssSelector(".o_sel_taxonomy_form");
+		OOGraphene.waitElement(selectLevelsBy, browser);
+		OOGraphene.waitTinymce(browser);
+		return this;
+	}
+	
+	/**
 	 * Select the tab to manage the taxonomy levels.
 	 * 
 	 * @return The taxonomy tree page

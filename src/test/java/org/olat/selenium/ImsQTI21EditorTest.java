@@ -2503,6 +2503,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		// make the test
 		QTI21Page
 			.getQTI21Page(participantBrowser)
+			.assertOnAssessmentItem()
 			.answerMatchDropSourceToTarget("Einstein", "Physicist")
 			.answerMatchDropSourceToTarget("Planck", "Physicist")
 			.answerMatchDropSourceToTarget("Euler", "Mathematician")
@@ -2694,6 +2695,7 @@ public class ImsQTI21EditorTest extends Deployments {
 		// make the test
 		QTI21Page
 			.getQTI21Page(participantBrowser)
+			.assertOnAssessmentItem()
 			.saveAnswer()
 			.assertFeedback("Correct feedback")
 			.nextAnswer()

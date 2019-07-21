@@ -63,6 +63,8 @@ public class EditTaxonomyController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_taxonomy_form");
+		
 		if(taxonomy != null) {
 			String key = taxonomy.getKey().toString();
 			uifactory.addStaticTextElement("taxonomy.key", key, formLayout);
@@ -98,7 +100,7 @@ public class EditTaxonomyController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		displayNameEl.clearError();
 		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
@@ -112,7 +114,7 @@ public class EditTaxonomyController extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

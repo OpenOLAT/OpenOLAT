@@ -40,6 +40,7 @@ public class RepositorySettingsPage {
 	public RepositoryEditDescriptionPage assertOnInfos() {
 		By infosBy = By.cssSelector("fieldset.o_sel_edit_repositoryentry");
 		OOGraphene.waitElement(infosBy, browser);
+		OOGraphene.waitTinymce(browser);
 		return new RepositoryEditDescriptionPage(browser);
 	}
 	

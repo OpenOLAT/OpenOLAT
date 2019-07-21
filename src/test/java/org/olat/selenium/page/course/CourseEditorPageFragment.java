@@ -201,8 +201,20 @@ public class CourseEditorPageFragment {
 		
 		By nodeBy = By.xpath("//div[@id='o_course_editor_choose_nodetype']//a[contains(@class,'o_sel_course_editor_node-" + nodeAlias + "')]");
 		OOGraphene.moveAndClick(nodeBy, browser);
-		OOGraphene.waitBusy(browser);
 		OOGraphene.waitModalDialogDisappears(browser);
+		return assertOnNodeTitle();
+	}
+	
+	/**
+	 * Wait until the short title and description field are
+	 * there.
+	 * 
+	 * @return Itself
+	 */
+	public CourseEditorPageFragment assertOnNodeTitle() {
+		By shortTitleBy = By.className("o_sel_node_editor_shorttitle");
+		OOGraphene.waitElement(shortTitleBy, browser);
+		OOGraphene.waitTinymce(browser);
 		return this;
 	}
 	
@@ -214,8 +226,9 @@ public class CourseEditorPageFragment {
 	 * @return Itself
 	 */
 	public CourseEditorPageFragment nodeTitle(String title) {
+		assertOnNodeTitle();
+
 		By shortTitleBy = By.cssSelector("div.o_sel_node_editor_shorttitle input[type='text']");
-		OOGraphene.waitElement(shortTitleBy, browser);
 		WebElement shortTitleEl = browser.findElement(shortTitleBy);
 		shortTitleEl.clear();
 		shortTitleEl.sendKeys(title);

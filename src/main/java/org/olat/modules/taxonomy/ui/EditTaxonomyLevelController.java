@@ -271,14 +271,14 @@ public class EditTaxonomyLevelController extends FormBasicController {
 		
 		String selectedTypeKey = taxonomyLevelTypeEl.getSelectedKey();
 		if(StringHelper.containsNonWhitespace(selectedTypeKey)) {
-			TaxonomyLevelTypeRef typeRef = new TaxonomyLevelTypeRefImpl(new Long(selectedTypeKey));
+			TaxonomyLevelTypeRef typeRef = new TaxonomyLevelTypeRefImpl(Long.valueOf(selectedTypeKey));
 			TaxonomyLevelType type = taxonomyService.getTaxonomyLevelType(typeRef);
 			level.setType(type);
 		} else {
 			level.setType(null);
 		}
 		if(StringHelper.isLong(sortOrderEl.getValue())) {
-			level.setSortOrder(new Integer(sortOrderEl.getValue()));
+			level.setSortOrder(Integer.valueOf(sortOrderEl.getValue()));
 		} else {
 			level.setSortOrder(null);
 		}

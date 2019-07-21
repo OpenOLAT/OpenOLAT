@@ -189,12 +189,12 @@ public class ImsQTI21Test extends Deployments {
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
-			.uploadResource(qtiTestTitle, qtiTestFile);
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
-			.clickToolbarBack()
 			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -244,12 +244,12 @@ public class ImsQTI21Test extends Deployments {
 		NavigationPage navBar = NavigationPage.load(browser);
 		navBar
 			.openAuthoringEnvironment()
-			.uploadResource(qtiTestTitle, qtiTestFile);
+			.uploadResource(qtiTestTitle, qtiTestFile)
+			.clickToolbarRootCrumb();
 		
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
-			.clickToolbarBack()
 			.settings()
 			.options()
 			.showResults(Boolean.TRUE, QTI21AssessmentResultsOptions.allOptions())
@@ -603,6 +603,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.assertOnStart()
 			.start()
 			.answerSingleChoiceWithParagraph("Right")
 			.saveAnswer()
@@ -691,6 +692,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.assertOnStart()
 			.start()
 			.answerSingleChoiceWithParagraph("Right")
 			.saveAnswer()
@@ -788,6 +790,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.assertOnStart()
 			.start()
 			.answerSingleChoiceWithParagraph("Correct")
 			.saveAnswer()
@@ -806,6 +809,7 @@ public class ImsQTI21Test extends Deployments {
 		qtiPage = QTI21Page
 				.getQTI21Page(browser);
 		qtiPage
+			.assertOnStart()
 			.start()
 			.assertOnAssessmentItem("Kprim")
 			.answerCorrectKPrim("True", "Right")
@@ -921,6 +925,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(participantBrowser);
 		qtiPage
+			.assertOnStart()
 			.start()
 			.assertOnAssessmentItem()
 			.answerSingleChoiceWithParagraph("Correct response")
@@ -1042,6 +1047,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 				.getQTI21Page(participantBrowser);
 		qtiPage
+			.assertOnStart()
 			.start()
 			.assertOnAssessmentItem()
 			.answerSingleChoiceWithParagraph("Correct answer")
@@ -1182,6 +1188,7 @@ public class ImsQTI21Test extends Deployments {
 		QTI21Page qtiPage = QTI21Page
 			.getQTI21Page(browser);
 		qtiPage
+			.assertOnStart()
 			.start()
 			.answerSingleChoiceWithParagraph("Right")
 			.saveAnswer()
