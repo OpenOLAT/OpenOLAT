@@ -204,16 +204,16 @@ public class CurriculumImportHandler {
 	}
 	
 	private CurriculumElementType findType(CurriculumElementType archivedType, List<CurriculumElementType> elementTypes) {
-		if(archivedType == null || elementTypes.isEmpty()) return null;
+		if(archivedType == null) return null;
 		
 		for(CurriculumElementType elementType:elementTypes) {
-			if(elementType.getIdentifier() != null && elementType.getIdentifier().equals(archivedType.getIdentifier())) {
+			if(elementType.getIdentifier() != null && elementType.getIdentifier().equalsIgnoreCase(archivedType.getIdentifier())) {
 				return elementType;
 			}
 		}
 		
 		for(CurriculumElementType elementType:elementTypes) {
-			if(elementType.getDisplayName() != null && elementType.getDisplayName().equals(archivedType.getDisplayName())) {
+			if(elementType.getDisplayName() != null && elementType.getDisplayName().equalsIgnoreCase(archivedType.getDisplayName())) {
 				return elementType;
 			}
 		}
