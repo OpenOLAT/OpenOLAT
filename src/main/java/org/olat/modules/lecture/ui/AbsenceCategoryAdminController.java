@@ -46,27 +46,28 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowC
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.LectureService;
-import org.olat.modules.lecture.Reason;
+import org.olat.modules.lecture.ui.AbsenceCategoryAdminDataModel.CategoryCols;
 import org.olat.modules.lecture.ui.ReasonAdminDataModel.ReasonCols;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
- * Initial date: 3 avr. 2017<br>
+ * Initial date: 22 juil. 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ReasonAdminController extends FormBasicController {
+public class AbsenceCategoryAdminController extends FormBasicController {
 	
-	private FormLink addReasonButton;
+	private FormLink addCategoryButton;
 	private FlexiTableElement tableEl;
-	private ReasonAdminDataModel dataModel;
+	private AbsenceCategoryAdminDataModel dataModel;
 	
 	private ToolsController toolsCtrl;
 	private CloseableModalController cmc;
-	private EditReasonController editReasonCtrl;
 	private DialogBoxController deleteDialogCtrl;
+	private EditAbsenceCategoryController editReasonCtrl;
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	
 	private int counter = 0;
@@ -74,8 +75,8 @@ public class ReasonAdminController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 	
-	public ReasonAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "admin_reason");
+	public AbsenceCategoryAdminController(UserRequest ureq, WindowControl wControl) {
+		super(ureq, wControl, "admin_absence_category");
 		
 		initForm(ureq);
 		loadModel();
@@ -88,15 +89,15 @@ public class ReasonAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		formLayout.setElementCssClass("o_sel_lecture_reasons");
+		formLayout.setElementCssClass("o_sel_lecture_absence_category");
 		
-		addReasonButton = uifactory.addFormLink("add.reason", formLayout, Link.BUTTON);
-		addReasonButton.setIconLeftCSS("o_icon o_icon_add_item");
+		addCategoryButton = uifactory.addFormLink("add.absence.category", formLayout, Link.BUTTON);
+		addCategoryButton.setIconLeftCSS("o_icon o_icon_add_item");
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ReasonCols.id));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReasonCols.title));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ReasonCols.description));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CategoryCols.id));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CategoryCols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CategoryCols.description));
 		DefaultFlexiColumnModel editColumn = new DefaultFlexiColumnModel("table.header.edit", -1, "edit",
 				new StaticFlexiCellRenderer("", "edit", "o_icon o_icon-lg o_icon_edit", translate("edit"), null));
 		editColumn.setExportable(false);
@@ -106,22 +107,22 @@ public class ReasonAdminController extends FormBasicController {
 		toolsColumn.setAlwaysVisible(true);
 		columnsModel.addFlexiColumnModel(toolsColumn);
 		
-		dataModel = new ReasonAdminDataModel(columnsModel, getLocale());
+		dataModel = new AbsenceCategoryAdminDataModel(columnsModel, getLocale());
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 20, false, getTranslator(), formLayout);
 		tableEl.setExportEnabled(true);
-		tableEl.setAndLoadPersistedPreferences(ureq, "absences-reasons");
+		tableEl.setAndLoadPersistedPreferences(ureq, "absences-categories");
 	}
 	
 	private void loadModel() {
-		List<Reason> reasons = lectureService.getAllReasons();
-		List<ReasonRow> rows = new ArrayList<>(reasons.size());
-		for(Reason reason:reasons) {
+		List<AbsenceCategory> categories = lectureService.getAllAbsencesCategories();
+		List<AbsenceCategoryRow> rows = new ArrayList<>(categories.size());
+		for(AbsenceCategory category:categories) {
 			String linkName = "tools-" + counter++;
 			FormLink toolsLink = uifactory.addFormLink(linkName, "", null, flc, Link.LINK | Link.NONTRANSLATED);
 			toolsLink.setIconRightCSS("o_icon o_icon_actions o_icon-lg");
-			toolsLink.setUserObject(reason);
+			toolsLink.setUserObject(category);
 			flc.add(linkName, toolsLink);
-			rows.add(new ReasonRow(reason, toolsLink));
+			rows.add(new AbsenceCategoryRow(category, toolsLink));
 		}
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -148,8 +149,8 @@ public class ReasonAdminController extends FormBasicController {
 			}
 		} else if(deleteDialogCtrl == source) {
 			if (DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event)) {
-				Reason row = (Reason)deleteDialogCtrl.getUserObject();
-				doDelete(row);
+				AbsenceCategory category = (AbsenceCategory)deleteDialogCtrl.getUserObject();
+				doDelete(category);
 				loadModel();
 			}
 		}
@@ -169,23 +170,23 @@ public class ReasonAdminController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addReasonButton == source) {
-			doAddReason(ureq);
+		if(addCategoryButton == source) {
+			doAddCategory(ureq);
 		} else if(tableEl == source) {
 			if(event instanceof SelectionEvent) {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
-				ReasonRow row = dataModel.getObject(se.getIndex());
+				AbsenceCategoryRow row = dataModel.getObject(se.getIndex());
 				if("edit".equals(cmd)) {
-					doEditReason(ureq, row.getReason());
+					doEditCategory(ureq, row.getCategory());
 				}
 			}
 		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			String cmd = link.getCmd();
 			if(cmd != null && cmd.startsWith("tools-")) {
-				Reason row = (Reason)link.getUserObject();
-				doOpenTools(ureq, row, link);
+				AbsenceCategory category = (AbsenceCategory)link.getUserObject();
+				doOpenTools(ureq, category, link);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -196,31 +197,31 @@ public class ReasonAdminController extends FormBasicController {
 		//
 	}
 	
-	private void doEditReason(UserRequest ureq, Reason reason) {
-		editReasonCtrl = new EditReasonController(ureq, getWindowControl(), reason);
+	private void doEditCategory(UserRequest ureq, AbsenceCategory category) {
+		editReasonCtrl = new EditAbsenceCategoryController(ureq, getWindowControl(), category);
 		listenTo(editReasonCtrl);
 		
-		String title = translate("edit.reason");
+		String title = translate("edit.absence.category");
 		cmc = new CloseableModalController(getWindowControl(), "close", editReasonCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
-	private void doAddReason(UserRequest ureq) {
-		editReasonCtrl = new EditReasonController(ureq, getWindowControl());
+	private void doAddCategory(UserRequest ureq) {
+		editReasonCtrl = new EditAbsenceCategoryController(ureq, getWindowControl());
 		listenTo(editReasonCtrl);
 		
-		String title = translate("add.reason");
+		String title = translate("add.absence.category");
 		cmc = new CloseableModalController(getWindowControl(), "close", editReasonCtrl.getInitialComponent(), true, title, true);
 		listenTo(cmc);
 		cmc.activate();
 	}
 	
-	private void doOpenTools(UserRequest ureq, Reason row, FormLink link) {
+	private void doOpenTools(UserRequest ureq, AbsenceCategory category, FormLink link) {
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 
-		toolsCtrl = new ToolsController(ureq, getWindowControl(), row);
+		toolsCtrl = new ToolsController(ureq, getWindowControl(), category);
 		listenTo(toolsCtrl);
 	
 		toolsCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
@@ -229,37 +230,38 @@ public class ReasonAdminController extends FormBasicController {
 		toolsCalloutCtrl.activate();
 	}
 	
-	private void doCopy(Reason reason) {
-		String copiedTitle = translate("reason.copy", new String[] { reason.getTitle() });
-		lectureService.createReason(copiedTitle, reason.getDescription());
+	private void doCopy(AbsenceCategory category) {
+		String copiedTitle = translate("absence.category.copy", new String[] { category.getTitle() });
+		lectureService.createAbsenceCategory(copiedTitle, category.getDescription());
 		loadModel();
-		showInfo("reason.copied");
+		showInfo("absence.category.copied");
 	}
 
-	private void doConfirmDelete(UserRequest ureq, Reason reason) {
-		if(lectureService.isReasonInUse(reason)) {
-			showWarning("reason.in.use");
+	private void doConfirmDelete(UserRequest ureq, AbsenceCategory category) {
+		if(lectureService.isAbsenceCategoryInUse(category)) {
+			showWarning("absence.category.in.use");
 		} else {
-			String text = translate("confirm.delete.reason", new String[] { reason.getTitle() });
+			String text = translate("confirm.delete.absence.category", new String[] { category.getTitle() });
 			deleteDialogCtrl = activateYesNoDialog(ureq, translate("delete.title"), text, deleteDialogCtrl);
-			deleteDialogCtrl.setUserObject(reason);
+			deleteDialogCtrl.setUserObject(category);
 		}
 	}
 	
-	private void doDelete(Reason reason) {
-		lectureService.deleteReason(reason);
+	private void doDelete(AbsenceCategory category) {
+		lectureService.deleteAbsenceCategory(category);
 		showInfo("reason.deleted");
 	}
 	
 	private class ToolsController extends BasicController {
 		
-		private final Link deleteLink, copyLink;
+		private final Link deleteLink;
+		private final Link copyLink;
 		
-		private final Reason reason;
+		private final AbsenceCategory category;
 		
-		public ToolsController(UserRequest ureq, WindowControl wControl, Reason reason) {
+		public ToolsController(UserRequest ureq, WindowControl wControl, AbsenceCategory category) {
 			super(ureq, wControl);
-			this.reason = reason;
+			this.category = category;
 			
 			VelocityContainer mainVC = createVelocityContainer("reason_tools");
 			
@@ -280,9 +282,9 @@ public class ReasonAdminController extends FormBasicController {
 		protected void event(UserRequest ureq, Component source, Event event) {
 			this.fireEvent(ureq, Event.DONE_EVENT);
 			if(copyLink == source) {
-				doCopy(reason);
+				doCopy(category);
 			} else if(deleteLink == source) {
-				doConfirmDelete(ureq, reason);
+				doConfirmDelete(ureq, category);
 			}
 		}
 	}

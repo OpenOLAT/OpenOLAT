@@ -58,6 +58,7 @@ import org.olat.core.logging.activity.OlatResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -401,7 +402,7 @@ public class TeacherRollCallController extends FormBasicController {
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(reasonCtrl == source) {
 			if(event == Event.DONE_EVENT) {
-				doReason(reasonCtrl.getTeacherRollCallRow(), reasonCtrl.getReason());
+				doReason(reasonCtrl.getTeacherRollCallRow(), reasonCtrl.getReason(), reasonCtrl.getAbsenceCategory());
 			}
 			reasonCalloutCtrl.deactivate();
 			cleanUp();
@@ -604,7 +605,7 @@ public class TeacherRollCallController extends FormBasicController {
 		LectureBlockRollCall rollCall = row.getRollCall();
 		boolean authorized = check.isAtLeastSelected(1);
 		if(rollCall == null) {
-			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, authorized, null);
+			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, authorized, null, null);
 			lectureService.auditLog(LectureBlockAuditLog.Action.createRollCall, null, lectureService.toAuditXml(rollCall),
 					authorized ? "true" : "false", lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		} else {
@@ -633,16 +634,17 @@ public class TeacherRollCallController extends FormBasicController {
 		reasonCalloutCtrl.activate();
 	}
 	
-	private void doReason(TeacherRollCallRow row, String reason) {
+	private void doReason(TeacherRollCallRow row, String reason, AbsenceCategory category) {
 		LectureBlockRollCall rollCall = row.getRollCall();
 		String before = lectureService.toAuditXml(rollCall);
 		if(rollCall == null) {
 			row.getAuthorizedAbsence().select(onKeys[0], true);
-			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, true, reason);
+			rollCall = lectureService.getOrCreateRollCall(row.getIdentity(), lectureBlock, true, reason, category);
 			lectureService.auditLog(LectureBlockAuditLog.Action.createRollCall, before, lectureService.toAuditXml(rollCall),
 					reason, lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());
 		} else {
 			rollCall.setAbsenceReason(reason);
+			rollCall.setAbsenceCategory(category);
 			rollCall = lectureService.updateRollCall(rollCall);
 			lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
 					reason, lectureBlock, rollCall, lectureBlock.getEntry(), row.getIdentity(), getIdentity());

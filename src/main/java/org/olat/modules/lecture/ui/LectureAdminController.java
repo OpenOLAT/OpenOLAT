@@ -50,11 +50,13 @@ public class LectureAdminController extends BasicController implements Activatea
 	private final Link reportLink;
 	private final Link reasonsLink;
 	private final Link settingsLink;
+	private final Link absencesCategoriesLink;
 	private final SegmentViewComponent segmentView;
 	
 	private ReasonAdminController reasonsCtrl;
 	private LectureSettingsAdminController settingsCtrl;
 	private LecturesReportController lecturesReportCtrl;
+	private AbsenceCategoryAdminController absencesCategoriesCtrl;
 	
 	public LectureAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -66,6 +68,9 @@ public class LectureAdminController extends BasicController implements Activatea
 		segmentView.addSegment(settingsLink, true);
 		reasonsLink = LinkFactory.createLink("lectures.admin.reasons", mainVC, this);
 		segmentView.addSegment(reasonsLink, false);
+		absencesCategoriesLink = LinkFactory.createLink("lectures.admin.absences.categories", mainVC, this);
+		segmentView.addSegment(absencesCategoriesLink, false);
+		
 		reportLink = LinkFactory.createLink("lectures.admin.report", mainVC, this);
 		segmentView.addSegment(reportLink, false);
 
@@ -92,6 +97,9 @@ public class LectureAdminController extends BasicController implements Activatea
 		} else if("Report".equalsIgnoreCase(type)) {
 			doOpenLectureReports(ureq);
 			segmentView.select(reportLink);
+		} else if("AbsencesCategories".equals(type)) {
+			doOpenAbsencesCategories(ureq);
+			segmentView.select(absencesCategoriesLink);
 		}
 	}
 
@@ -108,6 +116,8 @@ public class LectureAdminController extends BasicController implements Activatea
 					doOpenReasons(ureq);
 				} else if (clickedLink == reportLink) {
 					doOpenLectureReports(ureq);
+				} else if(clickedLink == absencesCategoriesLink) {
+					doOpenAbsencesCategories(ureq);
 				}
 			}
 		}
@@ -133,6 +143,17 @@ public class LectureAdminController extends BasicController implements Activatea
 			addToHistory(ureq, reasonsCtrl);
 		}
 		mainVC.put("segmentCmp", reasonsCtrl.getInitialComponent());
+	}
+	
+	private void doOpenAbsencesCategories(UserRequest ureq) {
+		if(absencesCategoriesCtrl == null) {
+			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("AbsencesCategories"), null);
+			absencesCategoriesCtrl = new AbsenceCategoryAdminController(ureq, swControl);
+			listenTo(absencesCategoriesCtrl);
+		} else {
+			addToHistory(ureq, absencesCategoriesCtrl);
+		}
+		mainVC.put("segmentCmp", absencesCategoriesCtrl.getInitialComponent());
 	}
 	
 	private void doOpenLectureReports(UserRequest ureq) {

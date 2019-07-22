@@ -28,15 +28,18 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -57,7 +60,9 @@ public class SingleParticipantCallController extends FormBasicController {
 	private static final String[] onValues = new String[]{ "" };
 	
 	private FormLink selectAllLink;
-	private TextElement commentEl, absenceReasonEl;
+	private TextElement commentEl;
+	private TextElement absenceReasonEl;
+	private SingleSelection absenceCategoriesEl;
 	private MultipleSelectionElement authorizedAbsencedEl;
 	private final List<MultipleSelectionElement> checks = new ArrayList<>();
 	
@@ -66,6 +71,7 @@ public class SingleParticipantCallController extends FormBasicController {
 	private final LectureBlock lectureBlock;
 	private final boolean autorizedAbsenceEnabled;
 	private final boolean absenceDefaultAuthorized;
+	private final List<AbsenceCategory> absenceCategories;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -77,10 +83,11 @@ public class SingleParticipantCallController extends FormBasicController {
 		super(ureq, wControl, "call_wizard");
 		this.calledIdentity = calledIdentity;
 		this.lectureBlock = lectureBlock;
+		absenceCategories = lectureService.getAllAbsencesCategories();
 
 		autorizedAbsenceEnabled = lectureModule.isAuthorizedAbsenceEnabled();
 		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
-		rollCall = lectureService.getOrCreateRollCall(calledIdentity, lectureBlock, null, null);
+		rollCall = lectureService.getOrCreateRollCall(calledIdentity, lectureBlock, null, null, null);
 
 		initForm(ureq);
 	}
@@ -121,6 +128,25 @@ public class SingleParticipantCallController extends FormBasicController {
 				authorizedAbsencedEl.select(onKeys[0], true);
 			}
 			
+			KeyValues absenceKeyValues = new KeyValues();
+			absenceKeyValues.add(KeyValues.entry("", ""));
+			for(AbsenceCategory absenceCategory: absenceCategories) {
+				absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+			}
+
+			absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", "absence.category", formLayout, absenceKeyValues.keys(), absenceKeyValues.values());
+			absenceCategoriesEl.setDomReplacementWrapperRequired(false);
+			absenceCategoriesEl.setVisible(!absenceCategories.isEmpty());
+			absenceCategoriesEl.setMandatory(true);
+			AbsenceCategory currentCategory = rollCall.getAbsenceCategory();
+			if(currentCategory != null) {
+				for(AbsenceCategory absenceCategory: absenceCategories) {
+					if(absenceCategory.equals(currentCategory)) {
+						absenceCategoriesEl.select(absenceCategory.getKey().toString(), true);
+					}
+				}
+			}
+			
 			String reason = rollCall.getAbsenceReason();
 			absenceReasonEl = uifactory.addTextAreaElement("absence.reason", "authorized.absence.reason", 2000, 4, 36, false, false, reason, formLayout);
 			absenceReasonEl.setDomReplacementWrapperRequired(false);
@@ -142,22 +168,60 @@ public class SingleParticipantCallController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
+	
+	public AbsenceCategory getAbsenceCategory() {
+		if(!absenceCategoriesEl.isVisible() || !absenceCategoriesEl.isOneSelected()) return null;
+		
+		String selectedKey = absenceCategoriesEl.getSelectedKey();
+		if(StringHelper.isLong(selectedKey)) {
+			Long categoryKey = Long.valueOf(selectedKey);
+			for(AbsenceCategory absenceCategory:absenceCategories) {
+				if(absenceCategory.getKey().equals(categoryKey)) {
+					return absenceCategory;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public List<Integer> getAbsenceList() {
+		List<Integer> absenceList = new ArrayList<>();
+		for(int i=0; i<checks.size(); i++) {
+			MultipleSelectionElement check = checks.get(i);
+			if(check.isAtLeastSelected(1)) {
+				absenceList.add(i);
+			}
+		}
+		return absenceList;
+	}
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if(absenceReasonEl != null) {
 			absenceReasonEl.clearError();
 		}
-		if(!absenceDefaultAuthorized && authorizedAbsencedEl != null && authorizedAbsencedEl.isAtLeastSelected(1)) {
+		if(!absenceDefaultAuthorized && authorizedAbsencedEl != null
+				&& authorizedAbsencedEl.isAtLeastSelected(1) && absenceReasonEl != null) {
 			if(!StringHelper.containsNonWhitespace(absenceReasonEl.getValue())) {
 				absenceReasonEl.setErrorKey("error.reason.mandatory", null);
 				allOk &= false;
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		if(absenceCategoriesEl != null) {
+			absenceCategoriesEl.clearError();
+			if(absenceCategoriesEl.isVisible()) {
+				List<Integer> absenceList = getAbsenceList();
+				if((!absenceCategoriesEl.isOneSelected() || absenceCategoriesEl.isSelected(0)) && !absenceList.isEmpty()) {
+					absenceCategoriesEl.setErrorKey("error.reason.mandatory", null);
+					allOk &= false;
+				}
+			}
+		}
+		
+		return allOk;
 	}
 
 	@Override
@@ -175,13 +239,7 @@ public class SingleParticipantCallController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		List<Integer> absenceList = new ArrayList<>();
-		for(int i=0; i<checks.size(); i++) {
-			MultipleSelectionElement check = checks.get(i);
-			if(check.isAtLeastSelected(1)) {
-				absenceList.add(i);
-			}
-		}
+		List<Integer> absenceList = getAbsenceList();
 
 		String comment = commentEl.getValue();
 		String before = lectureService.toAuditXml(rollCall);
@@ -189,6 +247,7 @@ public class SingleParticipantCallController extends FormBasicController {
 		if(authorizedAbsencedEl != null) {
 			rollCall.setAbsenceAuthorized(authorizedAbsencedEl.isAtLeastSelected(1));
 			rollCall.setAbsenceReason(absenceReasonEl.getValue());
+			rollCall.setAbsenceCategory(getAbsenceCategory());
 			rollCall = lectureService.updateRollCall(rollCall);
 		}
 		lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),

@@ -41,6 +41,7 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -105,6 +106,9 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 	@ManyToOne(targetEntity=LectureBlockImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_lecture_block", nullable=false, insertable=true, updatable=false)
 	private LectureBlock lectureBlock;
+	@ManyToOne(targetEntity=AbsenceCategoryImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_absence_category", nullable=true, insertable=true, updatable=true)
+	private AbsenceCategory absenceCategory;
 	
 	@Override
 	public Long getKey() {
@@ -319,6 +323,16 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 
 	public void setLectureBlock(LectureBlock lectureBlock) {
 		this.lectureBlock = lectureBlock;
+	}
+
+	@Override
+	public AbsenceCategory getAbsenceCategory() {
+		return absenceCategory;
+	}
+
+	@Override
+	public void setAbsenceCategory(AbsenceCategory absenceCategory) {
+		this.absenceCategory = absenceCategory;
 	}
 
 	@Override

@@ -2419,6 +2419,15 @@ create table o_lecture_reason (
   primary key (id)
 );
 
+create table o_lecture_absence_category (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   l_title varchar(255),
+   l_descr mediumtext,
+   primary key (id)
+);
+
 create table o_lecture_block (
   id bigint not null auto_increment,
   creationdate datetime not null,
@@ -2471,6 +2480,7 @@ create table o_lecture_block_roll_call (
   l_appeal_status_reason mediumtext,
   fk_lecture_block bigint not null,
   fk_identity bigint not null,
+  fk_absence_category bigint,
   primary key (id)
 );
 
@@ -3197,6 +3207,7 @@ alter table o_sms_message_log ENGINE = InnoDB;
 alter table o_feed ENGINE = InnoDB;
 alter table o_feed_item ENGINE = InnoDB;
 alter table o_lecture_reason ENGINE = InnoDB;
+alter table o_lecture_absence_category ENGINE = InnoDB;
 alter table o_lecture_block ENGINE = InnoDB;
 alter table o_lecture_block_to_group ENGINE = InnoDB;
 alter table o_lecture_block_roll_call ENGINE = InnoDB;
@@ -3809,6 +3820,8 @@ create index idx_item_ident_modified_idx on o_feed_item(fk_identity_modified_id)
 alter table o_lecture_block add constraint lec_block_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
 alter table o_lecture_block add constraint lec_block_gcoach_idx foreign key (fk_teacher_group) references o_bs_group (id);
 alter table o_lecture_block add constraint lec_block_reason_idx foreign key (fk_reason) references o_lecture_reason (id);
+
+alter table o_lecture_block_roll_call add constraint absence_category_idx foreign key (fk_absence_category) references o_lecture_absence_category (id);
 
 alter table o_lecture_block_to_group add constraint lec_block_to_block_idx foreign key (fk_group) references o_bs_group (id);
 alter table o_lecture_block_to_group add constraint lec_block_to_group_idx foreign key (fk_lecture_block) references o_lecture_block (id);

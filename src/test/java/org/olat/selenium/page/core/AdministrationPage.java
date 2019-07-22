@@ -55,29 +55,33 @@ public class AdministrationPage {
 	}
 	
 	public AdministrationPage selectSystemInfo() {
-		By systemLinkby = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'systemParent')]");
-		browser.findElement(systemLinkby).click();
+		By systemLinkBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'systemParent')]");
+		OOGraphene.waitElement(systemLinkBy, browser);
+		browser.findElement(systemLinkBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public AdministrationPage selecCoreConfiguration() {
 		By coreConfigurationLinkBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'sysconfigParent')]");
+		OOGraphene.waitElement(coreConfigurationLinkBy, browser);
 		browser.findElement(coreConfigurationLinkBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public AdministrationPage selectModules() {
-		By systemLinkby = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'modulesParent')]");
-		browser.findElement(systemLinkby).click();
+		By moduleLinkBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'modulesParent')]");
+		OOGraphene.waitElement(moduleLinkBy, browser);
+		browser.findElement(moduleLinkBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
 	
 	public AdministrationPage selectAssessment() {
-		By systemLinkby = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'eAssessmentParent')]");
-		browser.findElement(systemLinkby).click();
+		By systemLinkBy = By.xpath("//div[contains(@class,'o_tree')]//a[contains(@onclick,'eAssessmentParent')]");
+		OOGraphene.waitElement(systemLinkBy, browser);
+		browser.findElement(systemLinkBy).click();
 		OOGraphene.waitBusy(browser);
 		return this;
 	}

@@ -39,6 +39,7 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockAuditLog;
@@ -80,7 +81,8 @@ public class LectureBlockRollCallDAO {
 	private LectureBlockAuditLogDAO auditLogDao;
 	
 	public LectureBlockRollCall createAndPersistRollCall(LectureBlock lectureBlock, Identity identity,
-			Boolean authorizedAbsence, String absenceReason, String comment, List<Integer> absences) {
+			Boolean authorizedAbsence, String absenceReason, AbsenceCategory absenceCategory, String comment,
+			List<Integer> absences) {
 		LectureBlockRollCallImpl rollCall = new LectureBlockRollCallImpl();
 		rollCall.setCreationDate(new Date());
 		rollCall.setLastModified(rollCall.getCreationDate());
@@ -88,6 +90,7 @@ public class LectureBlockRollCallDAO {
 		rollCall.setLectureBlock(lectureBlock);
 		rollCall.setAbsenceAuthorized(authorizedAbsence);
 		rollCall.setAbsenceReason(absenceReason);
+		rollCall.setAbsenceCategory(absenceCategory);
 		rollCall.setComment(comment);
 		addInternalLecture(lectureBlock, rollCall, absences);
 		dbInstance.getCurrentEntityManager().persist(rollCall);
