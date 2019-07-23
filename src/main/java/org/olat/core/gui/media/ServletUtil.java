@@ -332,7 +332,7 @@ public class ServletUtil {
 
 		// Vector which will contain all the ranges which are successfully
 		// parsed.
-		List<Range> result = new ArrayList<Range>();
+		List<Range> result = new ArrayList<>();
 		StringTokenizer commaTokenizer = new StringTokenizer(rangeHeader, ",");
 
 		// Parsing the range list

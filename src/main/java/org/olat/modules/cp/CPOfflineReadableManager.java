@@ -321,7 +321,7 @@ public class CPOfflineReadableManager {
 			targetZip.getParentFile().mkdirs();
 		}
 
-		Set<String> allFilesInUnzippedDir = new HashSet<String>();
+		Set<String> allFilesInUnzippedDir = new HashSet<>();
 		String[] cpFiles = unzippedDir.list();
 		for (int i = 0; i < cpFiles.length; i++) {
 			allFilesInUnzippedDir.add(cpFiles[i]);

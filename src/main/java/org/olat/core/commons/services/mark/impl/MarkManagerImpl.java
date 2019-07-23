@@ -89,7 +89,7 @@ public class MarkManagerImpl implements MarkManager {
 		}
 		
 		List<Long> results = query.getResultList();
-		return new HashSet<Long>(results);
+		return new HashSet<>(results);
 	}
 
 	@Override
@@ -300,7 +300,7 @@ public class MarkManagerImpl implements MarkManager {
 			}
 			
 			List<Object[]> rawStats = query.getResultList();
-			List<MarkResourceStat> stats = new ArrayList<MarkResourceStat>(rawStats.size());
+			List<MarkResourceStat> stats = new ArrayList<>(rawStats.size());
 			for(Object[] rawStat:rawStats) {
 				stats.add(new MarkResourceStat(ores,(String)rawStat[1],((Number)rawStat[0]).intValue()));
 			}
@@ -321,7 +321,7 @@ public class MarkManagerImpl implements MarkManager {
 				.setParameter("resId", ores.getResourceableId())
 				.getResultList();
 		
-		List<MarkResourceStat> stats = new ArrayList<MarkResourceStat>(rawStats.size());
+		List<MarkResourceStat> stats = new ArrayList<>(rawStats.size());
 		for(Object[] rawStat:rawStats) {
 			stats.add(new MarkResourceStat(ores,(String)rawStat[1],((Number)rawStat[0]).intValue()));
 		}
@@ -342,7 +342,7 @@ public class MarkManagerImpl implements MarkManager {
 				.setParameter("creator", identity)
 				.getResultList();
 		
-		List<MarkResourceStat> stats = new ArrayList<MarkResourceStat>(markedSubPaths.size());
+		List<MarkResourceStat> stats = new ArrayList<>(markedSubPaths.size());
 		for(String markedSubPath:markedSubPaths) {
 			stats.add(new MarkResourceStat(ores,markedSubPath,1));
 		}

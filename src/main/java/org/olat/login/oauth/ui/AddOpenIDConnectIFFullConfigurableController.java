@@ -101,7 +101,7 @@ public class AddOpenIDConnectIFFullConfigurableController extends FormBasicContr
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		allOk &= validate(openIdConnectIFName);
-		List<ValidationStatus> nameValidation = new ArrayList<ValidationStatus>();
+		List<ValidationStatus> nameValidation = new ArrayList<>();
 		openIdConnectIFName.validate(nameValidation);
 		allOk &= nameValidation.isEmpty();  
 		allOk &= validate(openIdConnectIFDisplayName);

@@ -198,7 +198,7 @@ public class EPStructureToArtefactTest extends OlatTestCase {
 		//save parent and 20 children
 		PortfolioStructure structureEl = epFrontendManager.createAndPersistPortfolioStructureElement(null, "paged-structure-el", "paged-structure-element");
 		
-		List<AbstractArtefact> children = new ArrayList<AbstractArtefact>();
+		List<AbstractArtefact> children = new ArrayList<>();
 		for(int i=0;i<20;i++) {
 			AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(ident1, "Forum");
 			artefact.setTitle("paged-artefact-" + i);
@@ -223,7 +223,7 @@ public class EPStructureToArtefactTest extends OlatTestCase {
 		//save parent and 5 children
 		PortfolioStructure structureEl = epFrontendManager.createAndPersistPortfolioStructureElement(null, "move-up-structure-el-1", "move-up-structure-element");
 		
-		List<AbstractArtefact> children = new ArrayList<AbstractArtefact>();
+		List<AbstractArtefact> children = new ArrayList<>();
 		for(int i=0;i<5;i++) {
 			AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(ident1, "Forum");
 			artefact.setTitle("move-up-artefact-1-" + i);
@@ -282,7 +282,7 @@ public class EPStructureToArtefactTest extends OlatTestCase {
 		//save parent and 5 children
 		PortfolioStructure structureEl = epFrontendManager.createAndPersistPortfolioStructureElement(null, "move-down-structure-el-1", "move-down-structure-element");
 		
-		List<AbstractArtefact> children = new ArrayList<AbstractArtefact>();
+		List<AbstractArtefact> children = new ArrayList<>();
 		for(int i=0;i<5;i++) {
 			AbstractArtefact artefact = epFrontendManager.createAndPersistArtefact(ident1, "Forum");
 			artefact.setTitle("move-down-artefact-1-" + i);

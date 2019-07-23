@@ -181,7 +181,7 @@ public class LockInfo {
 	}
 	
 	public synchronized Iterator<String> tokens() {
-		return new ArrayList<String>(tokens).iterator();
+		return new ArrayList<>(tokens).iterator();
 	}
 	
 	public synchronized void addToken(String token) {

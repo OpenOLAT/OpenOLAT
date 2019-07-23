@@ -38,7 +38,7 @@ import java.util.List;
  * @author guido
  */
 public class DialogPropertyElements {
-	private List<DialogElement> dialogPropertyElements = new ArrayList<DialogElement>();
+	private List<DialogElement> dialogPropertyElements = new ArrayList<>();
 	private transient String propertyCategory;
 	private int version = 1;
 	//there is a feature in the admin console you can search properties by propertyName

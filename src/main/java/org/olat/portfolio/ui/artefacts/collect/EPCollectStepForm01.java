@@ -91,7 +91,7 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 		tagListElement.setAllowDuplicates(false);
 		
 		// show a list of the 50 most used tags
-		List<FormLink> userTagLinks = new ArrayList<FormLink>();
+		List<FormLink> userTagLinks = new ArrayList<>();
 		int i = 0;
 		for (Iterator<Entry<String, String>> iterator = allUsersTags.entrySet().iterator(); iterator.hasNext();) {
 			Entry<String, String> entry = iterator.next();
@@ -122,7 +122,7 @@ public class EPCollectStepForm01 extends StepFormBasicController {
 	 */
 	private Map<String, String> getTagMapToDisplay() {
 
-		Map<String, String> tagMap = new HashMap<String, String>();
+		Map<String, String> tagMap = new HashMap<>();
 		Collection<String> tagCollection = null;
 		Collection<String> preSetArtefactTags = ePFMgr.getArtefactTags(artefact);
 

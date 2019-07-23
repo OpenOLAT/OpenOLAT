@@ -170,7 +170,7 @@ public class PrerequisiteManager {
 			prereq = prereq.replaceAll("=", ".equals(");
 			// System.out.println("1. "+prereq);
 			if (prereq.indexOf("@") != -1) {
-				List<String> v = new ArrayList<String>();
+				List<String> v = new ArrayList<>();
 				StringBuilder sb = new StringBuilder();
 				sb.append(prereq);
 				boolean notSymbFound = false;

@@ -69,7 +69,7 @@ public class OpenMeetingsRecordingsDataModel implements TableDataModel<OpenMeeti
 
 	@Override
 	public void setObjects(List<OpenMeetingsRecording> objects) {
-		recordings = new ArrayList<OpenMeetingsRecording>(objects);
+		recordings = new ArrayList<>(objects);
 	}
 
 	@Override

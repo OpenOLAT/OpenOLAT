@@ -242,7 +242,7 @@ public class NGramProfile {
   public List<NGramEntry> getSorted() {
     // make sure sorting is done only once
     if (sorted == null) {
-      sorted = new ArrayList<NGramEntry>(ngrams.values());
+      sorted = new ArrayList<>(ngrams.values());
       Collections.sort(sorted);
 
       // trim at NGRAM_LENGTH entries

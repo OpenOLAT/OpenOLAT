@@ -402,7 +402,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	}
 	
 	List<PerfItem> getPerfItems() {
-		List<PerfItem> l = new ArrayList<PerfItem>(2);
+		List<PerfItem> l = new ArrayList<>(2);
 		l.add(new PerfItem("Cluster Events Sent", -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, msgsSentCount));
 		l.add(new PerfItem("Cluster Events Received",  -1, -1, 1, -1, -1, -1, -1,  -1, -1, -1, -1, msgsReceivedCount));
 		return l;
@@ -442,7 +442,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	 */
 	List<String> getListOfReceivedMsgs() {
 		synchronized(msgsReceived) {//cluster_ok is per vm only
-			return new ArrayList<String>(msgsReceived);
+			return new ArrayList<>(msgsReceived);
 		}
 	}
 	
@@ -451,7 +451,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	 */
 	List<String> getListOfSentMsgs() {
 		synchronized(msgsSent) {//cluster_ok is per vm only
-			return new ArrayList<String>(msgsSent);
+			return new ArrayList<>(msgsSent);
 		}
 	}
 

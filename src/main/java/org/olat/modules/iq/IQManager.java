@@ -500,7 +500,7 @@ public class IQManager implements UserDataDeletable {
 	 * @return
 	 */
 	public List<Identity> getIdentitiesWithQtiSerEntry(Long resourceableId, String ident) {		
-		List<Identity> identities = new ArrayList<Identity>();
+		List<Identity> identities = new ArrayList<>();
 		LocalFolderImpl item = new LocalFolderImpl(new File(FilePersister.getFullPathToCourseNodeDirectory(Long.toString(resourceableId), ident)));
 		if (VFSManager.exists(item)) {
 			for (VFSItem identityFolder : item.getItems()) {

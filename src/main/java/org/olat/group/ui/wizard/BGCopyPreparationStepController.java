@@ -52,7 +52,7 @@ public class BGCopyPreparationStepController extends StepFormBasicController {
 		this.rightsEnabled = rightsEnabled;
 		this.areasEnabled = areasEnabled;
 		
-		List<String> keyList = new ArrayList<String>(8);
+		List<String> keyList = new ArrayList<>(8);
 		keyList.add("Tools");
 		if(coursesEnabled) {
 			keyList.add("Courses");

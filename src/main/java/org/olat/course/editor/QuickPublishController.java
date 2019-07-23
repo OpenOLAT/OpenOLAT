@@ -141,7 +141,7 @@ public class QuickPublishController extends BasicController {
 		PublishTreeModel publishTreeModel = publishProcess.getPublishTreeModel();
  
 		if (publishTreeModel.hasPublishableChanges()) {
-			List<String> nodeToPublish = new ArrayList<String>();
+			List<String> nodeToPublish = new ArrayList<>();
 			visitPublishModel(publishTreeModel.getRootNode(), publishTreeModel, nodeToPublish);
 
 			//only add selection if changes were possible

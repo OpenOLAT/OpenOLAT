@@ -92,7 +92,7 @@ public class LanguageIdentifier {
 
       Enumeration<Object> alllanguages = p.keys();
       StringBuilder list = new StringBuilder("Language identifier plugin supports:");
-      Map<NGramEntry, List<NGramEntry>> tmpIdx = new HashMap<NGramEntry, List<NGramEntry>>();
+      Map<NGramEntry, List<NGramEntry>> tmpIdx = new HashMap<>();
       while (alllanguages.hasMoreElements()) {
         String lang = (String) (alllanguages.nextElement());
 
@@ -109,7 +109,7 @@ public class LanguageIdentifier {
                 NGramEntry entry = ngrams.get(i);
                 List<NGramEntry> registered = tmpIdx.get(entry);
                 if (registered == null) {
-                    registered = new ArrayList<NGramEntry>();
+                    registered = new ArrayList<>();
                     tmpIdx.put(entry, registered);
                 }
                 registered.add(entry);
@@ -174,7 +174,7 @@ public class LanguageIdentifier {
     Iterator<NGramEntry> iter = suspect.getSorted().iterator();
     float topscore = Float.MIN_VALUE;
     String lang = "";
-    HashMap<NGramProfile, Float> scores = new HashMap<NGramProfile, Float>();
+    HashMap<NGramProfile, Float> scores = new HashMap<>();
     NGramEntry searched = null;
     
     while (iter.hasNext()) {

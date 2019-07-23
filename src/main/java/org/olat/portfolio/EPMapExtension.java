@@ -97,7 +97,7 @@ public class EPMapExtension {
 			
 			OLATResourceable mapsRes = OresHelper.createOLATResourceableType(nodeTypeName);
 			ContextEntry mapsEntry = BusinessControlFactory.getInstance().createContextEntry(mapsRes);
-			List<ContextEntry> rewritedEntries = new ArrayList<ContextEntry>();
+			List<ContextEntry> rewritedEntries = new ArrayList<>();
 			rewritedEntries.add(mapsEntry);//Menu node
 			rewritedEntries.add(mainEntry);//Map
 			if(entries != null && !entries.isEmpty()) {

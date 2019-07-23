@@ -95,7 +95,7 @@ public class EPPolicyManager {
 	public List<EPMapPolicy> getMapPolicies(PortfolioStructureMapRef mapRef) {
 		EPMapShort map = dbInstance.getCurrentEntityManager().find(EPMapShort.class, mapRef.getKey());
 		
-		List<EPMapPolicy> policies = new ArrayList<EPMapPolicy>();
+		List<EPMapPolicy> policies = new ArrayList<>();
 		Set<EPStructureElementToGroupRelation> relations = map.getGroups();
 		for(EPStructureElementToGroupRelation relation:relations) {
 			if(relation.isDefaultGroup()) {
@@ -165,7 +165,7 @@ public class EPPolicyManager {
 	public PortfolioStructureMap updateMapPolicies(PortfolioStructureMap map, List<EPMapPolicy> policies) {
 		map = dbInstance.getCurrentEntityManager().merge(map);
 
-		List<EPStructureElementToGroupRelation> savedPolicies = new ArrayList<EPStructureElementToGroupRelation>();
+		List<EPStructureElementToGroupRelation> savedPolicies = new ArrayList<>();
 		for(EPMapPolicy wrapper:policies) {
 			savedPolicies.addAll(applyPolicy(wrapper, map));
 		}
@@ -185,7 +185,7 @@ public class EPPolicyManager {
 	}
 	
 	private List<EPStructureElementToGroupRelation> applyPolicy(EPMapPolicy policy, PortfolioStructureMap map) {
-		List<EPStructureElementToGroupRelation> savedPolicies = new ArrayList<EPStructureElementToGroupRelation>();
+		List<EPStructureElementToGroupRelation> savedPolicies = new ArrayList<>();
 		switch(policy.getType()) {
 			case user:
 				savedPolicies.add(applyPolicyToUsers(policy, map));

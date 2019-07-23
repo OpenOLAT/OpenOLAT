@@ -47,7 +47,7 @@ implements SortableFlexiTableDataModel<ReasonRow> {
 
 	@Override
 	public void sort(SortKey orderBy) {
-		List<ReasonRow> rows = new SortableFlexiTableModelDelegate<ReasonRow>(orderBy, this, locale).sort();
+		List<ReasonRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 		super.setObjects(rows);
 	}
 

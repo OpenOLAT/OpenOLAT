@@ -33,14 +33,14 @@ import org.olat.core.gui.translator.Translator;
  */
 public class VisibleFlexiColumnsModel implements ChoiceModel {
 	
-	private Set<Integer> enabledCols = new HashSet<Integer>();
+	private Set<Integer> enabledCols = new HashSet<>();
 	private final Translator translator;
 	private final FlexiTableColumnModel columns;
 	
 	public VisibleFlexiColumnsModel(FlexiTableColumnModel columns, Set<Integer> enabledCols, Translator translator) {
 		this.columns = columns;
 		this.translator = translator;
-		this.enabledCols = new HashSet<Integer>(enabledCols);
+		this.enabledCols = new HashSet<>(enabledCols);
 	}
 
 	@Override

@@ -246,7 +246,7 @@ public class CORunController extends BasicController {
 	
 	
 	private ContactList retrieveCoachesFromGroups(List<Long> groupKeys) {
-		List<Identity> coaches = new ArrayList<>(new HashSet<Identity>(cgm.getCoachesFromBusinessGroups(groupKeys)));
+		List<Identity> coaches = new ArrayList<>(new HashSet<>(cgm.getCoachesFromBusinessGroups(groupKeys)));
 		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
 		cl.addAllIdentites(coaches);
 		return cl;

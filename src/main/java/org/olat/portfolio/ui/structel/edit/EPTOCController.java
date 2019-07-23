@@ -77,8 +77,8 @@ public class EPTOCController extends BasicController {
 	private PortfolioStructure structureClicked;
 	private AbstractArtefact artefactClicked;
 	
-	protected final Map<Long,String> idToPath = new HashMap<Long,String>();
-	protected final Map<String,PortfolioStructure> pathToStructure = new HashMap<String,PortfolioStructure>();
+	protected final Map<Long,String> idToPath = new HashMap<>();
+	protected final Map<String,PortfolioStructure> pathToStructure = new HashMap<>();
 	private EPAddElementsController addElCtrl;
 	private Link delButton;
 

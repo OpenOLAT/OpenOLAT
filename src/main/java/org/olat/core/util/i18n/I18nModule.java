@@ -419,7 +419,7 @@ public class I18nModule extends AbstractSpringModule {
 	 * @return set of language keys the system will find translations for
 	 */
 	Set<String> searchForAvailableLanguages(File i18nDir) {
-		Set<String> foundLanguages = new TreeSet<String>();
+		Set<String> foundLanguages = new TreeSet<>();
 		i18nDir = new File(i18nDir.getAbsolutePath()+"/org/olat/_i18n");
 		if (i18nDir.exists()) {
 			// First check for locale files
@@ -677,7 +677,7 @@ public class I18nModule extends AbstractSpringModule {
 	 */
 	public Collection<String> getEnabledLanguageKeys() {
 		synchronized (enabledLanguagesKeys) {
-			return new HashSet<String>(enabledLanguagesKeys);
+			return new HashSet<>(enabledLanguagesKeys);
 		}
 	}
 
@@ -820,7 +820,7 @@ public class I18nModule extends AbstractSpringModule {
 			// Sort alphabetically
 			Collections.sort(foundBundles);
 		} else {
-			foundBundles = new ArrayList<String>();
+			foundBundles = new ArrayList<>();
 		}
 		return foundBundles;
 	}

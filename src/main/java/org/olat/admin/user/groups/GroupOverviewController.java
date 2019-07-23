@@ -144,7 +144,7 @@ public class GroupOverviewController extends BasicController {
 		if(groups.size() > 50) {
 			groupKeysWithMembers = null;
 		} else {
-			groupKeysWithMembers = new ArrayList<Long>(groups.size());
+			groupKeysWithMembers = new ArrayList<>(groups.size());
 			for(BusinessGroup view:groups) {
 				groupKeysWithMembers.add(view.getKey());
 			}

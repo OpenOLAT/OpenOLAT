@@ -228,7 +228,7 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	public static <T> Map<String, T> getBeansOfType(Class<T> extensionType) {
 		WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
 		Map<String, T> beans = context.getBeansOfType(extensionType);
-		Map<String, T> clone = new HashMap<String, T>(beans);
+		Map<String, T> clone = new HashMap<>(beans);
 		return clone;
 	}
 

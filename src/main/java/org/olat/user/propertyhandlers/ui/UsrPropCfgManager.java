@@ -181,10 +181,10 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 			UserPropertyUsageContext ctx = ctxEntry.getValue();
 			String contextName = ctxEntry.getKey();
 
-			List<UserPropertyHandler> ctx_allHandlers = new ArrayList<UserPropertyHandler>();
-			Set<UserPropertyHandler> ctx_mandHandlers = new HashSet<UserPropertyHandler>();
-			Set<UserPropertyHandler> ctx_adminonlyHandlers = new HashSet<UserPropertyHandler>();
-			Set<UserPropertyHandler> ctx_usrreadonlyHandlers = new HashSet<UserPropertyHandler>();
+			List<UserPropertyHandler> ctx_allHandlers = new ArrayList<>();
+			Set<UserPropertyHandler> ctx_mandHandlers = new HashSet<>();
+			Set<UserPropertyHandler> ctx_adminonlyHandlers = new HashSet<>();
+			Set<UserPropertyHandler> ctx_usrreadonlyHandlers = new HashSet<>();
 
 			String handlerNameInConfig = props.getProperty(contextName, null);
 			if (handlerNameInConfig == null) {// our config doesn't know this context,
@@ -238,13 +238,13 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 	 * @return Returns the list of PropertyHandlers but with the correct order 
 	 */
 	private List<UserPropertyHandler> restoreCorrectHandlerOrderWithinContext(List<UserPropertyHandler> allHandlers, List<String> orderedNameList){
-		Map<String,UserPropertyHandler> nameToPropertyMap = new HashMap<String, UserPropertyHandler>();
+		Map<String,UserPropertyHandler> nameToPropertyMap = new HashMap<>();
 		for(UserPropertyHandler handler:allHandlers) {
 			nameToPropertyMap.put(handler.getName(), handler);
 		}
 		
 		// this list will be returned. contains all handlers from "allHandlers" in sorted order
-		List<UserPropertyHandler> sortedHandlersList = new ArrayList<UserPropertyHandler>(allHandlers.size());
+		List<UserPropertyHandler> sortedHandlersList = new ArrayList<>(allHandlers.size());
 		for(String name:orderedNameList) {
 			UserPropertyHandler handler = nameToPropertyMap.remove(name);
 			if(handler != null) {
@@ -279,7 +279,7 @@ public class UsrPropCfgManager extends AbstractSpringModule implements GenericEv
 	 */
 	private void setUserManagerProperties() {
 		UserPropertiesConfigImpl upConfig = new UserPropertiesConfigImpl();
-		List<UserPropertyHandler> handlers = new ArrayList<UserPropertyHandler>();
+		List<UserPropertyHandler> handlers = new ArrayList<>();
 		for (UserPropertyHandler handler : cfgObject.getPropertyHandlers()) {
 			if (cfgObject.isActiveHandler(handler)) handlers.add(handler);
 		}

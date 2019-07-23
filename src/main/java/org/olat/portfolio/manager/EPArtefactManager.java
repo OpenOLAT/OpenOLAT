@@ -330,7 +330,7 @@ public class EPArtefactManager {
 		EPFilterSettings filterSettings = new EPFilterSettings();
 		filterSettings.setTagFilter(tags);
 		
-		Set<String> newTags = new HashSet<String>();
+		Set<String> newTags = new HashSet<>();
 		filterArtefactsByTags(artefacts, filterSettings, newTags);
 
 		return new EPArtefactTagCloud(artefacts, newTags);
@@ -339,7 +339,7 @@ public class EPArtefactManager {
 	protected List<AbstractArtefact> filterArtefactsByFilterSettings(List<AbstractArtefact> allArtefacts, EPFilterSettings filterSettings) {
 		long start = System.currentTimeMillis();
 		if (allArtefacts == null) return null;
-		List<AbstractArtefact> filteredArtefactList = new ArrayList<AbstractArtefact>(allArtefacts.size());
+		List<AbstractArtefact> filteredArtefactList = new ArrayList<>(allArtefacts.size());
 		filteredArtefactList.addAll(allArtefacts);
 		if (filterSettings != null && !filterSettings.isFilterEmpty()) {
 			if (filteredArtefactList.size() != 0) {

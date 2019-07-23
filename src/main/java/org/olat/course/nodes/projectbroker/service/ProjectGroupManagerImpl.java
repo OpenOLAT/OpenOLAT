@@ -267,7 +267,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	//TODO gsync
 		List<Identity> addedIdentities = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<List<Identity>>(){
 			public List<Identity> execute() {
-				List<Identity> addedIdentityList = new ArrayList<Identity>();
+				List<Identity> addedIdentityList = new ArrayList<>();
 				for (Identity identity : addIdentities) {
 					if (!securityGroupDao.isIdentityInSecurityGroup(identity, project.getCandidateGroup()) ) {
 						securityGroupDao.addIdentityToSecurityGroup(identity, project.getCandidateGroup());

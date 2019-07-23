@@ -46,7 +46,7 @@ public class HistoryPointImpl implements HistoryPoint, Serializable {
 		if(entries == null) {
 			this.entries = Collections.emptyList();
 		} else {
-			this.entries = new ArrayList<ContextEntry>(entries.size());
+			this.entries = new ArrayList<>(entries.size());
 			for(ContextEntry entry:entries) {
 				this.entries.add(entry.clone());
 			}

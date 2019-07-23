@@ -382,7 +382,7 @@ public class EPShareListController extends FormBasicController {
 	 */
 	private void sendInvitation(UserRequest ureq, EPSharePolicyWrapper wrapper){
 		EPMapPolicy.Type shareType = wrapper.getType();
-		List<Identity> identitiesToMail = new ArrayList<Identity>();
+		List<Identity> identitiesToMail = new ArrayList<>();
 		Invitation invitation = null;
 		if (shareType.equals(EPMapPolicy.Type.allusers)) {
 			return;

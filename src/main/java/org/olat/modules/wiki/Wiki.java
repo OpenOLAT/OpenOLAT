@@ -393,7 +393,7 @@ public class Wiki implements WikiContainer, Serializable {
 	 * @return a List of all pages in a wiki ordered by date
 	 */
 	protected List<WikiPage> getPagesByDate() {
-		ArrayList<WikiPage> pages = new ArrayList<WikiPage>(wikiPages.values());
+		ArrayList<WikiPage> pages = new ArrayList<>(wikiPages.values());
 		Collections.sort(pages, WikiPageSort.MODTIME_ORDER);
 		return pages;
 	}
@@ -402,8 +402,8 @@ public class Wiki implements WikiContainer, Serializable {
 	 * @return a List containing all pages names of the wiki sorted alphabetically
 	 */
 	protected List<String> getListOfAllPageNames() {
-		ArrayList<WikiPage> pages = new ArrayList<WikiPage>(wikiPages.values());
-		ArrayList<String> pageNames = new ArrayList<String>(pages.size());
+		ArrayList<WikiPage> pages = new ArrayList<>(wikiPages.values());
+		ArrayList<String> pageNames = new ArrayList<>(pages.size());
 		Collections.sort(pages, WikiPageSort.PAGENAME_ORDER);
 		for (Iterator<WikiPage> iter = pages.iterator(); iter.hasNext();) {
 			WikiPage page = iter.next();
@@ -423,7 +423,7 @@ public class Wiki implements WikiContainer, Serializable {
 		}
 		
 		public List<WikiPage> getAllPagesWithContent(boolean includeSpecialPages) {
-			ArrayList<WikiPage> pages = new ArrayList<WikiPage>();
+			ArrayList<WikiPage> pages = new ArrayList<>();
 			for (Iterator<String> keyes = wikiPages.keySet().iterator(); keyes.hasNext();) {
 				String pageId = keyes.next();
 				WikiPage wikiPage = getPage(pageId);

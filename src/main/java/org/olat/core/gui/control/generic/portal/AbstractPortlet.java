@@ -42,7 +42,7 @@ import org.olat.core.gui.translator.Translator;
  * @author gnaegi
  */
 public abstract class AbstractPortlet extends AbstractConfigOnOff implements Portlet {
-	private Map<String,String> configuration = new HashMap<String,String>();
+	private Map<String,String> configuration = new HashMap<>();
 	private String name;
 	private Translator trans;
 	private int defaultMaxEntries = 6;

@@ -77,7 +77,7 @@ public class InstantMessagingMainController extends BasicController implements G
 	private VelocityContainer chatContent = createVelocityContainer("chat");
 	
 	//new messages
-	private List<Long> showNewMessageHolder = new ArrayList<Long>();
+	private List<Long> showNewMessageHolder = new ArrayList<>();
 	private VelocityContainer newMsgIcon = createVelocityContainer("newMsgIcon");
 	//roster
 	private Panel rosterPanel;

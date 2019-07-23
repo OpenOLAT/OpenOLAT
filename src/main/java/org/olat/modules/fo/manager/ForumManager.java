@@ -167,7 +167,7 @@ public class ForumManager {
 	 * @return
 	 */
 	public List<Message> getMessagesByForum(Forum forum){
-		if (forum == null) return new ArrayList<Message>(0); // fxdiff: while indexing it can somehow occur, that forum is null!
+		if (forum == null) return new ArrayList<>(0); // fxdiff: while indexing it can somehow occur, that forum is null!
 		return getMessagesByForumID(forum.getKey(),  0, -1, false, null, true);
 	}
 	
@@ -1268,7 +1268,7 @@ public class ForumManager {
 			.setParameter("forumKey", forum.getKey())
 			.setParameter("identityKey", identity.getKey())
 			.getResultList();
-		return new HashSet<Long>(messageKeys);	
+		return new HashSet<>(messageKeys);	
 	}
 	
 	/**

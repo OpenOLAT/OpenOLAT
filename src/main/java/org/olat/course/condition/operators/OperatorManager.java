@@ -43,7 +43,7 @@ import org.olat.core.gui.translator.Translator;
  */
 public class OperatorManager {
 
-	private static List<Operator> ops = new ArrayList<Operator>();
+	private static List<Operator> ops = new ArrayList<>();
 	
 	static {
 

@@ -88,7 +88,7 @@ public class EMailIdentity implements Identity {
 
 		private static final long serialVersionUID = 7260225880639460228L;
 		private final EMailPreferences prefs = new EMailPreferences();
-		private Map<String, String> data = new HashMap<String, String>();
+		private Map<String, String> data = new HashMap<>();
 
 		public EMailUser(String email) {
 			data.put(UserConstants.FIRSTNAME, "");

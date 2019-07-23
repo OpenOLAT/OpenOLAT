@@ -529,7 +529,7 @@ public class AssessmentInstance implements Serializable {
 	/*
 	 * For marking/flagging question items ... OLAT-5807
 	 */
-	private Map <String,Boolean>marked = new HashMap<String,Boolean>();
+	private Map <String,Boolean>marked = new HashMap<>();
 	
 	public void mark (String id, boolean b) {
 		marked.put(id, Boolean.valueOf(b));
@@ -543,7 +543,7 @@ public class AssessmentInstance implements Serializable {
 	/*
 	 * For memos/notes  ... OLAT-5809
 	 */
-	private Map <String,String>memos = new HashMap<String,String>();
+	private Map <String,String>memos = new HashMap<>();
 	
 	public void setMemo (String id, String m) {
 		memos.put(id, m);

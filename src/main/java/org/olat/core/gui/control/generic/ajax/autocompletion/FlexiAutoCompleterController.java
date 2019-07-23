@@ -200,7 +200,7 @@ public class FlexiAutoCompleterController extends FormBasicController {
 	}
 	
 	protected void doSelect(UserRequest ureq) {
-		List<String> selectedEntries = new ArrayList<String>(); // init empty result list
+		List<String> selectedEntries = new ArrayList<>(); // init empty result list
 		String key = ureq.getParameter(AutoCompleterMapper.PARAM_KEY);
 		if (key == null) {
 			// Fallback to submitted input field: the input field does not contain

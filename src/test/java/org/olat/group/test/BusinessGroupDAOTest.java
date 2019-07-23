@@ -226,7 +226,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertEquals(group1, groups2.get(0));
 
 		//check load 2 groups
-		List<Long> groupKeys = new ArrayList<Long>(2);
+		List<Long> groupKeys = new ArrayList<>(2);
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		List<BusinessGroup> groups3 = businessGroupDao.load(groupKeys);
@@ -255,13 +255,13 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertEquals(group1.getName(), groups2.get(0).getName());
 
 		//check load 2 groups
-		List<Long> groupKeys = new ArrayList<Long>(2);
+		List<Long> groupKeys = new ArrayList<>(2);
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		List<BusinessGroupShort> groups3 = businessGroupDao.loadShort(groupKeys);
 		Assert.assertNotNull(groups3);
 		Assert.assertEquals(2, groups3.size());
-		List<Long> groupShortKeys3 = new ArrayList<Long>(3);
+		List<Long> groupShortKeys3 = new ArrayList<>(3);
 		for(BusinessGroupShort group:groups3) {
 			groupShortKeys3.add(group.getKey());
 		}
@@ -707,7 +707,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(2, groups.size());
 
-		Set<Long> retrievedGroupkey = new HashSet<Long>();
+		Set<Long> retrievedGroupkey = new HashSet<>();
 		for(StatisticsBusinessGroupRow group:groups) {
 			retrievedGroupkey.add(group.getKey());
 		}
@@ -1104,7 +1104,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id, group3, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		List<BusinessGroup> groups = new ArrayList<>();
 		groups.add(group1);
 		groups.add(group2);
 		groups.add(group3);
@@ -1141,7 +1141,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id, group3, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		groupKeys.add(group3.getKey());
@@ -1186,11 +1186,11 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id2, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		List<BusinessGroup> groups = new ArrayList<>();
 		groups.add(group1);
 		groups.add(group2);
 		groups.add(group3);
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		groupKeys.add(group3.getKey());
@@ -1248,7 +1248,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id3, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		groupKeys.add(group3.getKey());

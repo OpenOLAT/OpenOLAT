@@ -93,14 +93,14 @@ public class EPStructureDetailsController extends FormBasicController {
 		this.rootStructure = rootStructure;
 		this.editStructure = rootStructure;
 		// work on a copy of the list in case of cancel
-		collectRestrictions = new ArrayList<CollectRestriction>(editStructure.getCollectRestrictions());
+		collectRestrictions = new ArrayList<>(editStructure.getCollectRestrictions());
 
 		initForm(ureq);
 	}
 
 	public void setNewStructure(final UserRequest ureq, final PortfolioStructure struct) {
 		editStructure = struct;
-		collectRestrictions = new ArrayList<CollectRestriction>(editStructure.getCollectRestrictions());
+		collectRestrictions = new ArrayList<>(editStructure.getCollectRestrictions());
 		updateUI(ureq);
 	}
 
@@ -185,12 +185,12 @@ public class EPStructureDetailsController extends FormBasicController {
 				collectRestrictions.add(new CollectRestriction());
 			}
 
-			restrictionElements = new ArrayList<SingleSelection>();
-			restrictToArtefactElements = new ArrayList<SingleSelection>();
-			amountElements = new ArrayList<TextElement>();
-			errorElements = new ArrayList<StaticTextElement>();
+			restrictionElements = new ArrayList<>();
+			restrictToArtefactElements = new ArrayList<>();
+			amountElements = new ArrayList<>();
+			errorElements = new ArrayList<>();
 
-			final List<String> counts = new ArrayList<String>();
+			final List<String> counts = new ArrayList<>();
 			for (final CollectRestriction restriction : collectRestrictions) {
 				final int count = restrictionElements.size();
 
@@ -259,7 +259,7 @@ public class EPStructureDetailsController extends FormBasicController {
 		if(rootStructure instanceof EPStructuredMapTemplate && restrictionElements != null) {
 			setCollectRestrictions();
 			clearErrors();
-			ArrayList<String> usedTypes = new ArrayList<String>();
+			ArrayList<String> usedTypes = new ArrayList<>();
 			int i=0;
 			boolean hasError = false;
 			for(SingleSelection restrictionElement:restrictionElements) {

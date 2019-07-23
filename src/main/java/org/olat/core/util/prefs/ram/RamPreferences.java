@@ -39,7 +39,7 @@ import org.olat.core.util.prefs.Preferences;
  * @author Felix
  */
 public class RamPreferences implements Preferences {
-	private Map<String, Object> store = new HashMap<String, Object>();
+	private Map<String, Object> store = new HashMap<>();
 	
 	
 	/**

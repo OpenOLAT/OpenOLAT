@@ -48,7 +48,7 @@ public class Year {
 	 */
 	Year(int year) {
 		this.year = year;
-		months = new TreeMap<Integer, Month>(Collections.reverseOrder());
+		months = new TreeMap<>(Collections.reverseOrder());
 	}
 
 	/**
@@ -109,7 +109,7 @@ public class Year {
 	 * @return The items of this year
 	 */
 	public List<? extends Dated> getItems() {
-		List<Dated> items = new ArrayList<Dated>();
+		List<Dated> items = new ArrayList<>();
 		for (Month month : months.values()) {
 			items.addAll(month.getItems());
 		}

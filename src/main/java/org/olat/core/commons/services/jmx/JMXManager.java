@@ -80,7 +80,7 @@ public class JMXManager {
 					return o1.getName().compareTo(o2.getName());
 				}});
 			
-			List<String> l = new ArrayList<String>();
+			List<String> l = new ArrayList<>();
 			for (MBeanAttributeInfo info : mbal) {
 				String name = info.getName();
 				Object res = mBeanServer.getAttribute(on, name);
@@ -88,7 +88,7 @@ public class JMXManager {
 			}
 			return l;
 		} catch (Exception e) {
-			List<String> l = new ArrayList<String>();
+			List<String> l = new ArrayList<>();
 			l.add("error while retrieving jmx values: "+e.getClass().getName()+":"+e.getMessage());
 			return l;
 		} 	
@@ -98,7 +98,7 @@ public class JMXManager {
 		try {
 			StringBuilder sb = new StringBuilder();
 			Set<ObjectInstance> mbeansset = mBeanServer.queryMBeans(null, null);
-			List<ObjectInstance> mbeans = new ArrayList<ObjectInstance>(mbeansset);
+			List<ObjectInstance> mbeans = new ArrayList<>(mbeansset);
 			Collections.sort(mbeans, new Comparator<ObjectInstance>(){
 				@Override
 				public int compare(ObjectInstance o1, ObjectInstance o2) {

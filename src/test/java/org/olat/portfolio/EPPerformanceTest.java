@@ -68,8 +68,8 @@ public class EPPerformanceTest extends OlatTestCase {
 			"Sed pulvinar magna nec nulla gravida eu ullamcorper dolor mattis. Phasellus quis neque dolor. Aliquam non odio ligula. Integer purus nisi, " +
 			"cursus accumsan ultricies eget, gravida sed eros. Maecenas malesuada commodo nisl, sit amet aliquam elit dapibus ut. Duis ultricies nibh at " +
 			"felis commodo a rutrum ipsum tristique. Nulla facilisi. Vivamus convallis faucibus augue quis ultrices. Sed quam orci, dignissim metus. ";
-	private static final List<String> tagList1 = new ArrayList<String>(Arrays.asList("Haus", "baum", "Wald"));
-	private static final List<String> tagList2 = new ArrayList<String>(Arrays.asList("Schule", "Lehrer"));
+	private static final List<String> tagList1 = new ArrayList<>(Arrays.asList("Haus", "baum", "Wald"));
+	private static final List<String> tagList2 = new ArrayList<>(Arrays.asList("Schule", "Lehrer"));
 	
 
 	@Autowired
@@ -139,7 +139,7 @@ public class EPPerformanceTest extends OlatTestCase {
 		
 		// filter artefacts by tags
 		EPFilterSettings filterSettings = new EPFilterSettings();
-		filterSettings.setTagFilter(new ArrayList<String>(Arrays.asList("Schule")));
+		filterSettings.setTagFilter(new ArrayList<>(Arrays.asList("Schule")));
 		start = System.currentTimeMillis();
 		artList = epFrontendManager.filterArtefactsByFilterSettings(filterSettings, ident1, Roles.userRoles(), Locale.ENGLISH);
 		now = System.currentTimeMillis();
@@ -193,7 +193,7 @@ public class EPPerformanceTest extends OlatTestCase {
 	private void internalTestCreateManyMaps(int mapAmount){		
 		long start = System.currentTimeMillis();
 		// prepare some artefacts to link to maps later
-		ArrayList<AbstractArtefact> artefacts = new ArrayList<AbstractArtefact>(10);
+		ArrayList<AbstractArtefact> artefacts = new ArrayList<>(10);
 		for (int i = 1; i < 11; i++) {
 			artefacts.add(createAndFillArtefact(i));
 		}
@@ -201,7 +201,7 @@ public class EPPerformanceTest extends OlatTestCase {
 		for (int k = 1; k < mapAmount; k++) {
 			PortfolioStructureMap map = epFrontendManager.createAndPersistPortfolioDefaultMap(ident1, "a test map number " + k, LOREM_STRING_512);
 			// attach sites and structures to it
-			ArrayList<PortfolioStructure> structs = new ArrayList<PortfolioStructure>();
+			ArrayList<PortfolioStructure> structs = new ArrayList<>();
 			PortfolioStructure page1 = epFrontendManager.createAndPersistPortfolioPage(map, "test page1 for map " + k, LOREM_STRING_512);
 			structs.add(page1);
 			PortfolioStructure struct11 = epFrontendManager.createAndPersistPortfolioStructureElement(page1, "struct1 in page1 for map" + k, LOREM_STRING_512);

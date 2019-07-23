@@ -128,7 +128,7 @@ public class NewBGController extends BasicController {
 				UserSession usess = ureq.getUserSession();
 				Object wildcard = usess.removeEntry("wild_card_new");
 				
-				newGroups = new ArrayList<BusinessGroup>();
+				newGroups = new ArrayList<>();
 				if (bulkMode) {
 					for(String bgName:groupCreateController.getGroupNames()) {
 						BusinessGroup group = businessGroupService.createBusinessGroup(getIdentity(), bgName, bgDesc, bgMin, bgMax,	enableWaitingList, enableAutoCloseRanks, re);
@@ -188,7 +188,7 @@ public class NewBGController extends BasicController {
 	 * @return the new groups.
 	 */
 	public Set<BusinessGroup> getCreatedGroups(){
-		Set<BusinessGroup> groupSet = new HashSet<BusinessGroup>();
+		Set<BusinessGroup> groupSet = new HashSet<>();
 		if(newGroups != null) {
 			groupSet.addAll(newGroups); 
 		}
@@ -201,7 +201,7 @@ public class NewBGController extends BasicController {
 	 * @return the new group names.
 	 */
 	public Set<String> getCreatedGroupNames(){
-		Set<String> groupNames = new HashSet<String>();
+		Set<String> groupNames = new HashSet<>();
 		if(newGroups != null) {
 			for (Iterator<BusinessGroup> iterator = newGroups.iterator(); iterator.hasNext();) {
 				 groupNames.add( iterator.next().getName());
@@ -211,7 +211,7 @@ public class NewBGController extends BasicController {
 	}
 	
 	public Set<Long> getCreatedGroupKeys(){
-		Set<Long> groupKeys = new HashSet<Long>();
+		Set<Long> groupKeys = new HashSet<>();
 		if(newGroups != null) {
 			for (BusinessGroup group:newGroups) {
 				 groupKeys.add(group.getKey());

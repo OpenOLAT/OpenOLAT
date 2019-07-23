@@ -68,7 +68,7 @@ public class RulesDataModel implements FlexiTableDataModel<RuleWrapper>, TableDa
 
 	@Override
 	public void setObjects(List<RuleWrapper> objects) {
-		rules = new ArrayList<RuleWrapper>(objects);
+		rules = new ArrayList<>(objects);
 	}
 
 	@Override

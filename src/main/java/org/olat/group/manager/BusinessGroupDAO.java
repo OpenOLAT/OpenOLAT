@@ -293,7 +293,7 @@ public class BusinessGroupDAO {
 
 		Map<IdentityGroupKey, BusinessGroupMembershipImpl> memberships = new HashMap<>();
 		loadBusinessGroupsMembership(groupKeys, memberships);
-		return new ArrayList<BusinessGroupMembership>(memberships.values());
+		return new ArrayList<>(memberships.values());
 	}
 	
 	private void loadBusinessGroupsMembership(Collection<Long> groupKeys,

@@ -85,11 +85,11 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	 * {conditionexpression,conditionexpression,...}) TODO: do we really need the
 	 * information splitted up by category and condition expression?
 	 */
-	private Map<String,List<ConditionExpression>> softRefs = new HashMap<String,List<ConditionExpression>>();
+	private Map<String,List<ConditionExpression>> softRefs = new HashMap<>();
 	/**
 	 * book keeping of (courseNodeId, StatusDescription)
 	 */
-	private Map<String,List<StatusDescription>> statusDescs = new HashMap<String,List<StatusDescription>>();
+	private Map<String,List<StatusDescription>> statusDescs = new HashMap<>();
 	/**
 	 * current active condition expression, it is activated by a call to
 	 * <code>validateConditionExpression(..)</code> the condition interpreter is
@@ -179,7 +179,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	@Override
 	public List<String> validateAreas(List<String> areanames) {
 		List<BGArea> cnt = cgm.getAllAreas();
-		List<String> invalidNames = new ArrayList<String>();
+		List<String> invalidNames = new ArrayList<>();
 		
 		a_a:
 		for(String areaname:areanames) {
@@ -238,7 +238,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 			}
 			condExprs.add(currentConditionExpression);
 		} else {
-			List<ConditionExpression> condExprs = new ArrayList<ConditionExpression>();
+			List<ConditionExpression> condExprs = new ArrayList<>();
 			condExprs.add(currentConditionExpression);
 			softRefs.put(currentCourseNodeId, condExprs);
 		}
@@ -274,12 +274,12 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		 */
 		String currentNodeWas = currentCourseNodeId;
 		// reset all
-		softRefs = new HashMap<String,List<ConditionExpression>>();
+		softRefs = new HashMap<>();
 		Visitor v = new CollectConditionExpressionsVisitor();
 		(new TreeVisitor(v, cetm.getRootNode(), true)).visitAll();
 
 		// refresh,create status descriptions of the course
-		statusDescs = new HashMap<String,List<StatusDescription>>();
+		statusDescs = new HashMap<>();
 		v = new CollectStatusDescriptionVisitor(this);
 		(new TreeVisitor(v, cetm.getRootNode(), true)).visitAll();
 		//
@@ -292,7 +292,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	public StatusDescription[] getCourseStatus() {
 		String[] a = statusDescs.keySet().toArray(new String[statusDescs.keySet().size()]);
 		Arrays.sort(a);
-		List<StatusDescription> all2gether = new ArrayList<StatusDescription>();
+		List<StatusDescription> all2gether = new ArrayList<>();
 		for (int i = a.length - 1; i >= 0; i--) {
 			all2gether.addAll(statusDescs.get(a[i]));
 		}
@@ -302,7 +302,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 		if(course!= null){
 			if(course.getCourseConfig().getSharedFolderSoftkey().equals("sf.notconfigured")){
 				INode rootNode = course.getEditorTreeModel().getRootNode();
-				List<StatusDescription> descriptions = new ArrayList<StatusDescription>();
+				List<StatusDescription> descriptions = new ArrayList<>();
 				descriptions = checkFolderNodes(rootNode, course, descriptions);
 				if(!descriptions.isEmpty()){
 					all2gether.addAll(descriptions);

@@ -272,7 +272,7 @@ public class PLockTest extends OlatTestCase {
 		Assert.assertNotNull(pc2);
 		dbInstance.closeSession();
 		
-		final List<Long> holder = new ArrayList<Long>(1);
+		final List<Long> holder = new ArrayList<>(1);
 		// first thread acquires the lock and waits and continues holding the lock for some time.
 		PLock p1 = pessimisticLockManager.findOrPersistPLock("blabla");
 		Assert.assertNotNull(p1);
@@ -310,7 +310,7 @@ public class PLockTest extends OlatTestCase {
 		assertNotNull(pc3);
 		dbInstance.closeSession();
 		
-		final List<Long> holder = new ArrayList<Long>(1);
+		final List<Long> holder = new ArrayList<>(1);
 		// first thread acquires the two locks and waits and continues holding the lock for some time.
 		PLock p1 = pessimisticLockManager.findOrPersistPLock("blabla");
 		assertNotNull(p1);
@@ -514,7 +514,7 @@ public class PLockTest extends OlatTestCase {
 		//	 ------------------ now check with lock -------------------
 		// create a group
 		//	 create users
-		final List<Identity> identities = new ArrayList<Identity>();
+		final List<Identity> identities = new ArrayList<>();
 		for (int i = 0; i < count + maxUsers; i++) {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("u-" + i + "-" + UUID.randomUUID().toString());
 			identities.add(id);

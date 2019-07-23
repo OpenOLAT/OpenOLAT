@@ -86,7 +86,7 @@ public class GuiDemoTextBoxListController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// the first showcase
-		Map<String, String> initialItems = new TreeMap<String, String>();
+		Map<String, String> initialItems = new TreeMap<>();
 		initialItems.put("Demo", "demo");
 		initialItems.put("You can delete me!", "delete");
 		textBoxListEl = uifactory.addTextBoxListElement("testTextbox", null, "textboxlist.hint", initialItems, formLayout, getTranslator());

@@ -128,11 +128,11 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 
 		// check for null values
 		if (this.initialItems == null) {
-			this.initialItems = new HashMap<String, String>();
+			this.initialItems = new HashMap<>();
 		}
 
 		// copy the initialItems into the "currentItems" map
-		this.currentItems = new HashMap<String, String>();
+		this.currentItems = new HashMap<>();
 		
 		for (Entry<String, String> initialMapEntry : this.initialItems.entrySet()) {
 			currentItems.put(initialMapEntry.getKey(), initialMapEntry.getValue());
@@ -234,7 +234,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 * @param arlList
 	 */
 	private static void removeDuplicates(List<String> arlList) {
-		HashSet<String> h = new HashSet<String>(arlList);
+		HashSet<String> h = new HashSet<>(arlList);
 		arlList.clear();
 		arlList.addAll(h);
 	}
@@ -282,7 +282,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 * @return
 	 */
 	public List<String> getCurrentItemValues() {
-		return new ArrayList<String>(currentItems.values());
+		return new ArrayList<>(currentItems.values());
 	}
 
 	public void validate(UserRequest ureq, ValidationResult vr) {
@@ -305,7 +305,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 			public MediaResource handle(String relPath, HttpServletRequest request) {
 				String lastInput = request.getParameter("term");
 				if (lastInput != null && lastInput.length() > 2) {
-					Map<String, String> autoCContLoc = new HashMap<String, String>();
+					Map<String, String> autoCContLoc = new HashMap<>();
 					provider.getAutoCompleteContent(lastInput, autoCContLoc);
 					setAutoCompleteContent(autoCContLoc);
 				}
@@ -368,7 +368,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 	 *            TextBoxListComponent
 	 */
 	public void setAutoCompleteContent(Set<String> autoCompletionValues) {
-		Map<String, String> map = new HashMap<String, String>(autoCompletionValues.size());
+		Map<String, String> map = new HashMap<>(autoCompletionValues.size());
 		for (String string : autoCompletionValues) {
 			map.put(string, string);
 		}
@@ -445,7 +445,7 @@ public abstract class TextBoxListComponent extends FormBaseComponentImpl {
 		if (content != null && content.size() != 0) {
 			//antisamy + escaping to prevent issue with the javascript code
 			OWASPAntiSamyXSSFilter filter = new OWASPAntiSamyXSSFilter();
-			List<String> filtered = new ArrayList<String>();
+			List<String> filtered = new ArrayList<>();
 			for(String item:content.keySet()) {
 				String antiItem = filter.filter(item);
 				if(StringHelper.containsNonWhitespace(antiItem)) {

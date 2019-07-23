@@ -294,7 +294,7 @@ public class PoolDAOTest extends OlatTestCase {
 		Pool pool2 = poolDao.createPool(null, poolName, true);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		List<Pool> pools = new ArrayList<Pool>(2);
+		List<Pool> pools = new ArrayList<>(2);
 		pools.add(pool1);
 		pools.add(pool2);
 		poolDao.addItemToPool(item, pools, false);

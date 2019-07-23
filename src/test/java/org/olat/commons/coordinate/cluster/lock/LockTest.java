@@ -93,7 +93,7 @@ public class LockTest extends OlatTestCase {
 	@Test
 	public void testCreateDeleteAcquire() {
 		// some setup
-		List<Identity> identities = new ArrayList<Identity>();
+		List<Identity> identities = new ArrayList<>();
 		for (int i = 0; i < MAX_COUNT + MAX_USERS_MORE; i++) {
 			Identity i1 = JunitTestHelper.createAndPersistIdentityAsRndUser("lock-");
 			identities.add(i1);

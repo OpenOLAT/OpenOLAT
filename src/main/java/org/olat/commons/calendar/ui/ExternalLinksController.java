@@ -78,7 +78,7 @@ public class ExternalLinksController extends FormBasicController {
 		
 		this.kalendarEvent = kalendarEvent;
 		
-		externalLinks = new ArrayList<LinkWrapper>();
+		externalLinks = new ArrayList<>();
 		List<KalendarEventLink> links = kalendarEvent.getKalendarEventLinks();
 		for(KalendarEventLink link:links) {
 			if(EXTERNAL_LINKS_PROVIDER.equals(link.getProvider())) {
@@ -214,7 +214,7 @@ public class ExternalLinksController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		List<KalendarEventLink> links = kalendarEvent.getKalendarEventLinks();
 		
-		List<LinkWrapper> filledWrappers = new ArrayList<LinkWrapper>();
+		List<LinkWrapper> filledWrappers = new ArrayList<>();
 		for(LinkWrapper linkWrapper:externalLinks) {
 			if(!linkWrapper.isEmpty()) {
 				filledWrappers.add(linkWrapper);
@@ -222,7 +222,7 @@ public class ExternalLinksController extends FormBasicController {
 		}
 		
 		//add and update links
-		Set<String> usedUuids = new HashSet<String>();
+		Set<String> usedUuids = new HashSet<>();
 		for(LinkWrapper linkWrapper:filledWrappers) {
 			boolean found = false;
 			usedUuids.add(linkWrapper.getId());

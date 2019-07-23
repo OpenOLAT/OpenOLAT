@@ -61,7 +61,7 @@ public class ProjectEventFormController extends FormBasicController {
 	public ProjectEventFormController(UserRequest ureq, WindowControl wControl, ProjectBrokerModuleConfiguration config) {
 		super(ureq, wControl);
 		this.config = config;
-		projectEventElementList = new HashMap<Project.EventType, MultipleSelectionElement>();
+		projectEventElementList = new HashMap<>();
 		initForm(this.flc, this, ureq);
 	}
 

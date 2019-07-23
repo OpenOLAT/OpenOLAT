@@ -88,12 +88,12 @@ public class EditorStatusController extends BasicController {
 			main.contextPut("hasCourseStatus", Boolean.FALSE);
 			main.contextPut("errorIsOpen", Boolean.FALSE);
 		} else {
-			List<String> errorIsForNode = new ArrayList<String>();
-			List<String> errorMessage = new ArrayList<String>();
-			List<String> errorHelpWizardLink = new ArrayList<String>();
-			List<String> warningIsForNode = new ArrayList<String>();
-			List<String> warningMessage = new ArrayList<String>();
-			List<String> warningHelpWizardLink = new ArrayList<String>();
+			List<String> errorIsForNode = new ArrayList<>();
+			List<String> errorMessage = new ArrayList<>();
+			List<String> errorHelpWizardLink = new ArrayList<>();
+			List<String> warningIsForNode = new ArrayList<>();
+			List<String> warningMessage = new ArrayList<>();
+			List<String> warningHelpWizardLink = new ArrayList<>();
 			//
 			int errCnt = 0;
 			int warCnt = 0;

@@ -84,8 +84,8 @@ public class PortfolioResultDetailsController extends FormBasicController {
 	private Binder templateBinder;
 	private List<Binder> binders;
 	
-	private Map<PortfolioStructureMap, MapElements> mapToElements = new HashMap<PortfolioStructureMap, MapElements>();
-	private Map<Binder, MapElements> binderToElements = new HashMap<Binder, MapElements>();
+	private Map<PortfolioStructureMap, MapElements> mapToElements = new HashMap<>();
+	private Map<Binder, MapElements> binderToElements = new HashMap<>();
 	
 	private DeadlineController deadlineCtr;
 	private CloseableCalloutWindowController deadlineCalloutCtr;

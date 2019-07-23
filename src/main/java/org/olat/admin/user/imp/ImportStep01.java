@@ -190,7 +190,7 @@ class ImportStep01 extends BasicStep {
 					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
 			}
 
-			FlexiTableDataModel<Identity> tableDataModel = new FlexiTableDataModelImpl<Identity>(new Model(idents, colPos), tableColumnModel);
+			FlexiTableDataModel<Identity> tableDataModel = new FlexiTableDataModelImpl<>(new Model(idents, colPos), tableColumnModel);
 			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 		}
 	}

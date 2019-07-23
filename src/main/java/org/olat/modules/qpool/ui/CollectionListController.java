@@ -136,7 +136,7 @@ public class CollectionListController extends FormBasicController {
 	}
 	
 	public List<QuestionItemCollection> getShortItems(Set<Integer> index) {
-		List<QuestionItemCollection> collections = new ArrayList<QuestionItemCollection>();
+		List<QuestionItemCollection> collections = new ArrayList<>();
 		for(Integer i:index) {
 			QuestionItemCollection row = model.getObject(i.intValue());
 			if(row != null) {

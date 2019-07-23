@@ -523,7 +523,7 @@ public class TranslationDevManager {
 			for (String bundleName : allBundles) {
 				int bundleCounter = 0;
 				//get valid keys from ref langs and this bundle
-				Set<String> allValidKeys = new HashSet<String>();
+				Set<String> allValidKeys = new HashSet<>();
 				for (String refLangKey : referenceLanguages) {
 					Properties properties = i18nMgr.getPropertiesWithoutResolvingRecursively(i18nMgr.getLocaleOrNull(refLangKey), bundleName);
 					if (properties == null) {

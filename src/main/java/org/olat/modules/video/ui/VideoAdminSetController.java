@@ -207,7 +207,7 @@ public class VideoAdminSetController extends FormBasicController  {
 
 		if(source == enable2160SelectionEl || source == enable1080SelectionEl || source == enable720SelectionEl || source == enable480SelectionEl || source == enable360SelectionEl || source == enable240SelectionEl) {
 			//update config with values from gui
-			List<Integer> resolutions = new ArrayList<Integer>();
+			List<Integer> resolutions = new ArrayList<>();
 			if(enable2160SelectionEl.isSelected(0)) resolutions.add(2160);
 			if(enable1080SelectionEl.isSelected(0)) resolutions.add(1080);
 			if(enable720SelectionEl.isSelected(0)) resolutions.add(720);

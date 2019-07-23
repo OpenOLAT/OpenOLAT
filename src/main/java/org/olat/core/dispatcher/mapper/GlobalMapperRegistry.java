@@ -59,7 +59,7 @@ public class GlobalMapperRegistry implements Dispatcher {
 	// The global mapper hash map contains mappers:
 	// keys: String objects representing the mapped path (derived from class name).
 	// values: the mapper
-	private Map<String, Mapper> pathToMapper = new HashMap<String, Mapper>();
+	private Map<String, Mapper> pathToMapper = new HashMap<>();
 
 	/**
 	 * 

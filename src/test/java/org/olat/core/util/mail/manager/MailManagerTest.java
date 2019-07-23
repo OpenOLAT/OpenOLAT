@@ -255,7 +255,7 @@ public class MailManagerTest extends OlatTestCase {
 		final CountDownLatch finishCount = new CountDownLatch(NUM_OF_THREADS);
 		List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
-		List<SubscribeThread> threads = new ArrayList<SubscribeThread>();
+		List<SubscribeThread> threads = new ArrayList<>();
 		for(int i=0; i<NUM_OF_THREADS; i++) {
 			List<Identity> ids = new ArrayList<>(identities);
 			SubscribeThread thread = new SubscribeThread(ids, exceptionHolder, statusList, finishCount);

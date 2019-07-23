@@ -60,8 +60,8 @@ public class ResultsController extends FormBasicController {
 	private boolean highlight = true;
 	private SearchResults searchResults;
 	
-	private final List<ResultDocument> documents = new ArrayList<ResultDocument>();
-	private final List<ResultController> resultsCtrl = new ArrayList<ResultController>();
+	private final List<ResultDocument> documents = new ArrayList<>();
+	private final List<ResultController> resultsCtrl = new ArrayList<>();
 	
 	public ResultsController(UserRequest ureq, WindowControl wControl, Form mainForm) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "results", mainForm);

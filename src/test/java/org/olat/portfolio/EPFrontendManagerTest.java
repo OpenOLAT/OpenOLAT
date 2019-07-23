@@ -216,8 +216,8 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		//create the template owned by ident1
 		PortfolioStructureMap templateEl = epStructureManager.createAndPersistPortfolioMapTemplateFromEntry(ident1, addedEntry);
 		//create five pages
-		List<PortfolioStructure> pageRefs = new ArrayList<PortfolioStructure>();
-		List<PortfolioStructure> elementRefs = new ArrayList<PortfolioStructure>();
+		List<PortfolioStructure> pageRefs = new ArrayList<>();
+		List<PortfolioStructure> elementRefs = new ArrayList<>();
 		
 		for(int i=0; i<5; i++) {
 			PortfolioStructure page = epFrontendManager.createAndPersistPortfolioPage(templateEl, "sync-template-page-" + i, "sync-template-page-" + i);
@@ -600,7 +600,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//save a list of policies
-		List<EPMapPolicy> policies = new ArrayList<EPMapPolicy>();
+		List<EPMapPolicy> policies = new ArrayList<>();
 		
 		//user policy
 		EPMapPolicy userPolicy = new EPMapPolicy();
@@ -643,7 +643,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//save a list of policies
-		List<EPMapPolicy> policies = new ArrayList<EPMapPolicy>();
+		List<EPMapPolicy> policies = new ArrayList<>();
 		//invitation
 		Invitation invitation = invitationDao.createAndPersistInvitation();
 		invitation.setFirstName("John");
@@ -676,7 +676,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//save a list of policies
-		List<EPMapPolicy> policies = new ArrayList<EPMapPolicy>();
+		List<EPMapPolicy> policies = new ArrayList<>();
 		//first user policy
 		EPMapPolicy userPolicy1 = new EPMapPolicy();
 		userPolicy1.setType(Type.user);
@@ -776,7 +776,7 @@ public class EPFrontendManagerTest extends OlatTestCase {
 		epFrontendManager.addArtefactToStructure(id, artefact, page);
 		dbInstance.commitAndCloseSession();
 		//add policy
-		List<EPMapPolicy> policies = new ArrayList<EPMapPolicy>();
+		List<EPMapPolicy> policies = new ArrayList<>();
 		EPMapPolicy userPolicy = new EPMapPolicy();
 		userPolicy.setType(Type.user);
 		userPolicy.getIdentities().add(ident2);

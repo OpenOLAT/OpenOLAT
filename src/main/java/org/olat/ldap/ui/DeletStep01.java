@@ -117,7 +117,7 @@ public class DeletStep01 extends BasicStep {
 				return;
 			}
 
-			Map<String, String> reqProbertyMap = new HashMap<String,String>(syncConfiguration.getUserAttributeMap());
+			Map<String, String> reqProbertyMap = new HashMap<>(syncConfiguration.getUserAttributeMap());
 			Collection<String> reqProberty = reqProbertyMap.values();
 			reqProberty.remove(LDAPConstants.LDAP_USER_IDENTIFYER);
 

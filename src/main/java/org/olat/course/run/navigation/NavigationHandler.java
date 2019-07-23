@@ -592,9 +592,9 @@ public class NavigationHandler implements Disposable {
 	}
 	
 	private List<String> convertToTreeNodeIds(TreeEvaluation treeEval, Collection<String> courseNodeIds) {
-		if(courseNodeIds == null || courseNodeIds.isEmpty()) return new ArrayList<String>();
+		if(courseNodeIds == null || courseNodeIds.isEmpty()) return new ArrayList<>();
 
-		List<String> convertedIds = new ArrayList<String>(courseNodeIds.size());
+		List<String> convertedIds = new ArrayList<>(courseNodeIds.size());
 		for(String courseNodeId:courseNodeIds) {
 			convertedIds.add(convertToTreeNodeId(treeEval, courseNodeId));
 		}

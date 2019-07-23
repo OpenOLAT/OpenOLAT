@@ -165,7 +165,7 @@ public class CalendarPrintMapper implements Mapper {
 		Collections.sort(eventList, new KalendarEventDateComparator());
 		
 		Date currentDate = null;
-		List<KalendarEventRenderWrapper> eventByDayList = new ArrayList<KalendarEventRenderWrapper>();
+		List<KalendarEventRenderWrapper> eventByDayList = new ArrayList<>();
 		for(KalendarEventRenderWrapper event:eventList) {
 			Date begin = event.getEvent().getBegin();
 			Date normalizedBegin = CalendarUtils.removeTime(begin);

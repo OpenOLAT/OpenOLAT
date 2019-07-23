@@ -67,7 +67,7 @@ public class JavaEnvironmmentPropertiesController extends BasicController {
 	
 	private void loadModel() {
 		Properties p = System.getProperties();
-		List<NameValuePair> pairs = new ArrayList<NameValuePair>(p.size());
+		List<NameValuePair> pairs = new ArrayList<>(p.size());
 		for(Map.Entry<Object,Object> entry : p.entrySet()) {
 			String name = entry.getKey().toString();
 			String value = entry.getValue().toString();

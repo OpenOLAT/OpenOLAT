@@ -38,8 +38,8 @@ import org.olat.instantMessaging.model.BuddyGroup;
 public class Roster {
 	
 	private final Long meIdentityKey;
-	private final List<Buddy> entries = new CopyOnWriteArrayList<Buddy>();
-	private final List<BuddyGroup> groups = new CopyOnWriteArrayList<BuddyGroup>();
+	private final List<Buddy> entries = new CopyOnWriteArrayList<>();
+	private final List<BuddyGroup> groups = new CopyOnWriteArrayList<>();
 	
 	public Roster(Long identityKey) {
 		this.meIdentityKey = identityKey;
@@ -93,8 +93,8 @@ public class Roster {
 	}
 	
 	public synchronized List<Buddy> getBuddies() {
-		Set<Buddy> buddies = new HashSet<Buddy>();
-		Set<Buddy> vips = new HashSet<Buddy>();
+		Set<Buddy> buddies = new HashSet<>();
+		Set<Buddy> vips = new HashSet<>();
 		for(Buddy entry:entries) {
 			if(entry.isVip()) {
 				vips.add(entry);
@@ -111,7 +111,7 @@ public class Roster {
 		}
 
 		//if vip once, vip always
-		List<Buddy> orderedBuddies = new ArrayList<Buddy>(buddies.size());
+		List<Buddy> orderedBuddies = new ArrayList<>(buddies.size());
 		for(Buddy buddy:buddies) {
 			Buddy clone = buddy.clone();
 			clone.setVip(vips.contains(buddy));

@@ -41,7 +41,7 @@ public class ItemsInput implements Serializable{
 	 */
 	public ItemsInput() {
 		super();
-		map = new HashMap<String,ItemInput>();
+		map = new HashMap<>();
 	}
 	
 	public void addItemInput(ItemInput iip) {

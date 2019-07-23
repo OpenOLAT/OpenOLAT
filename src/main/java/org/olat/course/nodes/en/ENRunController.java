@@ -284,7 +284,7 @@ public class ENRunController extends BasicController implements GenericEventList
 
 		if (numOfParticipatingGroups > 0) {
 			enrollVC.contextPut("isEnrolledView", Boolean.TRUE);
-			List<String> groupnames = new ArrayList<String>(numOfParticipatingGroups);
+			List<String> groupnames = new ArrayList<>(numOfParticipatingGroups);
 			for(String groupName: stats.getParticipantingGroupNames()){
 				groupnames.add(StringHelper.escapeHtml(groupName));
 			}
@@ -295,7 +295,7 @@ public class ENRunController extends BasicController implements GenericEventList
 
 		if (numOfWaitingGroups > 0){
 			enrollVC.contextPut("isInWaitingList", Boolean.TRUE);
-			List<String> waitingListNames = new ArrayList<String>(numOfWaitingGroups);
+			List<String> waitingListNames = new ArrayList<>(numOfWaitingGroups);
 			for(String groupName:stats.getWaitingGroupNames()){
 				waitingListNames.add(StringHelper.escapeHtml(groupName));
 			}

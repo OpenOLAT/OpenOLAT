@@ -124,7 +124,7 @@ public class YearPropertyHandlerController extends FormBasicController implement
 		String fV = txeFrom.getValue();
 		String tV = txeTo.getValue();
 		if (!StringUtils.isBlank(fV) || !StringUtils.isBlank(tV)) {
-			Map<String, String> handlerConfig = new HashMap<String, String>();
+			Map<String, String> handlerConfig = new HashMap<>();
 			handlerConfig.put(YearPropertyHandler.PROP_FROM, fV);
 			handlerConfig.put(YearPropertyHandler.PROP_TO, tV);
 			handler2Configure.getHandlerConfigFactory().saveConfigForHandler(handler2Configure, handlerConfig);

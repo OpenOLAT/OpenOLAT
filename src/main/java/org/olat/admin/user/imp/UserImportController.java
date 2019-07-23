@@ -339,8 +339,8 @@ public class UserImportController extends BasicController {
 	}
 	
 	private Collection<Identity> getIdentities(List<Identity> allIdents) {
-		Set<Identity> identities = new HashSet<Identity>(allIdents.size());
-		List<String> usernames = new ArrayList<String>();
+		Set<Identity> identities = new HashSet<>(allIdents.size());
+		List<String> usernames = new ArrayList<>();
 		for (Object o : allIdents) {
 			if(o instanceof TransientIdentity) {
 				TransientIdentity transIdent = (TransientIdentity)o;
@@ -404,7 +404,7 @@ public class UserImportController extends BasicController {
 
 	private void processGroupAdditionForAllIdents(List<Identity> allIdents, List<Long> tutorGroups, List<Long> partGroups, boolean sendmail) {
 		Collection<Identity> identities = getIdentities(allIdents);
-		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
+		List<BusinessGroupMembershipChange> changes = new ArrayList<>();
 		for(Identity identity:identities) {
 			if(tutorGroups != null && !tutorGroups.isEmpty()) {
 				for(Long tutorGroupKey:tutorGroups) {

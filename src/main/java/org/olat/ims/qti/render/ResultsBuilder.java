@@ -341,7 +341,7 @@ public class ResultsBuilder {
 								Element vareq = (Element) it_vareq.next();
 								String respIdent = vareq.attributeValue("respident");
 								Set<String> respIdent_corr_answers = corr_answers.get(respIdent);
-								if (respIdent_corr_answers == null) respIdent_corr_answers = new HashSet<String>(3);
+								if (respIdent_corr_answers == null) respIdent_corr_answers = new HashSet<>(3);
 								respIdent_corr_answers.add(vareq.getText());
 								corr_answers.put(respIdent, respIdent_corr_answers);
 							} // for varequal

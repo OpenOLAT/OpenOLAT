@@ -102,7 +102,7 @@ public class CourseCalendarSubscription implements CalendarSubscription {
 		@SuppressWarnings("unchecked")
 		List<String> courseSubscriptions = (List<String>)preferences.get(CourseCalendarSubscription.class, KEY_SUBSCRIPTION);
 		if (courseSubscriptions == null)
-			courseSubscriptions = new ArrayList<String>();
+			courseSubscriptions = new ArrayList<>();
 		return courseSubscriptions;
 	}
 	
@@ -110,7 +110,7 @@ public class CourseCalendarSubscription implements CalendarSubscription {
 		@SuppressWarnings("unchecked")
 		List<String> courseSubscriptions = (List<String>)preferences.get(CourseCalendarSubscription.class, KEY_UN_SUBSCRIPTION);
 		if (courseSubscriptions == null)
-			courseSubscriptions = new ArrayList<String>();
+			courseSubscriptions = new ArrayList<>();
 		return courseSubscriptions;
 	}
 	

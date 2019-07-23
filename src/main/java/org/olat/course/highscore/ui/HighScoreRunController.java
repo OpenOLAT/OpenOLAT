@@ -322,7 +322,7 @@ public class HighScoreRunController extends FormBasicController{
 				allMembers.subList(tableSize, allMembers.size()).clear();
 			}
 
-			tableDataModel = new FlexiTableDataModelImpl<HighScoreTableEntry>(new HighScoreFlexiTableModel(allMembers, anonymous, 
+			tableDataModel = new FlexiTableDataModelImpl<>(new HighScoreFlexiTableModel(allMembers, anonymous, 
 					translate("highscore.anonymous"),ownIdentity), tableColumnModel);
 			FlexiTableElement topTenTable = uifactory.addTableElement(getWindowControl(), "table", tableDataModel, 
 					getTranslator(), formLayout);
@@ -332,7 +332,7 @@ public class HighScoreRunController extends FormBasicController{
 
 			//establish a 2nd table if ownID position is greater than first table's size setting
 			if (!ownIdMembers.isEmpty()) {
-				tableDataModel2 = new FlexiTableDataModelImpl<HighScoreTableEntry>(
+				tableDataModel2 = new FlexiTableDataModelImpl<>(
 						new HighScoreFlexiTableModel(ownIdMembers, anonymous, 
 								translate("highscore.anonymous"), ownIdentity),
 						tableColumnModel);

@@ -596,7 +596,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		
 		
 		//-> remove id1, id3 from the resource
-		List<Identity> identitiesToRemove = new ArrayList<Identity>();
+		List<Identity> identitiesToRemove = new ArrayList<>();
 		identitiesToRemove.add(ident1);
 		identitiesToRemove.add(ident3);
 		businessGroupService.removeMembers(admin, identitiesToRemove, resource.getOlatResource(), null, false);
@@ -784,7 +784,7 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		change2.setTutor(Boolean.TRUE);
 		change2.setParticipant(Boolean.FALSE);
 
-		List<BusinessGroupMembershipChange> changes = new ArrayList<BusinessGroupMembershipChange>();
+		List<BusinessGroupMembershipChange> changes = new ArrayList<>();
 		changes.add(change1);
 		changes.add(change2);
 		businessGroupService.updateMemberships(ureqIdentity, changes, new MailPackage(false));

@@ -63,7 +63,7 @@ public class STPeekViewController extends BasicController {
 		super(ureq, wControl);
 
 		genericPeekViewVC = createVelocityContainer("stPeekView");
-		List<CourseNode> childNodes = new ArrayList<CourseNode>();
+		List<CourseNode> childNodes = new ArrayList<>();
 		// Loop over node evaluations of visible nodes
 		int chdCnt = ne.getChildCount();
 		for (int i = 0; i < chdCnt; i++) {

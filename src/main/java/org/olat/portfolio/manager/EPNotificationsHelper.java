@@ -69,7 +69,7 @@ public class EPNotificationsHelper {
 	 */
 	public List<SubscriptionListItem> getAllSubscrItemsDefault(Date compareDate, EPMapShort map) {
 		EPNotificationManager mgr = CoreSpringFactory.getImpl(EPNotificationManager.class);
-		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
+		List<SubscriptionListItem> allItems = new ArrayList<>();
 		List<Long> mapKeys = Collections.singletonList(map.getKey());
 		//structure elements
 		List<SubscriptionListItem> notis1 = mgr.getPageSubscriptionListItem(map.getKey(), rootBusinessPath, compareDate, translator);	
@@ -94,13 +94,13 @@ public class EPNotificationsHelper {
 		// at this moment, map is not yet synchronized. check the "parent"
 		// templateMap for map/structure changes
 	
-		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>();
+		List<SubscriptionListItem> allItems = new ArrayList<>();
 
 		//structure elements
 		List<SubscriptionListItem> notis1 = mgr.getPageSubscriptionListItem(map.getSourceMapKey(), rootBusinessPath, compareDate, translator);	
 		allItems.addAll(notis1);
 		
-		List<Long> mapKeys = new ArrayList<Long>();
+		List<Long> mapKeys = new ArrayList<>();
 		mapKeys.add(map.getKey());
 		mapKeys.add(map.getSourceMapKey());
 		

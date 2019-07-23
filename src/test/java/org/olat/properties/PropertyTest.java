@@ -112,7 +112,7 @@ public class PropertyTest extends OlatTestCase {
 		Assert.assertTrue(emptyProps.isEmpty());
 		
 		//check with a real value and a dummy
-		List<Long> resIds = new ArrayList<Long>();
+		List<Long> resIds = new ArrayList<>();
 		resIds.add(ores.getResourceableId());
 		resIds.add(2456l);//dummy
 		List<Property> props = pm.findProperties(ores.getResourceableTypeName(), resIds, "catidlist", "TestProperty");
@@ -142,7 +142,7 @@ public class PropertyTest extends OlatTestCase {
 		Assert.assertTrue(emptyProps.isEmpty());
 		
 		//check with a real value and a dummy
-		List<Identity> identities = new ArrayList<Identity>();
+		List<Identity> identities = new ArrayList<>();
 		identities.add(id1);
 		identities.add(id2);
 		

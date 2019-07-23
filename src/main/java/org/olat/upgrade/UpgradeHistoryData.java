@@ -50,7 +50,7 @@ public class UpgradeHistoryData {
 	 * Constructor, initializes everything
 	 */
 	public UpgradeHistoryData() {
-		upgradeData = new HashMap<String, Serializable>();
+		upgradeData = new HashMap<>();
 		installationComplete = false;
 	}
 

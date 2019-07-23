@@ -160,7 +160,7 @@ public class ExtendedIdentitiesTableDataModel extends DefaultTableDataModel<Iden
 	 * @return All Identities which were selected in a multiselect - table
 	 */
 	public List<Identity> getIdentities(BitSet selection) {
-		List<Identity> identities = new ArrayList<Identity>();
+		List<Identity> identities = new ArrayList<>();
 		for (int i = selection.nextSetBit(0); i >= 0; i = selection.nextSetBit(i + 1)) {
 			Identity identityAt = getObject(i);
 			identities.add(identityAt);

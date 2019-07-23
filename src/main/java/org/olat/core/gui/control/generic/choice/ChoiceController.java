@@ -151,7 +151,7 @@ public class ChoiceController extends FormBasicController {
 	 * @return a not null selected keys List.
 	 */
 	public List<String> getSelectedEntries() {
-		List<String> selected = new ArrayList<String>();
+		List<String> selected = new ArrayList<>();
 		if (entrySelector instanceof MultipleSelectionElement) {
 			//sort the selected keys according with the keysIn order 
 			Collection<String> selectedKeys = ((MultipleSelectionElement) entrySelector).getSelectedKeys(); 			

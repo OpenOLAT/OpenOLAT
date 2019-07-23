@@ -256,7 +256,7 @@ public class ACMethodDAO {
 			if(resourceKeys.size() < maxResourcesEntries) {
 				query.setParameter("resourceKeys", resourceKeys);
 			} else {
-				resourceKeysSet = new HashSet<Long>(resourceKeys);
+				resourceKeysSet = new HashSet<>(resourceKeys);
 			}
 		}
 		if(StringHelper.containsNonWhitespace(resourceType)) {

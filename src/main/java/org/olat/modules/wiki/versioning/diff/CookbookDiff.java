@@ -57,7 +57,7 @@ import org.olat.modules.wiki.versioning.ChangeInfo;
 
 public class CookbookDiff {
   private ChangeInfo last;
-  private List<String> lines = new ArrayList<String>();
+  private List<String> lines = new ArrayList<>();
 
   /** block len > any possible real block len */
   private final int UNREAL = Integer.MAX_VALUE;
@@ -288,7 +288,7 @@ public class CookbookDiff {
    * Expects all data structures have been filled out.
    */
   private List<ChangeInfo> printOut() {
-    List<ChangeInfo> result = new ArrayList<ChangeInfo>();
+    List<ChangeInfo> result = new ArrayList<>();
 
     printstatus = idle;
     anyprinted = false;
@@ -333,7 +333,7 @@ public class CookbookDiff {
       last.setLines(lines.toArray(new String[0]));
       result.add(last);
     }
-    lines = new ArrayList<String>();
+    lines = new ArrayList<>();
   }
 
   /*

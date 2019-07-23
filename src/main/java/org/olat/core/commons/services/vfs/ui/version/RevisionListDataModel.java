@@ -49,7 +49,7 @@ implements SortableFlexiTableDataModel<RevisionRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<RevisionRow> rows = new SortableFlexiTableModelDelegate<RevisionRow>(orderBy, this, translator.getLocale()).sort();
+			List<RevisionRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale()).sort();
 			super.setObjects(rows);
 		}
 	}

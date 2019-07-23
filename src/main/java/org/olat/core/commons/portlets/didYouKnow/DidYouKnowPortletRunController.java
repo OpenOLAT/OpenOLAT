@@ -102,7 +102,7 @@ public class DidYouKnowPortletRunController extends DefaultController {
 			}
 		}
 
-		lookupList = new ArrayList<String>();
+		lookupList = new ArrayList<>();
 		Set<Object> keys =  propertiesFile.keySet();
 		for (Iterator<Object> iterator = keys.iterator(); iterator.hasNext();) {
 			String key = (String)iterator.next();

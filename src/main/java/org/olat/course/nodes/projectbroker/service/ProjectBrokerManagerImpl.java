@@ -427,7 +427,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		log.debug("Start deleting projectBrokerId=" + projectBrokerId );
 		ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
 		// delete all projects of a project-broker
-		List<Project> deleteProjectList = new ArrayList<Project>();
+		List<Project> deleteProjectList = new ArrayList<>();
 		deleteProjectList.addAll(projectBroker.getProjects());
 		for (Iterator<Project> iterator = deleteProjectList.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();

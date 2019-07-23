@@ -364,7 +364,7 @@ public class CSVToQuestionConverter {
 		
 		String content = parts[1];
 		Mattext matText = new Mattext(content);
-		List<QTIObject> elements = new ArrayList<QTIObject>(1);
+		List<QTIObject> elements = new ArrayList<>(1);
 		elements.add(matText);
 		mat.setElements(elements);
 	}

@@ -108,7 +108,7 @@ public class PreviewSettingsForm extends FormBasicController {
 	 * @return attributes map
 	 */
 	public Map<String,String> getAttributesMap() {
-		Map <String,String>attributesMap = new HashMap<String,String>();
+		Map <String,String>attributesMap = new HashMap<>();
 		for (int i=0; i<attrNames.size(); i++) {
 			if (!attrNames.get(i).isEmpty()) {
 					attributesMap.put(

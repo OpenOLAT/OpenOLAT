@@ -161,7 +161,7 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 	}
 	
 	private void processAttachments(VFSContainer attachmentsContainer) {
-		List<VFSItem> attachments = new ArrayList<VFSItem>(attachmentsContainer.getItems(filter));
+		List<VFSItem> attachments = new ArrayList<>(attachmentsContainer.getItems(filter));
 		for(VFSItem attachment:attachments) {
 			if(attachment instanceof LocalFileImpl) {
 				//add the text

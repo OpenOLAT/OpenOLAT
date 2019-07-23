@@ -54,7 +54,7 @@ public class AlwaysEmptyMap<K, V> implements ConcurrentMap<K, V> {
 
 	@Override
 	public Set<java.util.Map.Entry<K, V>> entrySet() {
-		return new HashSet<java.util.Map.Entry<K, V>>();
+		return new HashSet<>();
 	}
 
 	@Override
@@ -69,7 +69,7 @@ public class AlwaysEmptyMap<K, V> implements ConcurrentMap<K, V> {
 
 	@Override
 	public Set<K> keySet() {
-		return new HashSet<K>();
+		return new HashSet<>();
 	}
 
 	@Override
@@ -94,7 +94,7 @@ public class AlwaysEmptyMap<K, V> implements ConcurrentMap<K, V> {
 
 	@Override
 	public Collection<V> values() {
-		return new HashSet<V>();
+		return new HashSet<>();
 	}
 
 	@Override

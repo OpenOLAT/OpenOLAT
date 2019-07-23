@@ -94,7 +94,7 @@ public class OpenMeetingsRecordingsController extends BasicController {
 	private void loadModel() {
 		try {
 			List<OpenMeetingsRecording> recordings = openMeetingsManager.getRecordings(roomId);
-			List<OpenMeetingsRecording> readyRecordings = new ArrayList<OpenMeetingsRecording>(recordings.size());
+			List<OpenMeetingsRecording> readyRecordings = new ArrayList<>(recordings.size());
 			for (OpenMeetingsRecording recording : recordings) {
 				if (StringHelper.containsNonWhitespace(recording.getDownloadName())) {
 					readyRecordings.add(recording);

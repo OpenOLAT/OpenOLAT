@@ -302,7 +302,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 
 		// 1) score configuration
 		if (hasScore.isSelected(0)) {
-			sc.setSumOfScoreNodes(new ArrayList<String>(scoreNodeIdents.getSelectedKeys()));
+			sc.setSumOfScoreNodes(new ArrayList<>(scoreNodeIdents.getSelectedKeys()));
 		}else {
 			//reset
 			sc.setSumOfScoreNodes(null);
@@ -341,8 +341,8 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 	 * 				("invalid" is a node that is not associated with a test resource)
 	 */
 	public List<String> getInvalidNodeDescriptions() {
-		List<String> testElemWithNoResource = new ArrayList<String>();
-		List<String> selectedNodesIds = new ArrayList<String>(scoreNodeIdents.getSelectedKeys());		
+		List<String> testElemWithNoResource = new ArrayList<>();
+		List<String> selectedNodesIds = new ArrayList<>(scoreNodeIdents.getSelectedKeys());		
 		for (Iterator<CourseNode> nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {
 			CourseNode node = nodeIter.next();
 			if (selectedNodesIds.contains(node.getIdent())) {				

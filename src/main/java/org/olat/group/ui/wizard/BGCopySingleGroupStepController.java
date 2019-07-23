@@ -74,7 +74,7 @@ public class BGCopySingleGroupStepController extends StepFormBasicController   {
 		@SuppressWarnings("unchecked")
 		List<BGCopyBusinessGroup> copies = (List<BGCopyBusinessGroup>)getFromRunContext("groupsCopy");
 		if(copies == null) {
-			copies = new ArrayList<BGCopyBusinessGroup>();
+			copies = new ArrayList<>();
 			addToRunContext("groupsCopy", copies);
 		}
 		

@@ -190,7 +190,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 	
 	void updateNodeInfos() {
 		Map<Integer, NodeInfo> stats = clusBus.getNodeInfos();
-		List<NodeInfo> li = new ArrayList<NodeInfo>(stats.values());
+		List<NodeInfo> li = new ArrayList<>(stats.values());
 		Collections.sort(li, new Comparator<NodeInfo>(){
 			public int compare(NodeInfo o1, NodeInfo o2) {
 				return o1.getNodeId().compareTo(o2.getNodeId());

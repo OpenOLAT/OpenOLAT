@@ -150,7 +150,7 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 	 * @return
 	 */
 	private List<PortletEntry<Note>> convertNoteToPortletEntryList(List<Note> items) {
-		List<PortletEntry<Note>> convertedList = new ArrayList<PortletEntry<Note>>();
+		List<PortletEntry<Note>> convertedList = new ArrayList<>();
 		Iterator<Note> listIterator = items.iterator();
 		while(listIterator.hasNext()) {
 			convertedList.add(new NotePortletEntry(listIterator.next()));
@@ -265,7 +265,7 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 			PortletDefaultTableDataModel<Note> tableDataModel = new NoteManualSortingTableDataModel(entries);
 			List<PortletEntry<Note>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl<Note>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);

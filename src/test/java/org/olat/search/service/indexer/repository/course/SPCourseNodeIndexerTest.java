@@ -64,7 +64,7 @@ public class SPCourseNodeIndexerTest {
 	 * @return
 	 */
 	private String findLink(String page) {
-		List<String> linkList = new ArrayList<String>();
+		List<String> linkList = new ArrayList<>();
 		SPCourseNodeIndexer.extractSubpageLinks(page, linkList);
 		if (linkList.isEmpty()) {
 			return null;

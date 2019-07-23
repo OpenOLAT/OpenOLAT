@@ -195,7 +195,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			if(StringHelper.containsNonWhitespace(groupNames)) {
 				groupKeys = businessGroupService.toGroupKeys(groupNames, cev.getCourseGroupManager().getCourseEntry());
 			} else {
-				groupKeys = new ArrayList<Long>();
+				groupKeys = new ArrayList<>();
 			}
 		}
 		KeysAndNames groupInitVal = getGroupKeysAndNames(groupKeys);
@@ -279,7 +279,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			// check whether groups exist
 			activeGroupSelection = getKeys(easyGroupList);
 
-			Set<Long> missingGroups = new HashSet<Long>();
+			Set<Long> missingGroups = new HashSet<>();
 			List<BusinessGroupShort> existingGroups =  businessGroupService.loadShortBusinessGroups(activeGroupSelection);
 			a_a:
 			for(Long activeGroupKey:activeGroupSelection) {
@@ -332,7 +332,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			// check whether areas exist
 			activeAreaSelection = getKeys(easyAreaList);
 
-			List<Long> missingAreas = new ArrayList<Long>();
+			List<Long> missingAreas = new ArrayList<>();
 			List<BGArea> cnt = areaManager.loadAreas(activeAreaSelection);
 			a_a:
 			for(Long activeAreaKey:activeAreaSelection) {
@@ -510,7 +510,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			cmc.deactivate();
 
 			if (event == Event.DONE_EVENT) {
-				List<Long> c = new ArrayList<Long>();
+				List<Long> c = new ArrayList<>();
 				c.addAll(getKeys(easyGroupList));
 				if (fixGroupError != null && fixGroupError.getUserObject() != null) {
 					String[] keyArr = (String[])fixGroupError.getUserObject();
@@ -536,7 +536,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 			easyAreaList.setEnabled(true);
 			cmc.deactivate();
 			if (event == Event.DONE_EVENT) {
-				List<Long> c = new ArrayList<Long>();
+				List<Long> c = new ArrayList<>();
 				c.addAll(getKeys(easyAreaList));
 				if (fixAreaError != null && fixAreaError.getUserObject() != null) {
 					String[] keyArr = (String[])fixAreaError.getUserObject();

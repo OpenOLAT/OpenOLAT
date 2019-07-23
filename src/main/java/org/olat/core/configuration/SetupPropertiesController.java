@@ -56,8 +56,8 @@ public class SetupPropertiesController extends BasicController {
 	Properties defaultProperties = new Properties();
 	Properties overwriteProperties = new Properties();
 	VelocityContainer content = createVelocityContainer("setup");
-	private List<OLATProperty> defaultProps = new ArrayList<OLATProperty>();
-	private List<OLATProperty> overwriteProps = new ArrayList<OLATProperty>();
+	private List<OLATProperty> defaultProps = new ArrayList<>();
+	private List<OLATProperty> overwriteProps = new ArrayList<>();
 
 	/**
 	 * 
@@ -186,7 +186,7 @@ public class SetupPropertiesController extends BasicController {
 		String comment;
 		boolean overwritten;
 		boolean hasComment;
-		List<String> availableValues = new ArrayList<String>(3);
+		List<String> availableValues = new ArrayList<>(3);
 		private String overwriteValue;
 		
 

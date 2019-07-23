@@ -75,7 +75,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	// current columns components
 	private Component[] columns = new Component[3];
 	// current css classes for the main div
-	private Set<String> mainCssClasses = new HashSet<String>();
+	private Set<String> mainCssClasses = new HashSet<>();
 	private LayoutMain3ColsConfig localLayoutConfig;
 	private String layoutConfigKey = null;
 	private Panel panel1, panel2, panel3;

@@ -84,7 +84,7 @@ public class ProjectBrokerModuleConfiguration {
 
 	public List<CustomField> getCustomFields() {
 		int size = moduleConfiguration.getIntegerSafe(CUSTOM_FIELDS_SIZE,0);
-		List<CustomField> customFields = new ArrayList<CustomField>();
+		List<CustomField> customFields = new ArrayList<>();
 		for (int i = 0; i < size; i++) {
 			String name = (String)moduleConfiguration.get(CUSTOM_FIELDS_NAME_ + i);
 			log.debug("getCustomFields " + CUSTOM_FIELDS_NAME_ + i + "=" + name);

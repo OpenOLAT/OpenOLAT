@@ -57,8 +57,8 @@ public class Assessment implements QTIObject {
 	private List assessfeedbacks = new ArrayList(); // occurs 0 to many
 	private SelectionOrdering selection_ordering;
 	private QTIObject reference = null; //occurs 0 to 1 time
-	private List<Section> sections = new ArrayList<Section>(); // occurs 0 to 1 time ( sections and section_references)
-	private List<Item> items = new ArrayList<Item>();
+	private List<Section> sections = new ArrayList<>(); // occurs 0 to 1 time ( sections and section_references)
+	private List<Item> items = new ArrayList<>();
 	private boolean inheritControls = false;
 	
 	public Assessment() {

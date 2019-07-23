@@ -38,7 +38,7 @@ public class Variables implements Serializable{
 	
 	public Variables() {
 		super();
-		vars = new HashMap<String,Variable>(3);
+		vars = new HashMap<>(3);
 	}
 
 

@@ -112,7 +112,7 @@ public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 				return "-";
 			} else {
 				// return all proj-leaders
-				List<Identity> allIdents = new ArrayList<Identity>();
+				List<Identity> allIdents = new ArrayList<>();
 				for (Identity idobj : identities) {
 					allIdents.add(idobj);
 				}
@@ -156,7 +156,7 @@ public class ProjectListTableModel extends DefaultTableDataModel<Project> {
 	}
 
 	private List<Project.EventType> getEnabledEvents(ProjectBrokerModuleConfiguration moduleConfig) {
-		List<Project.EventType> enabledEventList = new ArrayList<Project.EventType>();
+		List<Project.EventType> enabledEventList = new ArrayList<>();
 		for (Project.EventType eventType : Project.EventType.values()) {
 			if (moduleConfig.isProjectEventEnabled(eventType) && moduleConfig.isProjectEventTableViewEnabled(eventType)) {
 				enabledEventList.add(eventType);

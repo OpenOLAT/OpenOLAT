@@ -212,7 +212,7 @@ public class RestConnection {
 	throws UnsupportedEncodingException {
 		if(pairs == null || pairs.length == 0) return;
 		
-		List<NameValuePair> pairList = new ArrayList<NameValuePair>();
+		List<NameValuePair> pairList = new ArrayList<>();
 		for(NameValuePair pair:pairs) {
 			pairList.add(pair);
 		}

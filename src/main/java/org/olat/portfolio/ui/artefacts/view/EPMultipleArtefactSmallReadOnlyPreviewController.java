@@ -75,10 +75,10 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 	private void init(UserRequest ureq) {
 		if (artefactCtrls != null) disposeArtefactControllers();
 		if( optionLinkCtrls != null) disposeOptionLinkControllers();
-		optionLinkCtrls = new ArrayList<Controller>();
-		artefactCtrls = new ArrayList<Controller>();
-		List<List<Panel>> artefactCtrlCompLines = new ArrayList<List<Panel>>();
-		List<Panel> artefactCtrlCompLine = new ArrayList<Panel>();
+		optionLinkCtrls = new ArrayList<>();
+		artefactCtrls = new ArrayList<>();
+		List<List<Panel>> artefactCtrlCompLines = new ArrayList<>();
+		List<Panel> artefactCtrlCompLine = new ArrayList<>();
 		int i = 1;
 		for (AbstractArtefact artefact : artefacts) {
 			EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(artefact.getResourceableTypeName());
@@ -110,13 +110,13 @@ public class EPMultipleArtefactSmallReadOnlyPreviewController extends BasicContr
 						artefactCtrlCompLines.add(artefactCtrlCompLine);
 					}
 					artefactCtrlCompLines.add(Collections.singletonList(namedPanel));
-					artefactCtrlCompLine = new ArrayList<Panel>();
+					artefactCtrlCompLine = new ArrayList<>();
 				} else {
 					if(artefactCtrlCompLine.size() == 3) {
 						if(!artefactCtrlCompLine.isEmpty()) {
 							artefactCtrlCompLines.add(artefactCtrlCompLine);
 						}
-						artefactCtrlCompLine = new ArrayList<Panel>();
+						artefactCtrlCompLine = new ArrayList<>();
 					}
 					artefactCtrlCompLine.add(namedPanel);
 				}

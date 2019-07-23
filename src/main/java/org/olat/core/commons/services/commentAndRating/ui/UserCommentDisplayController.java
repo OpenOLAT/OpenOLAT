@@ -127,7 +127,7 @@ public class UserCommentDisplayController extends BasicController {
 		}
 		//
 		// Add all replies
-		replyControllers = new ArrayList<Controller>();
+		replyControllers = new ArrayList<>();
 		buildReplyComments(ureq);
 		userCommentDisplayVC.contextPut("replyControllers", replyControllers);
 		//
@@ -197,7 +197,7 @@ public class UserCommentDisplayController extends BasicController {
 			
 		} else if (source == deleteLink) {
 			// Init delete workflow
-			List<String> buttonLabels = new ArrayList<String>();
+			List<String> buttonLabels = new ArrayList<>();
 			boolean hasReplies = false;
 			for (UserComment comment : allComments) {
 				if (comment.getParent() != null && comment.getParent().getKey().equals(userComment.getKey())) {

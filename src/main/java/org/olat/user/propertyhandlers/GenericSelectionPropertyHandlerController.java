@@ -105,8 +105,8 @@ public class GenericSelectionPropertyHandlerController extends FormBasicControll
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		optionFieldNames = new ArrayList<String>();
-		i18nKeysToDelete = new ArrayList<String>();
+		optionFieldNames = new ArrayList<>();
+		i18nKeysToDelete = new ArrayList<>();
 
 		hcFlc = FormLayoutContainer.createCustomFormLayout("hcForm", getTranslator(), velocity_root
 				+ "/genericSelectionPropertyController.html");
@@ -235,7 +235,7 @@ public class GenericSelectionPropertyHandlerController extends FormBasicControll
 		// save the data to config
 		boolean m = modeRadio.isSelected(1);
 		handler.setMultiSelect(m);
-		List<String> selectionKeys = new ArrayList<String>();
+		List<String> selectionKeys = new ArrayList<>();
 
 		for (int i = 0; i < optionFieldNames.size(); i++) {
 			TextElement te = (TextElement) hcFlc.getFormComponent(OPTFIELD_PREFIX + optionFieldNames.get(i));

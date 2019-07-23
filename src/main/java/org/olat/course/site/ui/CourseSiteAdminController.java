@@ -124,8 +124,8 @@ public class CourseSiteAdminController extends FormBasicController {
 		
 		model = new CourseSiteDataModel(columnsModel);
 		
-		List<LanguageConfigurationRow> configs = new ArrayList<LanguageConfigurationRow>();
-		Map<String,LanguageConfiguration> langToConfigMap = new HashMap<String,LanguageConfiguration>();
+		List<LanguageConfigurationRow> configs = new ArrayList<>();
+		Map<String,LanguageConfiguration> langToConfigMap = new HashMap<>();
 		if(siteConfiguration.getConfigurations() != null) {
 			for(LanguageConfiguration langConfig : siteConfiguration.getConfigurations()) {
 				langToConfigMap.put(langConfig.getLanguage(), langConfig);

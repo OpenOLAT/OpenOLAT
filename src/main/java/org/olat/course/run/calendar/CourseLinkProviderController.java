@@ -130,7 +130,7 @@ public class CourseLinkProviderController extends FormBasicController implements
 			OLATResourceable courseOres = treeNode.getCourse();
 			if(courseOres != null) {
 				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(courseOres, true);
-				List<ContextEntry> ces = new ArrayList<ContextEntry>();
+				List<ContextEntry> ces = new ArrayList<>();
 				ces.add(BusinessControlFactory.getInstance().createContextEntry(re));
 				if(treeNode.getCourseNode() != null) {
 					String courseNodeId = treeNode.getCourseNode().getIdent();

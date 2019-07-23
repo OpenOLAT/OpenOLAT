@@ -43,7 +43,7 @@ import org.dom4j.Element;
  */
 public class OutcomesProcessing implements QTIObject {
 
-	private Map<String,String> outcomesProcessing = new HashMap<String,String>();
+	private Map<String,String> outcomesProcessing = new HashMap<>();
 	
 	// Strings used in outcomes processing
 //	public static final String DEFAULTVAL 	= "defaultval";

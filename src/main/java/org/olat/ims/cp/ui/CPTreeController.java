@@ -340,7 +340,7 @@ public class CPTreeController extends BasicController {
 			if (currentPage.isOrgaPage()) {
 				showInfo("cptreecontroller.orga.cannot.be.deleted");
 			} else {
-				List<String> buttonLables = new ArrayList<String>();
+				List<String> buttonLables = new ArrayList<>();
 				buttonLables.add(translate("cptreecontrolller.delete.items.and.files"));
 				buttonLables.add(translate("cptreecontrolller.delete.items.only"));
 				buttonLables.add(translate("cancel"));

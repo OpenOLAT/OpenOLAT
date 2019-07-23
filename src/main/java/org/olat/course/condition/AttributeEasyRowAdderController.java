@@ -243,12 +243,12 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	@Override
 	protected void initForm(final FormItemContainer formLayout, final Controller listener, final UserRequest ureq) {
 		//
-		columnAttribute = new ArrayList<String>();
-		columnOperator = new ArrayList<String>();
-		columnValueText = new ArrayList<String>();
-		columnValueSelection = new ArrayList<String>();
-		columnAddRow = new ArrayList<String>();
-		columnRemoveRow = new ArrayList<String>();
+		columnAttribute = new ArrayList<>();
+		columnOperator = new ArrayList<>();
+		columnValueText = new ArrayList<>();
+		columnValueSelection = new ArrayList<>();
+		columnAddRow = new ArrayList<>();
+		columnRemoveRow = new ArrayList<>();
 		// add a 0 row by default
 		addRowAt(0);
 
@@ -279,7 +279,7 @@ public class AttributeEasyRowAdderController extends FormBasicController {
 	 * @return
 	 */
 	public List<ExtendedCondition> getAttributeConditions() {
-		final List<ExtendedCondition> le = new ArrayList<ExtendedCondition>();
+		final List<ExtendedCondition> le = new ArrayList<>();
 		for (final Iterator<String> iterator = columnAttribute.iterator(); iterator.hasNext();) {
 			final String aname = iterator.next();
 			final String row = aname.replace(PRE_ATTRIBUTE, "");

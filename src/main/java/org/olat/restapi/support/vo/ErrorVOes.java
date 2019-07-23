@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class ErrorVOes {
 
 	@XmlElement(name="errorVO")
-	private List<ErrorVO> errors = new ArrayList<ErrorVO>();
+	private List<ErrorVO> errors = new ArrayList<>();
 	
 	public ErrorVOes() {
 		//make JAXB happy

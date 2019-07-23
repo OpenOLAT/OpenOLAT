@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class FlexiTableColumnModelImpl implements FlexiTableColumnModel {
 
-	private final List<FlexiColumnModel> columnModelList = new ArrayList<FlexiColumnModel>();
+	private final List<FlexiColumnModel> columnModelList = new ArrayList<>();
 	
 	/**
 	 * @return

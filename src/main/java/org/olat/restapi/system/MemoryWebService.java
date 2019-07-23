@@ -54,7 +54,7 @@ public class MemoryWebService implements Sampler {
 	
 	private static final Logger log = Tracing.createLoggerFor(MemoryWebService.class);
 	
-	private List<MemorySampleVO> memorySamples = new ArrayList<MemorySampleVO>(100);
+	private List<MemorySampleVO> memorySamples = new ArrayList<>(100);
 	
 	public MemoryWebService() {
 		//start sampling
@@ -73,7 +73,7 @@ public class MemoryWebService implements Sampler {
 		
 		Runtime r = Runtime.getRuntime();
 		if(r.freeMemory() < 20000000) {
-			List<String> currentThreadNames = new ArrayList<String>();
+			List<String> currentThreadNames = new ArrayList<>();
 			WorkThreadInformations.currentThreadNames(currentThreadNames);
 			for(String currentThreadName:currentThreadNames) {
 				String currentWork = WorkThreadInformations.get(currentThreadName);
@@ -149,7 +149,7 @@ public class MemoryWebService implements Sampler {
 	@Path("samples")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSamplesXml(@QueryParam("from") String from, @QueryParam("to") String to, @QueryParam("lastSamples") Integer maxResults) {
-		List<MemorySampleVO> samples = new ArrayList<MemorySampleVO>(memorySamples);
+		List<MemorySampleVO> samples = new ArrayList<>(memorySamples);
 		
 		Date fromDate = null;
 		if(StringHelper.containsNonWhitespace(from)) {

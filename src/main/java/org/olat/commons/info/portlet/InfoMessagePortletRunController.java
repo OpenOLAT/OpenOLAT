@@ -155,7 +155,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	 * @return
 	 */
 	private List<PortletEntry<InfoSubscriptionItem>> convertToPortletEntryList(List<InfoSubscriptionItem> infos) {
-		List<PortletEntry<InfoSubscriptionItem>> convertedList = new ArrayList<PortletEntry<InfoSubscriptionItem>>();
+		List<PortletEntry<InfoSubscriptionItem>> convertedList = new ArrayList<>();
 		long i = 0;
 		for(InfoSubscriptionItem info:infos) {
 			convertedList.add(new InfoPortletEntry(i++, info));
@@ -166,7 +166,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 	@Override
 	protected void reloadModel(SortingCriteria criteria) {
 		List<SubscriptionInfo> infos = NotificationsManager.getInstance().getSubscriptionInfos(getIdentity(), "InfoMessage");
-		List<InfoSubscriptionItem> items = new ArrayList<InfoSubscriptionItem>();
+		List<InfoSubscriptionItem> items = new ArrayList<>();
 		for(SubscriptionInfo info:infos) {
 			for(SubscriptionListItem item:info.getSubscriptionListItems()) {
 				items.add(new InfoSubscriptionItem(info, item));
@@ -193,7 +193,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 					return null;
 				}
 			};
-			portletToolsController = new PortletToolSortingControllerImpl<InfoSubscriptionItem>(ureq, wControl, getTranslator(), sortingCriteria, defaultModel, empty);
+			portletToolsController = new PortletToolSortingControllerImpl<>(ureq, wControl, getTranslator(), sortingCriteria, defaultModel, empty);
 			portletToolsController.setConfigManualSorting(false);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);

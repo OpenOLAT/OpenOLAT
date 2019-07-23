@@ -470,13 +470,13 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 		
 		List<MarkResourceStat> statList = markingService.getMarkManager().getStats(forumOres, null, getIdentity());
-		Map<String,MarkResourceStat> stats = new HashMap<String,MarkResourceStat>(statList.size() * 2 + 1);
+		Map<String,MarkResourceStat> stats = new HashMap<>(statList.size() * 2 + 1);
 		for(MarkResourceStat stat:statList) {
 			stats.put(stat.getSubPath(), stat);
 		}
 
 		if(reorder) {
-			List<MessageLight> orderedMessages = new ArrayList<MessageLight>();
+			List<MessageLight> orderedMessages = new ArrayList<>();
 			orderMessagesThreaded(messages, orderedMessages, thread);
 			messages = orderedMessages;
 		}
@@ -621,7 +621,7 @@ public class MessageListController extends BasicController implements GenericEve
 		// message attachments
 		VFSContainer msgContainer = forumManager.getMessageContainer(forum.getKey(), m.getKey());
 		messageView.setMessageContainer(msgContainer);
-		List<VFSItem> attachments = new ArrayList<VFSItem>(msgContainer.getItems(new VFSItemMetaFilter()));				
+		List<VFSItem> attachments = new ArrayList<>(msgContainer.getItems(new VFSItemMetaFilter()));				
 		messageView.setAttachments(attachments);
 
 		// number of children and modify/delete permissions

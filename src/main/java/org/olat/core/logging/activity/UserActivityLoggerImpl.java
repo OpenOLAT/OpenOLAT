@@ -452,7 +452,7 @@ public class UserActivityLoggerImpl implements IUserActivityLogger {
 				StackedBusinessControl sbc = (StackedBusinessControl)wControl.getBusinessControl();
 				final List<ContextEntry> ces = sbc.getContextEntryStack();
 				if (ces!=null) {
-					frameworkSetBCContextEntries(new LinkedList<ContextEntry>(ces));
+					frameworkSetBCContextEntries(new LinkedList<>(ces));
 				}
 			}
 			

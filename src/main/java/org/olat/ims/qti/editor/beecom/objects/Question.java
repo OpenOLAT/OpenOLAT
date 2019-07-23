@@ -46,7 +46,7 @@ public class Question {
 	private int type;
 	private String lable = null;
 	private Material question = new Material();
-	private List<Response> responses = new ArrayList<Response>(5);
+	private List<Response> responses = new ArrayList<>(5);
 	private String ident = null;
 	private float minValue = 0;
 	private float maxValue = 0;

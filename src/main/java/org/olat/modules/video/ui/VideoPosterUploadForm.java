@@ -54,7 +54,7 @@ public class VideoPosterUploadForm extends FormBasicController {
 	private static final int picUploadlimitKB = 51200;
 
 
-	private static final Set<String> imageMimeTypes = new HashSet<String>();
+	private static final Set<String> imageMimeTypes = new HashSet<>();
 	static {
 		imageMimeTypes.add("image/jpg");
 		imageMimeTypes.add("image/jpeg");

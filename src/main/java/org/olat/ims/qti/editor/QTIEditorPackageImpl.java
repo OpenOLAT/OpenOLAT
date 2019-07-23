@@ -129,10 +129,10 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 		Assessment assessment = QTIEditHelper.createAssessment(title, type);
 		qtiDocument.setAssessment(assessment);
 		Section section = QTIEditHelper.createSection(translator);
-		List<Section> sectionList = new ArrayList<Section>();
+		List<Section> sectionList = new ArrayList<>();
 		sectionList.add(section);
 		assessment.setSections(sectionList);
-		List<Item> itemList = new ArrayList<Item>();
+		List<Item> itemList = new ArrayList<>();
 		itemList.add(QTIEditHelper.createSCItem(translator));
 		section.setItems(itemList);
 		// initialize package
@@ -299,7 +299,7 @@ public class QTIEditorPackageImpl implements QTIEditorPackage {
 	 */
 	public boolean savePackageTo(File fOut) {
 		saveQTIDocument(qtiDocument.getDocument());
-		Set<String> files = new HashSet<String>(3);
+		Set<String> files = new HashSet<>(3);
 		files.add(ImsRepositoryResolver.QTI_FILE);
 		files.add("media");
 		files.add("changelog");

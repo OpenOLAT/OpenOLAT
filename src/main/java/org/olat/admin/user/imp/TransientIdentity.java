@@ -44,7 +44,7 @@ public class TransientIdentity implements Identity, User {
 	private String password;
 	private String language;
 	
-	private Map<String, String> properties = new HashMap<String,String>();
+	private Map<String, String> properties = new HashMap<>();
 
 	@Override
 	public Date getCreationDate() {

@@ -116,7 +116,7 @@ public class TaxonomyAllTreesBuilder {
 
 	private void loadTreeModel(Map<Taxonomy, GenericTreeNode> rootNodesMap, Taxonomy taxonomy) {
 		List<TaxonomyLevel> taxonomyLevels = taxonomyService.getTaxonomyLevels(taxonomy);
-		Map<Long,GenericTreeNode> fieldKeyToNode = new HashMap<Long, GenericTreeNode>();
+		Map<Long,GenericTreeNode> fieldKeyToNode = new HashMap<>();
 		for(TaxonomyLevel taxonomyLevel:taxonomyLevels) {
 			Long key = taxonomyLevel.getKey();
 			GenericTreeNode node = fieldKeyToNode.get(key);
@@ -152,7 +152,7 @@ public class TaxonomyAllTreesBuilder {
 		GenericTreeNode rootNode = new GenericTreeNode();
 		
 		
-		Map<Long,GenericTreeNode> fieldKeyToNode = new HashMap<Long, GenericTreeNode>();
+		Map<Long,GenericTreeNode> fieldKeyToNode = new HashMap<>();
 		for(TaxonomyLevelRow taxonomyLevel:taxonomyLevels) {
 			Long key = taxonomyLevel.getKey();
 			GenericTreeNode node = fieldKeyToNode.get(key);

@@ -46,7 +46,7 @@ import org.olat.search.service.SearchResourceContext;
 public class IMSMetadataDocument extends OlatDocument {
 
 	private static final long serialVersionUID = 7056634173187546351L;
-	private static Set<String> stopWords = new HashSet<String>();
+	private static Set<String> stopWords = new HashSet<>();
 	private static final Logger log = Tracing.createLoggerFor(IMSMetadataDocument.class);
 	
 	static {

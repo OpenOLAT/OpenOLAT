@@ -207,7 +207,7 @@ public class WikiToCPExport {
 		// isvisible="true">
 		// <title>Einleitung</title>
 		// </item>
-		List<WikiPage> topLevelPages = new ArrayList<WikiPage>();
+		List<WikiPage> topLevelPages = new ArrayList<>();
 		topLevelPages.add(wiki.getPage(WikiPage.WIKI_INDEX_PAGE));
 		WikiPage pageAtoZ = wiki.getPage(WikiPage.WIKI_A2Z_PAGE);
 		pageAtoZ.setContent(wiki.getAllPageNamesSorted());

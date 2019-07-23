@@ -161,7 +161,7 @@ public class DateChooserController extends FormBasicController {
 	public void setSubscribers(List<Subscriber> subscribers) {
 		String selectedKey = typeSelection.isOneSelected() ? typeSelection.getSelectedKey() : null;
 		
-		Set<String> types = new HashSet<String>();
+		Set<String> types = new HashSet<>();
 		for(Subscriber subscriber:subscribers) {
 			String type = subscriber.getPublisher().getType();
 			types.add(type);

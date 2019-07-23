@@ -50,19 +50,19 @@ public class TextLE extends AbstractLayoutElement {
 	public TextLE(Map<String, Object> config) {
 		super(config);
 
-		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<String, Integer>();
+		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<>();
 		iFrameRelativeChildren.put("body", 0);
 		iFrameRelativeChildren.put("table", 0);
 		iFrameRelativeChildren.put("ol, ul, li", 0);
 		setIframeRelativeChildren(iFrameRelativeChildren);
 
-		HashMap<String, Integer> mainRelativeChildren = new HashMap<String, Integer>();
+		HashMap<String, Integer> mainRelativeChildren = new HashMap<>();
 		mainRelativeChildren.put("#o_main", 0);
 		iFrameRelativeChildren.put("#o_main table", 0);
 		iFrameRelativeChildren.put("#o_main ol, #o_main ul, #o_main li", 0);
 		setMainRelativeChildren(mainRelativeChildren);
 
-		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<AbstractLayoutAttribute>();
+		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<>();
 		avAttribs.add(new FontLA());
 		avAttribs.add(new SizeLA());
 		avAttribs.add(new ColorLA());

@@ -154,7 +154,7 @@ public class GuiDemoFlexiForm extends FormBasicController {
 		fileElement = uifactory.addFileElement(getWindowControl(), "file", formLayout);
 		fileElement.setLabel("guidemo.flexi.form.file", null);
 		fileElement.setMaxUploadSizeKB(500, "guidemo.flexi.form.filetobig", null);
-		Set<String> mimeTypes = new HashSet<String>();
+		Set<String> mimeTypes = new HashSet<>();
 		mimeTypes.add("image/*");
 		fileElement.limitToMimeType(mimeTypes, "guidemo.flexi.form.wrongfiletype", null);
 		fileElement.setMandatory(true, "guidemo.flexi.form.mustbefilled");

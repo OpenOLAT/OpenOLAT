@@ -90,7 +90,7 @@ public class GenericTreeModel implements TreeModel {
 	 * @return The node whose user object is equal to the given object or null
 	 */
 	public TreeNode findNodeByUserObject(Object object) {
-		LinkedList<TreeNode> queue = new LinkedList<TreeNode>();
+		LinkedList<TreeNode> queue = new LinkedList<>();
 		// initialize the queue by the root node
 		queue.add(getRootNode());
 		do {

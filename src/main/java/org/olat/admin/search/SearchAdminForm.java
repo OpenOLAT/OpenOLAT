@@ -77,11 +77,11 @@ public class SearchAdminForm extends FormBasicController {
 		String value = blackList.getValue();
 		if(StringHelper.containsNonWhitespace(value)) {
 			String[] files = value.split(",");
-			Set<String> list = new HashSet<String>();
+			Set<String> list = new HashSet<>();
 			for(String file:files) {
 				list.add(file);
 			}
-			return new ArrayList<String>(list);
+			return new ArrayList<>(list);
 		}
 		return Collections.emptyList();
 	}

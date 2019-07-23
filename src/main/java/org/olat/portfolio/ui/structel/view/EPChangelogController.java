@@ -151,7 +151,7 @@ public class EPChangelogController extends FormBasicController {
 		// get the date from the dateChooser component
 		Date compareDate = dateChooser.getDate();
 		EPMapShort mapShort = ePFMgr.loadMapShortByResourceId(map.getOlatResource().getResourceableId());
-		List<SubscriptionListItem> allItems = new ArrayList<SubscriptionListItem>(0);
+		List<SubscriptionListItem> allItems = new ArrayList<>(0);
 		// get subscriptionListItems according to map type
 		if (map instanceof EPDefaultMap || map instanceof EPStructuredMapTemplate) {
 			allItems = helper.getAllSubscrItemsDefault(compareDate, mapShort);
@@ -169,7 +169,7 @@ public class EPChangelogController extends FormBasicController {
 	 * @return
 	 */
 	private List<SubscriptionItemBundle> getItemBundlesForSubscriptionItems(List<SubscriptionListItem> subscriptionItems) {
-		List<SubscriptionItemBundle> bundles = new ArrayList<EPChangelogController.SubscriptionItemBundle>();
+		List<SubscriptionItemBundle> bundles = new ArrayList<>();
 		Formatter f = Formatter.getInstance(getTranslator().getLocale());
 
 		for (int i = 0; i < subscriptionItems.size(); i++) {

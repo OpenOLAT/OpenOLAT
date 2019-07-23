@@ -245,7 +245,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				customfieldElementList.add(textElement);
 			} else {
 				// values define => dropdown selection
-				List<String> valueList = new ArrayList<String>();
+				List<String> valueList = new ArrayList<>();
 				while (tok.hasMoreTokens()) {
 					String value = tok.nextToken();
 					valueList.add(value);

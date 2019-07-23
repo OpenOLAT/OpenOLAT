@@ -94,9 +94,9 @@ public class EPMapPolicy {
 	}
 	
 	public Map<String,String> getIdentitiesValue() {
-		if(identities == null) return new HashMap<String,String>();
+		if(identities == null) return new HashMap<>();
 		
-		Map<String,String> values = new HashMap<String,String>();
+		Map<String,String> values = new HashMap<>();
 		for(Identity identity:identities) {
 			String login = identity.getName();
 			String first = identity.getUser().getProperty(UserConstants.FIRSTNAME, null);
@@ -116,15 +116,15 @@ public class EPMapPolicy {
 	
 	public void addIdentities(List<Identity> identitiesToAdd) {
 		if(identities == null) {
-			identities = new ArrayList<Identity>();
+			identities = new ArrayList<>();
 		}
 		identities.addAll(identitiesToAdd);
 	}
 	
 	public Map<String,String> getGroupsValues() {
-		if(groups == null) return new HashMap<String,String>();
+		if(groups == null) return new HashMap<>();
 		
-		Map<String,String> values = new HashMap<String,String>();
+		Map<String,String> values = new HashMap<>();
 		for(BusinessGroup group:groups) {
 			values.put(group.getName(), group.getKey().toString());
 		}

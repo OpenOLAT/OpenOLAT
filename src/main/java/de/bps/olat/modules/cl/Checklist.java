@@ -43,7 +43,7 @@ public class Checklist extends PersistentObject implements ModifiedInfo, Seriali
 	private String title;
 	private String description;
 	private Date lastMofified;
-	private List<Checkpoint> checkpoints = new ArrayList<Checkpoint>();
+	private List<Checkpoint> checkpoints = new ArrayList<>();
 	
 	public Checklist() {
 		this.title = "";
@@ -165,7 +165,7 @@ public class Checklist extends PersistentObject implements ModifiedInfo, Seriali
 	 * @return List with all visible checkpoints
 	 */
 	public List<Checkpoint> getVisibleCheckpoints() {
-		List<Checkpoint> visibleCheckpoints = new ArrayList<Checkpoint>();
+		List<Checkpoint> visibleCheckpoints = new ArrayList<>();
 		for(Checkpoint checkpoint : getCheckpoints()) {
 			if(!checkpoint.getMode().equals(CheckpointMode.MODE_HIDDEN)) visibleCheckpoints.add(checkpoint);
 		}

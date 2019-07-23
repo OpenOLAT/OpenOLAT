@@ -125,7 +125,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 
-		final Set<String> subscribed = new HashSet<String>();
+		final Set<String> subscribed = new HashSet<>();
 		NotificationsManager man = NotificationsManager.getInstance();
 		List<String> notiTypes = Collections.singletonList("FolderModule");
 		List<Subscriber> subs = man.getSubscribers(ureq.getIdentity(), notiTypes);

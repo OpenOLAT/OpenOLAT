@@ -49,7 +49,7 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 public class AccessListController extends BasicController implements AccessController {
 	
 	private final VelocityContainer mainVC;
-	private final List<Controller> accessCtrls = new ArrayList<Controller>();
+	private final List<Controller> accessCtrls = new ArrayList<>();
 	
 	private final AccessControlModule acModule;
 	private Object userObject;

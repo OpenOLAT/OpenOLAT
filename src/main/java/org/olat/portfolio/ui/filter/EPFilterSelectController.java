@@ -74,7 +74,7 @@ public class EPFilterSelectController extends FormBasicController {
 		}
 
 		int amount = existingFilters.size() + 1;
-		nonEmptyFilters = new ArrayList<EPFilterSettings>(amount);
+		nonEmptyFilters = new ArrayList<>(amount);
 		String[] theKeys = new String[amount];
 		String[] theValues = new String[amount];
 		theKeys[0] = String.valueOf(0);

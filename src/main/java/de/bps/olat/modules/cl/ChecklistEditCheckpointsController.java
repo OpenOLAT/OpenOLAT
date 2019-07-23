@@ -309,10 +309,10 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 		// reset complete form
 		this.checklist = ChecklistManager.getInstance().loadChecklist(checklist); // reload data from database
 		int size = checklist.getCheckpoints().size();
-		this.titleInputList = new ArrayList<TextElement>(size);
-		this.descriptionInputList = new ArrayList<TextElement>(size);
-		this.modeInputList = new ArrayList<SingleSelection>(size);
-		this.delButtonList = new ArrayList<FormLink>(size);
+		this.titleInputList = new ArrayList<>(size);
+		this.descriptionInputList = new ArrayList<>(size);
+		this.modeInputList = new ArrayList<>(size);
+		this.delButtonList = new ArrayList<>(size);
 		mainForm.setDirtyMarking(false);
 		initForm(flc, this, ureq);
 		fireEvent(ureq, Event.CANCELLED_EVENT);

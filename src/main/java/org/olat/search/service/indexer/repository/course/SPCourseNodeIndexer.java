@@ -124,7 +124,7 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 			
 			if (!indexOnlyChosenFile) {
 				if (log.isDebugEnabled()) log.debug("Index sub pages in SP.");
-				Set<String> alreadyIndexFileNames = new HashSet<String>();
+				Set<String> alreadyIndexFileNames = new HashSet<>();
 				alreadyIndexFileNames.add(chosenFile);
 				// Check if page has links to subpages and index those as well
 				indexSubPages(courseNodeResourceContext,rootContainer,indexWriter,leaf,alreadyIndexFileNames,0,filePath);
@@ -188,7 +188,7 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 	}
 
 	private List<String> getLinkListFrom(VFSLeaf leaf) {
-		List<String> linkList = new ArrayList<String>();
+		List<String> linkList = new ArrayList<>();
 		//only dive into file if it is a html file
 		String suffix = getSuffix(leaf.getName());
 		if (HTML_SUFFIXES.contains(suffix)) {

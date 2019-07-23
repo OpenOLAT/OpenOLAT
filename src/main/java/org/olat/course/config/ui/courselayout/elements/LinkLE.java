@@ -50,15 +50,15 @@ public class LinkLE extends AbstractLayoutElement {
 
 	public LinkLE(Map<String, Object> config) {
 		super(config);
-		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<String, Integer>();
+		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<>();
 		iFrameRelativeChildren.put("a", 0);
 		setIframeRelativeChildren(iFrameRelativeChildren);
 
-		HashMap<String, Integer> mainRelativeChildren = new HashMap<String, Integer>();
+		HashMap<String, Integer> mainRelativeChildren = new HashMap<>();
 		mainRelativeChildren.put("#o_main a", 0);
 		setMainRelativeChildren(mainRelativeChildren);
 
-		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<AbstractLayoutAttribute>();
+		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<>();
 		avAttribs.add(new FontLA());
 		avAttribs.add(new SizeLA());
 		avAttribs.add(new ColorLA());

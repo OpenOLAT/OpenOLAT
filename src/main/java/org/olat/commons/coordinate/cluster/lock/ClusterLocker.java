@@ -214,7 +214,7 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	
 	public List<LockEntry> adminOnlyGetLockEntries() {
 		List<LockImpl> li = clusterLockManager.getAllLocks();
-		List<LockEntry> res = new ArrayList<LockEntry>(li.size());
+		List<LockEntry> res = new ArrayList<>(li.size());
 		for (LockImpl impl : li) {
 			res.add(new LockEntry(impl.getAsset(), impl.getCreationDate().getTime(), impl.getOwner()));
 		}

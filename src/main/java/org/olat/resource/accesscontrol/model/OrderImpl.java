@@ -248,7 +248,7 @@ public class OrderImpl implements Persistable, Order, ModifiedInfo {
 	@Override
 	public List<OrderPart> getParts() {
 		if(parts == null) {
-			parts = new ArrayList<OrderPart>();
+			parts = new ArrayList<>();
 		}
 		return parts;
 	}

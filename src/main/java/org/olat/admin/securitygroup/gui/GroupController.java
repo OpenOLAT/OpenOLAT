@@ -379,7 +379,7 @@ public class GroupController extends BasicController {
 					}
 				} else if (toAdd.size() > 1) {
 					//check if already in group
-					List<Identity> alreadyInGroup = new ArrayList<Identity>();
+					List<Identity> alreadyInGroup = new ArrayList<>();
 					for (int i = 0; i < toAdd.size(); i++) {
 						if (securityGroupDao.isIdentityInSecurityGroup(toAdd.get(i), securityGroup)) {
 							tableCtr.setMultiSelectSelectedAt(i, false);

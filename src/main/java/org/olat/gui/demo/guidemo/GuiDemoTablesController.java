@@ -110,9 +110,9 @@ class SampleTableModel extends BaseTableDataModelWithoutFilter<List<Object>> {
 	
 	public SampleTableModel() {
 		int iEntries = 50;
-		this.entries = new ArrayList<List<Object>>(iEntries);
+		this.entries = new ArrayList<>(iEntries);
 		for (int i=0; i < iEntries; i++) {
-			List<Object> row = new ArrayList<Object>(5);
+			List<Object> row = new ArrayList<>(5);
 			row.add("Lorem" + i);
 			row.add("Ipsum" + i);
 			row.add("Dolor" + i);

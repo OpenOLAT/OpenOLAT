@@ -119,7 +119,7 @@ public class UserInterestsController extends FormBasicController {
 		// Draw the checkboxes
 		for (int i = 0; i < this.availableUserInterests.size(); i++) {
 			UserInterestsCategory category = this.availableUserInterests.get(i);
-			Vector<String> keys = new Vector<String>();
+			Vector<String> keys = new Vector<>();
 			for (UserInterestsCategory subcategory : category.getSubcategories()) {
 				keys.add(UserInterestsPropertyHandler.SUBCATEGORY_I18N_PREFIX + subcategory.getId());
 			}
@@ -144,7 +144,7 @@ public class UserInterestsController extends FormBasicController {
 			Set<String> currentSelection = getCurrentSelection();
 			for (MultipleSelectionElement checkboxGroup : this.checkboxGroups) {
 				MultipleSelectionElementImpl multipleSelectionElementImpl = (MultipleSelectionElementImpl)checkboxGroup;
-				Set<String> allUncheckedCheckboxes = new HashSet<String>(multipleSelectionElementImpl.getKeys());
+				Set<String> allUncheckedCheckboxes = new HashSet<>(multipleSelectionElementImpl.getKeys());
 				allUncheckedCheckboxes.removeAll(currentSelection);
 				multipleSelectionElementImpl.setEnabled(allUncheckedCheckboxes, false);
 			}
@@ -181,7 +181,7 @@ public class UserInterestsController extends FormBasicController {
 				// ... otherwise, disable all checkboxes except the selected ones.
 				for (MultipleSelectionElement checkboxGroup : this.checkboxGroups) {
 					MultipleSelectionElementImpl multipleSelectionElementImpl = (MultipleSelectionElementImpl)checkboxGroup;
-					Set<String> allUncheckedCheckboxes = new HashSet<String>(multipleSelectionElementImpl.getKeys());
+					Set<String> allUncheckedCheckboxes = new HashSet<>(multipleSelectionElementImpl.getKeys());
 					allUncheckedCheckboxes.removeAll(currentSelection);
 					multipleSelectionElementImpl.setEnabled(allUncheckedCheckboxes, false);
 				}
@@ -197,7 +197,7 @@ public class UserInterestsController extends FormBasicController {
 	 */
 	public String getSelectedInterests() {
 		// Retrieve the i18n keys of the selected checkboxes
-		Set<String> selectedInterestsKeysAsSet = new HashSet<String>(); 
+		Set<String> selectedInterestsKeysAsSet = new HashSet<>(); 
 		for (MultipleSelectionElement checkboxGroup : this.checkboxGroups) {
 			selectedInterestsKeysAsSet.addAll(checkboxGroup.getSelectedKeys());
 		}
@@ -205,7 +205,7 @@ public class UserInterestsController extends FormBasicController {
 		if (selectedInterestsKeysAsSet.size() > 0) {
 			// convert these keys into IDs
 			@SuppressWarnings("hiding")
-			Set<String> selectedInterestsIDs = new HashSet<String>();
+			Set<String> selectedInterestsIDs = new HashSet<>();
 			for (String selectedInterestKey : selectedInterestsKeysAsSet) {
 				selectedInterestsIDs.add(selectedInterestKey.replace(UserInterestsPropertyHandler.SUBCATEGORY_I18N_PREFIX, ""));
 			}
@@ -229,7 +229,7 @@ public class UserInterestsController extends FormBasicController {
 	 */
 	public void setSelectedInterests(String selectedInterestsIDs) {
 		if (selectedInterestsIDs != null) {
-			Set<String> selectedInterestsIDsAsSet = new HashSet<String>(Arrays.asList(selectedInterestsIDs.trim().split(":")));
+			Set<String> selectedInterestsIDsAsSet = new HashSet<>(Arrays.asList(selectedInterestsIDs.trim().split(":")));
 			// for each ID we get, ...
 			for (String selectedInterestID : selectedInterestsIDsAsSet) {
 				if (!selectedInterestID.equals("")) {
@@ -255,7 +255,7 @@ public class UserInterestsController extends FormBasicController {
 	}
 	
 	private Set<String> getCurrentSelection() {
-		Set<String> currentSelection = new HashSet<String>();
+		Set<String> currentSelection = new HashSet<>();
 		for (MultipleSelectionElement checkboxGroup : this.checkboxGroups) {
 			currentSelection.addAll(checkboxGroup.getSelectedKeys());
 		}

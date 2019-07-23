@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class SubscriptionInfoVOes {
 
 	@XmlElement(name="subscriptionInfoVO")
-	private List<SubscriptionInfoVO> users = new ArrayList<SubscriptionInfoVO>();
+	private List<SubscriptionInfoVO> users = new ArrayList<>();
 
 	public SubscriptionInfoVOes() {
 		//make JAXB happy

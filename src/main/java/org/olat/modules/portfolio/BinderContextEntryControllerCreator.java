@@ -92,7 +92,7 @@ public class BinderContextEntryControllerCreator extends DefaultContextEntryCont
 		Long binderKey = mainEntry.getOLATResourceable().getResourceableId();
 		BinderRef binder = new BinderRefImpl(binderKey);
 		
-		List<ContextEntry> rewritedEntries = new ArrayList<ContextEntry>();
+		List<ContextEntry> rewritedEntries = new ArrayList<>();
 		OLATResourceable homeRes = OresHelper.createOLATResourceableInstance("HomeSite", identity.getKey());
 		rewritedEntries.add(BusinessControlFactory.getInstance().createContextEntry(homeRes));
 		rewritedEntries.add(BusinessControlFactory.getInstance()

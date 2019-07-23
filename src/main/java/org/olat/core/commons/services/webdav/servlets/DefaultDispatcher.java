@@ -132,7 +132,7 @@ public abstract class DefaultDispatcher implements Serializable {
     /**
      * Full range marker.
      */
-    private static final ArrayList<Range> FULL = new ArrayList<Range>();
+    private static final ArrayList<Range> FULL = new ArrayList<>();
 
 
     // ----------------------------------------------------- Static Initializer

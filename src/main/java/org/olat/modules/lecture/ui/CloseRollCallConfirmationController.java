@@ -146,8 +146,8 @@ public class CloseRollCallConfirmationController extends FormBasicController {
 			}
 			
 			int numOfReasons = allReasons.size();
-			List<String> reasonKeys = new ArrayList<String>(numOfReasons + 1);
-			List<String> reasonValues = new ArrayList<String>(numOfReasons + 1);
+			List<String> reasonKeys = new ArrayList<>(numOfReasons + 1);
+			List<String> reasonValues = new ArrayList<>(numOfReasons + 1);
 			reasonKeys.add("-");
 			reasonValues.add("");
 			for(int i=numOfReasons; i-->0; ) {

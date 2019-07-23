@@ -148,7 +148,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
    * @return
    */
   private List<PortletEntry<UserEfficiencyStatementLight>> convertEfficiencyStatementToPortletEntryList(List<UserEfficiencyStatementLight> items) {
-		List<PortletEntry<UserEfficiencyStatementLight>> convertedList = new ArrayList<PortletEntry<UserEfficiencyStatementLight>>();
+		List<PortletEntry<UserEfficiencyStatementLight>> convertedList = new ArrayList<>();
 		for(UserEfficiencyStatementLight item:items) {
 			if(StringHelper.containsNonWhitespace(item.getShortTitle())) {
 				convertedList.add(new EfficiencyStatementPortletEntry(item));
@@ -266,7 +266,7 @@ public class EfficiencyStatementsPortletRunController extends AbstractPortletRun
 			PortletDefaultTableDataModel<UserEfficiencyStatementLight> tableDataModel = new EfficiencyStatementsManualSortingTableDataModel(portletEntryList, 2);
 			List<PortletEntry<UserEfficiencyStatementLight>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl<UserEfficiencyStatementLight>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);

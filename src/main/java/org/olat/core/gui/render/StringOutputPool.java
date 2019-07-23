@@ -39,7 +39,7 @@ public class StringOutputPool {
   protected final static int MAX_STR_BUILDER_POOL_SIZE = 50;
 
   /** General purpose pool for StringBuilder instances. */
-  private static List<Reference<StringOutput>> stringBuilders = new ArrayList<Reference<StringOutput>>(MAX_STR_BUILDER_POOL_SIZE+1);
+  private static List<Reference<StringOutput>> stringBuilders = new ArrayList<>(MAX_STR_BUILDER_POOL_SIZE+1);
 
   /** Auxiliary pool for small size builders. It is a simple sparse array with
       elements not sorted. Buffers are simply placed in and taken out. In
@@ -117,7 +117,7 @@ public class StringOutputPool {
 			// Bigger buffers? -> use primary pool, too big, don't return it to prevent memory leak
 		  synchronized ( stringBuilders ) {
 	      obj.setLength(0);
-		    stringBuilders.add(0, new SoftReference<StringOutput>(obj));
+		    stringBuilders.add(0, new SoftReference<>(obj));
 		    if ( stringBuilders.size() > MAX_STR_BUILDER_POOL_SIZE ) {
 		      stringBuilders.remove(MAX_STR_BUILDER_POOL_SIZE);
 		    }

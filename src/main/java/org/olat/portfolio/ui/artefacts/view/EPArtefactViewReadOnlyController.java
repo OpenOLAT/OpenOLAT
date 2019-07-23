@@ -96,7 +96,7 @@ public class EPArtefactViewReadOnlyController extends BasicController {
 	
 	private void updateTags() {
 		List<String> tags = ePFMgr.getArtefactTags(artefact);
-		List<String> escapedTags = new ArrayList<String>(tags.size());
+		List<String> escapedTags = new ArrayList<>(tags.size());
 		for(String tag:tags) {
 			escapedTags.add(StringHelper.escapeHtml(tag));
 		}

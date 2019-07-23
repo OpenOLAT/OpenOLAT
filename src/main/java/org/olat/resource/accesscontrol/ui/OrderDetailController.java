@@ -163,7 +163,7 @@ public class OrderDetailController extends FormBasicController {
 	}
 	
 	private OrderItemsDataModel getOrderItemsDataModel() {
-		List<OrderItemWrapper> items = new ArrayList<OrderItemWrapper>();
+		List<OrderItemWrapper> items = new ArrayList<>();
 		for(OrderPart part: order.getParts()) {
 			boolean first = true;
 			

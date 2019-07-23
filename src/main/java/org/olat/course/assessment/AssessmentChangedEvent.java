@@ -53,7 +53,7 @@ public class AssessmentChangedEvent extends MultiUserEvent {
 	/** Changed coach comment value **/
 	public static final String TYPE_COACH_COMMENT_CHANGED = "coach.comment";
 	
-	private static final List<String> assessmentTypes = new ArrayList<String>();
+	private static final List<String> assessmentTypes = new ArrayList<>();
 
 	static {
 		assessmentTypes.add(TYPE_ATTEMPTS_CHANGED);

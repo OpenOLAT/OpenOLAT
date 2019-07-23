@@ -75,7 +75,7 @@ public class LayeredPanel extends SimpleStackedPanel {
 	 */
 	List<Component> getLayers() {
 		synchronized(stackList) {
-			return new ArrayList<Component>(stackList);
+			return new ArrayList<>(stackList);
 		}
 	}
 

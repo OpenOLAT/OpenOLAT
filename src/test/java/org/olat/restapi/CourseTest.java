@@ -323,7 +323,7 @@ public class CourseTest extends OlatRestTestCase {
 		
 		//make auth1 and auth2 owner
 		RepositoryEntry repositoryEntry = repositoryManager.lookupRepositoryEntry(course1, true);
-		List<Identity> authors = new ArrayList<Identity>();
+		List<Identity> authors = new ArrayList<>();
 		authors.add(auth1);
 		authors.add(auth2);
 		IdentitiesAddEvent identitiesAddedEvent = new IdentitiesAddEvent(authors);

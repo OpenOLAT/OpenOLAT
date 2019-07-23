@@ -162,7 +162,7 @@ public class ItemWithResponseStr implements QTIItemObject {
 	 * @see org.olat.ims.qti.export.helper.QTIItemObject#getResponseColumns(org.olat.ims.qti.QTIResult)
 	 */
 	public List<String> getResponseColumns(QTIResult qtiresult) {
-		List<String> responseColumns = new ArrayList<String>();
+		List<String> responseColumns = new ArrayList<>();
 		if (qtiresult == null) {
 			// item has not been choosen
 			addTextAndTabs(responseColumns, "", getNumColumnHeaders());

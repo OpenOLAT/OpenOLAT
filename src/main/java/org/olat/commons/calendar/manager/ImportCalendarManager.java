@@ -149,7 +149,7 @@ public class ImportCalendarManager {
 	public List<KalendarRenderWrapper> getImportedCalendarsForIdentity(Identity identity, boolean reload) {
 		// initialize the calendars list
 
-		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		if(calendarModule.isEnabled() && calendarModule.isEnablePersonalCalendar()) {
 			long timestamp = System.currentTimeMillis();
 
@@ -181,7 +181,7 @@ public class ImportCalendarManager {
 	}
 	
 	public List<CalendarFileInfos> getImportedCalendarInfosForIdentity(Identity identity, boolean reload) {
-		List<CalendarFileInfos> calendars = new ArrayList<CalendarFileInfos>();
+		List<CalendarFileInfos> calendars = new ArrayList<>();
 		if(calendarModule.isEnabled() && calendarModule.isEnablePersonalCalendar()) {
 			long timestamp = System.currentTimeMillis();
 

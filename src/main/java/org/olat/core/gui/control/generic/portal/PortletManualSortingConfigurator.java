@@ -66,7 +66,7 @@ public class PortletManualSortingConfigurator<T> extends BasicController {
 	private TableController tableController;
 	private PortletDefaultTableDataModel<T> tableDataModel;
 	
-	private List<PortletEntry<T>> sortedItems = new ArrayList<PortletEntry<T>>();
+	private List<PortletEntry<T>> sortedItems = new ArrayList<>();
 	
 	/**
 	 * 

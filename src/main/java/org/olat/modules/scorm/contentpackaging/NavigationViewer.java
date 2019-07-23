@@ -318,7 +318,7 @@ public class NavigationViewer extends XMLDocument {
 	 * @return String[]
 	 */
 	public String[] getAllScoIdentifiers() {
-		List<String> v = new ArrayList<String>();
+		List<String> v = new ArrayList<>();
 		Element[] element = _scormCore.getElementsInManifest(this.getRootElement(), SCORM12_Core.ITEM, getRootElement().getNamespace());
 		for (int i = 0; i < element.length; i++) {
 			if (findScoType(element[i]).equals(SCORM12_Core.SCO)) {

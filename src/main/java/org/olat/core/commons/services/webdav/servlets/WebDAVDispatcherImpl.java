@@ -602,11 +602,11 @@ public class WebDAVDispatcherImpl
                             properties);
         } else {
             // The stack always contains the object of the current level
-            Stack<String> stack = new Stack<String>();
+            Stack<String> stack = new Stack<>();
             stack.push(path);
 
             // Stack of the objects one level below
-            Stack<String> stackBelow = new Stack<String>();
+            Stack<String> stackBelow = new Stack<>();
 
             while ((!stack.isEmpty()) && (depth >= 0)) {
 

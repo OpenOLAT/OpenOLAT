@@ -74,7 +74,7 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 	private UserCourseEnvironment euce;
 	private ScoreCalculator sc;
 	private List<CourseNode> assessableNodesList;
-	private List<String> testElemWithNoResource = new ArrayList<String>();
+	private List<String> testElemWithNoResource = new ArrayList<>();
 	
 	private Translator pt = null;
 	/**
@@ -178,7 +178,7 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 	 * @return
 	 */
 	private List<String> getInvalidNodeDescriptions(ConditionExpression ce) {
-		List<String> nodeDescriptionList = new ArrayList<String>();
+		List<String> nodeDescriptionList = new ArrayList<>();
 		if (ce != null) {
 			Set<String> selectedNodesIds = ce.getSoftReferencesOf("courseNodeId");
 			for (Iterator<CourseNode> nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {

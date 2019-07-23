@@ -61,7 +61,7 @@ public class EPCollectRestrictionResultController extends BasicController {
 	}
 
 	public void setMessage(List<CollectRestriction> restrictions, boolean passed) {
-		List<String> errors = new ArrayList<String>();
+		List<String> errors = new ArrayList<>();
 		for(CollectRestriction restriction:restrictions) {
 			String error = getMessage(restriction, getTranslator(), null);
 			errors.add(error);

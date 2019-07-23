@@ -149,7 +149,7 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 
 		ScoreCalculator sc = stNode.getScoreCalculator();
 		if(data.isPoints()) {
-			sc.setSumOfScoreNodes(new ArrayList<String>(checklistNodes));
+			sc.setSumOfScoreNodes(new ArrayList<>(checklistNodes));
 		} else {
 			sc.setSumOfScoreNodes(null);
 		}
@@ -159,7 +159,7 @@ public class CheckListStepRunnerCallback implements StepRunnerCallback {
 			Float cutValue = data.getCutValue();
 			if(cutValue == null) {
 				sc.setPassedType(ScoreCalculator.PASSED_TYPE_INHERIT);
-				sc.setPassedNodes(new ArrayList<String>(checklistNodes));
+				sc.setPassedNodes(new ArrayList<>(checklistNodes));
 			} else {
 				sc.setPassedType(ScoreCalculator.PASSED_TYPE_CUTVALUE);
 				sc.setPassedCutValue(cutValue.intValue());

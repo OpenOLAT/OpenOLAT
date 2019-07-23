@@ -64,7 +64,7 @@ class StatisticUpdateManagerImpl implements StatisticUpdateManager, GenericEvent
 	private static final String STARTUP_EVENT = "startupEvent";
 	
 	/** all the IStatisticUpdaters that registered with the StatisticUpdaterManager **/
-	final List<IStatisticUpdater> updaters_ = new LinkedList<IStatisticUpdater>();
+	final List<IStatisticUpdater> updaters_ = new LinkedList<>();
 
 	private final MultiUserEvent startupEvent_ = new MultiUserEvent(STARTUP_EVENT);
 

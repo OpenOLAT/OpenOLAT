@@ -231,13 +231,13 @@ public class Condition implements Serializable, Cloneable {
 	private final List<Long> getAccessIdList(String ids) {
 		if(StringHelper.containsNonWhitespace(ids)) {
 			String[] longStrArr = ids.split(",");
-			List<Long> keys = new ArrayList<Long>(longStrArr.length);
+			List<Long> keys = new ArrayList<>(longStrArr.length);
 			for(String longStr:longStrArr) {
 				keys.add(new Long(longStr.trim()));
 			}
 			return keys;
 		}
-		return new ArrayList<Long>();
+		return new ArrayList<>();
 	}
 
 	/**

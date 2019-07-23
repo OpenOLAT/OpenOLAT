@@ -205,7 +205,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 	private class SharedStringsHandler extends DefaultHandler {
 		private int position = 0;
 		private StringBuilder sb;
-		private Map<String,String> strings = new HashMap<String,String>();
+		private Map<String,String> strings = new HashMap<>();
 
 		public Map<String,String> getMap() {
 			return strings;

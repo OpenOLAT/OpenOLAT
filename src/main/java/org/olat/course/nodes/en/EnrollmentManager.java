@@ -230,7 +230,7 @@ public class EnrollmentManager {
 	 *         well by different than loadGroupsFromNames().size()
 	 */
 	protected List<BusinessGroup> loadGroupsFromNames(List<Long> groupKeys, List<Long> areaKeys) {
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>(businessGroupService.loadBusinessGroups(groupKeys));
+		List<BusinessGroup> groups = new ArrayList<>(businessGroupService.loadBusinessGroups(groupKeys));
 		List<BusinessGroup> areaGroups = areaManager.findBusinessGroupsOfAreaKeys(areaKeys);
 		// add groups from areas
 		for (BusinessGroup areaGroup:areaGroups) {

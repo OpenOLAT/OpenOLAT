@@ -368,7 +368,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 						}
 						// throws NumberFormatException if not a number
 						//long compID = Long.parseLong(s_compID); 
-						List<Component> foundPath = new ArrayList<Component>(10);
+						List<Component> foundPath = new ArrayList<>(10);
 						Component target = ComponentHelper.findDescendantOrSelfByID(getContentPane(), s_compID, foundPath);
 						final boolean validForDispatching;
 						if (target != null) { // the target was found

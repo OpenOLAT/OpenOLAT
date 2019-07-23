@@ -56,7 +56,7 @@ public class SortingCriteria {
 	private int sortingType = AUTO_SORTING; //default
 	private int maxEntries = 6; //default value
 	private int sortingTerm = ALPHABETICAL_SORTING; //0=Alphabetically, 1=Date, 2=Type
-	private List<Integer> sortingTermsList = new ArrayList<Integer>();
+	private List<Integer> sortingTermsList = new ArrayList<>();
 	private boolean ascending;
 	
 	//storage map keys
@@ -108,7 +108,7 @@ public class SortingCriteria {
 	 * @return a Map with the current sortingCriteria attribute values.
 	 */
 	public Map<String, Integer> getPersistable() {
-		Map<String, Integer> returnMap = new Hashtable<String, Integer>();
+		Map<String, Integer> returnMap = new Hashtable<>();
 		if (AUTO_SORTING == this.getSortingType()) {
 			returnMap.put(SORTING_TYPE_KEY, AUTO_SORTING);
 			returnMap.put(NUM_ENTRIES_KEY, this.getMaxEntries());

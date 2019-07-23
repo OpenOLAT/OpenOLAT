@@ -135,10 +135,10 @@ public class I18nManager {
 
 	// keys: bundlename ":" locale.toString() (e.g. "org.olat.admin:de_DE");
 	// values: PropertyFile
-	private ConcurrentMap<String,String> cachedLangTranslated = new ConcurrentHashMap<String, String>();
-	private ConcurrentMap<String, Properties> cachedBundles = new ConcurrentHashMap<String, Properties>();
-	private ConcurrentMap<String, String> cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
-	private ConcurrentMap<String, Deque<String>> referencingBundlesIndex = new ConcurrentHashMap<String, Deque<String>>();
+	private ConcurrentMap<String,String> cachedLangTranslated = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, Properties> cachedBundles = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, String> cachedJSTranslatorData = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, Deque<String>> referencingBundlesIndex = new ConcurrentHashMap<>();
 	private boolean cachingEnabled = true;
 	
 	private final I18nModule i18nModule;
@@ -374,7 +374,7 @@ public class I18nManager {
 	 */
 	public List<I18nItem> findExistingI18nItems(Locale targetLocale, String limitToBundleName, boolean includeBundlesChildren) {
 		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
-		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
+		List<I18nItem> foundTranslationItems = new LinkedList<>();
 		for (String bundleName : allBundles) {
 			if (limitToBundleName == null || limitToBundleName.equals(bundleName)
 					|| (includeBundlesChildren && bundleName.startsWith(limitToBundleName))) {
@@ -411,7 +411,7 @@ public class I18nManager {
 	public List<I18nItem> findMissingI18nItems(Locale referenceLocale, Locale targetLocale, String limitToBundleName,
 			boolean includeBundlesChildren) {
 		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
-		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
+		List<I18nItem> foundTranslationItems = new LinkedList<>();
 		for (String bundleName : allBundles) {
 			if (limitToBundleName == null || limitToBundleName.equals(bundleName)
 					|| (includeBundlesChildren && bundleName.startsWith(limitToBundleName))) {
@@ -450,7 +450,7 @@ public class I18nManager {
 	public List<I18nItem> findExistingAndMissingI18nItems(Locale referenceLocale, Locale targetLocale, String limitToBundleName,
 			boolean includeBundlesChildren) {
 		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
-		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
+		List<I18nItem> foundTranslationItems = new LinkedList<>();
 		for (String bundleName : allBundles) {
 			if (limitToBundleName == null || limitToBundleName.equals(bundleName)
 					|| (includeBundlesChildren && bundleName.startsWith(limitToBundleName))) {
@@ -504,7 +504,7 @@ public class I18nManager {
 	public List<I18nItem> findI18nItemsByValueSearch(String searchString, Locale searchLocale, Locale targetLocale, String limitToBundleName,
 			boolean includeBundlesChildren) {
 		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
-		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
+		List<I18nItem> foundTranslationItems = new LinkedList<>();
 		searchString = searchString.toLowerCase();
 		String[] parts = searchString.split("\\*");
 		// Build pattern
@@ -553,7 +553,7 @@ public class I18nManager {
 	public List<I18nItem> findI18nItemsByKeySearch(String searchString, Locale searchLocale, Locale targetLocale, String limitToBundleName,
 			boolean includeBundlesChildren) {
 		List<String> allBundles = i18nModule.getBundleNamesContainingI18nFiles();
-		List<I18nItem> foundTranslationItems = new LinkedList<I18nItem>();
+		List<I18nItem> foundTranslationItems = new LinkedList<>();
 		searchString = searchString.toLowerCase();
 		for (String bundleName : allBundles) {
 			if (limitToBundleName == null || limitToBundleName.equals(bundleName)
@@ -1248,7 +1248,7 @@ public class I18nManager {
 	 */
 	public Map<String, String> getEnabledLanguagesTranslated() {
 		Collection<String> enabledLangs = i18nModule.getEnabledLanguageKeys();
-		Map<String, String> translatedLangs = new HashMap<String, String>(11);
+		Map<String, String> translatedLangs = new HashMap<>(11);
 		for (String langKey : enabledLangs) {
 			String translated = cachedLangTranslated.get(langKey);
 			if(translated == null) {
@@ -1588,15 +1588,15 @@ public class I18nManager {
 	 */
 	public void setCachingEnabled(boolean useCache) {
 		if (useCache) {
-			cachedLangTranslated = new ConcurrentHashMap<String, String>(); 
-			cachedBundles = new ConcurrentHashMap<String, Properties>();
-			cachedJSTranslatorData = new ConcurrentHashMap<String, String>();
-			referencingBundlesIndex = new ConcurrentHashMap<String, Deque<String>>();
+			cachedLangTranslated = new ConcurrentHashMap<>(); 
+			cachedBundles = new ConcurrentHashMap<>();
+			cachedJSTranslatorData = new ConcurrentHashMap<>();
+			referencingBundlesIndex = new ConcurrentHashMap<>();
 		} else {
-			cachedLangTranslated = new AlwaysEmptyMap<String, String>();
-			cachedBundles = new AlwaysEmptyMap<String, Properties>();
-			cachedJSTranslatorData = new AlwaysEmptyMap<String, String>();
-			referencingBundlesIndex = new AlwaysEmptyMap<String, Deque<String>>();
+			cachedLangTranslated = new AlwaysEmptyMap<>();
+			cachedBundles = new AlwaysEmptyMap<>();
+			cachedJSTranslatorData = new AlwaysEmptyMap<>();
+			referencingBundlesIndex = new AlwaysEmptyMap<>();
 		}
 		cachingEnabled = useCache;
 	}
@@ -1664,7 +1664,7 @@ public class I18nManager {
 	 * @return Set of language keys, can be empty but never null
 	 */
 	public Set<String> sarchForAvailableLanguagesInJarFile(File jarFile, boolean checkForExecutables) {
-		Set<String> foundLanguages = new TreeSet<String>();
+		Set<String> foundLanguages = new TreeSet<>();
 		JarFile jar = null;
 		try {
 			jar = new JarFile(jarFile);
@@ -1841,7 +1841,7 @@ public class I18nManager {
 	public void deleteLanguage(String deleteLangKey, boolean reallyDeleteIt) {
 		Locale deleteLoclae = i18nModule.getAllLocales().get(deleteLangKey);
 		// copy bundles list to prevent concurrent modification exception
-		List<String> bundlesCopy = new ArrayList<String>();
+		List<String> bundlesCopy = new ArrayList<>();
 		bundlesCopy.addAll(i18nModule.getBundleNamesContainingI18nFiles());
 		for (String bundleName : bundlesCopy) {
 			if (reallyDeleteIt) {

@@ -80,8 +80,8 @@ public class EPStructureElementsController extends BasicController {
 	 */
 	protected void initForm(UserRequest ureq) {
 		flc.contextPut("structElements", structElements);
-		tableCtrls = new ArrayList<Controller>();
-		addBtnCtrls = new ArrayList<Controller>();
+		tableCtrls = new ArrayList<>();
+		addBtnCtrls = new ArrayList<>();
 		
 		int i = 1;
 		removeComponents();
@@ -169,7 +169,7 @@ public class EPStructureElementsController extends BasicController {
 	@Override
 	protected void doDispose() {
 		// dispose all in table-ctrls, button-ctrls
-		List<Controller> allCtrls = new ArrayList<Controller>();
+		List<Controller> allCtrls = new ArrayList<>();
 		allCtrls.addAll(addBtnCtrls);
 		allCtrls.addAll(tableCtrls);
 		for (Controller ctrl : allCtrls) {

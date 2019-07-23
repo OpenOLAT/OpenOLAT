@@ -134,7 +134,7 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 	 */
 	public List<EPStructureToStructureLink> getInternalChildren() {
 		if(children == null) {
-			children = new ArrayList<EPStructureToStructureLink>();
+			children = new ArrayList<>();
 		}
 		return children;
 	}
@@ -149,7 +149,7 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 	 */
 	public List<EPStructureToArtefactLink> getInternalArtefacts() {
 		if(artefacts == null) {
-			artefacts = new ArrayList<EPStructureToArtefactLink>();
+			artefacts = new ArrayList<>();
 		}
 		return artefacts;
 	}
@@ -195,7 +195,7 @@ public class EPStructureElement extends PersistentObject implements PortfolioStr
 	 */
 	public List<CollectRestriction> getCollectRestrictions() {
 		if(collectRestrictions == null) {
-			collectRestrictions = new ArrayList<CollectRestriction>();
+			collectRestrictions = new ArrayList<>();
 		}
 		return collectRestrictions;
 	}

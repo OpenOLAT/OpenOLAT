@@ -173,7 +173,7 @@ public class QTIEditHelper {
 		newItem.setLabel("");
 		// controls
 		Control control = new Control();
-		List<Control> controls = new ArrayList<Control>();
+		List<Control> controls = new ArrayList<>();
 		controls.add(control);
 		newItem.setItemcontrols(controls);
 
@@ -212,7 +212,7 @@ public class QTIEditHelper {
 
 		// conrols
 		Control control = new Control();
-		List<Control> controls = new ArrayList<Control>();
+		List<Control> controls = new ArrayList<>();
 		controls.add(control);
 		newItem.setItemcontrols(controls);
 		
@@ -442,7 +442,7 @@ public class QTIEditHelper {
 	 * @return hasmap with responselabel_idents as keys and points as values.
 	 */
 	public static Map<String,Float> fetchPoints(List<?> respconditions, int type) {
-		Map<String,Float> points = new HashMap<String,Float>();
+		Map<String,Float> points = new HashMap<>();
 		for (Iterator<?> i = respconditions.iterator(); i.hasNext();) {
 			Element el_resp_condition = (Element) i.next();
 			///todo
@@ -482,7 +482,7 @@ public class QTIEditHelper {
 	 * @return Map of choices.
 	 */
 	public static List<Response> fetchChoices(List response_labels) {
-		List<Response> choices = new ArrayList<Response>();
+		List<Response> choices = new ArrayList<>();
 		for (Iterator i = response_labels.iterator(); i.hasNext();) {
 			ChoiceResponse choice = new ChoiceResponse();
 			Element response_label = (Element) i.next();
@@ -846,7 +846,7 @@ public class QTIEditHelper {
 	 * @return Returns empty set if no reference found.
 	 */
 	private static Set<String> getMediaReferences(QTIDocument qtiDocument, Item thisItem, boolean filterOut) {
-		HashSet<String> returnSet = new HashSet<String>();
+		HashSet<String> returnSet = new HashSet<>();
 		//sections
 		List sectionList = qtiDocument.getAssessment().getSections();
 		Iterator sectionIterator = sectionList.iterator();
@@ -925,7 +925,7 @@ public class QTIEditHelper {
 	 * @return
 	 */
 	private static Set<String> getMediaFileNames(String htmlString) {
-		HashSet<String> returnSet = new HashSet<String>();
+		HashSet<String> returnSet = new HashSet<>();
 		String current = htmlString;
     while(current.indexOf("media/")>0) {   
     	current = current.substring(current.indexOf("media/")+6);     

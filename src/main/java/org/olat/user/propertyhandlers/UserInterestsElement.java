@@ -84,11 +84,11 @@ public class UserInterestsElement extends FormItemImpl implements FormItemCollec
 	
 	protected List<String> getUserInterests() {
 		if(getSelectedInterestsIDs() == null || getSelectedInterestsIDs().isEmpty()) {
-			return new ArrayList<String>();
+			return new ArrayList<>();
 		}
 		
 		String[] userInterestsIDs = getSelectedInterestsIDs().split(":");
-		List<String> sortedUserInterestsIDs = new Vector<String>();
+		List<String> sortedUserInterestsIDs = new Vector<>();
 		for (String id : userInterestsIDs) {
 			if (!id.equals("")) {
 				sortedUserInterestsIDs.add(id);
@@ -112,7 +112,7 @@ public class UserInterestsElement extends FormItemImpl implements FormItemCollec
 			}
 		});
 		
-		List<String> sortedUserInterests = new ArrayList<String>();
+		List<String> sortedUserInterests = new ArrayList<>();
 		for (String id : sortedUserInterestsIDs) {
 			sortedUserInterests.add(getTranslator().translate(UserInterestsPropertyHandler.SUBCATEGORY_I18N_PREFIX + id));
 		}

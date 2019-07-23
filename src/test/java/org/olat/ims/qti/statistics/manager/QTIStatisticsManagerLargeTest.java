@@ -82,11 +82,11 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 	private static List<QTIItemObject> itemObjects;
 	private static int numberOfParticipants = 1000;
 	private static int numberOfQuestions = 4;
-	private static Map<String,Double> averageScorePerQuestion = new HashMap<String,Double>();
-	private static List<Float> averageRightAnswersInPercent = new ArrayList<Float>();
+	private static Map<String,Double> averageScorePerQuestion = new HashMap<>();
+	private static List<Float> averageRightAnswersInPercent = new ArrayList<>();
 	private static Map<String,Float> identToANumOfRightAnswers = new HashMap<>();
-	private static List<Long> allDurations = new ArrayList<Long>();
-	private static List<Float> scorePerParticipant = new ArrayList<Float>();
+	private static List<Long> allDurations = new ArrayList<>();
+	private static List<Float> scorePerParticipant = new ArrayList<>();
 
 	private static double maxScore = 7.0d;
 	private static float averageScore = 0.0f;
@@ -98,7 +98,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 	private static float scoreQ2 = 0.0f;
 	private static int rightAnswersQ2 = 0;
 	private static int wrongAnswersQ2 = 0;
-	private static List<String> fibAnswers = new ArrayList<String>();
+	private static List<String> fibAnswers = new ArrayList<>();
 
 	@Autowired
 	private DB dbInstance;
@@ -334,7 +334,7 @@ public class QTIStatisticsManagerLargeTest extends OlatTestCase {
 		Document doc = xmlParser.parse(in, false);
 		Element root = doc.getRootElement();
 		List items = root.selectNodes("//item");
-		itemObjects = new ArrayList<QTIItemObject>();
+		itemObjects = new ArrayList<>();
 		for (Iterator iter = items.iterator(); iter.hasNext();) {
 			Element el_item = (Element) iter.next();
 			if (el_item.selectNodes(".//response_lid").size() > 0) {

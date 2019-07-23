@@ -138,7 +138,7 @@ class OLATGroupExport {
 }
 
 class AreaCollection {
-	private List<Area> groups = new ArrayList<Area>();
+	private List<Area> groups = new ArrayList<>();
 
 	public List<Area> getGroups() {
 		return groups;
@@ -150,7 +150,7 @@ class AreaCollection {
 }
 
 class GroupCollection {
-	private List<Group> groups = new ArrayList<Group>();
+	private List<Group> groups = new ArrayList<>();
 
 	public List<Group> getGroups() {
 		return groups;

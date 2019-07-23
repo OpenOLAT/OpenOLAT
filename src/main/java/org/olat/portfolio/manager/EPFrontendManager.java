@@ -1266,7 +1266,7 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 			return null;
 		}
 		List<Identity> ownerIdents = policyManager.getOwners(map);
-		List<String> identNames = new ArrayList<String>();
+		List<String> identNames = new ArrayList<>();
 		for (Identity identity : ownerIdents) {
 			String fullName = userManager.getUserDisplayName(identity);
 			if(fullName != null) {

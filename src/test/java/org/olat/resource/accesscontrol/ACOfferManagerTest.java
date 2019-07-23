@@ -238,7 +238,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//filter by resources
-		List<Long> resourceKeys = new ArrayList<Long>();
+		List<Long> resourceKeys = new ArrayList<>();
 		resourceKeys.add(testOres1.getKey());
 		resourceKeys.add(testOres2.getKey());
 		resourceKeys.add(testOres3.getKey());
@@ -280,7 +280,7 @@ public class ACOfferManagerTest extends OlatTestCase {
 		dbInstance.deleteObject(testOres2);
 
 		//filter by resources
-		List<Long> resourceKeys = new ArrayList<Long>();
+		List<Long> resourceKeys = new ArrayList<>();
 		resourceKeys.add(testOres1.getKey());
 		resourceKeys.add(testOres2.getKey());
 		resourceKeys.add(testOres3.getKey());

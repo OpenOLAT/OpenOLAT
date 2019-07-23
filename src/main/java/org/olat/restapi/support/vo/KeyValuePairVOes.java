@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class KeyValuePairVOes {
 	
 	@XmlElement(name="keyValuePairVO")
-	private List<KeyValuePair> pairs = new ArrayList<KeyValuePair>();
+	private List<KeyValuePair> pairs = new ArrayList<>();
 	
 	public KeyValuePairVOes() {
 		//make jaxb happy

@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class TinyMCECustomPluginFactory {
 	// default is an empty set
-	private List<TinyMCECustomPlugin> customPlugins = new ArrayList<TinyMCECustomPlugin>();
+	private List<TinyMCECustomPlugin> customPlugins = new ArrayList<>();
 	
 	/**
 	 * Sping setter method
@@ -72,7 +72,7 @@ public class TinyMCECustomPluginFactory {
 	 * @return List containing the plugins or an empty set.
 	 */
 	public List<TinyMCECustomPlugin> getCustomPlugionsForProfile() {
-		List<TinyMCECustomPlugin> profilePlugins = new ArrayList<TinyMCECustomPlugin>();
+		List<TinyMCECustomPlugin> profilePlugins = new ArrayList<>();
 		for (TinyMCECustomPlugin tinyMCECustomPlugin : customPlugins) {
 			profilePlugins.add(tinyMCECustomPlugin);
 		}

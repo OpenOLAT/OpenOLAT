@@ -126,7 +126,7 @@ public class TreeHelper {
 	}
 	
 	public static List<TreeNode> getTreePath(TreeNode node) {
-		List<TreeNode> conPath = new ArrayList<TreeNode>();
+		List<TreeNode> conPath = new ArrayList<>();
 		for (TreeNode cur = node; cur != null; cur = (TreeNode) cur.getParent()) {
 			conPath.add(cur);
 		}

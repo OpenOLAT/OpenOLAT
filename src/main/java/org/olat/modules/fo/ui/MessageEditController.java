@@ -290,7 +290,7 @@ public class MessageEditController extends FormBasicController {
 	private void createOrUpdateAttachmentListLayout(FormItemContainer formLayout) {
 		FormItem attachLayout = formLayout.getFormComponent("attachLayout");
 
-		List<VFSItem> attachments = new ArrayList<VFSItem>();
+		List<VFSItem> attachments = new ArrayList<>();
 		// add already existing attachments:
 		if (message.getKey() != null) {
 			VFSContainer msgContainer = fm.getMessageContainer(message.getForum().getKey(), message.getKey());

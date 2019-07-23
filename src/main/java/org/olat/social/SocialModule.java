@@ -77,9 +77,9 @@ public class SocialModule extends AbstractSpringModule {
 			shareEnabled = "true".equals(shareEnabledFromPersistedProperties);
 		}
 		// Init the available share link buttons implemented in the footer template
-		shareLinkButtonsAvailableList = new ArrayList<String>(Arrays.asList(SHARE_LINK_BUTTONS_AVAILABLE.split(",")));
+		shareLinkButtonsAvailableList = new ArrayList<>(Arrays.asList(SHARE_LINK_BUTTONS_AVAILABLE.split(",")));
 		// Init the enabled share link buttons from the configuration
-		shareLinkButtonsEnabledList = new ArrayList<String>();
+		shareLinkButtonsEnabledList = new ArrayList<>();
 		
 		// Override enabled share link buttons config from persisted properties
 		String shareLinkButtonsEnabledFromPersistedProperties = getStringPropertyValue(SHARE_LINK_BUTTONS, true);

@@ -56,7 +56,7 @@ public class MainAccessController extends FormBasicController {
 	
 	private FormLink backLink;
 	private final List<OfferAccess> links;
-	private final List<FormLink> accessButtons = new ArrayList<FormLink>();
+	private final List<FormLink> accessButtons = new ArrayList<>();
 	private final AccessControlModule acModule;
 	private final ACService acService;
 	

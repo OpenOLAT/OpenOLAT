@@ -58,7 +58,7 @@ public class SimpleDublinCoreMetadataFieldsProvider implements SearchMetadataFie
 	private static final List<String> multiFieldSearchFields;
 
 	static {
-		searchableFields = new ArrayList<String>();
+		searchableFields = new ArrayList<>();
 		// add only the ones that are supported by OLAT
 		searchableFields.add(DC_TITLE);
 		searchableFields.add(DC_DESCRIPTION);
@@ -69,7 +69,7 @@ public class SimpleDublinCoreMetadataFieldsProvider implements SearchMetadataFie
 		searchableFields.add(DC_DATE);
 		searchableFields.add(DC_FORMAT);
 
-		multiFieldSearchFields = new ArrayList<String>();
+		multiFieldSearchFields = new ArrayList<>();
 		multiFieldSearchFields.add(DC_TITLE);
 		multiFieldSearchFields.add(DC_CREATOR);
 		multiFieldSearchFields.add(DC_DESCRIPTION);

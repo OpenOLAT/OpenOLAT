@@ -60,7 +60,7 @@ public class Section implements QTIObject {
 	private SelectionOrdering selection_ordering = null; //?
 	private QTIObject reference = null; //occurs 0 to 1 time
 	private List sections = null; // occurs 0 to 1 time ( sections and section_references)
-	private List<Item> items = new ArrayList<Item>(); // occurs 0 to many (items and item_references)
+	private List<Item> items = new ArrayList<>(); // occurs 0 to many (items and item_references)
 	private boolean alienItems = false;
 	
 	public Section() {

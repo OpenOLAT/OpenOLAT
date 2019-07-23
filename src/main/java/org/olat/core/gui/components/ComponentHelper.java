@@ -45,7 +45,7 @@ public class ComponentHelper {
 	
 	
 	public static List<Component> findAncestorsOrSelfByID(Component startFrom, Component target) {
-		List<Component> ancestors = new ArrayList<Component>();
+		List<Component> ancestors = new ArrayList<>();
 		dofindAncestors(startFrom, target, ancestors);
 		return ancestors;
 	}

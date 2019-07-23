@@ -582,7 +582,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * @see org.olat.course.nodes.CourseNode#getConditionExpressions()
 	 */
 	public List<ConditionExpression> getConditionExpressions() {
-		ArrayList<ConditionExpression> retVal = new ArrayList<ConditionExpression>();
+		ArrayList<ConditionExpression> retVal = new ArrayList<>();
 		String coS = getPreConditionVisibility().getConditionExpression();
 		if (coS != null && !coS.equals("")) {
 			// an active condition is defined

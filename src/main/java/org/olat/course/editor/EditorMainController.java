@@ -1019,12 +1019,12 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	 * @param courseStatus
 	 */
 	private void updateCourseStatusMessages(Locale locale, StatusDescription[] courseStatus) {
-		List<String> errorIsForNode = new ArrayList<String>();
-		List<String> errorMessage = new ArrayList<String>();
-		List<String> errorHelpWizardLink = new ArrayList<String>();
-		List<String> warningIsForNode = new ArrayList<String>();
-		List<String> warningMessage = new ArrayList<String>();
-		List<String> warningHelpWizardLink = new ArrayList<String>();
+		List<String> errorIsForNode = new ArrayList<>();
+		List<String> errorMessage = new ArrayList<>();
+		List<String> errorHelpWizardLink = new ArrayList<>();
+		List<String> warningIsForNode = new ArrayList<>();
+		List<String> warningMessage = new ArrayList<>();
+		List<String> warningHelpWizardLink = new ArrayList<>();
 		//
 		int errCnt = 0;
 		int warCnt = 0;

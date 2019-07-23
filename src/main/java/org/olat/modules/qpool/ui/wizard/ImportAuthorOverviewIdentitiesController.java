@@ -96,7 +96,7 @@ public class ImportAuthorOverviewIdentitiesController extends StepFormBasicContr
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.login", colIndex++));
 		}
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
-		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<UserPropertyHandler>();
+		List<UserPropertyHandler> resultingPropertyHandlers = new ArrayList<>();
 		// followed by the users fields
 		for (int i = 0; i < userPropertyHandlers.size(); i++) {
 			UserPropertyHandler userPropertyHandler	= userPropertyHandlers.get(i);

@@ -53,7 +53,7 @@ import org.olat.instantMessaging.model.Buddy;
 public class ChatManagerController extends BasicController {
 
 	private final VelocityContainer container;
-	private final Map<Long, ChatController> chats = new HashMap<Long, ChatController>();
+	private final Map<Long, ChatController> chats = new HashMap<>();
 
 	private final InstantMessagingService imService;
 
@@ -102,7 +102,7 @@ public class ChatManagerController extends BasicController {
 	 * Close the chats windows
 	 */
 	protected void closeAllChats() {
-		List<Long> chatKeys = new ArrayList<Long>(chats.keySet());
+		List<Long> chatKeys = new ArrayList<>(chats.keySet());
 		for(Long chatKey :chatKeys) {
 			closeChat(chatKey);
 		}

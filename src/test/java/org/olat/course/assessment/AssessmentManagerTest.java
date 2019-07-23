@@ -204,7 +204,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	private void checkEfficiencyStatementManager() {
 		log.info("Start testUpdateEfficiencyStatement");
 					
-		List <Identity> identitiyList = new ArrayList<Identity> ();
+		List <Identity> identitiyList = new ArrayList<> ();
 		identitiyList.add(student);
 		
 		Long courseResId = course.getCourseEnvironment().getCourseResourceableId(); 

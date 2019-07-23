@@ -68,7 +68,7 @@ public class EPArtefactTagSelectionController extends FormBasicController {
 		setFormDescription("filter.tag.intro");
 		
 		Map<String, String> allUserTags = ePFMgr.getUsersMostUsedTags(getIdentity(), -1);
-		LinkedList<Entry<String, String>> sortEntrySet = new LinkedList<Entry<String, String>>(allUserTags.entrySet());
+		LinkedList<Entry<String, String>> sortEntrySet = new LinkedList<>(allUserTags.entrySet());
 		String[] keys = new String[sortEntrySet.size()];
 		String[] values = new String[sortEntrySet.size()];
 		int i=0;
@@ -93,7 +93,7 @@ public class EPArtefactTagSelectionController extends FormBasicController {
 	 */
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (selectedTagsList == null) selectedTagsList = new ArrayList<String>();
+		if (selectedTagsList == null) selectedTagsList = new ArrayList<>();
 		Collection<String> selectedKeys = chkBox.getSelectedKeys();
 		Set<String> allKeys = chkBox.getKeys();
 		for (String actTag : allKeys) {

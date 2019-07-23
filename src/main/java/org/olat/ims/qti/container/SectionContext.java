@@ -294,7 +294,7 @@ public class SectionContext implements Serializable {
 		}
 
 		// now wrap all item contexts
-		itemContexts = new ArrayList<ItemContext>(10);
+		itemContexts = new ArrayList<>(10);
 		for (Iterator<Element> iter = el_items.iterator(); iter.hasNext();) {
 			Element item = iter.next();
 			item.detach();

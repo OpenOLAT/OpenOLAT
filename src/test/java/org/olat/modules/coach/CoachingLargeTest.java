@@ -77,9 +77,9 @@ public class CoachingLargeTest extends OlatTestCase {
 	
 	private static RepositoryEntry course10;
 
-	private static Map<Long,List<Long>> coachToCourseMap = new ConcurrentHashMap<Long,List<Long>>();
-	private static Map<Identity,List<RepositoryEntry>> studentToCourseMap = new ConcurrentHashMap<Identity,List<RepositoryEntry>>();
-	private static Map<Long,List<Long>> coachToGroupCourseMap = new ConcurrentHashMap<Long,List<Long>>();
+	private static Map<Long,List<Long>> coachToCourseMap = new ConcurrentHashMap<>();
+	private static Map<Identity,List<RepositoryEntry>> studentToCourseMap = new ConcurrentHashMap<>();
+	private static Map<Long,List<Long>> coachToGroupCourseMap = new ConcurrentHashMap<>();
 	
 	private static List<UserPropertyHandler> userPropertyHandlers;
 	
@@ -118,7 +118,7 @@ public class CoachingLargeTest extends OlatTestCase {
 		coach25 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-25");
 		coach26 = JunitTestHelper.createAndPersistIdentityAsRndUser("coach-26");
 		
-		List<Identity> students = new ArrayList<Identity>();
+		List<Identity> students = new ArrayList<>();
 		//r1 set of student
 		for(int i=0; i<NUM_OF_STUDENTS; i++) {
 			Identity student = JunitTestHelper.createAndPersistIdentityAsRndUser("student-" + i);
@@ -257,7 +257,7 @@ public class CoachingLargeTest extends OlatTestCase {
 	}
 	
 	public List<Identity> reservoirSample(Iterable<Identity> items, int m) {   
-		List<Identity> res = new ArrayList<Identity>(m);   
+		List<Identity> res = new ArrayList<>(m);   
 		int count = 0;   
 		for(Identity item : items){       
 			count++;

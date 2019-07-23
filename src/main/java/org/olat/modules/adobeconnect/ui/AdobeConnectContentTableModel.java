@@ -48,7 +48,7 @@ implements SortableFlexiTableDataModel<AdobeConnectContentRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<AdobeConnectContentRow> views = new SortableFlexiTableModelDelegate<AdobeConnectContentRow>(orderBy, this, locale).sort();
+			List<AdobeConnectContentRow> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}

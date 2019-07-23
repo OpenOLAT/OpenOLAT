@@ -155,10 +155,10 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		}
 
 		this.startStep = startStep;
-		steps = new Stack<Step>();
-		stepTitleLinks = new ArrayList<FormItem>();
-		stepPages = new Stack<FormItem>();
-		stepPagesController = new Stack<StepFormController>();
+		steps = new Stack<>();
+		stepTitleLinks = new ArrayList<>();
+		stepPages = new Stack<>();
+		stepPagesController = new Stack<>();
 		stepsContext = new DefaultStepsRunContext();
 		initForm(ureq);
 		// add current step index to velocity

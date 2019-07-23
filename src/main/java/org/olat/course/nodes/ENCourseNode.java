@@ -239,7 +239,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 		// error messages
 
 		List<StatusDescription> condErrs = isConfigValidWithTranslator(cev, PACKAGE_COND, getConditionExpressions());
-		List<StatusDescription> missingNames = new ArrayList<StatusDescription>();
+		List<StatusDescription> missingNames = new ArrayList<>();
 		/*
 		 * check group and area names for existence
 		 */
@@ -296,7 +296,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 				}
 			}
 		} else {
-			Set<Long> missingAreas = new HashSet<Long>();
+			Set<Long> missingAreas = new HashSet<>();
 			List<BGArea> existingAreas =  CoreSpringFactory.getImpl(BGAreaManager.class).loadAreas(areaKeys);
 			
 			List<String> knowNames = new ArrayList<>();
@@ -347,7 +347,7 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 				}
 			}
 		} else {
-			Set<Long> missingGroups = new HashSet<Long>();
+			Set<Long> missingGroups = new HashSet<>();
 			List<BusinessGroupShort> existingGroups =  CoreSpringFactory.getImpl(BusinessGroupService.class).loadShortBusinessGroups(groupKeys);
 			
 			List<String> knowNames = new ArrayList<>();

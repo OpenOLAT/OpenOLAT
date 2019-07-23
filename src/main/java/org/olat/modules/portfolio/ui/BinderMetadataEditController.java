@@ -60,7 +60,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class BinderMetadataEditController extends FormBasicController {
 	
-	private static final Set<String> imageMimeTypes = new HashSet<String>();
+	private static final Set<String> imageMimeTypes = new HashSet<>();
 	static {
 		imageMimeTypes.add("image/gif");
 		imageMimeTypes.add("image/jpg");

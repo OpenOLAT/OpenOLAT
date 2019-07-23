@@ -131,7 +131,7 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 	 * @return
 	 */
 	private List<DENCourseNode> getCourseDENNodes(ICourse course) {
-		List<DENCourseNode> denNodes = new ArrayList<DENCourseNode>(10);
+		List<DENCourseNode> denNodes = new ArrayList<>(10);
 
 		Structure courseStruct = course.getRunStructure();
 		CourseNode rootNode = courseStruct.getRootNode();

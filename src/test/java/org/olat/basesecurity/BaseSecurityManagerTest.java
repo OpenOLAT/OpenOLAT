@@ -212,7 +212,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//find it
-		List<String> names = new ArrayList<String>(2);
+		List<String> names = new ArrayList<>(2);
 		names.add(name1);
 		names.add(name2);
 		List<Identity> foundIds = securityManager.findIdentitiesByName(names);
@@ -235,7 +235,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		Assert.assertEquals(username2, id2.getName());
 		dbInstance.commitAndCloseSession();
 		
-		List<String> names = new ArrayList<String>(2);
+		List<String> names = new ArrayList<>(2);
 		names.add(username1);
 		names.add(username2);
 		
@@ -257,7 +257,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		userManager.updateUserFromIdentity(id);
 		dbInstance.commitAndCloseSession();
 		
-		List<String> numbers = new ArrayList<String>(2);
+		List<String> numbers = new ArrayList<>(2);
 		numbers.add(institutionalNumber);
 
 		//find it
@@ -452,7 +452,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		SearchIdentityParams params = new SearchIdentityParams();
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put(UserConstants.FIRSTNAME, firstName);
 		params.setUserProperties(props);
 		
@@ -498,7 +498,7 @@ public class BaseSecurityManagerTest extends OlatTestCase {
 		
 		SearchIdentityParams params = new SearchIdentityParams();
 		params.setLogin(login);
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put(UserConstants.FIRSTNAME, id.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		props.put(UserConstants.LASTNAME, id.getUser().getProperty(UserConstants.LASTNAME, null));
 		params.setUserProperties(props);

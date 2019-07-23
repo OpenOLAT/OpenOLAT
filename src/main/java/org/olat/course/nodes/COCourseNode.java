@@ -283,7 +283,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         // error messages
         String translatorStr = Util.getPackageName(ConditionEditController.class);
         List<StatusDescription> condErrs = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
-        List<StatusDescription> missingNames = new ArrayList<StatusDescription>();
+        List<StatusDescription> missingNames = new ArrayList<>();
         /*
          * check group and area names for existence
          */

@@ -40,8 +40,8 @@ public class SegmentViewComponent extends AbstractComponent  {
 	private boolean allowMultipleSelection;
 	private boolean dontShowSingleSegment;
 	
-	private final Set<Component> selectedSegments = new HashSet<Component>();
-	private final List<Component> segments = new ArrayList<Component>();
+	private final Set<Component> selectedSegments = new HashSet<>();
+	private final List<Component> segments = new ArrayList<>();
 	
 	private final static SegmentViewRenderer RENDERER = new SegmentViewRenderer();
 

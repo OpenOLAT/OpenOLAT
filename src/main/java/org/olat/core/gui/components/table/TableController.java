@@ -583,7 +583,7 @@ public class TableController extends BasicController {
 	 */
 	public List getSelectedSortedObjects(final BitSet objectMarkers, final DefaultTableDataModel defaultTableDataModel) {		
 		List results = new ArrayList();
-		List<Integer> sortedIndexes = new ArrayList<Integer>();
+		List<Integer> sortedIndexes = new ArrayList<>();
 		if(objectMarkers.isEmpty()) {
 			sortedIndexes.clear();
 		}

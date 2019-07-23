@@ -32,7 +32,7 @@ import java.util.List;
 public class ExtendedSearchPrefs implements Serializable {
 
 	private static final long serialVersionUID = -1531232270649506181L;
-	private List<ExtendedSearchPref> condQueries = new ArrayList<ExtendedSearchPref>();
+	private List<ExtendedSearchPref> condQueries = new ArrayList<>();
 
 	public List<ExtendedSearchPref> getCondQueries() {
 		return condQueries;

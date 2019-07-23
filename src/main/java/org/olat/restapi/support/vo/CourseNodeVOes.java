@@ -43,7 +43,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class CourseNodeVOes {
 	
 	@XmlElement(name="courseNodeVO")
-	private List<CourseNodeVO> nodes = new ArrayList<CourseNodeVO>();
+	private List<CourseNodeVO> nodes = new ArrayList<>();
 
 	public CourseNodeVOes() {
 		//make JAXB happy

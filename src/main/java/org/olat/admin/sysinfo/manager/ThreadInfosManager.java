@@ -56,14 +56,14 @@ public class ThreadInfosManager implements Sampler {
 	private final static NumberFormat percentFormat = NumberFormat.getPercentInstance(Locale.ENGLISH);
 	
 	private long prevUpTime;
-	private Map<Long,ThreadView> threadMap = new ConcurrentHashMap<Long,ThreadView>();
+	private Map<Long,ThreadView> threadMap = new ConcurrentHashMap<>();
 
 	public List<ThreadView> getThreadViews() {
 		if(threadMap.isEmpty()) {
 			takeSample();
 		}
 
-		List<ThreadView> threads = new ArrayList<ThreadView>(threadMap.values());
+		List<ThreadView> threads = new ArrayList<>(threadMap.values());
 		Collections.sort(threads);
 		return threads;
 	}
@@ -78,8 +78,8 @@ public class ThreadInfosManager implements Sampler {
 		RuntimeMXBean runtimeProxy  = ManagementFactory.getRuntimeMXBean();
 		ThreadInfo tis[] = threadProxy.dumpAllThreads(false, false);
 
-		List<String> currentThreadNames = new ArrayList<String>();
-		Set<Long> currentThreadIds = new HashSet<Long>();
+		List<String> currentThreadNames = new ArrayList<>();
+		Set<Long> currentThreadIds = new HashSet<>();
 		for (ThreadInfo ti : tis) {
 			Long threadId = new Long(ti.getThreadId());
 			if (threadMap.containsKey(threadId)) {

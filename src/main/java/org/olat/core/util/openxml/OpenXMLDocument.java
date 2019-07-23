@@ -90,7 +90,7 @@ public class OpenXMLDocument {
 	private int currentNumberingId = 0;
 	private String documentHeader;
 	private Set<String> imageFilenames = new HashSet<>();
-	private Map<File, DocReference> fileToImagesMap = new HashMap<File, DocReference>();
+	private Map<File, DocReference> fileToImagesMap = new HashMap<>();
 	
 	private List<Node> cursorStack = new ArrayList<>();
 	private List<ListParagraph> numbering = new ArrayList<>();
@@ -196,7 +196,7 @@ public class OpenXMLDocument {
 
 	private Element createHeading(String text, PredefinedStyle style, String additionalText) {
 		Element textEl = createTextEl(text);
-		List<Element> runsEl = new ArrayList<Element>(2);
+		List<Element> runsEl = new ArrayList<>(2);
 		Element runEl = createRunEl(Collections.singletonList(textEl));
 		runsEl.add(runEl);
 		Element styleEl = createParagraphStyle(style);
@@ -228,7 +228,7 @@ public class OpenXMLDocument {
 	
 	public void appendSubtitle(String text) {
 		Element textEl = createTextEl(text);
-		List<Element> runsEl = new ArrayList<Element>(2);
+		List<Element> runsEl = new ArrayList<>(2);
 		Element runEl = createRunEl(Collections.singletonList(textEl), PredefinedStyle.subSubtleEmphasis);
 		runsEl.add(runEl);
 		Element styleEl = createParagraphStyle(PredefinedStyle.subSubtleEmphasis);
@@ -342,7 +342,7 @@ public class OpenXMLDocument {
 	public void appendText(String text, boolean newParagraph, Style... textStyles) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
 		
-		List<Element> textEls = new ArrayList<Element>();
+		List<Element> textEls = new ArrayList<>();
 		for(StringTokenizer tokenizer = new StringTokenizer(text, "\n\r"); tokenizer.hasMoreTokens(); ) {
 			String token = tokenizer.nextToken();
 			Element textEl = createTextEl(token);
@@ -1016,7 +1016,7 @@ public class OpenXMLDocument {
 	}
 	
 	public List<Node> convertLaTeX(String latex) {
-		List<Node> mathEls = new ArrayList<Node>();
+		List<Node> mathEls = new ArrayList<>();
 		try {
 			//convert latex -> mathml
 			String mathml = ConvertFromLatexToMathML.convertToMathML(latex);

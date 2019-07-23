@@ -44,7 +44,7 @@ import org.olat.core.util.resource.OresHelper;
  */
 public class BusListenerInfo implements Serializable {
 	private static final long serialVersionUID = 5144991028203688442L;
-	private Map<String, Integer> listenersCnt = new HashMap<String, Integer>();
+	private Map<String, Integer> listenersCnt = new HashMap<>();
 	
 	public BusListenerInfo() {
 		//
@@ -76,7 +76,7 @@ public class BusListenerInfo implements Serializable {
 	public Set<String> getAllDerivedStrings() {
 		synchronized (listenersCnt) {//cluster_ok
 			// copy to be independent (fail safe iterators)
-			return new HashSet<String>(listenersCnt.keySet());
+			return new HashSet<>(listenersCnt.keySet());
 		}
 	}
 }

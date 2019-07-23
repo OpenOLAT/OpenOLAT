@@ -53,7 +53,7 @@ public class DbPrefs implements Preferences, Serializable {
 	private static final long serialVersionUID = 3828851618949061953L;
 
 	// keys: prefs-keys; values: any Prefs-Objects
-	private Map<String,Object> prefstore = new HashMap<String,Object>();
+	private Map<String,Object> prefstore = new HashMap<>();
 
 	private transient Identity owner;
   

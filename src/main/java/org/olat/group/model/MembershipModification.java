@@ -30,10 +30,10 @@ import org.olat.core.id.Identity;
  */
 public class MembershipModification {
 
-	private List<Identity> addOwners = new ArrayList<Identity>();
-	private List<Identity> addParticipants = new ArrayList<Identity>();
-	private List<Identity> addToWaitingList = new ArrayList<Identity>();
-	private List<Identity> removedIdentities = new ArrayList<Identity>();
+	private List<Identity> addOwners = new ArrayList<>();
+	private List<Identity> addParticipants = new ArrayList<>();
+	private List<Identity> addToWaitingList = new ArrayList<>();
+	private List<Identity> removedIdentities = new ArrayList<>();
 	
 	public List<Identity> getAddOwners() {
 		return addOwners;
@@ -77,7 +77,7 @@ public class MembershipModification {
 	}
 	
 	public List<Identity> getAllIdentities() {
-		List<Identity> allIdentities = new ArrayList<Identity>();
+		List<Identity> allIdentities = new ArrayList<>();
 		allIdentities.addAll(addOwners);
 		allIdentities.addAll(addParticipants);
 		allIdentities.addAll(addToWaitingList);

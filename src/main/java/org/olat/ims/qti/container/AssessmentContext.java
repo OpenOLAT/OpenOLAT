@@ -167,7 +167,7 @@ public class AssessmentContext implements Serializable {
 	}
 
 	private void initSections(Element assessment, Switches sw) {
-		sectionContexts = new ArrayList<SectionContext>(2);
+		sectionContexts = new ArrayList<>(2);
 		
 
 		List<Element> el_sections = new ArrayList<>();
@@ -254,7 +254,7 @@ public class AssessmentContext implements Serializable {
 					String sNum = el_selection_number.getText();
 					int num = new Integer(sNum).intValue();
 					// now choose some x out of the items if selection_number exists
-					List<Element> newList = new ArrayList<Element>();
+					List<Element> newList = new ArrayList<>();
 					Random r = new Random();
 					int size = el_sections.size();
 					// if num > size ??e.g. 5 elements should be picked, but there are

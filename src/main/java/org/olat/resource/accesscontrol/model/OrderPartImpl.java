@@ -140,7 +140,7 @@ public class OrderPartImpl implements Persistable, OrderPart {
 	@Override
 	public List<OrderLine> getOrderLines() {
 		if(lines == null) {
-			lines = new ArrayList<OrderLine>();
+			lines = new ArrayList<>();
 		}
 		return lines;
 	}

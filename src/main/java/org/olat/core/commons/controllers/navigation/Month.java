@@ -42,7 +42,7 @@ public class Month {
 	 */
 	Month(int month) {
 		this.month = month;
-		items = new ArrayList<Dated>();
+		items = new ArrayList<>();
 	}
 
 	/**

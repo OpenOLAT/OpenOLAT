@@ -49,7 +49,7 @@ import org.olat.core.gui.translator.Translator;
  */
 class FormWrapperContainerRenderer implements ComponentRenderer {
 
-	private static final Set<String> acceptedInstructions = new HashSet<String>();
+	private static final Set<String> acceptedInstructions = new HashSet<>();
 	static {
 		acceptedInstructions.add("class");
 	}

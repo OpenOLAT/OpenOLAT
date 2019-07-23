@@ -50,7 +50,7 @@ public class ConditionExpression {
 
 	public ConditionExpression(String idName) {
 		this.id = idName;
-		errorStack = new Stack<Exception>();
+		errorStack = new Stack<>();
 		softReferences = new HashMap<>();
 	}
 

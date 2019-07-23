@@ -46,7 +46,7 @@ public final class PreviewIdentity implements Identity, User {
 
 	private static final long serialVersionUID = 6582855975941440446L;
 	
-	private final Map<String, String> data = new HashMap<String, String>();
+	private final Map<String, String> data = new HashMap<>();
 	private final Long key;
 	private Map<String, String> envAttrs;
 	{

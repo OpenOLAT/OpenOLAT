@@ -48,8 +48,8 @@ import org.springframework.stereotype.Service;
 @Service("mapperService")
 public class MapperServiceImpl implements MapperService, InitializingBean {
 	
-	private Map<MapperKey,Mapper> mapperKeyToMapper = new ConcurrentHashMap<MapperKey,Mapper>();
-	private Map<String,List<MapperKey>> sessionIdToMapperKeys = new ConcurrentHashMap<String,List<MapperKey>>();
+	private Map<MapperKey,Mapper> mapperKeyToMapper = new ConcurrentHashMap<>();
+	private Map<String,List<MapperKey>> sessionIdToMapperKeys = new ConcurrentHashMap<>();
 
 	private CacheWrapper<String, Serializable> mapperCache;
 	
@@ -84,7 +84,7 @@ public class MapperServiceImpl implements MapperService, InitializingBean {
 		if(sessionIdToMapperKeys.containsKey(sessionId)) {
 			sessionIdToMapperKeys.get(sessionId).add(mapperKey);
 		} else {
-			List<MapperKey> mapKeys = new ArrayList<MapperKey>();
+			List<MapperKey> mapKeys = new ArrayList<>();
 			mapKeys.add(mapperKey);
 			sessionIdToMapperKeys.put(sessionId, mapKeys);
 		}

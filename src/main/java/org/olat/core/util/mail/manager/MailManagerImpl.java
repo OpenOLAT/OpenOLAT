@@ -1334,7 +1334,7 @@ public class MailManagerImpl implements MailManager, InitializingBean  {
 			}
 			
 			//add bcc contact lists
-			List<Address> bccList = new ArrayList<Address>();
+			List<Address> bccList = new ArrayList<>();
 			if(bccLists != null) {
 				for (ContactList contactList : bccLists) {
 					if(StringHelper.containsNonWhitespace(contactList.getName())) {

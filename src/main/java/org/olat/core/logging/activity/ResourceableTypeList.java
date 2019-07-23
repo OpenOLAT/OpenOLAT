@@ -201,7 +201,7 @@ public class ResourceableTypeList {
 	 */
 	private List<ResourceableTypeList> getOrs() {
 		if (orList_==null) {
-			orList_ = new LinkedList<ResourceableTypeList>();
+			orList_ = new LinkedList<>();
 		}
 		return orList_;
 	}
@@ -212,7 +212,7 @@ public class ResourceableTypeList {
 	 */
 	private List<ILoggingResourceableType> getMandatory() {
 		if (mandatory_==null) {
-			mandatory_ = new LinkedList<ILoggingResourceableType>();
+			mandatory_ = new LinkedList<>();
 		}
 		return mandatory_;
 	}
@@ -223,7 +223,7 @@ public class ResourceableTypeList {
 	 */
 	private List<ILoggingResourceableType> getOptional() {
 		if (optional_==null) {
-			optional_ = new LinkedList<ILoggingResourceableType>();
+			optional_ = new LinkedList<>();
 		}
 		return optional_;
 	}
@@ -266,7 +266,7 @@ public class ResourceableTypeList {
 			return null;
 		}
 		
-		List<ILoggingResourceable> resourceInfosCopy = new LinkedList<ILoggingResourceable>(resourceInfos);
+		List<ILoggingResourceable> resourceInfosCopy = new LinkedList<>(resourceInfos);
 
 		for (Iterator<ILoggingResourceable> it = resourceInfosCopy.iterator(); it.hasNext();) {
 			if(it.next().isIgnorable()) {

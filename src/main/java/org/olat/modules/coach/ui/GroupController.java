@@ -370,7 +370,7 @@ public class GroupController extends FormBasicController implements Activateable
 	}
 	
 	private void openGroup(UserRequest ureq) {
-		List<ContextEntry> ces = new ArrayList<ContextEntry>(4);
+		List<ContextEntry> ces = new ArrayList<>(4);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("BusinessGroup", entry.getGroupKey());
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(ores));
 

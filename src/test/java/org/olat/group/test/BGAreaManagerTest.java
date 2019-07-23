@@ -131,7 +131,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 		Assert.assertEquals(area2, single.get(0));
 		
 		//check by loading 2 areas
-		List<Long> areaKeys = new ArrayList<Long>();
+		List<Long> areaKeys = new ArrayList<>();
 		areaKeys.add(area1.getKey());
 		areaKeys.add(area2.getKey());
 		List<BGArea> areaList = areaManager.loadAreas(areaKeys);
@@ -347,7 +347,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 		Assert.assertTrue(areasGroup1.contains(area1));
 		
 		//check find group 2 and 4 -> only area 2
-		List<BusinessGroup> groups2_4 = new ArrayList<BusinessGroup>();
+		List<BusinessGroup> groups2_4 = new ArrayList<>();
 		groups2_4.add(group2);
 		groups2_4.add(group4);
 		List<BGArea> areasGroup2_4 = areaManager.findBGAreasOfBusinessGroups(groups2_4);
@@ -356,7 +356,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 		Assert.assertTrue(areasGroup2_4.contains(area2));
 		
 		//check find all groups
-		List<BusinessGroup> allGroups = new ArrayList<BusinessGroup>();
+		List<BusinessGroup> allGroups = new ArrayList<>();
 		allGroups.add(group1);
 		allGroups.add(group2);
 		allGroups.add(group3);
@@ -484,7 +484,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 		Assert.assertTrue(groupArea3.contains(group1));
 		
 		//check find area 1,2 and 3 -> only group 1 and 2
-		List<BGArea> allAreas = new ArrayList<BGArea>();
+		List<BGArea> allAreas = new ArrayList<>();
 		allAreas.add(area1);
 		allAreas.add(area2);
 		allAreas.add(area3);
@@ -597,7 +597,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, numOfAreas2);
 		
 		//num of areas of group 1 and 2
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>(2);
+		List<BusinessGroup> groups = new ArrayList<>(2);
 		groups.add(group1);
 		groups.add(group2);
 		int numOfAreas3 = areaManager.countBGAreasOfBusinessGroups(groups);

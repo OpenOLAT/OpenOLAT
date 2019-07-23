@@ -94,7 +94,7 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<Group
 	 * @return
 	 */
 	public List<Identity> getIdentities(BitSet objectMarkers) {
-		List<Identity> results = new ArrayList<Identity>();
+		List<Identity> results = new ArrayList<>();
 		for(int i=objectMarkers.nextSetBit(0); i >= 0; i=objectMarkers.nextSetBit(i+1)) {
 			GroupMemberView elem = getObject(i);
 			results.add(elem.getIdentity());

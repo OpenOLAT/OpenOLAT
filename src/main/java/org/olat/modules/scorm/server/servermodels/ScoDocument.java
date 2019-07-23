@@ -201,7 +201,7 @@ public class ScoDocument extends XMLDocument {
 			}
 		}
 
-		Vector<String[]> allElements = new Vector<String[]>();
+		Vector<String[]> allElements = new Vector<>();
 		// first add all part A cmi model components...
 		for (int i = 0; i < _cmivalues_a.length; i++) {
 			String[] _cmicomponents = new String[2];
@@ -427,7 +427,7 @@ public class ScoDocument extends XMLDocument {
 	 */
 	public String[][] doFinalPreUpdate(String[][] scoElementsPreUpdate, boolean loadFlag) {
 		// Keying the elements into a map will make this easier
-		Map<String,String> keyedElements = new LinkedHashMap<String,String>();
+		Map<String,String> keyedElements = new LinkedHashMap<>();
 		for (int i = 0; i < scoElementsPreUpdate.length; i++) {
 			keyedElements.put(scoElementsPreUpdate[i][0], scoElementsPreUpdate[i][1]);
 		}

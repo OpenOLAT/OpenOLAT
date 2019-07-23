@@ -126,7 +126,7 @@ public abstract class AbstractComponent implements Component {
 					
 		this.name = name;
 		this.translator = translator;
-		listeners = new ArrayList<ComponentEventListener>(1);
+		listeners = new ArrayList<>(1);
 	}
 	
 	/**

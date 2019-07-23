@@ -201,7 +201,7 @@ public class NewCachePersistingAssessmentManager {
 		int count = 0;
 		int batch = 200;
 
-		Map<Identity, List<Property>> map = new HashMap<Identity, List<Property>>(201); 
+		Map<Identity, List<Property>> map = new HashMap<>(201); 
 		do {
 			int toIndex = Math.min(count + batch, identities.size());
 			List<Identity> toLoad = identities.subList(count, toIndex);
@@ -218,7 +218,7 @@ public class NewCachePersistingAssessmentManager {
 			for(Identity id:toLoad) {
 				List<Property> props = map.get(id);
 				if(props == null) {
-					props = new ArrayList<Property>(1);
+					props = new ArrayList<>(1);
 				}
 				getOrLoadScorePassedAttemptsMap(id, props, false);
 			}
@@ -245,7 +245,7 @@ public class NewCachePersistingAssessmentManager {
 		if (m == null) {
 			// cache entry (=all data of the given identity in this course) has expired or has never been stored yet into the cache.
 			// or has been invalidated (in cluster mode when puts occurred from an other node for the same cache)
-			m = new HashMap<String, Serializable>();
+			m = new HashMap<>();
 			// load data
 			List<Property> loadedProperties = properties == null ? loadPropertiesFor(Collections.singletonList(identity)) : properties;
 			for (Property property:loadedProperties) {

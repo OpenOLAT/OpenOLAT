@@ -31,8 +31,8 @@ import org.olat.repository.RepositoryEntry;
  */
 public class BGConfigBusinessGroup {
 	
-	private final List<String> toolsToEnable = new ArrayList<String>();
-	private final List<String> toolsToDisable = new ArrayList<String>();
+	private final List<String> toolsToEnable = new ArrayList<>();
+	private final List<String> toolsToDisable = new ArrayList<>();
 	
 	private int calendarAccess;
 	private int folderAccess;

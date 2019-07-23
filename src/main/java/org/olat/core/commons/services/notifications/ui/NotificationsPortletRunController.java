@@ -159,7 +159,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	}
 	
 	private List<PortletEntry<Subscriber>> convertNotificationToPortletEntryList(List<Subscriber> items) {
-		List<PortletEntry<Subscriber>> convertedList = new ArrayList<PortletEntry<Subscriber>>();
+		List<PortletEntry<Subscriber>> convertedList = new ArrayList<>();
 		Iterator<Subscriber> listIterator = items.iterator();
 		while(listIterator.hasNext()) {
 			convertedList.add(new SubscriberPortletEntry(listIterator.next()));
@@ -175,7 +175,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
   	if (sortingCriteria.getSortingType() == SortingCriteria.AUTO_SORTING) {
   		Map<Subscriber,SubscriptionInfo> subscriptionMap = NotificationHelper.getSubscriptionMap(getIdentity(), getLocale(), true, compareDate);
 			
-			notificationsList = new ArrayList<Subscriber>();
+			notificationsList = new ArrayList<>();
 			for (Iterator<Map.Entry<Subscriber, SubscriptionInfo>> it_subs = subscriptionMap.entrySet().iterator(); it_subs.hasNext();) {
 				Map.Entry<Subscriber, SubscriptionInfo> sInfo = it_subs.next();
 				Subscriber subscrer = sInfo.getKey();
@@ -274,7 +274,7 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 			PortletDefaultTableDataModel<Subscriber> tableDataModel = new NotificationsManualSortingTableDataModel(entries, ureq.getLocale(), subscriptionMap);
 			List<PortletEntry<Subscriber>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl<Subscriber>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);

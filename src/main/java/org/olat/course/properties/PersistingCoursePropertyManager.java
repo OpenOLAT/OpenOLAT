@@ -64,7 +64,7 @@ public class PersistingCoursePropertyManager implements CoursePropertyManager {
 		this.ores = course;
 		pm = NarrowedPropertyManager.getInstance(course);
 		// Initialize identity anonymizer map
-		anonymizerMap = new HashMap<String,String>();
+		anonymizerMap = new HashMap<>();
 	}
 
 	/**

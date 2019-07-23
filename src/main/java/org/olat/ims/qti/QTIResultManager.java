@@ -241,7 +241,7 @@ public class QTIResultManager implements UserDataDeletable {
 		int startIdentPosition = 0;
 		int startCharacterPosition = 0;
 		String tempIdent = null;
-		Map<String,String> result = new HashMap<String,String>();
+		Map<String,String> result = new HashMap<>();
 		char c;
 
 		for (int i = 0; i < answerCode.length(); i++) {
@@ -286,7 +286,7 @@ public class QTIResultManager implements UserDataDeletable {
 		// calculate the correct answer, if eventually needed
 		int modus = 0;
 		int startCharacterPosition = 0;
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		char c;
 
 		for (int i = 0; i < answerCode.length(); i++) {

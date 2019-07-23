@@ -307,7 +307,7 @@ class PortletInstitution {
 	
 	public PortletInstitution(String name) {
 		this.name = name;
-		this.links = new ArrayList<PortletLink>();
+		this.links = new ArrayList<>();
 	}
 	
 	public PortletInstitution(String name, List<PortletLink> links) {
