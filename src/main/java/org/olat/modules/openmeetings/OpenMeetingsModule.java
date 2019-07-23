@@ -44,7 +44,7 @@ public class OpenMeetingsModule  extends AbstractSpringModule implements ConfigO
 	private static final String BASE_URL = "baseUrl";
 	private static final String CONTEXT_PATH = "contextPath";
 	private static final String ADMIN_LOGIN = "adminLogin";
-	private static final String ADMIN_PASSWORD = "adminPassword";
+	private static final String ADMIN_CREDENTIAL = "adminPassword";
 	
 	@Value("${vc.openmeetings.enabled}")
 	private boolean enabled;
@@ -95,7 +95,7 @@ public class OpenMeetingsModule  extends AbstractSpringModule implements ConfigO
 		if(StringHelper.containsNonWhitespace(adminLoginObj)) {
 			adminLogin = adminLoginObj;
 		}
-		String adminPasswordObj = getStringPropertyValue(ADMIN_PASSWORD, true);
+		String adminPasswordObj = getStringPropertyValue(ADMIN_CREDENTIAL, true);
 		if(StringHelper.containsNonWhitespace(adminPasswordObj)) {
 			adminPassword = adminPasswordObj;
 		}
@@ -192,7 +192,7 @@ public class OpenMeetingsModule  extends AbstractSpringModule implements ConfigO
 	}
 
 	public void setAdminPassword(String adminPassword) {
-		setSecretStringProperty(ADMIN_PASSWORD, adminPassword, true);
+		setSecretStringProperty(ADMIN_CREDENTIAL, adminPassword, true);
 	}
 	
 }

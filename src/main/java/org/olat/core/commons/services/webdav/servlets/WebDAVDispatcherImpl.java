@@ -45,6 +45,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -221,7 +222,7 @@ public class WebDAVDispatcherImpl
      * Default depth in spec is infinite. Limit depth to 3 by default as
      * infinite depth makes operations very expensive.
      */
-    public static int maxDepth = 3;
+    public static final int maxDepth = 3;
 
 
     /**
@@ -255,6 +256,7 @@ public class WebDAVDispatcherImpl
         DocumentBuilderFactory documentBuilderFactory = null;
         try {
             documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             documentBuilderFactory.setNamespaceAware(true);
             documentBuilderFactory.setExpandEntityReferences(false);
             documentBuilder = documentBuilderFactory.newDocumentBuilder();

@@ -50,7 +50,7 @@ public class InstitutionPortlet extends AbstractPortlet {
 	public static final String TYPE_COURSE = "course";
 	public static final String TYPE_CATALOG = "catalog";
 	
-	public static String HTTP_REQUEST_ATTRIBUT="catalog_node_id";
+	public static final String HTTP_REQUEST_ATTRIBUT="catalog_node_id";
 	private Controller runCtr;
 
 	/**

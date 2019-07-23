@@ -127,7 +127,7 @@ public class ViteroAdminBookingMembersController extends BasicController {
 				}
 			} else if(event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent e = (TableMultiSelectEvent)event;
-				List<ViteroUser> identities = new ArrayList<ViteroUser>();
+				List<ViteroUser> identities = new ArrayList<>();
 				for (int i = e.getSelection().nextSetBit(0); i >= 0; i = e.getSelection().nextSetBit(i + 1)) {
 					ViteroUser identity = (ViteroUser)tableCtr.getTableDataModel().getObject(i);
 					identities.add(identity);

@@ -44,7 +44,7 @@ public class PasswordCondition extends AdditionalCondition {
 	@SuppressWarnings("unused") @Deprecated
 	private String answer;
 	
-	public static final String PASSWORD_ENDING = "password";
+	protected static final String ENDING = "password";
 	// </OLATCE-91>
 
 	public AbstractAccessableCourseNode getNode() {

@@ -368,19 +368,19 @@ public class LoginModule extends AbstractSpringModule {
 			passwordSpecialSigns = passwordSpecialSignsObj;
 		}
 		
-		String passwordUsernameForbiddenObj = getStringPropertyValue(FORBIDDEN_USERNAME, true);
-		if(StringHelper.containsNonWhitespace(passwordUsernameForbiddenObj)) {
-			passwordUsernameForbidden = "true".equals(passwordUsernameForbiddenObj);
+		String usernameForbiddenObj = getStringPropertyValue(FORBIDDEN_USERNAME, true);
+		if(StringHelper.containsNonWhitespace(usernameForbiddenObj)) {
+			passwordUsernameForbidden = "true".equals(usernameForbiddenObj);
 		}
 		
-		String passwordFirstnameForbiddenObj = getStringPropertyValue(FORBIDDEN_FIRSTNAME, true);
-		if(StringHelper.containsNonWhitespace(passwordFirstnameForbiddenObj)) {
-			passwordFirstnameForbidden = "true".equals(passwordFirstnameForbiddenObj);
+		String firstnameForbiddenObj = getStringPropertyValue(FORBIDDEN_FIRSTNAME, true);
+		if(StringHelper.containsNonWhitespace(firstnameForbiddenObj)) {
+			passwordFirstnameForbidden = "true".equals(firstnameForbiddenObj);
 		}
 		
-		String passwordLastnameForbiddenObj = getStringPropertyValue(FORBIDDEN_LASTNAME, true);
-		if(StringHelper.containsNonWhitespace(passwordLastnameForbiddenObj)) {
-			passwordLastnameForbidden = "true".equals(passwordLastnameForbiddenObj);
+		String lastnameForbiddenObj = getStringPropertyValue(FORBIDDEN_LASTNAME, true);
+		if(StringHelper.containsNonWhitespace(lastnameForbiddenObj)) {
+			passwordLastnameForbidden = "true".equals(lastnameForbiddenObj);
 		}
 		
 		int validUntilHoursGuiInt = getIntPropertyValue("password.change.valid.hours.gui");

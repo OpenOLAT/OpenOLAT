@@ -35,12 +35,8 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.STCourseNode;
-/**
- * 
- * Description:<br>
- * TODO: guido Class Description for STCourseNodeConfiguration
- * 
- */
+
+
 public class STCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	transient public static int MAX_PEEKVIEW_CHILD_NODES = 10; // default 10
 	

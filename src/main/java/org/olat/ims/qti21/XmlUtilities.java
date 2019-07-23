@@ -19,8 +19,14 @@
  */
 package org.olat.ims.qti21;
 
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.XMLReader;
 
 /**
@@ -30,11 +36,18 @@ import org.xml.sax.XMLReader;
  *
  */
 public final class XmlUtilities {
+	
+	private static final Logger log = Tracing.createLoggerFor(XmlUtilities.class);
 
 	private static final SAXParserFactory parserFactory = SAXParserFactory.newInstance();
 	static {
-		parserFactory.setNamespaceAware(true);
-    	parserFactory.setValidating(false);
+		try {
+			parserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			parserFactory.setNamespaceAware(true);
+			parserFactory.setValidating(false);
+		} catch (SAXNotRecognizedException | SAXNotSupportedException | ParserConfigurationException e) {
+			log.error("", e);
+		}
 	}
 
 	/**

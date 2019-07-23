@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -183,6 +184,7 @@ public class LocalizedXSLTransformer {
 		XMLReader reader;
 		try {
 			reader = XMLReaderFactory.createXMLReader();
+			reader.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			reader.setEntityResolver(er);
 			Source xsltsource = new SAXSource(reader, new InputSource(new StringReader(replacedOutput)));
 			templates = tfactory.newTemplates(xsltsource);

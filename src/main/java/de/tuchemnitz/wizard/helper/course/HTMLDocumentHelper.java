@@ -34,6 +34,7 @@ package de.tuchemnitz.wizard.helper.course;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -45,7 +46,7 @@ import org.olat.course.ICourse;
 
 public final class HTMLDocumentHelper {
 	private static final Logger log = Tracing.createLoggerFor(HTMLDocumentHelper.class);
-	public static String ENCODING = "utf-8";
+	public static final String ENCODING = "utf-8";
 
 	/**
 	 * Create a HTML file and put it into the course folder container.
@@ -74,10 +75,9 @@ public final class HTMLDocumentHelper {
 					}						
 				}
 			}
-			final BufferedOutputStream bos = new BufferedOutputStream(file.getOutputStream(false));
-			FileUtils.save(bos, htmlText, ENCODING);
-			try {
-				bos.close();
+			try(OutputStream out = file.getOutputStream(false);
+					BufferedOutputStream bos = new BufferedOutputStream(out)) {
+				FileUtils.save(bos, htmlText, ENCODING);
 			} catch (IOException e) {
 				log.error("Error writing the HTML file::" + relFilePath, e);
 			}

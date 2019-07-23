@@ -43,8 +43,8 @@ import org.olat.core.util.WebappHelper;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 public class StaticMediaDispatcher {
-	public static String STATIC_DIR_NAME = "/static";
-	public static String NOVERSION = "_noversion_";
+	public static final String STATIC_DIR_NAME = "/static";
+	public static final String NOVERSION = "_noversion_";
 	private static String mapperPath;
 	private static int forceReloadCounter = 0;
 

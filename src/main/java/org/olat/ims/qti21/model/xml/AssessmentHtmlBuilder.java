@@ -23,6 +23,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.stream.StreamResult;
@@ -207,6 +208,7 @@ public class AssessmentHtmlBuilder {
 			// Alter infoset because of special namespace on tag p
 			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document document = builder.newDocument();
 			HtmlToDomBuilderHandler contentHandler = new HtmlToDomBuilderHandler(document);

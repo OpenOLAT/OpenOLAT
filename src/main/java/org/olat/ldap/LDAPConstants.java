@@ -23,6 +23,6 @@ public class LDAPConstants {
 	
 	public static final String LDAP_USER_IDENTIFYER = "userID";
 
-	public static final String LDAP_USER_PASSWORD = "userPassword";
+	public static final String LDAP_USER_CREDENTIAL = "userPassword";
 
 }

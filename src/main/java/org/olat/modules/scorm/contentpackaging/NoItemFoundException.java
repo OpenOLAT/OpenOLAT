@@ -54,9 +54,9 @@ public class NoItemFoundException extends Exception{
 
 	private static final long serialVersionUID = -5966627685214023530L;
 
-	public static String CR = System.getProperty("line.separator");
+	public static final String CR = System.getProperty("line.separator");
     
-    public static String NO_ITEM_FOUND_MSG =
+    public static final String NO_ITEM_FOUND_MSG =
         "The package you are importing conforms to SCORM 1.2." + CR +
         "However, it appears there are no items within the " + CR +
         "manifest file. (or none that point to a resource)  " + CR +

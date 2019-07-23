@@ -50,7 +50,8 @@ import org.olat.repository.RepositoryEntry;
  */
 public class LibrarySite extends AbstractSiteInstance {
 
-	public NavElement origNavElem, curNavElem;
+	private NavElement origNavElem;
+	private NavElement curNavElem;
 
 	/**
 	 * @param loc

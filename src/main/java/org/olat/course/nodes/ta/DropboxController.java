@@ -95,7 +95,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class DropboxController extends BasicController {
 	
-	public static String DROPBOX_DIR_NAME = "dropboxes";
+	public static final String DROPBOX_DIR_NAME = "dropboxes";
 	// config
 	
 	protected ModuleConfiguration config;

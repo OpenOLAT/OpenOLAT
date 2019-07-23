@@ -64,7 +64,7 @@ public class AdminModule extends AbstractSpringModule {
 
 	private static final String CONFIG_LOGIN_BLOCKED = "loginBlocked";
 	/** Category for system properties **/
-	public static String SYSTEM_PROPERTY_CATEGORY = "_o3_";
+	public static final String SYSTEM_PROPERTY_CATEGORY = "_o3_";
 	public static final String PROPERTY_MAINTENANCE_MESSAGE    = "maintenanceMessageToken";
 	public static final String PROPERTY_SESSION_ADMINISTRATION = "sessionAdministrationToken";
 	

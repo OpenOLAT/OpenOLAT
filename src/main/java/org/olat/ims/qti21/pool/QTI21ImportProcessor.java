@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.XMLOutputFactory;
@@ -230,8 +231,10 @@ public class QTI21ImportProcessor {
 				Writer out = Files.newBufferedWriter(outputFile, Charset.forName("UTF-8"))) {
 			XMLOutputFactory xof = XMLOutputFactory.newInstance();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
-	
-			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			SAXParser saxParser = factory.newSAXParser();
 			OnyxToQtiWorksHandler myHandler = new OnyxToQtiWorksHandler(xtw, infos);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);

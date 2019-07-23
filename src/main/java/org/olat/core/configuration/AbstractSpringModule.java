@@ -60,7 +60,7 @@ public abstract class AbstractSpringModule implements GenericEventListener, Init
 	
 	private final PersistedProperties moduleConfigProperties;
 	
-	public static final Map<Class<?>,AtomicInteger> starts = new HashMap<>();
+	private static final Map<Class<?>,AtomicInteger> starts = new HashMap<>();
 
 	public AbstractSpringModule(CoordinatorManager coordinatorManager) {
 		moduleConfigProperties = new PersistedProperties(coordinatorManager, this);

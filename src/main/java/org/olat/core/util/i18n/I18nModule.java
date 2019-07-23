@@ -75,9 +75,9 @@ public class I18nModule extends AbstractSpringModule {
 	public static final String LOCAL_STRINGS_FILE_POSTFIX = ".properties";
 	// Location of customizing directory and i18n configuration (configured at
 	// runtime)
-	public static File LANG_CUSTOMIZING_DIRECTORY;
-	public static File LANG_PACKS_DIRECTORY;
-	public static File LANG_OVERLAY_DIRECTORY;
+	private static File LANG_CUSTOMIZING_DIRECTORY;
+	private static File LANG_PACKS_DIRECTORY;
+	private static File LANG_OVERLAY_DIRECTORY;
 	// Constants for the translation statistics scheduler job
 	public static final String SCHEDULER_NAME = "i18n.status.generator";
 
@@ -629,6 +629,10 @@ public class I18nModule extends AbstractSpringModule {
 	 */
 	public boolean isCachingEnabled() {
 		return cachingEnabled;
+	}
+	
+	public File getLangPacksDirectory() {
+		return LANG_PACKS_DIRECTORY;
 	}
 
 	/**

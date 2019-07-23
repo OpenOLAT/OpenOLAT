@@ -25,6 +25,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -142,6 +143,7 @@ public class OpenXMLUtils {
 	public static final Document createDocument() {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			// Turn on validation, and turn on namespaces
 			factory.setValidating(true);
 			factory.setNamespaceAware(false);
@@ -163,6 +165,7 @@ public class OpenXMLUtils {
 	public static final Document createDocument(InputStream in) {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			// Turn on validation, and turn on namespaces
 			factory.setValidating(false);
 			factory.setNamespaceAware(false);
@@ -184,6 +187,7 @@ public class OpenXMLUtils {
 	public static final Document createDocument(String in) {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			// Turn on validation, and turn on namespaces
 			factory.setValidating(false);
 			factory.setNamespaceAware(false);

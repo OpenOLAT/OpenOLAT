@@ -46,7 +46,7 @@ public class Property extends PersistentObject implements ModifiedInfo {
 	private static final long serialVersionUID = -7029205250635324093L;
 
 	/** max length of a category */
-  public static int CATEGORY_MAX_LENGHT = 33;
+	public static final int CATEGORY_MAX_LENGHT = 33;
     
 	private Identity identity;
 	private BusinessGroup grp;

@@ -39,7 +39,7 @@ public class TabbedPaneChangedEvent extends Event {
 	/**
 	 * <code>TAB_CHANGED</code>
 	 */
-	public static String TAB_CHANGED = "tabChanged";
+	public static final String TAB_CHANGED = "tabChanged";
 
 	private Component oldComponent;
 	private Component newComponent;

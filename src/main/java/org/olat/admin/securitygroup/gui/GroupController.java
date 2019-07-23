@@ -163,7 +163,7 @@ public class GroupController extends BasicController {
 	@Autowired
 	private MailManager mailManager;
 	
-	public Object userObject;
+	private Object userObject;
 
 	/**
 	 * @param ureq

@@ -133,7 +133,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 					return;
 				}
 				// Ok, contains at least one language, copy to lang pack dir
-				importFile.moveUploadFileTo(I18nModule.LANG_PACKS_DIRECTORY);
+				importFile.moveUploadFileTo(i18nModule.getLangPacksDirectory());
 				logAudit("Uploaded language pack::" + importFile.getUploadFileName());
 				
 				if (alreadyInstalledLangs.size() > 0) {

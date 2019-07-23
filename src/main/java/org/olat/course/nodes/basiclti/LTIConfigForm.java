@@ -76,8 +76,6 @@ public class LTIConfigForm extends FormBasicController {
 	public static final String CONFIGKEY_HOST = "host";
 	public static final String CONFIGKEY_PROTO = "proto";
 
-	public static final String[] PROTOCOLS = new String[] {"http", "https"};
-
 	public static final String CONFIG_KEY_DEBUG = "debug";
 	public static final String CONFIG_KEY_CUSTOM = "custom";
 	public static final String CONFIG_KEY_SENDNAME = "sendname";

@@ -34,10 +34,10 @@ import org.olat.course.nodes.projectbroker.datamodel.Project;
 public class ProjectBrokerEditorEvent extends Event {
 	private static final long serialVersionUID = 5928305911095490482L;
 	private final Project project;
-	public static String CANCEL_NEW_PROJECT = "cancel_new_project";
-	public static String CREATED_NEW_PROJECT = "created_new_project";
-	public static String CHANGED_PROJECT = "changed_project";
-	public static String DELETED_PROJECT = "deleted_project";
+	public static final String CANCEL_NEW_PROJECT = "cancel_new_project";
+	public static final String CREATED_NEW_PROJECT = "created_new_project";
+	public static final String CHANGED_PROJECT = "changed_project";
+	public static final String DELETED_PROJECT = "deleted_project";
 
 	/**
 	 * @param command

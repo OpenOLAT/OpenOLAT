@@ -35,7 +35,7 @@ import org.olat.modules.video.ui.marker.VideoMarkerRowComparator;
  */
 public class VideoMarkersImpl implements VideoMarkers {
 	
-	public List<VideoMarker> markers;
+	private List<VideoMarker> markers;
 
 	@Override
 	public List<VideoMarker> getMarkers() {

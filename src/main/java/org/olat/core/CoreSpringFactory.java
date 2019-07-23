@@ -65,7 +65,7 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	private static final Logger log = Tracing.createLoggerFor(CoreSpringFactory.class);
 	
 	// Access servletContext only for spring beans admin-functions
-	public static ServletContext servletContext;
+	private static ServletContext servletContext;
 	private static DefaultListableBeanFactory beanFactory;
 	private static Map<Class<?>, String> idToBeans = new ConcurrentHashMap<>();
 	
@@ -76,6 +76,9 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 		//
 	}
 
+	public static ApplicationContext getWebApplicationContext() {
+		return WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
+	}
 
 	/**
 	 * wrapper to the applicationContext (we are facading spring's

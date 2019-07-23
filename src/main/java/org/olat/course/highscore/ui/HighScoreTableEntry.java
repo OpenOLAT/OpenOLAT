@@ -26,9 +26,9 @@ import org.olat.core.id.Identity;
 
 public class HighScoreTableEntry {
 	
-	public static int RANK = 0;
-	public static int SCORE = 1;
-	public static int NAME = 2;
+	public static final int RANK = 0;
+	public static final int SCORE = 1;
+	public static final int NAME = 2;
 	
 	private float score;
 	private String name;

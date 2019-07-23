@@ -33,7 +33,7 @@ public class LayoutChangedEvent extends MultiUserEvent {
 
 	private static final long serialVersionUID = 6963077725749903124L;
 	
-	public static String LAYOUTSETTINGSCHANGED = "LayoutSettingsChanged";
+	public static final String LAYOUTSETTINGSCHANGED = "LayoutSettingsChanged";
 	
 	public LayoutChangedEvent(String command) {
 		super(command);

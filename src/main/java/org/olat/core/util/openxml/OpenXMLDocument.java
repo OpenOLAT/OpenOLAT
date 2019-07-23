@@ -40,6 +40,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -1034,6 +1035,7 @@ public class OpenXMLDocument {
 				if(name.endsWith("word/document.xml")) {
 					
 					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 					factory.setValidating(false);
 					factory.setNamespaceAware(false);
 					DocumentBuilder builder = factory.newDocumentBuilder();
@@ -1367,7 +1369,7 @@ public class OpenXMLDocument {
 		anchorEl.setAttribute("distL", "0");
 		anchorEl.setAttribute("distR", "0");
 		anchorEl.setAttribute("simplePos", "0");
-		anchorEl.setAttribute("relativeHeight", "251663360");//TODO
+		anchorEl.setAttribute("relativeHeight", "251663360");
 		anchorEl.setAttribute("behindDoc", "0");
 		anchorEl.setAttribute("locked", "0");
 		anchorEl.setAttribute("layoutInCell", "1");
@@ -1425,7 +1427,7 @@ public class OpenXMLDocument {
 		Element wrapPolygonStartEl = (Element)wrapPolygonEl.appendChild(document.createElement("wp:start"));
 		wrapPolygonStartEl.setAttribute("x", "0");
 		wrapPolygonStartEl.setAttribute("y", "0");
-		appendLineTo(wrapPolygonEl, "0", "21396");//TODO
+		appendLineTo(wrapPolygonEl, "0", "21396");
 		appendLineTo(wrapPolygonEl, "21538", "21396");
 		appendLineTo(wrapPolygonEl, "21538", "0");
 		appendLineTo(wrapPolygonEl, "0", "0");

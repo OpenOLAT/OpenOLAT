@@ -162,7 +162,7 @@ public class GroupController extends BasicController {
 	private final MailManager mailManager;
 	private final GroupDAO groupDao;
 	
-	public Object userObject;
+	private Object userObject;
 
 	/**
 	 * @param ureq

@@ -37,6 +37,7 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.UUID;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.stream.FactoryConfigurationError;
@@ -186,7 +187,9 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 	private QTI21Infos scanFile(Path inputFile) {
 		QTI21ExplorerHandler infosHandler = new QTI21ExplorerHandler();
 		try(InputStream in = Files.newInputStream(inputFile)) {
-			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			SAXParser saxParser = factory.newSAXParser();
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", infosHandler);
 			saxParser.parse(in, infosHandler);
 		} catch(Exception e1) {
@@ -201,8 +204,10 @@ class CopyAndConvertVisitor extends SimpleFileVisitor<Path> {
 				Writer out = Files.newBufferedWriter(tmpFile.toPath(), StandardCharsets.UTF_8)) {
 			XMLOutputFactory xof = XMLOutputFactory.newInstance();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
-	
-			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			SAXParser saxParser = factory.newSAXParser();
 			DefaultHandler myHandler = provider.create(xtw);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);

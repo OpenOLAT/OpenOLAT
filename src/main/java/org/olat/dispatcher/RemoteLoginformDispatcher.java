@@ -89,7 +89,7 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 	
 	private static final String METHOD_POST = "POST";
 	private static final String PARAM_USERNAME = "username";
-	private static final String PARAM_PASSWORD = "pwd";
+	private static final String PARAM_CREDENTIAL = "pwd";
 	private static final Logger log = Tracing.createLoggerFor(RemoteLoginformDispatcher.class);
 	
 	private UserDeletionManager userDeletionManager;
@@ -130,9 +130,9 @@ public class RemoteLoginformDispatcher implements Dispatcher {
 				DispatcherModule.redirectToDefaultDispatcher(response); 
 				return;
 			}
-			String pwd = ureq.getParameter(PARAM_PASSWORD);
+			String pwd = ureq.getParameter(PARAM_CREDENTIAL);
 			if ( ! StringHelper.containsNonWhitespace(pwd)) {
-				log.warn("Missing password parameter, use '" + PARAM_PASSWORD + "' to submit the password");
+				log.warn("Missing password parameter, use '" + PARAM_CREDENTIAL + "' to submit the password");
 				DispatcherModule.redirectToDefaultDispatcher(response); 
 				return;					
 			}

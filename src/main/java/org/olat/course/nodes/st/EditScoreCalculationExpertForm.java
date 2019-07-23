@@ -99,13 +99,13 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 		
 		//the error message
 		fi.setErrorKey("rules.error", new String[]{
-				pt.translate(cem[0].errorKey, cem[0].errorKeyParams)
+				pt.translate(cem[0].getErrorKey(), cem[0].getErrorKeyParams())
 		});
 		
-		if (cem[0].solutionMsgKey != null && !"".equals(cem[0].solutionMsgKey)) {
+		if (cem[0].getSolutionMsgKey() != null && !"".equals(cem[0].getSolutionMsgKey())) {
 			//and a hint or example to clarify the error message
 			fi.setExampleKey("rules.error", new String[]{
-					pt.translate(cem[0].solutionMsgKey, cem[0].errorKeyParams)
+					pt.translate(cem[0].getSolutionMsgKey(), cem[0].getErrorKeyParams())
 			});
 		}
 	}

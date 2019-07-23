@@ -73,9 +73,9 @@ import org.olat.util.logging.activity.LoggingResourceable;
 public class StatisticDisplayController extends BasicController {
 	
 	private static class Graph {
-		public List<Integer> values;
-		public List<String> labelList;
-		public String chartIntroStr;
+		private List<Integer> values;
+		private List<String> labelList;
+		private String chartIntroStr;
 		private int numElements = 0;
 		
 		public List<Integer> getValues() {

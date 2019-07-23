@@ -20,8 +20,6 @@
  */
 package org.olat.resource.accesscontrol.provider.paypal.manager;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,10 +32,10 @@ import java.util.UUID;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.resource.OLATResource;
@@ -64,13 +62,6 @@ import org.olat.resource.accesscontrol.provider.paypal.model.PaypalTransactionSt
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.paypal.exception.ClientActionRequiredException;
-import com.paypal.exception.HttpErrorException;
-import com.paypal.exception.InvalidCredentialException;
-import com.paypal.exception.InvalidResponseDataException;
-import com.paypal.exception.MissingCredentialException;
-import com.paypal.exception.SSLConfigurationException;
-import com.paypal.sdk.exceptions.OAuthException;
 import com.paypal.svcs.services.AdaptivePaymentsService;
 import com.paypal.svcs.types.ap.ConvertCurrencyRequest;
 import com.paypal.svcs.types.ap.ConvertCurrencyResponse;
@@ -107,7 +98,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 	private static final Logger log = Tracing.createLoggerFor(PaypalManagerImpl.class);
 	
 	private static final String X_PAYPAL_SECURITY_USERID = "acct1.UserName";
-	private static final String X_PAYPAL_SECURITY_PASSWORD = "acct1.Password";
+	private static final String X_PAYPAL_SECURITY_CREDENTIAL = "acct1.Password";
 	private static final String X_PAYPAL_SECURITY_SIGNATURE = "acct1.Signature";
 	private static final String X_PAYPAL_APPLICATION_ID = "acct1.AppId";
 	private static final String X_PAYPAL_SANDBOX_EMAIL_ADDRESS = "sandbox.EmailAddress";
@@ -140,7 +131,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 		
 		Properties accountProps = new Properties();
 		accountProps.setProperty(X_PAYPAL_SECURITY_USERID, paypalModule.getPaypalSecurityUserId());
-		accountProps.setProperty(X_PAYPAL_SECURITY_PASSWORD, paypalModule.getPaypalSecurityPassword());
+		accountProps.setProperty(X_PAYPAL_SECURITY_CREDENTIAL, paypalModule.getPaypalSecurityPassword());
 		accountProps.setProperty(X_PAYPAL_SECURITY_SIGNATURE, paypalModule.getPaypalSecuritySignature());
 		accountProps.setProperty(X_PAYPAL_APPLICATION_ID, paypalModule.getPaypalApplicationId());
 		
@@ -266,15 +257,14 @@ public class PaypalManagerImpl  implements PaypalManager {
 		sb.append("select trx from ").append(PaypalTransaction.class.getName()).append(" as trx where ");
 		sb.append("trx.orderId in (:orderIds)");
 		
-		List<Long> orderIds = new ArrayList<Long>(orders.size());
+		List<Long> orderIds = new ArrayList<>(orders.size());
 		for(Order order:orders) {
 			orderIds.add(order.getKey());
 		}
-		List<PSPTransaction> transactions = dbInstance.getCurrentEntityManager()
+		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), PSPTransaction.class)
 				.setParameter("orderIds", orderIds)
 				.getResultList();
-		return transactions;
 	}
 
 	@Override
@@ -612,33 +602,6 @@ public class PaypalManagerImpl  implements PaypalManager {
 				}
 			}
 			return true;
-		} catch (SSLConfigurationException e) {
-			log.error("Paypal error", e);
-			return false;
-		} catch (InvalidCredentialException e) {
-			log.error("Paypal error", e);
-			return false;
-		} catch (UnsupportedEncodingException e) {
-			log.error("Paypal error", e);
-			return false;
-		} catch (HttpErrorException e) {
-			log.error("Paypal error", e);
-			return false;
-		} catch (InvalidResponseDataException e) {
-			log.error("Paypal error", e);
-			return false;
-		} catch (ClientActionRequiredException e) {
-			log.error("Paypal error", e);
-			return false;
-		} catch (MissingCredentialException e) {
-			log.error("Paypal error", e);
-			return false;
-		} catch (OAuthException e) {
-			log.error("Paypal error", e);
-			return false;
-		} catch (IOException | InterruptedException e) {
-			log.error("Paypal error", e);
-			return false;
 		} catch (Exception e) {
 			log.error("", e);
 			return false;
@@ -653,8 +616,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 		}
 		
 		String payKey = response.getPayKey();
-		String nextUrl= "https://www." + testEnv + "paypal.com/cgi-bin/webscr?cmd=_ap-payment&paykey=" + payKey;
-		return nextUrl;
+		return "https://www." + testEnv + "paypal.com/cgi-bin/webscr?cmd=_ap-payment&paykey=" + payKey;
 	}
 	
 	@Override
@@ -663,8 +625,7 @@ public class PaypalManagerImpl  implements PaypalManager {
 		if(paypalModule.isSandbox()) {
 			testEnv = "sandbox.";
 		}
-		String verificationUrl= "https://www." + testEnv + "paypal.com/cgi-bin/webscr";
-		return verificationUrl;
+		return "https://www." + testEnv + "paypal.com/cgi-bin/webscr";
 	}
 	
 	@Override
@@ -722,24 +683,6 @@ public class PaypalManagerImpl  implements PaypalManager {
 			payResp = ap.pay(payRequest);
 			log.info(Tracing.M_AUDIT, "Paypal send PayRequest: " + (payResp == null ? "no response" : payResp.getPayKey() + "/" + payResp.getPaymentExecStatus()));
 			return payResp;
-		} catch (SSLConfigurationException e) {
-			log.error("Paypal error", e);
-		} catch (InvalidCredentialException e) {
-			log.error("Paypal error", e);
-		} catch (UnsupportedEncodingException e) {
-			log.error("Paypal error", e);
-		} catch (HttpErrorException e) {
-			log.error("Paypal error", e);
-		} catch (InvalidResponseDataException e) {
-			log.error("Paypal error", e);
-		} catch (ClientActionRequiredException e) {
-			log.error("Paypal error", e);
-		} catch (MissingCredentialException e) {
-			log.error("Paypal error", e);
-		} catch (OAuthException e) {
-			log.error("Paypal error", e);
-		} catch (IOException | InterruptedException e) {
-			log.error("Paypal error", e);
 		} catch (Exception e) {
 			log.error("Paypal error", e);
 		} finally {
