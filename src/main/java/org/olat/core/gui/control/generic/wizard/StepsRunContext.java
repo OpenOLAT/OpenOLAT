@@ -26,10 +26,6 @@
 package org.olat.core.gui.control.generic.wizard;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for StepsRunContext
- * 
- * <P>
  * Initial Date:  11.01.2008 <br>
  * @author patrickb
  */

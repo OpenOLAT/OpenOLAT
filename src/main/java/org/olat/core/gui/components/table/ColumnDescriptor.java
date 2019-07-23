@@ -30,10 +30,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 
 /**
- * Description: <BR>
- * TODO: Class Description for ColumnDescriptor
- * <P>
- * 
  * @author Felix Jost
  */
 public interface ColumnDescriptor {

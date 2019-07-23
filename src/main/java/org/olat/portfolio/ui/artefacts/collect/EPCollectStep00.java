@@ -35,10 +35,6 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for EPCollectStep00
- * 
- * <P>
  * Initial Date:  27.07.2010 <br>
  * @author rhaag
  */
@@ -60,8 +56,6 @@ public class EPCollectStep00 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new EPCollectStepForm00(ureq, windowControl, form, stepsRunContext, FormBasicController.LAYOUT_DEFAULT, null, artefact);
-		return stepI;
+		return new EPCollectStepForm00(ureq, windowControl, form, stepsRunContext, FormBasicController.LAYOUT_DEFAULT, null, artefact);
 	}
-
 }

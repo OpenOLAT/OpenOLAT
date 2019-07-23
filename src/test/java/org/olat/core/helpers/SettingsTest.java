@@ -37,10 +37,6 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.GenericEventListener;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for SettingsTest
- * 
- * <P>
  * Initial Date:  12.07.2010 <br>
  * @author patrickb
  */

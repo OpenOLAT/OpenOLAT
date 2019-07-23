@@ -29,10 +29,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.Event;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for FormEvent
- * 
- * <P>
  * Initial Date:  11.12.2006 <br>
  * @author patrickb
  */
@@ -46,10 +42,7 @@ public class FormEvent extends Event {
 	// in IE <= 8. Use onclick instead (OLAT-5753). Note that when activating a 
 	// checkbox / radio button the onclick will also be fired although nothing has 
 	// been clicked. 
-	public static final int ONCHANGE = 4; 
-	// FIXME:BP: add support for onkeydown event. Also add support for multiple
-	// events, e.g. onclick and onkeydown. onchange is buggy, (IE does not fire it
-	// correctly)
+	public static final int ONCHANGE = 4;
 		
 	//sorted x0 > x1 > x2 .. > xn 
 	public static final int[] ON_DOTDOTDOT = new int[]{ONDBLCLICK, ONCLICK, ONCHANGE};

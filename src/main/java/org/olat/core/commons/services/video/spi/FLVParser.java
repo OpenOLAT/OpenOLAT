@@ -241,7 +241,7 @@ public class FLVParser {
                 }
 
                 if (data instanceof Map) {
-                    // TODO if there are multiple metadata values with same key (in
+                    // If there are multiple metadata values with same key (in
                     // separate AMF blocks, we currently loose previous values)
                     @SuppressWarnings("unchecked")
 					Map<String, Object> extractedMetadata = (Map<String, Object>) data;

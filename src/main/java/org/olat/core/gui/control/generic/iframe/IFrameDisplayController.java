@@ -156,7 +156,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		super(ureq, wControl);
 		
 		//register this object for textMarking on/off events
-		//TODO:gs how to unregister and where? unregister need ureq so dispose does not work
 		if (contextResourceable != null) {
 			ureq.getUserSession().getSingleUserEventCenter().registerFor(this, getIdentity(), contextResourceable);
 		}
@@ -174,9 +173,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		boolean adjusteightAutomatically = true;
 		
 		//Delivers content files via local mapper to enable session based browser caching for at least this instance
-		//FIXME:FG: implement named mapper concept based on business path to allow browser caching and distributed media server
-		//TODO:gs may use the same contentMapper if users clicks again on the same singlePage, now each time a new Mapper gets created and 
-		//therefore the browser can not reuse the cached elements
 		if(persistMapper) {
 			contentMapper = new SerializableIFrameDeliveryMapper(rootDir, false, enableTextmarking, adjusteightAutomatically,
 					iFrameId, null /*customCssURL*/, themeBaseUri, null /*customHeaderContent*/);
@@ -321,7 +317,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		} else if (uri.startsWith("http")) {
 			// http and https urls are absolute urls that do not need be fetched from
 			// the OLAT server, they retrieve their content from an external content server
-			//TODO:gs a if an absolut uri is loaded the iframe should size to the default site, see functions.js stuff
 			myContent.contextPut("isAbsoluteURI", Boolean.TRUE);
 		} else {
 			// Check for problematic URI that start with '/' (would lead to a logout (login screen)).
@@ -386,10 +381,6 @@ public class IFrameDisplayController extends BasicController implements GenericE
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == eventVC) {

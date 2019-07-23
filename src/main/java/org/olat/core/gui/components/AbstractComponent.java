@@ -247,8 +247,6 @@ public abstract class AbstractComponent implements Component {
 
 			// clear the event for memory reasons, used only for debugging reasons in
 			// case of an error
-			// TODO:fj: may be useful for admin purposes
-			// FIXME:fj:a rework events so we can get useful info out of it
 			latestFiredEvent = null;
 
 		}

@@ -29,10 +29,6 @@ import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for PopupBrowserWindowController
- * 
- * <P>
  * Initial Date:  26.07.2007 <br>
  * @author patrickb
  */

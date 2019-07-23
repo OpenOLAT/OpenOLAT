@@ -36,9 +36,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 
 /**
- * Description: <BR>
- * TODO: Class Description for DelegatingRenderer <P/>
- * 
  * @author Felix Jost
  */
 public class DelegatingRenderer implements ComponentRenderer {

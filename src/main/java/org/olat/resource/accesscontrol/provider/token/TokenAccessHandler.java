@@ -48,11 +48,6 @@ import org.olat.resource.accesscontrol.ui.AbstractConfigurationMethodController;
 import org.olat.resource.accesscontrol.ui.FormController;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for TokenAccessHandler
- * 
- * <P>
  * Initial Date:  18 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

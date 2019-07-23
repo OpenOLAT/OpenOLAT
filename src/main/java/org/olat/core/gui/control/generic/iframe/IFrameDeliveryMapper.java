@@ -285,10 +285,6 @@ public class IFrameDeliveryMapper implements Mapper {
 	 *            to framework; false: don't do this check
 	 * @return
 	 */
-	/**
-	 * TODO:gs make more stable by only adding some js stuff to the end of the page. First check if document.height is ready
-	 * when puttings js to the end or menachism like ext.onReady is needed
-	 */
 	private String injectJavaScript(String page, String mimetype, boolean addCheckForInlineEvents, boolean anchorFirefoxWorkaround) {
 		//do not use parser and just check for css and script stuff myself and append just before body and head
 		SimpleHtmlParser parser = new SimpleHtmlParser(page);

@@ -358,7 +358,6 @@ public class WebDAVDispatcherImpl
         if (!super.checkIfHeaders(request, response, resource))
             return false;
 
-        // TODO : Checking the WebDAV If header
         return true;
     }
 
@@ -744,9 +743,7 @@ public class WebDAVDispatcherImpl
         if (req.getContentLength() > 0) {
             DocumentBuilder documentBuilder = getDocumentBuilder(req);
             try {
-                // Document document =
                 documentBuilder.parse(new InputSource(req.getInputStream()));
-                // TODO : Process this request body
                 resp.setStatus(WebdavStatus.SC_NOT_IMPLEMENTED);
                 return;
 

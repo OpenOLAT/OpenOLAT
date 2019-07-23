@@ -196,10 +196,8 @@ public class TranslationDevManager {
 	}
 
 	private void checkForEmptyPropertyAndDelete(Locale locale, String bundleName) {
-		//TODO: RH: check if necessary although, as saveOrUpdateProperties does already delete properties
 		if (i18nMgr.getPropertiesWithoutResolvingRecursively(locale, bundleName).isEmpty()) {
 			i18nMgr.deleteProperties(locale, bundleName);
-			// TODO: RH: .cvs anpassen!
 		}
 	}
 
@@ -208,7 +206,7 @@ public class TranslationDevManager {
 		deleteKey(null, originBundleName, I18nManager.METADATA_BUNDLE_PRIORITY_KEY);
 		// copy all local string files and also the metadata file
 		try {
-			File sourceDir =  getBundlePath(originBundleName);
+			File sourceDir = getBundlePath(originBundleName);
 			File destDir = getBundlePath(targetBundleName);
 			copyDirectory(sourceDir, destDir);
 		} catch (IOException e) {
@@ -729,8 +727,6 @@ public class TranslationDevManager {
 			}
 			path.delete();
 		}
-		// TODO: RH: remove .cvs
-		// handle metadata
 	}
 
 	private File getBundlePath(String bundleName){
@@ -741,11 +737,6 @@ public class TranslationDevManager {
 			return deFile.getParentFile();
 		}
 		return null;
-//		I18nManager.getInstance().
-//		bundleName = bundleName.replace('.', '/');
-//		String relPath = "/" + bundleName + "/" + I18nManager.I18N_DIRNAME + "/";
-//		String bundlePath = getTransToolCoreLanguagesSrcDir().getAbsolutPath() + relPath;
-//		return new File(bundlePath);
 	}
 
 	private void copyDirectory(File sourceDir, File destDir) throws IOException {

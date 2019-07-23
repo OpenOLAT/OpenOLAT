@@ -105,8 +105,6 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	private final SimpleProbe mrtgProbeJMSProcessingTime_ = new SimpleProbe();
 	
 	private final SimpleProbe mrtgProbeJMSEnqueueTime_ = new SimpleProbe();
-	//final LinkedList<Object> incomingMessagesQueue_ = new LinkedList<Object>();
-	//private final static int LIMIT_ON_INCOMING_MESSAGE_QUEUE = 200;
 	
 	private ExecutorService jmsExecutor;
 	
@@ -321,7 +319,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 				final long deliveryTime = receiveTime - jmsTimestamp;
 				if (deliveryTime>1500) {
 					// then issue a log statement
-					log.warn("message received with long delivery time (longer than 1500ms: "+deliveryTime+"): "+recMsg);
+					log.warn("message received with long delivery time (longer than 1500ms: {}): {}", deliveryTime, recMsg);
 				}
 				mrtgProbeJMSDeliveryTime_.addMeasurement(deliveryTime);
 			}
@@ -331,17 +329,15 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			
 			// message with destination and source both having this vm are ignored here, since they were already 
 			// "inline routed" when having been sent (direct call within the vm).
-			//TODO jms if (!fromSameNode) {
-				// distribute the unmarshalled event to all JVM wide listeners for this channel.
-				doFire(event, ores);
-			//TODO jms } // else message already sent "in-vm"
+			// distribute the unmarshalled event to all JVM wide listeners for this channel.
+			doFire(event, ores);
 			
 			// stats
 			final long doneTime = System.currentTimeMillis();
 			final long processingTime = doneTime - receiveTime;
 			if (processingTime>500) {
 				// then issue a log statement
-				log.warn("message received with long processing time (longer than 500ms: "+processingTime+"): "+recMsg);
+				log.warn("message received with long processing time (longer than 500ms: {}): {}", processingTime, recMsg);
 			}
 			mrtgProbeJMSProcessingTime_.addMeasurement(processingTime);
 		} catch (Error er) {

@@ -35,9 +35,7 @@ import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.IQSURVCourseNode;
 /**
- * 
- * Description:<br>
- * TODO: guido Class Description for IQSURVCourseNodeConfiguration
+ * @author guido
  */
 public class IQSURVCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	

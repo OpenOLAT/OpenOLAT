@@ -92,7 +92,6 @@ public class CPFile extends DefaultElement implements CPNode {
 		CPFile copy = (CPFile) super.clone();
 		// Don't copy metadata, since we don't edit them anyway.
 		// Make a copy of the leaf
-		// TODO:GW Copy the leaf
 		VFSContainer parentContainer = file.getParentContainer();
 		String newName = VFSManager.similarButNonExistingName(parentContainer, file.getName());
 		VFSLeaf leafCopy = parentContainer.createChildLeaf(newName);
@@ -124,7 +123,6 @@ public class CPFile extends DefaultElement implements CPNode {
 		while (children.hasNext()) {
 			Element child = children.next();
 			if (child.getName().equals(CPCore.METADATA)) {
-				// TODO: implement METADATA
 				metadata = new CPMetadata(child);
 			} else {
 				throw new OLATRuntimeException(CPOrganizations.class, "Invalid IMS-Manifest ( only <metadata> element under <file> is allowed )",

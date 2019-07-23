@@ -195,8 +195,6 @@ public class CPOrganization extends DefaultElement implements CPNode {
 			item = it.next();
 			if (item.getIdentifier().equals(id)) { return item; }
 		}
-		// TODO: should it throw an exception, if no element with the given
-		// identifier is found ???
 		return null;
 	}
 

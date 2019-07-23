@@ -168,7 +168,6 @@ public class DialogBoxController extends BasicController {
 	
 	/**
 	 * attach a object to the dialog which you later retrieve.
-	 * TODO:pb:example for this
 	 * @param userObject
 	 */
 	public void setUserObject(Object userObject){

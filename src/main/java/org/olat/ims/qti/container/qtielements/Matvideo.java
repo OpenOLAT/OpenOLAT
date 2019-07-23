@@ -142,10 +142,6 @@ public class Matvideo extends GenericQTIElement {
 			buffer.append("<param name=\"autoStart\" value=\"true\">");
 			buffer.append("<param name=\"showControls\" value=\"true\">");
 			buffer.append("<param name=\"loop\" value=\"false\">");
-			//TODO:gs:a the following application type forces the browser to use windows media player
-			// which is broken in version 10 as it can produces a file not found (404) error on the server in together with firefox.
-			// workaround is to let the browser choose which plugin to load. See: OLAT-1364
-			//buffer.append("<embed type=\"application/x-mplayer2\" pluginspage=\"http://microsoft.com/windows/mediaplayer/en/download/\"")
 			buffer.append("<embed ")
 				.append(" width=\"").append(width).append("\" height=\"").append(height).append("\" src=\"");
 			if (uri.startsWith("http://") || uri.startsWith("https://"))

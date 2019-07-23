@@ -875,8 +875,6 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 		} else if(row.isPendingAssignment()) {
 			if(secCallback.canNewAssignment()) {
 				doEditAssignment(ureq, row);
-			} else {
-				//TODO portfolio
 			}
 		}
 	}

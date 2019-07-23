@@ -33,10 +33,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.navigation.SiteInstance;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for BaseFullWebappControllerParts
- * 
- * <P>
  * Initial Date:  29.01.2008 <br>
  * @author patrickb
  */

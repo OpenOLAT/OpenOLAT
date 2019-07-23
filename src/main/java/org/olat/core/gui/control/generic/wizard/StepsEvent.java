@@ -28,22 +28,16 @@ package org.olat.core.gui.control.generic.wizard;
 import org.olat.core.gui.control.Event;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for StepsEvent
- * 
- * <P>
  * Initial Date:  11.01.2008 <br>
  * @author patrickb
  */
 public class StepsEvent extends Event {
-	/**
-	 * 
-	 */
+
 	private static final long serialVersionUID = -3050157198786051420L;
 	
-	public final static StepsEvent ACTIVATE_NEXT = new StepsEvent("next", PrevNextFinishConfig.NOOP);
-	public final static StepsEvent ACTIVATE_PREVIOUS = new StepsEvent("prev", PrevNextFinishConfig.NOOP);
-	public final static StepsEvent INFORM_FINISHED = new StepsEvent("finished", PrevNextFinishConfig.NOOP);
+	public static final StepsEvent ACTIVATE_NEXT = new StepsEvent("next", PrevNextFinishConfig.NOOP);
+	public static final StepsEvent ACTIVATE_PREVIOUS = new StepsEvent("prev", PrevNextFinishConfig.NOOP);
+	public static final StepsEvent INFORM_FINISHED = new StepsEvent("finished", PrevNextFinishConfig.NOOP);
 	
 	private PrevNextFinishConfig pnfConf;
 

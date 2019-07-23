@@ -298,7 +298,7 @@ public class RepositoryEntriesTest extends OlatRestTestCase {
 		assertNotNull(re.getOlatResource());
 		assertEquals("CP demo", re.getDisplayname());
 		Assert.assertTrue(re.isAllUsers());
-		Assert.assertFalse(re.isGuests());//TODO repo access
+		Assert.assertFalse(re.isGuests());
 		
 		conn.shutdown();
 	}

@@ -50,10 +50,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResourceManager;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for DisposedCourseRestartController
- * 
- * <P>
  * Initial Date: 19.04.2008 <br>
  * 
  * @author patrickb
@@ -74,19 +70,11 @@ public class DisposedCourseRestartController extends BasicController {
 		panel = putInitialPanel(initialContent);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == restartLink) {

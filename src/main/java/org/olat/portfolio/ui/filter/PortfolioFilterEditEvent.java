@@ -28,10 +28,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.portfolio.model.EPFilterSettings;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for PortfolioFilterChangeEvent
- * 
- * <P>
  * Initial Date:  15.07.2010 <br>
  * @author rhaag
  */

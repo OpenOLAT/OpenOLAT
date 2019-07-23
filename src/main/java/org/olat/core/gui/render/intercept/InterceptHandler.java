@@ -26,12 +26,7 @@
 package org.olat.core.gui.render.intercept;
 
 
-
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for Trans
- * 
- * <P>
  * Initial Date: 08.01.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */

@@ -61,9 +61,7 @@ import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 /**
- * 
- * Description:<br>
- * TODO: guido Class Description for EditScoreCalculationExpertForm
+ * @author guido
  * 
  */
 class EditScoreCalculationExpertForm extends FormBasicController {

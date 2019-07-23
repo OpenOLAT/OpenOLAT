@@ -139,7 +139,6 @@ public class CPResource extends DefaultElement implements CPNode {
 				dep.setParentElement(this);
 				dependencies.add(dep);
 			} else if (child.getName().equals(CPCore.METADATA)) {
-				// TODO: implement METADATA
 				metadata = new CPMetadata(child);
 				metadata.setParentElement(this);
 			} else {
@@ -160,12 +159,6 @@ public class CPResource extends DefaultElement implements CPNode {
 
 	@Override
 	public void buildDocument(Element parentEl) {
-		// String base = "";
-		// if(xmlbase != null && !xmlbase.equals("")) base="
-		// xml:base=\""+xmlbase+"\"";
-
-		// TODO: xml base imlement !!!
-
 		DefaultElement resourceElement = new DefaultElement(CPCore.RESOURCE);
 
 		resourceElement.addAttribute(CPCore.IDENTIFIER, identifier);
@@ -215,10 +208,6 @@ public class CPResource extends DefaultElement implements CPNode {
 	 * from the FileSystem
 	 */
 	public void removeFromManifest() {
-		// TODO:GW For now, only the page itself is deleted. All other linked files
-		// are not touched since they could be part of a different resource as well.
-		// It'd be neccessary to check this before deleting a file.
-		// removeLinkedFiles();
 		removeReferencedFile();
 		parent.removeChild(this.identifier);
 	}

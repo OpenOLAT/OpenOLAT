@@ -784,7 +784,6 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 					StringOutput result;
 					synchronized(render_mutex) { //o_clusterOK by:fj
 						// render now
-						//TODO state-less 
 						if (incTimestamp) {
 							timestamp++;
 						}

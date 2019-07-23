@@ -549,10 +549,6 @@ public class StringHelper {
 	 * @return
 	 */
 	public static String check4xMacRoman(String extractedCharset) {
-		//OLAT-1844
-		//TODO:pb: why do http encoding names not match java encoding names?
-		//the encoding name 'x-mac-roman' must be translated to javas 'x-MacRoman'
-		//but it must be x-mac-roman for browser and htmleditor.. weird naming problem.
 		if(extractedCharset == null) return null;
 		if(extractedCharset.toLowerCase().startsWith(X_MAC_ENC)) {
 			String tmp = extractedCharset.substring(6);

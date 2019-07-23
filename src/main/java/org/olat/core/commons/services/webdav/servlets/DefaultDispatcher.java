@@ -490,7 +490,7 @@ public abstract class DefaultDispatcher implements Serializable {
             if (resource.isDirectory()) {
                 if (serveContent) {
                     // Serve the directory browser
-                    renderResult = null;//TODO tomcat render(getPathPrefix(request), resource);
+                    renderResult = null;
                 }
             }
 
@@ -508,7 +508,7 @@ public abstract class DefaultDispatcher implements Serializable {
                     // Output via a writer so can't use sendfile or write
                     // content directly.
                     if (resource.isDirectory()) {
-                        renderResult = null;//render(getPathPrefix(request), resource);
+                        renderResult = null;
                     } else {
                         renderResult = resource.getInputStream();
                     }
@@ -516,7 +516,7 @@ public abstract class DefaultDispatcher implements Serializable {
                 } else {
                     // Output is via an InputStream
                     if (resource.isDirectory()) {
-                        renderResult = null;//render(getPathPrefix(request), resource);
+                        renderResult = null;
                     } else {
                         renderResult = resource.getInputStream();
                     }

@@ -140,7 +140,7 @@ public class ScormCPFileResource extends FileResource {
 			// This makes sure, at least a root node gets created in CPManifestTreeModel.	
 			XPath meta = rootElement.createXPath("//ns:organization");
 			meta.setNamespaceURIs(nsuris);
-			Element orgaEl = (Element) meta.selectSingleNode(rootElement); // TODO: accept several organizations?
+			Element orgaEl = (Element) meta.selectSingleNode(rootElement);
 			if (orgaEl == null) {
 				return false;
 			}
@@ -175,7 +175,7 @@ public class ScormCPFileResource extends FileResource {
 				String identifier = item.attributeValue("identifier");
 				//check if identifiers are unique, reject if not so
 				if (!set.add(identifier)) {
-					return false;//TODO:create special error message for non unique ids
+					return false;
 				}
 			}
 			

@@ -36,9 +36,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.ValidationStatus;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for FormSubmit
- * <P>
  * Initial Date: 24.11.2006 <br>
  * 
  * @author patrickb
@@ -61,15 +58,12 @@ public class FormSubmit extends FormButton implements Submit{
 		this.action = FormEvent.ONCLICK;
 	}
 
+	@Override
 	protected void rootFormAvailable(){
 		String formItemId = getFormItemId();
 		component = new FormButtonComponent(formItemId, this,true);
 	}
 	
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponentImpl#doDispatchFormRequest(org.olat.core.gui.UserRequest,
-	 *      long[], int)
-	 */
 	@Override
 	public void dispatchFormRequest(UserRequest ureq) {
 		if(getRootForm().getAction() == FormEvent.ONCLICK){
@@ -78,23 +72,18 @@ public class FormSubmit extends FormButton implements Submit{
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponentImpl#rememberFormRequest(org.olat.core.gui.UserRequest,
-	 *      long[], int)
-	 */
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
 		// no values with submit to be evaluated
 		getComponent().setDirty(true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#validate()
-	 */
+	@Override
 	public void validate(List<ValidationStatus> statusDescriptinons) {
 		// submit is not validating itself
 	}
 
+	@Override
 	protected Component getFormItemComponent() {
 		return component;
 	}
@@ -104,6 +93,7 @@ public class FormSubmit extends FormButton implements Submit{
 	 * for submit renderer only
 	 * @return
 	 */
+	@Override
 	String getTranslated(){
 		return getTranslator().translate(i18nKey);
 	}

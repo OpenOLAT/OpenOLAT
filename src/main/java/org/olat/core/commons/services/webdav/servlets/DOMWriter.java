@@ -65,15 +65,15 @@ public class DOMWriter {
             // print document
             case Node.DOCUMENT_NODE:
                 if (!canonical) {
-                    String Encoding = getWriterEncoding();
-                    if (Encoding.equalsIgnoreCase("DEFAULT"))
-                        Encoding = "UTF-8";
-                    else if (Encoding.equalsIgnoreCase("Unicode"))
-                        Encoding = "UTF-16";
+                    String encoding = getWriterEncoding();
+                    if (encoding.equalsIgnoreCase("DEFAULT"))
+                        encoding = "UTF-8";
+                    else if (encoding.equalsIgnoreCase("Unicode"))
+                        encoding = "UTF-16";
                     else
-                        Encoding = null;//TODO webdav MIME2Java.reverse(Encoding);
+                        encoding = null;
 
-                    out.println("<?xml version=\"1.0\" encoding=\"" + Encoding +
+                    out.println("<?xml version=\"1.0\" encoding=\"" + encoding +
                             "\"?>");
                 }
                 print(((Document) node).getDocumentElement());

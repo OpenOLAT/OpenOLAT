@@ -30,21 +30,15 @@ import java.util.Locale;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormLinkImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.StaticTextElementImpl;
 import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.Util;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for BasicStep
- * 
- * <P>
  * Initial Date:  18.01.2008 <br>
  * @author patrickb
  */
@@ -69,15 +63,12 @@ public abstract class BasicStep implements Step {
 		this.translator = translator;
 	}
 	
-	public abstract PrevNextFinishConfig getInitialPrevNextFinishConfig();
-
-	public abstract StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form);
-
 	/**
 	 * generates a StaticTextElement with i18n key defined, or returns null if 
 	 * i18n key undefined.
 	 * @see org.olat.core.gui.control.generic.wizard.Step#getStepShortDescription()
 	 */
+	@Override
 	public FormItem getStepShortDescription(){
 		if(i18nStepDescription == null){
 			return null;

@@ -41,10 +41,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.WebappHelper;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for GuiDemoFlexiForm
- * 
- * <P>
  * Initial Date: 06.09.2007 <br>
  * 
  * @author patrickb

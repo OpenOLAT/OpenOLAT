@@ -367,7 +367,7 @@ public class FormJSHelper {
 	 * creates the JS fragment needed for the {@link #getInlineEditOkCancelHTML(StringOutput, String, String, String)} HTML fragment.
 	 * @param sb where to append
 	 * @param id formItemId of the InlineEdit FormItem
-	 * @param oldHtmlValue escaped HTML value TODO:2009-09-26:pb: escaped values appear as &apos; and are not escaped back.
+	 * @param oldHtmlValue escaped HTML value
 	 * @param rootForm to extract the ID of the Form where to submit to.
 	 */
 	public static void getInlineEditOkCancelJS(StringOutput sb, String id, String oldHtmlValue, Form rootForm) {

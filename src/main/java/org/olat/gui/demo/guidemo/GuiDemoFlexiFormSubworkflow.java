@@ -40,9 +40,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for GuiDemoFlexiFormSubworkflow
- * <P>
  * Initial Date: 10.09.2007 <br>
  * 
  * @author patrickb
@@ -81,17 +78,11 @@ public class GuiDemoFlexiFormSubworkflow extends FormBasicController {
 		// but typically initForm(..) is the last call in the constructor.
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		// nothing to dispose
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// nothing to do
@@ -220,13 +211,13 @@ public class GuiDemoFlexiFormSubworkflow extends FormBasicController {
 
 		@Override
 		protected void doDispose() {
-			// TODO Auto-generated method stub
+			//
 			
 		}
 
 		@Override
 		protected void formOK(UserRequest ureq) {
-			// TODO Auto-generated method stub	
+			//
 		}
 		
 		@Override

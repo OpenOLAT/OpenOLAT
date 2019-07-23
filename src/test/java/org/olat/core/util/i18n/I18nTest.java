@@ -211,18 +211,18 @@ public class I18nTest extends OlatTestCase {
 		}
 	}
 	
-	@Test public void testMergePackageTask(){
+	@Test
+	public void testMergePackageTask(){
 		if (i18nModule.isTransToolEnabled()) {
 			prepareDevToolTests();
 			tDMgr.mergePackageTask(testSourceBundle, testTargetBundle);
 			i18nMgr.clearCaches();
 			assertTrue(i18nMgr.getPropertiesWithoutResolvingRecursively(null, testSourceBundle).isEmpty());
-			//TODO: manipulate source/target first, merge and check if all is in target!
-			//try to merge existing key
 		}
 	}
 	
-	@Test public void testRenameLanguageTask(){
+	@Test
+	public void testRenameLanguageTask(){
 		if (i18nModule.isTransToolEnabled()) {
 			prepareDevToolTests();
 			// create source
@@ -244,13 +244,13 @@ public class I18nTest extends OlatTestCase {
 		}
 	}
 	
-	//TODO: RH: remove this or really test for correct finding?!
-	@Test public void testGetDouplicateKeys(){
+	@Test
+	public void testGetDouplicateKeys(){
 		tDMgr.getDouplicateKeys();		
 	}
 	
-//TODO: RH: remove this or really test for correct finding?!
-	@Test public void testGetDouplicateValues(){
+	@Test
+	public void testGetDouplicateValues(){
 		tDMgr.getDouplicateValues();		
 	}
 	

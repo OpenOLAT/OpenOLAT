@@ -34,10 +34,6 @@ import org.olat.core.gui.control.creator.AutoCreator;
 import org.olat.core.gui.control.creator.ControllerCreator;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for DMZContentControllerCreator
- * 
- * <P>
  * Initial Date:  29.01.2008 <br>
  * @author patrickb
  */

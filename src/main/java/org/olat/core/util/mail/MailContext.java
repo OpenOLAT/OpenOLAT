@@ -24,11 +24,6 @@ package org.olat.core.util.mail;
 import org.olat.core.id.OLATResourceable;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for MailContext
- * 
- * <P>
  * Initial Date:  30 mars 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix
  */

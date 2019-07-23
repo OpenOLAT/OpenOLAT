@@ -37,10 +37,6 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for IntegerElement
- * 
- * <P>
  * Initial Date: 22.06.2007 <br>
  * 
  * @author patrickb

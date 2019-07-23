@@ -32,10 +32,6 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for EPCreateTextArtefactStep00
- * 
- * <P>
  * Initial Date: 01.09.2010 <br>
  * 
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
@@ -67,9 +63,7 @@ public class EPCreateTextArtefactStep00 extends BasicStep {
 			stepsRunContext.put("preSelectedStructure", preSelectedStruct);
 		}
 		
-		StepFormController stepI = new EPCreateTextArtefactStepForm00(ureq, windowControl, form, stepsRunContext,
+		return new EPCreateTextArtefactStepForm00(ureq, windowControl, form, stepsRunContext,
 				FormBasicController.LAYOUT_DEFAULT, null, artefact, vfsTemp);
-		return stepI;
 	}
-
 }

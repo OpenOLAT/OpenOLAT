@@ -29,10 +29,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for PopupController
- * 
- * <P>
  * Initial Date:  25.07.2007 <br>
  * @author patrickb
  */

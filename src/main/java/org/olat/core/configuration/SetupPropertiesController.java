@@ -44,10 +44,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
 /**
- * Description:<br>
- * TODO: guido Class Description for SetupPropertiesController
- * 
- * <P>
  * Initial Date:  02.02.2010 <br>
  * @author guido
  */

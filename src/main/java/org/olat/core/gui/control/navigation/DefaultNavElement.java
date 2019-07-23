@@ -27,10 +27,6 @@
 package org.olat.core.gui.control.navigation;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for DefaultNavElement
- * 
- * <P>
  * Initial Date:  19.07.2005 <br>
  *
  * @author Felix Jost

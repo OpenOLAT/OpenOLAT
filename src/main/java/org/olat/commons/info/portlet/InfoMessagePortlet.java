@@ -31,11 +31,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for InfoMessagePortlet
- * 
- * <P>
  * Initial Date:  27 juil. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

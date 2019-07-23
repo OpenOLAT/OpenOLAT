@@ -464,7 +464,6 @@ public class BusinessControlFactory {
 			if(ceStr.startsWith("[path")) {
 				//the %2F make a problem on browsers.
 				//make the change only for path which is generally used
-				//TODO: find a better method or a better separator as |
 				ceStr = ceStr.replace("%2F", "~~");
 			}
 			ceStr = ceStr.replace(':', '/');

@@ -20,11 +20,6 @@
 package org.olat.portfolio.model.structel;
 
 /**
- * 
- * Description:<br>
- * TODO: Class Description for EPDefaultMap
- * 
- * <P>
  * Initial Date:  11.06.2010 <br>
  * @author rhaag, roman.haag@frentix.com, http://www.frentix.com
  */

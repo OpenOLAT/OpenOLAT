@@ -129,7 +129,6 @@ public class NotesPortletRunController extends AbstractPortletRunController<Note
 		
 		putInitialPanel(notesVC);
 		
-    //register for events targeted at this Identity - TODO: LD: use SingleUserEventCenter
 		eventBusThisIdentityOres = OresHelper.createOLATResourceableInstance(Identity.class, getIdentity().getKey());    
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), eventBusThisIdentityOres);
 	}

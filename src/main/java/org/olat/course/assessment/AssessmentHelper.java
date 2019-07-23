@@ -231,7 +231,7 @@ public class AssessmentHelper {
 					return true;
 				}
 			} else if (node instanceof ProjectBrokerCourseNode) {
-				return false;// TODO:cg 28.01.2010 ProjectBroker : no assessment-tool in V1.0 return always false
+				return false;//no assessment-tool in V1.0 return always false
 			} else {
 				return true;
 			}
@@ -367,7 +367,7 @@ public class AssessmentHelper {
 		gtm.setRootNode(node);
 		
 		List<GenericTreeNode> children = addAssessableNodesToList(rootNode);
-		children.forEach((child) -> node.addChild(child));
+		children.forEach(child -> node.addChild(child));
 		return gtm;
 	}
 	
@@ -384,7 +384,7 @@ public class AssessmentHelper {
 				CourseNodeConfiguration nodeconfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
 				node.setIconCssClass(nodeconfig.getIconCSSClass());
 				result.add(node);
-				assessableChildren.forEach((child) -> node.addChild(child));
+				assessableChildren.forEach(child -> node.addChild(child));
 			}
 		}
 		return result;

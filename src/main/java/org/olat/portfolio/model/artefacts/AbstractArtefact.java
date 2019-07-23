@@ -232,7 +232,6 @@ public abstract class AbstractArtefact extends PersistentObject implements Seria
 
 	/**
 	 * Setter of the property <tt>collectionDate</tt>
-	 * TODO: epf: probably not needed, as date comes from persistentobject
 	 * @param collectionDate The collectionDate to set.
 	 * @uml.property name="collectionDate"
 	 */

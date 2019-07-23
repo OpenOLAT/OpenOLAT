@@ -118,7 +118,7 @@ public class MySharedItemsController extends FormBasicController implements Acti
 			MySharedItemRow row = new MySharedItemRow();
 			row.setBinderKey(binder.getKey());
 			row.setBinderTitle(binder.getTitle());
-			row.setLastModified(binder.getLastModified());//TODO max()
+			row.setLastModified(binder.getLastModified());
 			if(binder.getEntry() != null) {
 				row.setCourseDisplayName(binder.getEntry().getDisplayname());
 			}

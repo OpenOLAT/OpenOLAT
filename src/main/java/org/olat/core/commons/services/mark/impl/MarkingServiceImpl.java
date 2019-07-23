@@ -33,10 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Description:<br>
- * TODO: srosse Class Description for MarkingServiceImpl
- * 
- * <P>
  * Initial Date:  9 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
@@ -54,19 +50,16 @@ public class MarkingServiceImpl implements MarkingService {
 
 	@Override
 	public Controller getMarkController(UserRequest ureq, WindowControl wControl, OLATResourceable ores, String subPath, String businessPath) {
-		MarkController controller = new MarkController(ureq, wControl, ores, subPath, businessPath);
-		return controller;
+		return new MarkController(ureq, wControl, ores, subPath, businessPath);
 	}
 
 	@Override
 	public Controller getMarkController(UserRequest ureq, WindowControl wControl, Mark mark) {
-		MarkController controller = new MarkController(ureq, wControl, mark.getOLATResourceable(), mark.getResSubPath(), mark.getBusinessPath());
-		return controller;
+		return new MarkController(ureq, wControl, mark.getOLATResourceable(), mark.getResSubPath(), mark.getBusinessPath());
 	}
 	
 	@Override
 	public Controller getMarkController(UserRequest ureq, WindowControl wControl, Mark mark, MarkResourceStat stat, OLATResourceable ores, String subPath, String businessPath) {
-		MarkController controller = new MarkController(ureq, wControl, mark, stat, ores, subPath, businessPath);
-		return controller;
+		return new MarkController(ureq, wControl, mark, stat, ores, subPath, businessPath);
 	}
 }

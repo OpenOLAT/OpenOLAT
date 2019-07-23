@@ -32,10 +32,6 @@ import org.olat.core.id.CreateInfo;
 import org.olat.core.id.Persistable;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for Publisher
- * 
- * <P>
  * Initial Date:  21.10.2004 <br>
  * @author Felix Jost
  */

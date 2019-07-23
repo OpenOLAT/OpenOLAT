@@ -29,10 +29,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for StepRunnerCallback
- * 
- * <P>
  * Initial Date:  23.01.2008 <br>
  * @author patrickb
  */

@@ -59,10 +59,7 @@ import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
 import org.olat.group.area.BGArea;
 
-/**
- * Description:<br>
- * TODO: guido Class Description for CourseEditorEnvImpl
- */
+
 public class CourseEditorEnvImpl implements CourseEditorEnv {
 	/**
 	 * the course editor tree model used in this editing session, exist only once
@@ -82,8 +79,7 @@ public class CourseEditorEnvImpl implements CourseEditorEnv {
 	private Locale editorLocale;
 	/**
 	 * book keeping of (coursNodeId,
-	 * {conditionexpression,conditionexpression,...}) TODO: do we really need the
-	 * information splitted up by category and condition expression?
+	 * {conditionexpression,conditionexpression,...})
 	 */
 	private Map<String,List<ConditionExpression>> softRefs = new HashMap<>();
 	/**

@@ -90,7 +90,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 
 		XPath meta = rootElement.createXPath("//ns:organization");
 		meta.setNamespaceURIs(nsuris);
-		Element orgaEl = (Element) meta.selectSingleNode(rootElement); // TODO: accept several organizations?
+		Element orgaEl = (Element) meta.selectSingleNode(rootElement);
 		if (orgaEl == null) throw new AssertException("could not find element organization");
 
 		XPath metares = rootElement.createXPath("//ns:resources");

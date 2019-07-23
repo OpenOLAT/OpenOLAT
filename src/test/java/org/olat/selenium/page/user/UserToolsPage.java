@@ -118,7 +118,7 @@ public class UserToolsPage {
 			}
 			OOGraphene.waitNavBarTransition(browser);
 			try {
-				OOGraphene.waitElement(mySettingsClassName, browser);//TODO selenium
+				OOGraphene.waitElement(mySettingsClassName, browser);
 			} catch (Exception e) {
 				log.error("", e);
 			}

@@ -20,10 +20,6 @@
 package org.olat.portfolio.model.structel;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for PortfolioStructurePage
- * 
- * <P>
  * Initial Date:  08.06.2010 <br>
  * @author rhaag
  */

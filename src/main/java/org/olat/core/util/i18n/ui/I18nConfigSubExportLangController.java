@@ -119,14 +119,11 @@ class I18nConfigSubExportLangController extends FormBasicController {
 		submitButton.setEnabled(false); // enable as soon as something is checked
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		Collection<String> toExport = exportLangSelection.getSelectedKeys();
 		logDebug("Following languages selected for export::" + toExport.toString());
-		if (toExport.size() == 0) {
+		if (toExport.isEmpty()) {
 			// should not happen since button disabled
 			return;
 		}
@@ -141,7 +138,6 @@ class I18nConfigSubExportLangController extends FormBasicController {
 					"language download for olatcore webapp framework", true);
 			logDebug("Exporting tmp file::" + exportFile.getAbsolutePath() + " as fileName::" + fileName);
 
-			// TODO open in new window (click invalid)
 			ureq.getDispatchResult().setResultingMediaResource(mediaResource);
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
@@ -154,7 +150,7 @@ class I18nConfigSubExportLangController extends FormBasicController {
 			fireEvent(ureq, Event.CANCELLED_EVENT);
 
 		} else if (source == exportLangSelection) {
-			if (exportLangSelection.getSelectedKeys().size() == 0) {
+			if (exportLangSelection.getSelectedKeys().isEmpty()) {
 				submitButton.setEnabled(false);
 			} else {
 				submitButton.setEnabled(true);
@@ -162,12 +158,8 @@ class I18nConfigSubExportLangController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-	// nothing to dispose
+		//
 	}
-
 }

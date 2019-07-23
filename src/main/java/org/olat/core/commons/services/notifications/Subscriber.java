@@ -34,10 +34,6 @@ import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 
 /**
- * Description: <br>
- * TODO: Felix Jost Class Description for Subscriber
- * <P>
- * 
  * Initial Date: 21.10.2004 <br>
  * @author Felix Jost
  */

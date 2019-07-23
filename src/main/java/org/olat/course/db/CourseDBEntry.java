@@ -23,11 +23,6 @@ package org.olat.course.db;
 import org.olat.core.id.Identity;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for CourseDBEntry
- * 
- * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

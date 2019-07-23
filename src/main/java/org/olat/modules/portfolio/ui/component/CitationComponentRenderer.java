@@ -53,7 +53,7 @@ public class CitationComponentRenderer extends DefaultComponentRenderer {
 		String volume = getVolumeAPA(citation.getVolume());
 		String series = getSeries(citation.getSeries());
 		String date = getDate(dcData.getDate());
-		String dateAdded = "";//TODO portfolio getDateAdded(citation.getDateAdded());
+		String dateAdded = "";
 
 		sb.append("<div class='item ").append(citation.getItemType().name()).append("'><div class='bib'>");
 		switch (citation.getItemType()) {
@@ -106,7 +106,6 @@ public class CitationComponentRenderer extends DefaultComponentRenderer {
 	}
 	
 	public static String getAuthors(String authors/*, String d, boolean apa*/) {
-		//TODO portfolio
 		return authors;
 	}
 	

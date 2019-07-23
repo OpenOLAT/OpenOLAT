@@ -215,7 +215,7 @@ public class AssessmentContext implements Serializable {
 				Element el_sourcebankref = (Element) el_selection.selectSingleNode("sourcebank_ref");
 				if (el_sourcebankref == null) {
 					// no reference to sourcebank, -> take internal one, but dtd disallows
-					// it!?? TODO
+					// it!??
 					/*
 					 * 2:27 PM] <felix.jost> aus ims qti sao: [2:27 PM] <felix.jost> 3.2.1
 					 * <sourcebank_ref> Description: Identifies the objectbank to which

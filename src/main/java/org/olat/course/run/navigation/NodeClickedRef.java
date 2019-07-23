@@ -33,7 +33,6 @@ import org.olat.course.nodes.CourseNode;
 
 /**
  * Description: <br>
- * TODO: Felix Jost Class Description for NodeClickedResult
  * <P>
  * useful usage of this class: <br>
  * 1. handled by subtreelistener? yes? break : continue 2. check if visible ->

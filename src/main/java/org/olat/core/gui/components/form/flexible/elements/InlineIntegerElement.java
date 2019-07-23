@@ -25,10 +25,6 @@
 package org.olat.core.gui.components.form.flexible.elements;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for InlineIntegerElement
- * 
- * <P>
  * Initial Date:  07.11.2009 <br>
  * @author patrickb
  */

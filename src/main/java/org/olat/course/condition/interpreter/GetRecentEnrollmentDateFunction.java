@@ -97,11 +97,7 @@ public class GetRecentEnrollmentDateFunction extends AbstractFunction {
 		/*
 		 * the real function evaluation which is used during run time
 		 */		
-		CourseNode node = getUserCourseEnv().getCourseEnvironment().getRunStructure().getNode(nodeId);	
-		// invalid node id's return still a valid double
-		//TODO fg: check with editor tree model DONE: above checks ensure correct node references
-		//if (node == null) return new Double(Double.NEGATIVE_INFINITY);
-
+		CourseNode node = getUserCourseEnv().getCourseEnvironment().getRunStructure().getNode(nodeId);
 		CoursePropertyManager pm = getUserCourseEnv().getCourseEnvironment().getCoursePropertyManager();
 		Identity identity = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 		
@@ -112,12 +108,13 @@ public class GetRecentEnrollmentDateFunction extends AbstractFunction {
 			return Double.valueOf(firstTimeMillis);
 		} else {
 			// what to do in case of no date available??? -> return date in the future
-			return new Double(Double.POSITIVE_INFINITY);
+			return Double.valueOf(Double.POSITIVE_INFINITY);
 		}
 	}
 
+	@Override
 	protected Object defaultValue() {
-		return new Double(Double.MIN_VALUE);
+		return Double.valueOf(Double.MIN_VALUE);
 	}
 
 }

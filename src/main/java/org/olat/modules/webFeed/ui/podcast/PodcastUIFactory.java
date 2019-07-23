@@ -58,7 +58,6 @@ public class PodcastUIFactory extends FeedUIFactory {
 		setTranslator(locale);
 	}
 
-	// TODO:GW comments (or refactor?)
 	public static PodcastUIFactory getInstance(Locale locale) {
 		return new PodcastUIFactory(locale);
 	}

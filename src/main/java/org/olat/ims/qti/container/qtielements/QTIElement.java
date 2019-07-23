@@ -47,7 +47,7 @@ public interface QTIElement {
 	/**
 	 * Render to HTML
 	 * 
-	 * @param buffer TODO
+	 * @param buffer
 	 * @param ri
 	 */
 	public void render(StringBuilder buffer, RenderInstructions ri);

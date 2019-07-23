@@ -137,10 +137,6 @@ class PublishStep00 extends BasicStep {
 	}
 
 	/**
-	 * Description:<br>
-	 * TODO: patrickb Class Description for PublishStep00Form
-	 * 
-	 * <P>
 	 * Initial Date: 18.01.2008 <br>
 	 * 
 	 * @author patrickb
@@ -167,7 +163,6 @@ class PublishStep00 extends BasicStep {
 			// nothing to dispose
 		}
 		
-		@SuppressWarnings("synthetic-access")
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
 			//

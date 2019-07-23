@@ -106,9 +106,6 @@ public class SectionParser implements IParser {
 			}
 			section.setSectionfeedbacks(feedbacks);
 			 
-			// OUTCOMES_PROCESSING
-			// TODO: maybe we should use the OutcomesProcessing object and parser here? Same as on
-			// assessment level?
 			QTIObject outcomes_processing = (QTIObject)parserManager.parse(element.element("outcomes_processing"));
 			section.setOutcomes_processing(outcomes_processing);
 			

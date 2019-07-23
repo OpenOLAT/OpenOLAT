@@ -34,9 +34,6 @@ import org.olat.core.util.Util;
 import org.olat.group.right.BGRightManager;
 
 /**
- * Description:<BR/>
- * TODO: Class Description for CourseRights
- * 
  * Initial Date:  Aug 24, 2004
  *
  * @author gnaegi 

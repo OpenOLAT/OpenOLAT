@@ -322,8 +322,6 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	
 	/**
 	 * DO NOT USE THE ONCHANGE EVENT with TEXTFIELDS!
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#addActionListener(org.olat.core.gui.control.Controller, int)
-	 * TODO: add an onkeypress listener which will post do background instead, this could then also be used for an autocomplete textfield
 	 */
 	@Override
 	public void addActionListener(int action) {

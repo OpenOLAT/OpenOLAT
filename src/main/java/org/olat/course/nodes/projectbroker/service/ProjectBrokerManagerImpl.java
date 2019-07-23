@@ -636,7 +636,6 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	public List<Project> getProjectsOf(Identity identity, Long projectBrokerId) {
 		List<Project> myProjects = new ArrayList<>();
 		List<Project> allProjects = getProjectListBy(projectBrokerId);
-		//TODO: for better performance should be done with sql query instead of a loop
 		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
 			if (businessGroupService.hasRoles(identity, project.getProjectGroup(), GroupRoles.participant.name()) ) {
@@ -655,7 +654,6 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	public List<Project> getCoachedProjectsOf(Identity identity, Long projectBrokerId) {
 		List<Project> myProjects = new ArrayList<>();
 		List<Project> allProjects = getProjectListBy(projectBrokerId);
-		//TODO: for better performance should be done with sql query instead of a loop
 		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
 			if (businessGroupService

@@ -302,8 +302,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		
 		String repoSoftkey = config.getStringValue(CONFIG_KEY_REPOSITORY_SOFTKEY);
 		if (!StringHelper.containsNonWhitespace(repoSoftkey)) return null;
-		
-		//TODO uh soft deletes?
+
 		return RepositoryManager.getInstance().lookupRepositoryEntryBySoftkey(repoSoftkey, false);
 	}
 	

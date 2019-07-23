@@ -240,7 +240,6 @@ public class OOGraphene {
 	
 	public static void nextStep(WebDriver browser) {
 		clickAndWait(wizardNextBy, browser);
-		//TODO moveTo modal-footer???
 	}
 	
 	public static void finishStep(WebDriver browser) {

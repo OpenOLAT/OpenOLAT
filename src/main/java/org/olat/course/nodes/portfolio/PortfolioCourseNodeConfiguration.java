@@ -34,11 +34,6 @@ import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.portfolio.PortfolioModule;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for PortfolioCourseNodeConfiguration
- * 
- * <P>
  * Initial Date:  6 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

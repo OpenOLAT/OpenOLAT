@@ -268,10 +268,6 @@ public class MailTest extends OlatTestCase {
 			System.out.println("MailTest.testMailAttachments Url1=" + MailTest.class.getResource("MailTest.class") );
 			file1 = new File(MailTest.class.getResource("MailTest.class").toURI());
 			attachments[0] = file1;
-// TODO: cg Properties file is in olat_core.jar and not be lookup as resource (jar:file:...)
-//			System.out.println("MailTest.testMailAttachments Url2=" + MailTest.class.getResource("_i18n/LocalStrings_de.properties") );	
-//			file2 = new File(MailTest.class.getResource("_i18n/LocalStrings_de.properties").toURI());
-//			attachments[1] = file2;
 		} catch (URISyntaxException e) {
 			fail("ups, can't get testfiles from local path: MailTest.class and _i18n/LocalStrings_de.properties");
 		}

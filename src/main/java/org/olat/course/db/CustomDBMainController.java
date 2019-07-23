@@ -29,11 +29,6 @@ import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.course.ICourse;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for CustomDBMainController
- * 
- * <P>
  * Initial Date:  7 avr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

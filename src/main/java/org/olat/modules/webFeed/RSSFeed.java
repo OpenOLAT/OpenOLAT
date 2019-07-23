@@ -67,7 +67,6 @@ public class RSSFeed extends SyndFeedImpl {
 		// (explicitly) allowed to contain html tags.
 		String strippedDescription = FilterFactory.getHtmlTagsFilter().filter(feed.getDescription());
 		strippedDescription = strippedDescription == null? "": strippedDescription;
-		// TODO: remove when filter does it
 		strippedDescription = strippedDescription.replaceAll("&nbsp;", " ");
 		setDescription(strippedDescription);
 		setLink(helper.getJumpInLink(feed, null));

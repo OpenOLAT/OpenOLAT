@@ -769,7 +769,6 @@ function setFormDirty(formId) {
 	// fetch the form and the forms submit button is identified via the olat 
 	// form submit name
 	var myForm = document.getElementById(formId);
-	//TODO:gs:a why not directly accessing the submit button by an id. name="olat_fosm" send additional parameter which is unused. OLAT-1363
 	if (myForm != null) {
 		var mySubmit = myForm.olat_fosm_0;
 		if(mySubmit == null){

@@ -45,7 +45,6 @@ public class PropFoundEvent extends Event {
 	 * @param prop found property
 	 */
 	public PropFoundEvent(Property prop) {
-		//TODO:as:b make a public constant and check on that constant in the controllers 
 		super("PropFound");
 		this.prop = prop;
 	}

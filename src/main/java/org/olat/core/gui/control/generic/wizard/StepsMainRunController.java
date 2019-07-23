@@ -181,11 +181,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		getWindowControl().getWindowBackOffice().removeCycleListener(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 	// unused
@@ -210,8 +205,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 		} else if (source == nextButton) {
 			// submit and let current unsaved step do its work
 			flc.getRootForm().submitAndNext(ureq);
-			//getWindowControl().getWindowBackOffice()
-			//	.sendCommandTo(new JSCommand("try { o_scrollToElement('.o_wizard.modal.show.in'); } catch(e){ }"));
 			getWindowControl().getWindowBackOffice()
 				.sendCommandTo(new ScrollTopCommand());
 			// the current step decides whether to proceed to the next step or
@@ -348,7 +341,6 @@ public class StepsMainRunController extends FormBasicController implements Gener
 				doAfterDispatch = true;
 				// activate next event on source
 				Step current = steps.peek();
-				// TODO:pb detach previous from "submit" cycle
 				nextStep = current.nextStep();
 				if(nextStep == Step.NOSTEP) {
 					//next but no more step -> finish

@@ -22,9 +22,6 @@ package org.olat.portfolio.model.structel;
 import java.util.Date;
 
 /** 
- * Description:<br>
- * TODO: rhaag Class Description for PortfolioStructureStructuredMap
- * <P>
  * Initial Date:  08.06.2010 <br>
  * @author rhaag
  */

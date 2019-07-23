@@ -167,7 +167,7 @@ public class CalendarPage {
 	public CalendarPage save() {
 		By saveBy = By.cssSelector("fieldset.o_sel_cal_entry_form button.btn.btn-primary span");
 		OOGraphene.waitElement(saveBy, 5, browser);
-		OOGraphene.clickAndWait(saveBy, browser);//TODO selenium
+		OOGraphene.clickAndWait(saveBy, browser);
 		return this;
 	}
 	

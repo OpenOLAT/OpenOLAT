@@ -398,8 +398,8 @@ public class OpenXMLWorkbook implements Closeable {
 			//TitlesOfParts
 			writer.writeStartElement("TitlesOfParts");
 			writer.writeStartElement("vt:vector");
-			writer.writeAttribute("size", "1");//TODO
-			writer.writeAttribute("baseType", "lpstr");//TODO
+			writer.writeAttribute("size", "1");
+			writer.writeAttribute("baseType", "lpstr");
 			writer.writeStartElement("vt:lpstr");
 			writer.writeCharacters("Sheet 1");
 			writer.writeEndElement();

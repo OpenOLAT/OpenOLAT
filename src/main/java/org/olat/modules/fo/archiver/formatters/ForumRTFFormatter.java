@@ -87,7 +87,6 @@ public class ForumRTFFormatter extends ForumFormatter {
 	private final Pattern PATTERN_THREEPOINTS = Pattern.compile("&#8230;", Pattern.CASE_INSENSITIVE);
 	private final String THREEPOINTS = "...";
 	
-	//TODO: (LD) translate this!
 	private String HIDDEN_STR = "VERBORGEN";
 	
 	private final ForumManager forumManager;

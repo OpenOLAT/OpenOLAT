@@ -49,10 +49,6 @@ import org.olat.core.gui.dev.controller.SourceViewController;
 import org.olat.gui.demo.guidemo.GuiDemoFlexiForm;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for GuiDemoStepsRunner
- * 
- * <P>
  * Initial Date: 10.01.2008 <br>
  * 
  * @author patrickb
@@ -74,9 +70,6 @@ public class GuiDemoStepsRunner extends BasicController {
 		putInitialPanel(mainVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 	//

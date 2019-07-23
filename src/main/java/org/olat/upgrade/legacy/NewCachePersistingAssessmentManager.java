@@ -102,9 +102,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * a user in a course only needs its own data. only when a tutor enters the assessment functionality, all data of all users is needed ->
  * do a full load only then.
  * 
- * TODO: e.g. IQTEST.onDelete(..) cleans all data without going over the assessmentmanager here. meaning that the cache has stale data in it.
- * since coursenode.getIdent (partial key of this cache) is forever unique, then this doesn't really matter. - but it is rather unintended...
- * point is that a node can save lots of data that have nothing to do with assessments
  * 
  * 
  * @author Felix Jost

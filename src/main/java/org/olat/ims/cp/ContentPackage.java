@@ -101,7 +101,6 @@ public class ContentPackage {
 					CPResource res = new CPResource();
 					CPFile file = new CPFile(pageFile);
 					res.addFile(file);
-					// TODO:GW Set type according to file
 					res.setType("text/html");
 					res.setHref(file.getHref());
 					item.setIdentifierRef(res.getIdentifier());

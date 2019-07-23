@@ -793,8 +793,6 @@ public class FileUtils {
 	 * Characters < 33 --> control characters and space
 	 * Characters > 255 --> above ASCII
 	 * http://www.danshort.com/ASCIImap/
-	 * TODO: control chars from 127 - 157 should also not be accepted
-	 * TODO: how about non ascii chars in filenames, they should also work! See: OLAT-5704
 	 * 
 	 * @param filename
 	 * @return true if filename valid

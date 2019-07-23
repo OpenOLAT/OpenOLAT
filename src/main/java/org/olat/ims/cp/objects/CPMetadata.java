@@ -54,7 +54,6 @@ public class CPMetadata extends DefaultElement implements CPNode {
 	public CPMetadata(Element me) {
 		super(me.getName());
 		setContent(me.content());
-		// TODO: parse xml to LOM-Object!
 	}
 
 	/**

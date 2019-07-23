@@ -358,11 +358,6 @@ public class NotificationsPortletRunController extends AbstractPortletRunControl
 	 }
 	 
 	 /**
-	  * 
-	  * Description:<br>
-	  * TODO: Lavinia Dumitrescu Class Description for NotificationsManualSortingTableDataModel
-	  * 
-	  * <P>
 	  * Initial Date:  04.12.2007 <br>
 	  * @author Lavinia Dumitrescu
 	  */

@@ -36,10 +36,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for SimpleTextComponent
- * 
- * <P>
  * Initial Date:  06.12.2006 <br>
  * @author patrickb
  */

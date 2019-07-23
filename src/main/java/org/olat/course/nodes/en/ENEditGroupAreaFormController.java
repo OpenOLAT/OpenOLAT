@@ -74,10 +74,6 @@ import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for ENEditGroupAreaFormController
- * 
- * <P>
  * Initial Date:  12.08.2007 <br>
  * @author patrickb
  */

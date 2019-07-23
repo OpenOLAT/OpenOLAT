@@ -45,10 +45,6 @@ import org.olat.user.propertyhandlers.ui.UsrPropHandlerCfgController;
 
 /**
  * 
- * Description:<br>
- * TODO: strentini Class Description for
- * GenericSelectionPropertyHandlerController
- * 
  * This is the Config-Controller for the GenericSelectionPropertyHandler. It
  * provides a GUI for the Handler-Configuration
  * 
@@ -259,7 +255,6 @@ public class GenericSelectionPropertyHandlerController extends FormBasicControll
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
+		//
 	}
-
 }

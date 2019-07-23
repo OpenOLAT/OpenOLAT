@@ -371,8 +371,6 @@ public class EPArtefactManager {
 		// either search for artefacts with given tags, or such with no one!
 		List<AbstractArtefact> toRemove = new ArrayList<>();
 		if (tags != null && tags.size() != 0) {
-			// TODO: epf: RH: fix needed, as long as tags with uppercase initial are
-			// allowed!
 			for (AbstractArtefact artefact : artefacts) {
 				List<String> artefactTags = getArtefactTags(artefact);
 				if (!artefactTags.containsAll(tags)) {

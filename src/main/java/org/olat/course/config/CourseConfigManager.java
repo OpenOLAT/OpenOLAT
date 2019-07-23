@@ -28,10 +28,6 @@ package org.olat.course.config;
 import org.olat.course.ICourse;
 
 /**
- * Description: <br>
- * TODO: patrick Class Description for CourseConfigManager
- * <P>
- * 
  * Initial Date: Jun 3, 2005 <br>
  * @author patrick
  */

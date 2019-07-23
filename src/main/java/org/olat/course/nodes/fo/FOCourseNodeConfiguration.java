@@ -36,9 +36,6 @@ import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.FOCourseNode;
 
 /**
- * Description:<br>
- * TODO: guido Class Description for FOCourseNodeConfiguration
- * <P>
  * Initial Date: Apr 5, 2006 <br>
  * 
  * @author guido

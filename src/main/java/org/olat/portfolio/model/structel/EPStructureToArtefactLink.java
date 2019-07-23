@@ -26,11 +26,6 @@ import org.olat.core.id.Identity;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
- * 
- * Description:<br>
- * TODO: Class Description for EPStructureToArtefactLink
- * 
- * <P>
  * Initial Date:  11.06.2010 <br>
  * @author rhaag, roman.haag@frentix.com, http://www.frentix.com
  */

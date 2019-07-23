@@ -29,9 +29,6 @@ package org.olat.core.gui.components.table;
 import java.util.List;
 
 /**
- * Description: <br>
- * TODO: Felix Jost Class Description for TablePrefs
- * <P>
  * Initial Date: 01.12.2004 <br>
  * @author Felix Jost
  */

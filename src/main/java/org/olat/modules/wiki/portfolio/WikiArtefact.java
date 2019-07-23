@@ -23,11 +23,6 @@ import org.olat.fileresource.types.WikiResource;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for WikiArtefact
- * 
- * <P>
  * Initial Date:  7 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

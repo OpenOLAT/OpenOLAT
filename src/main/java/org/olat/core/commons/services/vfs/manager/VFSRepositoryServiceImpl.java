@@ -815,11 +815,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 			metadata.setRevisionComment(comment);
 			metadata.setRevisionNr(getNextRevisionNr(revisions));
-			metadata.setAuthor(identity);//TODO dedicated author
+			metadata.setAuthor(identity);
 			updateMetadata(metadata);
 			return true;
 		} else {
-			log.error("Cannot create a version of this file: " + currentLeaf);
+			log.error("Cannot create a version of this file: {}", currentLeaf);
 		}
 		return false;
 	}

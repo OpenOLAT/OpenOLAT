@@ -32,10 +32,6 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for EPCreateFileArtefactStep00
- * 
- * <P>
  * Initial Date:  02.09.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */
@@ -55,26 +51,18 @@ public class EPCreateFileArtefactStep00 extends BasicStep {
 		setNextStep(new EPCollectStep00(ureq, artefact));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.BasicStep#getInitialPrevNextFinishConfig()
-	 */
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return new PrevNextFinishConfig(false, true, false);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.BasicStep#getStepController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, org.olat.core.gui.control.generic.wizard.StepsRunContext, org.olat.core.gui.components.form.flexible.impl.Form)
-	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
 		if(preSelectedStruct != null) {
 			stepsRunContext.put("preSelectedStructure", preSelectedStruct);
 		}
 		
-		StepFormController stepI = new EPCreateFileArtefactStepForm00(ureq, windowControl, form, stepsRunContext,
+		return new EPCreateFileArtefactStepForm00(ureq, windowControl, form, stepsRunContext,
 				FormBasicController.LAYOUT_DEFAULT, null, artefact, vfsTemp);
-		return stepI;
 	}
-
 }

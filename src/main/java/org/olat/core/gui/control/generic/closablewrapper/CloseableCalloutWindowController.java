@@ -233,17 +233,11 @@ public class CloseableCalloutWindowController extends BasicController {
 			String oldTarget = (String) calloutVC.getContext().get("target");
 			if (oldTarget != null && !oldTarget.equals(targetDomID)) {
 				// cleanup old window first
-				// TODO
 			}
 			calloutVC.contextPut("target", targetDomID);
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == calloutVC) {
@@ -255,11 +249,7 @@ public class CloseableCalloutWindowController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller,
-	 *      org.olat.core.gui.control.Event)
-	 */
+	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == cmc) {
 			if (event == CloseableModalController.CLOSE_MODAL_EVENT) {
@@ -269,9 +259,6 @@ public class CloseableCalloutWindowController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		if (cmc != null) {
@@ -297,8 +284,9 @@ public class CloseableCalloutWindowController extends BasicController {
 	}
 
 	/**
-	 * @see org.olat.core.gui.control.DefaultController#getInitialComponent()
+	 * Don't use it! Return an exception
 	 */
+	@Override
 	public Component getInitialComponent() {
 		throw new RuntimeException("please use activate() instead");
 	}

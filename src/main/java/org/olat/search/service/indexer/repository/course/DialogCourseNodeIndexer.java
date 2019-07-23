@@ -156,7 +156,7 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 		}
 		
 		OLATResourceable ores = ce.getOLATResourceable();
-		if(log.isDebugEnabled()) log.debug("OLATResourceable=" + ores);
+		if(log.isDebugEnabled()) log.debug("OLATResourceable={}", ores);
 		if (ores.getResourceableTypeName().startsWith("path=")) {
 			// => it is a file element, typeName format: 'path=/test1/test2/readme.txt'
 			return true;
@@ -169,14 +169,13 @@ public class DialogCourseNodeIndexer extends DefaultIndexer implements CourseNod
 				threadtop = message;
 			}
 			boolean isMessageHidden = Status.getStatus(threadtop.getStatusCode()).isHidden(); 
-			//assumes that if is owner then is moderator so it is allowed to see the hidden forum threads		
-			//TODO: policy owner (LD) fix this!!! - the contextEntry is not the right context for this check
+			//assumes that if is owner then is moderator so it is allowed to see the hidden forum threads	
 			if(isMessageHidden) {
 				return false;
 			}		
 			return true;
 		} else {
-			log.warn("In DialogCourseNode unkown OLATResourceable=" + ores);
+			log.warn("In DialogCourseNode unkown OLATResourceable={}", ores);
 			return false;
 		}
 	}

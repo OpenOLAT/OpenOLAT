@@ -27,11 +27,6 @@ import org.olat.core.id.Identity;
 import org.olat.course.ICourse;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for CourseDBManager
- * 
- * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

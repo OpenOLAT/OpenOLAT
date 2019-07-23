@@ -21,11 +21,6 @@
 package org.olat.portfolio.ui;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for EPMapRunShowOption
- * 
- * <P>
  * Initial Date:  9 nov. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

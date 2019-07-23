@@ -38,10 +38,6 @@ import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.tree.TreeHelper;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for SelectionTree
- * 
- * <P>
  * Initial Date: 21.01.2008 <br>
  * 
  * @author patrickb

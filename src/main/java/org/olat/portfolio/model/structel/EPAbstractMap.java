@@ -22,11 +22,6 @@ package org.olat.portfolio.model.structel;
 import java.util.Set;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for EPAbstractMap
- * 
- * <P>
  * Initial Date:  11.06.2010 <br>
  * @author rhaag, roman.haag@frentix.com, http://www.frentix.com
  */

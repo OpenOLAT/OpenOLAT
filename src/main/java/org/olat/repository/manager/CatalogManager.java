@@ -309,7 +309,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 			SecurityGroup owner = ce.getOwnerGroup();
 			dbInstance.getCurrentEntityManager().remove(ce);
 			if (owner != null) {
-				log.debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
+				log.debug("deleteCatalogEntry case_1: delete owner-group={}", owner);
 				securityGroupDao.deleteSecurityGroup(owner);
 			}
 		} 
@@ -324,7 +324,7 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 */
 	public void deleteCatalogEntry(CatalogEntry ce) {
 		final boolean debug = log.isDebugEnabled();
-		if(debug) log.debug("deleteCatalogEntry start... ce=" + ce);
+		if(debug) log.debug("deleteCatalogEntry start... ce={}", ce);
 		
 		if (ce.getType() == CatalogEntry.TYPE_LEAF) {
 			//reload the detached catalog entry, delete it and then the owner group
@@ -333,26 +333,17 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 				SecurityGroup owner = ce.getOwnerGroup();
 				dbInstance.getCurrentEntityManager().remove(ce);
 				if (owner != null) {
-					log.debug("deleteCatalogEntry case_1: delete owner-group=" + owner);
+					log.debug("deleteCatalogEntry case_1: delete owner-group={}", owner);
 					securityGroupDao.deleteSecurityGroup(owner);
 				}
 			}
 		} else {
 			List<SecurityGroup> secGroupsToBeDeleted = new ArrayList<>();
-			//FIXME pb: the transaction must also include the deletion of the security
-			// groups. Why not using this method as a recursion and seperating the 
-			// deletion of the ce and the groups by collecting the groups? IMHO there 
-			// are not less db queries. This way the code is much less clear, e.g. the method
-			// deleteCatalogSubtree does not really delete the subtree, it leaves the 
-			// security groups behind. I would preferre to have one delete method that 
-			// deletes its children first by calling itself on the children and then deletes
-			// itself ant its security group. The nested transaction that occures is actually 
-			// not a problem, the DB object can handel this.
 			deleteCatalogSubtree(ce,secGroupsToBeDeleted);
 			// after deleting all entries, delete all secGroups corresponding
 			for (Iterator<SecurityGroup> iter = secGroupsToBeDeleted.iterator(); iter.hasNext();) {
 				SecurityGroup grp = iter.next();
-				if(debug) log.debug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp=" + grp);
+				if(debug) log.debug("deleteCatalogEntry case_2: delete groups of deleteCatalogSubtree grp={}", grp);
 				securityGroupDao.deleteSecurityGroup(grp);
 			}
 		}
@@ -375,7 +366,6 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 		if (owner != null) {
 			secGroupsToBeDeleted.add(owner);
 		}
-		//TODO delete marks
 		dbInstance.getCurrentEntityManager().remove(ce);
 	}
 
@@ -559,10 +549,10 @@ public class CatalogManager implements UserDataDeletable, InitializingBean {
 	 */
 	public void addCatalogEntry(CatalogEntry parent, CatalogEntry newEntry) {
 		boolean debug = log.isDebugEnabled();
-		if(debug) log.debug("addCatalogEntry parent=" + parent);
+		if(debug) log.debug("addCatalogEntry parent={}", parent);
 		newEntry.setParent(parent);
-		if(debug) log.debug("addCatalogEntry newEntry=" + newEntry);
-		if(debug) log.debug("addCatalogEntry newEntry.getOwnerGroup()=" + newEntry.getOwnerGroup());
+		if(debug) log.debug("addCatalogEntry newEntry={}", newEntry);
+		if(debug) log.debug("addCatalogEntry newEntry.getOwnerGroup()={}", newEntry.getOwnerGroup());
 		saveCatalogEntry(newEntry);
 	}
 

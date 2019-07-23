@@ -35,8 +35,7 @@ import org.olat.core.gui.render.StringOutput;
  * Description: <BR>
  * classes implementing this interface can determine how cells of a table look.
  * right now, if action != null, the whole cell (the value the method render of
- * this class produces) is embraced by an <a href... tag. TODO: let the renderer
- * access the prebuilt uri for having this limitation removed <P/>
+ * this class produces) is embraced by an <a href... tag.
  * 
  * @author Felix Jost
  */

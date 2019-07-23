@@ -52,7 +52,8 @@ import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 public class ChecklistEditCheckpointsController extends FormBasicController {
 
 	// GUI
-	private FormLayoutContainer titleContainer, buttonContainer;
+	private FormLayoutContainer titleContainer;
+	private FormLayoutContainer buttonContainer;
 	private DialogBoxController yesNoController;
 	private List<TextElement> titleInputList;
 	private List<TextElement> descriptionInputList;
@@ -137,10 +138,10 @@ public class ChecklistEditCheckpointsController extends FormBasicController {
 		// add checkpoint title
 		String pointTitle = checkpoint.getTitle() == null ? "" : checkpoint.getTitle();
 		TextElement title = uifactory.addTextElement("title" + counter, null, -1, pointTitle, titleContainer);
-		title.showError(false);//TODO:SK:2009-11-20:PB:should be default -> check layout in velocity.
+		title.showError(false);
 		title.setDisplaySize(20);
 		title.setMandatory(true);
-		title.setNotEmptyCheck("cl.table.title.error");//TODO:Stefan Köber: please verify that the default not empty check does the same as you ItemValidatorProvider
+		title.setNotEmptyCheck("cl.table.title.error");
 		title.setUserObject(checkpoint);
 		titleInputList.add(index, title);
 		

@@ -124,10 +124,7 @@
 			Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
 			Year (Optional)	empty, 1970-2099 	, - * /    	
 	   	-->
-		<property name="cronExpression" value="15 */3 * * * ?" />
-		<!--  //TODO absence
 		<property name="cronExpression" value="15 34 */1 * * ?" />
-		-->
 		<property name="startDelay" value="60000" />
 	</bean>
 

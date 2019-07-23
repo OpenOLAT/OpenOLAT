@@ -31,9 +31,7 @@ import java.util.Locale;
 import org.olat.core.configuration.ConfigOnOff;
 /**
  * 
- * Description:<br>
  * Interface for course nodes
- * TODO: create abstract class as the implementation are more or less always the same
  */
 public interface CourseNodeConfiguration extends ConfigOnOff{
 

@@ -237,8 +237,6 @@ public class Wiki implements WikiContainer, Serializable {
 			for (Iterator<VFSItem> iter = leafs.iterator(); iter.hasNext();) {
 				VFSLeaf leaf = (VFSLeaf)iter.next();
 				String filename = leaf.getName();
-				// TODO:gs:a needs better filtering only for pagename.properties-xy 
-				// try this: List leafs = wikiCont.getItems(new VFSItemSuffixFilter(new String[]{WikiManager.WIKI_PROPERTIES_SUFFIX}));
 				if (filename.indexOf(WikiManager.WIKI_PROPERTIES_SUFFIX) != -1 && filename.startsWith(page.getPageId())) {
 					versions.add(assignPropertiesToPage(leaf));
 				}
@@ -313,7 +311,7 @@ public class Wiki implements WikiContainer, Serializable {
 		List<VFSItem> mediaFilesOnly = new ArrayList<>();
 		for (Iterator<VFSItem> iter = allFiles.iterator(); iter.hasNext();) {
 			VFSItem element = iter.next();
-			if(!element.getName().endsWith(WikiMainController.METADATA_SUFFIX)) {//TODO 
+			if(!element.getName().endsWith(WikiMainController.METADATA_SUFFIX)) { 
 				mediaFilesOnly.add(element);
 			}
 		}

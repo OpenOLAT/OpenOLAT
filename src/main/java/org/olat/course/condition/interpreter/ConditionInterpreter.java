@@ -227,7 +227,6 @@ public class ConditionInterpreter {
 		String solutionMsg = "";
 		try {
 			throw e;
-			//TODO:pb:b do no rethrow, but test for instanceof
 		} catch (XIllegalOperation xe) {
 			msg = "error.illegal.operation.at";
 			params = new String[] { Integer.toString(xe.getPosition()) };

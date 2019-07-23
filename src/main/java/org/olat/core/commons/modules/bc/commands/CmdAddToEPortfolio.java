@@ -31,10 +31,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for CmdAddToEPortfolio
- * 
- * <P>
  * Initial Date:  03.09.2010 <br>
  * @author rhaag
  */

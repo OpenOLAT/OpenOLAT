@@ -92,8 +92,7 @@ public class PFEditController extends ActivateableTabbableDefaultController impl
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-		// TODO Auto-generated method stub
-
+		//
 	}
 	
 	@Override
@@ -107,15 +106,14 @@ public class PFEditController extends ActivateableTabbableDefaultController impl
 		} else 	if (source == modConfigCtr) {
 			if (Event.DONE_EVENT.equals(event)) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);	
-				}
 			}
+		}
 		super.event(ureq, source, event);
 	}
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
 }

@@ -55,7 +55,6 @@ public class OLATResourceImpl extends PersistentObject implements OLATResource {
 	}
 
 	OLATResourceImpl(Long id, String typeName) {
-		//TODO: limit length of type name to some value (255 is too much)
 		if (id == null) id = NULLVALUE;
 		resId = id;
 		resName = typeName;

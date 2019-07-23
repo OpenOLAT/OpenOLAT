@@ -29,10 +29,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.panel.Panel;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description
- * 
- * <P>
  * Initial Date: 25.01.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */

@@ -31,9 +31,6 @@ import java.util.Hashtable;
 import java.util.Map;
 
 /**
- * Description:<br>
- * TODO: patrick Class Description for Memento
- * <P>
  * Initial Date: Nov 25, 2005 <br>
  * 
  * @author patrick

@@ -684,7 +684,6 @@ public class EPStructureManager {
 				return false;
 			}
 			//save eventual changes
-			//TODO update the changes before dbInstance.updateObject(structureEl);
 			//reconnect to the session
 			structureEl = (EPStructureElement)dbInstance.loadObject(structureEl);
 

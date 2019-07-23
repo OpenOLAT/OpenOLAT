@@ -212,10 +212,6 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @return
 	 */
 	private StringBuilder createChangelogMsg(UserRequest ureq) {
-		/*
-		 * TODO:pb:is ImsRepositoryResolver the right place for getting the change log?
-		 */
-
 		//re could be null, but if we are here it should not be null!
 		Roles userRoles = ureq.getUserSession().getRoles();
 		boolean showAll = userRoles.isAuthor() || userRoles.isAdministrator() || userRoles.isLearnResourceManager();

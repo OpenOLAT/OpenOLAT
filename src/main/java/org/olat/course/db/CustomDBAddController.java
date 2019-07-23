@@ -30,11 +30,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for CustomDBAddController
- * 
- * <P>
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

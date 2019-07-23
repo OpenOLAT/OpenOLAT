@@ -35,10 +35,6 @@ import org.olat.core.util.cache.CacheWrapper;
  * to free the developer from choosing the ttl, max-idle and max-elements settings, default values for a class should be configured in the file
  * olatcoreconfig.xml (-not- in ehcache.xml)
  * <br>
- * <br>
- * child caches can be obtained from a cachewrapper.
- * a child cache is automatically disposed when its parent is disposed. cluster::::this is a TODO, now caches expires only according to their ttl, tti settings.
- * <br>
  * How to obtain the name of a cache for configuring it in the olatcoreconfig.xml file:<br>
  * The name of a cache consists of<br>
  * 1. the class name together with the subkey if given<br>

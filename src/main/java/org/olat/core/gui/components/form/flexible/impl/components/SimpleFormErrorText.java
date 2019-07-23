@@ -37,9 +37,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for SimpleFormErrorText
- * <P>
  * Initial Date: 06.12.2006 <br>
  * 
  * @author patrickb

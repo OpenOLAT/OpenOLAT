@@ -63,11 +63,6 @@ import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for PortfolioConfigForm
- * 
- * <P>
  * Initial Date:  6 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

@@ -109,7 +109,6 @@ public class CmdAddToEPortfolioImpl extends BasicController implements CmdAddToE
 						|| "png".equalsIgnoreCase(extension) || "gif".equalsIgnoreCase(extension)) {
 					handler = portfolioService.getMediaHandler(ImageHandler.IMAGE_TYPE);
 				}
-				//TODO video
 			}
 			
 			if(handler == null) {
@@ -128,17 +127,11 @@ public class CmdAddToEPortfolioImpl extends BasicController implements CmdAddToE
 		return collectStepsCtrl;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.commands.FolderCommand#getStatus()
-	 */
 	@Override
 	public int getStatus() {
 		return status;
 	}
 
-	/**
-	 * @see org.olat.core.commons.modules.bc.commands.FolderCommand#runsModal()
-	 */
 	@Override
 	public boolean runsModal() {
 		return true;

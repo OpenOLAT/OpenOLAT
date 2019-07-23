@@ -79,10 +79,6 @@ public class ExceptionWindowController extends DefaultChiefController {
 	 * @param th
 	 */
 	public ExceptionWindowController(UserRequest ureq, Throwable th, boolean allowBackButton) {
-		//TODO remove the below warn again once OLAT-5715 has been resolved - or it turns out that below warn is too verbose
-		// the idea is that at this stage the throwable still contains a stacktrace but passed into the OLATRuntimeException
-		// below as the cause it somehow gets lost. If this does not turn out to be true then the line below can be removed.
-		// in any case, it is just a log.warn
 		log.warn("ExceptionWindowController<init>: Throwable occurred, logging the full stacktrace:", th);
 
 		// Disable inline translation mode whenever an exception occurs

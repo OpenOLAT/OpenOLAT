@@ -35,10 +35,7 @@ import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.TUCourseNode;
 
-/**
- * Description:<br>
- * TODO: guido Class Description for TUCourseNodeConfiguration
- */
+
 public class TUCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	/**

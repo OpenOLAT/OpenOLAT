@@ -152,8 +152,6 @@ public class CPOrganizations extends DefaultElement implements CPNode {
 			org = it.next();
 			if (org.getIdentifier().equals(id)) { return org; }
 		}
-		// TODO: should it throw an exception, if no organization with the given
-		// identifier is found ???
 		return null;
 	}
 

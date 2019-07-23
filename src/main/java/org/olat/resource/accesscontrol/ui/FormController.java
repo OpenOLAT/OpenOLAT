@@ -24,11 +24,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.Controller;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for FormController
- * 
- * <P>
  * Initial Date:  27 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

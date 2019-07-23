@@ -32,10 +32,6 @@ import java.text.Collator;
 import java.util.Comparator;
 
 /**
- * Description:<br>
- * TODO: thomasw Class Description for ChecklistComparator
- * 
- * <P>
  * Initial Date:  11.03.2010 <br>
  * @author thomasw
  */
@@ -61,7 +57,8 @@ public class CheckpointComparator implements Comparator<Checkpoint> {
 	
 	@Override
 	public int compare(Checkpoint cp1, Checkpoint cp2) {
-		String comp1 = "", comp2 = "";
+		String comp1 = "";
+		String comp2 = "";
 		Collator collator = Collator.getInstance();
 		switch (checkpointAttribute) {
 			case 1: 

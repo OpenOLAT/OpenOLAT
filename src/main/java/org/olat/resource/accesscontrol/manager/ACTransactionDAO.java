@@ -35,11 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for ACTransactionManagerImpl
- * 
- * <P>
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

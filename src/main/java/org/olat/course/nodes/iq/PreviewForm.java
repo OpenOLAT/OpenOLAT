@@ -34,9 +34,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for PreviewForm
- * 
  * Initial Date:  13.01.2005 <br>
  * @author Felix Jost
  */

@@ -47,11 +47,6 @@ import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.repository.RepositoryEntry;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for PortfolioCourseNodeEditController
- * 
- * <P>
  * Initial Date:  6 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

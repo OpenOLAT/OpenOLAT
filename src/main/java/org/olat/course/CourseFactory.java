@@ -383,7 +383,6 @@ public class CourseFactory {
 
 		// cleanup cache
 		removeFromCache(res.getResourceableId());
-		//TODO: ld: broadcast event: DeleteCourseEvent
 
 		// Everything is deleted, so we could get rid of course logging
 		// with the change in user audit logging - which now all goes into a DB
@@ -421,11 +420,6 @@ public class CourseFactory {
 		}
 		//the course calendar
 		try {
-			/**
-			 * TODO:gs 2010-01-26
-			 * OLAT-4947: if we do not have an repo entry we get an exception here.
-			 * This is normal in the case of courseimport and click canceling.
-			 */
 			KalendarRenderWrapper courseCalendar = calMan.getCalendarForDeletion(res);
 			if(courseCalendar != null) {
 				SubscriptionContext subContext = notificationManager.getSubscriptionContext(courseCalendar, res);
@@ -941,21 +935,19 @@ public class CourseFactory {
 	 * Loads the course or gets it from cache, and adds it to the courseEditSessionMap. <br/>
 	 * It guarantees that the returned value is never null. <br/>
 	 * The courseEditSession object should live between acquire course lock and release course lock.
-	 *
-	 * TODO: remove course from courseEditSessionMap at close course editor
-	 * @param resourceableId
+	 * 
+	 * @param resourceableId The resource id
 	 * @return
 	 */
 	public static PersistingCourseImpl openCourseEditSession(Long resourceableId) {
 		PersistingCourseImpl course = courseEditSessionMap.get(resourceableId);
-		if(course!=null) {
-			//TODO :LD: check this out! - here we might have a valid session if the course was just created/imported/copied
+		if(course != null) {
 			throw new AssertException("There is already an edit session open for this course: " + resourceableId);
-		} else if(course==null) {
+		} else {
 			course = (PersistingCourseImpl)loadCourse(resourceableId);
 			course.setReadAndWrite(true);
 			courseEditSessionMap.put(resourceableId, course);
-			log.debug("getCourseEditSession - put course in courseEditSessionMap: " + resourceableId);
+			log.debug("getCourseEditSession - put course in courseEditSessionMap: {}", resourceableId);
 		}
 		return course;
 	}
@@ -969,12 +961,10 @@ public class CourseFactory {
 	 * It guarantees that the returned value is never null if the openCourseEditSession was called first. <br/>
 	 * The CourseEditSession object should live between acquire course lock and release course lock.
 	 *
-	 * TODO: remove course from courseEditSessionMap at close course editor
 	 * @param resourceableId
 	 * @return
 	 */
 	public static PersistingCourseImpl getCourseEditSession(Long resourceableId) {
-		//TODO: this must be called after the course lock is acquired, else must by synchronized (doInSync)
 		PersistingCourseImpl course = courseEditSessionMap.get(resourceableId);
 		if(course==null) {
 			throw new AssertException("No edit session open for this course: " + resourceableId + " - Open a session first!");
@@ -982,10 +972,6 @@ public class CourseFactory {
 		return course;
 	}
 
-	/**
-	 * TODO: remove course from courseEditSessionMap at releaseLock
-	 * @param resourceableId
-	 */
 	public static void closeCourseEditSession(Long resourceableId, boolean checkIfAnyAvailable) {
 		PersistingCourseImpl course = courseEditSessionMap.get(resourceableId);
 		if(course==null && checkIfAnyAvailable) {
@@ -993,7 +979,7 @@ public class CourseFactory {
 		}	else if (course!=null) {
 		  course.setReadAndWrite(false);
 		  courseEditSessionMap.remove(resourceableId);
-		  log.debug("removeCourseEditSession for course: " + resourceableId);
+		  log.debug("removeCourseEditSession for course: {}", resourceableId);
 		}
 	}
 

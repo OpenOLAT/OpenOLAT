@@ -189,15 +189,6 @@ public class OpenMeetingsRoomEditController extends FormBasicController {
 			fireEvent(ureq, Event.DONE_EVENT);
 		}
 	}
-	
-	
-
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = super.validateFormLogic(ureq);
-		// TODO Auto-generated method stub
-		return allOk;
-	}
 
 	@Override
 	protected void formCancelled(UserRequest ureq) {

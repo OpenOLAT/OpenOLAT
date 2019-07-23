@@ -26,11 +26,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for MarkImpl
- * 
- * <P>
  * Initial Date:  9 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

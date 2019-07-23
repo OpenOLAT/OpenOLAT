@@ -515,11 +515,12 @@ public class Formatter {
 	 */
 	public static String truncate(String source, int len, String delim) {
 		if (source == null) return null;
-		int start, stop;
+		int start;
+		int stop;
 		int alen = source.length();
 		if (len > 0) {
 			if (alen <= len) return source;
-			start = 0; //TODO effizienter
+			start = 0;
 			stop = (len > alen ? alen : len);
 			StringBuilder sb = new StringBuilder(source.substring(start, stop));
 			if (alen > len) sb.append(delim);

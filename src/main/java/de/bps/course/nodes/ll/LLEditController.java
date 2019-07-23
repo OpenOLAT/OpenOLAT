@@ -60,7 +60,7 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 	private LLCourseNode courseNode;
 	private VelocityContainer editVc;
 	private ConditionEditController accessibilityCondContr;
-	final static String[] paneKeys = { PANE_TAB_LLCONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_LLCONFIG, PANE_TAB_ACCESSIBILITY };
 	private TabbedPane tabPane;
 	private LLEditForm llFormContr;
 
@@ -84,43 +84,27 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public TabbedPane getTabbedPane() {
 		return tabPane;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	protected void doDispose() {
 	// nothing to dispose
 
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessibilityCondContr) {
@@ -135,9 +119,7 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr

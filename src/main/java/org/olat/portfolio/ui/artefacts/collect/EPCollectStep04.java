@@ -34,10 +34,6 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for EPCollectStep04
- * 
- * <P>
  * Initial Date:  28.07.2010 <br>
  * @author rhaag
  */
@@ -48,22 +44,15 @@ public class EPCollectStep04 extends BasicStep {
 		setNextStep(NOSTEP);
 		setI18nTitleAndDescr("step4.description", "step4.short.descr");
 	}
-
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.BasicStep#getInitialPrevNextFinishConfig()
-	 */
+	
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return new PrevNextFinishConfig(true, false, true);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.BasicStep#getStepController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, org.olat.core.gui.control.generic.wizard.StepsRunContext, org.olat.core.gui.components.form.flexible.impl.Form)
-	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new EPCollectStepForm04(ureq, windowControl, form, stepsRunContext, FormBasicController.LAYOUT_CUSTOM);
-		return stepI;
+		return new EPCollectStepForm04(ureq, windowControl, form, stepsRunContext, FormBasicController.LAYOUT_CUSTOM);
 	}
 
 }

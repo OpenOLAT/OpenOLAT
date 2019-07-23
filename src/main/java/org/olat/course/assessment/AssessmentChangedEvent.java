@@ -33,8 +33,6 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.util.event.MultiUserEvent;
 
 /**
- * Description:<BR>
- * TODO: Class Description for AssessmentChangedEvent
  * Initial Date:  Nov 30, 2004
  *
  * @author gnaegi 

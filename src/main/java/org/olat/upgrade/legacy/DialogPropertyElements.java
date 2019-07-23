@@ -29,10 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Description:<br>
- * TODO: guido Class Description for DialogPropertyElements
- * 
- * <P>
  * Initial Date:  15.11.2005 <br>
  *
  * @author guido

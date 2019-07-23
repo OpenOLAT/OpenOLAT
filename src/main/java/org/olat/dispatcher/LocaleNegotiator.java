@@ -30,10 +30,6 @@ import org.olat.core.util.i18n.I18nModule;
 
 
 /**
- * Description:<br>
- * TODO: srosse Class Description for LocaleNegotiator
- * 
- * <P>
  * Initial Date:  17 nov. 2009 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */

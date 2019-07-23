@@ -30,11 +30,6 @@ import org.olat.login.DmzBFWCParts;
 import de.bps.olat.user.ChangeEMailController;
 
 /**
- * 
- * Description:<br>
- * TODO: bja Class Description for DMZEMChangeContentControllerCreator
- * 
- * <P>
  * Initial Date:  21.11.2008 <br>
  * @author bja
  */

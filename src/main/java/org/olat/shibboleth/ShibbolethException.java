@@ -25,10 +25,6 @@
 package org.olat.shibboleth;
 
 /**
- * Description:<br>
- * TODO: Lavinia Dumitrescu Class Description for ShibbolethException
- *
- * <P>
  * Initial Date:  31.10.2007 <br>
  * @author Lavinia Dumitrescu
  */

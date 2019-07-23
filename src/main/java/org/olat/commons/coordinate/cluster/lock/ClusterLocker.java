@@ -99,7 +99,7 @@ public class ClusterLocker implements Locker, GenericEventListener {
 	public LockResult acquireLock(final OLATResourceable ores, final Identity requestor, final String locksubkey) {
 		final String asset = OresHelper.createStringRepresenting(ores, locksubkey);
 		
-		LockResult res = syncer.doInSync(ores, new SyncerCallback<LockResult>(){
+		return syncer.doInSync(ores, new SyncerCallback<LockResult>(){
 			@Override
 			public LockResult execute() {
 				LockResultImpl lres;
@@ -122,8 +122,6 @@ public class ClusterLocker implements Locker, GenericEventListener {
 				}		
 				return lres;
 			}});
-		
-		return res;
 	}
 	
 	/**
@@ -147,9 +145,9 @@ public class ClusterLocker implements Locker, GenericEventListener {
 				DBFactory.getInstance().commit();
 			} catch (DBRuntimeException dbEx) {
 				log.warn("releaseAllLocksFor failed, close session and try it again for identName=" + identKey);
-				//TODO: 2010-04-23 Transactions [eglis]: OLAT-4318: this rollback has possibly unwanted
-				//      side effects, as it rolls back any changes with this transaction during this
-				//      event handling. Nicer would be to be done in the outmost-possible place, e.g. dofire()
+				// Transactions [eglis]: OLAT-4318: this rollback has possibly unwanted
+				// side effects, as it rolls back any changes with this transaction during this
+				// event handling. Nicer would be to be done in the outmost-possible place, e.g. dofire()
 				DBFactory.getInstance().rollbackAndCloseSession();
 				// try again with new db-session
 				log.info("try again to release all locks for identName=" + identKey);
@@ -192,26 +190,9 @@ public class ClusterLocker implements Locker, GenericEventListener {
 		String asset = lockEntry.getKey();
 		Identity releaseRequestor = lockEntry.getOwner();
 		clusterLockManager.deleteLock(asset, releaseRequestor);
-		
-		// cluster:: change to useage with syncer, but we don't have the olatresourceable yet
-		/*pessimisticLockManager.findOrPersistPLock(asset);
-
-		LockImpl li = clusterLockManager.findLock(asset);
-		if (li == null) {
-			// do nothing - since this lock may have been one that was cleared when restarting the vm
-		} else {
-			// check that entry was previously locked by the same user that now wants to release the lock.
-			Identity ownwer = li.getOwner();
-			if (releaseRequestor.getKey().equals(ownwer.getKey())) {
-				// delete the lock
-				clusterLockManager.deleteLock(li);
-			} else {
-				throw new AssertException("cannot release lock since the requestor of the release ("+
-						releaseRequestor.getName()+") is not the owner ("+ownwer.getName()+") of the lock ("+asset+")");
-			}
-		}*/
 	}
-	
+
+	@Override
 	public List<LockEntry> adminOnlyGetLockEntries() {
 		List<LockImpl> li = clusterLockManager.getAllLocks();
 		List<LockEntry> res = new ArrayList<>(li.size());
@@ -220,15 +201,15 @@ public class ClusterLocker implements Locker, GenericEventListener {
 		}
 		return res;
 	}
-	
+
+	@Override
 	public LockResult aquirePersistentLock(final OLATResourceable ores, final Identity ident, final String locksubkey) {
-		LockResult res = syncer.doInSync(ores, new SyncerCallback<LockResult>(){
+		return syncer.doInSync(ores, new SyncerCallback<LockResult>(){
+			@Override
 			public LockResult execute() {
-				LockResult ares = getPersistentLockManager().aquirePersistentLock(ores, ident, locksubkey);
-				return ares;
+				return getPersistentLockManager().aquirePersistentLock(ores, ident, locksubkey);
 			}
 		});
-		return res;
 	}
 
 	public void releasePersistentLock(LockResult lockResult) {

@@ -29,10 +29,6 @@ package org.olat.core.util;
 import java.io.File;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for FileVisitor
- * 
- * <P>
  * Initial Date:  10.11.2004 <br>
  *
  * @author Felix Jost

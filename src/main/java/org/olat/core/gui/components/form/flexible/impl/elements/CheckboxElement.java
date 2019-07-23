@@ -28,9 +28,6 @@ package org.olat.core.gui.components.form.flexible.impl.elements;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for CheckboxElementComponent
- * <P>
  * Initial Date: 04.01.2007 <br>
  * 
  * @author patrickb
@@ -66,7 +63,6 @@ class CheckboxElement {
 	 */
 	CheckboxElement(String name, MultipleSelectionElementImpl selectionWrapper, int which,
 			String cssClass, String iconLeftCSS) {
-		//super(name, translator);
 		this.name = name;
 		this.selectionWrapper = selectionWrapper;
 		this.which = which;

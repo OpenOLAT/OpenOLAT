@@ -47,12 +47,6 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Description:<br>
- * TODO: 
- * - maybe optimize new creation of artefacts controllers by watching which are yet existing and not
- * dropping/creating them again
- * 
- * <P>
  * Initial Date: 08.07.2010 <br>
  * 
  * @author Roman Haag, roman.haag@frentix.com, frentix GmbH
