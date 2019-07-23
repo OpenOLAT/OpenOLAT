@@ -28,6 +28,7 @@ import java.util.List;
 import org.olat.core.util.xml.XStreamHelper;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * 
@@ -45,6 +46,14 @@ public class GroupXStream {
 	
 	public GroupXStream() {
 		xstream = XStreamHelper.createXStreamInstance();
+		
+		XStream.setupDefaultSecurity(xstream);
+		Class<?>[] types = new Class[] {
+				CollabTools.class, Group.class, Area.class, AreaCollection.class, GroupCollection.class,
+				OLATGroupExport.class, ArrayList.class
+		};
+		xstream.addPermission(new ExplicitTypePermission(types));
+		
 		xstream.alias("OLATGroupExport", OLATGroupExport.class);
 		xstream.alias("AreaCollection", AreaCollection.class);
 		xstream.alias("GroupCollection", GroupCollection.class);
@@ -153,36 +162,244 @@ class GroupCollection {
 }
 
 class Area {
-	public Long key;
-	public String name;
-	public List<String> description;
+	private Long key;
+	private String name;
+	private List<String> description;
+	
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public List<String> getDescription() {
+		return description;
+	}
+	
+	public void setDescription(List<String> description) {
+		this.description = description;
+	}
 }
 
 class Group {
-	public Long key;
-	public String name;
-	public Integer minParticipants;
-	public Integer maxParticipants;
-	public Boolean waitingList;
-	public Boolean autoCloseRanks;
-	public Boolean showOwners;
-	public Boolean showParticipants;
-	public Boolean showWaitingList;
-	public List<String> description;
-	public CollabTools tools;
-	public List<String> areaRelations;
-	public Long calendarAccess;
-	public String info;
-	public Long folderAccess;
+	private Long key;
+	private String name;
+	private Integer minParticipants;
+	private Integer maxParticipants;
+	private Boolean waitingList;
+	private Boolean autoCloseRanks;
+	private Boolean showOwners;
+	private Boolean showParticipants;
+	private Boolean showWaitingList;
+	private List<String> description;
+	private CollabTools tools;
+	private List<String> areaRelations;
+	private Long calendarAccess;
+	private String info;
+	private Long folderAccess;
+	
+	public Long getKey() {
+		return key;
+	}
+	
+	public void setKey(Long key) {
+		this.key = key;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public Integer getMinParticipants() {
+		return minParticipants;
+	}
+	
+	public void setMinParticipants(Integer minParticipants) {
+		this.minParticipants = minParticipants;
+	}
+	
+	public Integer getMaxParticipants() {
+		return maxParticipants;
+	}
+	
+	public void setMaxParticipants(Integer maxParticipants) {
+		this.maxParticipants = maxParticipants;
+	}
+	
+	public Boolean getWaitingList() {
+		return waitingList;
+	}
+	
+	public void setWaitingList(Boolean waitingList) {
+		this.waitingList = waitingList;
+	}
+	
+	public Boolean getAutoCloseRanks() {
+		return autoCloseRanks;
+	}
+	
+	public void setAutoCloseRanks(Boolean autoCloseRanks) {
+		this.autoCloseRanks = autoCloseRanks;
+	}
+	
+	public Boolean getShowOwners() {
+		return showOwners;
+	}
+	
+	public void setShowOwners(Boolean showOwners) {
+		this.showOwners = showOwners;
+	}
+	
+	public Boolean getShowParticipants() {
+		return showParticipants;
+	}
+	
+	public void setShowParticipants(Boolean showParticipants) {
+		this.showParticipants = showParticipants;
+	}
+	
+	public Boolean getShowWaitingList() {
+		return showWaitingList;
+	}
+	
+	public void setShowWaitingList(Boolean showWaitingList) {
+		this.showWaitingList = showWaitingList;
+	}
+	
+	public List<String> getDescription() {
+		return description;
+	}
+	
+	public void setDescription(List<String> description) {
+		this.description = description;
+	}
+	
+	public CollabTools getTools() {
+		return tools;
+	}
+	
+	public void setTools(CollabTools tools) {
+		this.tools = tools;
+	}
+	
+	public List<String> getAreaRelations() {
+		return areaRelations;
+	}
+	
+	public void setAreaRelations(List<String> areaRelations) {
+		this.areaRelations = areaRelations;
+	}
+	
+	public Long getCalendarAccess() {
+		return calendarAccess;
+	}
+	
+	public void setCalendarAccess(Long calendarAccess) {
+		this.calendarAccess = calendarAccess;
+	}
+	
+	public String getInfo() {
+		return info;
+	}
+	
+	public void setInfo(String info) {
+		this.info = info;
+	}
+	
+	public Long getFolderAccess() {
+		return folderAccess;
+	}
+	
+	public void setFolderAccess(Long folderAccess) {
+		this.folderAccess = folderAccess;
+	}
 }
 
 class CollabTools {
-	public boolean hasNews;
-	public boolean hasContactForm;
-	public boolean hasCalendar;
-	public boolean hasFolder;
-	public boolean hasForum;
-	public boolean hasChat;
-	public boolean hasWiki;
-	public boolean hasPortfolio;
+	private boolean hasNews;
+	private boolean hasContactForm;
+	private boolean hasCalendar;
+	private boolean hasFolder;
+	private boolean hasForum;
+	private boolean hasChat;
+	private boolean hasWiki;
+	private boolean hasPortfolio;
+	
+	public boolean isHasNews() {
+		return hasNews;
+	}
+	
+	public void setHasNews(boolean hasNews) {
+		this.hasNews = hasNews;
+	}
+	
+	public boolean isHasContactForm() {
+		return hasContactForm;
+	}
+	
+	public void setHasContactForm(boolean hasContactForm) {
+		this.hasContactForm = hasContactForm;
+	}
+	
+	public boolean isHasCalendar() {
+		return hasCalendar;
+	}
+	
+	public void setHasCalendar(boolean hasCalendar) {
+		this.hasCalendar = hasCalendar;
+	}
+	
+	public boolean isHasFolder() {
+		return hasFolder;
+	}
+	
+	public void setHasFolder(boolean hasFolder) {
+		this.hasFolder = hasFolder;
+	}
+	
+	public boolean isHasForum() {
+		return hasForum;
+	}
+	
+	public void setHasForum(boolean hasForum) {
+		this.hasForum = hasForum;
+	}
+	
+	public boolean isHasChat() {
+		return hasChat;
+	}
+	
+	public void setHasChat(boolean hasChat) {
+		this.hasChat = hasChat;
+	}
+	
+	public boolean isHasWiki() {
+		return hasWiki;
+	}
+	
+	public void setHasWiki(boolean hasWiki) {
+		this.hasWiki = hasWiki;
+	}
+	
+	public boolean isHasPortfolio() {
+		return hasPortfolio;
+	}
+	
+	public void setHasPortfolio(boolean hasPortfolio) {
+		this.hasPortfolio = hasPortfolio;
+	}
 }

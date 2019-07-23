@@ -31,10 +31,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.olat.admin.user.UserSearchController;
 import org.olat.basesecurity.events.SingleIdentityChosenEvent;
 import org.olat.commons.coordinate.cluster.ClusterCoordinator;
@@ -45,7 +41,6 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.htmlheader.jscss.JSAndCSSComponent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
-import org.olat.core.gui.components.panel.OncePanel;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
@@ -55,7 +50,6 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.Formatter;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.Coordinator;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -272,6 +266,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 			long start = System.nanoTime();
 			for (int i = 0; i < cnt; i++) {
 				CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(ORES_TEST, new SyncerExecutor(){
+					@Override
 					public void execute() {
 						// empty
 					}});
@@ -287,35 +282,6 @@ public class ClusterAdminControllerCluster extends BasicController {
 			usc = new UserSearchController(ureq, getWindowControl(), true);
 			listenTo(usc);
 			getWindowControl().pushAsModalDialog(usc.getInitialComponent());
-		} else if ((source == nodeInfoVc) && (event.getCommand().equals("switchToNode"))) {
-			String nodeIdStr = ureq.getHttpReq().getParameter("nodeId");
-			if (nodeIdStr.length()==1) {
-				nodeIdStr = "0"+nodeIdStr;
-			}
-			Cookie[] cookies = ureq.getHttpReq().getCookies();
-			for (int i = 0; i < cookies.length; i++) {
-				Cookie cookie = cookies[i];
-				if ("JSESSIONID".equals(cookie.getName())) {
-					String redirectedButInvalidSessionId = cookie.getValue();
-					redirectedButInvalidSessionId = redirectedButInvalidSessionId.substring(0, redirectedButInvalidSessionId.length()-2) + nodeIdStr;
-					logInfo("redirecting session to node "+nodeIdStr+", new sessionid="+redirectedButInvalidSessionId);
-					cookie.setValue(redirectedButInvalidSessionId);
-					replaceCookie(ureq.getHttpReq(), ureq.getHttpResp(), cookie);
-
-					// OLAT-5165: make sure we can always bypass the dmz reject mechanism (for 5min that is)
-					Cookie newCookie = new Cookie("bypassdmzreject", String.valueOf(System.currentTimeMillis()));
-					newCookie.setMaxAge(5 * 60); // 5min lifetime
-					newCookie.setPath(WebappHelper.getServletContextPath());
-					newCookie.setSecure(ureq.getHttpReq().isSecure());
-					newCookie.setComment("cookie allowing olat admin users to bypass dmz rejects");
-					ureq.getHttpResp().addCookie(newCookie);
-
-					OncePanel oncePanel = new OncePanel("refresh");
-					oncePanel.setContent(createVelocityContainer("refresh"));
-					mainVc.put("refresh", oncePanel);
-					break;
-				}
-			}
 		} else if (source == toggleStartStop) {
 			clusBus.resetStats();
 			updatePerfInfos();
@@ -324,12 +290,8 @@ public class ClusterAdminControllerCluster extends BasicController {
 			updatePerfInfos();
 		}
 	}
-
-  private void replaceCookie(HttpServletRequest request, HttpServletResponse response, Cookie cookie) {
-  	// for a generalized version of this, use org/apache/tomcat/util/http/ServerCookie.java
-  	response.setHeader("Set-Cookie", cookie.getName()+"="+cookie.getValue()+"; Path="+request.getContextPath()+(request.isSecure()?"":"; Secure"));
-  }
   
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == usc) {
 			getWindowControl().pop();
@@ -343,7 +305,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 		}
 	}
 	
-	void sleep (int milis) {
+	private void sleep (int milis) {
 		try {
 			Thread.sleep(milis);
 		} catch (InterruptedException e) {
@@ -351,7 +313,7 @@ public class ClusterAdminControllerCluster extends BasicController {
 		}
 	}
 	
-	void updateCacheInfo() {
+	private void updateCacheInfo() {
 		CacheWrapper<String,String> cw = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(this.getClass().getSimpleName(), "cachetest");
 		Object val = cw.get("akey");
 		cachetest.contextPut("cacheval", val==null? "-null-": val);

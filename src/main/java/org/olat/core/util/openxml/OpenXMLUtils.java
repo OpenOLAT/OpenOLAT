@@ -36,15 +36,14 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.olat.core.commons.services.image.Size;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.services.image.Size;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.ShieldOutputStream;
@@ -172,13 +171,7 @@ public class OpenXMLUtils {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(in);
 			return doc;
-		} catch (ParserConfigurationException e) {
-			log.error("", e);
-			return null;
-		} catch (IOException e) {
-			log.error("", e);
-			return null;
-		} catch (SAXException e) {
+		} catch (ParserConfigurationException | IOException | SAXException e) {
 			log.error("", e);
 			return null;
 		}
@@ -194,13 +187,7 @@ public class OpenXMLUtils {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(new InputSource(new StringReader(in)));
 			return doc;
-		} catch (ParserConfigurationException e) {
-			log.error("", e);
-			return null;
-		} catch (IOException e) {
-			log.error("", e);
-			return null;
-		} catch (SAXException e) {
+		} catch (ParserConfigurationException | IOException | SAXException e) {
 			log.error("", e);
 			return null;
 		}
@@ -210,6 +197,7 @@ public class OpenXMLUtils {
 		try {
 			// Use a Transformer for output
 			TransformerFactory tFactory = TransformerFactory.newInstance();
+			tFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer transformer = tFactory.newTransformer();
 			if(indent) {
 				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -219,13 +207,8 @@ public class OpenXMLUtils {
 			DOMSource source = new DOMSource(document);
 			Result result = new StreamResult(out);
 			transformer.transform(source, result);
-		} catch (TransformerConfigurationException e) {
-			log.error("", e);
-		} catch (TransformerFactoryConfigurationError e) {
-			log.error("", e);
-		} catch (TransformerException e) {
+		} catch (TransformerFactoryConfigurationError | TransformerException e) {
 			log.error("", e);
 		}
 	}
-
 }

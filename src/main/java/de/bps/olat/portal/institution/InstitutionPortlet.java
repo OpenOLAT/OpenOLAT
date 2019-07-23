@@ -20,6 +20,7 @@
 package de.bps.olat.portal.institution;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +40,7 @@ import org.olat.core.util.WebappHelper;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.naming.NoNameCoder;
 import com.thoughtworks.xstream.io.xml.XppDriver;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 
 public class InstitutionPortlet extends AbstractPortlet {
@@ -121,9 +123,7 @@ public class InstitutionPortlet extends AbstractPortlet {
 		this.cssWrapperClass = cssWrapperClass;
 	}
 
-	/**
-	 * @see org.olat.gui.control.generic.portal.Portlet#disposeRunComponent(boolean)
-	 */
+	@Override
 	public void disposeRunComponent() {
 		if (runCtr != null) {
 			runCtr.dispose();
@@ -143,7 +143,7 @@ public class InstitutionPortlet extends AbstractPortlet {
 		InstitutionConfiguration configuration = (InstitutionConfiguration)xstream.fromXML(configurationFile);
 		
 		for(InstitutionPortletEntry institution: configuration.getInstitution()) {
-			String shortName = institution.shortname;
+			String shortName = institution.getShortname();
 			if (shortName == null) { 
 				throw new StartupException("Institution portlet startup: No shortname given for one entry!");
 			}
@@ -162,9 +162,19 @@ public class InstitutionPortlet extends AbstractPortlet {
 	public static InstitutionPortletEntry getInstitutionPortletEntry(String institution) {
 		return (InstitutionPortletEntry) institutions.get(institution);
 	}
+	
 		
 	public static XStream getInstitutionConfigXStream() {
 		XStream xstream = new XStream(new XppDriver(new NoNameCoder()));
+		
+		XStream.setupDefaultSecurity(xstream);
+		Class<?>[] types = new Class[] {
+				InstitutionConfiguration.class, Value.class, PolymorphLinkElement.class, PolymorphLink.class,
+				InstitutionPortletEntry.class, InstitutionPortletSupervisorEntry.class, InstitutionPortlet.class,
+				ArrayList.class
+		};
+		xstream.addPermission(new ExplicitTypePermission(types));
+		
 		xstream.alias("configuration", InstitutionConfiguration.class);
 		xstream.addImplicitCollection(InstitutionConfiguration.class, "institution", "institution", InstitutionPortletEntry.class);
 		xstream.alias("institution", InstitutionPortletEntry.class);
@@ -209,12 +219,12 @@ public class InstitutionPortlet extends AbstractPortlet {
  */
 class InstitutionPortletEntry {
 
-	public List<InstitutionPortletSupervisorEntry> supervisor;
-	public List<PolymorphLink> polymorphlink;
-	public Value logo;
-	public Value name;
-	public Value url;
-	public String shortname;
+	private List<InstitutionPortletSupervisorEntry> supervisor;
+	private List<PolymorphLink> polymorphlink;
+	private Value logo;
+	private Value name;
+	private Value url;
+	private String shortname;
 
 	/**
 	 * @param institutionName Name of the inst.
@@ -230,21 +240,21 @@ class InstitutionPortletEntry {
 	 * @return Returns the institutionLogo.
 	 */
 	public String getInstitutionLogo() {
-		return logo == null ? null : logo.value;
+		return logo == null ? null : logo.getValue();
 	}
 
 	/**
 	 * @return Returns the institutionName.
 	 */
 	public String getInstitutionName() {
-		return name == null ? null : name.value;
+		return name == null ? null : name.getValue();
 	}
 
 	/**
 	 * @return Returns the institutionUrl.
 	 */
 	public String getInstitutionUrl() {
-		return url == null ? null : url.value;
+		return url == null ? null : url.getValue();
 	}
 
 	/**
@@ -263,6 +273,54 @@ class InstitutionPortletEntry {
 		}
 		return polymorphlink;
 	}
+
+	public List<InstitutionPortletSupervisorEntry> getSupervisor() {
+		return supervisor;
+	}
+
+	public void setSupervisor(List<InstitutionPortletSupervisorEntry> supervisor) {
+		this.supervisor = supervisor;
+	}
+
+	public List<PolymorphLink> getPolymorphlink() {
+		return polymorphlink;
+	}
+
+	public void setPolymorphlink(List<PolymorphLink> polymorphlink) {
+		this.polymorphlink = polymorphlink;
+	}
+
+	public Value getLogo() {
+		return logo;
+	}
+
+	public void setLogo(Value logo) {
+		this.logo = logo;
+	}
+
+	public Value getName() {
+		return name;
+	}
+
+	public void setName(Value name) {
+		this.name = name;
+	}
+
+	public Value getUrl() {
+		return url;
+	}
+
+	public void setUrl(Value url) {
+		this.url = url;
+	}
+
+	public String getShortname() {
+		return shortname;
+	}
+
+	public void setShortname(String shortname) {
+		this.shortname = shortname;
+	}
 }
 
 /**
@@ -275,11 +333,11 @@ class InstitutionPortletEntry {
  * @author Lars Eberle (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 class InstitutionPortletSupervisorEntry {
-	public Value phone;
-	public Value email;
-	public Value person;
-	public Value url;
-	public Value blog;
+	private Value phone;
+	private Value email;
+	private Value person;
+	private Value url;
+	private Value blog;
 
 	/**
 	 * @param supervisorName The supervisors name. 
@@ -293,37 +351,77 @@ class InstitutionPortletSupervisorEntry {
 	}
 	
 	public String getSupervisorBlog() {
-		return blog == null ? null : blog.value;
+		return blog == null ? null : blog.getValue();
 	}
 
 	/**
 	 * @return Returns the supervisorMail.
 	 */
 	public String getSupervisorMail() {
-		return email == null ? null : email.value;
+		return email == null ? null : email.getValue();
 	}
 
 	/**
 	 * @return Returns the supervisorPhone.
 	 */
 	public String getSupervisorPhone() {
-		return phone == null ? null : phone.value;
+		return phone == null ? null : phone.getValue();
 	}
 
 	public String getSupervisorPerson() {
-		return person == null ? null : person.value;
+		return person == null ? null : person.getValue();
 	}
 
 	public String getSupervisorURL() {
-		return url == null ? null : url.value;
+		return url == null ? null : url.getValue();
+	}
+
+	public Value getPhone() {
+		return phone;
+	}
+
+	public void setPhone(Value phone) {
+		this.phone = phone;
+	}
+
+	public Value getEmail() {
+		return email;
+	}
+
+	public void setEmail(Value email) {
+		this.email = email;
+	}
+
+	public Value getPerson() {
+		return person;
+	}
+
+	public void setPerson(Value person) {
+		this.person = person;
+	}
+
+	public Value getUrl() {
+		return url;
+	}
+
+	public void setUrl(Value url) {
+		this.url = url;
+	}
+
+	public Value getBlog() {
+		return blog;
+	}
+
+	public void setBlog(Value blog) {
+		this.blog = blog;
 	}
 }
 
 class PolymorphLink {
-	public String defaultId;
-	public String linkType;
-	public String linkText;
-	public List<PolymorphLinkElement> element;
+	private String defaultId;
+	private String linkType;
+	private String linkText;
+	private List<PolymorphLinkElement> element;
 
 	protected String getDefaultLink() {
 		return this.defaultId;
@@ -368,11 +466,35 @@ class PolymorphLink {
 	}
 	
 	protected boolean hasConditions() {
-		return (element != null && element.size() > 0);
+		return (element != null && !element.isEmpty());
 	}
 
 	protected String getLinkText() {
 		return linkText;
+	}
+
+	public String getDefaultId() {
+		return defaultId;
+	}
+
+	public void setDefaultId(String defaultId) {
+		this.defaultId = defaultId;
+	}
+
+	public List<PolymorphLinkElement> getElement() {
+		return element;
+	}
+
+	public void setElement(List<PolymorphLinkElement> element) {
+		this.element = element;
+	}
+
+	public void setLinkType(String linkType) {
+		this.linkType = linkType;
+	}
+
+	public void setLinkText(String linkText) {
+		this.linkText = linkText;
 	}
 }
 
@@ -381,16 +503,16 @@ class PolymorphLinkElement {
 	protected static final String STARTS_WITH = "starts_with";
 	protected static final String CONTAINS = "contains";
 
-	public String id;
-	public String cond;
-	public String value;
-	public String attribute;
+	private String id;
+	private String cond;
+	private String value;
+	private String attribute;
 
 	public PolymorphLinkElement() {
 		//
 	}
 
-	protected int getAttrib() {
+	public int getAttrib() {
 		if ("orgunit".equals(attribute)) {
 			return 0;
 		} else if ("studysubject".equals(attribute)) {
@@ -399,11 +521,15 @@ class PolymorphLinkElement {
 		return -1;
 	}
 
-	protected String getValue() {
+	public String getValue() {
 		return value;
 	}
+	
+	public void setValue(String value) {
+		this.value = value;
+	}
 
-	protected int getCondition() {
+	public int getCondition() {
 		if (STARTS_WITH.equals(cond)) {
 			return 0;
 		} else if (EQUALS.equals(cond)) {
@@ -414,13 +540,33 @@ class PolymorphLinkElement {
 		return -1;
 	}
 
-	protected String getId() {
+	public String getId() {
 		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getCond() {
+		return cond;
+	}
+
+	public void setCond(String cond) {
+		this.cond = cond;
+	}
+
+	public String getAttribute() {
+		return attribute;
+	}
+
+	public void setAttribute(String attribute) {
+		this.attribute = attribute;
 	}
 }
 
 class Value {
-	public String value;
+	private String value;
 
 	public String getValue() {
 		return value;
@@ -437,12 +583,16 @@ class Value {
 }
 
 class InstitutionConfiguration {
-	public List<InstitutionPortletEntry> institution;
+	private List<InstitutionPortletEntry> institution;
 	
 	public List<InstitutionPortletEntry> getInstitution() {
 		if(institution == null) {
 			return Collections.emptyList();
 		}
 		return institution;
+	}
+
+	public void setInstitution(List<InstitutionPortletEntry> institution) {
+		this.institution = institution;
 	}
 }

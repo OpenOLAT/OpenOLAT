@@ -151,7 +151,7 @@ public class BGAreaManagerImpl implements BGAreaManager {
 	@Override
 	public void addBGToBGArea(BusinessGroup group, BGArea area) {
 		BGtoAreaRelation bgAreaRel = new BGtoAreaRelationImpl(area, group);
-		dbInstance.saveObject(bgAreaRel);
+		dbInstance.getCurrentEntityManager().persist(bgAreaRel);
 	}
 
 	@Override
@@ -300,9 +300,6 @@ public class BGAreaManagerImpl implements BGAreaManager {
 		return count.intValue();
 	}
 
-	/**
-	 * @see org.olat.group.area.BGAreaManager#findBGAreasOfBGContext(org.olat.group.context.BGContext)
-	 */
 	@Override
 	public List<BGArea> findBGAreasInContext(OLATResource resource) {
 		StringBuilder sb = new StringBuilder();

@@ -6,19 +6,12 @@
 #else
 	<legend>Node: $stat.nodeId</legend>
 #end
-	
 	<table class="table table-condensed table-striped">
 		<tr>
 			<td>Startup:</td><td>$!stat.config.startupTime</td>
 			<td>Messages received: </td><td>$stat.numOfReceivedMessages</td>
 			<td>Latest received Id: </td><td>$stat.latestReceivedMsgId</td>
 			<td>Count of missed messages: </td><td>$stat.numOfMissedMsgs</td>
-
-#if ($thisNodeId==$stat.nodeId)
-			<td>$r.translate("you.are.on.this.node")</td>
-#else
-			<td class="text-left"><a $r.hrefAndOnclick("switchToNode",false,false,"nodeId",$stat.nodeId)>$r.translate("switch.to.node")</a></td>
-#end
 		</tr>
 	</table>
 </fieldset>

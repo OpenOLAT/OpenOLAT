@@ -134,6 +134,7 @@ public class ProcSamplerJob extends QuartzJobBean {
 		// Use a Transformer for output
 		try(OutputStream out = new FileOutputStream(xmlFile)) {
 			TransformerFactory tFactory = TransformerFactory.newInstance();
+			tFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer transformer = tFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.transform(new DOMSource(doc), new StreamResult(out));
