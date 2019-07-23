@@ -59,7 +59,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-1");
 		dbInstance.commitAndCloseSession();
 		
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(rollCall);
@@ -76,7 +76,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("lecturer-1");
 		dbInstance.commitAndCloseSession();
 		
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlockRollCall reloadRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
@@ -97,7 +97,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Integer> absences = Collections.singletonList(2);
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, absences);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null, absences);
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlockRollCall reloadRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
@@ -127,7 +127,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Integer> absences = Arrays.asList(0);
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, absences);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null, absences);
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlockRollCall reloadRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
@@ -162,7 +162,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Integer> absences = Arrays.asList(0, 1, 2, 3);
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, absences);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null, absences);
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlockRollCall reloadRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
@@ -197,7 +197,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Integer> absences = Arrays.asList(0, 1, 2, 3);
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, absences);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null, absences);
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlockRollCall reloadRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
@@ -230,7 +230,7 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Integer> absences = Arrays.asList(1, 2);
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, absences);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, null, absences);
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlockRollCall reloadRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
@@ -263,7 +263,8 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		List<Integer> absences = Arrays.asList(1, 2);
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, absences);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id,
+				null, null, null, null, absences);
 		dbInstance.commitAndCloseSession();
 		
 		LectureBlockRollCall reloadRollCall = lectureBlockRollCallDao.loadByKey(rollCall.getKey());
@@ -307,10 +308,14 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		lectureBlockDao.update(closedLectureBlock);
 
 		List<Integer> absences = Arrays.asList(1, 2);
-		LectureBlockRollCall rollCall1 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id1, null, null, null, Collections.emptyList());
-		LectureBlockRollCall rollCall2 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id2, null, null, null, absences);
-		LectureBlockRollCall rollCall3 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id1, null, null, null, absences);
-		LectureBlockRollCall rollCall4 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id2, null, null, null, Collections.emptyList());
+		LectureBlockRollCall rollCall1 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id1,
+				null, null, null, null, Collections.emptyList());
+		LectureBlockRollCall rollCall2 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id2,
+				null, null, null, null, absences);
+		LectureBlockRollCall rollCall3 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id1,
+				null, null, null, null, absences);
+		LectureBlockRollCall rollCall4 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id2,
+				null, null, null, null, Collections.emptyList());
 		dbInstance.commit();
 		
 		rollCall2.setAbsenceSupervisorNotificationDate(new Date());
@@ -376,10 +381,14 @@ public class LectureBlockRollCallDAOTest extends OlatTestCase {
 		lectureBlockDao.update(closedLectureBlock);
 
 		List<Integer> absences = Arrays.asList(1, 2);
-		LectureBlockRollCall rollCall1 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id1, null, null, null, Collections.emptyList());
-		LectureBlockRollCall rollCall2 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id2, null, null, null, absences);
-		LectureBlockRollCall rollCall3 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id1, null, null, null, absences);
-		LectureBlockRollCall rollCall4 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id2, null, null, null, Collections.emptyList());
+		LectureBlockRollCall rollCall1 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id1,
+				null, null, null, null, Collections.emptyList());
+		LectureBlockRollCall rollCall2 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id2,
+				null, null, null, null, absences);
+		LectureBlockRollCall rollCall3 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id1,
+				null, null, null, null, absences);
+		LectureBlockRollCall rollCall4 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id2,
+				null, null, null, null, Collections.emptyList());
 		dbInstance.commit();
 		
 		rollCall2.setAbsenceSupervisorNotificationDate(new Date());

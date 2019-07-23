@@ -131,6 +131,15 @@
 	}
 }
 
+.o_form_inline_mandatory_compact {
+	i {
+		width: 20px;
+	}
+	select.form-control {
+		width: calc(100% - 25px);
+	}
+}
+
 /* centered form labels are still left aligned */
 .o_centered_form {
 	text-align: center;

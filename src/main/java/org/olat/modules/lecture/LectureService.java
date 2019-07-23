@@ -228,7 +228,7 @@ public interface LectureService {
 	/**
 	 * Updates the reason and return the freshest.
 	 * 
-	 * @param reason The reaosn to update
+	 * @param reason The reason to update
 	 * @return A merged reason
 	 */
 	public Reason updateReason(Reason reason);
@@ -236,6 +236,38 @@ public interface LectureService {
 	public boolean isReasonInUse(Reason reason);
 	
 	public boolean deleteReason(Reason reason);
+	
+	
+	public List<AbsenceCategory> getAllAbsencesCategories();
+	
+	/**
+	 * Load a category by its primary key.
+	 * 
+	 * @param key The primary key
+	 * @return A category of absences
+	 */
+	public AbsenceCategory getAbsenceCategory(Long key);
+	
+	/**
+	 * Creates and persists a new category.
+	 * 
+	 * @param title The title
+	 * @param description The description
+	 * @return
+	 */
+	public AbsenceCategory createAbsenceCategory(String title, String description);
+	
+	/**
+	 * Updates the category and return the freshest.
+	 * 
+	 * @param reason The category to update
+	 * @return A merged category
+	 */
+	public AbsenceCategory updateAbsenceCategory(AbsenceCategory category);
+	
+	public boolean isAbsenceCategoryInUse(AbsenceCategory category);
+	
+	public void deleteAbsenceCategory(AbsenceCategory category);
 
 	
 	/**
@@ -322,7 +354,7 @@ public interface LectureService {
 	 * @return A new persisted roll call
 	 */
 	public LectureBlockRollCall getOrCreateRollCall(Identity identity, LectureBlock lectureBlock,
-			Boolean authorizedAbsence, String absenceReason);
+			Boolean authorizedAbsence, String absenceReason, AbsenceCategory category);
 	
 	public LectureBlockRollCall getRollCall(LectureBlockRollCallRef rollCall);
 	

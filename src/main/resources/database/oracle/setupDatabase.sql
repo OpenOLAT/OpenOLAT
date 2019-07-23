@@ -2498,6 +2498,15 @@ create table o_lecture_reason (
   primary key (id)
 );
 
+create table o_lecture_absence_category (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   l_title varchar(255),
+   l_descr CLOB,
+   primary key (id)
+);
+
 create table o_lecture_block (
   id number(20) generated always as identity,
   creationdate date not null,
@@ -2550,6 +2559,7 @@ create table o_lecture_block_roll_call (
   l_appeal_status_reason CLOB,
   fk_lecture_block number(20) not null,
   fk_identity number(20) not null,
+  fk_absence_category number(20),
   primary key (id)
 );
 
@@ -3993,6 +4003,9 @@ alter table o_lecture_block add constraint lec_block_gcoach_idx foreign key (fk_
 create index idx_lec_block_gcoach_idx on o_lecture_block(fk_teacher_group);
 alter table o_lecture_block add constraint lec_block_reason_idx foreign key (fk_reason) references o_lecture_reason (id);
 create index idx_lec_block_reason_idx on o_lecture_block(fk_reason);
+
+alter table o_lecture_block_roll_call add constraint absence_category_idx foreign key (fk_absence_category) references o_lecture_absence_category (id);
+create index idx_absence_category_idx on o_lecture_block_roll_call (fk_absence_category);
 
 alter table o_lecture_block_to_group add constraint lec_block_to_block_idx foreign key (fk_group) references o_bs_group (id);
 create index idx_lec_block_to_block_idx on o_lecture_block_to_group(fk_group);
