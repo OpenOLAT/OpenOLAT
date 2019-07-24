@@ -158,6 +158,7 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 		createMeetingButton.setVisible(!StringHelper.containsNonWhitespace(meeting.getScoId()));
 		
 		configureMeetingButton = LinkFactory.createButton("meeting.configure.button", flc.getFormItemComponent(), this);
+		configureMeetingButton.setVisible(moderator || administrator);
 		configureMeetingButton.setTarget("_blank");
 		
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
