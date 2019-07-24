@@ -181,7 +181,7 @@ public class QTI21Page {
 			OOGraphene.waitElementPresence(hotspotBy, 5, browser);
 			WebElement element = browser.findElement(hotspotBy);
 			Dimension dim = element.getSize();
-			Position pos = Position.valueOf(coords, dim, browser);
+			Position pos = Position.valueOf(coords, dim);
 			new Actions(browser)
 				.moveToElement(element, pos.getX(), pos.getY())
 				.click()
@@ -220,7 +220,7 @@ public class QTI21Page {
 			By imgBy = By.xpath("//div[contains(@class,'graphicOrderInteraction')]/div/img");
 			WebElement element = browser.findElement(imgBy);
 			Dimension dim = element.getSize();
-			Position pos = Position.valueOf(coords, dim, browser);
+			Position pos = Position.valueOf(coords, dim);
 			new Actions(browser)
 				.moveToElement(element, pos.getX(), pos.getY())
 				.click()
@@ -393,7 +393,7 @@ public class QTI21Page {
 			By imgBy = By.xpath("//div[contains(@class,'graphicAssociateInteraction')]/div/div/img");
 			WebElement element = browser.findElement(imgBy);
 			Dimension dim = element.getSize();
-			Position pos = Position.valueOf(coords, dim, browser);
+			Position pos = Position.valueOf(coords, dim);
 			new Actions(browser)
 				.moveToElement(element, pos.getX(), pos.getY())
 				.click()
@@ -425,8 +425,8 @@ public class QTI21Page {
 		By targetBy = By.xpath("//div[@class='orderInteraction']//div[contains(@class,'target')]/ul");
 		WebElement targetEl = browser.findElement(targetBy);
 		
-		Position sourcePos = Position.valueOf(30, 30, sourceEl.getSize(), browser);
-		Position targetPos = Position.valueOf(30, 30,  targetEl.getSize(), browser);
+		Position sourcePos = Position.valueOf(30, 30, sourceEl.getSize());
+		Position targetPos = Position.valueOf(30, 30,  targetEl.getSize());
 		new Actions(browser)
 			.moveToElement(sourceEl, sourcePos.getX(), sourcePos.getY())
 			.clickAndHold()
@@ -472,7 +472,7 @@ public class QTI21Page {
 		By imgBy = By.xpath("//div[contains(@class,'graphicGapMatchInteraction')]/div/div/img");
 		WebElement element = browser.findElement(imgBy);
 		Dimension dim = element.getSize();
-		Position pos = Position.valueOf(coords, dim, browser);
+		Position pos = Position.valueOf(coords, dim);
 		new Actions(browser)
 			.moveToElement(element, pos.getX(), pos.getY())
 			.click()
@@ -488,7 +488,7 @@ public class QTI21Page {
 	 * @return Itself
 	 */
 	public QTI21Page answerSelectPoint(int x, int y, int width, int height) {
-		Position pos = Position.valueOf(x, y, width, height, browser);
+		Position pos = Position.valueOf(x, y, width, height);
 		By canvasBy = By.xpath("//div[contains(@class,'selectPointInteraction')]/div/canvas");
 		WebElement canvasEl = browser.findElement(canvasBy);
 		new Actions(browser)
@@ -529,9 +529,9 @@ public class QTI21Page {
 		By targetBy = By.xpath("//div[@class='positionObjectStage']//img[contains(@id,'qtiworks_id_container_')]");
 		WebElement targetEl = browser.findElement(targetBy);
 		Dimension targetDim = targetEl.getSize();
-		Position targetPos = Position.valueOf(x, y, firefoxCorrection, targetDim, browser);
+		Position targetPos = Position.valueOf(x, y, firefoxCorrection, targetDim);
 		Dimension itemDim = itemEl.getSize();
-		Position itemPos = Position.valueOf(5, 5, itemDim, browser);
+		Position itemPos = Position.valueOf(5, 5, itemDim);
 		new Actions(browser)
 			.moveToElement(itemEl, itemPos.getX(), itemPos.getY())
 			.clickAndHold()
@@ -567,7 +567,7 @@ public class QTI21Page {
 		Dimension size = sliderEl.getSize();
 		float height = (size.getHeight() / 100f) * val;
 		int scaledY = Math.round(size.getHeight() - height);
-		Position pos = Position.valueOf(5, scaledY, size, browser);
+		Position pos = Position.valueOf(5, scaledY, size);
 		new Actions(browser)
 			.moveToElement(sliderEl, pos.getX(), pos.getY())
 			.click()

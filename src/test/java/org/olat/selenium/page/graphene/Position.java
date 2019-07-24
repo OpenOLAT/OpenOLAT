@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.openqa.selenium.Dimension;
-import org.openqa.selenium.WebDriver;
 
 /**
  * 
@@ -49,7 +48,7 @@ public class Position {
 		return y;
 	}
 	
-	public static Position valueOf(String coords, Dimension dimension, WebDriver browser) {
+	public static Position valueOf(String coords, Dimension dimension) {
 		List<Integer> coordList = AssessmentItemFactory.coordsList(coords);
 		
 		int x = 0;
@@ -71,13 +70,13 @@ public class Position {
 		return new Position(x, y);
 	}
 	
-	public static Position valueOf(int x, int y, Dimension dimension, WebDriver browser) {
+	public static Position valueOf(int x, int y, Dimension dimension) {
 		x = x - Math.round(dimension.getWidth() / 2.0f);
 		y = y - Math.round(dimension.getHeight() / 2.0f);
 		return new Position(x, y);
 	}
 	
-	public static Position valueOf(int x, int y, int firefoxCorrection, Dimension dimension, WebDriver browser) {
+	public static Position valueOf(int x, int y, int firefoxCorrection, Dimension dimension) {
 		x = x - Math.round(dimension.getWidth() / 2.0f);
 		y = y - Math.round(dimension.getHeight() / 2.0f);
 		x += firefoxCorrection;
@@ -85,7 +84,7 @@ public class Position {
 		return new Position(x, y);
 	}
 	
-	public static Position valueOf(int x, int y, int width, int height, WebDriver browser) {
+	public static Position valueOf(int x, int y, int width, int height) {
 		x = x - Math.round(width / 2.0f);
 		y = y - Math.round(height / 2.0f);
 		return new Position(x, y);

@@ -259,7 +259,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				fireEvent(ureq, event);
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent
-						.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, currBusinessGroup, null);
+						.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, currBusinessGroup, null, getIdentity());
 			}
 		} else if (source == alreadyLockedDialogController) {
 			//closed dialog box either by clicking ok, or closing the box
@@ -276,7 +276,7 @@ public class BusinessGroupEditController extends BasicController implements Cont
 				setAllTabs(ureq);
 				// notify current active users of this business group
 				BusinessGroupModifiedEvent
-						.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, currBusinessGroup, null);
+						.fireModifiedGroupEvents(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT, currBusinessGroup, null, getIdentity());
 				// do logging
 				ThreadLocalUserActivityLogger.log(GroupLoggingAction.GROUP_CONFIGURATION_CHANGED, getClass());
 			}

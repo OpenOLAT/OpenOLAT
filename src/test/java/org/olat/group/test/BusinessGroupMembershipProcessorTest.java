@@ -130,7 +130,7 @@ public class BusinessGroupMembershipProcessorTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//manually trigger the event
-		businessGroupMembershipProcessor.event(new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, businessGroup, member));
+		businessGroupMembershipProcessor.event(new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, businessGroup, member, null));
 		dbInstance.commitAndCloseSession();
 	
 		//check that subscription of member was not deleted because it's still coach

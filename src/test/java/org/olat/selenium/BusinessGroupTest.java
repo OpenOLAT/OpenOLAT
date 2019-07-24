@@ -867,15 +867,14 @@ public class BusinessGroupTest extends Deployments {
 			.quickPublish(UserAccess.registred);
 		courseEditor.clickToolbarBack();
 		
-
 		for(String groupName:groups){
-				navBar
-					.openGroups(browser)
-					.selectGroup(groupName)
-					.openAdministration()
-					.openAdminMembers()
-					.setVisibility(true, true, false)
-					.openMembers();
+			navBar
+				.openGroups(browser)
+				.selectGroup(groupName)
+				.openAdministration()
+				.openAdminMembers()
+				.setVisibility(true, true, false)
+				.openMembers();
 		}
 				
 		//Ryomou open the course	
@@ -907,8 +906,9 @@ public class BusinessGroupTest extends Deployments {
 		//assert that that no more enrollment is allowed
 		enrollmentPage
 			.assertNoEnrollmentAllowed();
-		
 	}
+	
+	
 	/**
 	 * An author create a course and a business group in the members
 	 * management. It has max. participants set to 1 and no waiting list.

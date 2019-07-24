@@ -218,7 +218,7 @@ public class ENRunController extends BasicController implements GenericEventList
 					// fire event to indicate runmaincontroller that the menuview is to update
 					doEnrollView(updateModel());
 					if (enrollStatus.isEnrolled() ) {
-						fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, choosenGroup, getIdentity()));
+						fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, choosenGroup, getIdentity(), null));
 					} else {
 						fireEvent(ureq, Event.DONE_EVENT);
 					}
@@ -236,7 +236,7 @@ public class ENRunController extends BasicController implements GenericEventList
 					}
 
 					// fire event to indicate runmaincontroller that the menuview is to update
-					fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, choosenGroup, getIdentity()));
+					fireEvent(ureq, new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, choosenGroup, getIdentity(), null));
 					// events are already fired BusinessGroupManager level :: BusinessGroupModifiedEvent.fireModifiedGroupEvents(BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT, group,  ureq.getIdentity());
 					// but async
 					doEnrollView(updateModel());

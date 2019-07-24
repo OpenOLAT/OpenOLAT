@@ -95,7 +95,7 @@ public class QTI21HotspotEditorPage extends QTI21AssessmentItemEditorPage {
 		
 		WebElement circleEl = browser.findElement(circleBy);
 		Dimension dim = circleEl.getSize();
-		Position pos = Position.valueOf(10, 10, dim, browser);
+		Position pos = Position.valueOf(10, 10, dim);
 		new Actions(browser)
 			.moveToElement(circleEl, pos.getX(), pos.getY())
 			.clickAndHold()

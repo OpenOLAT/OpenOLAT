@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -66,17 +67,18 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	private Long groupKey;
 	private Long identityKey;
 	private boolean isTutor = false;
-
+	private Long senderKey;
 	
 	/**
 	 * @param command one of the class constants
 	 * @param group
 	 * @param identity
 	 */
-	public BusinessGroupModifiedEvent(String command, BusinessGroup group, Identity identity) {
+	public BusinessGroupModifiedEvent(String command, BusinessGroup group, IdentityRef identity, IdentityRef sender) {
 		super(command);
 		this.groupKey = group.getKey();
 		this.identityKey = (identity == null ? null : identity.getKey());
+		this.senderKey = (sender == null ? null : sender.getKey());
 		if (identity != null) {
 			if (command.equals(MYSELF_ASOWNER_REMOVED_EVENT)) {
 				isTutor = true; // Removed myself as tutor/owner from group
@@ -91,6 +93,10 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	 */
 	public Long getModifiedGroupKey() {
 		return this.groupKey;
+	}
+	
+	public boolean isSender(IdentityRef identity) {
+		return senderKey != null && identity != null && senderKey.equals(identity.getKey());
 	}
 
 	/**
@@ -138,7 +144,6 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 		if (added) {
 			// load the business group and add it to the groups list
 			BusinessGroup nGroup = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(modKey);
-			// if (SyncHelper.)
 			if(nGroup != null) {
 				businessGroups.add(nGroup);
 			}
@@ -165,8 +170,8 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	 * @param group The group affected by the modification
 	 * @param identity The identity affected by the modification
 	 */
-	public static void fireModifiedGroupEvents(String command, BusinessGroup group, Identity identity) {
-		BusinessGroupModifiedEvent modifiedEvent = new BusinessGroupModifiedEvent(command, group, identity);
+	public static void fireModifiedGroupEvents(String command, BusinessGroup group, Identity identity, IdentityRef sender) {
+		BusinessGroupModifiedEvent modifiedEvent = new BusinessGroupModifiedEvent(command, group, identity, sender);
 		EventBus eventBus = CoordinatorManager.getInstance().getCoordinator().getEventBus();
 		// 1) notify listeners of group events
 		eventBus.fireEventToListenersOf(modifiedEvent, group);
@@ -180,15 +185,14 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	}
 	
 	public static Deferred createDeferredEvent(String command, BusinessGroup group, Identity identity) {
-		Deferred modifiedEvent = new Deferred(command, group, identity);
-		return modifiedEvent;	
+		return new Deferred(command, group, identity);	
 	}
 	
 	public static void fireDeferredEvents(List<Deferred> events) {
 		if(events == null || events.isEmpty()) return;
 		
 		for(Deferred deferedEvent:events) {
-			fireModifiedGroupEvents(deferedEvent.command, deferedEvent.group, deferedEvent.identity);
+			fireModifiedGroupEvents(deferedEvent.command, deferedEvent.group, deferedEvent.identity, null);
 		}
 	}
 	
