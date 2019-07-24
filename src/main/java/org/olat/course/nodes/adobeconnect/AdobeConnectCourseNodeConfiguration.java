@@ -74,6 +74,7 @@ public class AdobeConnectCourseNodeConfiguration extends AbstractCourseNodeConfi
 		return new AdobeConnectCourseNode();
 	}
 
+	@Override
 	public String getLinkText(Locale locale) {
 		Translator fallback = Util.createPackageTranslator(CourseNodeConfiguration.class, locale);
 		Translator translator = Util.createPackageTranslator(this.getClass(), locale, fallback);
@@ -83,6 +84,6 @@ public class AdobeConnectCourseNodeConfiguration extends AbstractCourseNodeConfi
 	@Override
 	public boolean isEnabled() {
 		AdobeConnectModule module = CoreSpringFactory.getImpl(AdobeConnectModule.class);
-		return module.isEnabled();
+		return module.isEnabled() && module.isCoursesEnabled();
 	}
 }

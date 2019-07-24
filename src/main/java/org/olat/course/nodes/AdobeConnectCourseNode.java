@@ -30,6 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -129,10 +130,16 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 		String providerId = getModuleConfiguration().getStringValue("vc_provider_id");
 		
 		Controller controller;
+		Roles roles = ureq.getUserSession().getRoles();
 		if("wimba".equals(providerId)) {
 			Translator trans = Util.createPackageTranslator(AdobeConnectCourseNodeConfiguration.class, ureq.getLocale());
 			String title = trans.translate("wimba.not.supported.title");
 			String message = trans.translate("wimba.not.supported.message");
+			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else if(roles.isGuestOnly()) {
+			Translator trans = Util.createPackageTranslator(AdobeConnectCourseNode.class, ureq.getLocale());
+			String title = trans.translate("guestnoaccess.title");
+			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
 			// check if user is moderator of the virtual classroom

@@ -1206,7 +1206,8 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			nodeOpenMeetings = gtnChild;
 		}
 		
-		if(adobeConnectModule.isEnabled() && collabTools.isToolEnabled(CollaborationTools.TOOL_ADOBECONNECT)) {
+		if(adobeConnectModule.isEnabled() && adobeConnectModule.isGroupsEnabled()
+				&& collabTools.isToolEnabled(CollaborationTools.TOOL_ADOBECONNECT)) {
 			gtnChild = new GenericTreeNode(nodeIdPrefix.concat("adobeconnect"));
 			gtnChild.setTitle(translate("menutree.adobeconnect"));
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_ADOBECONNECT);

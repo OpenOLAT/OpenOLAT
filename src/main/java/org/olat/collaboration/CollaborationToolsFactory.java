@@ -108,7 +108,7 @@ public class CollaborationToolsFactory {
 			toolArr.add(CollaborationTools.TOOL_OPENMEETINGS);
 		}
 		AdobeConnectModule adobeConnectModule = CoreSpringFactory.getImpl(AdobeConnectModule.class);
-		if(adobeConnectModule.isEnabled()) {
+		if(adobeConnectModule.isEnabled() && adobeConnectModule.isGroupsEnabled()) {
 			toolArr.add(CollaborationTools.TOOL_ADOBECONNECT);
 		}
 		TOOLS = ArrayHelper.toArray(toolArr);				

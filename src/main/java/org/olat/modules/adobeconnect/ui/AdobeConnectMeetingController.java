@@ -83,6 +83,7 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 
 	private int counter;
 	private Link joinButton;
+	private Link configureMeetingButton;
 	
 	private FormLink registerButton;
 	private FormLink createMeetingButton;
@@ -155,7 +156,11 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 		
 		createMeetingButton = uifactory.addFormLink("meeting.create.button", flc, Link.BUTTON);
 		createMeetingButton.setVisible(!StringHelper.containsNonWhitespace(meeting.getScoId()));
-
+		
+		configureMeetingButton = LinkFactory.createButton("meeting.configure.button", flc.getFormItemComponent(), this);
+		configureMeetingButton.setVisible(moderator || administrator);
+		configureMeetingButton.setTarget("_blank");
+		
 		joinButton = LinkFactory.createButtonLarge("meeting.join.button", flc.getFormItemComponent(), this);
 		joinButton.setTarget("_blank");
 		joinButton.setVisible(!ended || moderator || administrator);
@@ -305,6 +310,8 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(joinButton == source) {
 			doJoin(ureq);
+		} else if(configureMeetingButton == source) {
+			doConfigureMeeting(ureq);
 		}
 		super.event(ureq, source, event);
 	}
@@ -343,12 +350,12 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 		} else if(sharedDocumentButton == source) {
 			doShareDocuments(ureq);
 		} else if(createMeetingButton == source) {
-			doCreateMeeting(ureq);
+			doCreateMeeting();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private void doCreateMeeting(UserRequest ureq) {
+	private void doCreateMeeting() {
 		meeting = adobeConnectManager.getMeeting(meeting);
 		AdobeConnectErrors errors = new AdobeConnectErrors();
 		meeting = adobeConnectManager.createAdobeMeeting(meeting, getLocale(), guestsAccess, errors);
@@ -360,6 +367,21 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 			AdobeConnectEvent createEvent = new AdobeConnectEvent(AdobeConnectEvent.CREATE_MEETING, meeting.getKey(), getIdentity().getKey());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(createEvent, meetingOres);
 		}
+	}
+	
+	private void doConfigureMeeting(UserRequest ureq) {
+		meeting = adobeConnectManager.getMeeting(meeting);
+		AdobeConnectErrors errors = new AdobeConnectErrors();
+		if(!StringHelper.containsNonWhitespace(meeting.getScoId())) {
+			meeting = adobeConnectManager.createAdobeMeeting(meeting, getLocale(), guestsAccess, errors);
+		}
+		updateButtonsAndStatus();
+		if(errors.hasErrors()) {
+			getWindowControl().setError(AdobeConnectErrorHelper.formatErrors(getTranslator(), errors));
+		} else if(administrator || moderator) {
+			String meetingUrl = adobeConnectManager.join(meeting, getIdentity(), (administrator || moderator), errors);
+			redirectToAdobeConnect(ureq, meetingUrl, errors);
+		} 
 	}
 	
 	private void doJoin(UserRequest ureq) {
@@ -378,8 +400,11 @@ public class AdobeConnectMeetingController extends FormBasicController implement
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(openEvent, meetingOres);
 		} else if(meeting.isOpened() || !moderatorStartMeeting) {
 			meetingUrl = adobeConnectManager.join(meeting, getIdentity(), (administrator || moderator), errors);
-		} 
-
+		}
+		redirectToAdobeConnect(ureq, meetingUrl, errors);
+	}
+	
+	private void redirectToAdobeConnect(UserRequest ureq, String meetingUrl, AdobeConnectErrors errors) {
 		if(errors.hasErrors()) {
 			getWindowControl().setError(AdobeConnectErrorHelper.formatErrors(getTranslator(), errors));
 		} else if(StringHelper.containsNonWhitespace(meetingUrl)) {
