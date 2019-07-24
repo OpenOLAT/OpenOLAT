@@ -138,7 +138,7 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 
 		Date startDate = meeting == null ? null : meeting.getStartDate();
 		startDateEl = uifactory.addDateChooser("meeting.start", "meeting.start", startDate, formLayout);
-		startDateEl.setMandatory(true);
+		startDateEl.setMandatory(!permanent);
 		startDateEl.setDateChooserTimeEnabled(true);
 		
 		String leadtime = meeting == null ? null : Long.toString(meeting.getLeadTime());
@@ -146,7 +146,7 @@ public class EditAdobeConnectMeetingController extends FormBasicController {
 		
 		Date endDate = meeting == null ? null : meeting.getEndDate();
 		endDateEl = uifactory.addDateChooser("meeting.end", "meeting.end", endDate, formLayout);
-		endDateEl.setMandatory(true);
+		endDateEl.setMandatory(!permanent);
 		endDateEl.setDefaultValue(startDateEl);
 		endDateEl.setDateChooserTimeEnabled(true);
 		

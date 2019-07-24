@@ -1,4 +1,9 @@
-<h3>$r.escapeHtml($title)</h3>
+<div class="o_header_with_buttons"><h3>$r.escapeHtml($title)</h3>
+#if($r.available("meeting.configure.button")) 
+	<div class="o_button_group">
+		$r.render("meeting.configure.button")
+	</div>
+#end</div>
 #if($errorMessage && !${errorMessage.isEmpty()})
 	<div class="o_error">$errorMessage</div>
 #end

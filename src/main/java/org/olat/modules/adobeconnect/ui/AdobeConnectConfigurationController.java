@@ -58,6 +58,7 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 	private static final String[] CLEAN_KEYS = { "-", "1", "2", "3", "4", "5", "7", "14", "21", "30" };
 	private static final String[] CREATE_KEYS = { "immediately", "differed" };
 	private static final String[] SINGLE_KEYS = { "single", "perdate" };
+	private static final String[] FOR_KEYS = { "courses", "groups" };
 	private static final String PLACEHOLDER = "xxx-placeholder-xxx";
 	
 	private FormLink checkLink;
@@ -71,6 +72,7 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 	private SingleSelection createMeetingEl;
 	private SingleSelection singleMeetingEl;
 	private MultipleSelectionElement moduleEnabled;
+	private MultipleSelectionElement enabledForEl;
 
 	private static final String[] enabledKeys = new String[]{"on"};
 	private final String[] enabledValues;
@@ -100,6 +102,13 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 		moduleEnabled = uifactory.addCheckboxesHorizontal("adobeconnect.module.enabled", formLayout, enabledKeys, enabledValues);
 		moduleEnabled.select(enabledKeys[0], adobeConnectModule.isEnabled());
 		moduleEnabled.addActionListener(FormEvent.ONCHANGE);
+		
+		String[] forValues = new String[] {
+			translate("adobeconnect.module.enabled.for.courses"), translate("adobeconnect.module.enabled.for.groups")
+		};
+		enabledForEl = uifactory.addCheckboxesVertical("adobeconnect.module.enabled.for", formLayout, FOR_KEYS, forValues, 1);
+		enabledForEl.select(FOR_KEYS[0], adobeConnectModule.isCoursesEnabled());
+		enabledForEl.select(FOR_KEYS[1], adobeConnectModule.isGroupsEnabled());
 			
 		//spacer
 		spacerEl = uifactory.addSpacerElement("spacer", formLayout, false);
@@ -188,12 +197,17 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean enabled = moduleEnabled.isAtLeastSelected(1);
+		enabledForEl.setVisible(enabled);
 		checkLink.setVisible(enabled);
 		urlEl.setVisible(enabled);
 		loginEl.setVisible(enabled);
 		passwordEl.setVisible(enabled);
+		accountIdEl.setVisible(enabled);
 		spacerEl.setVisible(enabled);
 		providerEl.setVisible(enabled);
+		cleanMeetingsEl.setVisible(enabled);
+		createMeetingEl.setVisible(enabled);
+		singleMeetingEl.setVisible(enabled);
 	}
 	
 	@Override
@@ -293,6 +307,8 @@ public class AdobeConnectConfigurationController extends FormBasicController {
 				adobeConnectModule.setAdminLogin(loginEl.getValue());
 				adobeConnectModule.setProviderId(providerEl.getSelectedKey());
 				adobeConnectModule.setAccountId(accountIdEl.getValue());
+				adobeConnectModule.setCoursesEnabled(enabledForEl.isSelected(0));
+				adobeConnectModule.setGroupsEnabled(enabledForEl.isSelected(1));
 				if(cleanMeetingsEl.isSelected(0)) {
 					adobeConnectModule.setCleanupMeetings(false);
 					adobeConnectModule.setDaysToKeep(null);
