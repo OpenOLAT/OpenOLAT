@@ -1014,6 +1014,9 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 		} else if (event instanceof BusinessGroupModifiedEvent) {
 			BusinessGroupModifiedEvent bgmfe = (BusinessGroupModifiedEvent) event;
 			if (event.getCommand().equals(BusinessGroupModifiedEvent.CONFIGURATION_MODIFIED_EVENT)) {
+				if(bgmfe.isSender(getIdentity())) {
+					return;// receive event by other means
+				}
 				// reset business group property manager
 				// update reference to update business group object
 				businessGroup = businessGroupService.loadBusinessGroup(businessGroup);
@@ -1124,7 +1127,18 @@ public class BusinessGroupMainRunController extends MainLayoutBasicController im
 			gtnChild.setUserObject(ACTIVITY_MENUSELECT_MEMBERSLIST);
 			gtnChild.setAltText(translate("menutree.members.alt"));
 			gtnChild.setIconCssClass("o_icon_group");
-			gtnChild.setCssClass("o_sel_group_members");
+			StringBuilder selCss = new StringBuilder();
+			selCss.append("o_sel_group_members");
+			if(businessGroup.isOwnersVisibleIntern()) {
+				selCss.append(" o_sel_group_owners_members");
+			}
+			if(businessGroup.isParticipantsVisibleIntern()) {
+				selCss.append(" o_sel_group_participants_members");
+			}
+			if(businessGroup.isWaitingListVisibleIntern()) {
+				selCss.append(" o_sel_group_waiting_members");	
+			}
+			gtnChild.setCssClass(selCss.toString());
 			root.addChild(gtnChild);
 			nodeGroupOwners = gtnChild;
 		}

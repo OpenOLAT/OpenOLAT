@@ -50,7 +50,6 @@ public class GroupPage {
 	private static final By toolsBy = By.className("o_sel_collab_tools");
 	private static final By editDetails = By.className("o_sel_group_edit_title");
 	private static final By bookingConfigBy = By.className("o_sel_accesscontrol_create");
-	private static final By memberMenuItem = By.cssSelector("li.o_sel_group_members a");
 	
 	private static final Tool calendarTool = new Tool(
 			By.cssSelector("li.o_sel_group_calendar a"),
@@ -124,19 +123,19 @@ public class GroupPage {
 	
 	public IMPage openChat() {
 		openMenuItem(chatTool);
-		OOGraphene.waitElement(By.cssSelector("a.o_sel_im_open_tool_chat"), 2, browser);
+		OOGraphene.waitElement(By.cssSelector("a.o_sel_im_open_tool_chat"), browser);
 		return new IMPage(browser);
 	}
 	
 	public CalendarPage openCalendar() {
 		openMenuItem(calendarTool);
-		OOGraphene.waitElement(CalendarPage.calendarToolbatBy, 2, browser);
+		OOGraphene.waitElement(CalendarPage.calendarToolbatBy, browser);
 		return new CalendarPage(browser);
 	}
 	
 	public ContactPage openContact() {
 		openMenuItem(contactTool);
-		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contact_form"), 5, browser);
+		OOGraphene.waitElement(By.cssSelector("fieldset.o_sel_contact_form"), browser);
 		return new ContactPage(browser);
 	}
 	
@@ -147,35 +146,36 @@ public class GroupPage {
 	
 	public InfoMessageCEPage openNews() {
 		openMenuItem(newsTool);
-		OOGraphene.waitElement(By.className("o_infomsg"), 5, browser);
+		OOGraphene.waitElement(By.className("o_infomsg"), browser);
 		return new InfoMessageCEPage(browser);
 	}
 	
 	public FolderPage openFolder() {
 		openMenuItem(folderTool);
-		OOGraphene.waitElement(FolderPage.folderBy, 5, browser);
+		OOGraphene.waitElement(FolderPage.folderBy, browser);
 		return new FolderPage(browser);
 	}
 	
 	public ForumPage openForum() {
 		openMenuItem(forumTool);
-		OOGraphene.waitElement(ForumPage.threadTableBy, 5, browser);
+		OOGraphene.waitElement(ForumPage.threadTableBy, browser);
 		return ForumPage.getGroupForumPage(browser);
 	}
 	
 	public WikiPage openWiki() {
 		openMenuItem(wikiTool);
-		OOGraphene.waitElement(WikiPage.wikiWrapperBy, 5, browser);
+		OOGraphene.waitElement(WikiPage.wikiWrapperBy, browser);
 		return WikiPage.getGroupWiki(browser);
 	}
 	
 	public BinderPage openPortfolio() {
 		openMenuItem(portfolioTool);
-		OOGraphene.waitElement(BinderPage.portfolioBy, 5, browser);
+		OOGraphene.waitElement(BinderPage.portfolioBy, browser);
 		return new BinderPage(browser);
 	}
 	
 	private GroupPage openMenuItem(Tool tool) {
+		OOGraphene.waitElement(tool.getMenuItemBy(), browser);
 		browser.findElement(tool.getMenuItemBy()).click();
 		OOGraphene.waitBusy(browser);
 		return this;
@@ -206,21 +206,24 @@ public class GroupPage {
 			By showOwnersBy = By.cssSelector(".o_sel_group_show_owners input[type='checkbox']");
 			browser.findElement(showOwnersBy).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(memberMenuItem, browser);
+			By withOwnersBy = By.cssSelector("li.o_sel_group_members.o_sel_group_owners_members a");
+			OOGraphene.waitElement(withOwnersBy, browser);
 		}
 		
 		if(participants) {
 			By showParticipants = By.cssSelector(".o_sel_group_show_participants input[type='checkbox']");
 			browser.findElement(showParticipants).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(memberMenuItem, browser);
+			By withParticipantsBy = By.cssSelector("li.o_sel_group_members.o_sel_group_participants_members a");
+			OOGraphene.waitElement(withParticipantsBy, browser);
 		}
 		
 		if(waitingList) {
 			By showWaitingListBy = By.cssSelector(".o_sel_group_show_waiting_list input[type='checkbox']");
 			browser.findElement(showWaitingListBy).click();
 			OOGraphene.waitBusy(browser);
-			OOGraphene.waitElement(memberMenuItem, browser);
+			By withWaitingBy = By.cssSelector("li.o_sel_group_members.o_sel_group_waiting_members a");
+			OOGraphene.waitElement(withWaitingBy, browser);
 		}
 		return this;
 	}

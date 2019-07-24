@@ -334,7 +334,7 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 	public void sendGroupChangeEvent(Project project, Long courseResourceableId, Identity identity) {
 		ICourse course = CourseFactory.loadCourse(courseResourceableId);
 		RepositoryEntry ores = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		MultiUserEvent modifiedEvent = new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, project.getProjectGroup(), identity);
+		MultiUserEvent modifiedEvent = new BusinessGroupModifiedEvent(BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT, project.getProjectGroup(), identity, null);
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().fireEventToListenersOf(modifiedEvent, ores);
 	}
 

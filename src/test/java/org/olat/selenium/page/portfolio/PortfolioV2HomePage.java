@@ -86,15 +86,17 @@ public class PortfolioV2HomePage {
 		browser.findElement(myEntriesLinkBy).click();
 		
 		By myEntriesBy = By.cssSelector("div.o_portfolio_entries");
-		OOGraphene.waitElement(myEntriesBy, 5, browser);
+		OOGraphene.waitElement(myEntriesBy, browser);
 		return new EntriesPage(browser);
 	}
 	
 	public EntriesPage openDeletedEntries() {
 		By goToTrashBy = By.cssSelector("a.o_sel_pf_trash");
-		OOGraphene.waitElement(goToTrashBy, 5, browser);
+		OOGraphene.waitElement(goToTrashBy, browser);
 		browser.findElement(goToTrashBy).click();
 		OOGraphene.waitBusy(browser);
+		By entriesBy = By.cssSelector("div.o_portfolio_content div.o_portfolio_entries");
+		OOGraphene.waitElement(entriesBy, browser);
 		return new EntriesPage(browser);
 	}
 	

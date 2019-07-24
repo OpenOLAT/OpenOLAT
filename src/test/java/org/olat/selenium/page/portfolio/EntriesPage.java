@@ -80,7 +80,7 @@ public class EntriesPage {
 	
 	public EntriesPage assertOnPageTableView(String title) {
 		By pageTitleBy = By.xpath("//div[contains(@class,'o_binder_page_listing')]/table//a/span[contains(text(),'" + title + "')]");
-		OOGraphene.waitElement(pageTitleBy, 5, browser);
+		OOGraphene.waitElement(pageTitleBy, browser);
 		List<WebElement> pageTitleEls = browser.findElements(pageTitleBy);
 		Assert.assertEquals(1, pageTitleEls.size());
 		return this;
@@ -92,13 +92,13 @@ public class EntriesPage {
 		OOGraphene.waitBusy(browser);
 		
 		By classicViewBy = By.cssSelector(".o_rendertype_classic");
-		OOGraphene.waitElement(classicViewBy, 5, browser);
+		OOGraphene.waitElement(classicViewBy, browser);
 		return this;
 	}
 	
 	public EntriesPage assertEmptyTableView() {
 		By emptyMessageBy = By.cssSelector("div.o_portfolio_entries div.o_info");
-		OOGraphene.waitElement(emptyMessageBy, 5, browser);
+		OOGraphene.waitElement(emptyMessageBy, browser);
 		return this;
 	}
 	
