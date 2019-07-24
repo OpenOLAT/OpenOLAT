@@ -1084,7 +1084,7 @@ public class I18nManager {
 	 * This method should only be called by the JSTranslatorMapper. If you need
 	 * localized data in your javascript code use the following code snipplet:
 	 * <code>;
-	 * &lt;script type='text/javascript'&gt;
+	 * &lt;script&gt;
 	 *   var translator = b_jsTranslatorFactory.getTranslator('de', 'org.olat.core');
 	 *   alert(translator.translate('warn.beta.feature'));
 	 * &lt;/script&gt;

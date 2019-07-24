@@ -283,7 +283,7 @@ public class InfoMessagePortletRunController extends AbstractPortletRunControlle
 				
 				if(tooltip) {
 					sb.append("<div id='o_sel_info_tooltip_").append(key).append("' style='display:none'>").append(tipSb.toString()).append("</div>");
-				  sb.append("<script type='text/javascript'>/* <![CDATA[ */")
+				  sb.append("<script>/* <![CDATA[ */")
 				    .append("jQuery(function() {")
 					  .append("  jQuery('#o_sel_info_msg_title_").append(key).append(",#o_sel_info_msg_link_").append(key).append("').tooltip({")
 					  .append("	  html: true,")

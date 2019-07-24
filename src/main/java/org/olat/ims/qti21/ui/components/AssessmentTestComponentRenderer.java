@@ -385,7 +385,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		  .append("</span></a>")
 		  .append("</div></div>");
 		// script to show/hide the rubrics with the translated linked
-		sb.append("<script type=\"text/javascript\">\n")
+		sb.append("<script>\n")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
 		  .append(" jQuery('#").append(linkKey).append(", #h").append(linkKey).append("').on('click', function(linkIndex, linkEl) {\n")

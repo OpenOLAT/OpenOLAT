@@ -139,7 +139,7 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 		// resize element to fit content
 		if (teC.isAutoHeightEnabled()) {
 			int minSize = Math.max(90, (Math.abs(rows) * 20));
-			sb.append("<script type='text/javascript'>\n")
+			sb.append("<script>\n")
 			  .append("/* <![CDATA[ */\n")
 			  .append("jQuery(function(){\n")
 			  .append(" jQuery('#").append(id).append("').each(function () {\n")

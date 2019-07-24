@@ -771,8 +771,8 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			//this is a OpenOLAT movie and need to be converted
 			/*
 			<span id="olatFlashMovieViewer213060" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
-			  <script src="/raw/fx-111111x11/movie/player.js" type="text/javascript"></script>
-			  <script type="text/javascript" defer="defer">// <![CDATA[
+			  <script src="/raw/fx-111111x11/movie/player.js"></script>
+			  <script defer="defer">// <![CDATA[
 			    BPlayer.insertPlayer("demo-video.mp4","olatFlashMovieViewer213060",320,240,0,0,"video",undefined,false,false,true,undefined);
 			   // ]]></script>
 			</span>
@@ -813,10 +813,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			sb.append("<span id=\"").append(uniqueId).append("\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:").append(width).append("px; height:").append(height).append("px;\">\n")
 			  .append(" <script src=\"");
 			Renderer.renderStaticURI(sb, "movie/player.js");
-			sb.append("\" type=\"text/javascript\"></script>\n")
-			  .append(" <script type=\"text/javascript\" defer=\"defer\">// <![CDATA[\n")
+			sb.append("\"></script>\n")
+			  .append(" <script defer=\"defer\">")
 			  .append("  BPlayer.insertPlayer(").append(dataMovie).append(");\n")
-			  .append(" // ]]></script>\n")
+			  .append(" </script>\n")
 			  .append("</span>\n");
 		} else {
 			renderStartHtmlTag(sb, component, resolvedAssessmentItem, object, null);

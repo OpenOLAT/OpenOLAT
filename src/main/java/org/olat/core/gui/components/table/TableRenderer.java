@@ -123,7 +123,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 		// entries after the 1023 entry or even the entire table unreadable.
 		// Comment CDATA section to make it work with prototype's stripScripts method !
 		if (!usePageing && rows > 1000) {
-			target.append("<script type=\"text/javascript\">/* <![CDATA[ */\n ")
+			target.append("<script>/* <![CDATA[ */\n ")
 			      .append("jQuery(function() { jQuery('#o_table_wrapper").append(source.hashCode()).append("').height(o_viewportHeight()/3*2);});")
 			      .append("/* ]]> */\n</script>");
 		}

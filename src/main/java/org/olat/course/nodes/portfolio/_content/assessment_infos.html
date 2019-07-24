@@ -74,8 +74,7 @@
   	</div>
 	<div id="collapseComment" class="panel-collapse collapse #if($r.isTrue($incomment)) in #end"><div class="panel-body">$comment</div></div>
 </div>
-<script type="text/javascript">
-	/* <![CDATA[ */
+<script>
 		jQuery('#collapseComment').on('hide.bs.collapse', function () {
 			jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
 			$f.backgroundCommand("hide","panel","comment")
@@ -84,7 +83,6 @@
 			jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 			$f.backgroundCommand("show","panel","comment")
 		})
-	/* ]]> */
 </script>
 #end
 
@@ -104,8 +102,7 @@
 		</ul>
  		</div></div>
 </div>
-<script type="text/javascript">
-	/* <![CDATA[ */
+<script>
 		jQuery('#collapseAssessmentDocuments').on('hide.bs.collapse', function () {
 			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
 			$f.backgroundCommand("hide","panel","assessmentDocuments")
@@ -114,7 +111,6 @@
 			jQuery('#collapseAssessmentDocumentsToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 			$f.backgroundCommand("show","panel","assessmentDocuments")
 		})
-	/* ]]> */
 </script>
 #end
 

@@ -131,7 +131,7 @@ var BLoader = {
 					// create the new stylesheet and convince the browser to load the url using @import with protocol 'data'
 					//var styles = '@import url("'+cssURL+'");';
 					//var newSt = new Element('link', {rel : 'stylesheet', id : linkid, href : 'data:text/css,'+escape(styles) });
-					var newSt = jQuery('<link id="' + linkid + '" rel="stylesheet" type="text/css" href="' + cssURL+ '">');
+					var newSt = jQuery('<link id="' + linkid + '" rel="stylesheet" href="' + cssURL+ '">');
 					if (loadAfterTheme) {
 						newSt.insertBefore(jQuery('#o_fontSize_css'));
 					} else {

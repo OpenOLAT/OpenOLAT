@@ -58,7 +58,7 @@ public class DescriptionWithTooltipCellRenderer implements FlexiCellRenderer {
 				  .append(desc)
 				  .append("</div>");
 				
-				sb.append("<script type='text/javascript'>")
+				sb.append("<script>")
 			      .append("/* <![CDATA[ */")
 				  .append("jQuery(function() {\n")
 				  .append("  jQuery('#o_sel_desc_").append(pos).append("').tooltip({\n")

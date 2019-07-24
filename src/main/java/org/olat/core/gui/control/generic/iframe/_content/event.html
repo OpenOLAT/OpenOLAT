@@ -1,5 +1,4 @@
-<script type="text/javascript">
-/* <![CDATA[ */
+<script>
 function newUriEvent(uri){
 	## don't forward event when another request is beeing processed or when page not
 	## yet fully loaded (e.g. in case of a full page refresh when loading TinyMCE)
@@ -7,5 +6,4 @@ function newUriEvent(uri){
 		${r.openJavaScriptCommand("newUriEvent")},'uri',uri);
 	}
 }
-/* ]]> */
 </script>

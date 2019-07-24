@@ -20,15 +20,13 @@
 
 ## Display user rating when hovering over rating area
 #if($r.available("ratingUserC"))
-<script type="text/javascript">
-/* <![CDATA[ */ 
+<script>
 jQuery(function(){
 	jQuery('#o_rating_wrapper_$viewIdent').hover(
 		function(){ jQuery('#o_rating_$viewIdent').show(); jQuery('#o_rating_avg_$viewIdent').hide(); },
 	  	function(){ jQuery('#o_rating_$viewIdent').hide(); jQuery('#o_rating_avg_$viewIdent').show(); }  
 	);
 });
-/* ]]> */
 </script>
 #end
 

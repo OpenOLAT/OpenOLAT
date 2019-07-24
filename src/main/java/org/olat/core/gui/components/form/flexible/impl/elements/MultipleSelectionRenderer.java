@@ -131,7 +131,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			}
 			
 			// Set button text on ready
-			sb.append("<script type='text/javascript'>");
+			sb.append("<script>");
 		    sb.append("/* <![CDATA[ */");
 			sb.append("jQuery('#").append(buttonTitleId).append("').ready(function() {");
 			sb.append(getJsSetButtonText(stF, buttonTitleId, listId));
@@ -141,7 +141,7 @@ public class MultipleSelectionRenderer extends DefaultComponentRenderer {
 			
 			if(stC.isEnabled() && check.isEnabled()) {
 				// (un-) check ckechbox when clicking on the menu entry
-				sb.append("<script type='text/javascript'>");
+				sb.append("<script>");
 				sb.append("/* <![CDATA[ */");
 				sb.append("jQuery('#").append(aId).append("').on('click', function(event) {");
 				sb.append("   var $target = jQuery(event.currentTarget);");

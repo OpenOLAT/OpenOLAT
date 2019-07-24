@@ -361,7 +361,7 @@ public class ListRenderer {
 			sb.append("</div>");
 			if (hasMeta) {
 				// render tooltip only when it contains something
-				sb.append("<script type='text/javascript'>")
+				sb.append("<script>")
 			      .append("/* <![CDATA[ */")
 				  .append("jQuery(function() {\n")
 				  .append("  jQuery('#o_sel_doc_").append(pos).append("').tooltip({\n")
@@ -500,7 +500,7 @@ public class ListRenderer {
 				}
 
 				sb.append("</ul></div>")
-				  .append("<script type='text/javascript'>")
+				  .append("<script>")
 			      .append("/* <![CDATA[ */")
 				  .append("jQuery(function() {\n")
 				  .append("  o_popover('o_sel_actions_").append(pos).append("','o_sel_actions_pop_").append(pos).append("','left');\n")

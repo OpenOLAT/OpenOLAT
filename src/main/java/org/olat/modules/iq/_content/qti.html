@@ -1,4 +1,4 @@
-<script type="text/javascript">
+<script>
 ## little hack to allow next clicks after clicking cancel on the js confirm dialog.
 ## Should be properly done by olat modal dialog and get rid of js dialogs: gs
 function confirmSubmit() {
@@ -166,7 +166,7 @@ function confirmSuspend() {
 </div>
 
 #if($qtistatus.hasAssessTimeLimit() || $qtistatus.hasItemTimeLimit())
-<script type="text/javascript" defer="defer">
+<script defer="defer">
 /* <![CDATA[ */ 
 jQuery(function() {
 	
@@ -279,7 +279,7 @@ try {
 </script>
 #end
 
-<script type="text/javascript">
+<script>
 /* <![CDATA[ */ 
              
 function mark (it, title, title_marked) {

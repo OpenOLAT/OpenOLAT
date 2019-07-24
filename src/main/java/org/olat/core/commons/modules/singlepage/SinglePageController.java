@@ -342,8 +342,8 @@ public class SinglePageController extends BasicController implements CloneableCo
 			}
 			
 			StringBuilder header = new StringBuilder(256);
-			header.append("<style type='text/css'>body {").append(cssRule).append("}</style>");
-			header.append("<!--[if lt IE 10]><style type='text/css'>body {").append(ieCssRule).append("}</style><![endif]-->");
+			header.append("<style>body {").append(cssRule).append("}</style>");
+			header.append("<!--[if lt IE 10]><style>body {").append(ieCssRule).append("}</style><![endif]-->");
 			idc.setCustomHeaderContent(header.toString());								
 		} else {
 			idc.setCustomHeaderContent(null);

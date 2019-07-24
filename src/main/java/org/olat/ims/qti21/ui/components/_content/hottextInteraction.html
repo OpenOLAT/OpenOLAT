@@ -27,7 +27,7 @@
 	$r.renderBlockStatics($interaction.getBlockStatics())
 </div>
 #if(!$r.isSingleChoice($interaction) && $r.isItemSessionOpen())
-<script type='text/javascript'>
+<script>
 	jQuery(function() {
 		jQuery('#qti_container_${responseIdentifier}').choiceInteraction({
 			responseIdentifier: '$responseIdentifier',

@@ -146,15 +146,15 @@ public class Theme {
 		StringBuilder sb = new StringBuilder(512);
 		File themeFolder = getThemeFolder();
 		// Include the theme css file
-		sb.append("<link id='o_theme_css' href='").append(baseURI).append("theme.css' rel='stylesheet' type='text/css' />\n");
+		sb.append("<link id='o_theme_css' href='").append(baseURI).append("theme.css' rel='stylesheet' />\n");
 		// Include the email css file. It is necessary because AntiSAMY filters the styles in the OpenOLAT email module.
 		Path cssPath = getEmailCssPath();
 		if (Files.exists(cssPath)) {
-			sb.append("<link id='o_email_css' href='").append(baseURI).append("email.css' rel='stylesheet' type='text/css' />\n");
+			sb.append("<link id='o_email_css' href='").append(baseURI).append("email.css' rel='stylesheet' />\n");
 		}
 		// Include custom theme javascript file, for login caroussel, js-based layout patches etc
 		if (new File(themeFolder,CUSTOM_JS_FILENAME).exists()) {
-			sb.append("<script type='text/javascript' src='").append(baseURI).append(CUSTOM_JS_FILENAME).append("'></script>\n");
+			sb.append("<script src='").append(baseURI).append(CUSTOM_JS_FILENAME).append("'></script>\n");
 		}
 		// Include the favicons in legacy .ico format and others in png format and different resolutions
 		if (new File(themeFolder,CUSTOM_FAVICON_ICO_FILENAME).exists()) {	

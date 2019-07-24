@@ -230,7 +230,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			}
 			sb.append(" />");
 			if(intermediate) {
-				sb.append("<script type='text/javascript'>\n")
+				sb.append("<script>\n")
 				  .append("/* <![CDATA[ */\n")
 				  .append("jQuery(function() {\n")
 				  .append("  jQuery('#").append(id).append("').prop('indeterminate', true);")
@@ -466,7 +466,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 
 	private StringOutput appendDragAndDropScript(List<DndElement> elements, MenuTree tree, StringOutput sb) {
 		if(elements == null || elements.isEmpty()) return sb;
-		sb.append("<script type='text/javascript'>\n")
+		sb.append("<script>\n")
 		  .append("/* <![CDATA[ */\n")
 		  .append("jQuery(function() {\n");
 		

@@ -450,8 +450,8 @@
 				var poster = typeof(p.poster) != "undefined" ? '"' + p.poster + '"' : 'undefined';
 				var playerScriptUrl = ed.getParam("olatmovieviewer_playerScript");
 
-				var h = '<script src="' + playerScriptUrl + '" type="text/javascript"></script>';
-				h += '<script type="text/javascript" defer="defer">';
+				var h = '<script src="' + playerScriptUrl + '"></script>';
+				h += '<script defer="defer">';
 				h += 'BPlayer.insertPlayer("' + p.address + '","' + domIdentity + '",' + playerWidth + ',' + playerHeight + ',' + starttime + ',0,' + provider + ',' + streamer +',' + autostart + ',' + repeat + ',' + controlbar + ',' + poster + ');';
 				h += '</script>';
 				var node = ed.dom.create("span", {

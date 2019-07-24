@@ -644,7 +644,7 @@ public class Formatter {
 	 */
 	public static String elementLatexFormattingScript(String domid) {
 		return String.format("%n"
-				+ "<script type='text/javascript'>%n"
+				+ "<script>%n"
 				+ "/* <![CDATA[ */%n"
 				+ " jQuery(function() {setTimeout(function() { BFormatter.formatLatexFormulas('%s');}, 100); }); %n"
 				+ "/* ]]> */%n"

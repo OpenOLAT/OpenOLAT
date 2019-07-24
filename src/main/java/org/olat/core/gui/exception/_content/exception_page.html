@@ -15,7 +15,7 @@
 <meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1">
 <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
 ## <!-- IE cache -->
-<script type="text/javascript">
+<script>
 /* <![CDATA[ */
 #if($enforceTopFrame)
 if (top!=self){top.location=self.location+"?o_winrndo=1";}
@@ -24,34 +24,34 @@ var o_info = new Object();
 /* ]]> */
 </script>
 ## jQuery libraries
-<script type="text/javascript" src='$r.staticLink("js/jquery/jquery-3.3.1.min.js")'></script>
+<script src='$r.staticLink("js/jquery/jquery-3.3.1.min.js")'></script>
 #if ($r.available("guidebug"))
 	## Are compressed as js/js.plugins.min.js in non-debug mode
-	<script type="text/javascript" src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("js/jquery/openolat/jquery.navbar.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("js/tinymce4/tinymce/jquery.tinymce.min.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("js/functions.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("js/jquery/transit/jquery.transit.js")'></script>
+	<script src='$r.staticLink("js/jquery/periodic/jquery.periodic.js")'></script>
+	<script src='$r.staticLink("js/jshashtable-2.1_src.js")'></script>
+	<script src='$r.staticLink("js/jquery/openolat/jquery.translator.js")'></script>
+	<script src='$r.staticLink("js/jquery/openolat/jquery.navbar.js")'></script>
+	<script src='$r.staticLink("js/tinymce4/tinymce/jquery.tinymce.min.js")'></script>
+	<script src='$r.staticLink("js/functions.js")'></script>
+	<script src='$r.staticLink("js/jquery/transit/jquery.transit.js")'></script>
 	## Bootstrap js
-	##<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/affix.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/alert.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/button.js")'></script>
-	##<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/carousel.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/collapse.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/dropdown.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/tab.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/transition.js")'></script>
-	##<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/scrollspy.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/modal.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/tooltip.js")'></script>
-	<script type="text/javascript" src='$r.staticLink("bootstrap/javascripts/bootstrap/popover.js")'></script>
+	##<script src='$r.staticLink("bootstrap/javascripts/bootstrap/affix.js")'></script>
+	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/alert.js")'></script>
+	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/button.js")'></script>
+	##<script src='$r.staticLink("bootstrap/javascripts/bootstrap/carousel.js")'></script>
+	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/collapse.js")'></script>
+	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/dropdown.js")'></script>
+	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/tab.js")'></script>
+	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/transition.js")'></script>
+	##<script src='$r.staticLink("bootstrap/javascripts/bootstrap/scrollspy.js")'></script>
+	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/modal.js")'></script>
+	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/tooltip.js")'></script>
+	<script src='$r.staticLink("bootstrap/javascripts/bootstrap/popover.js")'></script>
 #else
-	<script type="text/javascript" src='$r.staticLink("js/js.plugins.min.js")'></script>
+	<script src='$r.staticLink("js/js.plugins.min.js")'></script>
 #end
 
-<script type="text/javascript">
+<script>
 /* <![CDATA[ */ 
   jQuery.noConflict();
 /* ]]> */
@@ -63,16 +63,16 @@ $r.render("jsCssRawHtmlHeader", "pre-theme")
 ## 2) CSS theme inclusion and favicons
 <link rel="icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
 <link rel="shortcut icon" href="${theme.getBaseURI()}favicon.ico" type="image/x-icon" /> 
-<link id="o_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" type="text/css" />
+<link id="o_theme_css" href="${theme.getBaseURI()}theme.css" rel="stylesheet" />
 ## 3) IE specific bugfixes for current theme
 <!--[if lte IE 7]>
-<link href="${theme.getBaseURI()}patches.css" rel="stylesheet" type="text/css" />
+<link href="${theme.getBaseURI()}patches.css" rel="stylesheet" />
 <![endif]-->
 ## 4) Dynamic overriding of CSS rules
 $r.render("jsCssRawHtmlHeader", "post-theme")
 ## 5) Add user font size
 #if (${globalSettings.getFontSize()} != "100")
-<style id="o_fontSize_css" type="text/css">#o_body{zoom:${globalSettings.getFontSize()}%; -moz-transform: scale(${globalSettings.getFontSize()}%)}</style>
+<style id="o_fontSize_css">#o_body{zoom:${globalSettings.getFontSize()}%; -moz-transform: scale(${globalSettings.getFontSize()}%)}</style>
 #end
 
 ## deprecated - include any raw header

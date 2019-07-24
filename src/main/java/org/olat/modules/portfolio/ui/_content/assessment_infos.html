@@ -35,14 +35,12 @@
   	</div>
 	<div id="collapseComment" class="panel-collapse collapse in"><div class="panel-body">$comment</div></div>
 </div>
-<script type="text/javascript">
-	/* <![CDATA[ */
+<script>
 		jQuery('#collapseComment').on('hide.bs.collapse', function () {
 				jQuery('#collapseCommentToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
 		})
 		jQuery('#collapseComment').on('show.bs.collapse', function () {
 				jQuery('#collapseCommentToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 		})
-	/* ]]> */
 </script>
 #end

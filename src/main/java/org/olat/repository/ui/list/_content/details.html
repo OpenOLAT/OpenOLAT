@@ -199,7 +199,7 @@
 				<div class="o_copy_code o_nowrap">
 					<a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
 					<input type="text" value="$extlink" onclick="this.select()"/>
-					<script type="text/javascript">
+					<script>
 					/* <![CDATA[ */
 						jQuery(function() {
 							o_QRCodePopup('o_extlink', '$extlink', 'right');
@@ -211,7 +211,7 @@
 				<div class="o_copy_code o_nowrap">
 					<a href="javascript:;" id="o_extlink2"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a>
 					<input type="text" value="${extlink}?guest=true&amp;lang=$r.getLanguageCode()" onclick="this.select()"/>					
-					<script type="text/javascript">
+					<script>
 					/* <![CDATA[ */
 						jQuery(function() {
 							o_QRCodePopup('o_extlink2', '${extlink}?guest=true&amp;lang=$r.getLanguageCode()', 'right');
@@ -279,7 +279,7 @@
 					</tbody></table>
 				</div>
 			</div>
-			<script type="text/javascript">
+			<script>
 				/* <![CDATA[ */
 					jQuery('#collapseInfo').on('hide.bs.collapse', function () {
 							jQuery('#collapseInfoToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -327,7 +327,7 @@
 					</tbody></table>
 				</div>
 			</div>
-			<script type="text/javascript">
+			<script>
 				/* <![CDATA[ */
 					jQuery('#collapseUsage').on('hide.bs.collapse', function () {
 							jQuery('#collapseUsageToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
@@ -360,7 +360,7 @@
 					</div>
 				</div>
 			</div>
-			<script type="text/javascript">
+			<script>
 				/* <![CDATA[ */
 					jQuery('#collapseManaged').on('hide.bs.collapse', function () {
 							jQuery('#collapseManagedToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');

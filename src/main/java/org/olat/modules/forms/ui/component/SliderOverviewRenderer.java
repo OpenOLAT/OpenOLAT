@@ -83,7 +83,7 @@ public class SliderOverviewRenderer extends DefaultComponentRenderer {
 		}
 		sb.append("</div>");
 		
-		sb.append("<script type='text/javascript'>\n")
+		sb.append("<script>\n")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
 		  .append(" var render = function() {\n")

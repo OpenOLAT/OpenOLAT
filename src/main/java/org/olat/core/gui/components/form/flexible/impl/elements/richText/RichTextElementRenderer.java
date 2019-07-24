@@ -215,7 +215,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		Integer currentHeight = teC.getCurrentHeight();
 		
 		sb.append("<input type='hidden' id='rtinye_").append(teC.getFormDispatchId()).append("' name='rtinye_").append(teC.getFormDispatchId()).append("' value='' />");
-		sb.append("<script type='text/javascript'>/* <![CDATA[ */\n");
+		sb.append("<script>/* <![CDATA[ */\n");
 		//file browser url
 		sb.append("  BTinyHelper.editorMediaUris.put('").append(domID).append("','");
 		ubu.buildURI(sb, null, null);

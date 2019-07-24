@@ -56,7 +56,7 @@ public class RatingWithAverageRenderer extends DefaultComponentRenderer {
 		sb.append("</div>")
 		  .append("</div>")
 		  .append("</div>")
-		  .append("<script type='text/javascript'>\n")
+		  .append("<script>\n")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function(){\n")
 		  .append("  jQuery('#o_rating_wrapper_").append(viewIdent).append("')\n")

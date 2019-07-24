@@ -60,7 +60,7 @@ public class SliderElementRenderer extends DefaultComponentRenderer {
 		sb.append("'> </div>");
 		sb.append("<input id='").append(inputId).append("' type='hidden' name='").append(sec.getFormDispatchId()).append("' value=''/>");
 		
-		sb.append("<script type='text/javascript'>/* <![CDATA[ */\n")
+		sb.append("<script>/* <![CDATA[ */\n")
 		  .append("jQuery(function() {\n")
 		  .append(" jQuery('#").append(sec.getFormDispatchId()).append("_slider').slider({\n")
 		  .append("  value: ").append(value).append(",\n");

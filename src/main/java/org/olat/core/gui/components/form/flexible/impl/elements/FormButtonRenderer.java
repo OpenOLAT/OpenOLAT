@@ -79,7 +79,7 @@ class FormButtonRenderer extends DefaultComponentRenderer {
 		
 		if(source.isEnabled() && fsC.getIsSubmitAndValidate()){
 			//it is a submitting and validating button (e.g. FormSubmit)
-			sb.append("<script type=\"text/javascript\">\n /* <![CDATA[ */ \n");
+			sb.append("<script>\n /* <![CDATA[ */ \n");
 			sb.append(FormJSHelper.getJSSubmitRegisterFn(fs.getRootForm(),id));
 			if(!fs.getRootForm().isSubmittedAndValid()){
 				//mark as dirty, because form is not yet submitted or

@@ -57,7 +57,7 @@ public class ResponsiveBarChartRenderer extends DefaultComponentRenderer {
 		String cmpId = chartCmp.getDispatchID();
 		
 		sb.append("<div id='d").append(cmpId).append("d3holder' class='d3chart'></div>")
-		  .append("<script type='text/javascript'>")
+		  .append("<script>")
 		  .append("/* <![CDATA[ */ ")
 		  .append("jQuery(function () {")
 		  .append("var placeholderheight = 300;")

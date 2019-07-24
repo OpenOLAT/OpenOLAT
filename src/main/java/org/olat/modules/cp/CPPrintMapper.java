@@ -161,7 +161,7 @@ public class CPPrintMapper implements Mapper {
 			StaticMediaDispatcher.renderStaticURI(sb, "js/jquery/jquery-3.3.1.min.js");
 			sb.append("\")'></script>");
 			output.append(sb.toString());
-			output.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" type=\"text/css\" />\n");
+			output.append("<link href=\"").append(themeBaseUri).append("all/content.css\" rel=\"stylesheet\" />\n");
 		} catch(IOException e) {
 			log.error("", e);
 		}

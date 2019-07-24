@@ -45,7 +45,7 @@ class DisplayOrDownloadComponentRenderer extends DefaultComponentRenderer {
 		String fileUrl = ((DisplayOrDownloadComponent) source).consumeFileUrl();
 		if (fileUrl != null) { 
 			// use javascript to open a new file that loads the file.
-			sb.append("<script type='text/javascript'>");
+			sb.append("<script>");
 			sb.append("/* <![CDATA[ */ ");
 			sb.append("jQuery(function() {");
 			sb.append("  window.open('").append(fileUrl).append("', 'downloadwindow','');");

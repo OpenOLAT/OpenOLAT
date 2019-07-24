@@ -5,8 +5,8 @@
 		</div>
 	#else
 		<div id="$id"></div>
-		<script type="text/javascript" src="$apiUrl"></script>
-		<script type="text/javascript">
+		<script src="$apiUrl"></script>
+		<script>
 		/* <![CDATA[ */
 			jQuery('$id').ready(function(){
 				new DocsAPI.DocEditor("$id", $apiConfig);

@@ -62,7 +62,7 @@ public class AutoCompleterRenderer extends DefaultComponentRenderer {
 				sb.append(StringHelper.escapeHtml(autoCompleter.getValue()));
 			}
 			sb.append("\" />");
-			sb.append("<script type='text/javascript'>\n")
+			sb.append("<script>\n")
 			  .append("/* <![CDATA[ */\n")
 			  .append("jQuery(function(){\n")
 			  .append("  var fullNameTypeahead = new Bloodhound({\n")

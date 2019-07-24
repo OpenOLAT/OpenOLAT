@@ -351,7 +351,7 @@ public class LinkRenderer extends DefaultComponentRenderer {
 		if(jsSb.length() > 0) {
 			// Execute code within an anonymous function (closure) to not leak
 			// variables to global scope (OLAT-5755)
-			sb.append(" <script type=\"text/javascript\">\n/* <![CDATA[ */\n")
+			sb.append(" <script>\n/* <![CDATA[ */\n")
 			  .append("(function(){ var ").append(elementId).append(" = jQuery('#").append(elementId).append("');")
 			  .append(jsSb).append("})();")
 		      .append("\n/* ]]> */\n</script>");

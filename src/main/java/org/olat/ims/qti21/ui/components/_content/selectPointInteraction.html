@@ -14,7 +14,7 @@
 	
 	<div id="${containerId}" class="appletContainer" data-openolat="">
 		<canvas id="${containerId}_canvas" width="${interaction.object.width}" height="${interaction.object.height}" style="background-image:url('${r.convertLink($interaction.object.data)}');"></canvas>
-		<script type="text/javascript">
+		<script>
 		jQuery(function() {
 			jQuery('#${containerId}').selectPointInteraction({
 				responseIdentifier: '$responseIdentifier',

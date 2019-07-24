@@ -32,7 +32,7 @@
 			#if ($!item.getEnclosure())								
 			<div class="o_block_large_top o_enclosure">
 				<div id="o_podcast_${podId}_episode" class="o_podcast_$!helper.getMediaType($item.getEnclosure())"></div>
-				<script type="text/javascript">
+				<script>
 				/* <![CDATA[ */
 				#if ($!helper.getMediaType($item.getEnclosure()) == "video")
 					BPlayer.insertPlayer("$!helper.getMediaUrl($item)","o_podcast_${podId}_episode",$!helper.getWidth($item),$!helper.getHeight($item),false,null,"video",undefined,false,false,true);

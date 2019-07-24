@@ -313,7 +313,7 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		if (!postThemeRendering) {
 			for (Iterator<String> it_js = jsToRender.iterator(); it_js.hasNext();) {
 				String jsExpr = it_js.next();
-				sb.append("<script type=\"text/javascript\" src=\"").append(jsExpr).append("\"></script>\n");
+				sb.append("<script src=\"").append(jsExpr).append("\"></script>\n");
 			}
 		}
 		
@@ -329,7 +329,7 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 					|| (!postThemeRendering && cssIndex < JSAndCSSAdder.CSS_INDEX_THEME)) {
 				String acssId = cssPathToId.get(cssExpr);
 				// use media=all to load always and use @media screen/print within the stylesheet
-				sb.append("<link id=\"").append(acssId).append("\" rel=\"StyleSheet\" href=\"").append(cssExpr).append("\" type=\"text/css\" media=\"all\" />\n");
+				sb.append("<link id=\"").append(acssId).append("\" rel=\"StyleSheet\" href=\"").append(cssExpr).append("\" media=\"all\" />\n");
 			}
 		}
 		

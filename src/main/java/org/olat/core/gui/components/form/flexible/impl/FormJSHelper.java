@@ -328,9 +328,9 @@ public class FormJSHelper {
 	 * @return
 	 */
 	public static StringOutput appendFlexiFormDirtyOn(StringOutput sb, Form form, String events, String formDispatchId) {
-		sb.append(" <script>\n /* <![CDATA[ */ \n")
+		sb.append(" <script>\n")
 		  .append("(function() { jQuery('#").append(formDispatchId).append("').on('").append(events).append("', {formId:\"").append(form.getDispatchFieldId()).append("\", hideMessage:").append(form.isHideDirtyMarkingMessage()).append("}, setFlexiFormDirtyByListener);")
-		  .append("})();\n /* ]]> */ \n</script>");
+		  .append("})();\n</script>");
 		return sb;
 	}
 	
@@ -343,9 +343,9 @@ public class FormJSHelper {
 	 * @return
 	 */
 	public static StringOutput setFlexiFormDirtyOnLoad(StringOutput sb, Form form) {
-		sb.append("<script>\n /* <![CDATA[ */ \n")
+		sb.append("<script>\n")
 		  .append(" setTimeout(function(){ setFlexiFormDirty(\"").append(form.getDispatchFieldId()).append("\",").append(form.isHideDirtyMarkingMessage()).append(");}, 500);")
-		  .append("\n/* ]]> */ \n</script>");
+		  .append("\n</script>");
 		return sb;
 	}
 	

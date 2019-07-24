@@ -101,7 +101,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 
 		}
 		sb.append("' class='o_video_wrapper'></div>")
-		  .append("<script type='text/javascript'>")
+		  .append("<script>")
 		  .append("/* <![CDATA[ */")
 		  .append("BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);
 		sb.append("','").append(imgId).append("',").append(width).append(",").append(height).append(",'video'");
@@ -165,7 +165,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 			  .append("<input id='").append(imgId).append("_w' name='").append(imgId).append("_w' type='hidden' value='' />")
 			  .append("<input id='").append(imgId).append("_h' name='").append(imgId).append("_h' type='hidden' value='' />");
 			
-			sb.append("<script type='text/javascript'>\n")
+			sb.append("<script>\n")
 			  .append("/* <![CDATA[ */ \n")
 			  .append("jQuery(function() {\n")
 			  .append("  jQuery('#").append(imgId).append("').cropper({\n")

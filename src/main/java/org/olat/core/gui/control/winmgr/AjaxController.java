@@ -97,7 +97,7 @@ public class AjaxController extends DefaultController {
 	// protected only for performance improvement
 	protected List<WindowCommand> windowcommands = new ArrayList<>(3);
 	private final Mapper m, sbm;
-	private final  MapperKey mKey, sbmKey;
+	private final MapperKey mKey, sbmKey;
 	
 	private static final int DEFAULT_POLLPERIOD = 5000;//reasonable default value
 	private int pollperiod = DEFAULT_POLLPERIOD;//reasonable default value
@@ -228,10 +228,6 @@ public class AjaxController extends DefaultController {
 		myContent.contextPut("sburi", sbmKey.getUrl());
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
@@ -240,7 +236,7 @@ public class AjaxController extends DefaultController {
 	public void pushResource(UserRequest ureq, Writer sb, boolean wrapHTML) throws IOException {
 		if (wrapHTML) {
 			// most ajax responses are a lot smaller than 16k
-			sb.append("<html><head><script type=\"text/javascript\">\n/* <![CDATA[ */\nfunction invoke(){var r=");
+			sb.append("<html><head><script>\nfunction invoke(){var r=");
 			pushJSONAndClear(ureq, sb);
 			sb.append("; ") 
 				.append("if (parent!=self&&parent.window.o_info){")
@@ -257,7 +253,7 @@ public class AjaxController extends DefaultController {
 				.append("this.document.location=\"")
 				.append(StaticMediaDispatcher.createStaticURIFor("msg/json/en/info.html"))
 				.append("\";")
-				.append("}}\n/* ]]> */\n</script></head><body onLoad=\"invoke()\"></body></html>");
+				.append("}}\n</script></head><body onLoad=\"invoke()\"></body></html>");
 		} else {
 			pushJSONAndClear(ureq, sb);
 		}
@@ -320,7 +316,7 @@ public class AjaxController extends DefaultController {
 		if (wrapHTML) {
 			// most ajax responses are a lot smaller than 16k
 			StringBuilder sb = new StringBuilder(16384);
-			sb.append("<html><head><script type=\"text/javascript\">\n/* <![CDATA[ */\nfunction invoke(){var r=")
+			sb.append("<html><head><script>\n/* <![CDATA[ */\nfunction invoke(){var r=")
 			  .append(json.toString()).append("; ") 
 			  .append("if (parent!=self&&parent.window.o_info) {")
 			  .append("  parent.window.o_ainvoke(r);")

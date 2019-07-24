@@ -2,7 +2,7 @@
 	<div class="o_visual">
 		<a href="javascript:${f.ffXHREvent("select_row","$row.key")}">
 		#if($row.isThumbnailAvailable())
-			<img src="${row.getThumbnailRelPath()}" />
+			<img src="${row.getThumbnailRelPath()}" alt="$r.translate("rentry.pic.alt")" />
 		#else
 			<div class="o_visual_not_available"></div>
 		#end
