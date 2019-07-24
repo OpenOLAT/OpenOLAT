@@ -89,8 +89,12 @@ public class AdobeConnect9Provider extends AbstractAdobeConnectProvider {
 		builder
 			.queryParam("action", "principal-update")
 			.queryParam("first-name", identity.getUser().getFirstName())
-			.queryParam("last-name", identity.getUser().getLastName())
-			.queryParam("email", identity.getUser().getEmail())
+			.queryParam("last-name", identity.getUser().getLastName());
+		if(!adobeConnectModule.isLoginCompatibilityMode()) {
+			builder
+				.queryParam("email", identity.getUser().getEmail());
+		}
+		builder
 			.queryParam("login", login)
 			.queryParam("ext-login", login)
 			.queryParam("password", password)
