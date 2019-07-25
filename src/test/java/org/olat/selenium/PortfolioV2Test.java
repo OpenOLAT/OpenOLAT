@@ -31,7 +31,6 @@ import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.olat.selenium.page.LoginPage;
@@ -62,7 +61,6 @@ import org.olat.test.JunitTestHelper;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.firefox.FirefoxDriver;
 
 import com.dumbster.smtp.SmtpMessage;
 
@@ -640,7 +638,6 @@ public class PortfolioV2Test extends Deployments {
 	@RunAsClient
 	public void binderAssessment(@Drone @User WebDriver reiBrowser)
 			throws IOException, URISyntaxException {
-		Assume.assumeFalse(reiBrowser instanceof FirefoxDriver);
 		
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
 		UserVO rei = new UserRestClient(deploymentUrl).createRandomUser("rei");

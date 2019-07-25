@@ -26,7 +26,6 @@ import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.firefox.FirefoxDriver;
 
 /**
  * 
@@ -54,10 +53,10 @@ public class ContactPage {
 	public ContactPage setContent(String subject, String body) {
 		By subjectBy = By.cssSelector("div.o_sel_contact_subject  input[type='text']");
 		OOGraphene.waitElement(subjectBy, browser);
-		browser.findElement(subjectBy).sendKeys(subject);
-		
-		String containerCssSelector = "div.o_sel_contact_body";
 		OOGraphene.waitTinymce(browser);
+		
+		browser.findElement(subjectBy).sendKeys(subject);
+		String containerCssSelector = "div.o_sel_contact_body";
 		OOGraphene.tinymce(body, containerCssSelector, browser);
 		return this;
 	}
@@ -65,13 +64,11 @@ public class ContactPage {
 	public ContactPage send() {
 		By buttonsBy = By.xpath("//div[contains(@class,'o_sel_contact_buttons')]");
 		OOGraphene.scrollTo(buttonsBy, browser);
-		if(browser instanceof FirefoxDriver) {
-			OOGraphene.waitingALittleLonger();
-		}
+
 		By sendBy = By.cssSelector("fieldset.o_sel_contact_form button.btn-primary");
 		browser.findElement(sendBy).click();
 		By disabledBy = By.cssSelector("fieldset.o_sel_contact_form div.o_sel_contact_body div.o_disabled");
-		OOGraphene.waitElementSlowly(disabledBy, 10, browser);
+		OOGraphene.waitElement(disabledBy, browser);
 		
 		OOGraphene.moveTop(browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);

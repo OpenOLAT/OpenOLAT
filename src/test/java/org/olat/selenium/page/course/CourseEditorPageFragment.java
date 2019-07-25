@@ -73,13 +73,13 @@ public class CourseEditorPageFragment {
 	}
 	
 	public static CourseEditorPageFragment getEditor(WebDriver browser) {
-		OOGraphene.waitElement(editorBy, 5, browser);
+		OOGraphene.waitElement(editorBy, browser);
 		OOGraphene.closeBlueMessageWindow(browser);
 		return new CourseEditorPageFragment(browser);
 	}
 	
 	public CourseEditorPageFragment assertOnEditor() {
-		OOGraphene.waitElement(editorBy, 5, browser);
+		OOGraphene.waitElement(editorBy, browser);
 		List<WebElement> editorEls = browser.findElements(editorBy);
 		Assert.assertFalse(editorEls.isEmpty());
 		Assert.assertTrue(editorEls.get(0).isDisplayed());
@@ -88,7 +88,7 @@ public class CourseEditorPageFragment {
 	
 	public CourseEditorPageFragment assertOnWarning() {
 		By warningBy = By.cssSelector("div.modal-dialog div.alert.alert-warning");
-		OOGraphene.waitElement(warningBy, 2, browser);
+		OOGraphene.waitElement(warningBy, browser);
 		List<WebElement> warningEls = browser.findElements(warningBy);
 		Assert.assertFalse(warningEls.isEmpty());
 		OOGraphene.closeModalDialogWindow(browser);
