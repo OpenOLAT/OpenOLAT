@@ -83,14 +83,12 @@ public class CalendarToolsController extends BasicController {
 			deleteTokenLink.setIconLeftCSS("o_icon o_icon_delete");
 		}
 		
-		if(row.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE) {
-			if(row.isImported()) {
-				deleteCalendarLink = LinkFactory.createLink("cal.delete.imported.calendar", mainVC, this);
-				deleteCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
-			} else {
-				resetCalendarLink = LinkFactory.createLink("cal.reset.calendar", mainVC, this);
-				resetCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
-			}
+		if(row.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY && row.isImported()) {
+			deleteCalendarLink = LinkFactory.createLink("cal.delete.imported.calendar", mainVC, this);
+			deleteCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
+		} else if(row.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE && !row.isImported()) {
+			resetCalendarLink = LinkFactory.createLink("cal.reset.calendar", mainVC, this);
+			resetCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
 		}
 		
 		putInitialPanel(mainVC);

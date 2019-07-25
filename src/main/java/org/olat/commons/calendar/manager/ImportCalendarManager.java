@@ -89,6 +89,7 @@ public class ImportCalendarManager {
 		try(InputStream in = new URL(url).openStream()) {
 			Files.copy(in, tmpFile.toPath());
 		} catch(IOException e) {
+			log.error("Cannot copy {}", tmpFile, e);
 			throw e;
 		}
 		
@@ -274,7 +275,7 @@ public class ImportCalendarManager {
 		
 		public KalendarEventFilter(Identity identity, List<ImportedCalendar> importedCalendars) {
 			id = "-" + CalendarManager.TYPE_USER + "-" + identity.getName() + "-";
-			if(importedCalendars != null && importedCalendars.size() > 0) {
+			if(importedCalendars != null && !importedCalendars.isEmpty()) {
 				for(ImportedCalendar importedCalendar:importedCalendars) {
 					String calendarId = CalendarManager.TYPE_USER + "-" + importedCalendar.getCalendarId();
 					calendarIds.add(calendarId);
