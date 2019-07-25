@@ -70,18 +70,11 @@ public class EfficiencyStatementPage {
 	 * @return
 	 */
 	public EfficiencyStatementPage assertOnCertificateAndStatements(String courseTitle) {
-		WebElement rowToAssert = getStatementRow(courseTitle);
-		boolean found = false;
-		for(int i=0; i<20; i++) {
-			By certificateDownloadBy = By.cssSelector("a i.o_icon.o_filetype_pdf");
-			List<WebElement> certificateDownloadEls = rowToAssert.findElements(certificateDownloadBy);
-			if(certificateDownloadEls.size() > 0) {
-				found = true;
-				break;
-			}
-			OOGraphene.waitingALittleLonger();
+		if(courseTitle.length() > 25) {
+			courseTitle = courseTitle.substring(0, 25);
 		}
-		Assert.assertTrue(found);
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td//a/i[contains(@class,'o_filetype_pdf')]");
+		OOGraphene.waitElementSlowly(courseCertificateBy, 30, browser);
 		return this;
 	}
 	
@@ -94,15 +87,12 @@ public class EfficiencyStatementPage {
 	 * @return
 	 */
 	public EfficiencyStatementPage assertOnStatement(String courseTitle, boolean passed) {
-		WebElement rowToAssert = getStatementRow(courseTitle);
-		Assert.assertNotNull(rowToAssert);
-		if(passed) {
-			By passedBy = By.cssSelector(".o_state.o_passed");
-			browser.findElement(passedBy);	
-		} else {
-			By failedBy = By.cssSelector(".o_state.o_failed");
-			browser.findElement(failedBy);
+		if(courseTitle.length() > 25) {
+			courseTitle = courseTitle.substring(0, 25);
 		}
+		String passedCss = passed ? "o_passed" : "o_failed";
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/span[contains(@class,'o_state')][contains(@class,'" + passedCss + "')]");
+		OOGraphene.waitElement(courseCertificateBy, browser);
 		return this;
 	}
 	
@@ -140,31 +130,14 @@ public class EfficiencyStatementPage {
 	 * @return
 	 */
 	public EfficiencyStatementPage selectStatement(String courseTitle) {
-		WebElement rowToAssert = getStatementRow(courseTitle);
-		By courseCertificateBy = By.xpath("//td//a[contains(@href,'cmd.show')]");
-		rowToAssert.findElement(courseCertificateBy).click();
-		OOGraphene.waitBusy(browser);
-		return this;
-	}
-	
-	private WebElement getStatementRow(String courseTitle) {
-		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr");
-		
-		WebElement rowToAssert = null;
-		List<WebElement> rowsEl = browser.findElements(courseCertificateBy);
-		a_a:
-		for(WebElement rowEl:rowsEl) {
-			for(WebElement col:rowEl.findElements(By.tagName("td"))) {
-				String text = col.getText();
-				if(courseTitle.contains(text) || text.contains(courseTitle)) {
-					rowToAssert = rowEl;
-					break a_a;
-				}
-			}
+		if(courseTitle.length() > 25) {
+			courseTitle = courseTitle.substring(0, 25);
 		}
-		
-		Assert.assertNotNull(rowToAssert);
-		return rowToAssert;
+		By courseCertificateBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td//a[contains(@href,'cmd.show')]");
+		OOGraphene.waitElement(courseCertificateBy, browser);
+		browser.findElement(courseCertificateBy).click();
+ 		OOGraphene.waitBusy(browser);
+		return this;
 	}
 
 	public EfficiencyStatementPage selectStatementSegment() {
@@ -177,8 +150,7 @@ public class EfficiencyStatementPage {
 	public MediaPage addAsMediaInList(String courseTitle) {
 		if(courseTitle.length() > 25) {
 			courseTitle = courseTitle.substring(0, 25);
-		}//
-		
+		}
 		By collectBy = By.xpath("//div[contains(@class,'o_sel_certificates_table')]//table//tr[td[contains(text(),'" + courseTitle + "')]]/td/a[contains(@href,'cmd.MEDIA')]");
 		OOGraphene.waitElement(collectBy, browser);
 		OOGraphene.scrollTo(collectBy, browser);
