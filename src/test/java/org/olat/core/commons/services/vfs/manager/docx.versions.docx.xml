@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<versions>
+  <versioned>true</versioned>
+  <author>openolat</author>
+  <creator>openolat</creator>
+  <revisionNr>2</revisionNr>
+  <revisions>
+    <revision>
+      <author>openolat</author>
+      <name>17C.docx</name>
+      <uuid>2a97afdc-c069-4946-b056-3ebabbfc1342</uuid>
+      <lastModified>1558539284000</lastModified>
+      <revisionNr>1</revisionNr>
+      <filename>8f201ef7-996e-4ba5-aa39-6091e52d905e_17C.docx</filename>
+      <metadata class="metadata">
+        <uuid>7a34d2ee982845f4930ffa5524b140b8</uuid>
+        <authorIdentKey>455737485</authorIdentKey>
+        <lockedByIdentKey>455737485</lockedByIdentKey>
+        <comment></comment>
+        <lockedDate>2019-05-22 15:35:56.817 UTC</lockedDate>
+        <downloadCount>1</downloadCount>
+        <locked>true</locked>
+        <originFile>/this/bcroot/course/95832818319926/foldernodes/88120182050795/2. Lehrjahr/Probe-VA/Schlussprodukt/17C.docx</originFile>
+        <metaFile>/this/bcroot/.meta/course/95832818319926/foldernodes/88120182050795/2. Lehrjahr/Probe-VA/Schlussprodukt/17C.docx.xml</metaFile>
+        <cannotGenerateThumbnail>false</cannotGenerateThumbnail>
+        <thumbnails/>
+      </metadata>
+    </revision>
+  </revisions>
+</versions>

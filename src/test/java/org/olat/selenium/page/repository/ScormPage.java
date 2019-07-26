@@ -21,7 +21,6 @@ package org.olat.selenium.page.repository;
 
 import java.util.List;
 
-import org.junit.Assert;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -43,12 +42,13 @@ public class ScormPage {
 	}
 	
 	public static ScormPage getScormPage(WebDriver browser) {
-		WebElement main = browser.findElement(By.id("o_main_wrapper"));
-		Assert.assertTrue(main.isDisplayed());
+		By mainBy = By.id("o_main_wrapper");
+		OOGraphene.waitElement(mainBy, browser);
 		return new ScormPage(browser);
 	}
 	
 	public ScormPage start() {
+		assertOnStart();
 		By startBy = By.cssSelector("button.o_sel_start_scorm");
 		browser.findElement(startBy).click();
 		OOGraphene.waitBusy(browser);

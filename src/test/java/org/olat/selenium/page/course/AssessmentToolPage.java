@@ -21,9 +21,7 @@ package org.olat.selenium.page.course;
 
 import java.util.List;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.olat.core.logging.Tracing;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.By;
@@ -37,8 +35,7 @@ import org.openqa.selenium.WebElement;
  *
  */
 public class AssessmentToolPage {
-	private static final Logger log = Tracing.createLoggerFor(AssessmentToolPage.class);
-	
+
 	private final WebDriver browser;
 	
 	public AssessmentToolPage(WebDriver browser) {

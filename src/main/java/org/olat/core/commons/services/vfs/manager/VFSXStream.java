@@ -70,6 +70,7 @@ public class VFSXStream {
 		mystream.omitField(RevisionFileImpl.class, "file");
 		mystream.omitField(VFSMetadataImpl.class, "originFile");
 		mystream.omitField(VFSMetadataImpl.class, "metaFile");
+		mystream.omitField(VFSMetadataImpl.class, "lockedByIdentKey");
 		mystream.aliasAttribute(VFSMetadataImpl.class, "cannotGenerateThumbnails", "cannotGenerateThumbnail");
 		mystream.aliasAttribute(VFSMetadataImpl.class, "author", "authorIdentKey");
 		mystream.aliasAttribute(VFSMetadataImpl.class, "licenseType", "licenseTypeKey");
