@@ -50,7 +50,19 @@ public class VFSXStreamTest extends OlatTestCase {
 			log.error("", e);
 			throw e;
 		}
-		
+		Assert.assertNotNull(versions);
+	}
+	
+	@Test
+	public void readOldVersions_locked() throws IOException {
+		VersionsFileImpl versions = null;
+		try(InputStream in = VFSXStreamTest.class.getResourceAsStream("docx.versions.docx.xml")) {
+			versions = (VersionsFileImpl)VFSXStream.read(in);
+			
+		} catch(IOException | OLATRuntimeException e) {
+			log.error("", e);
+			throw e;
+		}
 		Assert.assertNotNull(versions);
 	}
 
