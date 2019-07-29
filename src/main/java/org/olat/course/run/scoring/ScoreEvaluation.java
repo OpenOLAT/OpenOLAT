@@ -132,9 +132,6 @@ public class ScoreEvaluation {
 		return runStatus;
 	}
 	
-	/** (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "score:" + score + ", passed:" + passed + ", fullyAssessed " + fullyAssessed + ", S" + hashCode();

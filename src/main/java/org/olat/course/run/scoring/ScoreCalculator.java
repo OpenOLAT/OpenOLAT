@@ -25,9 +25,13 @@
 
 package org.olat.course.run.scoring;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
+
+import org.olat.course.condition.interpreter.score.GetAverageScoreFunction;
 
 /**
  * Description:<br>
@@ -43,6 +47,10 @@ public class ScoreCalculator implements Serializable {
 	private String passedExpression;
 	private String failedExpression;
 	
+	public static final String SCORE_TYPE_NONE = "no";
+	public static final String SCORE_TYPE_SUM = "sum";
+	public static final String SCORE_TYPE_AVG = "avg";
+	
 	/** config flag: no passed configured **/
 	public static final String PASSED_TYPE_NONE = "no";
 	/** config flag: passed based on cutvalue **/
@@ -53,6 +61,9 @@ public class ScoreCalculator implements Serializable {
 	private boolean expertMode = false;
 	// easy mode variables
 	// score configuration
+	private String scoreType;
+	// nodes for all scoreTypes (not only sum)
+	// Can't rename because of the XML serialization
 	private List<String> sumOfScoreNodes;
 	// passed configuration
 	private String passedType;
@@ -66,11 +77,11 @@ public class ScoreCalculator implements Serializable {
 	}
 	
 	/**
-	 * @return Returns the passedExpression. if null, then there is no expression to calculate
+	 * @return Returns the passedExpression. If null, then there is no expression to calculate.
 	 */
 	public String getPassedExpression() {
 		// always return expression, even if in easy mode! whenever something in the easy mode
-		// hase been changed the one who changes something must also set the passedExpression
+		// has been changed the one who changes something must also set the passedExpression
 		// to the new correct value using something like
 		// sc.setScoreExpression(sc.getScoreExpressionFromEasyModeConfiguration());
 		return passedExpression;
@@ -81,7 +92,7 @@ public class ScoreCalculator implements Serializable {
 	 */
 	public String getScoreExpression() {
 		// always return expression, even if in easy mode! whenever something in the easy mode
-		// hase been changed the one who changes something must also set the passedExpression
+		// has been changed the one who changes something must also set the passedExpression
 		// to the new correct value using something like
 		// sc.setScoreExpression(sc.getScoreExpressionFromEasyModeConfiguration());
 		return scoreExpression;
@@ -94,37 +105,50 @@ public class ScoreCalculator implements Serializable {
 	
 	/**
 	 * Calculate the score expression based on the easy mode configuration. This must not be used 
-	 * during calcualtion of a score but after changeing an expression in the editor to set the
-	 * new score expression
-	 * @return String
+	 * during calculation of a score but after changing an expression in the editor to set the
+	 * new score expression.
+	 * 
+	 * @return 
 	 */
 	public String getScoreExpressionFromEasyModeConfiguration() {
-		StringBuilder sb = new StringBuilder();
-
 		if (getSumOfScoreNodes() != null && getSumOfScoreNodes().size() > 0) {
-			sb.append("(");
-			for(Iterator<String> iter = getSumOfScoreNodes().iterator(); iter.hasNext(); ) {
-				String nodeIdent = iter.next();
-				sb.append("getScore(\"");
-				sb.append(nodeIdent);
-				sb.append("\")");			
-				if (iter.hasNext()) sb.append(" + ");
+			switch (scoreType) {
+			case SCORE_TYPE_SUM: return getSumScoreExpression();
+			case SCORE_TYPE_AVG: return getAvgScoreExpression();
+			default: //
 			}
-			sb.append(")");
 		}
+		return null;
+	}
 
-		if (sb.length() == 0) {
-			return null;
-		} else {
-			return sb.toString();
+	private String getSumScoreExpression() {
+		StringBuilder sb = new StringBuilder();
+		for(Iterator<String> iter = getSumOfScoreNodes().iterator(); iter.hasNext(); ) {
+			String nodeIdent = iter.next();
+			sb.append("getScore(\"");
+			sb.append(nodeIdent);
+			sb.append("\")");			
+			if (iter.hasNext()) sb.append(" + ");
 		}
+		sb.append(")");
+		return sb.toString();
+	}
+	
+	private String getAvgScoreExpression() {
+		return new StringBuilder()
+			.append(GetAverageScoreFunction.NAME)
+			.append("(\"")
+			.append(getSumOfScoreNodes().stream().collect(joining("\",\"")))
+			.append("\")")
+			.toString();
 	}
 
 	/**
 	 * Calculate the passed expression based on the easy mode configuration. This must not be used 
-	 * during calcualtion of a passed but after changeing an expression in the editor to set the
-	 * new passed expression
-	 * @return String
+	 * during calculation of a passed but after changing an expression in the editor to set the
+	 * new passed expression.
+	 * 
+	 * @return 
 	 */
 	public String getPassedExpressionFromEasyModeConfiguration() {
 		if (getPassedType() == null || getPassedType().equals(PASSED_TYPE_NONE)) return null;
@@ -146,11 +170,7 @@ public class ScoreCalculator implements Serializable {
 			sb.append(getPassedCutValue());
 		}
 		
-		if (sb.length() == 0) {
-			return null;
-		} else {
-			return sb.toString();
-		}
+		return sb.length() > 0? sb.toString(): null;
 	}
 
 	/**
@@ -160,69 +180,64 @@ public class ScoreCalculator implements Serializable {
 	public boolean isExpertMode() {
 		return expertMode;
 	}
+	
 	/**
 	 * @param expertMode true when in expert mode, false when in easy mode
 	 */
 	public void setExpertMode(boolean expertMode) {
 		this.expertMode = expertMode;
 	}
+	
+	public String getScoreType() {
+		return scoreType;
+	}
+
+	public void setScoreType(String scoreType) {
+		this.scoreType = scoreType;
+	}
+
 	/**
 	 * @return List of nodeIdents as Strings
 	 */
 	public List<String> getSumOfScoreNodes() {
 		return sumOfScoreNodes;
 	}
-	/**
-	 * @param sumOfScoreNodes
-	 */
+	
 	public void setSumOfScoreNodes(List<String> sumOfScoreNodes) {
 		this.sumOfScoreNodes = sumOfScoreNodes;
 	}
-	/**
-	 * @param passedExpression
-	 */
+	
 	public void setPassedExpression(String passedExpression) {
 		this.passedExpression = passedExpression;
 	}
-	/**
-	 * @param scoreExpression
-	 */
+	
 	public void setScoreExpression(String scoreExpression) {
 		this.scoreExpression = scoreExpression;
 	}
-	/**
-	 * @return int
-	 */
+	
 	public int getPassedCutValue() {
 		return passedCutValue;
 	}
-	/**
-	 * @param passedCutValue
-	 */
+	
 	public void setPassedCutValue(int passedCutValue) {
 		this.passedCutValue = passedCutValue;
 	}
+
 	/**
 	 * @return List of nodeIdents as Strings
 	 */
 	public List<String> getPassedNodes() {
 		return passedNodes;
 	}
-	/**
-	 * @param passedNodes
-	 */
+	
 	public void setPassedNodes(List<String> passedNodes) {
 		this.passedNodes = passedNodes;
 	}
-	/**
-	 * @return String
-	 */
+	
 	public String getPassedType() {
 		return passedType;
 	}
-	/**
-	 * @param passedType
-	 */
+	
 	public void setPassedType(String passedType) {
 		this.passedType = passedType;
 	}
@@ -240,10 +255,11 @@ public class ScoreCalculator implements Serializable {
 	 *
 	 */
 	public void clearEasyMode() {
+		scoreType = SCORE_TYPE_NONE;
+		sumOfScoreNodes = null;
 		passedCutValue = 0;
 		passedNodes = null;
 		passedType = PASSED_TYPE_NONE;
-		sumOfScoreNodes = null;
 	}
 
 }

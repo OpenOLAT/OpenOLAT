@@ -26,15 +26,16 @@
 package org.olat.course.run.scoring;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.LazyInitializationException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
@@ -385,7 +386,7 @@ public class ScoreAccounting {
 	/**
 	 * Evaluate the score of the course element. The method
 	 * takes the visibility of the results in account and will
-	 * return 0.0 if the results are not visiblity.
+	 * return 0.0 if the results are not visible.
 	 * 
 	 * @param childId The specified course element ident
 	 * @return A float (never null)
@@ -414,6 +415,40 @@ public class ScoreAccounting {
 		}
 		
 		return score;
+	}
+	
+	/**
+	 * Evaluate the average score of the course element. The method
+	 * takes the visibility of the results in account.
+	 * 
+	 * @param childIds The specified course element idents
+	 * @return A float (never null)
+	 */
+	public Float evalAverageScore(Collection<String> childIds) {
+		int count = 0;
+		float sum = 0.0f;
+		
+		for (String childId : childIds) {
+			CourseNode foundNode = findChildByID(childId);
+			Float score = null;
+			if (foundNode instanceof AssessableCourseNode) {
+				AssessableCourseNode acn = (AssessableCourseNode) foundNode;
+				ScoreEvaluation se = evalCourseNode(acn);
+				if(se != null) {
+					// the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
+					if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
+						score = se.getScore();
+						if (score != null) {
+							count++;
+							sum += score.floatValue();
+						}
+					}
+				}
+			}
+		}
+		
+		// Calculate the average only if at least one score is available.
+		return count > 0? Float.valueOf(sum / count): Float.valueOf(0.0f);
 	}
 
 	/**
