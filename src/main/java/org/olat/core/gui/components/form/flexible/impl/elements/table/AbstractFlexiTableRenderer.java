@@ -301,8 +301,8 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				}
 			}
 		}
-		sb.append("</ul></div></div> ")
-		  .append("/* <![CDATA[ */\n")
+		sb.append("</ul></div></div>\n")
+		  .append("<script>\n")
 		  .append("jQuery(function() { o_popover('table-button-filters-").append(dispatchId).append("','table-filters-").append(dispatchId).append("'); });\n")
 		  .append("</script>");
 		return selected.toString();
@@ -336,7 +336,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				sb.append(sort.getLabel()).append("</a></li>");
 			}
 		}
-		sb.append("</ul></div></div> ")
+		sb.append("</ul></div></div>\n")
 		  .append("<script>\n")
 		  .append("jQuery(function() { o_popover('table-button-sorters-").append(dispatchId).append("','table-sorters-").append(dispatchId).append("'); });\n")
 		  .append("</script>");
@@ -411,7 +411,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				  .append("</span></a>");
 				
 				sb.append("<a id='")
-				  .append(dispatchId).append("_sa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
+				  .append(dispatchId).append("_psa' href=\"javascript:o_table_toggleCheck('").append(formName).append("', true);")
 				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,
 						  new NameValuePair("select", "checkpage")))
 				  .append("\"><i class='o_icon o_icon-lg o_icon_check_on'> </i> <span>").append(translator.translate("form.checkpage"))
