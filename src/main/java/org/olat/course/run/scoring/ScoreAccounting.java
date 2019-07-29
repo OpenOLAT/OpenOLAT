@@ -217,7 +217,7 @@ public class ScoreAccounting {
 				AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 				ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
 				if (cNode.hasScoreConfigured() && scoreExpressionStr != null) {
-					score = new Float(ci.evaluateCalculation(scoreExpressionStr));
+					score = Float.valueOf(ci.evaluateCalculation(scoreExpressionStr));
 				}
 				if (cNode.hasPassedConfigured() && passedExpressionStr != null) {
 					boolean hasPassed = ci.evaluateCondition(passedExpressionStr);
@@ -403,15 +403,15 @@ public class ScoreAccounting {
 				if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
 					score = se.getScore();
 				} else {
-					score = new Float(0.0f);
+					score = Float.valueOf(0.0f);
 				}
 			}
 			if (score == null) { // a child has no score yet
-				score = new Float(0.0f); // default to 0.0, so that the condition can be evaluated (zero points makes also the most sense for "no results yet", if to be expressed in a number)
+				score = Float.valueOf(0.0f); // default to 0.0, so that the condition can be evaluated (zero points makes also the most sense for "no results yet", if to be expressed in a number)
 			}
 		} else {
 			error = true;
-			score = new Float(0.0f);
+			score = Float.valueOf(0.0f);
 		}
 		
 		return score;
@@ -472,7 +472,7 @@ public class ScoreAccounting {
 		AssessableCourseNode acn = (AssessableCourseNode) foundNode;
 		ScoreEvaluation se = evalCourseNode(acn);
 		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-			log.error("could not evaluate node '" + acn.getShortTitle() + "' (" + acn.getClass().getName() + "," + childId + ")");
+			log.error("could not evaluate node '{}' ({},{})", acn.getShortTitle(), acn.getClass().getName(), childId);
 			return Boolean.FALSE;
 		}
 		// check if the results are visible
@@ -484,6 +484,26 @@ public class ScoreAccounting {
 			passed = Boolean.FALSE;
 		}
 		return passed;
+	}
+	
+	public boolean evalUserVisibleOfCourseNode(String childId) {
+		CourseNode foundNode = findChildByID(childId);
+		if (foundNode == null) {
+			error = true;
+			return Boolean.FALSE;
+		}
+		if (!(foundNode instanceof AssessableCourseNode)) {
+			error = true;
+			return Boolean.FALSE;
+		}
+		AssessableCourseNode acn = (AssessableCourseNode) foundNode;
+		ScoreEvaluation se = evalCourseNode(acn);
+		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
+			log.error("could not evaluate node '{}' ({},{})", acn.getShortTitle(), acn.getClass().getName(), childId);
+			return Boolean.FALSE;
+		}
+		// check if the results are visible
+		return se.getUserVisible() != null && se.getUserVisible().booleanValue();
 	}
 
 	private CourseNode findChildByID(String id) {

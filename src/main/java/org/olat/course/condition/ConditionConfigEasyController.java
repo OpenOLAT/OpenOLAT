@@ -90,6 +90,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	private List<CourseNode> nodeIdentList;
 	private MultipleSelectionElement coachExclusive;
 	private MultipleSelectionElement assessmentMode;
+	private MultipleSelectionElement assessmentModeResultVisible;
 	private JSDateChooser fromDate;
 	private JSDateChooser toDate;
 	private FormItemContainer dateSubContainer;
@@ -189,7 +190,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// or blocked for learner
-		coachExclusive = uifactory.addCheckboxesHorizontal("coachExclusive", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.coachExclusive") });
+		coachExclusive = uifactory.addCheckboxesHorizontal("coachExclusive", null, formLayout,
+				new String[] { "ison" }, new String[] { translate("form.easy.coachExclusive") });
 		coachExclusive.setElementCssClass("o_sel_condition_coach_exclusive");
 		coachExclusive.addActionListener(FormEvent.ONCLICK);
 		if(validatedCondition.isEasyModeCoachesAndAdmins()) {
@@ -206,14 +208,23 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		}
 		flc.contextPut("shibbolethEnabled", Boolean.valueOf(enableShibbolethEasyConfig));
 		
-		assessmentMode = uifactory.addCheckboxesHorizontal("assessmentMode", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.assessmentMode") });
+		assessmentMode = uifactory.addCheckboxesHorizontal("assessmentMode", null, formLayout,
+				new String[] { "ison" }, new String[] { translate("form.easy.assessmentMode") });
 		if(validatedCondition.isAssessmentMode()) {
 			assessmentMode.select("ison", true);
 		}
 		assessmentMode.addActionListener(FormEvent.ONCLICK);
 		assessmentMode.setVisible(assessmentModule.isAssessmentModeEnabled());
 		
-		applyRulesForCoach = uifactory.addCheckboxesHorizontal("applyRulesForCoach", null, formLayout, new String[] { "ison" }, new String[] { translate("form.easy.applyRulesForCoach") });
+		assessmentModeResultVisible = uifactory.addCheckboxesHorizontal("assessmentModeResultVisible", null, formLayout,
+				new String[] { "ison" }, new String[] { translate("form.easy.assessmentMode.visible") });
+		if(validatedCondition.isAssessmentModeViewResults()) {
+			assessmentModeResultVisible.select("ison", true);
+		}
+		assessmentModeResultVisible.setVisible(assessmentModule.isAssessmentModeEnabled() && assessmentMode.isAtLeastSelected(1));
+		
+		applyRulesForCoach = uifactory.addCheckboxesHorizontal("applyRulesForCoach", null, formLayout,
+				new String[] { "ison" }, new String[] { translate("form.easy.applyRulesForCoach") });
 		applyRulesForCoach.setVisible(isDateGroupAssessmentOrAttributeSwitchOnOrAssessmentModeOn());
 		// note that in the condition this rule is saved with the opposite meaning:
 		// true when coach and admins always have access, false when rule should apply also to them
@@ -452,6 +463,8 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			validatedCondition.setAttributeConditions(null);
 			validatedCondition.setAttributeConditionsConnectorIsAND(null);
 			validatedCondition.setAssessmentMode(false);
+			validatedCondition.setAssessmentModeViewResults(false);
+			validatedCondition.setEasyModeAssessmentModeNodeId(null);
 			validatedCondition.setEasyModeGroupAccessIdList(null);
 			validatedCondition.setEasyModeGroupAreaAccessIdList(null);
 		} else {
@@ -540,6 +553,15 @@ public class ConditionConfigEasyController extends FormBasicController implement
 			
 			// assessment mode
 			validatedCondition.setAssessmentMode(assessmentMode.isAtLeastSelected(1));
+			
+			if(assessmentMode.isAtLeastSelected(1) && assessmentModeResultVisible.isAtLeastSelected(1)) {
+				validatedCondition.setAssessmentModeViewResults(true);
+				String currentNodeId = courseEditorEnv.getCurrentCourseNodeId();
+				validatedCondition.setEasyModeAssessmentModeNodeId(currentNodeId);
+			} else {
+				validatedCondition.setAssessmentModeViewResults(false);
+				validatedCondition.setEasyModeAssessmentModeNodeId(null);
+			}
 		}
 
 		// calculate expression from easy mode form
@@ -883,6 +905,9 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		//assessment switch only enabled if nodes to be selected
 		assessmentSwitch.setEnabled(!blockedForLearner && (!nodeIdentList.isEmpty()  || isSelectedNodeDeleted()));
 		assessmentMode.setEnabled(!blockedForLearner);
+		
+		assessmentModeResultVisible.setVisible(assessmentMode.isAtLeastSelected(1));
+		assessmentModeResultVisible.setEnabled(assessmentMode.isEnabled());
 						
 		//default is a checked disabled apply rules for coach
 		if (attributeSwitch != null) {
@@ -946,6 +971,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		easyGroupList.setValue("");
 		easyGroupList.setUserObject(new ArrayList<Long>());
 		assessmentMode.uncheckAll();
+		assessmentModeResultVisible.uncheckAll();
 		
 		// disable the shibboleth attributes switch and reset the row subform
 		if (attributeSwitch != null) {

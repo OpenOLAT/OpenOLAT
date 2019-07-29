@@ -44,6 +44,9 @@
 #end
 
 	$r.render("assessmentMode")
+	#if($r.visible("assessmentModeResultVisible"))
+		<div class="col-sm-offset-1">$r.render("assessmentModeResultVisible")</div>
+	#end
 	$r.render("applyRulesForCoach")
 	<div class="o_button_group">
 		$r.render("subm")
