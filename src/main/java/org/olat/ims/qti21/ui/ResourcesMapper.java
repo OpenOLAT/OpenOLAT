@@ -44,6 +44,7 @@ import org.olat.core.util.StringHelper;
 public class ResourcesMapper implements Mapper {
 	
 	private static final Logger log = Tracing.createLoggerFor(ResourcesMapper.class);
+	private static final String SUBMISSION_SUBPATH = "submissions/";
 	
 	private final URI assessmentObjectUri;
 	private final File submissionDirectory;
@@ -92,14 +93,15 @@ public class ResourcesMapper implements Mapper {
 				} else {
 					resource = new ForbiddenMediaResource();
 				}
-			} else if(filename.endsWith("/raw/_noversion_/images/transparent.gif")) {
+			} else if(filename != null && filename.endsWith("/raw/_noversion_/images/transparent.gif")) {
 				String realPath = request.getServletContext().getRealPath("/static/images/transparent.gif");
 				resource = new FileMediaResource(new File(realPath), true);
 			} else {
 				String submissionName = null;
 				File storage = null;
-				if(filename.startsWith("submissions/")) {
-					String submission = filename.substring("submissions/".length());
+				if(filename != null && filename.contains(SUBMISSION_SUBPATH)) {
+					int submissionIndex = filename.indexOf(SUBMISSION_SUBPATH) + SUBMISSION_SUBPATH.length();
+					String submission = filename.substring(submissionIndex);
 					int candidateSessionIndex = submission.indexOf('/');
 					if(candidateSessionIndex > 0) {
 						submissionName = submission.substring(candidateSessionIndex + 1);
@@ -109,7 +111,7 @@ public class ResourcesMapper implements Mapper {
 							String sessionKey = submission.substring(0, candidateSessionIndex);
 							if(StringHelper.isLong(sessionKey)) {
 								try {
-									storage = submissionDirectoryMaps.get(new Long(sessionKey));
+									storage = submissionDirectoryMaps.get(Long.valueOf(sessionKey));
 								} catch (Exception e) {
 									log.error("", e);
 								}
