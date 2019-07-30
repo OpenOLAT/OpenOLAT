@@ -416,8 +416,11 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent, CurriculumElement siblingBefore) {
-		CurriculumElement element = curriculumElementDao.move(elementToMove, newParent, siblingBefore);
+	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent,
+			CurriculumElement siblingBefore, Curriculum targetCurriculum) {
+		Curriculum reloadedTargetCurriculum = curriculumDao.loadByKey(targetCurriculum.getKey());
+		CurriculumElement element = curriculumElementDao
+				.move(elementToMove, newParent, siblingBefore, reloadedTargetCurriculum);
 		
 		// propagate inheritance of the new parent
 		List<GroupMembership> memberships = groupDao.getMemberships(newParent.getGroup());
