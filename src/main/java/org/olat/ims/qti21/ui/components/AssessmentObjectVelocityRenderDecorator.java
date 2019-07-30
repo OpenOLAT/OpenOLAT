@@ -194,7 +194,7 @@ public class AssessmentObjectVelocityRenderDecorator extends VelocityRenderDecor
 	}
 	
 	public String convertSubmissionLinkFull(String uri) {
-		return AssessmentRenderFunctions.convertSubmissionLink(avc, resolvedAssessmentItem, uri);
+		return AssessmentRenderFunctions.convertSubmissionLink(avc, uri);
 	}
 	
 	public String getFormDispatchFieldId() {
