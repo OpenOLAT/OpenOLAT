@@ -123,6 +123,7 @@ public class ScoreCalculator implements Serializable {
 
 	private String getSumScoreExpression() {
 		StringBuilder sb = new StringBuilder();
+		sb.append("(");
 		for(Iterator<String> iter = getSumOfScoreNodes().iterator(); iter.hasNext(); ) {
 			String nodeIdent = iter.next();
 			sb.append("getScore(\"");
