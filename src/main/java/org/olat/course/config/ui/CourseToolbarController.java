@@ -26,6 +26,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -66,6 +67,7 @@ public class CourseToolbarController extends FormBasicController {
 	private final String[] onValues;
 	
 	private SelectionElement toolbarEl;
+	private StaticTextElement explainEl;
 	private SelectionElement calendarEl;
 	private SelectionElement searchEl;
 	private SelectionElement chatEl;
@@ -122,7 +124,7 @@ public class CourseToolbarController extends FormBasicController {
 		toolbarEl.addActionListener(FormEvent.ONCHANGE);
 		toolbarEl.setEnabled(editable);
 		
-		uifactory.addStaticTextElement("chkbx.toolbar.explain", "", formLayout);
+		explainEl = uifactory.addStaticTextElement("chkbx.toolbar.explain", "", formLayout);
 
 		boolean canHideToolbar = true;
 		if(calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
@@ -180,7 +182,7 @@ public class CourseToolbarController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(toolbarEl == source) {
-			if(!toolbarEl.isSelected(0)) {
+			if(!toolbarEl.isSelected(0) && isAnyToolSelected()) {
 				showWarning("chkbx.toolbar.off.warning");
 			}
 			updateToolbar();
@@ -188,13 +190,22 @@ public class CourseToolbarController extends FormBasicController {
 		super.formInnerEvent(ureq, source, event);
 	}
 	
+	private boolean isAnyToolSelected() {
+		return (calendarEl != null && calendarEl.isSelected(0))
+				|| chatEl.isSelected(0)
+				|| searchEl.isSelected(0)
+				|| glossaryEl.isSelected(0);
+	}
+
 	private void updateToolbar() {
 		boolean enabled = toolbarEl.isSelected(0);
+		explainEl.setVisible(enabled);
 		if(calendarEl != null) {
 			calendarEl.setVisible(enabled);
 		}
 		chatEl.setVisible(enabled);
 		searchEl.setVisible(enabled);
+		glossaryEl.setVisible(enabled);
 	}
 
 	@Override
@@ -226,45 +237,45 @@ public class CourseToolbarController extends FormBasicController {
 		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		
 		if(updateSearch) {
-			ILoggingAction loggingAction =  enableSearch ?
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_COURSESEARCH_ENABLED :
+			ILoggingAction loggingAction =enableSearch ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_COURSESEARCH_ENABLED:
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_COURSESEARCH_DISABLED;
-	  		ThreadLocalUserActivityLogger.log(loggingAction, getClass());
-	  		
-	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
-        		.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.search, course.getResourceableId()), course);
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.search, course.getResourceableId()), course);
 		}
 
 		if(updateChat) {
-			ILoggingAction loggingAction =  enableChat ?
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_ENABLED :
+			ILoggingAction loggingAction =enableChat ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_ENABLED:
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_DISABLED;
-	  		ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
 
-	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
-	        	.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.chat, course.getResourceableId()), course);
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.chat, course.getResourceableId()), course);
 		}
 		
 		if(updateGlossary) {
 			ILoggingAction loggingAction = enableCalendar ?
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_GLOSSARY_ENABLED :
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_GLOSSARY_ENABLED:
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_GLOSSARY_DISABLED;
 
 			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
-	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
-	        	.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.glossary, course.getResourceableId()), course);
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.glossary, course.getResourceableId()), course);
 		}
 		
 		if(updateCalendar) {
 			ILoggingAction loggingAction = enableCalendar ?
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_ENABLED :
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_ENABLED:
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_DISABLED;
 
 			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
-	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
-	        	.fireEventToListenersOf(new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
-	        CoordinatorManager.getInstance().getCoordinator().getEventBus()
-	        	.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.calendar, course.getResourceableId()), course);
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.calendar, course.getResourceableId()), course);
 		}
 		
 		fireEvent(ureq, new ReloadSettingsEvent(false, false, true, false));
