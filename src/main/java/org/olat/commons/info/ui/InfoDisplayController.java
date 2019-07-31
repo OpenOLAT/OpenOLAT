@@ -75,9 +75,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
-import org.olat.course.nodes.info.InfoCourseNodeConfiguration;
 import org.olat.group.BusinessGroup;
-import org.olat.modules.ModuleConfiguration;
 import org.olat.user.UserManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,7 +113,6 @@ public class InfoDisplayController extends FormBasicController {
 	
 	private int maxResults = 0;
 	private int maxResultsConfig = 0;
-	private int duration = -1;
 	private Date after = null;
 	private Date afterConfig = null;
 	
@@ -148,16 +145,16 @@ public class InfoDisplayController extends FormBasicController {
 		loadMessages();		
 	}
 	
-	public InfoDisplayController(UserRequest ureq, WindowControl wControl, ModuleConfiguration config,
+	public InfoDisplayController(UserRequest ureq, WindowControl wControl, int maxResults, int duration,
 			InfoSecurityCallback secCallback, OLATResourceable ores, String resSubPath, String businessPath) {
 		super(ureq, wControl, "display");
 		this.secCallback = secCallback;
 		this.ores = ores;
 		this.resSubPath = resSubPath;
 		this.businessPath = businessPath;
+		this.maxResults = maxResults;
+		this.maxResultsConfig = maxResults;
 		
-		maxResults = maxResultsConfig = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_LENGTH, 10);
-		duration = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_DURATION, 90);
 		thumbnailMapper = registerCacheableMapper(ureq, "InfoMessagesThumbnail", new ThumbnailMapper());
 		attachmentMapper = registerCacheableMapper(ureq, "InfoMessages", new AttachmentMapper());
 		
@@ -189,19 +186,7 @@ public class InfoDisplayController extends FormBasicController {
 		// now load with configuration
 		loadMessages();
 	}
-	
-	private int getConfigValue(ModuleConfiguration config, String key, int def) {
-		String durationStr = (String)config.get(key);
-		if("\u221E".equals(durationStr)) {
-			return -1;
-		} else if(StringHelper.containsNonWhitespace(durationStr)) {
-			try {
-				return Integer.parseInt(durationStr);
-			} catch(NumberFormatException e) { /* fallback to default */ }
-		}
-		return def;
-	}
-	
+
 	public List<SendMailOption> getSendMailOptions() {
 		return sendMailOptions;
 	}

@@ -103,6 +103,7 @@ import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
+import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
@@ -172,6 +173,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink, searchLink,
+		participantInfoLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
@@ -183,6 +185,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private ArchiverMainController archiverCtrl;
 	private CustomDBMainController databasesCtrl;
 	private FolderRunController courseFolderCtrl;
+	private InfoRunController participatInfoCtrl;
 	private SearchInputController searchController;
 	private StatisticMainController statisticsCtrl;
 	private CourseRemindersController remindersCtrl;
@@ -778,9 +781,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 
 		CourseConfig cc = course.getCourseConfig();
-		if (!assessmentLock && showInfos) {
+		if (!assessmentLock && showDetails) {
 			detailsLink = LinkFactory.createToolLink("courseconfig",translate("command.courseconfig"), this, "o_icon_details");
 			toolbarPanel.addTool(detailsLink);
+		}
+		
+		if(!assessmentLock) {
+			participantInfoLink = LinkFactory.createToolLink("participantinfo", translate("command.participant.info"), this, "o_infomsg_icon");
+			participantInfoLink.setVisible(cc.isParticipantInfoEnabled());
+			toolbarPanel.addTool(participantInfoLink);
 		}
 		
 		boolean calendarIsEnabled =  !assessmentLock && !isGuestOnly && calendarModule.isEnabled()
@@ -923,6 +932,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentSurveyStatistics(ureq);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
+		} else if(participantInfoLink == source) {
+			doParticipantInfo(ureq);
 		} else if(calendarLink == source) {
 			launchCalendar(ureq);
 		} else if(chatLink == source) {
@@ -1024,6 +1035,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case orders: doOrders(ureq); break;
 						case close: doClose(ureq); break;
 						case pop: popToRoot(ureq); cleanUp(); break;
+						case participantInfo: doParticipantInfo(ureq); break;
 					}
 					delayedClose = null;
 				} else {
@@ -1090,6 +1102,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("Settings".equalsIgnoreCase(type) || "EditDescription".equalsIgnoreCase(type)) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doSettings(ureq, subEntries);
+			} else if("ParticipantInfos".equalsIgnoreCase(type)) {
+				doParticipantInfo(ureq);
 			} else if("Certification".equalsIgnoreCase(type)) {
 				doEfficiencyStatements(ureq);
 			} else if("Reminders".equalsIgnoreCase(type) || "RemindersLogs".equalsIgnoreCase(type)) {
@@ -1622,12 +1636,41 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		listenTo(courseSearchCalloutCtr);
 	}
 	
+	private void doParticipantInfo(UserRequest ureq) {
+		if(delayedClose == Delayed.participantInfo || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			boolean autoSubscribe = false;
+			boolean canAdd;
+			boolean canAdmin;
+			if(getUserCourseEnvironment().isCourseReadOnly()) {
+				canAdd = false;
+				canAdmin = false;
+			} else {
+				boolean isAdmin = getUserCourseEnvironment().isAdmin();
+				canAdd = isAdmin;
+				canAdmin = isAdmin;
+			}
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("participantInfos");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			participatInfoCtrl = new InfoRunController(ureq, swControl, getUserCourseEnvironment(), "participantInfos",
+					canAdd, canAdmin, autoSubscribe);
+
+			pushController(ureq, translate("command.participant.info"), participatInfoCtrl);
+			setActiveTool(participantInfoLink);
+			currentToolCtr = participatInfoCtrl;
+		} else {
+			delayedClose = Delayed.participantInfo;
+		};
+	}
+	
 	private void launchCalendar(UserRequest ureq) {
 		ControllerCreator ctrlCreator = (lureq, lwControl) -> {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(getRepositoryEntry());
 			WindowControl llwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, lwControl);
-			CourseCalendarController calendarController = new CourseCalendarController(lureq, llwControl, getUserCourseEnvironment());					
+			CourseCalendarController calendarController = new CourseCalendarController(lureq, llwControl, getUserCourseEnvironment());
 			// use a one-column main layout
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(lureq, llwControl, calendarController);
 			layoutCtr.setCustomCSS(CourseFactory.getCustomCourseCss(lureq.getUserSession(), course.getCourseEnvironment()));
@@ -1729,6 +1772,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private void processCourseConfigEvent(CourseConfigEvent event) {
 		switch(event.getType()) {
+			case search: {
+				if(searchLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					searchLink.setVisible(cc.isCourseSearchEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case calendar: {
 				if(calendarLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -1738,11 +1790,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
-			case search: {
-				if(searchLink != null) {
+			case participantInfo: {
+				if(participantInfoLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-					searchLink.setVisible(cc.isCourseSearchEnabled());
+					calendarLink.setVisible(cc.isCalendarEnabled() && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar());
 					toolbarPanel.setDirty(true);
 				}
 				break;
@@ -1883,6 +1935,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		members,
 		orders,
 		close,
-		pop
+		pop,
+		participantInfo
 	}
 }

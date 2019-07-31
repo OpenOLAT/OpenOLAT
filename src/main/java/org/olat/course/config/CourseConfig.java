@@ -72,7 +72,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 14;
+	private static final transient int CURRENTVERSION = 15;
 	/**
 	 * Log levels
 	 */
@@ -119,6 +119,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * The course search is enabled by default
 	 */
 	public static final transient String COURSESEARCH_ENABLED = "COURSESEARCH_ENABLED";
+	public static final transient String PARTICIPANT_INFO_ENABLED = "PARTICIPANT_INFO_ENABLED";
 	/**
 	 * course calendar
 	 */
@@ -195,6 +196,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(TOOLBAR_ENABLED, Boolean.TRUE);
 		
 		configuration.put(COURSESEARCH_ENABLED, Boolean.TRUE);
+		configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.FALSE);
 
 		this.version = CURRENTVERSION;
 	}
@@ -292,6 +294,12 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(CERTIFICATE_CUSTOM3)) configuration.put(CERTIFICATE_CUSTOM3, "");
 				
 				this.version = 14;
+			}
+			
+			if (version == 14) {
+				if (!configuration.containsKey(PARTICIPANT_INFO_ENABLED)) configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.FALSE);
+				
+				this.version = 15;
 			}
 
 			
@@ -618,6 +626,15 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(COURSESEARCH_ENABLED, Boolean.valueOf(b));
 	}
 	
+	public boolean isParticipantInfoEnabled() {
+		Boolean bool = (Boolean) configuration.get(PARTICIPANT_INFO_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setParticipantInfoEnabled(boolean b) {
+		configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.valueOf(b));
+	}
+	
 	public boolean isToolbarEnabled() {
 		Boolean bool = (Boolean) configuration.get(TOOLBAR_ENABLED);
 		return bool.booleanValue();
@@ -665,6 +682,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setToolbarEnabled(isToolbarEnabled());
 		clone.setBreadCrumbEnabled(isBreadCrumbEnabled());
 		clone.setCourseSearchEnabled(isCourseSearchEnabled());
+		clone.setParticipantInfoEnabled(isParticipantInfoEnabled());
 		return clone;
 	}
 
