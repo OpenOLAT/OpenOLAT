@@ -532,9 +532,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 
 	@Override
 	public boolean hasResultsDetails() {
-		ModuleConfiguration config = getModuleConfiguration();
-		String scoreConfig = config.getStringValue(CONFIG_KEY_SCORE);
-		return CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig) || CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig);
+		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_EVAL_FORM_ENABLED);
 	}
 
 	@Override
