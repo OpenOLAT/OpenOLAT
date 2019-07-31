@@ -25,9 +25,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.ResourceLicense;
@@ -35,7 +37,6 @@ import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
@@ -53,6 +54,7 @@ import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,16 +65,25 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class CreateTestOverviewController extends FormBasicController {
 
+	private final boolean withLicenses;
 	private final ExportFormatOptions format;
 	private QItemDataModel itemsModel;
 	
+	
+	
+	@Autowired
+	private LicenseModule licenseModule;
 	@Autowired
 	private LicenseService licenseService;
+	@Autowired
+	private QuestionPoolLicenseHandler licenseHandler;
+	
 
 	public CreateTestOverviewController(UserRequest ureq, WindowControl wControl, List<QuestionItemShort> items,
 			ExportFormatOptions format) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "create_test");
 		this.format = format;
+		withLicenses = licenseModule.isEnabled(licenseHandler);
 		initForm(ureq);
 		loadModel(items);
 	}
@@ -88,14 +99,14 @@ public class CreateTestOverviewController extends FormBasicController {
 		));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license));
+		if(withLicenses) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license));
+		}
 		itemsModel = new QItemDataModel(columnsModel, format, getLocale());
 		uifactory.addTableElement(getWindowControl(), "shares", itemsModel, getTranslator(), formLayout);
 		
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("create.test", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("create.test", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
 	}
 	
 	private void loadModel(List<QuestionItemShort> items) {
@@ -106,6 +117,14 @@ public class CreateTestOverviewController extends FormBasicController {
 				.map(item -> new QuestionRow(item, resourceLicensesMap.get(item.getKey())))
 				.collect(Collectors.toList());
 		itemsModel.setObjects(rows);
+		if(withLicenses) {
+			Set<LicenseType> licenseTypes = resourceLicenses.stream()
+					.map(ResourceLicense::getLicenseType)
+					.collect(Collectors.toSet());
+			if(licenseTypes.size() > 1) {
+				flc.contextPut("licenseWarning", Boolean.TRUE);
+			}
+		}
 	}
 	
 	public String getResourceTypeFormat() {

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
@@ -63,7 +64,9 @@ import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 import org.olat.ims.qti21.ui.editor.overview.AssessmentTestOverviewDataModel.PartCols;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -90,6 +93,7 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 	private AssessmentTestOverviewDataModel tableModel;
 	private final TooledStackedPanel toolbar;
 	
+	private final boolean withLicenses;
 	private final RepositoryEntry testEntry;
 	private final ManifestBuilder manifestBuilder;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
@@ -100,6 +104,13 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 	private QPoolService qpoolService;
 	@Autowired
 	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private QuestionPoolLicenseHandler poolLicenseHandler;
+	@Autowired
+	private RepositoryEntryLicenseHandler repositoryEntryLicenseHandler;
+	
 	
 	public AssessmentTestOverviewConfigurationController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder) {
@@ -108,6 +119,7 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		this.manifestBuilder = manifestBuilder;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		this.toolbar = toolbar;
+		withLicenses = licenseModule.isEnabled(poolLicenseHandler) || licenseModule.isEnabled(repositoryEntryLicenseHandler);
 		initForm(ureq);
 		initialPanel.setCssClass("o_edit_mode");
 		loadModel();
@@ -215,8 +227,9 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		DefaultFlexiColumnModel feedbackCol = new DefaultFlexiColumnModel(PartCols.feedback, SelectionTarget.feedback.name(), new YesNoCellRenderer(getTranslator()));
 		feedbackCol.setDefaultVisible(false);
 		tableColumnModel.addFlexiColumnModel(feedbackCol);
-		// license
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PartCols.license));
+		if(withLicenses) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PartCols.license));
+		}
 
 		tableModel = new AssessmentTestOverviewDataModel(tableColumnModel);
 		
@@ -256,8 +269,10 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		if(aggregatedValues.getLearningTime() != null) {
 			testRow.setLearningTime(aggregatedValues.getLearningTime());
 		}
-		loadLicenses(rows);
-
+		if(withLicenses) {
+			loadLicenses(rows);
+		}
+		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
