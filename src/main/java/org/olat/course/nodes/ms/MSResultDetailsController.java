@@ -24,14 +24,10 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
-import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
@@ -57,9 +53,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MSResultDetailsController extends BasicController {
 	
 	private final VelocityContainer mainVC;
-	private final Link openLink;
 	
-	private CloseableModalController cmc;
 	private EvaluationFormExecutionController formCtrl;
 
 	private EvaluationFormSession session;
@@ -70,6 +64,8 @@ public class MSResultDetailsController extends BasicController {
 	public MSResultDetailsController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment assessedUserCourseEnv, MSCourseNode msCourseNode) {
 		super(ureq, wControl);
+
+		mainVC = createVelocityContainer("result_details");
 		
 		ModuleConfiguration config = msCourseNode.getModuleConfiguration();
 		RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(config);
@@ -79,26 +75,33 @@ public class MSResultDetailsController extends BasicController {
 		UserNodeAuditManager auditManager = assessedUserCourseEnv.getCourseEnvironment().getAuditManager();
 		AuditEnv auditEnv = AuditEnv.of(auditManager , msCourseNode, assessedIdentity, getIdentity(), Role.coach);
 		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, assessedIdentity, auditEnv);
-		List<RubricStatistic> statistics = msService.getRubricStatistics(session);
 		
 		String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
-		String scaleConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE);
-		float scale = Float.parseFloat(scaleConfig);
 		
-		List<RubricWrapper> rubricWrappers = new ArrayList<>(statistics.size());
-		for (int i = 0; i < statistics.size(); i++) {
-			RubricStatistic statistic = statistics.get(i);
-			String name = getName(statistic.getRubric(), i+1);
-			String value = getValue(statistic, scoreConfig, scale);
-			RubricWrapper rubricWrapper = new RubricWrapper(name, value);
-			rubricWrappers.add(rubricWrapper);
+		boolean pointsFromEvaluationForm = MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)
+				|| MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig);
+		if (pointsFromEvaluationForm) {
+			String scaleConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE);
+			float scale = Float.parseFloat(scaleConfig);
+
+			List<RubricStatistic> statistics = msService.getRubricStatistics(session);
+
+			List<RubricWrapper> rubricWrappers = new ArrayList<>(statistics.size());
+			for (int i = 0; i < statistics.size(); i++) {
+				RubricStatistic statistic = statistics.get(i);
+				String name = getName(statistic.getRubric(), i+1);
+				String value = getValue(statistic, scoreConfig, scale);
+				RubricWrapper rubricWrapper = new RubricWrapper(name, value);
+				rubricWrappers.add(rubricWrapper);
+			}
+			mainVC.contextPut("rubrics", rubricWrappers);
 		}
 		
-		mainVC = createVelocityContainer("result_details");
-		mainVC.contextPut("rubrics", rubricWrappers);
-		openLink = LinkFactory.createButton("result.details.open", mainVC, this);
-		putInitialPanel(mainVC);
+		formCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false);
+		listenTo(formCtrl);
+		mainVC.put("evaluationForm", formCtrl.getInitialComponent());
 		
+		putInitialPanel(mainVC);
 	}
 
 	private String getName(Rubric rubric, int index) {
@@ -128,40 +131,10 @@ public class MSResultDetailsController extends BasicController {
 		}
 		return AssessmentHelper.getRoundedScore(0f);
 	}
-
-	@Override
-	protected void event(UserRequest ureq, Component source, Event event) {
-		if (source == openLink) {
-			doOpenEvaluationForm(ureq);
-		}
-	}
 	
 	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == formCtrl) {
-			cmc.deactivate();
-			cleanUp();
-		} else if (source == cmc) {
-			cleanUp();
-		}
-		super.event(ureq, source, event);
-	}
-
-	private void cleanUp() {
-		removeAsListenerAndDispose(formCtrl);
-		removeAsListenerAndDispose(cmc);
-		formCtrl = null;
-		cmc = null;
-	}
-
-	private void doOpenEvaluationForm(UserRequest ureq) {
-		formCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session, true, false);
-		listenTo(formCtrl);
-		
-		String title = translate("result.details.title");
-		cmc = new CloseableModalController(getWindowControl(), "close", formCtrl.getInitialComponent(), true, title, true);
-		listenTo(cmc);
-		cmc.activate();
+	protected void event(UserRequest ureq, Component source, Event event) {
+		//
 	}
 
 	@Override

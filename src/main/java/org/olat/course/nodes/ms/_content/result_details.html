@@ -1,18 +1,40 @@
-<div class="panel panel-default">
-	<div class="panel-heading">
-		<h4 class="panel-title">$r.translate("result.details.title")</h4>
+#if($r.isNotNull($rubrics))
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h4 class="panel-title">$r.translate("result.details.title")</h4>
+		</div>
+		<table class="table">
+		<tbody>
+			#foreach($rubric in $rubrics)
+				<tr>
+					<th>$rubric.getName()</th>
+					<td>$rubric.getValue()</td>
+				</tr>
+			#end
+		</tbody>
+		</table>
 	</div>
-	<table class="table">
-	<tbody>
-		#foreach($rubric in $rubrics)
-			<tr>
-				<th>$rubric.getName()</th>
-				<td>$rubric.getValue()</td>
-			</tr>
-		#end
-	</tbody>
-	</table>
-</div>
-<div class="o_button_group">
-	$r.render("result.details.open")
-</div>
+#end
+#if($r.available("evaluationForm"))
+	<div class="panel panel-default o_disclaimer">
+		<div class="panel-heading" data-toggle="collapse" data-target="#collapseForm">
+			<h4 class="panel-title">
+				<i id="collapseFormToggler" class="o_icon o_icon-fw o_icon_close_togglebox"> </i>
+				$r.translate("result.details.form")
+			</h4>
+		</div>
+		<div id="collapseForm" class="panel-collapse collapse in"><div class="panel-body">
+			$r.render("evaluationForm")
+		</div></div>
+	</div>
+	<script>
+		/* <![CDATA[ */
+			jQuery('#collapseForm').on('hide.bs.collapse', function () {
+				jQuery('#collapseFormToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+			})
+			jQuery('#collapseForm').on('show.bs.collapse', function () {
+				jQuery('#collapseFormToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			})
+		/* ]]> */
+	</script>
+#end
