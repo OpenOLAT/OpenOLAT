@@ -151,15 +151,11 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	/**
 	 * with default layout <tt>_content/easycondedit.html</tt>
 	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param groupMgr The course group manager
-	 * @param cond condition for initialisation
-	 * @param title The title that should be displayed for this condition
-	 * @param formName Name of the condition form - must be unique within a HTML
-	 *          page
-	 * @param nodeIdentList
-	 * @param euce
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param cond The condition to edit
+	 * @param nodeIdentList The list of assessable course elements
+	 * @param env The course editor environment
 	 */
 	public ConditionConfigEasyController(UserRequest ureq, WindowControl wControl, Condition cond,
 			List<CourseNode> nodeIdentList, CourseEditorEnv env) {
@@ -269,8 +265,7 @@ public class ConditionConfigEasyController extends FormBasicController implement
 	}
 	
 	/**
-	 * @param formLayout
-	 * @param listener
+	 * @param formLayout The form container
 	 */
 	private void initEasyGroupAreaChoosers(FormItemContainer formLayout) {
 
@@ -429,17 +424,11 @@ public class ConditionConfigEasyController extends FormBasicController implement
 		cutValue.setDisplaySize(3);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		singleUserEventCenter.deregisterFor(this, groupConfigChangeEventOres);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 
