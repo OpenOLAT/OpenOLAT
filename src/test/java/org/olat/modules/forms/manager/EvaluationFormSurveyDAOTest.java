@@ -237,7 +237,7 @@ public class EvaluationFormSurveyDAOTest extends OlatTestCase {
 		EvaluationFormSurvey survey2 = sut.createSurvey(ores, "2", null, formEntry, survey1);
 		EvaluationFormSurvey survey3 = sut.createSurvey(ores, "3", null, formEntry, survey2);
 		EvaluationFormSurvey survey4 = sut.createSurvey(ores, "4", null, formEntry, survey3);
-		dbInstance.commitAndCloseSession();
+		dbInstance.commit();
 		EvaluationFormSurvey next = sut.loadSeriesNext(survey2);
 		EvaluationFormSurvey seriesPrevious = survey2.getSeriesPrevious();
 		sut.updateSeriesPrevious(survey2, null);

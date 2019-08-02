@@ -63,14 +63,14 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
 		<org.springframework.version>5.1.8.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.3.Final</org.hibernate.version>
+		<org.hibernate.version>5.4.4.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<apache.cxf>3.3.2</apache.cxf>
 		<apache.pdfbox>2.0.16</apache.pdfbox>
 		<apache.poi>4.1.0</apache.poi>
 		<apache.log4j>2.12.0</apache.log4j>
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
-		<io.undertow>2.0.22.Final</io.undertow>
+		<io.undertow>2.0.23.Final</io.undertow>
 		<jackson.version>2.9.9</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.6</org.postgresql.version>
@@ -434,7 +434,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.23.0</version>
+				    <version>3.23.2</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1847,7 +1847,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.12</version>
+			<version>1.13</version>
 		</dependency>
 		<dependency>
 			<!-- Used by at least commons-validator -->
@@ -2502,7 +2502,7 @@
         <dependency>
         	<groupId>com.fasterxml.jackson.core</groupId>
         	<artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}.1</version>
+            <version>${jackson.version}.2</version>
         </dependency>
         <dependency>
         	<groupId>com.fasterxml.jackson.dataformat</groupId>
