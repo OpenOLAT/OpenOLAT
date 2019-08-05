@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.core.CoreSpringFactory;
@@ -160,7 +161,9 @@ public class FullCalendarMapper implements Mapper {
 			applyLiveStreamClass(jsonEvent, event);
 		}
 		
-		jsonEvent.put("editable", Boolean.valueOf(cal.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE));
+		Boolean editable = Boolean.valueOf(cal.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE)
+				&& !CalendarManagedFlag.isManaged(event, CalendarManagedFlag.dates);
+		jsonEvent.put("editable", editable);
 		
 		if(event.getBegin() != null) {
 			if(allDay) {
