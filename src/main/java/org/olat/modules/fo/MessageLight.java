@@ -31,8 +31,6 @@ import org.olat.core.id.Identity;
  */
 public interface MessageLight extends MessageRef {
 	
-	public int getStatusCode();
-	
 	public String getTitle();
 	
 	public String getBody();
@@ -49,7 +47,6 @@ public interface MessageLight extends MessageRef {
 	
 	public Date getLastModified();
 	
-
 	public Long getParentKey();
 	
 	public MessageRef getThreadtop();

@@ -19,6 +19,7 @@
  */
 package org.olat.core.commons.services.mark.impl.ui;
 
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.control.Event;
 
 /**
@@ -31,8 +32,15 @@ public class MarkedEvent extends Event {
 
 	private static final long serialVersionUID = -4104070726631981649L;
 
-	public MarkedEvent() {
+	private final Mark mark;
+
+	public MarkedEvent(Mark mark) {
 		super("marked");
+		this.mark = mark;
+	}
+
+	public Mark getMark() {
+		return mark;
 	}
 
 }

@@ -913,8 +913,12 @@ public class MessageListController extends BasicController implements GenericEve
 				MessageView splitedMessage = (MessageView)confirmSplitCtrl.getUserObject();
 				doSplitThread(ureq, splitedMessage);
 			}
-		} else if(event instanceof MarkedEvent || event instanceof UnmarkedEvent) {
-			reloadMessageTable(ureq);
+		} else if(event instanceof MarkedEvent) {
+			MarkedEvent me = (MarkedEvent) event;
+			messageTableCtrl.onMarked(me.getMark());
+		} else if(event instanceof UnmarkedEvent) {
+			UnmarkedEvent ue = (UnmarkedEvent)event;
+			messageTableCtrl.onUnmarked(ue.getSubPath());
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -1289,13 +1293,6 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 	}
 
-	private void reloadMessageTable(UserRequest ureq) {
-		String settings = getViewSettings(ureq);
-		if(VIEWMODE_MESSAGE.equals(settings)) {
-			doShowOne(ureq);
-		}
-	}
-	
 	private String getViewSettings(UserRequest ureq) {
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		Object setting = prefs.get(GUI_PREFS_VIEWMODE_CLASS, GUI_PREFS_VIEWMODE_KEY);

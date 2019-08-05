@@ -48,6 +48,8 @@ public interface FlexiTreeTableDataModel<T extends FlexiTreeTableNode> extends F
 	
 	public void open(int row);
 	
+	public boolean hasOpenCloseAll();
+
 	/**
 	 * The table will call the openAll method and filter() right after.
 	 * 
@@ -61,5 +63,5 @@ public interface FlexiTreeTableDataModel<T extends FlexiTreeTableNode> extends F
 	public void popBreadcrumb(FlexiTreeTableNode node);
 	
 	public List<FlexiTreeTableNode> reloadBreadcrumbs(List<FlexiTreeTableNode> crumbs);
-
+	
 }

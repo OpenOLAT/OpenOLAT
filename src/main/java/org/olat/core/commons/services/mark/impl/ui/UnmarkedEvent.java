@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.mark.impl.ui;
 
 import org.olat.core.gui.control.Event;
+import org.olat.core.id.OLATResourceable;
 
 /**
  * 
@@ -31,8 +32,21 @@ public class UnmarkedEvent extends Event {
 
 	private static final long serialVersionUID = 3503240359856342650L;
 
-	public UnmarkedEvent() {
+	private final OLATResourceable ores;
+	private final String subPath;
+
+	public UnmarkedEvent(OLATResourceable ores, String subPath) {
 		super("unmarked");
+		this.ores = ores;
+		this.subPath = subPath;
+	}
+
+	public OLATResourceable getOres() {
+		return ores;
+	}
+
+	public String getSubPath() {
+		return subPath;
 	}
 
 }

@@ -19,8 +19,12 @@
  */
 package org.olat.modules.fo.ui;
 
+import java.util.Date;
+
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
+import org.olat.modules.fo.Status;
 
 /**
  * 
@@ -28,11 +32,13 @@ import org.olat.core.gui.components.form.flexible.elements.FormLink;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class MessageLightViewRow {
+public class MessageLightViewRow implements FlexiTreeTableNode {
 
 	private final MessageLightView view;
 	private Mark mark;
 	private final FormLink markLink;
+	private MessageLightViewRow parent;
+	private boolean hasChildren;
 	
 	public MessageLightViewRow(MessageLightView view, Mark mark, FormLink markLink) {
 		this.view = view;
@@ -59,4 +65,34 @@ public class MessageLightViewRow {
 	public FormLink getMarkLink() {
 		return markLink;
 	}
+	
+	public boolean isSticky() {
+		return Status.getStatus(view.getStatusCode()).isSticky();
+	}
+	
+	public Date getLastModified() {
+		return view.getLastModified();
+	}
+
+	public void setParent(MessageLightViewRow parent) {
+		this.parent = parent;
+		if (parent != null) {
+			parent.hasChildren = true;
+		}
+	}
+
+	@Override
+	public FlexiTreeTableNode getParent() {
+		return parent;
+	}
+
+	@Override
+	public String getCrump() {
+		return null;
+	}
+
+	public boolean hasChildren() {
+		return hasChildren;
+	}
+
 }

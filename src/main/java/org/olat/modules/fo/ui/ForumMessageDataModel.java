@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.core.commons.persistence.SortKey;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTreeTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
@@ -32,13 +34,15 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.group.ui.main.AbstractMemberListController;
 
+import edu.emory.mathcs.backport.java.util.Collections;
+
 /**
  * 
  * Initial date: 12.11.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLightViewRow>
+public class ForumMessageDataModel extends DefaultFlexiTreeTableDataModel<MessageLightViewRow>
 	implements SortableFlexiTableDataModel<MessageLightViewRow> {
 	
 	private Translator translator;
@@ -49,13 +53,29 @@ public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLig
 	}
 
 	@Override
+	public void filter(String searchString, List<FlexiTableFilter> filters) {
+		//
+	}
+	
+	@Override
+	public boolean hasChildren(int row) {
+		MessageLightViewRow viewRow = getObject(row);
+		return viewRow.hasChildren();
+	}
+
+	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
 			if("natural".equals(orderBy.getKey())) {
-				//System.out.println();
+				List<MessageLightViewRow> objects = getObjects();
+				Collections.sort(objects, new MessageTreeRowComparator());
+				super.setObjects(objects);
+				setHasOpenCloseAll(true);
 			} else {
+				openAll();
 				List<MessageLightViewRow> views = new ForumMessageDataModelSort(orderBy, this, null).sort();
 				super.setObjects(views);
+				setHasOpenCloseAll(false);
 			}
 		}
 	}
@@ -129,4 +149,5 @@ public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLig
 			super(orderBy, tableModel, locale);
 		}
 	}
+
 }

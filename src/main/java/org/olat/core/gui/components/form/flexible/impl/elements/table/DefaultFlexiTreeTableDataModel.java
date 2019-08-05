@@ -42,6 +42,7 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 	protected final Set<U> openedRows = new HashSet<>();
 	protected List<U> backupRows;
 	protected U focusedNode;
+	private boolean hasOpenCloseAll = true;
 
 	public DefaultFlexiTreeTableDataModel(FlexiTableColumnModel columnModel) {
 		super(columnModel);
@@ -185,6 +186,15 @@ implements FlexiTreeTableDataModel<U>, FilterableFlexiTableModel {
 			}
 		}
 		return refreshedCrumbs;
+	}
+
+	@Override
+	public boolean hasOpenCloseAll() {
+		return hasOpenCloseAll;
+	}
+
+	protected void setHasOpenCloseAll(boolean hasOpenCloseAll) {
+		this.hasOpenCloseAll = hasOpenCloseAll;
 	}
 
 	@SuppressWarnings("unchecked")
