@@ -27,18 +27,23 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.olat.basesecurity.BaseSecurityModule;
+import org.olat.core.commons.services.mark.Mark;
+import org.olat.core.commons.services.mark.MarkingService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
@@ -46,10 +51,14 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.ui.BooleanCSSCellRenderer;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.MessageLight;
 import org.olat.modules.fo.Status;
@@ -77,7 +86,11 @@ public class ForumMessageListController extends FormBasicController {
 	
 	private final Forum forum;
 	private final boolean withType;
+	private final boolean showMarks;
+	private final boolean showNew;
+	private final boolean guestOnly;
 	private final boolean isAdministrativeUser;
+	private final OLATResourceable forumOres;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	private MessageView userObject, selectView;
 	
@@ -86,16 +99,22 @@ public class ForumMessageListController extends FormBasicController {
 	@Autowired
 	private ForumManager forumManager;
 	@Autowired
+	private MarkingService markingService;
+	@Autowired
 	private BaseSecurityModule securityModule;
 	
 	public ForumMessageListController(UserRequest ureq, WindowControl wControl,
-			Forum forum, boolean withType) {
+			Forum forum, boolean withType, boolean showMarks, boolean showNew) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		setTranslator(Util.createPackageTranslator(Forum.class, getLocale(), getTranslator()));
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		this.forum = forum;
 		this.withType = withType;
+		this.showMarks = showMarks;
+		this.showNew = showNew;
+		this.guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
+		forumOres = OresHelper.createOLATResourceableInstance("Forum", forum.getKey());
 		
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(ureq.getUserSession().getRoles());
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, isAdministrativeUser);
@@ -120,15 +139,21 @@ public class ForumMessageListController extends FormBasicController {
 	}
 
 	public void loadAllMessages() {
+		Set<Long> readSet = !guestOnly? forumManager.getReadSet(getIdentity(), forum): Collections.emptySet();
 		List<MessageLight> allMessages = forumManager.getLightMessagesByForum(forum);
 		List<MessageLightView> views = new ArrayList<>(allMessages.size());
 		Map<Long,MessageLightView> keyToViews = new HashMap<>();
 		for(MessageLight message:allMessages) {
 			MessageLightView view = new MessageLightView(message, userPropertyHandlers, getLocale());
+			if (readSet.contains(message.getKey())) {
+				view.setNewMessage(false);
+			} else {
+				view.setNewMessage(true);
+			}
 			views.add(view);
 			keyToViews.put(view.getKey(), view);
 		}
-
+		
 		//calculate depth
 		Map<Long, List<Long>> keyToParentline = new HashMap<>();
 		for(MessageLightView view:views) {
@@ -150,13 +175,38 @@ public class ForumMessageListController extends FormBasicController {
 		Collections.sort(threads, new MessageNodeComparator());
 		List<MessageLightView> orderedViews = new ArrayList<>(allMessages.size());
 		flatTree(threads, orderedViews);
-		dataModel.setObjects(orderedViews);
+		List<MessageLightViewRow> rows = appendLinks(orderedViews);
+		dataModel.setObjects(rows);
 	}
 	
 	public void loadMessages(List<MessageLightView> views) {
-		dataModel.setObjects(views);
+		List<MessageLightViewRow> rows = appendLinks(views);
+		dataModel.setObjects(rows);
 		tableEl.reloadData();
 		tableEl.reset();
+	}
+
+	private List<MessageLightViewRow> appendLinks(List<MessageLightView> views) {
+		List<Mark> markList = !guestOnly
+				? markingService.getMarkManager().getMarks(forumOres, getIdentity(), null)
+				: Collections.emptyList();
+		Map<String,Mark> marks = new HashMap<>();
+		for (Mark mark : markList) {
+			marks.put(mark.getResSubPath(), mark);
+		}
+		
+		List<MessageLightViewRow> rows = new ArrayList<>(views.size());
+		for (MessageLightView view : views) {
+			Mark mark = marks.get(view.getKey().toString());
+			boolean marked = mark != null;
+			FormLink markLink = uifactory.addFormLink("mark_" + view.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
+			markLink.setIconLeftCSS(marked? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
+			
+			MessageLightViewRow row = new MessageLightViewRow(view, mark, markLink);
+			markLink.setUserObject(row);
+			rows.add(row);
+		}
+		return rows;
 	}
 
 	@Override
@@ -169,6 +219,11 @@ public class ForumMessageListController extends FormBasicController {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.type, new StatusTypeCellRenderer()));
 			sorts.add(new FlexiTableSort(translate(ForumMessageCols.type.i18nHeaderKey()), ForumMessageCols.type.name()));
 		}
+		
+		if (showMarks) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.mark));
+		}
+		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.thread,
 				"select", new StaticFlexiCellRenderer("select", new IndentCellRenderer())));
 		sorts.add(new FlexiTableSort(translate(ForumMessageCols.thread.i18nHeaderKey()), ForumMessageCols.thread.name()));
@@ -195,6 +250,12 @@ public class ForumMessageListController extends FormBasicController {
 
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.lastModified));
 		sorts.add(new FlexiTableSort(translate(ForumMessageCols.lastModified.i18nHeaderKey()), ForumMessageCols.lastModified.name()));
+
+		if(showNew && !guestOnly) {
+			FlexiCellRenderer newMessageRenderer = new BooleanCSSCellRenderer(getTranslator(),
+					"o_icon o_forum_new_icon", null, "table.new.message.hover", null);
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ForumMessageCols.newMessage, newMessageRenderer));
+		}
 
 		dataModel = new ForumMessageDataModel(columnsModel, getTranslator());
 		tableEl = uifactory.addTableElement(getWindowControl(), "messages", dataModel, getTranslator(), formLayout);
@@ -223,14 +284,45 @@ public class ForumMessageListController extends FormBasicController {
 				SelectionEvent se = (SelectionEvent)event;
 				String cmd = se.getCommand();
 				if("select".equals(cmd)) {
-					MessageLightView message = dataModel.getObject(se.getIndex());
+					MessageLightView message = dataModel.getObject(se.getIndex()).getView();
 					fireEvent(ureq, new SelectMessageEvent(SelectMessageEvent.SELECT_MESSAGE, message.getKey()));
 				}
+			}
+		} else if(source instanceof FormLink) {
+			FormLink link = (FormLink)source;
+			String cmd = link.getCmd();
+			if ("mark".equals(cmd)) {
+				MessageLightViewRow row = (MessageLightViewRow) link.getUserObject();
+				if (row.isMarked()) {
+					doUnmark(row);
+					link.setIconLeftCSS(Mark.MARK_ADD_CSS_LARGE);
+				} else {
+					doMark(row);
+					link.setIconLeftCSS(Mark.MARK_CSS_LARGE);
+				}
+				link.getComponent().setDirty(true);
+				fireEvent(ureq, new MessageMarkedEvent(selectView.getKey(), row.getView().getKey()));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
+	private void doMark(MessageLightViewRow row) {
+		MessageLightView view = row.getView();
+		Mark currentMark = row.getMark();
+		String businessPath = currentMark == null ?
+				getWindowControl().getBusinessControl().getAsString() + "[Message:" + view.getKey() + "]"
+				: currentMark.getBusinessPath();
+		Mark mark = markingService.getMarkManager().setMark(forumOres, getIdentity(), view.getKey().toString(), businessPath);
+		row.setMark(mark);
+	}
+
+	private void doUnmark(MessageLightViewRow row) {
+		MessageLightView view = row.getView();
+		markingService.getMarkManager().removeMark(forumOres, getIdentity(), view.getKey().toString());
+		row.setMark(null);
+	}
+
 	private void flatTree(List<MessageNode> nodes, List<MessageLightView> orderedViews) {
 		for(MessageNode node:nodes) {
 			orderedViews.add(node.getView());
@@ -269,7 +361,7 @@ public class ForumMessageListController extends FormBasicController {
 	private class MessageCssDelegate extends DefaultFlexiTableCssDelegate {
 		@Override
 		public String getRowCssClass(FlexiTableRendererType type, int pos) {
-			MessageLightView row = dataModel.getObject(pos);
+			MessageLightView row = dataModel.getObject(pos).getView();
 			return row != null && selectView != null && row.getKey().equals(selectView.getKey()) ? "o_row_selected" : null;
 		}
 	}

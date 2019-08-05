@@ -145,8 +145,10 @@ public class MarkController extends FormBasicController {
 					markingService.getMarkManager().removeMark(mark);
 					mark = null;
 				}
+				fireEvent(ureq, new UnmarkedEvent());
 			} else {
 				mark = markingService.getMarkManager().setMark(ores, identity, subPath, businessPath);
+				fireEvent(ureq, new MarkedEvent());
 			}
 			marked = !marked;
 			markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);

@@ -48,8 +48,10 @@ public class MessageLightView extends UserPropertiesRow implements MessageRef {
 
 	private final Long threadtopKey;
 
-	private int depth;
+	private int depth = -1;
 	private int numOfChildren = 0;
+
+	private boolean newMessage;
 
 	public MessageLightView(MessageLight message, List<UserPropertyHandler> userPropertyHandlers, Locale locale) {
 		super(message.getCreator(), userPropertyHandlers, locale);
@@ -119,5 +121,13 @@ public class MessageLightView extends UserPropertiesRow implements MessageRef {
 
 	public boolean isThreadTop() {
 		return threadtopKey != null;
+	}
+
+	public boolean isNewMessage() {
+		return newMessage;
+	}
+
+	public void setNewMessage(boolean newMessage) {
+		this.newMessage = newMessage;
 	}
 }

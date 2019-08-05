@@ -54,10 +54,7 @@ public class MessageView extends MessageLightView {
 	private boolean threadTop;
 	private boolean closed;
 	private boolean moved;
-
-	private int depth = -1;
 	
-	private boolean newMessage;
 	private List<VFSItem> attachments;
 	private VFSContainer messageContainer;
 	
@@ -89,14 +86,6 @@ public class MessageView extends MessageLightView {
 		this.formattedLastModified = formattedLastModified;
 	}
 
-	public boolean isNewMessage() {
-		return newMessage;
-	}
-
-	public void setNewMessage(boolean newMessage) {
-		this.newMessage = newMessage;
-	}
-
 	public String getCreatorFirstname() {
 		return creatorFirstname;
 	}
@@ -111,14 +100,6 @@ public class MessageView extends MessageLightView {
 
 	public void setCreatorLastname(String creatorLastname) {
 		this.creatorLastname = creatorLastname;
-	}
-	
-	public int getDepth() {
-		return depth;
-	}
-
-	public void setDepth(int depth) {
-		this.depth = depth;
 	}
 
 	public boolean isMoved() {
@@ -169,6 +150,7 @@ public class MessageView extends MessageLightView {
 		this.author = author;
 	}
 
+	@Override
 	public boolean isThreadTop() {
 		return threadTop;
 	}

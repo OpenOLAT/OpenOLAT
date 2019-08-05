@@ -38,8 +38,8 @@ import org.olat.group.ui.main.AbstractMemberListController;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLightView>
-	implements SortableFlexiTableDataModel<MessageLightView> {
+public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLightViewRow>
+	implements SortableFlexiTableDataModel<MessageLightViewRow> {
 	
 	private Translator translator;
 	
@@ -54,7 +54,7 @@ public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLig
 			if("natural".equals(orderBy.getKey())) {
 				//System.out.println();
 			} else {
-				List<MessageLightView> views = new ForumMessageDataModelSort(orderBy, this, null).sort();
+				List<MessageLightViewRow> views = new ForumMessageDataModelSort(orderBy, this, null).sort();
 				super.setObjects(views);
 			}
 		}
@@ -62,40 +62,44 @@ public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLig
 	
 	@Override
 	public Object getValueAt(int row, int col) {
-		MessageLightView view = getObject(row);
+		MessageLightViewRow view = getObject(row);
 		return getValueAt(view, col);
 	}
 
 	@Override
-	public Object getValueAt(MessageLightView row, int col) {
+	public Object getValueAt(MessageLightViewRow row, int col) {
 		if(col >= 0 && col < ForumMessageCols.values().length) {
 			switch(ForumMessageCols.values()[col]) {
-				case type: return row.getStatusCode();
-				case thread: return StringHelper.escapeHtml(row.getTitle());
-				case lastModified: return row.getLastModified();
+				case type: return row.getView().getStatusCode();
+				case mark: return row.getMarkLink();
+				case thread: return StringHelper.escapeHtml(row.getView().getTitle());
+				case lastModified: return row.getView().getLastModified();
+				case newMessage: return row.getView().isNewMessage()? Boolean.TRUE: null;
 				default: return "ERROR";
 			}
 		}
 		
 		int propPos = col - AbstractMemberListController.USER_PROPS_OFFSET;
-		if(StringHelper.containsNonWhitespace(row.getPseudonym())) {
-			return propPos == 0 ? row.getPseudonym() : null;
+		if(StringHelper.containsNonWhitespace(row.getView().getPseudonym())) {
+			return propPos == 0 ? row.getView().getPseudonym() : null;
 		}
-		if(row.isGuest()) {
+		if(row.getView().isGuest()) {
 			return propPos == 0 ? translator.translate("guest") : null;
 		}
-		return row.getIdentityProp(propPos);
+		return row.getView().getIdentityProp(propPos);
 	}
 
 	@Override
-	public DefaultFlexiTableDataModel<MessageLightView> createCopyWithEmptyList() {
+	public DefaultFlexiTableDataModel<MessageLightViewRow> createCopyWithEmptyList() {
 		return new ForumMessageDataModel(getTableColumnModel(), translator);
 	}
 	
 	public enum ForumMessageCols implements FlexiSortableColumnDef {
 		type("table.header.typeimg"),
+		mark("table.header.mark"),
 		thread("table.thread"),
-		lastModified("table.lastModified");
+		lastModified("table.lastModified"),
+		newMessage("table.header.new.message");
 		
 		private final String i18nKey;
 		
@@ -119,9 +123,9 @@ public class ForumMessageDataModel extends DefaultFlexiTableDataModel<MessageLig
 		}
 	}
 	
-	public class ForumMessageDataModelSort extends SortableFlexiTableModelDelegate<MessageLightView> {
+	public class ForumMessageDataModelSort extends SortableFlexiTableModelDelegate<MessageLightViewRow> {
 		
-		public ForumMessageDataModelSort(SortKey orderBy, SortableFlexiTableDataModel<MessageLightView> tableModel, Locale locale) {
+		public ForumMessageDataModelSort(SortKey orderBy, SortableFlexiTableDataModel<MessageLightViewRow> tableModel, Locale locale) {
 			super(orderBy, tableModel, locale);
 		}
 	}

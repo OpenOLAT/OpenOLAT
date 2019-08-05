@@ -60,7 +60,7 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	/**
-	 * @see org.olat.core.commons.persistence.Persistable#getKey()
+	 * @see org.olat.core.commons.persistence.Persistable#getSelectedMessageKey()
 	 */
 	@Override
 	public Long getKey() {
