@@ -48,6 +48,7 @@ import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.QItemDocument;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionsController;
 import org.olat.modules.qpool.ui.metadata.MetaUIFactory.KeyValues;
@@ -72,6 +73,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	private final String prefsKey;
 	private ExtendedSearchPrefs prefs;
 	private final boolean allTaxonomyLevels;
+	private final List<QItemType> excludedItemTypes;
 	private boolean enabled = true;
 	private final QPoolSecurityCallback qPoolSecurityCallback;
 	
@@ -85,11 +87,13 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 	private QuestionPoolLicenseHandler licenseHandler;
 
 	public ExtendedSearchController(UserRequest ureq, WindowControl wControl,
-			QPoolSecurityCallback qPoolSecurityCallback, String prefsKey, Form mainForm, boolean allTaxonomyLevels) {
+			QPoolSecurityCallback qPoolSecurityCallback, String prefsKey, Form mainForm,
+			List<QItemType> excludedItemTypes, boolean allTaxonomyLevels) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "extended_search", mainForm);
 		setTranslator(Util.createPackageTranslator(QuestionsController.class, getLocale(), getTranslator()));
 		this.qPoolSecurityCallback = qPoolSecurityCallback;
 		this.allTaxonomyLevels = allTaxonomyLevels;
+		this.excludedItemTypes = excludedItemTypes;
 		searchAttributes = new SearchAttributes();
 		
 		this.prefsKey = prefsKey;
@@ -484,7 +488,7 @@ public class ExtendedSearchController extends FormBasicController implements Ext
 		
 		@Override
 		public FormItem createItem(String startValue) {
-			KeyValues types = MetaUIFactory.getQItemTypeKeyValues(getTranslator(), qpoolService);
+			KeyValues types = MetaUIFactory.getQItemTypeKeyValues(getTranslator(), excludedItemTypes, qpoolService);
 			return createItem(types.getKeys(), types.getValues(), startValue);
 		}
 

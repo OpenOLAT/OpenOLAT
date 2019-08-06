@@ -40,6 +40,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
@@ -61,6 +62,7 @@ public class SharedItemsSource implements QuestionItemsSource {
 	
 	private String searchString;
 	private String restrictToFormat;
+	private List<QItemType> excludedItemTypes;
 	private QPoolSearchEvent extendedSearchParameters;
 
 	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles, Locale locale, boolean admin) {
@@ -78,6 +80,10 @@ public class SharedItemsSource implements QuestionItemsSource {
 
 	public void setRestrictToFormat(String restrictToFormat) {
 		this.restrictToFormat = restrictToFormat;
+	}
+	
+	public void setExcludedItemTypes(List<QItemType> excludedItemTypes) {
+		this.excludedItemTypes = excludedItemTypes;
 	}
 	
 	@Override
@@ -200,6 +206,7 @@ public class SharedItemsSource implements QuestionItemsSource {
 		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
 			params.setFormat(restrictToFormat);
 		}
+		params.setExcludedItemTypes(excludedItemTypes);
 		ResultInfos<QuestionItemView> items = qpoolService.getItems(params, 0, -1);
 		return items.getObjects();
 	}
@@ -229,6 +236,7 @@ public class SharedItemsSource implements QuestionItemsSource {
 		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
 			params.setFormat(restrictToFormat);
 		}
+		params.setExcludedItemTypes(excludedItemTypes);
 		params.setResource(group.getResource());
 		return params;
 	}

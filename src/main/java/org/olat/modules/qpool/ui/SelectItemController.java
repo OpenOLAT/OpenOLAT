@@ -19,6 +19,9 @@
  */
 package org.olat.modules.qpool.ui;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -35,6 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.datasource.DefaultItemsSource;
 import org.olat.modules.qpool.ui.datasource.MarkedItemsSource;
@@ -50,8 +54,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class SelectItemController extends BasicController {
 	
-	private Link myCompetencesLink, mySharesLink, myListsLink;
-	private final Link markedItemsLink, ownedItemsLink;
+	private Link myListsLink;
+	private Link mySharesLink;
+	private Link ownedItemsLink;
+	private Link myCompetencesLink;
+	private final Link markedItemsLink;
 	private final SegmentViewComponent segmentView;
 	private final VelocityContainer mainVC;
 	private ItemListController ownedItemsCtrl;
@@ -59,7 +66,9 @@ public class SelectItemController extends BasicController {
     private ItemListMyListsController myListsCtrl;
 	private ItemListMySharesController mySharesCtrl;
 	private ItemListMyCompetencesController myCompetencesCtrl;
-	private String restrictToFormat;
+	
+	private final String restrictToFormat;
+	private final List<QItemType> excludeTypes;
 	
 	private final QPoolSecurityCallback secCallback;
 	
@@ -68,8 +77,14 @@ public class SelectItemController extends BasicController {
 	@Autowired
 	private QPoolSecurityCallbackFactory qPoolSecurityCallbackFactory;
 	
+
 	public SelectItemController(UserRequest ureq, WindowControl wControl, String restrictToFormat) {
+		this(ureq, wControl, restrictToFormat, Collections.emptyList());
+	}
+	
+	public SelectItemController(UserRequest ureq, WindowControl wControl, String restrictToFormat, List<QItemType> excludeTypes) {
 		super(ureq, wControl);
+		this.excludeTypes = excludeTypes;
 		this.restrictToFormat = restrictToFormat;
 		mainVC = createVelocityContainer("item_list_overview");
 		
@@ -96,7 +111,7 @@ public class SelectItemController extends BasicController {
 			segmentView.addSegment(mySharesLink, false);
         }
 		if(StringHelper.isLong(qpoolModule.getTaxonomyQPoolKey()) && qpoolModule.isReviewProcessEnabled()) {
-			myCompetencesCtrl = new ItemListMyCompetencesController(ureq, getWindowControl(), secCallback, restrictToFormat);
+			myCompetencesCtrl = new ItemListMyCompetencesController(ureq, getWindowControl(), secCallback, restrictToFormat, excludeTypes);
 			listenTo(myCompetencesCtrl);
 			if(myCompetencesCtrl.hasCompetences()) {
 				myCompetencesLink = LinkFactory.createLink("my.competences", mainVC, this);
@@ -148,7 +163,8 @@ public class SelectItemController extends BasicController {
 			DefaultItemsSource source = new MarkedItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), "Fav");
 			source.getDefaultParams().setFavoritOnly(true);
 			source.getDefaultParams().setFormat(restrictToFormat);
-			markedItemsCtrl = new ItemListController(ureq, getWindowControl(), secCallback, source);
+			source.getDefaultParams().setExcludedItemTypes(excludeTypes);
+			markedItemsCtrl = new ItemListController(ureq, getWindowControl(), secCallback, source, restrictToFormat, excludeTypes);
 			listenTo(markedItemsCtrl);
 		}
 		int numOfMarkedItems = markedItemsCtrl.updateList();
@@ -161,7 +177,8 @@ public class SelectItemController extends BasicController {
 			DefaultItemsSource source = new MyItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), "My"); 
 			source.getDefaultParams().setAuthor(getIdentity());
 			source.getDefaultParams().setFormat(restrictToFormat);
-			ownedItemsCtrl = new ItemListController(ureq, getWindowControl(), secCallback, source);
+			source.getDefaultParams().setExcludedItemTypes(excludeTypes);
+			ownedItemsCtrl = new ItemListController(ureq, getWindowControl(), secCallback, source, restrictToFormat, excludeTypes);
 			listenTo(ownedItemsCtrl);
 		}
 		ownedItemsCtrl.updateList();
@@ -170,7 +187,7 @@ public class SelectItemController extends BasicController {
 
     private void updateMyLists(UserRequest ureq) {
         if(myListsCtrl == null) {
-            myListsCtrl = new ItemListMyListsController(ureq, getWindowControl(), secCallback, restrictToFormat);
+            myListsCtrl = new ItemListMyListsController(ureq, getWindowControl(), secCallback, restrictToFormat, excludeTypes);
             listenTo(myListsCtrl);
         }
         mainVC.put("itemList", myListsCtrl.getInitialComponent());
@@ -178,7 +195,7 @@ public class SelectItemController extends BasicController {
 
 	private void updateMyShares(UserRequest ureq) {
 		if(mySharesCtrl == null) {
-			mySharesCtrl = new ItemListMySharesController(ureq, getWindowControl(), secCallback, restrictToFormat);
+			mySharesCtrl = new ItemListMySharesController(ureq, getWindowControl(), secCallback, restrictToFormat, excludeTypes);
 			listenTo(mySharesCtrl);
 		}
 		mainVC.put("itemList", mySharesCtrl.getInitialComponent());
@@ -186,7 +203,7 @@ public class SelectItemController extends BasicController {
 	
 	private void updateMyCompetences(UserRequest ureq) {
 		if(myCompetencesCtrl == null) {
-			myCompetencesCtrl = new ItemListMyCompetencesController(ureq, getWindowControl(), secCallback, restrictToFormat);
+			myCompetencesCtrl = new ItemListMyCompetencesController(ureq, getWindowControl(), secCallback, restrictToFormat, excludeTypes);
 			listenTo(myCompetencesCtrl);
 		}
 		mainVC.put("itemList", myCompetencesCtrl.getInitialComponent());

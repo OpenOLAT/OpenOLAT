@@ -33,6 +33,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 
 /**
@@ -47,6 +48,13 @@ public class ItemListController extends AbstractItemListController {
 	
 	public ItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, QuestionItemsSource source) {
 		super(ureq, wControl, secCallback, source, "qti-select");
+		
+		initForm(ureq);
+	}
+	
+	public ItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, QuestionItemsSource source,
+			String restrictToFormat, List<QItemType> excludeTypes) {
+		super(ureq, wControl, secCallback, source, restrictToFormat, excludeTypes, "qti-select");
 		
 		initForm(ureq);
 	}

@@ -40,6 +40,7 @@ import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
 import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
@@ -62,6 +63,7 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 	private QPoolSearchEvent extendedSearchParameters;
 	
 	private String restrictToFormat;
+	private List<QItemType> excludedItemTypes;
 	
 	public CollectionOfItemsSource(QuestionItemCollection collection, Identity identity, Roles roles, Locale locale) {
 		this.roles = roles;
@@ -77,6 +79,10 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 
 	public void setRestrictToFormat(String restrictToFormat) {
 		this.restrictToFormat = restrictToFormat;
+	}
+	
+	public void setExcludedItemTypes(List<QItemType> excludedItemTypes) {
+		this.excludedItemTypes = excludedItemTypes;
 	}
 	
 	@Override
@@ -204,6 +210,7 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 			params.setFormat(restrictToFormat);
 		}
 		params.setCollection(collection);
+		params.setExcludedItemTypes(excludedItemTypes);
 		ResultInfos<QuestionItemView> items = qpoolService.getItems(params, 0, -1);
 		return items.getObjects();
 	}
@@ -232,6 +239,7 @@ public class CollectionOfItemsSource implements QuestionItemsSource {
 		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
 			params.setFormat(restrictToFormat);
 		}
+		params.setExcludedItemTypes(excludedItemTypes);
 		params.setCollection(collection);
 		return params;
 	}

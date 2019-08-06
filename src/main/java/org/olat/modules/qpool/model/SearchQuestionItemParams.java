@@ -354,6 +354,9 @@ public class SearchQuestionItemParams implements Cloneable {
 		if(itemType != null) {
 			clone.itemType = itemType;
 		}
+		if(excludedItemTypes != null) {
+			clone.excludedItemTypes = excludedItemTypes;
+		}
 		if(taxonomyLevel != null) {
 			clone.taxonomyLevel = taxonomyLevel;
 		}

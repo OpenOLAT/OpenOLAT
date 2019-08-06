@@ -40,6 +40,7 @@ import org.olat.modules.qpool.Pool;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.datasource.EmptyItemsSource;
 import org.olat.modules.qpool.ui.datasource.PoolItemsSource;
 import org.olat.modules.qpool.ui.datasource.SharedItemsSource;
@@ -63,8 +64,9 @@ public class ItemListMySharesController extends AbstractItemListController {
 	@Autowired
 	private QuestionPoolModule qpoolModule;
 
-	public ItemListMySharesController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, String restrictToFormat) {
-		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, "qti-select");
+	public ItemListMySharesController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback,
+			String restrictToFormat, List<QItemType> excludeTypes) {
+		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, excludeTypes, "qti-select");
 	}
 	
 	@Override
@@ -116,15 +118,17 @@ public class ItemListMySharesController extends AbstractItemListController {
 			myShareEl.setEnabled(false);
 		} else {
 			myShareEl.select(myShareKeys[0], true);
-			if(myPools.size() > 0) {
+			if(!myPools.isEmpty()) {
 				Pool firstPool = myPools.get(0);
 				PoolItemsSource source = new PoolItemsSource(getIdentity(), roles, getLocale(), firstPool);
 				source.getDefaultParams().setFormat(restrictToFormat);
+				source.getDefaultParams().setExcludedItemTypes(excludeTypes);
 				updateSource(source);
-			} else if(myGroups.size() > 0) {
+			} else if(!myGroups.isEmpty()) {
 				BusinessGroup firstGroup = myGroups.get(0);
 				SharedItemsSource source = new SharedItemsSource(firstGroup, getIdentity(), roles, getLocale(), false);
 				source.setRestrictToFormat(restrictToFormat);
+				source.setExcludedItemTypes(excludeTypes);
 				updateSource(source);
 			}
 		}
@@ -173,6 +177,7 @@ public class ItemListMySharesController extends AbstractItemListController {
 		} else {
 			PoolItemsSource source = new PoolItemsSource(getIdentity(), ureq.getUserSession().getRoles(), getLocale(), myPool);
 			source.getDefaultParams().setFormat(restrictToFormat);
+			source.getDefaultParams().setExcludedItemTypes(excludeTypes);
 			updateSource(source);
 		}
 	}
@@ -190,6 +195,7 @@ public class ItemListMySharesController extends AbstractItemListController {
 		} else {
 			SharedItemsSource source = new SharedItemsSource(myGroup, getIdentity(), ureq.getUserSession().getRoles(), getLocale(), false);
 			source.setRestrictToFormat(restrictToFormat);
+			source.setExcludedItemTypes(excludeTypes);
 			updateSource(source);
 		}
 	}

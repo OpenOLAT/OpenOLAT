@@ -1048,8 +1048,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private GenericQtiNode doConvertItemToQtiNode(QuestionItemView qitemv) {
 		VFSContainer editorContainer = qtiPackage.getBaseDir();
 		Item theItem = qtiQpoolServiceProvider.exportToQTIEditor(qitemv, editorContainer);
-		GenericQtiNode node = new ItemNode(theItem, qtiPackage);
-		return node;
+		return new ItemNode(theItem, qtiPackage);
 	}
 	
 	private void doSelectQItem(UserRequest ureq) {
