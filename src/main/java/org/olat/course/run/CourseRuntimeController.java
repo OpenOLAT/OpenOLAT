@@ -104,6 +104,7 @@ import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.nodes.info.InfoRunController;
+import org.olat.course.nodes.members.MembersToolRunController;
 import org.olat.course.reminder.ui.CourseRemindersController;
 import org.olat.course.run.calendar.CourseCalendarController;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
@@ -173,7 +174,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink, searchLink,
-		participantInfoLink,
+		participantListLink, participantInfoLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
@@ -185,6 +186,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	private ArchiverMainController archiverCtrl;
 	private CustomDBMainController databasesCtrl;
 	private FolderRunController courseFolderCtrl;
+	private MembersToolRunController participatListCtrl;
 	private InfoRunController participatInfoCtrl;
 	private SearchInputController searchController;
 	private StatisticMainController statisticsCtrl;
@@ -786,12 +788,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(detailsLink);
 		}
 		
-		if(!assessmentLock) {
-			participantInfoLink = LinkFactory.createToolLink("participantinfo", translate("command.participant.info"), this, "o_infomsg_icon");
-			participantInfoLink.setVisible(cc.isParticipantInfoEnabled());
-			toolbarPanel.addTool(participantInfoLink);
-		}
-		
 		boolean calendarIsEnabled =  !assessmentLock && !isGuestOnly && calendarModule.isEnabled()
 				&& calendarModule.isEnableCourseToolCalendar() && reSecurity.canLaunch();
 		if (calendarIsEnabled && userCourseEnv != null) {
@@ -799,6 +795,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			calendarLink.setPopup(new LinkPopupSettings(950, 750, "cal"));
 			calendarLink.setVisible(cc.isCalendarEnabled());
 			toolbarPanel.addTool(calendarLink);
+		}
+		
+		if(!assessmentLock && isLecturesLinkEnabled()) {
+			lecturesLink = LinkFactory.createToolLink("command.lectures", translate("command.lectures"), this, "o_icon_lecture");
+			toolbarPanel.addTool(lecturesLink);
+		}
+		
+		if(!assessmentLock) {
+			participantListLink = LinkFactory.createToolLink("participantlist", translate("command.participant.list"), this, "o_cmembers_icon");
+			participantListLink.setVisible(cc.isParticipantListEnabled());
+			toolbarPanel.addTool(participantListLink);
+		}
+
+		if(!assessmentLock) {
+			participantInfoLink = LinkFactory.createToolLink("participantinfo", translate("command.participant.info"), this, "o_infomsg_icon");
+			participantInfoLink.setVisible(cc.isParticipantInfoEnabled());
+			toolbarPanel.addTool(participantInfoLink);
 		}
 		
 		if(!assessmentLock) {
@@ -813,11 +826,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			enableGlossaryLink = LinkFactory.createToolLink("command.glossary.on.off", translate("command.glossary.on.alt"), this);
 			glossary.addComponent(enableGlossaryLink);
 			toolbarPanel.addTool(glossary);
-		}
-		
-		if(!assessmentLock && isLecturesLinkEnabled()) {
-			lecturesLink = LinkFactory.createToolLink("command.lectures", translate("command.lectures"), this, "o_icon_lecture");
-			toolbarPanel.addTool(lecturesLink);
 		}
 		
 		//add group chat to toolbox
@@ -932,6 +940,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doAssessmentSurveyStatistics(ureq);
 		} else if(assessmentLink == source) {
 			doAssessmentTool(ureq);
+		} else if(participantListLink == source) {
+			doParticipantList(ureq);
 		} else if(participantInfoLink == source) {
 			doParticipantInfo(ureq);
 		} else if(calendarLink == source) {
@@ -1035,6 +1045,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case orders: doOrders(ureq); break;
 						case close: doClose(ureq); break;
 						case pop: popToRoot(ureq); cleanUp(); break;
+						case participantList: doParticipantList(ureq); break;
 						case participantInfo: doParticipantInfo(ureq); break;
 					}
 					delayedClose = null;
@@ -1636,6 +1647,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		listenTo(courseSearchCalloutCtr);
 	}
 	
+	private void doParticipantList(UserRequest ureq) {
+		if(delayedClose == Delayed.participantList || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("participantList");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			participatListCtrl = new  MembersToolRunController(ureq, swControl, getUserCourseEnvironment());
+
+			pushController(ureq, translate("command.participant.list"), participatListCtrl);
+			setActiveTool(participantListLink);
+			currentToolCtr = participatListCtrl;
+		} else {
+			delayedClose = Delayed.participantList;
+		};
+	}
+	
 	private void doParticipantInfo(UserRequest ureq) {
 		if(delayedClose == Delayed.participantInfo || requestForClose(ureq)) {
 			removeCustomCSS();
@@ -1790,11 +1817,20 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
+			case participantList: {
+				if(participantListLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					participantListLink.setVisible(cc.isParticipantListEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case participantInfo: {
 				if(participantInfoLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
-					calendarLink.setVisible(cc.isCalendarEnabled() && calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar());
+					participantInfoLink.setVisible(cc.isParticipantInfoEnabled());
 					toolbarPanel.setDirty(true);
 				}
 				break;
@@ -1936,6 +1972,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		orders,
 		close,
 		pop,
+		participantList,
 		participantInfo
 	}
 }

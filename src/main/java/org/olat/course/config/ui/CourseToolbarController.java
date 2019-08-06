@@ -69,8 +69,9 @@ public class CourseToolbarController extends FormBasicController {
 	private SelectionElement toolbarEl;
 	private StaticTextElement explainEl;
 	private SelectionElement searchEl;
-	private SelectionElement participantInfoEl;
 	private SelectionElement calendarEl;
+	private SelectionElement participantListEl;
+	private SelectionElement participantInfoEl;
 	private SelectionElement chatEl;
 	private SelectionElement glossaryEl;
 	
@@ -138,15 +139,6 @@ public class CourseToolbarController extends FormBasicController {
 			canHideToolbar &= false;
 		}
 		
-		boolean participantInfoEnabled = courseConfig.isParticipantInfoEnabled();
-		boolean managedInfo = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.participantInfo);
-		participantInfoEl = uifactory.addCheckboxesHorizontal("infoIsOn", "chkbx.participantinfo.onoff", formLayout, onKeys, onValues);
-		participantInfoEl.select(onKeys[0], participantInfoEnabled);
-		participantInfoEl.setEnabled(editable && !managedInfo);
-		if(managedInfo && participantInfoEnabled) {
-			canHideToolbar &= false;
-		}
-		
 		if(calendarModule.isEnabled() && calendarModule.isEnableCourseToolCalendar()) {
 			boolean calendarEnabled = courseConfig.isCalendarEnabled();
 			boolean managedCal = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.calendar);
@@ -158,6 +150,24 @@ public class CourseToolbarController extends FormBasicController {
 			if(managedCal && calendarEnabled) {
 				canHideToolbar &= false;
 			}
+		}
+		
+		boolean participantListEnabled = courseConfig.isParticipantListEnabled();
+		boolean managedList = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.participantList);
+		participantListEl = uifactory.addCheckboxesHorizontal("listIsOn", "chkbx.participantlist.onoff", formLayout, onKeys, onValues);
+		participantListEl.select(onKeys[0], participantListEnabled);
+		participantListEl.setEnabled(editable && !managedList);
+		if(managedList && participantListEnabled) {
+			canHideToolbar &= false;
+		}
+		
+		boolean participantInfoEnabled = courseConfig.isParticipantInfoEnabled();
+		boolean managedInfo = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.participantInfo);
+		participantInfoEl = uifactory.addCheckboxesHorizontal("infoIsOn", "chkbx.participantinfo.onoff", formLayout, onKeys, onValues);
+		participantInfoEl.select(onKeys[0], participantInfoEnabled);
+		participantInfoEl.setEnabled(editable && !managedInfo);
+		if(managedInfo && participantInfoEnabled) {
+			canHideToolbar &= false;
 		}
 
 		boolean chatEnabled = courseConfig.isChatEnabled();
@@ -203,8 +213,9 @@ public class CourseToolbarController extends FormBasicController {
 	
 	private boolean isAnyToolSelected() {
 		return searchEl.isSelected(0)
-				|| participantInfoEl.isSelected(0)
 				|| (calendarEl != null && calendarEl.isSelected(0))
+				|| participantListEl.isSelected(0)
+				|| participantInfoEl.isSelected(0)
 				|| chatEl.isSelected(0)
 				|| glossaryEl.isSelected(0);
 	}
@@ -213,10 +224,11 @@ public class CourseToolbarController extends FormBasicController {
 		boolean enabled = toolbarEl.isSelected(0);
 		explainEl.setVisible(enabled);
 		searchEl.setVisible(enabled);
-		participantInfoEl.setVisible(enabled);
 		if(calendarEl != null) {
 			calendarEl.setVisible(enabled);
 		}
+		participantListEl.setVisible(enabled);
+		participantInfoEl.setVisible(enabled);
 		chatEl.setVisible(enabled);
 		glossaryEl.setVisible(enabled);
 	}
@@ -234,17 +246,21 @@ public class CourseToolbarController extends FormBasicController {
 		boolean updateSearch = courseConfig.isCourseSearchEnabled() != enableSearch;
 		courseConfig.setCourseSearchEnabled(enableSearch && toolbarEnabled);
 		
-		boolean enableParticipantInfo = searchEl.isSelected(0);
+		boolean enableCalendar = calendarEl != null && calendarEl.isSelected(0);
+		boolean updateCalendar = courseConfig.isCalendarEnabled() != enableCalendar && calendarModule.isEnableCourseToolCalendar();
+		courseConfig.setCalendarEnabled(enableCalendar && toolbarEnabled);
+		
+		boolean enableParticipantList = participantListEl.isSelected(0);
+		boolean updateParticipantList = courseConfig.isParticipantListEnabled() != enableParticipantList;
+		courseConfig.setParticipantListEnabled(enableParticipantList && toolbarEnabled);
+		
+		boolean enableParticipantInfo = participantInfoEl.isSelected(0);
 		boolean updateParticipantInfo = courseConfig.isParticipantInfoEnabled() != enableParticipantInfo;
 		courseConfig.setParticipantInfoEnabled(enableParticipantInfo && toolbarEnabled);
 		
 		boolean enableChat = chatEl.isSelected(0);
 		boolean updateChat = courseConfig.isChatEnabled() != enableChat;
 		courseConfig.setChatIsEnabled(enableChat && toolbarEnabled);
-		
-		boolean enableCalendar = calendarEl != null && calendarEl.isSelected(0);
-		boolean updateCalendar = courseConfig.isCalendarEnabled() != enableCalendar && calendarModule.isEnableCourseToolCalendar();
-		courseConfig.setCalendarEnabled(enableCalendar && toolbarEnabled);
 		
 		boolean enableGlossary = glossaryEl != null && glossaryEl.isSelected(0);
 		boolean updateGlossary = courseConfig.isGlossaryEnabled() != enableGlossary;
@@ -263,6 +279,28 @@ public class CourseToolbarController extends FormBasicController {
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.search, course.getResourceableId()), course);
 		}
 		
+		if(updateCalendar) {
+			ILoggingAction loggingAction = enableCalendar ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_DISABLED;
+
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.calendar, course.getResourceableId()), course);
+		}
+		
+		if(updateParticipantList) {
+			ILoggingAction loggingAction = enableParticipantList ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_PARTICIPANTLIST_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_PARTICIPANTLIST_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.participantList, course.getResourceableId()), course);
+		}
+		
 		if(updateParticipantInfo) {
 			ILoggingAction loggingAction = enableParticipantInfo ?
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_PARTICIPANTINFO_ENABLED:
@@ -272,7 +310,7 @@ public class CourseToolbarController extends FormBasicController {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.participantInfo, course.getResourceableId()), course);
 		}
-
+		
 		if(updateChat) {
 			ILoggingAction loggingAction =enableChat ?
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_IM_ENABLED:
@@ -291,18 +329,6 @@ public class CourseToolbarController extends FormBasicController {
 			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.glossary, course.getResourceableId()), course);
-		}
-		
-		if(updateCalendar) {
-			ILoggingAction loggingAction = enableCalendar ?
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_ENABLED:
-					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_CALENDAR_DISABLED;
-
-			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
-			CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.fireEventToListenersOf(new CalendarGUIModifiedEvent(), OresHelper.lookupType(CalendarManager.class));
-			CoordinatorManager.getInstance().getCoordinator().getEventBus()
-				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.calendar, course.getResourceableId()), course);
 		}
 		
 		fireEvent(ureq, new ReloadSettingsEvent(false, false, true, false));

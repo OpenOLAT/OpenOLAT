@@ -119,6 +119,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * The course search is enabled by default
 	 */
 	public static final transient String COURSESEARCH_ENABLED = "COURSESEARCH_ENABLED";
+	public static final transient String PARTICIPANT_LIST_ENABLED = "PARTICIPANT_LIST_ENABLED";
 	public static final transient String PARTICIPANT_INFO_ENABLED = "PARTICIPANT_INFO_ENABLED";
 	/**
 	 * course calendar
@@ -196,6 +197,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(TOOLBAR_ENABLED, Boolean.TRUE);
 		
 		configuration.put(COURSESEARCH_ENABLED, Boolean.TRUE);
+		configuration.put(PARTICIPANT_LIST_ENABLED, Boolean.FALSE);
 		configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.FALSE);
 
 		this.version = CURRENTVERSION;
@@ -297,6 +299,7 @@ public class CourseConfig implements Serializable, Cloneable {
 			}
 			
 			if (version == 14) {
+				if (!configuration.containsKey(PARTICIPANT_LIST_ENABLED)) configuration.put(PARTICIPANT_LIST_ENABLED, Boolean.FALSE);
 				if (!configuration.containsKey(PARTICIPANT_INFO_ENABLED)) configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.FALSE);
 				
 				this.version = 15;
@@ -625,6 +628,15 @@ public class CourseConfig implements Serializable, Cloneable {
 	public void setCourseSearchEnabled(boolean b) {
 		configuration.put(COURSESEARCH_ENABLED, Boolean.valueOf(b));
 	}
+
+	public boolean isParticipantListEnabled() {
+		Boolean bool = (Boolean) configuration.get(PARTICIPANT_LIST_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setParticipantListEnabled(boolean b) {
+		configuration.put(PARTICIPANT_LIST_ENABLED, Boolean.valueOf(b));
+	}
 	
 	public boolean isParticipantInfoEnabled() {
 		Boolean bool = (Boolean) configuration.get(PARTICIPANT_INFO_ENABLED);
@@ -682,6 +694,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setToolbarEnabled(isToolbarEnabled());
 		clone.setBreadCrumbEnabled(isBreadCrumbEnabled());
 		clone.setCourseSearchEnabled(isCourseSearchEnabled());
+		clone.setParticipantListEnabled(isParticipantListEnabled());
 		clone.setParticipantInfoEnabled(isParticipantInfoEnabled());
 		return clone;
 	}

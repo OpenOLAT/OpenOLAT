@@ -58,6 +58,7 @@ public class CourseConfigEvent extends MultiUserEvent {
 	
 	public enum CourseConfigType {
 		efficiencyStatement,
+		participantList,
 		participantInfo,
 		calendar,
 		search,

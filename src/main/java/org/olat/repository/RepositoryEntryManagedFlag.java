@@ -47,6 +47,7 @@ public enum RepositoryEntryManagedFlag {
     settings(all),//max num of participants...
       access(settings,all),
       search(settings, all),
+      participantList(settings, all),
       participantInfo(settings, all),
       chat(settings,all),
       layout(settings,all),
