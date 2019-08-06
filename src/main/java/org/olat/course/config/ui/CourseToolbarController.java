@@ -72,6 +72,7 @@ public class CourseToolbarController extends FormBasicController {
 	private SelectionElement calendarEl;
 	private SelectionElement participantListEl;
 	private SelectionElement participantInfoEl;
+	private SelectionElement emailEl;
 	private SelectionElement chatEl;
 	private SelectionElement glossaryEl;
 	
@@ -170,6 +171,15 @@ public class CourseToolbarController extends FormBasicController {
 			canHideToolbar &= false;
 		}
 
+		boolean emailEnabled = courseConfig.isEmailEnabled();
+		boolean managedEmail = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.email);
+		emailEl = uifactory.addCheckboxesHorizontal("emailIsOn", "chkbx.email.onoff", formLayout, onKeys, onValues);
+		emailEl.select(onKeys[0], emailEnabled);
+		emailEl.setEnabled(editable && !managedEmail);
+		if(managedEmail && emailEnabled) {
+			canHideToolbar &= false;
+		}
+		
 		boolean chatEnabled = courseConfig.isChatEnabled();
 		boolean managedChat = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.chat);
 		chatEl = uifactory.addCheckboxesHorizontal("chatIsOn", "chkbx.chat.onoff", formLayout, onKeys, onValues);
@@ -216,6 +226,7 @@ public class CourseToolbarController extends FormBasicController {
 				|| (calendarEl != null && calendarEl.isSelected(0))
 				|| participantListEl.isSelected(0)
 				|| participantInfoEl.isSelected(0)
+				|| emailEl.isSelected(0)
 				|| chatEl.isSelected(0)
 				|| glossaryEl.isSelected(0);
 	}
@@ -229,6 +240,7 @@ public class CourseToolbarController extends FormBasicController {
 		}
 		participantListEl.setVisible(enabled);
 		participantInfoEl.setVisible(enabled);
+		emailEl.setVisible(enabled);
 		chatEl.setVisible(enabled);
 		glossaryEl.setVisible(enabled);
 	}
@@ -257,6 +269,10 @@ public class CourseToolbarController extends FormBasicController {
 		boolean enableParticipantInfo = participantInfoEl.isSelected(0);
 		boolean updateParticipantInfo = courseConfig.isParticipantInfoEnabled() != enableParticipantInfo;
 		courseConfig.setParticipantInfoEnabled(enableParticipantInfo && toolbarEnabled);
+		
+		boolean enableEmail = emailEl.isSelected(0);
+		boolean updateEmail = courseConfig.isEmailEnabled() != enableEmail;
+		courseConfig.setEmailEnabled(enableEmail && toolbarEnabled);
 		
 		boolean enableChat = chatEl.isSelected(0);
 		boolean updateChat = courseConfig.isChatEnabled() != enableChat;
@@ -300,7 +316,7 @@ public class CourseToolbarController extends FormBasicController {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.participantList, course.getResourceableId()), course);
 		}
-		
+
 		if(updateParticipantInfo) {
 			ILoggingAction loggingAction = enableParticipantInfo ?
 					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_PARTICIPANTINFO_ENABLED:
@@ -309,6 +325,16 @@ public class CourseToolbarController extends FormBasicController {
 			
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.participantInfo, course.getResourceableId()), course);
+		}
+		
+		if(updateEmail) {
+			ILoggingAction loggingAction = enableEmail ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EMAIL_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_EMAIL_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.email, course.getResourceableId()), course);
 		}
 		
 		if(updateChat) {

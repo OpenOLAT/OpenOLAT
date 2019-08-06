@@ -188,6 +188,12 @@ public class ContactFormController extends BasicController {
 		}
 		return null;
 	}
+	
+	public void setRecipientsLists(List<ContactList> recipientsLists) {
+		if (cntctForm != null) {
+			cntctForm.setRecipientsLists(recipientsLists);
+		}	
+	}
 
 	private void init(UserRequest ureq, boolean hasAtLeastOneAddress, List<Identity> disabledIdentities) {
 		if (hasAtLeastOneAddress) {

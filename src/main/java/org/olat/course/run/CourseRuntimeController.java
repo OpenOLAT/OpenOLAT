@@ -103,6 +103,7 @@ import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
+import org.olat.course.nodes.co.COToolController;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
 import org.olat.course.reminder.ui.CourseRemindersController;
@@ -174,25 +175,26 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
 		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink, searchLink,
-		participantListLink, participantInfoLink,
+		participantListLink, participantInfoLink, emailLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
 	private Dropdown myCourse, glossary;
 
 	private CloseableModalController cmc;
+	private COToolController emailCtrl;
 	private CourseAreasController areasCtrl;
 	private ConfirmLeaveController leaveDialogBox;
 	private ArchiverMainController archiverCtrl;
 	private CustomDBMainController databasesCtrl;
 	private FolderRunController courseFolderCtrl;
-	private MembersToolRunController participatListCtrl;
 	private InfoRunController participatInfoCtrl;
 	private SearchInputController searchController;
 	private StatisticMainController statisticsCtrl;
 	private CourseRemindersController remindersCtrl;
 	private TeacherOverviewController lecturesCtrl;
 	private AssessmentToolController assessmentToolCtr;
+	private MembersToolRunController participatListCtrl;
 	private MembersManagementMainController membersCtrl;
 	private StatisticCourseNodesController statsToolCtr;
 	private AssessmentModeListController assessmentModeCtrl;
@@ -807,11 +809,17 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			participantListLink.setVisible(cc.isParticipantListEnabled());
 			toolbarPanel.addTool(participantListLink);
 		}
-
+		
 		if(!assessmentLock) {
 			participantInfoLink = LinkFactory.createToolLink("participantinfo", translate("command.participant.info"), this, "o_infomsg_icon");
 			participantInfoLink.setVisible(cc.isParticipantInfoEnabled());
 			toolbarPanel.addTool(participantInfoLink);
+		}
+		
+		if(!assessmentLock) {
+			emailLink = LinkFactory.createToolLink("email", translate("command.email"), this, "o_co_icon");
+			emailLink.setVisible(cc.isEmailEnabled());
+			toolbarPanel.addTool(emailLink);
 		}
 		
 		if(!assessmentLock) {
@@ -944,6 +952,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doParticipantList(ureq);
 		} else if(participantInfoLink == source) {
 			doParticipantInfo(ureq);
+		} else if(emailLink == source) {
+			doEmail(ureq);
 		} else if(calendarLink == source) {
 			launchCalendar(ureq);
 		} else if(chatLink == source) {
@@ -1047,6 +1057,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case pop: popToRoot(ureq); cleanUp(); break;
 						case participantList: doParticipantList(ureq); break;
 						case participantInfo: doParticipantInfo(ureq); break;
+						case email: doEmail(ureq); break;
 					}
 					delayedClose = null;
 				} else {
@@ -1692,6 +1703,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		};
 	}
 	
+	private void doEmail(UserRequest ureq) {
+		if(delayedClose == Delayed.email || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("email");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			emailCtrl = new COToolController(ureq, swControl, getUserCourseEnvironment());
+
+			pushController(ureq, translate("command.email"), emailCtrl);
+			setActiveTool(emailLink);
+			currentToolCtr = emailCtrl;
+		} else {
+			delayedClose = Delayed.email;
+		};
+	}
+	
 	private void launchCalendar(UserRequest ureq) {
 		ControllerCreator ctrlCreator = (lureq, lwControl) -> {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -1835,6 +1862,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
+			case email: {
+				if(emailLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					emailLink.setVisible(cc.isEmailEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case chat: {
 				if(chatLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -1973,6 +2009,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		close,
 		pop,
 		participantList,
-		participantInfo
+		participantInfo,
+		email
 	}
 }
