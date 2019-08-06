@@ -256,13 +256,14 @@ public class CurriculumElementsWebService {
 			elementToSave.setBeginDate(curriculumElement.getBeginDate());
 			elementToSave.setEndDate(curriculumElement.getEndDate());
 			elementToSave.setType(type);
-			if(parentElement != null && elementToSave.getParent() != null
-					&& !elementToSave.getParent().getKey().equals(parentElement.getKey())) {
+			if((parentElement != null && elementToSave.getParent() != null && !elementToSave.getParent().getKey().equals(parentElement.getKey()))) {
 				move = true;
 			} else if(parentElement == null && elementToSave.getParent() == null
 					&& (elementToSave.getCurriculum() != null && !elementToSave.getCurriculum().getKey().equals(curriculum.getKey()))) {
 				// this is a root curriculum element and it get a new curriculum as home
 				moveAsCurriculumRoot = true;
+			} else if(!elementToSave.getCurriculum().getKey().equals(curriculumElement.getCurriculumKey())) {
+				move = true;
 			}
 		}
 		
@@ -279,7 +280,7 @@ public class CurriculumElementsWebService {
 		}
 		CurriculumElement savedElement = curriculumService.updateCurriculumElement(elementToSave);
 		if(move) {
-			curriculumService.moveCurriculumElement(savedElement, parentElement, null);
+			curriculumService.moveCurriculumElement(savedElement, parentElement, null, curriculum);
 			dbInstance.commit();
 			savedElement = curriculumService.getCurriculumElement(savedElement);
 		} else if(moveAsCurriculumRoot) {

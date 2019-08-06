@@ -111,11 +111,11 @@ public class ScoreCalculator implements Serializable {
 	 * @return 
 	 */
 	public String getScoreExpressionFromEasyModeConfiguration() {
-		if (getSumOfScoreNodes() != null && getSumOfScoreNodes().size() > 0) {
-			switch (scoreType) {
-			case SCORE_TYPE_SUM: return getSumScoreExpression();
-			case SCORE_TYPE_AVG: return getAvgScoreExpression();
-			default: //
+		if (getSumOfScoreNodes() != null && !getSumOfScoreNodes().isEmpty()) {
+			if(scoreType == null || SCORE_TYPE_SUM.equals(scoreType)) {
+				return getSumScoreExpression();
+			} else if(SCORE_TYPE_AVG.equals(scoreType)) {
+				return getAvgScoreExpression();
 			}
 		}
 		return null;

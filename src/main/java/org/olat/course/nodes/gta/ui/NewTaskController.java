@@ -177,7 +177,7 @@ public class NewTaskController extends FormBasicController {
 		}
 		DocTemplate docTemplate = getSelectedTemplate();
 		if (docTemplate != null) {
-			VFSManager.copyContent(docTemplate.getContentProvider().getContent(), vfsLeaf);
+			VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf);
 		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

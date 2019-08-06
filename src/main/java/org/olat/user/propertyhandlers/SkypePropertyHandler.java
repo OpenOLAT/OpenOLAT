@@ -38,13 +38,12 @@ import org.olat.user.UserManager;
  */
 public class SkypePropertyHandler extends Generic127CharTextPropertyHandler {
 	
-	/**
-	 * @see org.olat.user.AbstractUserPropertyHandler#getUserPropertyAsHTML(org.olat.core.id.User, java.util.Locale)
-	 */
+	private static final int MAX_LENGTH = 127;
+	
 	@Override
 	public String getUserPropertyAsHTML(User user, Locale locale) {
 		String skypeid = getUserProperty(user, locale);
-		if (StringHelper.containsNonWhitespace(skypeid)) {
+		if(StringHelper.containsNonWhitespace(skypeid)) {
 			skypeid = StringHelper.escapeHtml(skypeid);
 			StringBuilder sb = new StringBuilder();
 			sb.append("<div id=\"SkypeButton_Call_").append(skypeid).append("_1\" class=\"o_skype_button\">")
@@ -63,36 +62,25 @@ public class SkypePropertyHandler extends Generic127CharTextPropertyHandler {
 		return null;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#isValidValue(java.lang.String, org.olat.core.gui.components.form.ValidationError, java.util.Locale)
-	 */
 	@Override
 	public boolean isValidValue(User user, String value, ValidationError validationError, Locale locale) {
-		if ( ! super.isValidValue(user, value, validationError, locale)) return false;
+		if(!super.isValidValue(user, value, validationError, locale)) return false;
 		
-		if (StringHelper.containsNonWhitespace(value)) {		
-			// skype names are max 32 chars long
-			if ( value.length() > 32 ) {
-				validationError.setErrorKey("general.error.max.32");
-				return false;
-			}
+		if(StringHelper.containsNonWhitespace(value) && value.length() > MAX_LENGTH) {
+			validationError.setErrorKey("general.error.max." + MAX_LENGTH);
+			return false;
 		}
 		return true;
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler#addFormItem(java.util.Locale, org.olat.core.id.User, java.lang.String, boolean, org.olat.core.gui.components.form.flexible.FormItemContainer)
-	 */
+
 	@Override
 	public FormItem addFormItem(Locale locale, User user, String usageIdentifyer, boolean isAdministrativeUser,
 			FormItemContainer formItemContainer) {
 		org.olat.core.gui.components.form.flexible.elements.TextElement textElement = (org.olat.core.gui.components.form.flexible.elements.TextElement)super.addFormItem(locale, user, usageIdentifyer, isAdministrativeUser, formItemContainer);
-		textElement.setMaxLength(32);
-		if ( ! UserManager.getInstance().isUserViewReadOnly(usageIdentifyer, this) || isAdministrativeUser) {
+		textElement.setMaxLength(MAX_LENGTH);
+		if(!UserManager.getInstance().isUserViewReadOnly(usageIdentifyer, this) || isAdministrativeUser) {
 			textElement.setExampleKey("form.example.skypename", null);
 		}
 		return textElement;
 	}
-
-
 }

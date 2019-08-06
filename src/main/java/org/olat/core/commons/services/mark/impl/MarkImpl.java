@@ -78,6 +78,7 @@ public class MarkImpl extends PersistentObject implements Mark {
 		this.resId = resId;
 	}
 
+	@Override
 	public String getResSubPath() {
 		return resSubPath;
 	}
@@ -86,6 +87,7 @@ public class MarkImpl extends PersistentObject implements Mark {
 		this.resSubPath = resSubPath;
 	}
 
+	@Override
 	public String getBusinessPath() {
 		return businessPath;
 	}
@@ -94,6 +96,7 @@ public class MarkImpl extends PersistentObject implements Mark {
 		this.businessPath = businessPath;
 	}
 
+	@Override
 	public Identity getCreator() {
 		return creator;
 	}

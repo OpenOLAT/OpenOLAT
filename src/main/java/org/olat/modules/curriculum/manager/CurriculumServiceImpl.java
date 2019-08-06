@@ -416,17 +416,22 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 	
 	@Override
-	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent, CurriculumElement siblingBefore) {
-		CurriculumElement element = curriculumElementDao.move(elementToMove, newParent, siblingBefore);
+	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent,
+			CurriculumElement siblingBefore, Curriculum targetCurriculum) {
+		Curriculum reloadedTargetCurriculum = curriculumDao.loadByKey(targetCurriculum.getKey());
+		CurriculumElement element = curriculumElementDao
+				.move(elementToMove, newParent, siblingBefore, reloadedTargetCurriculum);
 		
 		// propagate inheritance of the new parent
-		List<GroupMembership> memberships = groupDao.getMemberships(newParent.getGroup());
 		List<GroupMembership> membershipsToPropagate = new ArrayList<>();
 		Map<IdentityToRoleKey,GroupMembership> identityRoleToNewParentMembership = new HashMap<>();
-		for(GroupMembership membership:memberships) {
-			if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited || membership.getInheritanceMode() == GroupMembershipInheritance.root) {
-				membershipsToPropagate.add(membership);
-				identityRoleToNewParentMembership.put(new IdentityToRoleKey(membership), membership);
+		if(newParent != null) {
+			List<GroupMembership> memberships = groupDao.getMemberships(newParent.getGroup());
+			for(GroupMembership membership:memberships) {
+				if(membership.getInheritanceMode() == GroupMembershipInheritance.inherited || membership.getInheritanceMode() == GroupMembershipInheritance.root) {
+					membershipsToPropagate.add(membership);
+					identityRoleToNewParentMembership.put(new IdentityToRoleKey(membership), membership);
+				}
 			}
 		}
 		

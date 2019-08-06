@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -70,7 +71,7 @@ public class ContentProviderFactory {
 		private static final byte[] EMPTY_CONTENT = new byte[0];
 		
 		@Override
-		public InputStream getContent() {
+		public InputStream getContent(Locale locale) {
 			return new ByteArrayInputStream(EMPTY_CONTENT);
 		}
 	}
@@ -78,7 +79,7 @@ public class ContentProviderFactory {
 	private static final class DocxContentProvider implements ContentProvider {
 
 		@Override
-		public InputStream getContent() {
+		public InputStream getContent(Locale locale) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			ZipOutputStream zout = null;
 			try {
@@ -87,7 +88,7 @@ public class ContentProviderFactory {
 
 				zout = new ZipOutputStream(out);
 				zout.setLevel(9);
-				OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter();
+				OpenXMLDocumentWriter writer = new OpenXMLDocumentWriter(locale);
 				writer.createDocument(zout, document);
 			} catch (Exception e) {
 				log.error("", e);
@@ -107,7 +108,7 @@ public class ContentProviderFactory {
 	private static final class XlsxContentProvider implements ContentProvider {
 
 		@Override
-		public InputStream getContent() {
+		public InputStream getContent(Locale locale) {
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			try(OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 				workbook.nextWorksheet();
@@ -121,14 +122,14 @@ public class ContentProviderFactory {
 	private static final class PptxContentProvider implements ContentProvider {
 
 		@Override
-		public InputStream getContent() {
+		public InputStream getContent(Locale locale) {
 			URL url = PptxContentProvider.class.getResource("empty.pptx");
 			try {
 				return new FileInputStream(url.getFile());
 			} catch (FileNotFoundException e) {
 				log.error("", e);
 			}
-			return new EmptyContentProvider().getContent();
+			return new EmptyContentProvider().getContent(locale);
 		}
 	}
 

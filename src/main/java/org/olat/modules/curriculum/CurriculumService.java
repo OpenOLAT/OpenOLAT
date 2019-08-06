@@ -331,7 +331,8 @@ public interface CurriculumService {
 	 * @param newParent The new parent or null if root
 	 * @param siblingBefore The sibling before the new position or null if at the first place
 	 */
-	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent, CurriculumElement siblingBefore);
+	public CurriculumElement moveCurriculumElement(CurriculumElement elementToMove, CurriculumElement newParent,
+			CurriculumElement siblingBefore, Curriculum targetCurriculum);
 	
 	/**
 	 * Move a root curriculum element from a curriculum to an other. This operation

@@ -524,6 +524,11 @@ public class MSConfigController extends FormBasicController {
 	}
 
 	private void doCalculateMinMax() {
+		if (formEntry == null) {
+			formMinMax = MinMax.of(Float.valueOf(0), Float.valueOf(0));
+			return;
+		};
+		
 		String scoreKey = scoreEl != null && scoreEl.isOneSelected()
 				? scoreEl.getSelectedKey()
 				: config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);

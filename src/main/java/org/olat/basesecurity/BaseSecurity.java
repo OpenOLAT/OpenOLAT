@@ -275,7 +275,7 @@ public interface BaseSecurity {
 	 * @param newUser
 	 * @return
 	 */
-	public Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername, User newUser);
+	public Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername, User newUser, Organisation organisation);
 	
 
 	/**

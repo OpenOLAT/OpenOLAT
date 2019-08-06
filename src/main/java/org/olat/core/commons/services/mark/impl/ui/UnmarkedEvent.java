@@ -17,41 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.handlers;
+package org.olat.core.commons.services.mark.impl.ui;
 
-import java.io.InputStream;
-import java.util.Locale;
-
-import org.olat.core.commons.services.doceditor.ContentProviderFactory;
+import org.olat.core.gui.control.Event;
 import org.olat.core.id.OLATResourceable;
-import org.olat.fileresource.types.XlsFileResource;
 
 /**
  * 
- * Initial date: 05.04 2019<br>
+ * Initial date: 5 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class PowerPointVFSEditorDelegateType implements DocumentEditorDelegateType  {
+public class UnmarkedEvent extends Event {
 
-	@Override
-	public OLATResourceable getOLATResourceable() {
-		return new XlsFileResource();
-	}
-	
-	@Override
-	public String getCreateLabelI18nKey() {
-		return "new.powerpoint";
-	}
-	
-	@Override
-	public String getSuffix() {
-		return "pptx";
+	private static final long serialVersionUID = 3503240359856342650L;
+
+	private final OLATResourceable ores;
+	private final String subPath;
+
+	public UnmarkedEvent(OLATResourceable ores, String subPath) {
+		super("unmarked");
+		this.ores = ores;
+		this.subPath = subPath;
 	}
 
-	@Override
-	public InputStream getContent(Locale locale) {
-		return ContentProviderFactory.emptyPptx().getContent(locale);
+	public OLATResourceable getOres() {
+		return ores;
+	}
+
+	public String getSubPath() {
+		return subPath;
 	}
 
 }

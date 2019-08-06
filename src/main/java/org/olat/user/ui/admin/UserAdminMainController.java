@@ -261,7 +261,6 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		menuTree.setSelectedNode(null);
 	}
 	
-	
 	private Organisation getPreselectedOrganisation() {
 		TreeNode selectedNode = menuTree.getSelectedNode();
 		Object uobject = selectedNode.getUserObject();
@@ -298,7 +297,8 @@ public class UserAdminMainController extends MainLayoutBasicController implement
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean canCreateOLATPassword = roles.isAdministrator() || roles.isRolesManager() || roles.isUserManager();
 
-		UserImportController importCtrl = new UserImportController(ureq, getWindowControl(), canCreateOLATPassword);
+		Organisation preselectedOrganisation = getPreselectedOrganisation();
+		UserImportController importCtrl = new UserImportController(ureq, getWindowControl(), preselectedOrganisation, canCreateOLATPassword);
 		addToHistory(ureq, importCtrl);
 		listenTo(importCtrl);
 		content.rootController(translate("menu.usersimport"), importCtrl);

@@ -17,41 +17,30 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.repository.handlers;
+package org.olat.core.commons.services.mark.impl.ui;
 
-import java.io.InputStream;
-import java.util.Locale;
-
-import org.olat.core.commons.services.doceditor.ContentProviderFactory;
-import org.olat.core.id.OLATResourceable;
-import org.olat.fileresource.types.XlsFileResource;
+import org.olat.core.commons.services.mark.Mark;
+import org.olat.core.gui.control.Event;
 
 /**
  * 
- * Initial date: 05.04 2019<br>
+ * Initial date: 5 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class PowerPointVFSEditorDelegateType implements DocumentEditorDelegateType  {
+public class MarkedEvent extends Event {
 
-	@Override
-	public OLATResourceable getOLATResourceable() {
-		return new XlsFileResource();
-	}
-	
-	@Override
-	public String getCreateLabelI18nKey() {
-		return "new.powerpoint";
-	}
-	
-	@Override
-	public String getSuffix() {
-		return "pptx";
+	private static final long serialVersionUID = -4104070726631981649L;
+
+	private final Mark mark;
+
+	public MarkedEvent(Mark mark) {
+		super("marked");
+		this.mark = mark;
 	}
 
-	@Override
-	public InputStream getContent(Locale locale) {
-		return ContentProviderFactory.emptyPptx().getContent(locale);
+	public Mark getMark() {
+		return mark;
 	}
 
 }

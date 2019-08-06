@@ -20,6 +20,7 @@
 package org.olat.core.commons.services.doceditor;
 
 import java.io.InputStream;
+import java.util.Locale;
 
 /**
  * Provides content for a file, e.g. an empty Word document.
@@ -30,6 +31,6 @@ import java.io.InputStream;
  */
 public interface ContentProvider {
 	
-	public InputStream getContent();
+	public InputStream getContent(Locale locale);
 
 }

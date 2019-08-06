@@ -20,6 +20,7 @@
 package org.olat.repository.handlers;
 
 import java.io.InputStream;
+import java.util.Locale;
 
 import org.olat.core.id.OLATResourceable;
 
@@ -37,6 +38,6 @@ public interface DocumentEditorDelegateType {
 	
 	public String getSuffix();
 
-	public InputStream getContent();
+	public InputStream getContent(Locale locale);
 
 }

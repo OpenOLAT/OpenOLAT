@@ -56,6 +56,7 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
@@ -95,6 +96,8 @@ public class UserImportController extends BasicController {
 	private VelocityContainer mainVC;
 	private Link startLink;
 	
+	private final Organisation preselectedOrganisation;
+	
 	private StepsMainRunController importStepsController;
 
 	@Autowired
@@ -118,8 +121,9 @@ public class UserImportController extends BasicController {
 	 * @param canCreateOLATPassword true: workflow offers column to create
 	 *          passwords; false: workflow does not offer pwd column
 	 */
-	public UserImportController(UserRequest ureq, WindowControl wControl, boolean canCreateOLATPassword) {
+	public UserImportController(UserRequest ureq, WindowControl wControl, Organisation preselectedOrganisation, boolean canCreateOLATPassword) {
 		super(ureq, wControl);
+		this.preselectedOrganisation = preselectedOrganisation;
 		this.canCreateOLATPassword = canCreateOLATPassword;
 		mainVC = createVelocityContainer("importindex");
 		startLink = LinkFactory.createButton("import.start", mainVC, this);
@@ -165,12 +169,10 @@ public class UserImportController extends BasicController {
 		String lang = singleUser.getLanguage();
 
 		// use password only when configured to do so
-		if (canCreateOLATPassword) {
-			if (!StringHelper.containsNonWhitespace(pwd)) {
-				// treat white-space passwords as no-password. This is fine, a password
-				// can be set later on
-				pwd = null;
-			}
+		if (canCreateOLATPassword && !StringHelper.containsNonWhitespace(pwd)) {
+			// treat white-space passwords as no-password. This is fine, a password
+			// can be set later on
+			pwd = null;
 		}
 
 		// Create transient user without firstName,lastName, email
@@ -190,11 +192,13 @@ public class UserImportController extends BasicController {
 		Identity ident;
 		if(pwd != null && pwd.startsWith(SHIBBOLETH_MARKER) && shibbolethModule.isEnableShibbolethLogins()) {
 			String uniqueID = pwd.substring(SHIBBOLETH_MARKER.length());
-			ident = securityManager.createAndPersistIdentityAndUserWithUserGroup(login, null, ShibbolethDispatcher.PROVIDER_SHIB, uniqueID, newUser);
+			ident = securityManager.createAndPersistIdentityAndUserWithUserGroup(login, null, ShibbolethDispatcher.PROVIDER_SHIB,
+					uniqueID, newUser, preselectedOrganisation);
 			report.incrementCreatedUser();
 			report.incrementUpdatedShibboletAuthentication();
 		} else {
-			ident = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd, newUser, null);
+			ident = securityManager.createAndPersistIdentityAndUserWithDefaultProviderAndUserGroup(login, null, pwd,
+					newUser, preselectedOrganisation);
 			report.incrementCreatedUser();
 		}
 		return ident;
@@ -268,68 +272,66 @@ public class UserImportController extends BasicController {
 				
 		Step start = new ImportStep00(ureq, canCreateOLATPassword);
 		// callback executed in case wizard is finished.
-		StepRunnerCallback finish = new StepRunnerCallback() {
-			@Override
-			public Step execute(UserRequest ureq1, WindowControl wControl1, StepsRunContext runContext) {
-				// all information to do now is within the runContext saved
-				ImportReport report = new ImportReport();
-				runContext.put("report", report);
-				try {
-					if (runContext.containsKey("validImport") && ((Boolean) runContext.get("validImport")).booleanValue()) {
-						// create new users and persist
-						int count = 0;
-						@SuppressWarnings("unchecked")
-						List<TransientIdentity> newIdents = (List<TransientIdentity>) runContext.get("newIdents");
-						Map<TransientIdentity,Identity> newPersistedIdentities = new HashMap<>();
-						for (TransientIdentity newIdent:newIdents) {
-							Identity newIdentity = doCreateAndPersistIdentity(newIdent, report);
-							if(newIdentity != null) {
-								newPersistedIdentities.put(newIdent, newIdentity);
-							}
-							if(++count % 10 == 0) {
-								dbInstance.commitAndCloseSession();
-							}
+		StepRunnerCallback finish = (uureq, swControl, runContext) -> {
+			// all information to do now is within the runContext saved
+			ImportReport report = new ImportReport();
+			runContext.put("report", report);
+			try {
+				if (runContext.containsKey("validImport") && ((Boolean) runContext.get("validImport")).booleanValue()) {
+					// create new users and persist
+					int count = 0;
+					@SuppressWarnings("unchecked")
+					List<TransientIdentity> newIdents = (List<TransientIdentity>) runContext.get("newIdents");
+					Map<TransientIdentity,Identity> newPersistedIdentities = new HashMap<>();
+					for (TransientIdentity newIdent:newIdents) {
+						Identity newIdentity = doCreateAndPersistIdentity(newIdent, report);
+						if(newIdentity != null) {
+							newPersistedIdentities.put(newIdent, newIdentity);
 						}
-						dbInstance.commitAndCloseSession();
-
-						Boolean updateUsers = (Boolean)runContext.get("updateUsers");
-						Boolean updatePasswords = (Boolean)runContext.get("updatePasswords");
-						@SuppressWarnings("unchecked")
-						List<UpdateIdentity> updateIdents = (List<UpdateIdentity>) runContext.get("updateIdents");
-						for (UpdateIdentity updateIdent:updateIdents) {
-							doUpdateIdentity(updateIdent, updateUsers, updatePasswords, report);
-							if(++count % 10 == 0) {
-								dbInstance.commitAndCloseSession();
-							}
+						if(++count % 10 == 0) {
+							dbInstance.commitAndCloseSession();
 						}
-						dbInstance.commitAndCloseSession();
-
-						@SuppressWarnings("unchecked")
-						List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
-						@SuppressWarnings("unchecked")
-						List<Long> partGroups = (List<Long>) runContext.get("partGroups");
-
-						if ((ownGroups != null && ownGroups.size() > 0) || (partGroups != null && partGroups.size() > 0)) {
-							@SuppressWarnings("unchecked")
-							List<Identity> allIdents = (List<Identity>) runContext.get("idents");
-							Boolean sendMailObj = (Boolean)runContext.get("sendMail");
-							boolean sendmail = sendMailObj == null ? true : sendMailObj.booleanValue();
-							processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, sendmail);
-						} else {
-							Boolean sendMailObj = (Boolean)runContext.get("sendMail");
-							if(sendMailObj != null && sendMailObj) {
-								sendMailToNewIdentities(newPersistedIdentities);
-							}
-						}
-						report.setHasChanges(true);
 					}
-				} catch (Exception any) {
-					logError("", any);
-					report.addError("Unexpected error, see log files or call your system administrator");
+					dbInstance.commitAndCloseSession();
+
+					Boolean updateUsers = (Boolean)runContext.get("updateUsers");
+					Boolean updatePasswords = (Boolean)runContext.get("updatePasswords");
+					@SuppressWarnings("unchecked")
+					List<UpdateIdentity> updateIdents = (List<UpdateIdentity>) runContext.get("updateIdents");
+					for (UpdateIdentity updateIdent:updateIdents) {
+						doUpdateIdentity(updateIdent, updateUsers, updatePasswords, report);
+						if(++count % 10 == 0) {
+							dbInstance.commitAndCloseSession();
+						}
+					}
+					dbInstance.commitAndCloseSession();
+
+					@SuppressWarnings("unchecked")
+					List<Long> ownGroups = (List<Long>) runContext.get("ownerGroups");
+					@SuppressWarnings("unchecked")
+					List<Long> partGroups = (List<Long>) runContext.get("partGroups");
+
+					if ((ownGroups != null && !ownGroups.isEmpty()) || (partGroups != null && !partGroups.isEmpty())) {
+						@SuppressWarnings("unchecked")
+						List<Identity> allIdents = (List<Identity>) runContext.get("idents");
+						Boolean sendMailObj = (Boolean)runContext.get("sendMail");
+						boolean sendmail = sendMailObj != null && sendMailObj.booleanValue();
+						processGroupAdditionForAllIdents(allIdents, ownGroups, partGroups, sendmail);
+					} else {
+						Boolean sendMailObj = (Boolean)runContext.get("sendMail");
+						if(sendMailObj != null && sendMailObj) {
+							sendMailToNewIdentities(newPersistedIdentities);
+						}
+					}
+					report.setHasChanges(true);
 				}
-				// signal correct completion and tell if changes were made or not.
-				return report.isHasChanges() ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
+			} catch (Exception any) {
+				logError("", any);
+				report.addError("Unexpected error, see log files or call your system administrator");
 			}
+			// signal correct completion and tell if changes were made or not.
+			return report.isHasChanges() ? StepsMainRunController.DONE_MODIFIED : StepsMainRunController.DONE_UNCHANGED;
+
 		};
 
 		importStepsController = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
@@ -341,14 +343,14 @@ public class UserImportController extends BasicController {
 	private Collection<Identity> getIdentities(List<Identity> allIdents) {
 		Set<Identity> identities = new HashSet<>(allIdents.size());
 		List<String> usernames = new ArrayList<>();
-		for (Object o : allIdents) {
+		for (Identity o : allIdents) {
 			if(o instanceof TransientIdentity) {
 				TransientIdentity transIdent = (TransientIdentity)o;
 				usernames.add(transIdent.getName());
 			} else if (o instanceof UpdateIdentity) {
 				identities.add(((UpdateIdentity)o).getIdentity());	
-			} else if (o instanceof Identity) {
-				identities.add((Identity)o);	
+			} else {
+				identities.add(o);	
 			}
 		}
 
@@ -374,12 +376,12 @@ public class UserImportController extends BasicController {
 	private MailTemplate createMailTemplateForNewIdentity(Identity identity, TransientIdentity transientIdentity) {
 		// get some data about the actor and fetch the translated subject / body via i18n module
 		String[] bodyArgs = new String[] {
-				identity.getName(),														//{0}
-				identity.getUser().getProperty(UserConstants.FIRSTNAME, null),			//{1}
-				identity.getUser().getProperty(UserConstants.LASTNAME, null),			//{2}
-				UserManager.getInstance().getUserDisplayEmail(identity, getLocale()),	//{3}
-				Settings.getServerContextPathURI(),										//{4}
-				transientIdentity.getPassword()											//{5}
+				identity.getName(),														// 0
+				identity.getUser().getProperty(UserConstants.FIRSTNAME, null),			// 1
+				identity.getUser().getProperty(UserConstants.LASTNAME, null),			// 2
+				UserManager.getInstance().getUserDisplayEmail(identity, getLocale()),	// 3
+				Settings.getServerContextPathURI(),										// 4
+				transientIdentity.getPassword()											// 5
 		};
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
 		Translator translator = Util.createPackageTranslator(UserImportController.class, locale);
@@ -388,18 +390,17 @@ public class UserImportController extends BasicController {
 		String body = translator.translate("mail.new.identity.text", bodyArgs);
 		
 		// create a mail template which all these data
-		MailTemplate mailTempl = new MailTemplate(subject, body, null) {
+		return new MailTemplate(subject, body, null) {
 			@Override
-			public void putVariablesInMailContext(VelocityContext context, Identity identity) {
+			public void putVariablesInMailContext(VelocityContext context, Identity emailedIdentity) {
 				// Put user variables into velocity context
-				User user = identity.getUser();
+				User user = emailedIdentity.getUser();
 				context.put("firstname", user.getProperty(UserConstants.FIRSTNAME, null));
 				context.put("lastname", user.getProperty(UserConstants.LASTNAME, null));
 				//the email of the user, needs to stay named 'login'
 				context.put("login", user.getProperty(UserConstants.EMAIL, null));
 			}
 		};
-		return mailTempl;
 	}
 
 	private void processGroupAdditionForAllIdents(List<Identity> allIdents, List<Long> tutorGroups, List<Long> partGroups, boolean sendmail) {

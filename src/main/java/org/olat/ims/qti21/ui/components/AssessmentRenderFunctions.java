@@ -661,10 +661,9 @@ public class AssessmentRenderFunctions {
 		return component.getMapperUri() + "/" + relativePath + "?href=" + relativePath;
 	}
 	
-	public static final String convertSubmissionLink(AssessmentObjectComponent component, ResolvedAssessmentItem resolvedAssessmentItem, String uri) {
+	public static final String convertSubmissionLink(AssessmentObjectComponent component, String uri) {
 		String filename = getLinkFilename(uri);
-		String relativePath = component.relativePathTo(resolvedAssessmentItem);
-		return component.getSubmissionMapperUri() + "/submissions/" + filename + "?href=" + relativePath + (uri == null ? "" : uri);
+		return component.getSubmissionMapperUri() + "/submissions/" + filename + "?href=" + (uri == null ? "" : uri);
 	}
 	
 	private static final String getLinkFilename(String uri) {

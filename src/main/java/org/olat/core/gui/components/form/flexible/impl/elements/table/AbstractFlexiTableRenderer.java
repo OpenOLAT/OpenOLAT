@@ -425,7 +425,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 				  .append("</span></a>");
 			}
 			
-			if(ftE.getTreeTableDataModel() != null) {
+			if(ftE.getTreeTableDataModel() != null && ftE.getTreeTableDataModel().hasOpenCloseAll()) {
 				sb.append("<a id='")
 				  .append(dispatchId).append("_toa' href=\"javascript:;\" onclick=\"")
 				  .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, true,

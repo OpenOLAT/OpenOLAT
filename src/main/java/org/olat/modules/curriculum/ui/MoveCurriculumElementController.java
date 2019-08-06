@@ -300,7 +300,7 @@ public class MoveCurriculumElementController extends FormBasicController {
 			}
 	
 			for(CurriculumElement elementToMove:curriculumElementsToMove) {
-				curriculumService.moveCurriculumElement(elementToMove, newParent, siblingBefore);
+				curriculumService.moveCurriculumElement(elementToMove, newParent, siblingBefore, curriculum);
 				dbInstance.commit();
 			}
 		}

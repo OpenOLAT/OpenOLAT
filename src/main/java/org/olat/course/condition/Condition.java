@@ -471,7 +471,7 @@ public class Condition implements Serializable, Cloneable {
 
 	public void clearEasyConfig() {
 		// do not clear this.condition = null; as this will be set during a save in easy mode
-		// do not clear this.conditionId = null;
+		// do not clear the conditionId
 		this.easyModeAlwaysAllowCoachesAndAdmins = false;
 		this.easyModeBeginDate = null;
 		this.easyModeCoachesAndAdmins = false;
@@ -484,7 +484,8 @@ public class Condition implements Serializable, Cloneable {
 		this.easyModeNodePassedId = null;
 		this.attributeConditions = null;
 		this.assessmentMode = false;
-		// do not clear this.expertMode = false;
+		this.assessmentModeViewResults = false;
+		this.easyModeAssessmentModeNodeId = null;
 	}
 
 	/**
@@ -510,6 +511,8 @@ public class Condition implements Serializable, Cloneable {
 		retVal.attributeConditions = this.attributeConditions;
 		retVal.attributeconditionsConnectorIsAND = this.attributeconditionsConnectorIsAND;
 		retVal.assessmentMode = this.assessmentMode;
+		retVal.assessmentModeViewResults = this.assessmentModeViewResults;
+		retVal.easyModeAssessmentModeNodeId = this.easyModeAssessmentModeNodeId;
 		return retVal;
 	}
 	/**
