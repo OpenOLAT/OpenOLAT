@@ -804,21 +804,21 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(lecturesLink);
 		}
 		
-		if(!assessmentLock) {
+		boolean showParticipantList = !assessmentLock && cc.isParticipantListEnabled() && !isGuestOnly;
+		if(showParticipantList) {
 			participantListLink = LinkFactory.createToolLink("participantlist", translate("command.participant.list"), this, "o_cmembers_icon");
-			participantListLink.setVisible(cc.isParticipantListEnabled());
 			toolbarPanel.addTool(participantListLink);
 		}
 		
-		if(!assessmentLock) {
+		boolean showParticipantInfo = !assessmentLock && cc.isParticipantInfoEnabled();
+		if(showParticipantInfo) {
 			participantInfoLink = LinkFactory.createToolLink("participantinfo", translate("command.participant.info"), this, "o_infomsg_icon");
-			participantInfoLink.setVisible(cc.isParticipantInfoEnabled());
 			toolbarPanel.addTool(participantInfoLink);
 		}
 		
-		if(!assessmentLock) {
+		boolean showEmail = !assessmentLock && cc.isEmailEnabled() && !isGuestOnly && userCourseEnv != null && !userCourseEnv.isCourseReadOnly();
+		if(showEmail) {
 			emailLink = LinkFactory.createToolLink("email", translate("command.email"), this, "o_co_icon");
-			emailLink.setVisible(cc.isEmailEnabled());
 			toolbarPanel.addTool(emailLink);
 		}
 		
