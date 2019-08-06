@@ -34,6 +34,7 @@ public class FlexiTableSortOptions {
 	
 	private SortKey defaultOrderBy;
 	private boolean fromColumnModel;
+	private boolean openAllBySort = false;
 	private List<FlexiTableSort> sorts;
 	
 	public FlexiTableSortOptions() {
@@ -58,6 +59,22 @@ public class FlexiTableSortOptions {
 	
 	public boolean isFromColumnModel() {
 		return fromColumnModel;
+	}
+	
+	/**
+	 * Reopen a tree model before sorting.
+	 * 
+	 * @return true if reopen a tree model before sorting
+	 */
+	public boolean isOpenAllBySort() {
+		return openAllBySort;
+	}
+	
+	/**
+	 * @param openAllBySort true if you want to open all the model before sorting it
+	 */
+	public void setOpenAllBySort(boolean openAllBySort) {
+		this.openAllBySort = openAllBySort;
 	}
 	
 	/**

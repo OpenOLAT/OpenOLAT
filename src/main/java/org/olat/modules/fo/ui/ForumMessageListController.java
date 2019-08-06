@@ -277,6 +277,7 @@ public class ForumMessageListController extends FormBasicController {
 
 		FlexiTableSortOptions sortOptions = new FlexiTableSortOptions();
 		sortOptions.setFromColumnModel(false);
+		sortOptions.setOpenAllBySort(true);
 		sortOptions.setSorts(sorts);
 		tableEl.setSortSettings(sortOptions);
 	}

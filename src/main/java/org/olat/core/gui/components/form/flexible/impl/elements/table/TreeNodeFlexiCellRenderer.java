@@ -53,6 +53,11 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	public TreeNodeFlexiCellRenderer(String action) {
 		this.action = action;
 	}
+	
+	public TreeNodeFlexiCellRenderer(FlexiCellRenderer labelDelegate) {
+		this.labelDelegate = labelDelegate;
+		this.action = null;
+	}
 
 	public boolean isFlatBySearchAndFilter() {
 		return flatBySearchAndFilter;
@@ -147,11 +152,15 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			}
 			target.append("'> </i></a> ");
 		}
-
-		NameValuePair pair = new NameValuePair(action, Integer.toString(row));
-		String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
-		target.append("<a href=\"javascript:").append(jsCode).append(";\">");
-		labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
-		target.append("</a></div>");
+		
+		if(action == null) {
+			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+		} else {
+			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
+			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
+			target.append("<a href=\"javascript:").append(jsCode).append(";\">");
+			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+			target.append("</a></div>");
+		}
 	}
 }
