@@ -29,7 +29,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -40,8 +39,6 @@ import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.SecurityGroupImpl;
-import org.olat.core.id.CreateInfo;
-import org.olat.core.id.ModifiedInfo;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QuestionItemFull;
@@ -56,10 +53,8 @@ import org.olat.modules.taxonomy.model.TaxonomyLevelImpl;
  */
 @Entity(name="questionitem")
 @Table(name="o_qp_item")
-@NamedQueries({
-	@NamedQuery(name="loadQuestionItemByKey", query="select item from questionitem item where item.key=:itemKey")
-})
-public class QuestionItemImpl implements QuestionItemFull, CreateInfo, ModifiedInfo, Persistable {
+@NamedQuery(name="loadQuestionItemByKey", query="select item from questionitem item where item.key=:itemKey")
+public class QuestionItemImpl implements QuestionItemFull, Persistable {
 
 	private static final long serialVersionUID = 6264601750280239307L;
 

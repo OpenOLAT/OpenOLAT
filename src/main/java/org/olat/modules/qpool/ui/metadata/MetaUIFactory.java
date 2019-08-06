@@ -74,7 +74,7 @@ public class MetaUIFactory {
 		String[] contextValues = new String[ levels.size() ];
 		int count = 0;
 		for(QEducationalContext level:levels) {
-			contextKeys[count] = level.getLevel();
+			contextKeys[count] = level.getKey().toString();
 			String i18nKey = "item.level." + level.getLevel().toLowerCase();
 			String translation = translator.translate(i18nKey);
 			if(i18nKey.equals(translation) || translation.length() > 256) {
@@ -83,6 +83,13 @@ public class MetaUIFactory {
 			contextValues[count++] = translation;
 		}
 		return new KeyValues(contextKeys, contextValues);
+	}
+	
+	public static QEducationalContext getContextByKey(String key, QPoolService qpoolService) {
+		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
+		return levels.stream()
+				.filter(level -> level.getKey().toString().equals(key))
+				.findFirst().orElse(null);
 	}
 	
 	public static KeyValues getQItemTypeKeyValues(Translator translator, QPoolService qpoolService) {
@@ -101,6 +108,13 @@ public class MetaUIFactory {
 			count++;
 		}
 		return new KeyValues(typeKeys, typeValues);
+	}
+	
+	public static QItemType getQItemTypeByKey(String key, QPoolService qpoolService) {
+		List<QItemType> types = qpoolService.getAllItemTypes();
+		return types.stream()
+				.filter(type -> type.getType().equals(key))
+				.findFirst().orElse(null);
 	}
 	
 	public static boolean validateElementLogic(TextElement el, int maxLength, boolean mandatory, boolean enabled) {

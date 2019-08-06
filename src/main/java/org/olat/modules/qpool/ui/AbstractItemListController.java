@@ -80,6 +80,7 @@ import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
 import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.modules.qpool.ui.metadata.ExtendedSearchController;
+import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -286,11 +287,14 @@ public abstract class AbstractItemListController extends FormBasicController
 		if(extendedSearchCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				String quickSearch = itemsTable.getQuickSearchString();
+				itemsSource.setExtendedSearchParams(null);
 				if(StringHelper.containsNonWhitespace(quickSearch)) {
 					itemsTable.quickSearch(ureq, quickSearch);
 				} else {
 					itemsTable.resetSearch(ureq);
 				}
+			} else if(event instanceof QPoolSearchEvent) {
+				doSearch((QPoolSearchEvent)event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -447,10 +451,15 @@ public abstract class AbstractItemListController extends FormBasicController
 			return true;
 		}
 	}
+	
+	private void doSearch(QPoolSearchEvent search) {
+		itemsSource.setExtendedSearchParams(search);
+		itemsTable.reset(true, true, true);
+	}
 
 	@Override
 	public int getRowCount() {
-		return itemsSource.getNumOfItems();
+		return itemsSource.getNumOfItems(true);
 	}
 
 	@Override
@@ -472,7 +481,7 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	@Override
 	public ResultInfos<ItemRow> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		ResultInfos<QuestionItemView> items = itemsSource.getItems(query, condQueries, firstResult, maxResults, orderBy);
+		ResultInfos<QuestionItemView> items = itemsSource.getItems(query, firstResult, maxResults, orderBy);
 		List<ItemRow> rows = new ArrayList<>(items.getObjects().size());
 		List<ResourceLicense> licenses = licenseService.loadLicenses(items.getObjects());
 		for(QuestionItemView item:items.getObjects()) {
@@ -484,9 +493,9 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	protected ItemRow forgeRow(QuestionItemView item, List<ResourceLicense> licenses) {
 		boolean marked = item.isMarked();
-		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
+		QuestionItemSecurityCallback itemSecCallback = qpoolSecurityCallbackFactory
 				.createQuestionItemSecurityCallback(item, getSource(), roles);
-		ItemRow row = new ItemRow(item, securityCallback);
+		ItemRow row = new ItemRow(item, itemSecCallback);
 		
 		// favorite
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;", null, null, Link.NONTRANSLATED);

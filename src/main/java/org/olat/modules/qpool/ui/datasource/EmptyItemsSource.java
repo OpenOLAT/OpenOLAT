@@ -35,6 +35,7 @@ import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
+import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
 
 /**
  * An empty data source.
@@ -52,6 +53,11 @@ public class EmptyItemsSource implements QuestionItemsSource {
     }
 
     @Override
+	public void setExtendedSearchParams(QPoolSearchEvent parameters) {
+		//
+	}
+
+	@Override
     public Controller getSourceController(UserRequest ureq, WindowControl wControl) {
         return null;
     }
@@ -143,11 +149,11 @@ public class EmptyItemsSource implements QuestionItemsSource {
 
     @Override
     public void removeFromSource(List<QuestionItemShort> items) {
-
+    	//
     }
 
     @Override
-    public int getNumOfItems() {
+    public int getNumOfItems(boolean withExtendedSearchParams) {
         return 0;
     }
 
@@ -162,7 +168,7 @@ public class EmptyItemsSource implements QuestionItemsSource {
     }
 
     @Override
-    public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+    public ResultInfos<QuestionItemView> getItems(String query, int firstResult, int maxResults, SortKey... orderBy) {
         return new DefaultResultInfos<>();
     }
 }

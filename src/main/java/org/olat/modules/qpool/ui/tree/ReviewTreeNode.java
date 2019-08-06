@@ -93,7 +93,7 @@ public class ReviewTreeNode extends GenericTreeNode implements ControllerTreeNod
 	}
 	
 	public void reloadCount() {
-		int count = source.getNumOfItems();
+		int count = source.getNumOfItems(false);
 		if (count > 0) {
 			setBadge(Integer.toString(count), Badge.Level.info);
 		} else {

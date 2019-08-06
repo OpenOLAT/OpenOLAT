@@ -45,6 +45,7 @@ import org.olat.modules.qpool.QuestionType;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.QuestionItemImpl;
+import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.manager.TaxonomyDAO;
@@ -297,6 +298,7 @@ public class QuestionDAOTest extends OlatTestCase {
 	@Test
 	public void shareItems_countSharedItemByResource() {
 		//create a group to share 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Share-item-");
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
@@ -312,13 +314,17 @@ public class QuestionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve them
-		int sharedItems = questionDao.countSharedItemByResource(group.getResource(), null);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setResource(group.getResource());
+		params.setFormat(QTIConstants.QTI_12_FORMAT);
+		int sharedItems = qItemQueriesDao.countItems(params);
 		Assert.assertEquals(3, sharedItems);
 	}
 	
 	@Test
 	public void shareItems_countSharedItemByResource_format() {
 		//create a group to share 2 items
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Share-item-");
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		QItemType fibType = qItemTypeDao.loadByType(QuestionType.FIB.name());
 		BusinessGroup group = businessGroupDao.createAndPersist(null, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
@@ -334,7 +340,10 @@ public class QuestionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve them
-		int sharedItems = questionDao.countSharedItemByResource(group.getResource(), QTI21Constants.QTI_21_FORMAT);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setResource(group.getResource());
+		params.setFormat(QTI21Constants.QTI_21_FORMAT);
+		int sharedItems = qItemQueriesDao.countItems(params);
 		Assert.assertEquals(1, sharedItems);
 	}
 	
@@ -352,8 +361,12 @@ public class QuestionDAOTest extends OlatTestCase {
 		questionDao.share(item, group.getResource());
 		questionDao.share(item, group.getResource());
 		
+
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setResource(group.getResource());
+		
 		//retrieve them
-		List<QuestionItemView> sharedItems = qItemQueriesDao.getSharedItemByResource(id, group.getResource(), null, null, 0, -1);
+		List<QuestionItemView> sharedItems = qItemQueriesDao.getItems(params, 0, -1);
 		Assert.assertNotNull(sharedItems);
 		Assert.assertEquals(1, sharedItems.size());
 		Assert.assertEquals(item.getKey(), sharedItems.get(0).getKey());
@@ -409,7 +422,9 @@ public class QuestionDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//check them
-		List<QuestionItemView> shared = qItemQueriesDao.getSharedItemByResource(id, group.getResource(), null, null, 0, -1);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setResource(group.getResource());
+		List<QuestionItemView> shared = qItemQueriesDao.getItems(params, 0, -1);
 		Assert.assertNotNull(shared);
 		Assert.assertEquals(1, shared.size());
 		
@@ -417,7 +432,7 @@ public class QuestionDAOTest extends OlatTestCase {
 		questionDao.removeFromShare(Collections.<QuestionItemShort>singletonList(item), group.getResource());
 		dbInstance.commitAndCloseSession();
 		//check
-		int numOfStayingItems = questionDao.countSharedItemByResource(group.getResource(), null);
+		int numOfStayingItems = qItemQueriesDao.countItems(params);
 		Assert.assertEquals(0, numOfStayingItems);
 	}
 	
@@ -425,7 +440,7 @@ public class QuestionDAOTest extends OlatTestCase {
 	public void shareItems_removeFromBusinessGroups_paranoid() {
 		//create a group to share 2 items
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
-		Identity id = JunitTestHelper.createAndPersistIdentityAsUser("Share-item-" + UUID.randomUUID().toString());
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("Share-item-");
 		BusinessGroup group1 = businessGroupDao.createAndPersist(id, "gdao-b", "gdao-desc", -1, -1, false, false, false, false, false);
 		BusinessGroup group2 = businessGroupDao.createAndPersist(id, "gdao-c", "gdao-desc", -1, -1, false, false, false, false, false);
 		QuestionItem item1 = questionDao.createAndPersist(id, "Share-Item-Dup-1", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
@@ -436,10 +451,15 @@ public class QuestionDAOTest extends OlatTestCase {
 		questionDao.share(item2, group2.getResource());
 		dbInstance.commit();
 		
+		SearchQuestionItemParams params1 = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params1.setResource(group1.getResource());
+		SearchQuestionItemParams params2 = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params2.setResource(group2.getResource());
+		
 		//check them
-		int numOfItems_1 = questionDao.countSharedItemByResource(group1.getResource(), null);
+		int numOfItems_1 = qItemQueriesDao.countItems(params1);
 		Assert.assertEquals(2, numOfItems_1);
-		int numOfItems_2 = questionDao.countSharedItemByResource(group2.getResource(), null);
+		int numOfItems_2 = qItemQueriesDao.countItems(params2);
 		Assert.assertEquals(2, numOfItems_2);
 		
 		//remove
@@ -447,11 +467,13 @@ public class QuestionDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		//check
-		int numOfStayingItems_1 = questionDao.countSharedItemByResource(group1.getResource(), null);
+		int numOfStayingItems_1 = qItemQueriesDao.countItems(params1);
 		Assert.assertEquals(1, numOfStayingItems_1);
-		int numOfStayingItems_2 = questionDao.countSharedItemByResource(group2.getResource(), null);
+		int numOfStayingItems_2 = qItemQueriesDao.countItems(params2);
 		Assert.assertEquals(2, numOfStayingItems_2);
-		List<QuestionItemView> items_1 = qItemQueriesDao.getSharedItemByResource(id, group1.getResource(), null, null, 0, -1);
+		
+		
+		List<QuestionItemView> items_1 = qItemQueriesDao.getItems(params1, 0, -1);
 		Assert.assertEquals(1, items_1.size());
 		Assert.assertEquals(item1.getKey(), items_1.get(0).getKey());
 	}
@@ -491,7 +513,9 @@ public class QuestionDAOTest extends OlatTestCase {
 		questionDao.share(item, group.getResource());
 		
 		//retrieve them as a check
-		List<QuestionItemView> shared = qItemQueriesDao.getSharedItemByResource(id, group.getResource(), null, null, 0, -1);
+		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setResource(group.getResource());
+		List<QuestionItemView> shared = qItemQueriesDao.getItems(params, 0, -1);
 		Assert.assertEquals(1, shared.size());
 		//and remove the items
 		List<QuestionItemShort> toDelete = Collections.<QuestionItemShort>singletonList(shared.get(0));

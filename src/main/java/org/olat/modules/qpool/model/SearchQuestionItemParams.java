@@ -19,16 +19,18 @@
  */
 package org.olat.modules.qpool.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.resource.OLATResource;
 
 /**
  * 
@@ -36,17 +38,31 @@ import org.olat.modules.taxonomy.TaxonomyLevel;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class SearchQuestionItemParams {
+public class SearchQuestionItemParams implements Cloneable {
+	
+	private Collection<Long> itemKeys;
+	
 	
 	private Long poolKey;
-	private Collection<Long> itemKeys;
 	private String format;
-	private String searchString;
-	private List<String> condQueries;
-	
-	private boolean favoritOnly;
 	private Identity author;
+	private String title;
+	private String topic;
+	private String keywords;
+	private String coverage;
+	private String informations;
+	private String language;
+	private String assessmentType;
+	private String searchString;
+	private boolean favoritOnly;
+	private OLATResource resource;
+	private LicenseType licenseType;
+	private QEducationalContext level;
+	private QuestionItemCollection collection;
+	private List<QItemType> excludedItemTypes;
 	
+	private QItemType itemType;
+	private TaxonomyLevel taxonomyLevel;
 	private TaxonomyLevel likeTaxonomyLevel;
 	private QuestionStatus questionStatus;
 	private Identity onlyAuthor;
@@ -82,6 +98,86 @@ public class SearchQuestionItemParams {
 		this.itemKeys = itemKeys;
 	}
 
+	public QuestionItemCollection getCollection() {
+		return collection;
+	}
+
+	public void setCollection(QuestionItemCollection collection) {
+		this.collection = collection;
+	}
+
+	public OLATResource getResource() {
+		return resource;
+	}
+
+	public void setResource(OLATResource resource) {
+		this.resource = resource;
+	}
+
+	public QItemType getItemType() {
+		return itemType;
+	}
+
+	public void setItemType(QItemType itemType) {
+		this.itemType = itemType;
+	}
+
+	public List<QItemType> getExcludedItemTypes() {
+		return excludedItemTypes;
+	}
+
+	public void setExcludedItemTypes(List<QItemType> excludedItemTypes) {
+		this.excludedItemTypes = excludedItemTypes;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getTopic() {
+		return topic;
+	}
+
+	public void setTopic(String topic) {
+		this.topic = topic;
+	}
+
+	public String getKeywords() {
+		return keywords;
+	}
+
+	public void setKeywords(String keywords) {
+		this.keywords = keywords;
+	}
+
+	public String getCoverage() {
+		return coverage;
+	}
+
+	public void setCoverage(String coverage) {
+		this.coverage = coverage;
+	}
+
+	public String getInformations() {
+		return informations;
+	}
+
+	public void setInformations(String informations) {
+		this.informations = informations;
+	}
+
+	public String getLanguage() {
+		return language;
+	}
+
+	public void setLanguage(String language) {
+		this.language = language;
+	}
+
 	public String getFormat() {
 		return format;
 	}
@@ -112,6 +208,22 @@ public class SearchQuestionItemParams {
 
 	public void setLikeTaxonomyLevel(TaxonomyLevel likeTaxonomyLevel) {
 		this.likeTaxonomyLevel = likeTaxonomyLevel;
+	}
+
+	public TaxonomyLevel getTaxonomyLevel() {
+		return taxonomyLevel;
+	}
+
+	public void setTaxonomyLevel(TaxonomyLevel taxonomyLevel) {
+		this.taxonomyLevel = taxonomyLevel;
+	}
+
+	public String getAssessmentType() {
+		return assessmentType;
+	}
+
+	public void setAssessmentType(String assessmentType) {
+		this.assessmentType = assessmentType;
 	}
 
 	public QuestionStatus getQuestionStatus() {
@@ -162,11 +274,6 @@ public class SearchQuestionItemParams {
 		this.withoutAuthorOnly = withoutAuthorOnly;
 	}
 
-	public boolean isFulltextSearch() {
-		return StringHelper.containsNonWhitespace(searchString) ||
-				condQueries != null && !condQueries.isEmpty();
-	}
-
 	public String getSearchString() {
 		return searchString;
 	}
@@ -174,16 +281,23 @@ public class SearchQuestionItemParams {
 	public void setSearchString(String searchString) {
 		this.searchString = searchString;
 	}
+	
+	
 
-	public List<String> getCondQueries() {
-		if(condQueries == null) {
-			return new ArrayList<>(1);
-		}
-		return new ArrayList<>(condQueries);
+	public LicenseType getLicenseType() {
+		return licenseType;
 	}
 
-	public void setCondQueries(List<String> condQueries) {
-		this.condQueries = condQueries;
+	public void setLicenseType(LicenseType licenseType) {
+		this.licenseType = licenseType;
+	}
+
+	public QEducationalContext getLevel() {
+		return level;
+	}
+
+	public void setLevel(QEducationalContext level) {
+		this.level = level;
 	}
 
 	public Identity getIdentity() {
@@ -198,22 +312,81 @@ public class SearchQuestionItemParams {
 		return locale;
 	}
 	
-	@Override
-	public SearchQuestionItemParams clone() {
+	public SearchQuestionItemParams copy() {
 		SearchQuestionItemParams clone = new SearchQuestionItemParams(identity, roles, locale);
-		clone.poolKey = poolKey;
-		clone.format = format;
-		clone.searchString = searchString;
-		clone.condQueries = getCondQueries();
-		clone.favoritOnly = favoritOnly;
-		clone.author = author;
-		clone.likeTaxonomyLevel = likeTaxonomyLevel;
-		clone.questionStatus = questionStatus;
-		clone.onlyAuthor = onlyAuthor;
-		clone.excludeAuthor = excludeAuthor;
-		clone.excludeRater = excludeRater;
-		clone.withoutTaxonomyLevelOnly = withoutTaxonomyLevelOnly;
-		clone.withoutAuthorOnly = withoutAuthorOnly;
+		return enrich(clone);
+	}
+	
+	public SearchQuestionItemParams enrich(SearchQuestionItemParams clone) {
+		if(poolKey != null) {
+			clone.poolKey = poolKey;
+		}
+		if(StringHelper.containsNonWhitespace(format)) {
+			clone.format = format;
+		}
+		if(StringHelper.containsNonWhitespace(title)) {
+			clone.title = title;
+		}
+		if(StringHelper.containsNonWhitespace(coverage)) {
+			clone.coverage = coverage;
+		}
+		if(StringHelper.containsNonWhitespace(keywords)) {
+			clone.keywords = keywords;
+		}
+		if(StringHelper.containsNonWhitespace(language)) {
+			clone.language = language;
+		}
+		if(StringHelper.containsNonWhitespace(topic)) {
+			clone.topic = topic;
+		}
+		if(StringHelper.containsNonWhitespace(informations)) {
+			clone.informations = informations;
+		}
+		if(StringHelper.containsNonWhitespace(searchString)) {
+			clone.searchString = searchString;
+		}
+		if(favoritOnly) {
+			clone.favoritOnly = favoritOnly;
+		}
+		if(author != null) {
+			clone.author = author;
+		}
+		if(itemType != null) {
+			clone.itemType = itemType;
+		}
+		if(taxonomyLevel != null) {
+			clone.taxonomyLevel = taxonomyLevel;
+		}
+		if(likeTaxonomyLevel != null) {
+			clone.likeTaxonomyLevel = likeTaxonomyLevel;
+		}
+		if(questionStatus != null) {
+			clone.questionStatus = questionStatus;
+		}
+		if(onlyAuthor != null) {
+			clone.onlyAuthor = onlyAuthor;
+		}
+		if(excludeAuthor != null) {
+			clone.excludeAuthor = excludeAuthor;
+		}
+		if(excludeRater != null) {
+			clone.excludeRater = excludeRater;
+		}
+		if(withoutTaxonomyLevelOnly) {
+			clone.withoutTaxonomyLevelOnly = withoutTaxonomyLevelOnly;
+		}
+		if(withoutAuthorOnly) {
+			clone.withoutAuthorOnly = withoutAuthorOnly;
+		}
+		if(licenseType != null) {
+			clone.licenseType = licenseType;
+		}
+		if(level != null) {
+			clone.level = level;
+		}
+		if(assessmentType != null) {
+			clone.assessmentType = assessmentType;
+		}
 		return clone;
 	}
 

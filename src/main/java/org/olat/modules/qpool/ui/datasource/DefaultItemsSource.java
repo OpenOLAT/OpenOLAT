@@ -32,12 +32,12 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QPoolService;
-import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
+import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
 
 /**
  * 
@@ -52,6 +52,9 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 	private final String name;
 	protected final QPoolService qpoolService;
 	private final SearchQuestionItemParams defaultParams;
+	
+	private String searchString;
+	private QPoolSearchEvent extendedSearchParameters;
 	
 	public DefaultItemsSource(Identity me, Roles roles, Locale locale, String name) {
 		this.name = name;
@@ -70,6 +73,11 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 
 	public SearchQuestionItemParams getDefaultParams() {
 		return defaultParams;
+	}
+
+	@Override
+	public void setExtendedSearchParams(QPoolSearchEvent parameters) {
+		this.extendedSearchParameters = parameters;
 	}
 
 	@Override
@@ -107,21 +115,22 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public abstract int postImport(List<QuestionItem> items, boolean editable);
-
-	@Override
 	public void removeFromSource(List<QuestionItemShort> items) {
 		//
 	}
 
 	@Override
-	public int getNumOfItems() {
+	public final int getNumOfItems(boolean withExtendedSearchParams) {
+		if(withExtendedSearchParams) {
+			SearchQuestionItemParams params = getSearchParams();
+			return qpoolService.countItems(params);
+		}
 		return qpoolService.countItems(defaultParams);
 	}
 
 	@Override
 	public List<QuestionItemView> getItems(Collection<Long> keys) {
-		SearchQuestionItemParams params = defaultParams.clone();
+		SearchQuestionItemParams params = defaultParams.copy();
 		params.setItemKeys(keys);
 		ResultInfos<QuestionItemView> items = qpoolService.getItems(params, 0, -1);
 		return items.getObjects();
@@ -133,14 +142,23 @@ public abstract class DefaultItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		SearchQuestionItemParams params = defaultParams.clone();
-		params.setSearchString(query);
-		params.setCondQueries(condQueries);
+	public final ResultInfos<QuestionItemView> getItems(String query, int firstResult, int maxResults, SortKey... orderBy) {
+		this.searchString = query;
+		
+		SearchQuestionItemParams params = getSearchParams();
 		return doSearch(params, firstResult, maxResults, orderBy);
 	}
 	
-	protected ResultInfos<QuestionItemView> doSearch(SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy) {
+	protected final ResultInfos<QuestionItemView> doSearch(SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy) {
 		return qpoolService.getItems(params, firstResult, maxResults, orderBy);
+	}
+	
+	private SearchQuestionItemParams getSearchParams() {
+		SearchQuestionItemParams params = defaultParams.copy();
+		if(extendedSearchParameters != null && extendedSearchParameters.getSearchParams() != null) {
+			extendedSearchParameters.getSearchParams().enrich(params);
+		} 
+		params.setSearchString(searchString);
+		return params;
 	}
 }

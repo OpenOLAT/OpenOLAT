@@ -32,6 +32,7 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
 
 /**
  * 
@@ -81,7 +82,9 @@ public interface QuestionItemsSource {
 	
 	public void removeFromSource(List<QuestionItemShort> items);
 	
-	public int getNumOfItems();
+	public int getNumOfItems(boolean withExtendedSearchParams);
+	
+	public void setExtendedSearchParams(QPoolSearchEvent parameters);
 	
 	public List<QuestionItemView> getItems(Collection<Long> keys);
 	
@@ -95,6 +98,6 @@ public interface QuestionItemsSource {
 	 */
 	public QuestionItemView getItemWithoutRestrictions(Long key);
 	
-	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy);
+	public ResultInfos<QuestionItemView> getItems(String query, int firstResult, int maxResults, SortKey... orderBy);
 
 }

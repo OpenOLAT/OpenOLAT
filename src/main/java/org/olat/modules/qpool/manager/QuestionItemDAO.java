@@ -36,7 +36,6 @@ import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Resource;
@@ -442,26 +441,6 @@ public class QuestionItemDAO {
 				.setParameter("itemKey", item.getKey())
 				.getSingleResult();
 		return count.intValue() > 0;
-	}
-	
-	public int countSharedItemByResource(OLATResource resource, String format) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(item.key) from qshareitem share")
-		  .append(" inner join share.item item")
-		  .append(" where share.resource.key=:resourceKey");
-		if(StringHelper.containsNonWhitespace(format)) {
-			sb.append(" and item.format=:format");
-		}
-
-		TypedQuery<Number> countQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
-				.setParameter("resourceKey", resource.getKey());
-		if(StringHelper.containsNonWhitespace(format)) {
-			countQuery.setParameter("format", format);
-		}
-		
-		Number count = countQuery.getSingleResult();
-		return count.intValue();
 	}
 	
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity) {

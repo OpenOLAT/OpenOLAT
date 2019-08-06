@@ -115,11 +115,12 @@ public class QuestionPoolServiceTest extends OlatTestCase {
 		dbInstance.commit();//check if it's alright
 		
 		SearchQuestionItemParams params = new SearchQuestionItemParams(id, null, Locale.ENGLISH);
+		params.setCollection(newColl);
 		
 		//retrieve the list of items in the collection
-		int numOfItemsInCollection = qpoolService.countItemsOfCollection(newColl, params);
+		int numOfItemsInCollection = qpoolService.countItems(params);
 		Assert.assertEquals(2, numOfItemsInCollection);
-		ResultInfos<QuestionItemView> itemsOfCollection = qpoolService.getItemsOfCollection(newColl, params, 0, -1);
+		ResultInfos<QuestionItemView> itemsOfCollection = qpoolService.getItems(params, 0, -1);
 		Assert.assertNotNull(itemsOfCollection);
 		Assert.assertEquals(2, itemsOfCollection.getObjects().size());
 		List<Long> itemKeys = new ArrayList<>();

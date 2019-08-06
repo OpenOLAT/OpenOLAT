@@ -725,7 +725,7 @@ public class QuestionListController extends AbstractItemListController implement
 	private void reloadStatusFilterTitle(FormLink link, String i18n) {
 		QuestionStatus linkStatus = (QuestionStatus) link.getUserObject();
 		getSource().setStatusFilter(linkStatus);
-		int numItems = getSource().getNumOfItems();
+		int numItems = getSource().getNumOfItems(false);
 		link.setI18nKey(i18n, new String[] {Integer.toString(numItems)});
 		link.getComponent().setDirty(true);
 	}

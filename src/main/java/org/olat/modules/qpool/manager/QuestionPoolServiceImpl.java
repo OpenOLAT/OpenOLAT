@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.SecurityGroup;
 import org.olat.basesecurity.manager.SecurityGroupDAO;
@@ -43,7 +44,6 @@ import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -90,9 +90,7 @@ import org.olat.modules.taxonomy.manager.TaxonomyDAO;
 import org.olat.modules.taxonomy.manager.TaxonomyLevelDAO;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.resource.OLATResource;
-import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.indexer.LifeFullIndexer;
-import org.olat.search.service.searcher.SearchClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -106,9 +104,7 @@ import org.springframework.stereotype.Service;
 public class QuestionPoolServiceImpl implements QPoolService {
 	
 	private static final Logger log = Tracing.createLoggerFor(QuestionPoolServiceImpl.class);
-	
-	private static final int MAX_NUMBER_DOCS = 32000;
-	
+
 	@Autowired
 	private DB dbInstance;
 	@Autowired
@@ -129,8 +125,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	private QuestionPoolModule qpoolModule;
 	@Autowired
 	private SecurityGroupDAO securityGroupDao;
-	@Autowired
-	private SearchClient searchClient;
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
 	@Autowired
@@ -548,169 +542,14 @@ public class QuestionPoolServiceImpl implements QPoolService {
 
 	@Override
 	public int countItems(SearchQuestionItemParams searchParams) {
-		if(searchParams.isFavoritOnly()) {
-			return itemQueriesDao.countFavoritItems(searchParams);
-		} else if(searchParams.getPoolKey() != null) {
-			return poolDao.countItemsInPool(searchParams);
-		} else if(searchParams.getAuthor() != null) {
-			return itemQueriesDao.countItemsByAuthor(searchParams);
-		} else {
-			return itemQueriesDao.countItems(searchParams);
-		}
+		return itemQueriesDao.countItems(searchParams);
 	}
 
 	@Override
 	public ResultInfos<QuestionItemView> getItems(SearchQuestionItemParams searchParams,
 			int firstResult, int maxResults, SortKey... orderBy) {
-		if(searchParams.isFavoritOnly()) {
-			return searchFavorits(searchParams, firstResult, maxResults, orderBy);
-		} else if(searchParams.getAuthor() != null) {
-			return searchByAuthor(searchParams, firstResult, maxResults, orderBy);
-		} else if(searchParams.getPoolKey() != null) {
-			return getItemsByPool(searchParams, firstResult, maxResults, orderBy);
-		} else {
-			return getItemsByParams(searchParams, firstResult, maxResults, orderBy);
-		}
-	}
-
-	private ResultInfos<QuestionItemView> getItemsByParams(SearchQuestionItemParams searchParams, int firstResult,
-			int maxResults, SortKey... orderBy) {
-		ResultInfos<QuestionItemView> resultInfo = new DefaultResultInfos<>();
-		if (searchParams.isFulltextSearch()) {
-			try {
-				String queryString = searchParams.getSearchString();
-				List<String> condQueries = new ArrayList<>();
-				if (searchParams.getCondQueries() != null) {
-					condQueries.addAll(searchParams.getCondQueries());
-				}
-				addConditionsOfParams(condQueries, searchParams);
-				List<Long> results = searchClient.doSearch(queryString, condQueries, searchParams.getIdentity(),
-						searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
-				if (!results.isEmpty()) {
-					List<QuestionItemView> items = itemQueriesDao.getItems(searchParams, results, firstResult,
-							maxResults, orderBy);
-					resultInfo = new DefaultResultInfos<>(firstResult + items.size(), results.size(), items);
-				}
-			} catch (Exception e) {
-				log.error("", e);
-			}
-		} else {
-			List<QuestionItemView> items = itemQueriesDao.getItems(searchParams, searchParams.getItemKeys(),
-					firstResult, maxResults, orderBy);
-			resultInfo = new DefaultResultInfos<>(firstResult + items.size(), -1, items);
-		}
-		return resultInfo;
-	}
-
-	private void addConditionsOfParams(List<String> condQueries, SearchQuestionItemParams searchParams) {
-		if (searchParams.getQuestionStatus() != null) {
-			condQueries.add(QItemDocument.ITEM_STATUS_FIELD + ":" + searchParams.getQuestionStatus());
-		}
-	}
-
-	private ResultInfos<QuestionItemView> getItemsByPool(SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
-		if(searchParams.isFulltextSearch()) {
-			try {
-				String queryString = searchParams.getSearchString();
-				List<String> condQueries = new ArrayList<>();
-				if(searchParams.getCondQueries() != null) {
-					condQueries.addAll(searchParams.getCondQueries());
-				}
-				condQueries.add("pool:" + searchParams.getPoolKey());
-				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
-
-				if(results.isEmpty()) {
-					return new DefaultResultInfos<>();
-				}
-				List<QuestionItemView> items = itemQueriesDao.getItemsOfPool(searchParams, results, firstResult, maxResults, orderBy);
-				return new DefaultResultInfos<>(firstResult + items.size(), results.size(), items);
-			} catch (Exception e) {
-				log.error("", e);
-			}
-			return new DefaultResultInfos<>();
-		} else {
-			List<QuestionItemView> items = itemQueriesDao.getItemsOfPool(searchParams, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
-			return new DefaultResultInfos<>(firstResult + items.size(), -1, items);
-		}
-	}
-
-	private ResultInfos<QuestionItemView> searchByAuthor(SearchQuestionItemParams searchParams, int firstResult, int maxResults, SortKey... orderBy) {
-		Identity author = searchParams.getAuthor();
-		if(searchParams.isFulltextSearch()) {
-			try {
-				String queryString = searchParams.getSearchString();
-				List<String> condQueries = new ArrayList<>();
-				if(searchParams.getCondQueries() != null) {
-					condQueries.addAll(searchParams.getCondQueries());
-				}
-				condQueries.add(QItemDocument.OWNER_FIELD + ":" + author.getKey());
-				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
-
-				if(results.isEmpty()) {
-					return new DefaultResultInfos<>();
-				}
-				List<QuestionItemView> items = itemQueriesDao.getItemsByAuthor(searchParams, results, firstResult, maxResults, orderBy);
-				return new DefaultResultInfos<>(firstResult + items.size(), results.size(), items);
-			} catch (Exception e) {
-				log.error("", e);
-			}
-			return new DefaultResultInfos<>();
-		} else {
-			List<QuestionItemView> items = itemQueriesDao.getItemsByAuthor(searchParams, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
-			return new DefaultResultInfos<>(firstResult + items.size(), -1, items);
-		}
-	}
-	
-	
-	/**
-	 * Do limit the search to favorit with the optimized view
-	 * @param searchParams
-	 * @param firstResult
-	 * @param maxResults
-	 * @param orderBy
-	 * @return
-	 */
-	private ResultInfos<QuestionItemView> searchFavorits(SearchQuestionItemParams searchParams,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		if(searchParams.isFulltextSearch()) {
-			try {
-				//filter with all favorits
-				List<Long> favoritKeys = questionItemDao.getFavoritKeys(searchParams.getIdentity());
-
-				String queryString = searchParams.getSearchString();
-				List<String> condQueries = new ArrayList<>();
-				if(searchParams.getCondQueries() != null) {
-					condQueries.addAll(searchParams.getCondQueries());
-				}
-				condQueries.add(getDbKeyConditionalQuery(favoritKeys));
-				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
-
-				if(results.isEmpty()) {
-					return new DefaultResultInfos<>();
-				}
-				List<QuestionItemView> items = itemQueriesDao.getFavoritItems(searchParams, results, firstResult, maxResults, orderBy);
-				return new DefaultResultInfos<>(firstResult + items.size(), results.size(), items);
-			} catch (Exception e) {
-				log.error("", e);
-			}
-			return new DefaultResultInfos<>();
-		} else {
-			List<QuestionItemView> items = itemQueriesDao.getFavoritItems(searchParams, searchParams.getItemKeys(), firstResult, maxResults, orderBy);
-			return new DefaultResultInfos<>(firstResult + items.size(), -1, items);
-		}
-	}
-	
-	private String getDbKeyConditionalQuery(List<Long> keys) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(AbstractOlatDocument.DB_ID_NAME).append(":(");
-		for(Long key:keys) {
-			if(sb.length() > 9) sb.append(" ");
-			sb.append(key);
-		}
-		return sb.append(')').toString();
+		List<QuestionItemView> items = itemQueriesDao.getItems(searchParams, firstResult, maxResults, orderBy);
+		return new DefaultResultInfos<>(firstResult + items.size(), -1, items);
 	}
 	
 	@Override
@@ -743,42 +582,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Override
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity) {
 		return questionItemDao.getResourcesWithSharedItems(identity);
-	}
-
-	@Override
-	public int countSharedItemByResource(OLATResource resource, SearchQuestionItemParams searchParams) {
-		return questionItemDao.countSharedItemByResource(resource, searchParams.getFormat());
-	}
-
-	@Override
-	public ResultInfos<QuestionItemView> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams searchParams,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		
-		if(searchParams != null && searchParams.isFulltextSearch()) {
-			try {
-				String queryString = searchParams.getSearchString();
-				List<String> condQueries = new ArrayList<>();
-				if(searchParams.getCondQueries() != null) {
-					condQueries.addAll(searchParams.getCondQueries());
-				}
-				condQueries.add(QItemDocument.SHARE_FIELD + ":" + resource.getKey());
-				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
-				if(results.isEmpty()) {
-					return new DefaultResultInfos<>();
-				}
-				List<QuestionItemView> items = itemQueriesDao.getSharedItemByResource(searchParams.getIdentity(), resource, results,
-						searchParams.getFormat(), firstResult, maxResults);
-				return new DefaultResultInfos<>(firstResult + items.size(), results.size(), items);
-			} catch (Exception e) {
-				log.error("", e);
-			}
-			return new DefaultResultInfos<>();
-		} else {
-			List<QuestionItemView> items = itemQueriesDao.getSharedItemByResource(searchParams.getIdentity(), resource, null,
-					searchParams.getFormat(), firstResult, maxResults, orderBy);
-			return new DefaultResultInfos<>(firstResult + items.size(), -1, items);
-		}
 	}
 
 	@Override
@@ -826,44 +629,6 @@ public class QuestionPoolServiceImpl implements QPoolService {
 	@Override
 	public List<QuestionItemCollection> getCollections(Identity owner) {
 		return collectionDao.getCollections(owner);
-	}
-
-	@Override
-	public int countItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams searchParams) {
-		return collectionDao.countItemsOfCollection(collection, searchParams.getFormat());
-	}
-
-	@Override
-	public ResultInfos<QuestionItemView> getItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams searchParams,
-			int firstResult, int maxResults, SortKey... orderBy) {
-		
-		if(searchParams != null && searchParams.isFulltextSearch()) {
-			try {
-				List<Long> content = collectionDao.getItemKeysOfCollection(collection);
-				String queryString = searchParams.getSearchString();
-				List<String> condQueries = new ArrayList<>();
-				if(searchParams.getCondQueries() != null) {
-					condQueries.addAll(searchParams.getCondQueries());
-				}
-				condQueries.add(getDbKeyConditionalQuery(content));
-				List<Long> results = searchClient.doSearch(queryString, condQueries,
-						searchParams.getIdentity(), searchParams.getRoles(), searchParams.getLocale(), 0, MAX_NUMBER_DOCS);
-
-				if(results.isEmpty()) {
-					return new DefaultResultInfos<>();
-				}
-				List<QuestionItemView> items = itemQueriesDao.getItemsOfCollection(searchParams.getIdentity(), collection, results, 
-						searchParams.getFormat(), firstResult, maxResults, orderBy);
-				return new DefaultResultInfos<>(firstResult + items.size(), results.size(), items);
-			} catch (Exception e) {
-				log.error("", e);
-			}
-			return new DefaultResultInfos<>();
-		} else {
-			List<QuestionItemView> items = itemQueriesDao.getItemsOfCollection(searchParams.getIdentity(), collection, searchParams.getItemKeys(),
-					searchParams.getFormat(), firstResult, maxResults, orderBy);
-			return new DefaultResultInfos<>(firstResult + items.size(), -1, items);
-		}
 	}
 
 	@Override

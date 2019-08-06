@@ -252,7 +252,7 @@ public class QPoolTaxonomyTreeBuilder {
 		boolean hasTreeRight = false;
 		String materalizedPathKeys = taxonomyLevel.getMaterializedPathKeys();
 		for (String path: materializedPathKeysWithCompetence) {
-			if (hasTreeRight == false) {
+			if (!hasTreeRight) {
 				if (path.equals(materalizedPathKeys)) {
 					hasTreeRight = true;
 				}
@@ -263,6 +263,14 @@ public class QPoolTaxonomyTreeBuilder {
 
 	public TaxonomyLevel getTaxonomyLevel(String key) {
 		if (key == null) return null;
+		
+		if(key.endsWith("/")) {
+			key = key.substring(0, key.length() - 1);
+		}
+		int index = key.lastIndexOf('/');
+		if(index >= 0) {
+			key = key.substring(index + 1);
+		}
 		
 		Long taxonomyLevelKey = Long.parseLong(key);
 		for (TaxonomyLevel taxonomyLevel: selectableTaxonomyLevels) {
