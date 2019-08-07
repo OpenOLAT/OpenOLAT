@@ -69,7 +69,7 @@ public class LoginModule extends AbstractSpringModule {
 	};
 	
 	public static final String DISABLED = "disabled";
-	public static final String FORBIDDEN = "forbiddden";
+	public static final String FORBIDDEN = "forbidden";
 	public static final String AT_LEAST_1 = "atLeast1";
 	public static final String AT_LEAST_2 = "atLeast2";
 	public static final String AT_LEAST_3 = "atLeast3";
