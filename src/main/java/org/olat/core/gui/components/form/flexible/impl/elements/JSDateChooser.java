@@ -31,10 +31,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -60,12 +60,18 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 	private TextElementComponent dateComponent;
 
 	private Locale locale;
+	private String separatorI18nKey;
 	private boolean dateChooserTimeEnabled;
 	private boolean defaultTimeAtEndOfDay;
 	private String forValidDateErrorKey;
 	private boolean checkForValidDate;
+	private boolean sameDay;
+	private boolean secondDate;
 	private int minute;
 	private int hour;
+	private int secondMinute;
+	private int secondHour;
+	private String secondValue;
 	private DateChooser defaultDateValue;
 	
 	public JSDateChooser(String name, Locale locale) {
@@ -122,9 +128,6 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		defaultDateValue = dateChooser;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.AbstractTextElement#validate(java.util.List, Identity)
-	 */
 	@Override
 	public void validate(List<ValidationStatus> validationResults) {
 		// checks of the textelement
@@ -140,7 +143,6 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		// check valid date
 		if (checkForValidDate && !checkValidDate()) {
 			validationResults.add(new ValidationStatusImpl(ValidationStatus.ERROR));
-			return;
 		}
 	}
 
@@ -149,22 +151,32 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		super.evalFormRequest(ureq);
 		
 		try {
-			String hourStr = getRootForm().getRequestParameter("o_dch_" + component.getFormDispatchId());
-			if (hourStr != null && StringHelper.isLong(hourStr)) {
-				hour = Integer.parseInt(hourStr);
-			}	
-			String minuteStr = getRootForm().getRequestParameter("o_dcm_" + component.getFormDispatchId());
-			if (minuteStr != null && StringHelper.isLong(minuteStr)) {
-				minute = Integer.parseInt(minuteStr);
+			String receiverId = component.getFormDispatchId();
+			hour = getRequestValue("o_dch_".concat(receiverId));
+			minute = getRequestValue("o_dcm_".concat(receiverId));
+			if(isSecondDate()) {
+				String secondReceiverId = receiverId.concat("_snd");
+				secondHour = getRequestValue("o_dch_".concat(secondReceiverId));
+				secondMinute = getRequestValue("o_dcm_".concat(secondReceiverId));
+				secondValue = getRootForm().getRequestParameter(secondReceiverId);
 			}
 		} catch (NumberFormatException e) {
 			log.error("", e);
 		}
 	}
+	
+	public String getSecondValue() {
+		return secondValue;
+	}
+	
+	private int getRequestValue(String id) {
+		String val = getRootForm().getRequestParameter(id);
+		if (StringHelper.isLong(val)) {
+			return Integer.parseInt(val);
+		}
+		return -1;
+	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.elements.AbstractTextElement#rootFormAvailable()
-	 */
 	@Override
 	protected void rootFormAvailable() {
 		super.rootFormAvailable();
@@ -184,22 +196,31 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#getDate()
-	 */
 	@Override
 	public Date getDate() {
+		return getDate(getValue(), hour, minute);
+	}
+	
+	@Override
+	public Date getSecondDate() {
+		if(isSameDay()) {
+			return getDate(getValue(), secondHour, secondMinute);
+		}
+		return getDate(getSecondValue(), secondHour, secondMinute);
+	}
+	
+	private Date getDate(String val, int h, int m) {
 		Date d = null;
 		try {
-			d = parseDate(getValue());
-			if(d != null && isDateChooserTimeEnabled() && (minute >= 0 || hour >= 0)) {
+			d = parseDate(val);
+			if(d != null && isDateChooserTimeEnabled() && (m >= 0 || h >= 0)) {
 				Calendar cal = Calendar.getInstance();
 				cal.setTime(d);
-				if(hour >= 0) {
-					cal.set(Calendar.HOUR_OF_DAY, hour);
+				if(h >= 0) {
+					cal.set(Calendar.HOUR_OF_DAY, h);
 				}
-				if(minute >= 0) {
-					cal.set(Calendar.MINUTE, minute);
+				if(m >= 0) {
+					cal.set(Calendar.MINUTE, m);
 				}
 				d = cal.getTime();
 			}	
@@ -209,9 +230,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		return d;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#setDate(java.util.Date)
-	 */
+	@Override
 	public void setDate(Date date) {
 		if (date == null) {
 			setValue("");
@@ -224,17 +243,36 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 			minute = cal.get(Calendar.MINUTE);
 		}
 	}
+	
+	@Override
+	public void setSecondDate(Date date) {
+		if (date == null) {
+			secondValue = "";
+			secondHour = secondMinute = 0;
+		} else {
+			secondValue = formatDate(date);
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(date);
+			secondHour = cal.get(Calendar.HOUR_OF_DAY);
+			secondMinute = cal.get(Calendar.MINUTE);
+		}
+	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#isDateChooserTimeEnabled()
-	 */
+	public String getSeparator() {
+		return separatorI18nKey;
+	}
+
+	@Override
+	public void setSeparator(String i18nKey) {
+		separatorI18nKey = i18nKey;
+	}
+
+	@Override
 	public boolean isDateChooserTimeEnabled() {
 		return dateChooserTimeEnabled;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#setDateChooserTimeEnabled(boolean)
-	 */
+	@Override
 	public void setDateChooserTimeEnabled(boolean dateChooserTimeEnabled) {
 		this.dateChooserTimeEnabled = dateChooserTimeEnabled;
 	}
@@ -248,9 +286,26 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		this.defaultTimeAtEndOfDay = defaultTimeAtEndOfDay;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#getDateChooserDateFormat()
-	 */
+	@Override
+	public boolean isSecondDate() {
+		return secondDate;
+	}
+
+	@Override
+	public void setSecondDate(boolean enableSecondDate) {
+		this.secondDate = enableSecondDate;
+	}
+
+	@Override
+	public boolean isSameDay() {
+		return sameDay;
+	}
+
+	@Override
+	public void setSameDay(boolean sameDay) {
+		this.sameDay = sameDay;
+	}
+
 	public String getDateChooserDateFormat() {
 		Calendar cal = Calendar.getInstance();
 		cal.set( 1999, Calendar.MARCH, 1, 0, 0, 0 );
@@ -264,9 +319,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		return formattedDate;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#setValidDateCheck(java.lang.String)
-	 */
+	@Override
 	public void setValidDateCheck(String errorKey) {
 		checkForValidDate = true;
 		forValidDateErrorKey = errorKey;
@@ -284,9 +337,7 @@ public class JSDateChooser extends TextElementImpl implements DateChooser {
 		dateComponent.setEnabled(isEnabled);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.components.form.flexible.impl.elements.DateChooser#getExampleDateString()
-	 */
+	@Override
 	public String getExampleDateString(){
 		return formatDate(new Date(System.currentTimeMillis()));
 	}
