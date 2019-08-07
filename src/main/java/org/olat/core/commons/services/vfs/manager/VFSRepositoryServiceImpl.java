@@ -399,8 +399,14 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		VFSMetadataImpl metadata = (VFSMetadataImpl)getMetadataFor(item);
 		if(metadata != null) { // concurrent delete possible
 			metadata.setDeleted(true);
-			if(item instanceof VFSLeaf && item.canVersion() == VFSConstants.YES) {
-				addToRevisions((VFSLeaf)item, metadata, author, "", true);
+			if(item instanceof VFSLeaf) {
+				VFSLeaf file = (VFSLeaf)item;
+				if(isThumbnailAvailable(file, metadata)) {
+					resetThumbnails(file);
+				}
+				if(file.canVersion() == VFSConstants.YES) {
+					addToRevisions(file, metadata, author, "", true);
+				}
 			}
 			metadataDao.updateMetadata(metadata);
 		}
