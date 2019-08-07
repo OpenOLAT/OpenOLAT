@@ -219,7 +219,7 @@ public class RepositoryManager {
 	public boolean setImage(VFSLeaf newImageFile, RepositoryEntry re) {
 		VFSLeaf currentImage = getImage(re);
 		if(currentImage != null) {
-			currentImage.delete();
+			currentImage.deleteSilently();//no versions for this
 		}
 
 		if(newImageFile == null || !newImageFile.exists() || newImageFile.getSize() <= 0) {
