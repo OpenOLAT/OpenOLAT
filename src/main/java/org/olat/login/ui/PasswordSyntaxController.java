@@ -51,11 +51,13 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
 import org.olat.login.validation.PasswordValidationConfig;
+import org.olat.login.validation.PasswordValidationConfig.Builder;
 import org.olat.login.validation.PasswordValidationRulesFactory;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationRulesProvider;
-import org.olat.login.validation.PasswordValidationConfig.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 
@@ -116,7 +118,9 @@ public class PasswordSyntaxController extends FormBasicController {
 		lettersKV.add(entry(VALIDATE_SEPARATELY, translate("admin.syntax.letters.lower.upper")));
 		lettersEl = uifactory.addDropdownSingleselect("admin.syntax.letters", formLayout, lettersKV.keys(),
 				lettersKV.values());
-		lettersEl.select(loginModule.getPasswordLetters(), true);
+		if (Arrays.asList(lettersKV.keys()).contains(loginModule.getPasswordLetters())) {
+			lettersEl.select(loginModule.getPasswordLetters(), true);
+		}
 		lettersEl.addActionListener(FormEvent.ONCHANGE);
 		
 		KeyValues lettersUppercaseKV = new KeyValues();
@@ -127,7 +131,9 @@ public class PasswordSyntaxController extends FormBasicController {
 		lettersUppercaseKV.add(entry(FORBIDDEN, translate("admin.syntax.forbidden")));
 		lettersUppercaseEl = uifactory.addDropdownSingleselect("admin.syntax.letters.uppercase", formLayout,
 				lettersUppercaseKV.keys(), lettersUppercaseKV.values());
-		lettersUppercaseEl.select(loginModule.getPasswordLettersUppercase(), true);
+		if (Arrays.asList(lettersUppercaseKV.keys()).contains(loginModule.getPasswordLettersUppercase())) {
+			lettersUppercaseEl.select(loginModule.getPasswordLettersUppercase(), true);
+		}
 		
 		KeyValues lettersLowercaseKV = new KeyValues();
 		lettersLowercaseKV.add(entry(DISABLED, translate("admin.syntax.permitted")));
@@ -137,7 +143,9 @@ public class PasswordSyntaxController extends FormBasicController {
 		lettersLowercaseKV.add(entry(FORBIDDEN, translate("admin.syntax.forbidden")));
 		lettersLowercaseEl = uifactory.addDropdownSingleselect("admin.syntax.letters.lowercase", formLayout,
 				lettersLowercaseKV.keys(), lettersLowercaseKV.values());
-		lettersLowercaseEl.select(loginModule.getPasswordLettersLowercase(), true);
+		if (Arrays.asList(lettersLowercaseKV.keys()).contains(loginModule.getPasswordLettersLowercase())) {
+			lettersLowercaseEl.select(loginModule.getPasswordLettersLowercase(), true);
+		}
 		
 		KeyValues digitsOrSpecialsKV = new KeyValues();
 		digitsOrSpecialsKV.add(entry(DISABLED, translate("admin.syntax.permitted")));
@@ -148,7 +156,9 @@ public class PasswordSyntaxController extends FormBasicController {
 		digitsOrSpecialsKV.add(entry(VALIDATE_SEPARATELY, translate("admin.syntax.digits.or.specials")));
 		digitsAndSpecialsEl = uifactory.addDropdownSingleselect("admin.syntax.digits.specials", formLayout, digitsOrSpecialsKV.keys(),
 				digitsOrSpecialsKV.values());
-		digitsAndSpecialsEl.select(loginModule.getPasswordDigitsAndSpecialSigns(), true);
+		if (Arrays.asList(digitsOrSpecialsKV.keys()).contains(loginModule.getPasswordDigitsAndSpecialSigns())) {
+			digitsAndSpecialsEl.select(loginModule.getPasswordDigitsAndSpecialSigns(), true);
+		}
 		digitsAndSpecialsEl.addActionListener(FormEvent.ONCHANGE);
 		
 		KeyValues digitsKV = new KeyValues();
@@ -159,7 +169,9 @@ public class PasswordSyntaxController extends FormBasicController {
 		digitsKV.add(entry(FORBIDDEN, translate("admin.syntax.forbidden")));
 		digitsEl = uifactory.addDropdownSingleselect("admin.syntax.digits", formLayout, digitsKV.keys(),
 				digitsKV.values());
-		digitsEl.select(loginModule.getPasswordDigits(), true);
+		if (Arrays.asList(digitsKV.keys()).contains(loginModule.getPasswordDigits())) {
+			digitsEl.select(loginModule.getPasswordDigits(), true);
+		}
 		
 		KeyValues specialsKV = new KeyValues();
 		specialsKV.add(entry(DISABLED, translate("admin.syntax.permitted")));
@@ -169,7 +181,9 @@ public class PasswordSyntaxController extends FormBasicController {
 		specialsKV.add(entry(FORBIDDEN, translate("admin.syntax.forbidden")));
 		specialsEl = uifactory.addDropdownSingleselect("admin.syntax.specials", formLayout, specialsKV.keys(),
 				specialsKV.values());
-		specialsEl.select(loginModule.getPasswordSpecialSigns(), true);
+		if (Arrays.asList(specialsKV.keys()).contains(loginModule.getPasswordSpecialSigns())) {
+			specialsEl.select(loginModule.getPasswordSpecialSigns(), true);
+		}
 		
 		KeyValues forbiddenValuesKV = new KeyValues();
 		forbiddenValuesKV.add(entry(FORBIDDEN_USERNAME, translate("admin.syntax.forbidden.username")));
