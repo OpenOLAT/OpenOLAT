@@ -73,7 +73,7 @@ public class DocEditorSecurityCallbackBuilder {
 	 * @param canClose
 	 * @return
 	 */
-	public DocEditorSecurityCallbackBuilder canClose(boolean canClose) {
+	public DocEditorSecurityCallbackBuilder withCanClose(boolean canClose) {
 		this.canClose = canClose;
 		return this;
 	}
@@ -96,7 +96,7 @@ public class DocEditorSecurityCallbackBuilder {
 				.withMode(secCallback.getMode())
 				.withHasMeta(secCallback.hasMeta())
 				.withVersionControlled(secCallback.isVersionControlled())
-				.canClose(secCallback.canClose());
+				.withCanClose(secCallback.canClose());
 	}
 	
 	private DocEditorSecurityCallbackBuilder() {

@@ -103,7 +103,7 @@ public class WebDocumentRunController extends BasicController {
 			} else if (docEditorService.hasEditor(getIdentity(), ureq.getUserSession().getRoles(), extension, Mode.VIEW, true)) {
 				DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 						.withMode(Mode.VIEW)
-						.canClose(false)
+						.withCanClose(false)
 						.build();
 				Controller editCtrl = new DocEditorController(ureq, wControl, document, secCallback, none(), "o_web_document");
 				listenTo(editCtrl);
