@@ -111,11 +111,11 @@ public class WopiServiceTest extends OlatTestCase {
 	public void shouldNotReuseAccessIfCanCloseChanged() {
 		VFSMetadata metadata = randomMetadata();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
-		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder().canClose(true).build();
+		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder().withCanClose(true).build();
 		Access access = sut.getOrCreateAccess(metadata, identity, secCallback, "App1", null);
 		dbInstance.commitAndCloseSession();
 		
-		DocEditorSecurityCallback secCallbackChanged = DocEditorSecurityCallbackBuilder.builder().canClose(false).build();
+		DocEditorSecurityCallback secCallbackChanged = DocEditorSecurityCallbackBuilder.builder().withCanClose(false).build();
 		Access accessChanged = sut.getOrCreateAccess(metadata, identity, secCallbackChanged, "App1", null);
 		dbInstance.commitAndCloseSession();
 		
@@ -156,9 +156,9 @@ public class WopiServiceTest extends OlatTestCase {
 	public void shouldDeleteAccessIfChanged() {
 		VFSMetadata metadata = randomMetadata();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
-		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.EDIT).build();
+		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder().withCanClose(true).build();
 		Access access = sut.getOrCreateAccess(metadata, identity, secCallback, "App1", null);
-		DocEditorSecurityCallback secCallbackChanged = DocEditorSecurityCallbackBuilder.builder().withMode(Mode.VIEW).build();
+		DocEditorSecurityCallback secCallbackChanged = DocEditorSecurityCallbackBuilder.builder().withCanClose(false).build();
 		sut.getOrCreateAccess(metadata, identity, secCallbackChanged, "App1", null);
 		dbInstance.commitAndCloseSession();
 		

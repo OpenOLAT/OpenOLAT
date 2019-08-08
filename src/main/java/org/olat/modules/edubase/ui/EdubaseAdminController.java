@@ -48,6 +48,7 @@ public class EdubaseAdminController extends FormBasicController {
 	private TextElement edubaseReaderUrlEl;
 	private MultipleSelectionElement edubaseReaderUrlUniqueEl;
 	private TextElement edubaseInfoverUrlEl;
+	private TextElement edubaseCoverUrlEl;
 
 	@Autowired
 	private EdubaseModule edubaseModule;
@@ -97,6 +98,10 @@ public class EdubaseAdminController extends FormBasicController {
 		String edubaseInfoverUrl = edubaseModule.getInfoverUrl();
 		edubaseInfoverUrlEl = uifactory.addTextElement("admin.edubase.infover.url", "admin.edubase.infover.url", 128, edubaseInfoverUrl, edubaseCont);
 		edubaseInfoverUrlEl.setMandatory(true);
+		
+		String edubaseCoverUrl = edubaseModule.getCoverUrl();
+		edubaseCoverUrlEl = uifactory.addTextElement("admin.edubase.cover.url", "admin.edubase.cover.url", 128, edubaseCoverUrl, edubaseCont);
+		edubaseCoverUrlEl.setMandatory(true);
 
 		// Edubook
 		FormLayoutContainer edubookCont = FormLayoutContainer.createDefaultFormLayout("edubook_admin", getTranslator());
@@ -121,6 +126,7 @@ public class EdubaseAdminController extends FormBasicController {
 		edubaseModule.setReaderUrl(edubaseReaderUrlEl.getValue());
 		edubaseModule.setReaderUrlUnique(edubaseReaderUrlUniqueEl.isAtLeastSelected(1));
 		edubaseModule.setInfoverUrl(edubaseInfoverUrlEl.getValue());
+		edubaseModule.setCoverUrl(edubaseCoverUrlEl.getValue());
 	}
 
 	@Override
@@ -134,6 +140,7 @@ public class EdubaseAdminController extends FormBasicController {
 			allOk &= validateIsMandatory(edubaseLtiLaunchUrlEl);
 			allOk &= validateIsMandatory(edubaseReaderUrlEl);
 			allOk &= validateIsMandatory(edubaseInfoverUrlEl);
+			allOk &= validateIsMandatory(edubaseCoverUrlEl);
 		}
 
 		return allOk & super.validateFormLogic(ureq);

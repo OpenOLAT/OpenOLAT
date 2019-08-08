@@ -124,7 +124,7 @@ public class DocumentEditorDelegate implements WebDocumentCreateDelegate, WebDoc
 		
 		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 				.withMode(Mode.EDIT)
-				.canClose(false)
+				.withCanClose(false)
 				.build();
 		return new DocEditorController(ureq, wControl, document, secCallback, none(), "o_web_document_edit");
 	}

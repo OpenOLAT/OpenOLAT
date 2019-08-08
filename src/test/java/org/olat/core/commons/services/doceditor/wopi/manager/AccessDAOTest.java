@@ -126,11 +126,13 @@ public class AccessDAOTest extends OlatTestCase {
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi2");
 		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
 		String app = random();
-		Access access = sut.createAccess(vfsMetadata, identity, app, random(), true, true, true, null);
-		sut.createAccess(vfsMetadata, identity2, app, random(), true, true, true, null);
+		boolean canEdit = true;
+		Access access = sut.createAccess(vfsMetadata, identity, app, random(), canEdit, true, true, null);
+		sut.createAccess(vfsMetadata, identity2, app, random(), canEdit, true, true, null);
+		sut.createAccess(vfsMetadata, identity, app, random(), !canEdit, true, true, null);
 		dbInstance.commitAndCloseSession();
 		
-		Access reloadedAccess = sut.loadAccess(vfsMetadata, identity, app);
+		Access reloadedAccess = sut.loadAccess(vfsMetadata, identity, app, canEdit);
 		
 		assertThat(reloadedAccess).isEqualTo(access);
 	}
