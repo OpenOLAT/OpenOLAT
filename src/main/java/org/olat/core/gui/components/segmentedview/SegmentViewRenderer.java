@@ -42,6 +42,7 @@ public class SegmentViewRenderer extends DefaultComponentRenderer {
 			ComponentRenderer subRenderer = segment.getHTMLRendererSingleton();
 			Translator subTranslator = segment.getTranslator();
 			subRenderer.render(renderer, sb, segment, ubu, subTranslator, renderResult, args);
+			segment.setDirty(false);
 		}
 		sb.append("</div>");
 	}

@@ -34,7 +34,6 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.render.intercept.InterceptHandlerInstance;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.helpers.Settings;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.WebappHelper;
 
@@ -79,13 +78,13 @@ public class Renderer {
 	 * use renderStaticURI
 	 * 
 	 * @param target
-	 * @param URI e.g. myspecialdispatcher/somestuff
+	 * @param uri e.g. myspecialdispatcher/somestuff
 	 */
-	public static void renderNormalURI(StringOutput target, String URI) {
+	public static void renderNormalURI(StringOutput target, String uri) {
 		String root = WebappHelper.getServletContextPath();
 		target.append(root); // e.g /olat
 		target.append("/");
-		target.append(URI);
+		target.append(uri);
 	}
 
 	/**
@@ -96,11 +95,11 @@ public class Renderer {
 	 * renders a uri which is mounted to the webapp/static/ directory of your webapplication.
 	 * 
 	 * @param target
-	 * @param URI e.g. img/specialimagenotpossiblewithcss.jpg
+	 * @param uri e.g. img/specialimagenotpossiblewithcss.jpg
 	 */
-	public static void renderStaticURI(StringOutput target, String URI) {
+	public static void renderStaticURI(StringOutput target, String uri) {
 		// forward to static dispatcher that knows how to deliver the static files!
-		StaticMediaDispatcher.renderStaticURI(target, URI);
+		StaticMediaDispatcher.renderStaticURI(target, uri);
 	}
 
 	/**
@@ -172,8 +171,7 @@ public class Renderer {
 	 * @return
 	 */
 	public Component findComponent(String componentName) {
-		Component source = renderContainer.getComponent(componentName);
-		return source;
+		return renderContainer.getComponent(componentName);
 	}
 
 	/**
@@ -213,9 +211,6 @@ public class Renderer {
 					sb.append("<span id='o_c").append(source.getDispatchID());
 				} else {
 					sb.append("<div id='o_c").append(source.getDispatchID());
-				}
-				if(Settings.isDebuging()) {
-					//sb.append("' title='").append(source.getComponentName());
 				}
 				sb.append("'>");
 			}			

@@ -19,16 +19,13 @@
  */
 package org.olat.core.gui.components.stack;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
-import org.olat.core.gui.components.dropdown.Dropdown;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel.Tool;
 import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
-import org.olat.core.gui.components.stack.TooledStackedPanel.Tool;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -57,86 +54,17 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		
 		if((panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) || (!tools.isEmpty() && panel.isToolbarEnabled())) {
 			sb.append("<div id='o_main_toolbar' class='o_toolbar");
-			if ((panel.isToolbarAutoEnabled() || panel.isToolbarEnabled() ) && !getTools(tools, Align.segment).isEmpty()) {
+			if ((panel.isToolbarAutoEnabled() || panel.isToolbarEnabled() ) && !panel.getTools(Align.segment).isEmpty()) {
 				sb.append(" o_toolbar_with_segments");
 			}
 			sb.append("'>");
 
-			if(panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) {
-				sb.append("<div class='o_breadcrumb'><ol class='breadcrumb'>");
-				Link backLink = panel.getBackLink();
-				int numOfCrumbs = breadCrumbs.size();
-				if(backLink.isVisible() && numOfCrumbs > panel.getInvisibleCrumb()) {
-					sb.append("<li class='o_breadcrumb_back'>");
-					backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
-					sb.append("</li>");
-					
-					for(Link crumb:breadCrumbs) {
-						sb.append("<li").append(" class='active'", breadCrumbs.indexOf(crumb) == numOfCrumbs-1).append(">");
-						renderer.render(crumb, sb, args);
-						sb.append("</li>");
-					}
-				}
-
-				Link closeLink = panel.getCloseLink();
-				if (closeLink.isVisible()) {
-					sb.append("<li class='o_breadcrumb_close'>");
-					closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
-					sb.append("</li>");				
-				}	
-
-				sb.append("</ol></div>"); // o_breadcrumb
+			if(panel.isBreadcrumbEnabled() && breadCrumbs.size() > panel.getInvisibleCrumb()) {	
+				renderer.render(panel.getBreadcrumbBar(), sb, args);
 			}
 			
 			if (panel.isToolbarAutoEnabled() || panel.isToolbarEnabled()) {
-				List<Tool> leftTools = getTools(tools, Align.left);
-				List<Tool> rightEdgeTools = getTools(tools, Align.rightEdge);
-				List<Tool> rightTools = getTools(tools, Align.right);
-				List<Tool> segmentsTools = getTools(tools, Align.segment);
-				List<Tool> notAlignedTools = getTools(tools, null);
-				
-				if(panel.isToolbarEnabled() || (panel.isToolbarAutoEnabled()
-						&& (!leftTools.isEmpty() || !rightTools.isEmpty() || !notAlignedTools.isEmpty() || !segmentsTools.isEmpty()))) {
-					sb.append("<div class='o_tools_container'><div class='container-fluid'>");
-					
-					if(!leftTools.isEmpty()) {
-						sb.append("<ul class='o_tools o_tools_left list-inline'>");
-						renderTools(leftTools, renderer, sb, args);
-						sb.append("</ul>");
-					}
-					
-					if(!rightEdgeTools.isEmpty()) {
-						sb.append("<ul class='o_tools o_tools_right_edge list-inline'>");
-						renderTools(rightEdgeTools, renderer, sb, args);
-						sb.append("</ul>");
-					}
-
-					if(!rightTools.isEmpty()) {
-						sb.append("<ul class='o_tools o_tools_right list-inline'>");
-						renderTools(rightTools, renderer, sb, args);
-						sb.append("</ul>");
-					}
-
-					if(!notAlignedTools.isEmpty()) {
-						sb.append("<ul class='o_tools o_tools_center list-inline'>");
-						renderTools(notAlignedTools, renderer, sb, args);
-						sb.append("</ul>");
-					}
-					sb.append("</div>"); // container-fluid,
-					
-					if(!segmentsTools.isEmpty()) {
-						boolean segmentAlone = leftTools.isEmpty() && rightTools.isEmpty() && notAlignedTools.isEmpty();
-						sb.append("<ul class='o_tools o_tools_segments list-inline")
-						  .append(" o_tools_segments_alone", segmentAlone).append("'>");
-						
-						Tool segmentTool = segmentsTools.get(segmentsTools.size() - 1);
-						List<Tool> lastSegmentTool = Collections.singletonList(segmentTool);
-						renderTools(lastSegmentTool, renderer, sb, args);
-						
-						sb.append("</ul>");
-					}
-					sb.append("</div>"); 
-				}
+				renderer.render(panel.getToolBar(), sb, args);
 			}
 			sb.append("</div>"); // o_toolbar
 		}
@@ -152,6 +80,7 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 			Component messageCmp = panel.getMessageComponent();
 			URLBuilder cubu = ubu.createCopyFor(messageCmp);
 			messageCmp.getHTMLRendererSingleton().render(renderer, sb, messageCmp, cubu, translator, renderResult, args);
+			messageCmp.setDirty(false);
 		}
 		
 		Component toRender = panel.getContent();
@@ -160,45 +89,5 @@ public class TooledStackedPanelRenderer extends DefaultComponentRenderer {
 		}
 
 		sb.append("</div>"); // end of panel div
-	}
-	
-	private List<Tool> getTools(List<Tool> tools, Align alignement) {
-		List<Tool> alignedTools = new ArrayList<>(tools.size());
-		if(alignement == null) {
-			for(Tool tool:tools) {
-				if(tool.getAlign() == null && tool.getComponent().isVisible()) {
-					alignedTools.add(tool);
-				}
-			}
-		} else {
-			for(Tool tool:tools) {
-				if(alignement.equals(tool.getAlign()) && tool.getComponent().isVisible()) {
-					alignedTools.add(tool);
-				}
-			}
-		}
-		return alignedTools;
-	}
-	
-	private void renderTools(List<Tool> tools, Renderer renderer, StringOutput sb, String[] args) {
-		int numOfTools = tools.size();
-		for(int i=0; i<numOfTools; i++) {
-			Tool tool = tools.get(i);
-			Component cmp = tool.getComponent();
-			String cssClass = tool.getToolCss();
-			if (cssClass == null) {
-				// use defaults
-				if(cmp instanceof Dropdown) {
-					cssClass = "o_tool_dropdown dropdown";
-				} else if(cmp instanceof Link && !cmp.isEnabled()) {
-					cssClass = "o_text";
-				} else {
-					cssClass = "o_tool";
-				}				
-			}
-			sb.append("<li class='").append(cssClass).append("'>");
-			renderer.render(cmp, sb, args);
-			sb.append("</li>");
-		}
 	}
 }

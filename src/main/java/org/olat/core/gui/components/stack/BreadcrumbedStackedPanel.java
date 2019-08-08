@@ -24,13 +24,16 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.panel.StackedPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -49,14 +52,16 @@ import org.olat.core.util.Util;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, BreadcrumbPanel, ComponentEventListener {
+public class BreadcrumbedStackedPanel extends Panel implements BreadcrumbPanel, ComponentEventListener {
 	private static final Logger log = Tracing.createLoggerFor(BreadcrumbedStackedPanel.class);
+	private static final ComponentRenderer BAR_RENDERER = new BreadcrumbBarRenderer();
 	private static final ComponentRenderer RENDERER = new BreadcrumbedStackedPanelRenderer();
 	
 	protected final List<Link> stack = new ArrayList<>(3);
 	
 	protected final Link backLink;
 	protected final Link closeLink;
+	protected final BreadcrumbBar breadcrumbBar;
 	
 	private int invisibleCrumb = 1;
 	private String cssClass;
@@ -74,6 +79,9 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		addListener(listener);
 		
 		this.cssClass = cssClass;
+		
+		String barId = getDispatchID().concat("_bbar");
+		breadcrumbBar = new BreadcrumbBar(barId);
 		
 		// Add back link before the bread crumbs, when pressed delegates click to current bread-crumb - 1
 		backLink = LinkFactory.createCustomLink("back", "back", "\u00A0", Link.NONTRANSLATED + Link.LINK_CUSTOM_CSS, null, this);
@@ -174,18 +182,26 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	public List<Link> getBreadCrumbs() {
 		return stack;
 	}
+	
+	public BreadcrumbBar getBreadcrumbBar() {
+		return breadcrumbBar;
+	}
+	
+	@Override
+	public Component getComponent(String name) {
+		if(breadcrumbBar.getComponentName().equals(name)) {
+			return breadcrumbBar;
+		}
+		return super.getComponent(name);
+	}
 
 	@Override
 	public Iterable<Component> getComponents() {
 		List<Component> cmps = new ArrayList<>(3 + stack.size());
-		cmps.add(backLink);
-		cmps.add(closeLink);
+		cmps.add(breadcrumbBar);
 		Component content = getContent();
 		if(content != null && content != this) {
 			cmps.add(getContent());
-		}
-		for(Link crumb:stack) {
-			cmps.add(crumb);
 		}
 		return cmps;
 	}
@@ -408,7 +424,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	
 	@Override
 	public void rootController(String displayName, Controller controller) {
-		if(stack.size() > 0) {
+		if(!stack.isEmpty()) {
 			for(int i=stack.size(); i-->0; ) {
 				Link link = stack.remove(i);
 				BreadCrumb crumb = (BreadCrumb)link.getUserObject();
@@ -493,7 +509,7 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 	@Override
 	public void changeDisplayname(String diplayName) {
 		stack.get(stack.size() - 1).setCustomDisplayText(diplayName);
-		setDirty(true);
+		breadcrumbBar.setDirty(true);
 	}
 
 	@Override
@@ -584,9 +600,72 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		closeLink.setVisible(showClose);								
 	}
 	
+	public class BreadcrumbBar extends AbstractComponent implements ComponentCollection {
+		
+		public BreadcrumbBar(String id) {
+			super(id, null, null);
+			setDomReplacementWrapperRequired(false);
+		}
+		
+		public BreadcrumbedStackedPanel getPanel() {
+			return BreadcrumbedStackedPanel.this;
+		}
+		
+		@Override
+		public Translator getTranslator() {
+			return BreadcrumbedStackedPanel.this.getTranslator();
+		}
+
+		@Override
+		protected void doDispatchRequest(UserRequest ureq) {
+			String cmd = ureq.getParameter(VelocityContainer.COMMAND_ID);
+			if(cmd != null) {
+				if(backLink.getCommand().equals(cmd)) {
+					dispatchEvent(ureq, backLink, null);
+				} else if(closeLink.getCommand().equals(cmd)) {
+					dispatchEvent(ureq, closeLink, null);
+				}
+			}
+		}
+
+		@Override
+		public ComponentRenderer getHTMLRendererSingleton() {
+			return BAR_RENDERER;
+		}
+
+		@Override
+		public Component getComponent(String name) {
+			if(backLink.getComponentName().equals(name)) {
+				return backLink;
+			}
+			if(closeLink.getComponentName().equals(name)) {
+				return closeLink;
+			}
+			for(Link crumb:stack) {
+				if(crumb != null && crumb.getComponentName().equals(name)) {
+					return crumb;
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public Iterable<Component> getComponents() {
+			List<Component> cmps = new ArrayList<>(3 + stack.size());
+			cmps.add(backLink);
+			cmps.add(closeLink);
+			for(Link crumb:stack) {
+				cmps.add(crumb);
+			}
+			return cmps;
+		}
+	}
+
 	public static class BreadCrumb {
+		
 		private final Object uobject;
 		private final Controller controller;
+		private final List<Tool> tools = new ArrayList<>(5);
 		
 		public BreadCrumb(Controller controller, Object uobject) {
 			this.uobject = uobject;
@@ -596,15 +675,58 @@ public class BreadcrumbedStackedPanel extends Panel implements StackedPanel, Bre
 		public Object getUserObject() {
 			return uobject;
 		}
-
+	
 		public Controller getController() {
 			return controller;
 		}
-
+		
+		public List<Tool> getTools() {
+			return tools;
+		}
+		
+		public void addTool(Tool tool) {
+			tools.add(tool);
+		}
+		
+		public void removeTool(Tool tool) {
+			tools.remove(tool);
+		}
+	
 		public void dispose() {
 			if(controller != null) {
 				controller.dispose();
 			}
+		}
+	}
+	
+	public static class Tool {
+
+		private final  Align align;
+		private final boolean inherit;
+		private final Component component;
+		private String toolCss;
+		
+		public Tool(Component component, Align align, boolean inherit, String toolCss) {
+			this.align = align;
+			this.inherit = inherit;
+			this.component = component;
+			this.toolCss = toolCss;
+		}
+		
+		public boolean isInherit() {
+			return inherit;
+		}
+
+		public Align getAlign() {
+			return align;
+		}
+
+		public Component getComponent() {
+			return component;
+		}
+		
+		public String getToolCss() {
+			return toolCss;
 		}
 	}
 }
