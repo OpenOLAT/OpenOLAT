@@ -204,6 +204,7 @@ public class AssessmentItemComponentRenderer extends AssessmentObjectComponentRe
 		if(component.isItemSessionOpen(itemSessionState, renderer.isSolutionMode())) {
 			Component submit = itemEl.getSubmitButton().getComponent();
 			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
+			submit.setDirty(false);
 		}
 		
 		boolean enableAdditionalButtons = component.isEnableBack() || component.isEnableSkip()

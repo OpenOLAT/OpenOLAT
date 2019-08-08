@@ -260,6 +260,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
 			Component submit = component.getQtiItem().getSubmitButton().getComponent();
 			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
+			submit.setDirty(false);
 		}
 		//advanceTestItemAllowed /* && testSessionState.getCurrentItemKey() != null && testSessionController.mayAdvanceItemLinear() */
 		if(options.isAdvanceTestItemAllowed() ) {//TODO need to find if there is a next question

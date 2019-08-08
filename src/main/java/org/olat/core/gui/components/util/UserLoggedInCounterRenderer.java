@@ -22,10 +22,9 @@
 package org.olat.core.gui.components.util;
 
 import org.olat.core.gui.components.Component;
-import org.olat.core.gui.components.ComponentRenderer;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
-import org.olat.core.gui.render.RenderingState;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
@@ -40,7 +39,7 @@ import org.olat.core.gui.translator.Translator;
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com
  */
 
-public class UserLoggedInCounterRenderer implements ComponentRenderer {
+public class UserLoggedInCounterRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source,
@@ -49,18 +48,4 @@ public class UserLoggedInCounterRenderer implements ComponentRenderer {
 		UserLoggedInCounter counter = (UserLoggedInCounter) source;
 		sb.append(counter.getSessionCount());
 	}
-
-	@Override
-	public void renderHeaderIncludes(Renderer renderer, StringOutput sb,
-			Component source, URLBuilder ubu, Translator translator,
-			RenderingState rstate) {
-		// nothing to include
-	}
-
-	@Override
-	public void renderBodyOnLoadJSFunctionCall(Renderer renderer,
-			StringOutput sb, Component source, RenderingState rstate) {
-		// no body js stuff
-	}
-
 }

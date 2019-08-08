@@ -22,6 +22,7 @@ package org.olat.group.ui.main;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -80,8 +81,10 @@ public class BGResourcesCellRenderer implements FlexiCellRenderer {
 								null, formLayout, Link.NONTRANSLATED);
 						}
 						allResourcesLink.setUserObject(item);
-						allResourcesLink.getComponent().getHTMLRendererSingleton()
-							.render(renderer, sb, allResourcesLink.getComponent(), ubu, translator, null, null);
+						Component allResourcesCmp = allResourcesLink.getComponent();
+						allResourcesCmp.getHTMLRendererSingleton()
+							.render(renderer, sb, allResourcesCmp, ubu, translator, null, null);
+						allResourcesCmp.setDirty(false);
 						break;
 					} else {
 						if(count > 0) sb.append(" ");
@@ -95,8 +98,10 @@ public class BGResourcesCellRenderer implements FlexiCellRenderer {
 							markLink.setUserObject(relation);
 							formLayout.add(name, markLink);
 						}
-						markLink.getComponent().getHTMLRendererSingleton()
-							.render(renderer, sb, markLink.getComponent(), ubu, translator, null, null);
+						Link markCmp = markLink.getComponent();
+						markCmp.getHTMLRendererSingleton()
+							.render(renderer, sb, markCmp, ubu, translator, null, null);
+						markCmp.setDirty(false);
 						count++;
 					}
 				}

@@ -65,6 +65,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
@@ -954,8 +955,10 @@ public abstract class AssessmentObjectComponentRenderer extends DefaultComponent
 			item.addFormItem(endAttemptButton);
 		}
 		endAttemptButton.setEnabled(!ended);
-		endAttemptButton.getComponent().getHTMLRendererSingleton()
-				.render(renderer.getRenderer(), sb, endAttemptButton.getComponent(), ubu, translator, new RenderResult(), null);
+		Component endAttemptCmp = endAttemptButton.getComponent();
+		endAttemptCmp.getHTMLRendererSingleton()
+				.render(renderer.getRenderer(), sb, endAttemptCmp, ubu, translator, new RenderResult(), null);
+		endAttemptCmp.setDirty(false);
 
 	}
 	

@@ -49,15 +49,16 @@ public class RatingWithAverageRenderer extends DefaultComponentRenderer {
 		
 		Component userCmp = item.getUserComponent();
 		userCmp.getHTMLRendererSingleton().render(renderer, sb, userCmp, ubu, translator, renderResult, args);
+		userCmp.setDirty(false);
 		sb.append("</div>")
 		  .append("<div id='o_rating_avg_").append(viewIdent).append("'>");
 		Component averageCmp = item.getAverageComponent();
 		averageCmp.getHTMLRendererSingleton().render(renderer, sb, averageCmp, ubu, translator, renderResult, args);
+		averageCmp.setDirty(false);
 		sb.append("</div>")
 		  .append("</div>")
 		  .append("</div>")
 		  .append("<script>\n")
-		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function(){\n")
 		  .append("  jQuery('#o_rating_wrapper_").append(viewIdent).append("')\n")
 		  .append("    .hover(\n")
@@ -65,7 +66,6 @@ public class RatingWithAverageRenderer extends DefaultComponentRenderer {
 		  .append("      function(){ jQuery('#o_rating_").append(viewIdent).append("').hide(); jQuery('#o_rating_avg_").append(viewIdent).append("').show(); }\n")  
 		  .append("	   );\n")
 		  .append("});\n")
-		  .append("/* ]]> */\n")
 		  .append("</script>\n");
 	}
 }

@@ -289,10 +289,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		return dc;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
@@ -307,8 +303,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		allCssKeepSet.clear();
 		allJsKeepSet.clear();
 		
-		//sb.append("<!-- css and js include test \n");
-		//sb.append("js-files:\n");
 		// JS scripts are rendered when in pre-theme rendering phase
 		if (!postThemeRendering) {
 			for (Iterator<String> it_js = jsToRender.iterator(); it_js.hasNext();) {
@@ -318,8 +312,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		}
 		
 		// sort css files
-			
-		//sb.append("css-files:\n");
 		for (Iterator<String> it_css = cssToRender.iterator(); it_css.hasNext();) {
 			String cssExpr = it_css.next();
 			// render post-theme css when in post-theme rendering phase and pre-theme
@@ -353,16 +345,12 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredRawHeader(java.lang.Class)
-	 */
+	@Override
 	public void addRequiredRawHeader(Class<?> baseClass, String rawHeader) {
 		curRawSet.add(rawHeader);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#setRequiredRefreshInterval(java.lang.Class, int)
-	 */
+	@Override
 	public void setRequiredRefreshInterval(Class<?> baseClass, int refreshIntervall) {
 		if(refreshIntervall < MINIMAL_REFRESHINTERVAL){
 			throw new AssertException("Poll refresh intervall is smaller then defined MINIMAL value " + MINIMAL_REFRESHINTERVAL);
@@ -370,7 +358,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		// idea: baseClass for later de-prioritising by configuration
 		if (this.refreshInterval == -1 || refreshIntervall < this.refreshInterval) {
 			this.refreshInterval = refreshIntervall;
-			//System.out.println("setting new refresh intervall: "+this.refreshInterval);
 		} // else we already have a request that requires a higher frequency of updates, we will take that one
 	}
 	
