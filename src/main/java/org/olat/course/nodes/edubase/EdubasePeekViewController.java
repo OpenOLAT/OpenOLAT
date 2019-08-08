@@ -34,7 +34,9 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.nodes.EdubaseCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edubase.BookSection;
+import org.olat.modules.edubase.EdubaseManager;
 import org.olat.modules.edubase.model.PositionComparator;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -48,6 +50,9 @@ public class EdubasePeekViewController extends BasicController {
 	private final static int NUMBER_BOOK_SECTION_DESC_DISABLED = 4;
 
 	private final String nodeId;
+	
+	@Autowired
+	private EdubaseManager edubaseManager;
 
 	public EdubasePeekViewController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modulConfiguration,
 			String nodeId) {
@@ -64,6 +69,7 @@ public class EdubasePeekViewController extends BasicController {
 		// BookSections
 		List<BookSection> bookSections =
 				modulConfiguration.getList(EdubaseCourseNode.CONFIG_BOOK_SECTIONS, BookSection.class).stream()
+				.map(bs -> edubaseManager.appendCoverUrl(bs))
 				.sorted(new PositionComparator())
 				.limit(NUMBER_BOOK_SECTION_DESC_DISABLED)
 				.collect(Collectors.toList());

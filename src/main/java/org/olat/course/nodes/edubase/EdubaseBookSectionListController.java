@@ -98,6 +98,7 @@ public class EdubaseBookSectionListController extends FormBasicController {
 		// BookSections
 		List<BookSection> bookSections = new ArrayList<>(config.getList(EdubaseCourseNode.CONFIG_BOOK_SECTIONS, BookSectionImpl.class));
 		bookSections.stream()
+			.map(bs -> edubaseManager.appendCoverUrl(bs))
 			.sorted(new PositionComparator())
 			.forEach(this::wrapBookSection);
 		ensureBookSectionWrappersHaveAnEntry();
@@ -313,7 +314,7 @@ public class EdubaseBookSectionListController extends FormBasicController {
 	private void showDetails(UserRequest ureq, BookSectionWrapper wrapper) {
 		String bookId = setParsedBookId(wrapper);
 		BookDetails bookDetails = edubaseManager.fetchBookDetails(bookId);
-		setCoverUrl(wrapper, bookDetails);
+		edubaseManager.appendCoverUrl(wrapper.getBookSection());
 		detailsController = new EdubaseBookSectionDetailsController(
 				ureq,
 				getWindowControl(),
@@ -332,9 +333,8 @@ public class EdubaseBookSectionListController extends FormBasicController {
 
 	private void setBookIdsAndCovers() {
 		for (BookSectionWrapper wrapper: bookSectionWrappers) {
-			String bookId = setParsedBookId(wrapper);
-			BookDetails bookDetails = edubaseManager.fetchBookDetails(bookId);
-			setCoverUrl(wrapper, bookDetails);
+			setParsedBookId(wrapper);
+			edubaseManager.appendCoverUrl(wrapper.getBookSection());
 		}
 	}
 
@@ -342,14 +342,6 @@ public class EdubaseBookSectionListController extends FormBasicController {
 		String bookId = edubaseManager.parseBookId(wrapper.getBookIdEl().getValue());
 		wrapper.getBookIdEl().setValue(bookId);
 		return bookId;
-	}
-
-	private void setCoverUrl(BookSectionWrapper wrapper, BookDetails bookDetails) {
-		String coverUrl = bookDetails.getCoverUrl();
-		if (coverUrl != null && coverUrl.substring(0, 5).equals("http:")) {
-			coverUrl = coverUrl.replace("http:", "https:");
-		}
-		wrapper.getBookSection().setCoverUrl(coverUrl);
 	}
 
 	private void wrapBookSection(BookSection bookSection) {

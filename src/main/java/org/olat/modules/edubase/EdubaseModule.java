@@ -43,6 +43,7 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	public static final String EDUBASE_READER_URL_UNIQUE = "edubase.readerUrl.unique";
 	public static final String EDUBASE_LTI_LAUNCH_URL = "edubase.ltiLaunchUrl";
 	public static final String EDUBASE_INFOVER_URL = "edubase.infoverUrl";
+	public static final String EDUBASE_COVER_URL = "edubase.coverUrl";
 
 	@Value("${edubase.enabled:false}")
 	private boolean enabled;
@@ -56,6 +57,8 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	private String ltiLaunchUrl;
 	@Value("${edubase.infoverUrl}")
 	private String infoverUrl;
+	@Value("${edubase.coverUrl}")
+	private String coverUrl;
 
 	@Autowired
 	public EdubaseModule(CoordinatorManager coordinatorManager) {
@@ -102,6 +105,11 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 		String infoverUrlObj = getStringPropertyValue(EDUBASE_INFOVER_URL, true);
 		if (StringHelper.containsNonWhitespace(infoverUrlObj)) {
 			infoverUrl = infoverUrlObj;
+		}
+		
+		String coverUrlObj = getStringPropertyValue(EDUBASE_COVER_URL, true);
+		if (StringHelper.containsNonWhitespace(coverUrlObj)) {
+			coverUrl = coverUrlObj;
 		}
 	}
 
@@ -161,6 +169,15 @@ public class EdubaseModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setInfoverUrl(String infoverUrl) {
 		this.infoverUrl = infoverUrl;
 		setStringProperty(EDUBASE_INFOVER_URL, infoverUrl, true);
+	}
+
+	public String getCoverUrl() {
+		return coverUrl;
+	}
+
+	public void setCoverUrl(String coverUrl) {
+		this.coverUrl = coverUrl;
+		setStringProperty(EDUBASE_COVER_URL, coverUrl, true);
 	}
 
 	public void setEnabled(boolean enabled) {
