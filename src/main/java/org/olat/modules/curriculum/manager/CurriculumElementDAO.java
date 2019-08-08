@@ -589,8 +589,8 @@ public class CurriculumElementDAO {
 			sb.and()
 			  .append("exists (select membership.key from bgroupmember as membership")
 			  .append("  where membership.identity.key=:managerKey")
-			  .append("  and (membership.group.key=baseGroup.key or organis.group.key=baseGroup.key)")
-			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("','").append(OrganisationRoles.administrator).append("')")
+			  .append("  and membership.role").in(CurriculumRoles.curriculummanager, CurriculumRoles.owner, OrganisationRoles.administrator)
+			  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
 			  .append(")");
 		}
 

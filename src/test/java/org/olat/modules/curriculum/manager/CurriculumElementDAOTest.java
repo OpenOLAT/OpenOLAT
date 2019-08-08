@@ -30,8 +30,10 @@ import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumCalendars;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -45,6 +47,8 @@ import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.model.CurriculumElementImpl;
 import org.olat.modules.curriculum.model.CurriculumElementInfos;
+import org.olat.modules.curriculum.model.CurriculumElementSearchInfos;
+import org.olat.modules.curriculum.model.CurriculumElementSearchParams;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -69,6 +73,8 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 	private CurriculumElementTypeDAO curriculumElementTypeDao;
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	@Test
 	public void createCurriculumElement() {
@@ -335,6 +341,68 @@ public class CurriculumElementDAOTest extends OlatTestCase {
 		Assert.assertNotNull(elementsByKey);
 		Assert.assertEquals(1, elementsByKey.size());
 		Assert.assertEquals(element, elementsByKey.get(0));
+	}
+	
+	@Test
+	public void searchElementsWithParams_permissions() {
+		Identity nobody = JunitTestHelper.createAndPersistIdentityAsRndUser("curriculum-nobody");
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Identity curriculumAdmin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("curriculum-admin");
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", defOrganisation);
+		String externalId = UUID.randomUUID().toString();
+		String identifier = UUID.randomUUID().toString();
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, "6.1 Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commit();
+		element.setExternalId(externalId);
+		element = curriculumElementDao.update(element);
+		dbInstance.commitAndCloseSession();
+
+		//search by external id, administrator
+		CurriculumElementSearchParams adminSearchParams = new CurriculumElementSearchParams(curriculumAdmin);
+		adminSearchParams.setElementId(externalId);
+		List<CurriculumElementSearchInfos> elementsByExternalId = curriculumElementDao.searchElements(adminSearchParams);
+		Assert.assertNotNull(elementsByExternalId);
+		Assert.assertEquals(1, elementsByExternalId.size());
+		Assert.assertEquals(element, elementsByExternalId.get(0).getCurriculumElement());
+		
+		//search by identifier 
+		CurriculumElementSearchParams nobodySearchParams = new CurriculumElementSearchParams(nobody);
+		nobodySearchParams.setElementId(externalId);
+		List<CurriculumElementSearchInfos> noElements = curriculumElementDao.searchElements(nobodySearchParams);
+		Assert.assertNotNull(noElements);
+		Assert.assertTrue(noElements.isEmpty());
+	}
+	
+	/**
+	 * The method only checks the query syntax, not the results.
+	 */
+	@Test
+	public void searchElementsWithParams_allParameters() {
+		Organisation defOrganisation = organisationService.getDefaultOrganisation();
+		Identity curriculumAdmin = JunitTestHelper.createAndPersistIdentityAsRndAdmin("curriculum-admin");
+		Curriculum curriculum = curriculumDao.createAndPersist("cur-for-el-6", "Curriculum for element", "Curriculum", defOrganisation);
+		String externalId = UUID.randomUUID().toString();
+		String identifier = UUID.randomUUID().toString();
+		CurriculumElement element = curriculumElementDao.createCurriculumElement(identifier, "6.1 Element",
+				CurriculumElementStatus.active, null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commit();
+		element.setExternalId(externalId);
+		element = curriculumElementDao.update(element);
+		dbInstance.commitAndCloseSession();
+
+		//search by external id, administrator
+		CurriculumElementSearchParams adminSearchParams = new CurriculumElementSearchParams(curriculumAdmin);
+		adminSearchParams.setElementId(externalId);
+		adminSearchParams.setElementBeginDate(new Date());
+		adminSearchParams.setElementEndDate(new Date());
+		adminSearchParams.setElementText("Hello");
+		adminSearchParams.setEntryId("734");
+		adminSearchParams.setEntryText("Course");
+		adminSearchParams.setSearchString("Search");
+		List<CurriculumElementSearchInfos> elementsByExternalId = curriculumElementDao.searchElements(adminSearchParams);
+		Assert.assertNotNull(elementsByExternalId);
+
 	}
 	
 	@Test
