@@ -121,7 +121,7 @@ public class WopiServiceImpl implements WopiService {
 	@Override
 	public Access getOrCreateAccess(VFSMetadata vfsMetadata, Identity identity, DocEditorSecurityCallback secCallback,
 			String app, Date expiresAt) {
-		Access access = accessDao.loadAccess(vfsMetadata, identity, app);
+		Access access = accessDao.loadAccess(vfsMetadata, identity, app, getCanEdit(secCallback));
 		if (access != null) {
 			if (accessUnchanged(access, secCallback) && !expired(access)) {
 				access = accessDao.updateExpiresAt(access, expiresAt);
@@ -135,7 +135,6 @@ public class WopiServiceImpl implements WopiService {
 	}
 
 	private boolean accessUnchanged(Access access, DocEditorSecurityCallback secCallback) {
-		if (access.isCanEdit() != getCanEdit(secCallback)) return false;
 		if (access.isCanClose() != secCallback.canClose()) return false;
 		if (access.isVersionControlled() != secCallback.isVersionControlled()) return false;
 		return true;
