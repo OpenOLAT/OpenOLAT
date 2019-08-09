@@ -229,6 +229,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 
 			container.getHTMLRendererSingleton().render(renderer, target, container, ubu, translator, renderResult, null);
 			container.contextRemove("row");
+			container.setDirty(false);
 			
 			target.append("</td></tr>");
 		}

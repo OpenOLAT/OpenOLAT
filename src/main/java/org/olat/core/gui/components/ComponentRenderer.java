@@ -41,7 +41,8 @@ import org.olat.core.gui.translator.Translator;
 public interface ComponentRenderer {
 
 	/**
-	 * calls must be threadsafe
+	 * Calls must be threadsafe and the caller set dirty to false on the component.
+	 * 
 	 * @param renderer
 	 * @param sb
 	 * @param source

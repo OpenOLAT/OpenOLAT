@@ -148,41 +148,27 @@ public class InlineTranslationInterceptHandlerController extends BasicController
 				// we save the result in a new var since it is too early to
 				// append it
 				// to the 'stream' right now.
-				StringOutput sbOrig = new StringOutput();
-				try {
+				
+				try(StringOutput sbOrig = new StringOutput()) {
 					originalRenderer.render(renderer, sbOrig, source, ubu, translator, renderResult, args);
+					String rendered = sbOrig.toString();
+					
+					String renderedWithHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(rendered,
+							inlineTranslationURLBuilder, getTranslator());
+					sb.append(renderedWithHTMLMarkup);
 				} catch (Exception e) {
 					String emsg = "exception while rendering component '" + source.getComponentName() + "' (" + source.getClass().getName() + ") "
 							+ source.getListenerInfo() + "<br />Message of exception: " + e.getMessage();
-					sbOrig.append("<span style=\"color:red\">Exception</span><br /><pre>" + emsg + "</pre>");
-				}
-
-				String rendered = sbOrig.toString();
-				String renderedWithHTMLMarkup = InlineTranslationInterceptHandlerController.replaceLocalizationMarkupWithHTML(rendered,
-						inlineTranslationURLBuilder, getTranslator());
-				sb.append(renderedWithHTMLMarkup);
+					sb.append("<span style=\"color:red\">Exception</span><br /><pre>" + emsg + "</pre>");
+				}	
 			}
-
-			/**
-			 * @see org.olat.core.gui.components.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer,
-			 *      org.olat.core.gui.render.StringOutput,
-			 *      org.olat.core.gui.components.Component,
-			 *      org.olat.core.gui.render.URLBuilder,
-			 *      org.olat.core.gui.translator.Translator,
-			 *      org.olat.core.gui.render.RenderingState)
-			 */
+			
 			@Override
 			public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 					RenderingState rstate) {
 				originalRenderer.renderHeaderIncludes(renderer, sb, source, ubu, translator, rstate);
 			}
 
-			/**
-			 * @see org.olat.core.gui.components.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer,
-			 *      org.olat.core.gui.render.StringOutput,
-			 *      org.olat.core.gui.components.Component,
-			 *      org.olat.core.gui.render.RenderingState)
-			 */
 			@Override
 			public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 				originalRenderer.renderBodyOnLoadJSFunctionCall(renderer, sb, source, rstate);

@@ -387,6 +387,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if(item != null) {
 			Component cmp = item.getComponent();
 			cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+			cmp.setDirty(false);
 		}
 	}
 	
