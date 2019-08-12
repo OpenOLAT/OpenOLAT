@@ -238,7 +238,7 @@ public class OLATUpgrade_13_0_0 extends OLATUpgrade {
 			Long rollCallKey = auditLog.getRollCallKey();
 			if(rollCallKey != null) {
 				LectureBlockRollCall call = lectureService.getRollCall(new LectureBlockRollCallRefImpl(rollCallKey));
-				if(call.getAppealDate() == null) {
+				if(call != null && call.getAppealDate() == null) {
 					call.setAppealDate(auditLog.getCreationDate());
 					call.setAppealStatus(LectureBlockAppealStatus.oldWorkflow);
 					lectureService.updateRollCall(call);
