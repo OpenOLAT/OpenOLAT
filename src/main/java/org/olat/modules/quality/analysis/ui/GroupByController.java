@@ -102,7 +102,6 @@ public abstract class GroupByController extends FormBasicController implements F
 	protected final static Attribute[] identicalRubricsAttributes = {
 			Attribute.sliderType,
 			Attribute.scaleType,
-			Attribute.name,
 			Attribute.start,
 			Attribute.end,
 			Attribute.steps,
