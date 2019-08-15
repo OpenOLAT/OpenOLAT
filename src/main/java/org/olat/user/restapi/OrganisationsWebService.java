@@ -61,12 +61,15 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Initial date: 14 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Tag(name = "Organisations")
 @Component
 @Path("organisations")
 public class OrganisationsWebService {

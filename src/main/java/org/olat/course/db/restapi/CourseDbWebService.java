@@ -54,6 +54,8 @@ import org.olat.restapi.support.vo.KeyValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Description:<br>
  * Access the custom dbs of a course
@@ -62,6 +64,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:	 *7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/courses/{courseId}/db/{category}")
 public class CourseDbWebService {

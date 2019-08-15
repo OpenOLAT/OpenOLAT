@@ -45,6 +45,8 @@ import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * The security check is done by the curriculums web service.
  * 
@@ -52,6 +54,7 @@ import org.springframework.stereotype.Component;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Tag(name = "Curriculum")
 @Component
 @Path("curriculum/types")
 public class CurriculumElementTypesWebService {

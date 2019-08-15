@@ -76,6 +76,8 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Description:<br>
@@ -85,6 +87,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:  20.12.2010 <br>
  * @author skoeber
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/courses/{courseId}/elements/forum")
 public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {

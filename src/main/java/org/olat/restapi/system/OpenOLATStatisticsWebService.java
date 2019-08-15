@@ -48,6 +48,8 @@ import org.olat.restapi.system.vo.SessionsVO;
 import org.olat.restapi.system.vo.TasksVO;
 import org.olat.restapi.system.vo.UserStatisticsVO;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -87,6 +89,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	 * @param request The HTTP request
 	 * @return The statistics about OpenOLAT users
 	 */
+	@Tag(name = "Users")
 	@GET
 	@Path("users")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -105,6 +108,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	 * @param request The HTTP request
 	 * @return The statistics about the repository
 	 */
+	@Tag(name = "Repo")
 	@GET
 	@Path("repository")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

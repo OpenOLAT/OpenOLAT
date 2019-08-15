@@ -11,6 +11,8 @@
 	<!-- CXF OpenApiFeature -->  
 	<bean id="openApiFeature" class="org.apache.cxf.jaxrs.openapi.OpenApiFeature">
 		<!-- customize some of the properties -->
+		<property name="useContextBasedConfig" value="true"/>
+		<property name="scan" value="false"/>
 	</bean>
 
 	<jaxrs:server address="/" basePackages="org.olat">

@@ -94,11 +94,15 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * This web service handles functionalities related to <code>User</code>.
  * 
  * @author srosse, stephane.rosse@frentix.com
  */
+
+@Tag (name = "Users")
 @Path("users")
 @Component
 public class UserWebService {

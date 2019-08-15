@@ -53,11 +53,14 @@ import org.olat.restapi.support.vo.ErrorVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * This web service handles functionalities related to authentication credentials of users.
  * 
  * @author srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Users")
 @Component
 @Path("users/{username}/auth")
 public class UserAuthenticationWebService {

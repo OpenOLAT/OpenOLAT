@@ -54,6 +54,8 @@ import org.olat.restapi.support.vo.GroupVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Description:<br>
@@ -63,6 +65,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:  10 mai 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/courses/{courseId}/elements/enrollment")
 public class ENWebService extends AbstractCourseNodeWebService {

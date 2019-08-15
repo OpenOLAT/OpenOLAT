@@ -56,6 +56,8 @@ import org.olat.restapi.support.vo.LinkVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Description:<br>
  * A web service for the catalog
@@ -64,6 +66,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:  5 may 2017 <br>
  * @author Stephan Clemenz, VCRP
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/sharedfolder")
 public class SharedFolderWebService {

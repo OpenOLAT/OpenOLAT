@@ -79,10 +79,17 @@ import org.olat.restapi.support.vo.RepositoryEntryVOes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.*;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
  * Description:<br>
@@ -93,7 +100,23 @@ import io.swagger.v3.oas.annotations.responses.*;
  * 
  * @author patrickb, srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Repo")
 @Component
+@OpenAPIDefinition(
+	info = @Info(
+			title = "OpenOlat REST API",
+			description = "This is the documentation of the OpenOlat REST API.",
+			contact = @Contact(
+					name=  "OpenOlat",
+					url = "https://www.openolat.org"
+				),
+			license = @License(
+					name = "Apache 2.0",
+					url = "https://github.com/OpenOLAT/OpenOLAT/blob/master/LICENSE"
+				)
+		),
+	servers = { @Server(url = "/restapi") }
+)
 @Path("repo/entries")
 public class RepositoryEntriesWebService {
 	

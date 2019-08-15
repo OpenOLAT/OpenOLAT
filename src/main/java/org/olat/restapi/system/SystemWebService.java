@@ -45,6 +45,8 @@ import org.olat.restapi.system.vo.EnvironmentInformationsVO;
 import org.olat.restapi.system.vo.ReleaseInfosVO;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * <h3>Description:</h3>
@@ -52,6 +54,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:  18 jun. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
+@Tag(name = "System")
 @Path("system")
 @Component
 public class SystemWebService {

@@ -77,6 +77,8 @@ import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * Description:<br>
  * A web service for the catalog
@@ -85,6 +87,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:  5 may 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Catalog")
 @Component
 @Path("catalog")
 public class CatalogWebService {
