@@ -31,7 +31,17 @@ import org.olat.modules.lecture.LectureModule;
 public class LecturesSecurityCallbackFactory {
 	
 	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole) {
-		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, null);
+		LectureRoles viewAs;
+		if(adminRole) {
+			viewAs = LectureRoles.lecturemanager;
+		} else if(masterCoachRole) {
+			viewAs = LectureRoles.mastercoach;
+		} else if(teacherRole) {
+			viewAs = LectureRoles.teacher;
+		} else {
+			viewAs = LectureRoles.participant;
+		}
+		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs);
 	}
 	
 	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole, LectureRoles viewAs) {
