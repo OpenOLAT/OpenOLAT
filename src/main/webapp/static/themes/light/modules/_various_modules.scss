@@ -526,6 +526,26 @@ div.o_assessment_mode_row {
 	margin-top: $line-height-computed;
 }
 
+.o_segments.o_segments_linked {
+	.btn, .btn:hover, .btn:active, .btn:focus {
+		border: none;
+		border-radius: 0;
+		box-shadow: none;
+	}
+	.btn-primary {
+		color: #000;
+		font-size: ceil(($font-size-base * 1.7));
+		background-color: transparent;
+	}
+	.btn-default, .btn-default:hover, .btn-default:active, .btn-default:focus {
+		color: $o-content-link-color;
+		background-color: transparent;
+	}
+	.o_segment_separator {
+		color: #000;
+	}
+}
+
 /* Tabbed pane component */
 .o_tabbed_pane { 
 	.o_tabbed_pane_content {

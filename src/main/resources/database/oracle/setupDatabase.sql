@@ -2507,6 +2507,24 @@ create table o_lecture_absence_category (
    primary key (id)
 );
 
+create table o_lecture_absence_notice (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   l_type varchar(32),
+   l_absence_reason CLOB,
+   l_absence_authorized number default null,
+   l_start_date timestamp,
+   l_end_date timestamp,
+   l_target varchar(32) default 'allentries' not null,
+   l_attachments_dir varchar(255),
+   fk_identity number(20) not null,
+   fk_notifier number(20),
+   fk_authorizer number(20),
+   fk_absence_category number(20),
+   primary key (id)
+);
+
 create table o_lecture_block (
   id number(20) generated always as identity,
   creationdate date not null,
@@ -2541,6 +2559,22 @@ create table o_lecture_block_to_group (
   primary key (id)
 );
 
+create table o_lecture_notice_to_block (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   fk_lecture_block number(20) not null,
+   fk_absence_notice number(20) not null,
+   primary key (id)
+);
+
+create table o_lecture_notice_to_entry (
+   id number(20) generated always as identity,
+   creationdate timestamp not null,
+   fk_entry number(20) not null,
+   fk_absence_notice number(20) not null,
+   primary key (id)
+);
+
 create table o_lecture_block_roll_call (
   id number(20) generated always as identity,
   creationdate date not null,
@@ -2550,6 +2584,7 @@ create table o_lecture_block_roll_call (
   l_lectures_absent varchar2(128 char),
   l_lectures_attended_num number(20) default 0 not null,
   l_lectures_absent_num number(20) default 0 not null,
+  l_absence_notice_lectures varchar(128),
   l_absence_reason clob,
   l_absence_authorized number default null,
   l_absence_appeal_date date,
@@ -2560,6 +2595,7 @@ create table o_lecture_block_roll_call (
   fk_lecture_block number(20) not null,
   fk_identity number(20) not null,
   fk_absence_category number(20),
+  fk_absence_notice number(20),
   primary key (id)
 );
 
@@ -4007,6 +4043,25 @@ create index idx_lec_block_reason_idx on o_lecture_block(fk_reason);
 alter table o_lecture_block_roll_call add constraint absence_category_idx foreign key (fk_absence_category) references o_lecture_absence_category (id);
 create index idx_absence_category_idx on o_lecture_block_roll_call (fk_absence_category);
 
+alter table o_lecture_absence_notice add constraint notice_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+create index idx_notice_identity_idx on o_lecture_absence_notice (fk_identity);
+alter table o_lecture_absence_notice add constraint notice_notif_identity_idx foreign key (fk_notifier) references o_bs_identity (id);
+create index idx_notice_notif_identity_idx on o_lecture_absence_notice (fk_notifier);
+alter table o_lecture_absence_notice add constraint notice_auth_identity_idx foreign key (fk_authorizer) references o_bs_identity (id);
+create index idx_notice_auth_identity_idx on o_lecture_absence_notice (fk_authorizer);
+alter table o_lecture_absence_notice add constraint notice_category_idx foreign key (fk_absence_category) references o_lecture_absence_category (id);
+create index idx_notice_category_idx on o_lecture_absence_notice (fk_absence_category);
+
+alter table o_lecture_notice_to_block add constraint notice_to_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+create index idx_notice_to_block_idx on o_lecture_notice_to_block (fk_lecture_block);
+alter table o_lecture_notice_to_block add constraint notice_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
+create index idx_notice_to_notice_idx on o_lecture_notice_to_block (fk_absence_notice);
+
+alter table o_lecture_notice_to_entry add constraint notice_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+create index idx_notice_to_entry_idx on o_lecture_notice_to_entry (fk_entry);
+alter table o_lecture_notice_to_entry add constraint rel_notice_e_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
+create index idx_rel_notice_e_to_notice_idx on o_lecture_notice_to_entry (fk_absence_notice);
+
 alter table o_lecture_block_to_group add constraint lec_block_to_block_idx foreign key (fk_group) references o_bs_group (id);
 create index idx_lec_block_to_block_idx on o_lecture_block_to_group(fk_group);
 alter table o_lecture_block_to_group add constraint lec_block_to_group_idx foreign key (fk_lecture_block) references o_lecture_block (id);
@@ -4016,6 +4071,8 @@ alter table o_lecture_block_roll_call add constraint lec_call_block_idx foreign 
 create index idx_lec_call_block_idx on o_lecture_block_roll_call(fk_lecture_block);
 alter table o_lecture_block_roll_call add constraint lec_call_identity_idx foreign key (fk_identity) references o_bs_identity (id);
 create index idx_lec_call_identity_idx on o_lecture_block_roll_call(fk_identity);
+alter table o_lecture_block_roll_call add constraint rollcall_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
+create index idx_rollcall_to_notice_idx on o_lecture_block_roll_call (fk_absence_notice);
 
 alter table o_lecture_reminder add constraint lec_reminder_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
 create index idx_lec_reminder_block_idx on o_lecture_reminder(fk_lecture_block);

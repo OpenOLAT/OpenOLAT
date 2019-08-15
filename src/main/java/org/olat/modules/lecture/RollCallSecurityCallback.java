@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture;
 
+import java.util.List;
+
 /**
  * 
  * Initial date: 11 avr. 2017<br>
@@ -28,6 +30,8 @@ package org.olat.modules.lecture;
 public interface RollCallSecurityCallback {
 	
 	public boolean canEdit();
+	
+	public boolean canClose(List<LectureBlock> blocks);
 	
 	public boolean canViewAuthorizedAbsences();
 	

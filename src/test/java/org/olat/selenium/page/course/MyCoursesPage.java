@@ -44,7 +44,7 @@ public class MyCoursesPage {
 	
 	public MyCoursesPage assertOnMyCourses() {
 		By myCoursesSegmentBy = By.cssSelector("div.o_segments a.btn.o_sel_mycourses_my");
-		OOGraphene.waitElement(myCoursesSegmentBy, 5, browser);
+		OOGraphene.waitElement(myCoursesSegmentBy, browser);
 		WebElement myCoursesSegmentEl = browser.findElement(myCoursesSegmentBy);
 		Assert.assertTrue(myCoursesSegmentEl.isDisplayed());
 		return this;

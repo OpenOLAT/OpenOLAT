@@ -30,6 +30,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.UserSession;
 import org.olat.modules.coach.CoachingModule;
 import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.model.CoachingSecurity;
 
 /**
  * 
@@ -51,11 +52,13 @@ public class CoachSiteDef extends AbstractSiteDefinition implements SiteDefiniti
 
 		// these are the minimal security
 		Roles roles = usess.getRoles();
-		if(roles.isAdministrator() || roles.isPrincipal()
-				|| roles.isLearnResourceManager() || roles.isLectureManager()
-				|| CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity())) {
-			return new CoachSite(this, ureq.getLocale());
-		}		
+		if(roles.isAdministrator() || roles.isPrincipal() || roles.isLearnResourceManager() || roles.isLectureManager()) {
+			return new CoachSite(this, null, ureq.getLocale());
+		}	
+		CoachingSecurity coachingSec = CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity());
+		if(coachingSec.isCoach() || coachingSec.isMasterCoachForLectures() || coachingSec.isTeacher()) {
+			return new CoachSite(this, coachingSec, ureq.getLocale());
+		}
 		return null;
 	}
 	

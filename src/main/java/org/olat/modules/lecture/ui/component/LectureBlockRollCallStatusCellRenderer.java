@@ -74,7 +74,7 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 		}	
 	}
 	
-	private void renderString(StringOutput target, LectureBlockAndRollCall rollCall) {
+	protected final void renderString(StringOutput target, LectureBlockAndRollCall rollCall) {
 		if(rollCall.isRollCalled()) {
 			LectureBlockStatus status = rollCall.getStatus();
 			LectureRollCallStatus rollCallStatus = rollCall.getRollCallStatus();
@@ -91,7 +91,7 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 		}
 	}
 	
-	private void render(StringOutput target, LectureBlockAndRollCall rollCall) {
+	protected final void render(StringOutput target, LectureBlockAndRollCall rollCall) {
 		if(rollCall.isRollCalled()) {
 			LectureBlockStatus status = rollCall.getStatus();
 			LectureRollCallStatus rollCallStatus = rollCall.getRollCallStatus();

@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.model;
 
 /**
+ * Statistics centered around a user.
  * 
  * Initial date: 13 avr. 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -31,6 +32,7 @@ public class LectureBlockStatistics {
 	private final String displayName;
 	private final String externalRef;
 	private final Long identityKey;
+	private final Long lectureBlockKey;
 	
 	private long totalLectureBlocks = 0l;
 	private long totalEffectiveLectures = 0l;
@@ -44,11 +46,12 @@ public class LectureBlockStatistics {
 	private final boolean calculateRate;
 	private final double requiredRate;
 	
-	public LectureBlockStatistics(Long identityKey, Long repoKey, String displayName, String externalRef, boolean calculateRate, double requiredRate) {
+	public LectureBlockStatistics(Long identityKey, Long lectureBlockKey, Long repoKey, String displayName, String externalRef, boolean calculateRate, double requiredRate) {
 		this.repoKey = repoKey;
 		this.displayName = displayName;
 		this.externalRef = externalRef;
 		this.identityKey = identityKey;
+		this.lectureBlockKey = lectureBlockKey;
 		this.calculateRate = calculateRate;
 		this.requiredRate = requiredRate;
 	}
@@ -63,6 +66,10 @@ public class LectureBlockStatistics {
 	
 	public String getExternalRef() {
 		return externalRef;
+	}
+	
+	public Long getLectureBlockKey() {
+		return lectureBlockKey;
 	}
 	
 	public Long getIdentityKey() {

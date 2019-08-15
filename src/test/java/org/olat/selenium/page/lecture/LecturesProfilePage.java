@@ -30,21 +30,33 @@ import org.openqa.selenium.WebDriver;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class LecturesToolPage {
+public class LecturesProfilePage {
 	
 	private final WebDriver browser;
 	
-	public LecturesToolPage(WebDriver browser) {
+	public LecturesProfilePage(WebDriver browser) {
 		this.browser = browser;
 	}
 	
-	public LecturesToolPage assertOnParticipantLecturesList() {
+	public LecturesProfilePage assertDailyOverview() {
+		By overviewBy = By.cssSelector("fieldset.o_lectures_daily_overview");
+		OOGraphene.waitElement(overviewBy, browser);
+		return this;
+	}
+	
+	public LecturesProfilePage openLecturesAndAbsences() {
+		By overviewBy = By.cssSelector("fieldset.o_sel_lecture_participant_overview");
+		OOGraphene.selectTab("o_sel_lectures_profile", overviewBy, browser);
+		return this;
+	}
+
+	public LecturesProfilePage assertOnParticipantLecturesList() {
 		By overviewBy = By.cssSelector("fieldset.o_sel_lecture_participant_overview");
 		OOGraphene.waitElement(overviewBy, browser);
 		return this;
 	}
 	
-	public LecturesToolPage selectCourseAsParticipant(String course) {
+	public LecturesProfilePage selectCourseAsParticipant(String course) {
 		By selectBy = By.xpath("//table//tr/td/a[contains(@href,'details')][contains(text(),'" + course + "')]");
 		OOGraphene.waitElement(selectBy, browser);
 		browser.findElement(selectBy).click();
@@ -52,7 +64,7 @@ public class LecturesToolPage {
 		return this;
 	}
 	
-	public LecturesToolPage assertOnParticipantLectureBlocks() {
+	public LecturesProfilePage assertOnParticipantLectureBlocks() {
 		By blocks = By.cssSelector("div.o_sel_lecture_participant_blocks table");
 		OOGraphene.waitElement(blocks, browser);
 		return this;
@@ -67,7 +79,7 @@ public class LecturesToolPage {
 	 * @param course The course name
 	 * @return Itself
 	 */
-	public LecturesToolPage assertOnParticipantLectureBlockAbsent(UserVO teacher, String block, String course) {
+	public LecturesProfilePage assertOnParticipantLectureBlockAbsent(UserVO teacher, String block, String course) {
 		By blocks = By.xpath("//div[contains(@class,'o_sel_lecture_participant_blocks')]//table//tr[td[contains(text(),'" + course + "')]][td[contains(text(),'" + block + "')]][td[contains(text(),'" + teacher.getLastName() + "')]]/td/span/i[contains(@class,'o_lectures_rollcall_danger')]");
 		OOGraphene.waitElement(blocks, browser);
 		return this;
@@ -82,7 +94,7 @@ public class LecturesToolPage {
 	 * @param course The course name
 	 * @return Itself
 	 */
-	public LecturesToolPage assertOnParticipantLectureBlockAuthorised(UserVO teacher, String block, String course) {
+	public LecturesProfilePage assertOnParticipantLectureBlockAuthorised(UserVO teacher, String block, String course) {
 		By blocks = By.xpath("//div[contains(@class,'o_sel_lecture_participant_blocks')]//table//tr[td[contains(text(),'" + course + "')]][td[contains(text(),'" + block + "')]][td[contains(text(),'" + teacher.getLastName() + "')]]/td/span/i[contains(@class,'o_lectures_rollcall_warning')]");
 		OOGraphene.waitElement(blocks, browser);
 		return this;

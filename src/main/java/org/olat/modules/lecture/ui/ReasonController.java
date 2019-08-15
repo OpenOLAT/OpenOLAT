@@ -47,13 +47,13 @@ public class ReasonController extends FormBasicController {
 	private SingleSelection absenceCategoriesEl;
 	
 	private final boolean editable;
-	private TeacherRollCallRow row;
+	private RollCallRow row;
 	private final List<AbsenceCategory> absenceCategories;
 	
 	@Autowired
 	private LectureService lectureService;
 
-	public ReasonController(UserRequest ureq, WindowControl wControl, TeacherRollCallRow row, boolean editable) {
+	public ReasonController(UserRequest ureq, WindowControl wControl, RollCallRow row, boolean editable) {
 		super(ureq, wControl, "reason");
 		this.row = row;
 		this.editable = editable;
@@ -61,7 +61,7 @@ public class ReasonController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	public TeacherRollCallRow getTeacherRollCallRow() {
+	public RollCallRow getRollCallRow() {
 		return row;
 	}
 

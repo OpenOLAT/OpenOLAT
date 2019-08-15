@@ -379,7 +379,7 @@ public class TeacherLecturesTableController extends FormBasicController implemen
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("LectureBlock", block.getKey());
 		WindowControl swControl = addToHistory(ureq, ores, null);
-		rollCallCtrl = new TeacherRollCallController(ureq, swControl, reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock));
+		rollCallCtrl = new TeacherRollCallController(ureq, swControl, reloadedBlock, participants, getRollCallSecurityCallback(reloadedBlock), false);
 		listenTo(rollCallCtrl);
 		toolbarPanel.pushController(reloadedBlock.getTitle(), rollCallCtrl);
 	}

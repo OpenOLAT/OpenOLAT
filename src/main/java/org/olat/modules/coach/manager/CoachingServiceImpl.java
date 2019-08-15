@@ -34,11 +34,13 @@ import org.olat.course.assessment.model.UserEfficiencyStatementForCoaching;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,13 +61,18 @@ public class CoachingServiceImpl implements CoachingService {
 	@Autowired
 	private CoachingDAO coachingDao;
 	@Autowired
+	private LectureModule lectureModule;
+	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
 
 	@Override
-	public boolean isCoach(Identity coach) {
-		return coachingDao.isCoach(coach);
+	public CoachingSecurity isCoach(Identity identity) {
+		boolean coach = coachingDao.isCoach(identity);
+		boolean teacher = lectureModule.isEnabled() && coachingDao.isTeacher(identity);
+		boolean masterCoach =  lectureModule.isEnabled() && coachingDao.isMasterCoach(identity);
+		return new CoachingSecurity(masterCoach, coach, teacher);
 	}
 
 	@Override

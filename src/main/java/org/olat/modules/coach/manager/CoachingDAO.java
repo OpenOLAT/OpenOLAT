@@ -50,6 +50,7 @@ import org.olat.modules.coach.model.EfficiencyStatementEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
 import org.olat.modules.coach.model.SearchCoachedIdentityParams;
 import org.olat.modules.coach.model.StudentStatEntry;
+import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -87,6 +88,40 @@ public class CoachingDAO {
 		  .append(" inner join relGroup.group as baseGroup")
 		  .append(" inner join baseGroup.members as membership on (membership.identity.key=:identityKey and membership.role ").in(GroupRoles.owner, GroupRoles.coach.name()).append(")")
 		  .append(" where v.status ").in(RepositoryEntryStatusEnum.coachPublishedToClosed());
+		
+		List<Long> firstKey = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setParameter("identityKey", coach.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return !firstKey.isEmpty();
+	}
+	
+	public boolean isTeacher(IdentityRef coach) {
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select block.key from lectureblock block")
+		  .append(" inner join block.teacherGroup teacherGroup")
+		  .append(" inner join teacherGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role ").in(LectureRoles.teacher);
+		
+		List<Long> firstKey = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setFlushMode(FlushModeType.COMMIT)
+				.setParameter("identityKey", coach.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return !firstKey.isEmpty();
+	}
+	
+	public boolean isMasterCoach(IdentityRef coach) {
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select curEl.key from curriculumelement as curEl")
+		  .append(" inner join curEl.group bGroup")
+		  .append(" inner join bGroup.members membership")
+		  .append(" where membership.identity.key=:identityKey and membership.role ").in(LectureRoles.mastercoach);
 		
 		List<Long> firstKey = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Long.class)

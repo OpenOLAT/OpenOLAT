@@ -1,0 +1,26 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("edit.type.absence"))
+	<li>$r.render("edit.type.absence")</li>
+	#end
+	#if($r.available("edit.type.dispensation"))
+	<li>$r.render("edit.type.dispensation")</li>
+	#end
+	#if($r.available("edit.type.notice.absence"))
+	<li>$r.render("edit.type.notice.absence")</li>
+	#end
+	#if($r.available("delete"))
+	<li>$r.render("delete")</li>
+	#end
+	#if($r.available("profile"))
+	<li>$r.render("profile")</li>
+	#end
+	#if($r.available("contact.teachers"))
+	<li>$r.render("contact.teachers")</li>
+	#end
+	#if($r.isNotEmpty($entryLinkIds))
+		<li class="separator"></li>
+		#foreach($entryLinkId in $entryLinkIds)
+			<li>$r.render($entryLinkId)</li>
+		#end
+	#end
+</ul>

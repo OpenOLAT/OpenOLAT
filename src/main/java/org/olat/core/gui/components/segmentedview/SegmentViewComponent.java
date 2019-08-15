@@ -40,10 +40,13 @@ public class SegmentViewComponent extends AbstractComponent  {
 	private boolean allowMultipleSelection;
 	private boolean dontShowSingleSegment;
 	
+	private SegmentViewRendererType rendererType = SegmentViewRendererType.segmented;
+	
 	private final Set<Component> selectedSegments = new HashSet<>();
 	private final List<Component> segments = new ArrayList<>();
 	
-	private final static SegmentViewRenderer RENDERER = new SegmentViewRenderer();
+	private static final LinkedViewRenderer LINKED_RENDERER = new LinkedViewRenderer();
+	private static final SegmentViewRenderer SEGMENTED_RENDERER = new SegmentViewRenderer();
 
 	public SegmentViewComponent(String name) {
 		super(name);
@@ -71,6 +74,14 @@ public class SegmentViewComponent extends AbstractComponent  {
 
 	public void setDontShowSingleSegment(boolean dontShowSingleSegment) {
 		this.dontShowSingleSegment = dontShowSingleSegment;
+	}
+
+	public SegmentViewRendererType getRendererType() {
+		return rendererType;
+	}
+
+	public void setRendererType(SegmentViewRendererType rendererType) {
+		this.rendererType = rendererType;
 	}
 
 	public boolean isReselect() {
@@ -218,6 +229,13 @@ public class SegmentViewComponent extends AbstractComponent  {
 		}
 	}
 	
+	public Component getSelectedComponent() {
+		if(selectedSegments.size() == 1) {
+			return selectedSegments.iterator().next();
+		}
+		return null;
+	}
+	
 	private void selectSegment(Component segment) {
 		if(segment instanceof Link) {
 			((Link)segment).setCustomEnabledLinkCSS("btn btn-primary");
@@ -236,6 +254,9 @@ public class SegmentViewComponent extends AbstractComponent  {
 
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
-		return RENDERER;
+		if(rendererType == SegmentViewRendererType.linked) {
+			return LINKED_RENDERER ;
+		}
+		return SEGMENTED_RENDERER;
 	}
 }

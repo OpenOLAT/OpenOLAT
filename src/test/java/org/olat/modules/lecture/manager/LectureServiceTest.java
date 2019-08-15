@@ -35,8 +35,12 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
+import org.olat.modules.lecture.AbsenceNotice;
+import org.olat.modules.lecture.AbsenceNoticeTarget;
+import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
+import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureBlockToGroup;
 import org.olat.modules.lecture.LectureParticipantSummary;
@@ -355,7 +359,136 @@ public class LectureServiceTest extends OlatTestCase {
 		List<LectureBlockAuditLog> logs = lectureBlockAuditLogDao.getAuditLog(entry);
 		Assert.assertNotNull(logs);
 		Assert.assertEquals(0, logs.size());
+	}
+	
+	@Test
+	public void addNotice_lectureblocks() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
 		
+		// add roles
+		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
+		
+		LectureBlock block1 = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block1, teacher);
+		LectureBlock block2 = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block2, teacher);
+
+		dbInstance.commit();
+		
+		List<LectureBlock> lectureBlocks = new ArrayList<>();
+		lectureBlocks.add(block1);
+		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
+				null, null, null, null, null, null, lectureBlocks);
+		dbInstance.commitAndCloseSession();
+
+		// first roll call
+		LectureBlockRollCall rollCall1 = lectureService.getOrCreateRollCall(participant, block1, null, null, null);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlockRollCall reloadedRollCall1 = lectureService.getRollCall(rollCall1);
+		Assert.assertNotNull(notice);
+		Assert.assertNotNull(reloadedRollCall1);
+		Assert.assertEquals(notice, reloadedRollCall1.getAbsenceNotice());
+		
+		// second roll call
+		LectureBlockRollCall rollCall2 = lectureService.getOrCreateRollCall(participant, block2, null, null, null);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlockRollCall reloadedRollCall2 = lectureService.getRollCall(rollCall2);
+		Assert.assertNotNull(notice);
+		Assert.assertNotNull(reloadedRollCall2);
+		Assert.assertNull(reloadedRollCall2.getAbsenceNotice());
+	}
+	
+	@Test
+	public void addNotice_entries() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		
+		// add roles
+		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
+		
+		LectureBlock block1 = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block1, teacher);
+		LectureBlock block2 = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block2, teacher);
+
+		dbInstance.commit();
+		
+		List<RepositoryEntry> entries = new ArrayList<>();
+		entries.add(entry);
+		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				null, null, null, null, null, entries, null);
+		dbInstance.commitAndCloseSession();
+
+		// first roll call
+		LectureBlockRollCall rollCall1 = lectureService.getOrCreateRollCall(participant, block1, null, null, null);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlockRollCall reloadedRollCall1 = lectureService.getRollCall(rollCall1);
+		Assert.assertNotNull(notice);
+		Assert.assertNotNull(reloadedRollCall1);
+		Assert.assertEquals(notice, reloadedRollCall1.getAbsenceNotice());
+		
+		// second roll call
+		LectureBlockRollCall rollCall2 = lectureService.getOrCreateRollCall(participant, block2, null, null, null);
+		dbInstance.commitAndCloseSession();
+
+		LectureBlockRollCall reloadedRollCall2 = lectureService.getRollCall(rollCall2);
+		Assert.assertNotNull(notice);
+		Assert.assertNotNull(reloadedRollCall2);
+		Assert.assertEquals(notice, reloadedRollCall2.getAbsenceNotice());
+	}
+	
+	@Test
+	public void addNoticeAfterRollCall_entries() {
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-1");
+		
+		// add roles
+		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
+		
+		LectureBlock block1 = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block1, teacher);
+		LectureBlock block2 = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block2, teacher);
+		LectureBlock block3 = createMinimalLectureBlock(entry);
+		lectureService.addTeacher(block3, teacher);
+		dbInstance.commit();
+		
+		// make roll call
+		LectureBlockRollCall rollCall1 = lectureService.getOrCreateRollCall(participant, block1, null, null, null);
+		LectureBlockRollCall rollCall2 = lectureService.getOrCreateRollCall(participant, block2, null, null, null);
+		LectureBlockRollCall rollCall3 = lectureService.getOrCreateRollCall(participant, block3, null, null, null);
+		dbInstance.commitAndCloseSession();
+
+		// add an notice of absence
+		List<LectureBlock> lectureBlocks = new ArrayList<>();
+		lectureBlocks.add(block1);
+		lectureBlocks.add(block2);
+		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
+				null, null, null, null, null, null, lectureBlocks);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(notice);
+
+		// check first roll call
+		LectureBlockRollCall reloadedRollCall1 = lectureService.getRollCall(rollCall1);
+		Assert.assertNotNull(reloadedRollCall1);
+		Assert.assertEquals(notice, reloadedRollCall1.getAbsenceNotice());
+
+		// check second roll call
+		LectureBlockRollCall reloadedRollCall2 = lectureService.getRollCall(rollCall2);
+		Assert.assertNotNull(reloadedRollCall2);
+		Assert.assertEquals(notice, reloadedRollCall2.getAbsenceNotice());
+		
+		// check third roll call
+		LectureBlockRollCall reloadedRollCall3 = lectureService.getRollCall(rollCall3);
+		Assert.assertNotNull(reloadedRollCall3);
+		Assert.assertNull(reloadedRollCall3.getAbsenceNotice());
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry) {

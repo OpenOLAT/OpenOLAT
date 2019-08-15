@@ -19,9 +19,12 @@
  */
 package org.olat.modules.lecture;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import org.olat.core.id.Identity;
+import org.olat.basesecurity.IdentityRef;
+import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntryRef;
 
 /**
@@ -39,10 +42,18 @@ public class LectureBlockRollCallSearchParameters {
 	private Long rollCallKey;
 	private Long lectureBlockKey;
 	
+	private Date startDate;
+	private Date endDate;
+	private String searchString;
+
+	private IdentityRef teacher;
+	private IdentityRef manager;
+	private IdentityRef masterCoach;
+	private IdentityRef calledIdentity;
 	private RepositoryEntryRef entry;
 	private List<LectureBlockAppealStatus> appealStatus;
+	private List<LectureBlockRef> lectureBlockRefs;
 	
-	private Identity identity;
 
 	public Boolean getClosed() {
 		return closed;
@@ -100,13 +111,36 @@ public class LectureBlockRollCallSearchParameters {
 		this.appealStatus = appealStatus;
 	}
 
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public String getSearchString() {
+		return searchString;
+	}
+
+	public void setSearchString(String searchString) {
+		this.searchString = searchString;
+	}
+
 	/**
 	 * Identity which want to access the data (for permission restrictions)
-	 * 
 	 * @return
 	 */
-	public Identity getIdentity() {
-		return identity;
+	public IdentityRef getManager() {
+		return manager;
 	}
 
 	/**
@@ -114,10 +148,49 @@ public class LectureBlockRollCallSearchParameters {
 	 * 
 	 * @param identity
 	 */
-	public void setIdentity(Identity identity) {
-		this.identity = identity;
+	public void setManager(IdentityRef manager) {
+		this.manager = manager;
+	}
+
+	public IdentityRef getTeacher() {
+		return teacher;
+	}
+
+	public void setTeacher(IdentityRef teacher) {
+		this.teacher = teacher;
+	}
+
+	public IdentityRef getMasterCoach() {
+		return masterCoach;
+	}
+
+	public void setMasterCoach(IdentityRef masterCoach) {
+		this.masterCoach = masterCoach;
 	}
 	
-	
+	public void setViewAs(IdentityRef identity, LectureRoles role) {
+		switch(role) {
+			case lecturemanager: setManager(identity); break;
+			case mastercoach: setMasterCoach(identity); break;
+			case teacher: setTeacher(identity); break;
+			case participant:
+			default: setCalledIdentity(identity); break;
+		}
+	}
 
+	public IdentityRef getCalledIdentity() {
+		return calledIdentity;
+	}
+
+	public void setCalledIdentity(IdentityRef calledIdentity) {
+		this.calledIdentity = calledIdentity;
+	}
+
+	public List<LectureBlockRef> getLectureBlockRefs() {
+		return lectureBlockRefs;
+	}
+
+	public void setLectureBlockRefs(List<? extends LectureBlockRef> lectureBlockRefs) {
+		this.lectureBlockRefs = new ArrayList<>(lectureBlockRefs);
+	}
 }

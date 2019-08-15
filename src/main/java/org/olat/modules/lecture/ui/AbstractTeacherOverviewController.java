@@ -259,6 +259,8 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 			if(!started) {
 				activateLectureBlockInTable(ureq, entries, state);
 			}
+		} else if("RepositoryEntry".equals(name)) {
+			searchCtrl.activate(ureq, entries, state);
 		}
 	}
 	
@@ -343,7 +345,7 @@ public abstract class AbstractTeacherOverviewController extends BasicController 
 		List<Identity> teachers = lectureService.getTeachers(reloadedBlock);
 		List<Identity> participants = lectureService.startLectureBlock(getIdentity(), reloadedBlock);
 		RollCallSecurityCallback secCallback = getRollCallSecurityCallback(reloadedBlock, teachers.contains(getIdentity()));
-		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, secCallback);
+		rollCallCtrl = new TeacherRollCallController(ureq, getWindowControl(), reloadedBlock, participants, secCallback, false);
 		if(withRepositoryEntry) {
 			rollCallCtrl.addLoggingResourceable(CoreLoggingResourceable.wrap(reloadedBlock.getEntry().getOlatResource(),
 					OlatResourceableType.course, reloadedBlock.getEntry().getDisplayname()));

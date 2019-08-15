@@ -32,10 +32,12 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.format.TextStyle;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -125,6 +127,23 @@ public class Formatter {
 			localToFormatterMap.put(locale, formatter);
 		}
 		return formatter;
+	}
+	
+	public String dayOfWeek(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		DayOfWeek dayOfWeek;
+		switch(cal.get(Calendar.DAY_OF_WEEK)) {
+			case Calendar.MONDAY: dayOfWeek = DayOfWeek.MONDAY; break;
+			case Calendar.TUESDAY: dayOfWeek = DayOfWeek.TUESDAY; break;
+			case Calendar.WEDNESDAY: dayOfWeek = DayOfWeek.WEDNESDAY; break;
+			case Calendar.THURSDAY: dayOfWeek = DayOfWeek.THURSDAY; break;
+			case Calendar.FRIDAY: dayOfWeek = DayOfWeek.FRIDAY; break;
+			case Calendar.SATURDAY: dayOfWeek = DayOfWeek.SATURDAY; break;
+			case Calendar.SUNDAY: dayOfWeek = DayOfWeek.SUNDAY; break;
+			default: dayOfWeek = DayOfWeek.MONDAY;
+		}
+		return  dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, locale);
 	}
 
 	/**

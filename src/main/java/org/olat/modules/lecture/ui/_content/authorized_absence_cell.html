@@ -1,5 +1,12 @@
 <div id="$r.getCId()">
-	<div class="o_lecture_authorized_absence">$r.render($row.getAuthorizedAbsence()) $r.render($row.getReasonLink())</div>
+	<div class="o_lecture_authorized_absence">$r.render($row.getAuthorizedAbsence())
+	#if($r.visible($row.getReasonLink()))
+		$r.render($row.getReasonLink())
+	#end
+	#if($r.visible($row.getNoticeLink()))
+		$r.render($row.getNoticeLink())
+	#end
+	</div>
 	#if($f.hasError($row.getAuthorizedAbsence().getComponent().getComponentName()))
 		<div>$r.render("${row.getAuthorizedAbsence().getComponent().getComponentName()}_ERROR")</div>
 	#end

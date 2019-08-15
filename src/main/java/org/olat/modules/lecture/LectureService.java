@@ -26,16 +26,24 @@ import java.util.List;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.modules.lecture.model.AbsenceNoticeInfos;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.IdentityRateWarning;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import org.olat.modules.lecture.model.LectureBlockBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockRollCallAndCoach;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
+import org.olat.modules.lecture.model.LectureBlockWithNotice;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LectureCurriculumElementInfos;
+import org.olat.modules.lecture.model.LectureCurriculumElementSearchParameters;
 import org.olat.modules.lecture.model.LectureReportRow;
+import org.olat.modules.lecture.model.LectureRepositoryEntryInfos;
+import org.olat.modules.lecture.model.LectureRepositoryEntrySearchParameters;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -268,7 +276,67 @@ public interface LectureService {
 	public boolean isAbsenceCategoryInUse(AbsenceCategory category);
 	
 	public void deleteAbsenceCategory(AbsenceCategory category);
+	
+	/**
+	 * Creates a new absence notice for the specified identity.
+	 * 
+	 * @param absentIdentity The absent (which is wrong)
+	 * @param type The type of absence
+	 * @return A new absence notice
+	 */
+	public AbsenceNotice createAbsenceNotice(Identity absentIdentity, AbsenceNoticeType type, AbsenceNoticeTarget target,
+			Date startDate, Date endDate, AbsenceCategory category, String absenceRason, Boolean authorized,
+			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks);
+	
+	/**
+	 * 
+	 * @param absenceNotice The absence notice to update
+	 * @param entries A new list of repository entries
+	 * @param lectureBlocks Or a new list of lecture blocks
+	 * @return A refreshed absence notice
+	 */
+	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks);
+	
+	/**
+	 * Reload the absence notice.
+	 * 
+	 * @param notice The absence notice to reload
+	 * @return A fresh reloaded absence notice
+	 */
+	public AbsenceNotice getAbsenceNotice(AbsenceNoticeRef notice);
+	
+	public List<AbsenceNotice> getAbsenceNoticeRelatedTo(LectureBlock block);
 
+	public List<AbsenceNoticeInfos> searchAbsenceNotices(AbsenceNoticeSearchParameters searchParams);
+	
+	/**
+	 * Detect an absence notice for the specified identity.
+	 * 
+	 * @param identity The identity which is absent
+	 * @param notice A notice to ignore (optional)
+	 * @param start The start of the absence (mandatory)
+	 * @param end The end of the absence (mandatory)
+	 * @return A list of notices which are at the same dates as the specified ones
+	 */
+	public List<AbsenceNotice> detectCollision(Identity identity, AbsenceNoticeRef notice, Date start, Date end);
+	
+	/**
+	 * @param notices
+	 * @return A list of lecture blocks linked to a absence notice
+	 */
+	public List<LectureBlockWithNotice> getLectureBlocksWithAbsenceNotices(List<AbsenceNotice> notices);
+	
+	/**
+	 * @param notice The notice
+	 * @return A list of relations from the absence notice to lecture blocks.
+	 */
+	public List<AbsenceNoticeToLectureBlock> getAbsenceNoticeToLectureBlocks(AbsenceNotice notice);
+	
+	/**
+	 * @param notice The notice
+	 * @return A list of relations from the absence notice to the learn resources
+	 */
+	public List<AbsenceNoticeToRepositoryEntry> getAbsenceNoticeToRepositoryEntries(AbsenceNotice notice);
 	
 	/**
 	 * Lists the base groups attached to the specified lecture block.
@@ -304,6 +372,8 @@ public interface LectureService {
 	 * @return A list of identities
 	 */
 	public List<Identity> getParticipants(RepositoryEntry entry, Identity teacher);
+	
+	public List<Identity> searchParticipants(LecturesMemberSearchParameters searchParams);
 	
 	
 	/**
@@ -417,6 +487,8 @@ public interface LectureService {
 	 * @return The updated roll call
 	 */
 	public LectureBlockRollCall removeRollCall(Identity identity, LectureBlock lectureBlock, LectureBlockRollCall rollCall, List<Integer> absences);
+	
+	public void saveDefaultRollCalls(List<LectureBlock> lectureBlocks, Identity teacher);
 
 	
 	/**
@@ -461,18 +533,9 @@ public interface LectureService {
 	 * @param teacher The teacher to filter with (optional)
 	 * @return
 	 */
-	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry, IdentityRef teacher, LecturesBlockSearchParameters searchParams);
+	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(LecturesBlockSearchParameters searchParams);
 
-	/**
-	 * The list of lecture blocks of a specific teacher. The lecture blocks come
-	 * from repository entry where the lectures are enabled.
-	 * 
-	 * @param teacher The teacher to search with.
-	 * @return A list of lecture blocks.
-	 */
-	public List<LectureBlock> getLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams);
-	
-	public List<LectureBlockRef> getAssessedLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams);
+	public List<LectureBlockRef> getAssessedLectureBlocks(LecturesBlockSearchParameters searchParams);
 	
 	/**
 	 * Returns the lecture block for the specified learning resource
@@ -503,9 +566,37 @@ public interface LectureService {
 	 */
 	public List<LectureBlock> getRollCallAsTeacher(Identity identity);
 	
+	/**
+	 * Load the teachers of the specified lecture blocks.
+	 * 
+	 * @param block The lecture block
+	 * @return A list of identities
+	 */
 	public List<Identity> getTeachers(LectureBlock block);
 	
+	/**
+	 * Load the teachers (deduplicated) of the specified lectures blocks.
+	 * 
+	 * @param blocks The lecture blocks
+	 * @return A list of identities
+	 */
+	public List<Identity> getTeachers(List<LectureBlock> blocks);
+	
 	public List<Identity> getTeachers(RepositoryEntry entry);
+	
+	/**
+	 * Search the teachers 
+	 * 
+	 * @param participant The mandatory participant
+	 * @param blocks An optional list of lecture blocks
+	 * @param entries An optional list of repository entries
+	 * @param start The mandatory start date
+	 * @param end The mandatory end date
+	 * @return A list of identities
+	 */
+	public List<Identity> getTeachers(Identity participant, List<LectureBlock> blocks, List<RepositoryEntry> entries, Date start, Date end);
+	
+	public List<Identity> searchTeachers(LecturesMemberSearchParameters searchParams);
 	
 	public void addTeacher(LectureBlock block, Identity teacher);
 	
@@ -546,6 +637,16 @@ public interface LectureService {
 	public void recalculateSummary(RepositoryEntry entry);
 	
 	public void recalculateSummary(RepositoryEntry entry, Identity identity);
+	
+
+	/**
+	 * Returns statistics centered around the lecture block.
+	 * 
+	 * @param teacher The teacher
+	 * @param searchParams
+	 * @return
+	 */
+	public List<LectureBlockBlockStatistics> getLectureBlocksStatistics(LecturesBlockSearchParameters searchParams);
 	
 	
 	public List<LectureBlockIdentityStatistics> groupByIdentity(List<LectureBlockIdentityStatistics> statistics);
@@ -617,5 +718,10 @@ public interface LectureService {
 	 * @param entry
 	 */
 	public void syncCalendars(RepositoryEntry entry);
+	
+	
+	public List<LectureRepositoryEntryInfos> searchRepositoryEntries(LectureRepositoryEntrySearchParameters searchParams);
+	
+	public List<LectureCurriculumElementInfos> searchCurriculumElements(LectureCurriculumElementSearchParameters searchParams);
 	
 }

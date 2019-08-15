@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture.ui.admin;
 
 import java.util.List;
 
@@ -29,14 +29,21 @@ import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.AbsenceCategoryAdminController;
+import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.ReasonAdminController;
 import org.olat.modules.lecture.ui.coach.LecturesReportController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -50,6 +57,7 @@ public class LectureAdminController extends BasicController implements Activatea
 	private final Link reportLink;
 	private final Link reasonsLink;
 	private final Link settingsLink;
+	private final Link permissionsLink;
 	private final Link absencesCategoriesLink;
 	private final SegmentViewComponent segmentView;
 	
@@ -57,22 +65,32 @@ public class LectureAdminController extends BasicController implements Activatea
 	private LectureSettingsAdminController settingsCtrl;
 	private LecturesReportController lecturesReportCtrl;
 	private AbsenceCategoryAdminController absencesCategoriesCtrl;
+	private LecturesPermissionsSettingsAdminController permissionsCtrl;
+	
+	@Autowired
+	private LectureModule lectureModule;
 	
 	public LectureAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);
+		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		
 		mainVC = createVelocityContainer("admin");
 		
 		segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
+		segmentView.setDontShowSingleSegment(true);
 		settingsLink = LinkFactory.createLink("lectures.admin.settings", mainVC, this);
+		settingsLink.setElementCssClass("o_sel_lectures_admin_settings");
 		segmentView.addSegment(settingsLink, true);
+		permissionsLink = LinkFactory.createLink("lectures.admin.permissions", mainVC, this);
+		permissionsLink.setElementCssClass("o_sel_lectures_admin_permissions");
 		reasonsLink = LinkFactory.createLink("lectures.admin.reasons", mainVC, this);
-		segmentView.addSegment(reasonsLink, false);
 		absencesCategoriesLink = LinkFactory.createLink("lectures.admin.absences.categories", mainVC, this);
-		segmentView.addSegment(absencesCategoriesLink, false);
-		
 		reportLink = LinkFactory.createLink("lectures.admin.report", mainVC, this);
-		segmentView.addSegment(reportLink, false);
+		if(lectureModule.isEnabled()) {
+			segmentView.addSegment(permissionsLink, false);
+			segmentView.addSegment(reasonsLink, false);
+			segmentView.addSegment(absencesCategoriesLink, false);
+			segmentView.addSegment(reportLink, false);
+		}
 
 		doOpenSettings(ureq);
 		putInitialPanel(mainVC);
@@ -100,7 +118,29 @@ public class LectureAdminController extends BasicController implements Activatea
 		} else if("AbsencesCategories".equals(type)) {
 			doOpenAbsencesCategories(ureq);
 			segmentView.select(absencesCategoriesLink);
+		} else if("Permissions".equals(type)) {
+			doOpenPermissions(ureq);
+			segmentView.select(permissionsLink);
 		}
+	}
+	
+	
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(event == Event.CHANGED_EVENT) {
+			segmentView.removeSegment(permissionsLink);
+			segmentView.removeSegment(reasonsLink);
+			segmentView.removeSegment(absencesCategoriesLink);
+			segmentView.removeSegment(reportLink);
+			if(lectureModule.isEnabled()) {
+				segmentView.addSegment(permissionsLink, false);
+				segmentView.addSegment(reasonsLink, false);
+				segmentView.addSegment(absencesCategoriesLink, false);
+				segmentView.addSegment(reportLink, false);
+			}
+		}
+		super.event(ureq, source, event);
 	}
 
 	@Override
@@ -112,6 +152,8 @@ public class LectureAdminController extends BasicController implements Activatea
 				Component clickedLink = mainVC.getComponent(segmentCName);
 				if (clickedLink == settingsLink) {
 					doOpenSettings(ureq);
+				} else if(clickedLink == permissionsLink) {
+					doOpenPermissions(ureq);
 				} else if (clickedLink == reasonsLink) {
 					doOpenReasons(ureq);
 				} else if (clickedLink == reportLink) {
@@ -132,6 +174,16 @@ public class LectureAdminController extends BasicController implements Activatea
 			addToHistory(ureq, settingsCtrl);
 		}
 		mainVC.put("segmentCmp", settingsCtrl.getInitialComponent());
+	}
+	
+	private void doOpenPermissions(UserRequest ureq) {
+		removeControllerListener(permissionsCtrl);
+		
+		WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Permissions"), null);
+		permissionsCtrl = new LecturesPermissionsSettingsAdminController(ureq, swControl);
+		listenTo(permissionsCtrl);
+		addToHistory(ureq, settingsCtrl);
+		mainVC.put("segmentCmp", permissionsCtrl.getInitialComponent());
 	}
 	
 	private void doOpenReasons(UserRequest ureq) {

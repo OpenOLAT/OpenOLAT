@@ -158,6 +158,9 @@ public class EditLectureBlockController extends FormBasicController {
 		titleEl.setElementCssClass("o_sel_repo_lecture_title");
 		titleEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.title));
 		titleEl.setMandatory(true);
+		if(!StringHelper.containsNonWhitespace(title)) {
+			titleEl.setFocus(true);
+		}
 
 		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
 				plannedLecturesKeys, plannedLecturesKeys, null);

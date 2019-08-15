@@ -313,7 +313,7 @@ public class ContactFormController extends BasicController {
 			error.append("<br>").append(errors);
 		}
 		if(warnings.length() > 0) {
-			warnings.append("<br>").append(warnings);
+			error.append("<br>").append(warnings);
 		}
 		getWindowControl().setError(error.toString());
 	}

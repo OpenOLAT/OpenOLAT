@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,6 +42,8 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -49,8 +52,14 @@ import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRefImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LectureCurriculumElementInfos;
+import org.olat.modules.lecture.model.LectureCurriculumElementSearchParameters;
 import org.olat.modules.lecture.model.LectureReportRow;
+import org.olat.modules.lecture.model.LectureRepositoryEntryInfos;
+import org.olat.modules.lecture.model.LectureRepositoryEntrySearchParameters;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
+import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,14 +178,14 @@ public class LectureBlockDAO {
 	}
 	
 	public List<LectureBlock> searchLectureBlocks(LecturesBlockSearchParameters searchParams) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select block from lectureblock block")
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select distinct block from lectureblock block")
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join fetch block.entry entry");
-		boolean where = addSearchParametersToQuery(sb, false, searchParams);
-		where = PersistenceHelper.appendAnd(sb, where);
-		sb.append(" exists (select config.key from lectureentryconfig config")
+		addSearchParametersToQuery(sb, searchParams);
+		sb.and()
+		  .append(" exists (select config.key from lectureentryconfig config")
 		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
 		  .append(" )");
 
@@ -186,39 +195,127 @@ public class LectureBlockDAO {
 		return query.getResultList();
 	}
 	
-	public List<LectureBlock> loadByTeacher(IdentityRef identityRef, LecturesBlockSearchParameters searchParams) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select block from lectureblock block")
-		  .append(" inner join block.teacherGroup tGroup")
-		  .append(" inner join tGroup.members membership")
-		  .append(" inner join fetch block.entry entry")
-		  .append(" where membership.identity.key=:teacherKey");
-		addSearchParametersToQuery(sb, true, searchParams);
-		sb.append(" and exists (select config.key from lectureentryconfig config")
-		  .append("   where config.entry.key=entry.key and config.lectureEnabled=true")
-		  .append(" )");
-
-		TypedQuery<LectureBlock> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), LectureBlock.class)
-				.setParameter("teacherKey", identityRef.getKey());
-		addSearchParametersToQuery(query, searchParams);
-		return query.getResultList();
-	}
-	
-	public List<LectureBlockRef> loadAssessedByTeacher(IdentityRef identityRef, LecturesBlockSearchParameters searchParams) {
-		StringBuilder sb = new StringBuilder(512);
+	public List<LectureBlockRef> searchAssessedLectureBlocks(LecturesBlockSearchParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select distinct block.key from lectureblock block")
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
 		  .append(" inner join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
-		  .append(" where membership.identity.key=:teacherKey");
-		addSearchParametersToQuery(sb, true, searchParams);
+		  .append(" inner join block.entry entry");
+		addSearchParametersToQuery(sb, searchParams);
 		TypedQuery<Long> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Long.class)
-				.setParameter("teacherKey", identityRef.getKey());
+				.createQuery(sb.toString(), Long.class);
 		addSearchParametersToQuery(query, searchParams);
 		List<Long> blockKeys = query.getResultList();
 		return blockKeys.stream().map(LectureBlockRefImpl::new).collect(Collectors.toList());
+	}
+	
+	public List<LectureRepositoryEntryInfos> searchRepositoryEntries(LectureRepositoryEntrySearchParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder(512);
+		sb.append("select v,")
+		  .append(" (select count(distinct participants.key) from repoentrytogroup as rel, bgroupmember as participants")
+		  .append("  where v.key=rel.entry.key and rel.group.key=participants.group.key and participants.role='").append(GroupRoles.participant.name()).append("'")
+		  .append("  and exists (select blockToGroup.key from lectureblocktogroup blockToGroup where blockToGroup.group.key=rel.group.key) ")
+		  .append(" ) as numOfParticipants")
+		  .append(" from lectureentryconfig config")
+		  .append(" inner join config.entry as v")
+		  .append(" inner join fetch v.olatResource as res" )
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where config.lectureEnabled=true");
+		
+		if(searchParams.getTeacher() != null) {
+			sb.append(" and exists (select block.key from lectureblock block")
+			  .append("   inner join block.teacherGroup tGroup")
+			  .append("   inner join tGroup.members membership")
+			  .append("   where block.entry.key=v.key and membership.identity.key=:teacherKey")
+			  .append(" )");
+		}
+		//TODO absences coach
+		if(searchParams.getManager() != null || searchParams.getMasterCoach() != null) {
+			sb.append(" and exists (select membership.key from repoentrytogroup as rel, bgroupmember as membership")
+	          .append("    where v.key=rel.entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
+	          .append("    and membership.role");
+			if(searchParams.getManager() != null && searchParams.getMasterCoach() != null) {
+				sb.in(OrganisationRoles.administrator, OrganisationRoles.lecturemanager, CurriculumRoles.mastercoach, GroupRoles.owner, GroupRoles.coach);
+			} else if(searchParams.getManager() != null ) {
+				sb.in(OrganisationRoles.administrator, OrganisationRoles.lecturemanager, GroupRoles.owner, GroupRoles.coach);
+			} else if(searchParams.getMasterCoach() != null) {
+				sb.in(CurriculumRoles.mastercoach);
+			}
+	        sb.append("  )");
+		}
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(searchParams.getTeacher() != null) {
+			query.setParameter("teacherKey", searchParams.getTeacher().getKey());
+		}
+		if(searchParams.getManager() != null) {
+			query.setParameter("managerKey", searchParams.getManager().getKey());
+		} else if(searchParams.getMasterCoach() != null) {
+			query.setParameter("managerKey", searchParams.getMasterCoach().getKey());
+		}
+		
+		List<Object[]> rawObjects = query.getResultList();
+		return rawObjects.stream()
+			.map(objects -> new LectureRepositoryEntryInfos((RepositoryEntry)objects[0], PersistenceHelper.extractPrimitiveLong(objects, 1)))
+			.collect(Collectors.toList());
+	}
+	
+	public List<LectureCurriculumElementInfos> searchCurriculumElements(LectureCurriculumElementSearchParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder(2048);
+		sb.append("select curEl,")
+		  .append(" (select count(distinct participants.key) from bgroupmember as participants")
+		  .append("   where curEl.group.key=participants.group.key and participants.role='").append(GroupRoles.participant.name()).append("'")
+		  .append("   and exists (select blockToGroup.key from lectureblocktogroup blockToGroup where blockToGroup.group.key=curEl.group.key) ")
+		  .append(" ) as numOfParticipants")
+		  .append(" from curriculumelement curEl")
+		  .append(" inner join fetch curEl.group curElGroup")
+		  .append(" inner join fetch curEl.curriculum cur")
+		  .append(" where exists (select v.key from repositoryentry as v")
+		  .append("  inner join v.groups as relGroup")
+		  .append("  inner join lectureentryconfig config on (config.entry.key=v.key)")
+		  .append("  where relGroup.group.key=curElGroup.key and config.lectureEnabled=true")
+		  .append(" )");
+		// generic search
+		Long key = null;
+		String ref = null;
+		String fuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			ref = searchParams.getSearchString();
+			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(ref);
+			
+			sb.append(" and (cur.externalId=:ref or curEl.externalId=:ref or v.externalId=:ref or ")
+			  .likeFuzzy("cur.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("cur.identifier", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("curEl.displayName", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("curEl.identifier", "fuzzyRef", dbInstance.getDbVendor());
+			if(StringHelper.isLong(ref)) {
+				key = Long.valueOf(ref);
+				sb.append(" or cur.key=:cKey or curEl.key=:cKey");
+			}
+			sb.append(")");	
+		}
+		
+		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class);
+		if(key != null) {
+			query.setParameter("cKey", key);
+		}
+		if(ref != null) {
+			query.setParameter("ref", ref);
+		}
+		if(fuzzyRef != null) {
+			query.setParameter("fuzzyRef", fuzzyRef);
+		}
+		
+		List<Object[]> rawObjects = query.getResultList();
+		return rawObjects.stream().map(objects
+				-> new LectureCurriculumElementInfos((CurriculumElement)objects[0], PersistenceHelper.extractPrimitiveLong(objects, 1)))
+				.collect(Collectors.toList());
 	}
 	
 	public List<LectureReportRow> getLecturesBlocksReport(Date from, Date to, List<LectureRollCallStatus> status) {
@@ -384,9 +481,8 @@ public class LectureBlockDAO {
 	 * @param teacher The teacher (mandatory)
 	 * @return
 	 */
-	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(RepositoryEntryRef entry,
-			IdentityRef teacher, LecturesBlockSearchParameters searchParams) {
-		StringBuilder sc = new StringBuilder();
+	public List<LectureBlockWithTeachers> getLecturesBlockWithTeachers(LecturesBlockSearchParameters searchParams) {
+		QueryBuilder sc = new QueryBuilder(2048);
 		sc.append("select block, coach, mode.key")
 		  .append(" from lectureblock block")
 		  .append(" inner join block.entry entry")
@@ -395,21 +491,13 @@ public class LectureBlockDAO {
 		  .append(" inner join membership.identity coach")
 		  .append(" inner join fetch coach.user usercoach")
 		  .append(" left join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
-		  .append(" where membership.role='").append("teacher").append("' and block.entry.key=:repoEntryKey");
-		addSearchParametersToQuery(sc, true, searchParams);
-		if(teacher != null) {
-			sc.append(" and exists (select teachership.key from bgroupmember teachership where")
-			  .append("  teachership.group.key=tGroup.key and teachership.identity.key=:teacherKey")
-			  .append(" )");
-		}
-		
+		  .where().append(" membership.role='").append("teacher").append("'");
+		addSearchParametersToQuery(sc, searchParams);
+
 		//get all, it's quick
 		TypedQuery<Object[]> coachQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sc.toString(), Object[].class)
-				.setParameter("repoEntryKey", entry.getKey());
-		if(teacher != null) {
-			coachQuery.setParameter("teacherKey", teacher.getKey());
-		}
+				.createQuery(sc.toString(), Object[].class);
+		
 		addSearchParametersToQuery(coachQuery, searchParams);
 		
 		List<Object[]> rawCoachs = coachQuery.getResultList();
@@ -429,38 +517,80 @@ public class LectureBlockDAO {
 		return new ArrayList<>(blockMap.values());
 	}
 	
-	private boolean addSearchParametersToQuery(StringBuilder sb, boolean where, LecturesBlockSearchParameters searchParams) {
-		if(searchParams == null) return where;
+	private void addSearchParametersToQuery(QueryBuilder sb, LecturesBlockSearchParameters searchParams) {
+		if(searchParams == null) return;
 		
+		if(searchParams.getEntry() != null) {
+			sb.and().append(" block.entry.key=:repoEntryKey");
+		}
+		
+		if(searchParams.getLectureBlocks() != null && !searchParams.getLectureBlocks().isEmpty()) {
+			sb.and().append(" block.key in (:lectureBlockKeys)");
+		}
+		
+		if(searchParams.getLectureBlockStatus() != null && !searchParams.getLectureBlockStatus().isEmpty()) {
+			sb.and().append(" block.statusString in (:lectureBlockStatus)");
+		}
+		
+		if(searchParams.getRollCallStatus() != null && !searchParams.getRollCallStatus().isEmpty()) {
+			sb.and().append(" block.rollCallStatusString in (:rollCallStatus)");
+		}
+
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" (entry.externalRef=:searchString or ");
-			PersistenceHelper.appendFuzzyLike(sb, "entry.displayname", "fuzzySearchString", dbInstance.getDbVendor());
-			sb.append(" or ");
-			PersistenceHelper.appendFuzzyLike(sb, "block.title", "fuzzySearchString", dbInstance.getDbVendor());
-			sb.append(")");
+			sb.and()
+			  .append(" (entry.externalRef=:searchString or ")
+			  .likeFuzzy("entry.displayname", "fuzzySearchString", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("block.title", "fuzzySearchString", dbInstance.getDbVendor())
+			  .append(")");
 		}
 		
 		if(searchParams.getStartDate() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" block.startDate>=:startDate");
+			sb.and().append(" block.startDate>=:startDate");
 		}
 		if(searchParams.getEndDate() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" block.endDate<=:endDate");
+			sb.and().append(" block.endDate<=:endDate");
 		}
 		if(searchParams.getManager() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append(" exists (select membership.key from repoentrytogroup as rel, bgroupmember as membership")
-	         .append("    where rel.entry.key=entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
-	         .append("      and membership.role in ('").append(OrganisationRoles.administrator.name()).append("','").append(OrganisationRoles.learnresourcemanager.name()).append("','").append(OrganisationRoles.lecturemanager.name()).append("','").append(GroupRoles.owner.name()).append("')")
-	         .append("  )");
+			sb.and()
+			  .append(" exists (select membership.key from repoentrytogroup as rel, bgroupmember as membership")
+	          .append("    where rel.entry.key=entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
+	          .append("      and membership.role in ('").append(OrganisationRoles.administrator.name()).append("','").append(OrganisationRoles.learnresourcemanager.name()).append("','").append(OrganisationRoles.lecturemanager.name()).append("','").append(GroupRoles.owner.name()).append("')")
+	          .append(" )");
 		}
-		return where;
+		
+		if(searchParams.getTeacher() != null) {
+			sb.and()
+			  .append(" exists (select teachership.key from bgroupmember teachership where")
+			  .append("  teachership.group.key=tGroup.key and teachership.identity.key=:teacherKey")
+			  .append(" )");
+		}
 	}
 	
 	private void addSearchParametersToQuery(TypedQuery<?> query, LecturesBlockSearchParameters searchParams) {
 		if(searchParams == null) return;
+		
+		if(searchParams.getEntry() != null) {
+			query.setParameter("repoEntryKey", searchParams.getEntry().getKey());
+		}
+		
+		if(searchParams.getLectureBlocks() != null && !searchParams.getLectureBlocks().isEmpty()) {
+			List<Long> lectureBlockKeys = searchParams.getLectureBlocks().stream()
+					.map(LectureBlockRef::getKey).collect(Collectors.toList());
+			query.setParameter("lectureBlockKeys", lectureBlockKeys);
+		}
+		
+		if(searchParams.getLectureBlockStatus() != null && !searchParams.getLectureBlockStatus().isEmpty()) {
+			List<String> lectureBlockStatus = searchParams.getLectureBlockStatus()
+					.stream().map(LectureBlockStatus::name).collect(Collectors.toList());
+			query.setParameter("lectureBlockStatus", lectureBlockStatus);
+		}
+		
+		if(searchParams.getRollCallStatus() != null && !searchParams.getRollCallStatus().isEmpty()) {
+			List<String> rollCallStatus = searchParams.getRollCallStatus()
+					.stream().map(LectureRollCallStatus::name).collect(Collectors.toList());
+			query.setParameter("rollCallStatus", rollCallStatus);
+		}
 		
 		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
 			String searchString = searchParams.getSearchString();
@@ -476,6 +606,9 @@ public class LectureBlockDAO {
 		}
 		if(searchParams.getManager() != null) {
 			query.setParameter("managerKey", searchParams.getManager().getKey());
+		}
+		if(searchParams.getTeacher() != null) {
+			query.setParameter("teacherKey", searchParams.getTeacher().getKey());
 		}
 	}
 
@@ -559,6 +692,65 @@ public class LectureBlockDAO {
 				.getResultList();
 	}
 	
+	public List<Identity> getTeachers(List<LectureBlock> blocks) {
+		if(blocks == null || blocks.isEmpty()) return new ArrayList<>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select distinct ident from lectureblock block")
+		  .append(" inner join block.teacherGroup teacherGroup")
+		  .append(" inner join teacherGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where block.key in (:lectureBlockKeys)");
+		
+		List<Long> lectureBlockKeys = blocks.stream()
+				.map(LectureBlock::getKey).collect(Collectors.toList());
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("lectureBlockKeys", lectureBlockKeys)
+				.getResultList();
+	}
+	
+	public List<Identity> getTeachers(Identity participant, List<LectureBlock> blocks, List<RepositoryEntry> entries, Date start, Date end) {
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select distinct ident from lectureblock block")
+		  .append(" inner join block.groups as blockToGroup")
+		  .append(" inner join blockToGroup.group as bGroup")
+		  .append(" inner join bGroup.members participants on (participants.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" inner join block.teacherGroup teacherGroup")
+		  .append(" inner join teacherGroup.members membership")
+		  .append(" inner join membership.identity ident")
+		  .append(" inner join fetch ident.user identUser")
+		  .append(" where participants.identity.key=:participantKey")
+		  .append(" and block.startDate>=:startDate and block.endDate<=:endDate");
+		
+		if(blocks != null && !blocks.isEmpty()) {
+			sb.append(" and block.key in (:blockKeys)");
+		}
+		if(entries != null && !entries.isEmpty()) {
+			sb.append(" and block.entry.key in (:entryKeys)");
+		}
+		
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class)
+				.setParameter("startDate", start, TemporalType.TIMESTAMP)
+				.setParameter("endDate", end, TemporalType.TIMESTAMP)
+				.setParameter("participantKey", participant.getKey());
+		if(blocks != null && !blocks.isEmpty()) {
+			List<Long> blockKeys = blocks.stream()
+					.map(LectureBlock::getKey).collect(Collectors.toList());
+			query.setParameter("blockKeys", blockKeys);
+		}
+		if(entries != null && !entries.isEmpty()) {
+			List<Long> entryKeys = entries.stream()
+					.map(RepositoryEntry::getKey).collect(Collectors.toList());
+			query.setParameter("entryKeys", entryKeys);
+		}
+		
+		return query.getResultList();
+	}
+	
 	public List<Identity> getParticipants(LectureBlockRef block) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select distinct ident from lectureblock block")
@@ -608,6 +800,179 @@ public class LectureBlockDAO {
 				.setParameter("repoKey", entry.getKey())
 				.setParameter("teacherKey", teacher.getKey())
 				.getResultList();
+	}
+	
+	public List<Identity> getParticipants(LecturesMemberSearchParameters searchParams) {
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select distinct ident from lectureblock block")
+		  .append(" inner join block.groups as blockToGroup")
+		  .append(" inner join blockToGroup.group as bGroup")
+		  .append(" inner join bGroup.members participants on (participants.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" inner join participants.identity ident")
+		  .append(" inner join fetch ident.user identUser");
+		
+		if(searchParams.getTeacher() != null) {
+			sb.and()
+			  .append(" exists (select teacherMembership from bgroupmember as teacherMembership")
+			  .append("   where teacherMembership.group.key=block.teacherGroup.key and teacherMembership.identity.key=:teacherKey and teacherMembership.role").in(LectureRoles.teacher)
+			  .append(" )");
+		}
+		if(searchParams.getMasterCoach() != null) {
+			sb.and()
+			  .append(" exists (select teacherMembership from bgroupmember as teacherMembership")
+			  .append("   where teacherMembership.group.key=bGroup.key and teacherMembership.identity.key=:masterCoachKey")
+			  .append("   and teacherMembership.role").in(CurriculumRoles.mastercoach)
+			  .append(" )");
+		}
+		if(searchParams.getManager() != null) {
+			sb.and()
+			  .append(" exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("   where rel.entry.key=block.entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
+			  .append("   and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.lecturemanager, GroupRoles.owner)
+			  .append(" )");
+		}
+		
+		if(searchParams.getRepositoryEntry() != null) {
+			sb.and().append(" block.entry.key=:repositoryEntryKey");
+		}
+		if(searchParams.getCurriculumElement() != null) {
+			sb.and().append(" exists (select curEl.key from curriculumelement as curEl")
+			  .append("  where curEl.group.key=bGroup.key")
+			  .append(")");
+		}
+		
+		Long refId = null;
+		String fuzzyString = null;
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			sb.append(" and (");
+			fuzzyString = PersistenceHelper.makeFuzzyQueryString(searchParams.getSearchString());
+			if(StringHelper.isLong(searchParams.getSearchString())) {
+				refId = Long.valueOf(searchParams.getSearchString());
+				sb.append("ident.key=:idKey or identUser.key=:idKey or ");
+			}
+			sb.likeFuzzy(" ident.externalId", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.firstName", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.lastName", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.email", "fuzzyString", dbInstance.getDbVendor())
+			  .append(")");
+		}
+		
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class);
+		if(searchParams.getTeacher() != null) {
+			query.setParameter("teacherKey", searchParams.getTeacher().getKey());
+		}
+		if(searchParams.getMasterCoach() != null) {
+			query.setParameter("masterCoachKey", searchParams.getMasterCoach().getKey());
+		}
+		if(searchParams.getManager() != null) {
+			query.setParameter("managerKey", searchParams.getManager().getKey());
+		}
+		if(refId != null) {
+			query.setParameter("refId", refId);
+		}
+		if(StringHelper.containsNonWhitespace(fuzzyString)) {
+			query.setParameter("fuzzyString", fuzzyString);
+		}
+		if(searchParams.getRepositoryEntry() != null) {
+			query.setParameter("repositoryEntryKey", searchParams.getRepositoryEntry().getKey());
+		}
+		
+		return query.getResultList();
+	}
+	
+	public List<Identity> getTeachers(LecturesMemberSearchParameters searchParams) {
+		if(searchParams.getTeacher() != null) {
+			return new ArrayList<>();// teacher cannot search teachers
+		}
+		
+		QueryBuilder sb = new QueryBuilder(1024);
+		sb.append("select distinct ident from lectureblock block")
+		  .append(" inner join block.teacherGroup teacherGroup")
+		  .append(" inner join teacherGroup.members teachers on (teachers.role='").append(LectureRoles.teacher).append("')")
+		  .append(" inner join teachers.identity ident")
+		  .append(" inner join fetch ident.user identUser");
+		
+		if(searchParams.getMasterCoach() != null) {
+			sb.and()
+			  .append(" exists (select teacherMembership from bgroupmember as teacherMembership")
+			  .append("   where teacherMembership.group.key=teacherGroup.key and teacherMembership.identity.key=:masterCoachKey")
+			  .append("   and teacherMembership.role").in(CurriculumRoles.mastercoach)
+			  .append(" )");
+		}
+		
+		if(searchParams.getManager() != null) {
+			sb.and()
+			  .append(" exists (select rel.key from repoentrytogroup as rel, bgroupmember as membership")
+			  .append("   where rel.entry.key=block.entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
+			  .append("   and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.lecturemanager, GroupRoles.owner)
+			  .append(" )");
+		}
+		
+		Long refId = null;
+		String fuzzyString = null;
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			sb.append(" and (");
+			fuzzyString = PersistenceHelper.makeFuzzyQueryString(searchParams.getSearchString());
+			if(StringHelper.isLong(searchParams.getSearchString())) {
+				refId = Long.valueOf(searchParams.getSearchString());
+				sb.append("ident.key=:idKey or identUser.key=:idKey or ");
+			}
+			sb.likeFuzzy(" ident.externalId", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.firstName", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.lastName", "fuzzyString", dbInstance.getDbVendor())
+			  .append(" or ").likeFuzzy(" identUser.email", "fuzzyString", dbInstance.getDbVendor())
+			  .append(")");
+		}
+		
+		TypedQuery<Identity> query = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Identity.class);
+		if(searchParams.getMasterCoach() != null) {
+			query.setParameter("masterCoachKey", searchParams.getMasterCoach().getKey());
+		}
+		if(searchParams.getManager() != null) {
+			query.setParameter("managerKey", searchParams.getManager().getKey());
+		}
+		if(refId != null) {
+			query.setParameter("refId", refId);
+		}
+		if(StringHelper.containsNonWhitespace(fuzzyString)) {
+			query.setParameter("fuzzyString", fuzzyString);
+		}
+		
+		return query.getResultList();
+	}
+	
+	public Map<Long,Long> getNumOfParticipants(List<LectureBlock> lectureBlocks) {
+		if(lectureBlocks == null || lectureBlocks.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select block.key, count(participants.identity.key) from lectureblock block")
+		  .append(" inner join block.groups as blockToGroup")
+		  .append(" inner join blockToGroup.group as bGroup")
+		  .append(" inner join bGroup.members as participants on (participants.role='").append(GroupRoles.participant.name()).append("')")
+		  .append(" where block.key in (:lectureBlockKeys)")
+		  .append(" group by block.key");
+		
+		List<Long> lectureBlockKeys = lectureBlocks.stream()
+				.map(LectureBlockRef::getKey).collect(Collectors.toList());
+
+		List<Object[]> rawObjects = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Object[].class)
+				.setParameter("lectureBlockKeys", lectureBlockKeys)
+				.getResultList();
+		Map<Long,Long> numOfParticipantMap = new HashMap<>();
+		for(Object[] rawObject:rawObjects) {
+			Long lectureBlockKey = (Long)rawObject[0];
+			Long numOfParticipants = PersistenceHelper.extractLong(rawObject, 1);
+			if(numOfParticipants == null) {
+				numOfParticipants = Long.valueOf(0l);
+			}
+			numOfParticipantMap.put(lectureBlockKey, numOfParticipants);
+		}
+		return numOfParticipantMap;
 	}
 	
 	public List<LectureBlockImpl> loadOpenBlocksBefore(Date endDate) {

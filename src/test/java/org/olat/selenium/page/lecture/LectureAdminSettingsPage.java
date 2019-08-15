@@ -49,14 +49,25 @@ public class LectureAdminSettingsPage {
 	 * @return
 	 */
 	public LectureAdminSettingsPage configure(boolean holdPartialLectures, boolean cancelStatus,
-			boolean authorizedAbsence, boolean defaultAuthorized, boolean teacherCanAutorizeAbsence) {
+			boolean authorizedAbsence, boolean defaultAuthorized) {
 		setHoldPartialLectures(holdPartialLectures);
 		setCancelStatus(cancelStatus);
 		setAuthorizedAbsence(authorizedAbsence);
 		if(authorizedAbsence) {
 			setDefaultAuthorisedAbsence(defaultAuthorized);
-			setTeacherCanAuthorizeAbsence(teacherCanAutorizeAbsence);
 		}
+		return this;
+	}
+	
+	public LectureAdminSettingsPage configurePermissions(boolean teacherCanAutorizeAbsence) {
+		By permissionsBy = By.cssSelector("div.o_segments a.btn.o_sel_lectures_admin_permissions");
+		OOGraphene.waitElement(permissionsBy, browser);
+		browser.findElement(permissionsBy).click();
+		OOGraphene.waitBusy(browser);
+		By paneBy = By.className("o_sel_lecture_permissions");
+		OOGraphene.waitElement(paneBy, browser);
+		
+		setTeacherCanAuthorizeAbsence(teacherCanAutorizeAbsence);
 		return this;
 	}
 	
@@ -136,5 +147,11 @@ public class LectureAdminSettingsPage {
 		OOGraphene.waitBusy(browser);
 		return this;
 	}
-
+	
+	public LectureAdminSettingsPage savePermissions() {
+		By saveBy = By.cssSelector("div.o_sel_lecture_save_permissions button.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
 }

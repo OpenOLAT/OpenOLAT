@@ -22,6 +22,9 @@ $fa-css-prefix: "o_icon" !default;
 
 
 /* OpenOLAT Icons */
+.o_icon_absence:before { content: $fa-var-times; }
+.o_icon_absence_authorized:before { content: $fa-var-check-circle-o; color: $brand-success }
+.o_icon_absence_unauthorized:before { content: $fa-var-exclamation-circle; color: $brand-danger }
 .o_icon_accepted:before { content: $fa-var-thumbs-up;}
 .o_icon_accessibility:before { content: $fa-var-wheelchair; }
 .o_icon_actions:before { content: $fa-var-gears;}
@@ -107,6 +110,8 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_description:before { content: $fa-var-info-circle; }
 .o_icon_dev:before { content: $fa-var-bug;}
 .o_icon_disabled:before { content: $fa-var-circle-o;}
+.o_icon_dispensation_authorized:before { content: $fa-var-check-circle-o; color: $brand-success }
+.o_icon_dispensation_unauthorized:before { content: $fa-var-exclamation-triangle; color: $brand-warning }
 .o_icon_download:before { content: $fa-var-download;}
 .o_icon_edit:before { content: $fa-var-edit;}
 .o_icon_edit_file:before { content: $fa-var-edit;}
@@ -196,7 +201,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_node_under:before { content: $fa-var-mail-reply; }
 .o_icon_node_up_down:before { content: $fa-var-arrows-v; }
 .o_icon_notes:before { content: $fa-var-sticky-note-o; }
+.o_icon_notice_authorized:before { content: $fa-var-check-circle-o; color: $brand-success }
+.o_icon_notice_unauthorized:before { content: $fa-var-exclamation-triangle; color: $brand-warning }
 .o_icon_notification:before { content: $fa-var-rss;}
+.o_icon_number_of:before { content: $fa-var-hashtag;}
 .o_icon_ok:before { content: $fa-var-check; color: $brand-success}
 .o_icon_open_tree:before { content: $fa-var-caret-right;}
 .o_icon_open_togglebox:before { content: $fa-var-caret-right;}
@@ -211,6 +219,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_pending:before { content: $fa-var-spinner; }
 .o_icon_phone:before { content: $fa-var-phone; }
 .o_icon_post:before { content: $fa-var-comment-o; }
+.o_icon_presence:before { content: $fa-var-check; }
 .o_icon_preview:before { content: $fa-var-eye;}
 .o_icon_previous:before { content: $fa-var-chevron-circle-left; }
 .o_icon_previous_page:before { content: $fa-var-angle-double-left; }
@@ -558,9 +567,12 @@ $fa-css-prefix: "o_icon" !default;
 .o_lectures_rollcall_warning:before { content: $fa-var-adjust; color: $brand-warning; }
 .o_lectures_rollcall_danger:before { content: $fa-var-circle-o; color: $brand-danger; }
 .o_lectures_rollcall_free:before { content: $fa-var-circle; color: #969696; }
+.o_lectures_rollcall_notice:before { content: $fa-var-circle; color: #969696; }
 .o_lectures_attended:before { content: $fa-var-circle; color: $brand-success; }
 .o_lectures_authorized:before { content: $fa-var-circle; color: $brand-warning; }
 .o_lectures_absent:before { content: $fa-var-circle; color: $brand-danger; }
+.o_absences_col_warning:before { content: $fa-var-warning; }
+.o_absences_col_alert:before { content: $fa-var-exclamation-circle; }
 
 /* taxonomy */
 .o_icon_taxonomy:before { content: $fa-var-cube; }

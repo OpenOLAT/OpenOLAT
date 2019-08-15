@@ -19,6 +19,12 @@
  */
 package org.olat.modules.lecture;
 
+import java.util.Date;
+
+import org.olat.core.id.CreateInfo;
+import org.olat.core.id.Identity;
+import org.olat.core.id.ModifiedInfo;
+
 /**
  * 
  * 
@@ -26,6 +32,36 @@ package org.olat.modules.lecture;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface AbsenceNotice {
+public interface AbsenceNotice extends AbsenceNoticeRef, ModifiedInfo, CreateInfo {
+	
+	public Identity getIdentity();
+	
+	public AbsenceNoticeType getNoticeType();
+	
+	public void setNoticeType(AbsenceNoticeType type);
+	
+	public  AbsenceNoticeTarget getNoticeTarget();
+	
+	public void setNoticeTarget(AbsenceNoticeTarget target);
+	
+	public Date getStartDate();
+	
+	public void setStartDate(Date date);
+	
+	public Date getEndDate();
+
+	public void setEndDate(Date endDate);
+	
+	public AbsenceCategory getAbsenceCategory();
+	
+	public void setAbsenceCategory(AbsenceCategory category);
+	
+	public String getAbsenceReason();
+	
+	public void setAbsenceReason(String reason);
+	
+	public Boolean getAbsenceAuthorized();
+
+	public void setAbsenceAuthorized(Boolean absenceAuthorized);
 
 }

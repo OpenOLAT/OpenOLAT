@@ -96,8 +96,13 @@
 	</bean>
 	<bean id="olatsites_curriculumadmin" class="org.olat.modules.curriculum.site.CurriculumAdminSiteDef">
 	   <property name="order" value="12" />
-	   <property name="enabled" value="${site.catalogadmin.enable}"/>
-	   	<property name="defaultSiteSecurityCallbackBeanId" value="curriculumManagerAndOwnerSiteSecurityCallback"/>
+	   <property name="enabled" value="true"/>
+	   <property name="defaultSiteSecurityCallbackBeanId" value="curriculumManagerAndOwnerSiteSecurityCallback"/>
+	</bean>
+	<bean id="olatsites_lecturesadmin" class="org.olat.modules.lecture.site.LecturesManagementSiteDef">
+	   <property name="order" value="12" />
+	   <property name="enabled" value="true"/>
+	   <property name="defaultSiteSecurityCallbackBeanId" value="restrictToLectureManagerSiteSecurityCallback"/>
 	</bean>
 	<bean id="olatsites_quality" class="org.olat.modules.quality.site.QualitySiteDef">
 	   <property name="order" value="13" />
@@ -176,6 +181,9 @@
 		<property name="limitToRole" value="administrator,sysadmin"/>
 	</bean>
 	
+	<bean id="restrictToLectureManagerSiteSecurityCallback" class="org.olat.core.gui.control.navigation.callback.SiteSecurityCallbackWithRolesRestriction">
+		<property name="limitToRole" value="lecturemanager,principal,administrator,sysadmin"/>
+	</bean>
 	
 	<!-- Alternative controllers -->
 	<bean id="courseSiteForbiddenAlt" class="org.olat.core.gui.control.navigation.SiteAlternativeControllerCreator">

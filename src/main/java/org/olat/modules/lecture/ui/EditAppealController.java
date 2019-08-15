@@ -19,6 +19,10 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -49,15 +53,23 @@ public class EditAppealController extends FormBasicController {
 	private TextElement reasonEl;
 	private SingleSelection statusEl;
 	
-	private LectureBlockRollCall rollCall;
+	private final LectureBlockRollCall preselectedRollCall;
+	private final List<LectureBlockRollCall> rollCalls;
 	
 	@Autowired
 	private LectureService lectureService;
 	
 	public EditAppealController(UserRequest ureq, WindowControl wControl, LectureBlockRollCall rollCall) {
 		super(ureq, wControl);
-		this.rollCall = rollCall;
-		
+		this.preselectedRollCall = rollCall;
+		this.rollCalls = Collections.singletonList(rollCall);
+		initForm(ureq);
+	}
+	
+	public EditAppealController(UserRequest ureq, WindowControl wControl, List<LectureBlockRollCall> rollCalls) {
+		super(ureq, wControl);
+		this.preselectedRollCall = null;
+		this.rollCalls = new ArrayList<>(rollCalls);
 		initForm(ureq);
 	}
 
@@ -65,7 +77,7 @@ public class EditAppealController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormDescription("appeal.form.explain");
 		
-		String reason = rollCall.getAppealStatusReason();
+		String reason = preselectedRollCall == null ? null : preselectedRollCall.getAppealStatusReason();
 		reasonEl = uifactory.addTextAreaElement("reason", 12, 60, reason, formLayout);
 		
 		String[] statusKeys = new String[] {
@@ -77,8 +89,8 @@ public class EditAppealController extends FormBasicController {
 			translate("appeal.pending"), translate("appeal.approved"), translate("appeal.rejected")
 		};
 		statusEl = uifactory.addRadiosVertical("appeal.status", "appeal.status", formLayout, statusKeys, statusValues);
-		if(rollCall.getAppealStatus() != null) {
-			statusEl.select(rollCall.getAppealStatus().name(), true);
+		if(preselectedRollCall != null && preselectedRollCall.getAppealStatus() != null) {
+			statusEl.select(preselectedRollCall.getAppealStatus().name(), true);
 		} else {
 			statusEl.select(statusKeys[0], true);
 		}
@@ -114,19 +126,20 @@ public class EditAppealController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		rollCall = lectureService.getRollCall(rollCall);
-		LectureBlock lectureBlock = rollCall.getLectureBlock();
-		Identity assessedIdentity = rollCall.getIdentity();
-		RepositoryEntry entry = lectureBlock.getEntry();
-		String before = lectureService.toAuditXml(rollCall);
-		
-		rollCall.setAppealStatusReason(reasonEl.getValue());
-		rollCall.setAppealStatus(LectureBlockAppealStatus.valueOf(statusEl.getSelectedKey()));
-		rollCall = lectureService.updateRollCall(rollCall);
-
-		lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
-				reasonEl.getValue(), lectureBlock, rollCall, entry, assessedIdentity, getIdentity());
-		
+		for(LectureBlockRollCall rollCall:rollCalls) {
+			rollCall = lectureService.getRollCall(rollCall);
+			LectureBlock lectureBlock = rollCall.getLectureBlock();
+			Identity assessedIdentity = rollCall.getIdentity();
+			RepositoryEntry entry = lectureBlock.getEntry();
+			String before = lectureService.toAuditXml(rollCall);
+			
+			rollCall.setAppealStatusReason(reasonEl.getValue());
+			rollCall.setAppealStatus(LectureBlockAppealStatus.valueOf(statusEl.getSelectedKey()));
+			rollCall = lectureService.updateRollCall(rollCall);
+	
+			lectureService.auditLog(LectureBlockAuditLog.Action.updateRollCall, before, lectureService.toAuditXml(rollCall),
+					reasonEl.getValue(), lectureBlock, rollCall, entry, assessedIdentity, getIdentity());
+		}
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 

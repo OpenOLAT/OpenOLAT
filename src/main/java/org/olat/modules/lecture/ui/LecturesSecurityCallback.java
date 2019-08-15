@@ -36,5 +36,17 @@ public interface LecturesSecurityCallback {
 	public boolean canApproveAppeal();
 	
 	public boolean canEditConfiguration();
+	
+	public boolean canAuthorizeAbsence();
+	
+	public boolean canAddAbsences();
+	
+	public boolean canAddNoticeOfAbsences();
+	
+	public boolean canAddDispensations();
+	
+	public boolean canDeleteAbsenceNotices();
+	
+	public LectureRoles viewAs();
 
 }

@@ -201,6 +201,9 @@
 		<class>org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl</class>
 		<class>org.olat.modules.lecture.model.RepositoryEntryLectureConfigurationImpl</class>
 		<class>org.olat.modules.lecture.model.AbsenceCategoryImpl</class>
+		<class>org.olat.modules.lecture.model.AbsenceNoticeImpl</class>
+		<class>org.olat.modules.lecture.model.AbsenceNoticeToLectureBlockImpl</class>
+		<class>org.olat.modules.lecture.model.AbsenceNoticeToRepositoryEntryImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
 		<class>org.olat.modules.portfolio.model.PageImpl</class>

@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +40,9 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OrganisationRef;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.AbsenceCategory;
+import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockAuditLog;
@@ -81,8 +84,8 @@ public class LectureBlockRollCallDAO {
 	private LectureBlockAuditLogDAO auditLogDao;
 	
 	public LectureBlockRollCall createAndPersistRollCall(LectureBlock lectureBlock, Identity identity,
-			Boolean authorizedAbsence, String absenceReason, AbsenceCategory absenceCategory, String comment,
-			List<Integer> absences) {
+			Boolean authorizedAbsence, String absenceReason, AbsenceCategory absenceCategory, AbsenceNotice absenceNotice,
+			String comment, List<Integer> absences) {
 		LectureBlockRollCallImpl rollCall = new LectureBlockRollCallImpl();
 		rollCall.setCreationDate(new Date());
 		rollCall.setLastModified(rollCall.getCreationDate());
@@ -91,6 +94,7 @@ public class LectureBlockRollCallDAO {
 		rollCall.setAbsenceAuthorized(authorizedAbsence);
 		rollCall.setAbsenceReason(absenceReason);
 		rollCall.setAbsenceCategory(absenceCategory);
+		rollCall.setAbsenceNotice(absenceNotice);
 		rollCall.setComment(comment);
 		addInternalLecture(lectureBlock, rollCall, absences);
 		dbInstance.getCurrentEntityManager().persist(rollCall);
@@ -162,7 +166,7 @@ public class LectureBlockRollCallDAO {
 			call.setLecturesAttendedList(attendedList);
 			call.setLecturesAttendedNumber(numOfLectures - currentAbsentList.size());
 			
-			if(currentAbsentList.size() == 0) {
+			if(currentAbsentList.isEmpty()) {
 				call.setAbsenceAuthorized(null);
 			}
 		}
@@ -253,6 +257,7 @@ public class LectureBlockRollCallDAO {
 		  .append(" inner join fetch rollcall.identity ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" inner join fetch rollcall.lectureBlock block")
+		  .append(" left join fetch rollcall.absenceNotice notice")
 		  .append(" where rollcall.lectureBlock.key=:blockKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockRollCall.class)
@@ -260,6 +265,31 @@ public class LectureBlockRollCallDAO {
 				.getResultList();
 	}
 	
+	public List<LectureBlockRollCall> getRollCalls(List<? extends LectureBlockRef> blocks) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select rollcall from lectureblockrollcall rollcall")
+		  .append(" inner join fetch rollcall.identity ident")
+		  .append(" inner join fetch ident.user user")
+		  .append(" inner join fetch rollcall.lectureBlock block")
+		  .append(" left join fetch rollcall.absenceNotice notice")
+		  .append(" where rollcall.lectureBlock.key in (:blockKeys)");
+		
+		List<Long> blockKeys = blocks.stream()
+				.map(LectureBlockRef::getKey).collect(Collectors.toList());
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), LectureBlockRollCall.class)
+				.setParameter("blockKeys", blockKeys)
+				.getResultList();
+	}
+	
+	/**
+	 * The query doesn't fetch anything.
+	 * 
+	 * @param block The lecture block
+	 * @param identity The attendee's identity
+	 * @return A lecture block roll cal or null if not found
+	 */
 	public LectureBlockRollCall getRollCall(LectureBlockRef block, IdentityRef identity) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select rollcall from lectureblockrollcall rollcall")
@@ -269,7 +299,7 @@ public class LectureBlockRollCallDAO {
 				.setParameter("blockKey", block.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.getResultList();
-		return rollCalls != null && rollCalls.size() > 0 ? rollCalls.get(0) : null;
+		return rollCalls != null && !rollCalls.isEmpty() ? rollCalls.get(0) : null;
 	}
 	
 	public List<LectureBlockRollCallAndCoach> getLectureBlockAndRollCalls(LectureBlockRollCallSearchParameters searchParams) {
@@ -285,8 +315,12 @@ public class LectureBlockRollCallDAO {
 	}
 	
 	private Map<Long,String> getCoaches(RepositoryEntryRef entry, String teacherSeaparator) {
+		if(entry == null) {
+			return Collections.emptyMap();
+		}
+		
 		// append the coaches
-		StringBuilder sc = new StringBuilder();
+		StringBuilder sc = new StringBuilder(256);
 		sc.append("select block.key, coach")
 		  .append(" from lectureblock block")
 		  .append(" inner join block.teacherGroup tGroup")
@@ -314,15 +348,14 @@ public class LectureBlockRollCallDAO {
 	}
 	
 	public List<LectureBlockRollCall> getRollCalls(LectureBlockRollCallSearchParameters searchParams) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select rollcall from lectureblockrollcall rollcall")
 		  .append(" inner join fetch rollcall.identity ident")
 		  .append(" inner join fetch ident.user user")
 		  .append(" inner join fetch rollcall.lectureBlock block");
-		
-		boolean where = false;
+
 		if(searchParams.getHasAbsence() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
+			sb.and();
 			if(searchParams.getHasAbsence().booleanValue()) {
 				sb.append("rollcall.lecturesAbsentNumber>0");
 			} else {
@@ -330,17 +363,48 @@ public class LectureBlockRollCallDAO {
 			}
 		}
 		
+		if(searchParams.getCalledIdentity() != null) {
+			sb.and().append(" ident.key=:calledIdentityKey");
+		}
+		
+		if(searchParams.getManager() != null || searchParams.getMasterCoach() != null) {
+			sb.and()
+			  .append(" exists (select membership.key from repoentrytogroup as rel, bgroupmember as membership")
+	          .append("    where rel.entry.key=block.entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
+	          .append("    and membership.role");
+			if(searchParams.getManager() != null && searchParams.getMasterCoach() != null) {
+				sb.in(OrganisationRoles.administrator, OrganisationRoles.lecturemanager, CurriculumRoles.mastercoach, GroupRoles.owner.name());
+			} else if(searchParams.getManager() != null ) {
+				sb.in(OrganisationRoles.administrator, OrganisationRoles.lecturemanager, GroupRoles.owner.name());
+			} else if(searchParams.getMasterCoach() != null) {
+				sb.in(CurriculumRoles.mastercoach);
+			}
+	        sb.append("  )");
+		}
+		
+		if(searchParams.getTeacher() != null) {
+			sb.and()
+			  .append(" exists (select teachership.key from bgroup as teacherGroup")
+			  .append("  inner join teacherGroup.members as teachership")
+			  .append("  where teacherGroup.key=block.teacherGroup.key and teachership.identity.key=:teacherKey")
+			  .append(" )");
+		}
+		
 		if(searchParams.getHasSupervisorNotificationDate() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
+			sb.and();
 			if(searchParams.getHasSupervisorNotificationDate().booleanValue()) {
 				sb.append("rollcall.absenceSupervisorNotificationDate is not null");
 			} else {
 				sb.append("rollcall.absenceSupervisorNotificationDate is null");
 			}
 		}
+
+		if(searchParams.getLectureBlockRefs() != null && !searchParams.getLectureBlockRefs().isEmpty()) {
+			sb.and().append(" block.key in (:lectureBlockKeys)");
+		}
 		
 		if(searchParams.getClosed() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
+			sb.and();
 			if(searchParams.getClosed().booleanValue()) {
 				sb.append("(block.statusString='").append(LectureBlockStatus.done.name()).append("'")
 				  .append(" or block.rollCallStatusString='").append(LectureRollCallStatus.closed.name()).append("'")
@@ -351,22 +415,41 @@ public class LectureBlockRollCallDAO {
 				  .append(" and block.rollCallStatusString!='").append(LectureRollCallStatus.autoclosed.name()).append("')");
 			}
 		}
+
+		String fuzzyRef = null;
+		if(StringHelper.containsNonWhitespace(searchParams.getSearchString())) {
+			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(searchParams.getSearchString());
+			sb.and().append("(")
+			  .likeFuzzy("block.title", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("block.externalId", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("user.firstName", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(" or ")
+			  .likeFuzzy("user.lastName", "fuzzyRef", dbInstance.getDbVendor())
+			  .append(")");
+			//TODO curriculum, course, reasons...
+		}
+		
+		if(searchParams.getStartDate() != null && searchParams.getEndDate() != null) {
+			sb.and().append(" (block.startDate>=:startDate and block.endDate<=:endDate)");
+		} else if(searchParams.getStartDate() != null) {
+			sb.and().append(" block.startDate>=:startDate");
+		} else if(searchParams.getEndDate() != null) {
+			sb.and().append(" block.endDate<=:endDate");
+		}
 		
 		if(searchParams.getRollCallKey() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("rollcall.key=:rollCallKey");
+			sb.and().append("rollcall.key=:rollCallKey");
 		}
 		if(searchParams.getLectureBlockKey() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("block.key=:lectureBlockKey");
+			sb.and().append("block.key=:lectureBlockKey");
 		}
 		if(searchParams.getEntry() != null) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("block.entry.key=:entryKey");
+			sb.and().append("block.entry.key=:entryKey");
 		}
 		if(searchParams.getAppealStatus() != null && !searchParams.getAppealStatus().isEmpty()) {
-			where = PersistenceHelper.appendAnd(sb, where);
-			sb.append("rollcall.appealStatusString in (:appealStatus)");
+			sb.and().append("rollcall.appealStatusString in (:appealStatus)");
 		}
 
 		TypedQuery<LectureBlockRollCall> query = dbInstance.getCurrentEntityManager()
@@ -374,17 +457,43 @@ public class LectureBlockRollCallDAO {
 		if(searchParams.getRollCallKey() != null) {
 			query.setParameter("rollCallKey", searchParams.getRollCallKey());
 		}
+		if(searchParams.getCalledIdentity() != null) {
+			query.setParameter("calledIdentityKey", searchParams.getCalledIdentity().getKey());
+		}
 		if(searchParams.getLectureBlockKey() != null) {
 			query.setParameter("lectureBlockKey", searchParams.getLectureBlockKey());
 		}
+		if(searchParams.getStartDate() != null) {
+			query.setParameter("startDate", searchParams.getStartDate(), TemporalType.TIMESTAMP);
+		}
+		if(searchParams.getEndDate() != null) {
+			query.setParameter("endDate", searchParams.getEndDate(), TemporalType.TIMESTAMP);
+		}
+		if(fuzzyRef != null) {
+			query.setParameter("fuzzyRef", fuzzyRef);
+		}
 		if(searchParams.getEntry() != null) {
 			query.setParameter("entryKey", searchParams.getEntry().getKey());
+		}
+		if(searchParams.getLectureBlockRefs() != null && !searchParams.getLectureBlockRefs().isEmpty()) {
+			List<Long> lectureBlockKeys = searchParams.getLectureBlockRefs().stream()
+					.map(LectureBlockRef::getKey).collect(Collectors.toList());
+			query.setParameter("lectureBlockKeys", lectureBlockKeys);
 		}
 		if(searchParams.getAppealStatus() != null && !searchParams.getAppealStatus().isEmpty()) {
 			List<String> appealStatus = searchParams.getAppealStatus().stream()
 					.map(LectureBlockAppealStatus::name).collect(Collectors.toList());
 			query.setParameter("appealStatus", appealStatus);
 		}
+		if(searchParams.getTeacher() != null) {
+			query.setParameter("teacherKey", searchParams.getTeacher().getKey());
+		}
+		if(searchParams.getManager() != null) {
+			query.setParameter("managerKey", searchParams.getManager().getKey());
+		} else if(searchParams.getMasterCoach() != null) {
+			query.setParameter("managerKey", searchParams.getMasterCoach().getKey());
+		}
+		
 		
 		return query.getResultList();
 	}
@@ -460,6 +569,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  call.lecturesAttendedNumber as attendedLectures,")
 		  .append("  call.lecturesAbsentNumber as absentLectures,")
 		  .append("  call.absenceAuthorized as absenceAuthorized,")
+		  .append("  notice.absenceAuthorized as absenceNoticeAuthorized,")
 		  .append("  block.key as blockKey,")
 		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
@@ -483,6 +593,7 @@ public class LectureBlockRollCallDAO {
 		  .append(" inner join lectureentryconfig as config on (re.key=config.entry.key)")
 		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
+		  .append(" left join absencenotice as notice on (call.absenceNotice.key=notice.key)")
 		  .append(" where config.lectureEnabled=true and membership.identity.key=:identityKey")
 		  .append(" and membership.role='").append(GroupRoles.participant.name()).append("'")
 		  .append(" and re.status ").in(entryStatus);
@@ -508,8 +619,9 @@ public class LectureBlockRollCallDAO {
 				absenceAuthorized = null;
 				pos++;
 			}
+			Boolean absenceNoticeAuthorized = (Boolean)rawObject[pos++];
 			
-			pos++;//jump block key
+			Long lectureBlockKey = (Long)rawObject[pos++];
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
 			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
@@ -534,7 +646,7 @@ public class LectureBlockRollCallDAO {
 			if(stats.containsKey(repoKey)) {
 				entryStatistics = stats.get(repoKey);
 			} else {
-				entryStatistics = create(identity.getKey(), repoKey, repoDisplayname, repoExternalRef,
+				entryStatistics = create(identity.getKey(), lectureBlockKey, repoKey, repoDisplayname, repoExternalRef,
 						overrideDefault, repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 				stats.put(repoKey, entryStatistics);
@@ -543,7 +655,7 @@ public class LectureBlockRollCallDAO {
 			appendStatistics(entryStatistics, compulsory, status,
 					rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent,
-					absenceAuthorized, absenceDefaultAuthorized,
+					absenceAuthorized, absenceNoticeAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
 		});
@@ -564,6 +676,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  call.lecturesAttendedNumber as attendedLectures,")
 		  .append("  call.lecturesAbsentNumber as absentLectures,")
 		  .append("  call.absenceAuthorized as absenceAuthorized,")
+		  .append("  notice.absenceAuthorized as absenceNoticeAuthorized,")
 		  .append("  block.key as blockKey,")
 		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
@@ -591,6 +704,7 @@ public class LectureBlockRollCallDAO {
 		  .append(" inner join ident.user user")
 		  .append(" inner join lectureentryconfig as config on (re.key=config.entry.key)")
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
+		  .append(" left join absencenotice as notice on (call.absenceNotice.key=notice.key)")
 		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
 		  .append(" where config.lectureEnabled=true and membership.role='").append(GroupRoles.participant.name()).append("'");
 	
@@ -671,8 +785,9 @@ public class LectureBlockRollCallDAO {
 				absenceAuthorized = null;
 				pos++;
 			}
-			
-			pos++;//jump block key
+			Boolean absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+
+			Long lectureBlockKey = (Long)rawObject[pos++];
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
 			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
@@ -710,7 +825,7 @@ public class LectureBlockRollCallDAO {
 				}
 				
 				entryStatistics = createIdentityStatistics(identityKey, identityName, identityProps,
-						repoKey, repoDisplayname, repoExternalRef,
+						lectureBlockKey, repoKey, repoDisplayname, repoExternalRef,
 						overrideDefault, repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
 				stats.put(memberKey, entryStatistics);
@@ -719,7 +834,7 @@ public class LectureBlockRollCallDAO {
 			appendStatistics(entryStatistics, compulsory, status,
 					rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent,
-					absenceAuthorized, absenceDefaultAuthorized,
+					absenceAuthorized, absenceNoticeAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
 		});
@@ -795,6 +910,7 @@ public class LectureBlockRollCallDAO {
 		  .append("  call.lecturesAttendedNumber as attendedLectures,")
 		  .append("  call.lecturesAbsentNumber as absentLectures,")
 		  .append("  call.absenceAuthorized as absenceAuthorized,")
+		  .append("  notice.absenceAuthorized as absenceNoticeAuthorized,")
 		  .append("  block.key as blockKey,")
 		  .append("  block.compulsory as compulsory,")
 		  .append("  block.plannedLecturesNumber as blockPlanned,")
@@ -810,6 +926,7 @@ public class LectureBlockRollCallDAO {
 		  .append(" inner join bGroup.members membership")
 		  .append(" inner join membership.identity ident")
 		  .append(" left join lectureblockrollcall as call on (call.identity.key=membership.identity.key and call.lectureBlock.key=block.key)")
+		  .append(" left join absencenotice as notice on (call.absenceNotice.key=notice.key)")
 		  .append(" left join lectureparticipantsummary as summary on (summary.identity.key=membership.identity.key and summary.entry.key=block.entry.key)")
 		  .append(" where block.entry.key=:entryKey and membership.role='").append(GroupRoles.participant.name()).append("'");
 
@@ -840,8 +957,9 @@ public class LectureBlockRollCallDAO {
 				absenceAuthorized = null;
 				pos++;
 			}
-			
-			pos++;//jump block key
+			Boolean absenceNoticeAuthorized = (Boolean)rawObject[pos++];
+
+			Long lectureBlockKey = (Long)rawObject[pos++];
 			boolean compulsory = PersistenceHelper.extractBoolean(rawObject, pos++, true);
 			Long plannedLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
 			Long effectiveLecturesNumber = PersistenceHelper.extractLong(rawObject, pos++);
@@ -859,7 +977,7 @@ public class LectureBlockRollCallDAO {
 			if(stats.containsKey(identityKey)) {
 				entryStatistics = stats.get(identityKey);
 			} else {
-				entryStatistics = create(identityKey,
+				entryStatistics = create(identityKey, lectureBlockKey,
 						entry.getKey(), entry.getDisplayname(), entry.getExternalRef(),
 						config.isOverrideModuleDefault(), repoCalculateRate,  repoRequiredRate,
 						persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
@@ -869,7 +987,7 @@ public class LectureBlockRollCallDAO {
 			appendStatistics(entryStatistics, compulsory, status,
 					rollCallEndDate, rollCallStatus,
 					lecturesAttended, lecturesAbsent,
-					absenceAuthorized, absenceDefaultAuthorized,
+					absenceAuthorized, absenceNoticeAuthorized, absenceDefaultAuthorized,
 					plannedLecturesNumber, effectiveLecturesNumber,
 					firstAdmissionDate, now);
 		});
@@ -907,23 +1025,24 @@ public class LectureBlockRollCallDAO {
 		statistics.setAttendanceRate(rate);
 	}
 	
-	private LectureBlockStatistics create(Long identityKey, Long entryKey, String displayName, String externalRef,
+	private LectureBlockStatistics create(Long identityKey, Long lectureBlockKey, Long entryKey, String displayName, String externalRef,
 			Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
 			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 
 		RequiredRate requiredRate = calculateRequiredRate(overrideDefault, repoCalculateRate, repoRequiredRate,
 				persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
-		return new LectureBlockStatistics(identityKey, entryKey, displayName, externalRef, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
+		return new LectureBlockStatistics(identityKey, lectureBlockKey, entryKey, displayName, externalRef,
+				requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
 	}
 	
 	private LectureBlockIdentityStatistics createIdentityStatistics(Long identityKey, String identityName, String[] identityProps,
-			Long entryKey, String displayName, String externalRef,
+			Long lectureBlockKey, Long entryKey, String displayName, String externalRef,
 			Boolean overrideDefault, Boolean repoCalculateRate, Double repoRequiredRate,
 			Double persoRequiredRate, boolean calculateAttendanceRate, double requiredAttendanceRateDefault) {
 
 		RequiredRate requiredRate = calculateRequiredRate(overrideDefault, repoCalculateRate, repoRequiredRate,
 				persoRequiredRate, calculateAttendanceRate, requiredAttendanceRateDefault);
-		return new LectureBlockIdentityStatistics(identityKey, identityName, identityProps,
+		return new LectureBlockIdentityStatistics(identityKey, identityName, identityProps, lectureBlockKey,
 				entryKey, displayName, externalRef, requiredRate.isCalculateRate(), requiredRate.getRequiredRate());
 	}
 	
@@ -954,10 +1073,14 @@ public class LectureBlockRollCallDAO {
 	private void appendStatistics(LectureBlockStatistics statistics, boolean compulsory, String blockStatus,
 			Date rollCallEndDate, String rollCallStatus,
 			Long lecturesAttended, Long lecturesAbsent,
-			Boolean absenceAuthorized, boolean absenceDefaultAuthorized,
+			Boolean absenceAuthorized, Boolean absenceNoticeAuthorized, boolean absenceDefaultAuthorized,
 			Long plannedLecturesNumber, Long effectiveLecturesNumber,
 			Date firstAdmissionDate, Date now) {
 		if(!compulsory) return;// not compulsory blocks are simply ignored
+		
+		if(absenceNoticeAuthorized != null) {// notice override roll call
+			absenceAuthorized = absenceNoticeAuthorized;
+		}
 		
 		//only count closed roll call after the end date
 		if(rollCallEndDate != null && rollCallEndDate.before(now)

@@ -58,7 +58,6 @@ public class TeacherRollCallDataModel extends DefaultFlexiTableDataModel<Teacher
 		TeacherRollCallRow rollCall = getObject(row);
 		return getValueAt(rollCall, col);
 	}
-	
 
 	@Override
 	public Object getValueAt(TeacherRollCallRow row, int col) {

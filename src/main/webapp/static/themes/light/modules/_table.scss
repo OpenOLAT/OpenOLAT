@@ -172,6 +172,23 @@ a.o_orderby, a.o_orderby:hover {
 	padding: 0 $panel-body-padding;
 }
 
+.o_table_filter {
+	.control-label {
+		margin-right: 0.5em;
+		&:after {
+			content: ':';
+		}
+	} 
+	
+ 	> div {
+		display:inline-block;
+	
+		label {
+			font-weight: normal;
+		}
+	}
+}
+
 /* bootstrap extensions */
 .o_info, o_note, o_important, o_warning, o_error {
 	.table-bordered td {

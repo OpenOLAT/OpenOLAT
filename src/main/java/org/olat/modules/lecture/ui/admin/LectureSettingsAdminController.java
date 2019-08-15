@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.lecture.ui;
+package org.olat.modules.lecture.ui.admin;
 
 import java.util.Set;
 
@@ -32,10 +32,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.Util;
+import org.olat.modules.lecture.DailyRollCall;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
+import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -50,7 +54,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private static final String[] onKeys = new String[] { "on" };
 	private static final String[] yesNoKeys = new String[] { "yes", "no" };
 	private static final String[] showKeys = new String[] { "all", "mine" };
-	
+	private static final String[] dailyBatchKeys = new String[] { DailyRollCall.startOfLectureBlock.name(), DailyRollCall.daily.name() };
+
 	private SingleSelection showAllTeachersLecturesEl;
 	private SingleSelection canOverrideStandardConfigEl;
 	private TextElement appealPeriodEl;
@@ -72,10 +77,10 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private MultipleSelectionElement countAuthorizedAbsenceAsAttendantEl;
 	private MultipleSelectionElement syncTeachersCalendarEnableEl;
 	private MultipleSelectionElement syncCourseCalendarEnableEl;
-	private MultipleSelectionElement teacherCanAuthorizeAbsenceEl;
 	private MultipleSelectionElement courseOwnersCanViewAllCoursesInCurriculumEl;
 	private MultipleSelectionElement reminderEnableEl;
 	private MultipleSelectionElement rollCallEnableEl;
+	private SingleSelection dayBatchRollCallEnableEl;
 	private FormLayoutContainer globalCont;
 	
 	@Autowired
@@ -84,7 +89,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private UserToolsModule userToolsModule;
 	
 	public LectureSettingsAdminController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl, "admin_settings");
+		super(ureq, wControl, "admin_settings", Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		initForm(ureq);
 		initializeValues();
 		updateUI();
@@ -134,6 +139,11 @@ public class LectureSettingsAdminController extends FormBasicController {
 		globalCont.setFormTitle(translate("lecture.admin.global.title"));
 		globalCont.setRootForm(mainForm);
 		formLayout.add("global", globalCont);
+		
+		String[] dailyBatchValues = new String[] {
+			translate("lecture.daily.batch.absence.start"), translate("lecture.daily.batch.absence.day")
+		};
+		dayBatchRollCallEnableEl = uifactory.addRadiosVertical("lecture.daily.batch.absence", globalCont, dailyBatchKeys, dailyBatchValues);
 
 		partiallyDoneEnabledEl = uifactory.addCheckboxesVertical("lecture.status.partially.done.enabled", globalCont, onKeys, onValues, 1);
 		partiallyDoneEnabledEl.setElementCssClass("o_sel_lecture_status_partially_done");
@@ -159,7 +169,6 @@ public class LectureSettingsAdminController extends FormBasicController {
 		authorizedAbsenceEnableEl.addActionListener(FormEvent.ONCHANGE);
 		countAuthorizedAbsenceAsAttendantEl = uifactory.addCheckboxesHorizontal("lecture.count.authorized.absence.attendant", globalCont, onKeys, onValues);
 		absenceDefaultAuthorizedEl = uifactory.addCheckboxesHorizontal("lecture.absence.default.authorized", globalCont, onKeys, onValues);
-		teacherCanAuthorizeAbsenceEl = uifactory.addCheckboxesHorizontal("lecture.teacher.can.authorize.absence", globalCont, onKeys, onValues);
 		courseOwnersCanViewAllCoursesInCurriculumEl = uifactory.addCheckboxesHorizontal("lecture.owner.can.view.all.curriculum.elements", globalCont, onKeys, onValues);
 
 		// appeal enabled
@@ -266,12 +275,6 @@ public class LectureSettingsAdminController extends FormBasicController {
 		} else {
 			absenceDefaultAuthorizedEl.uncheckAll();
 		}
-		if(lectureModule.isTeacherCanAuthorizedAbsence()) {
-			teacherCanAuthorizeAbsenceEl.select(onKeys[0], true);
-		} else {
-			teacherCanAuthorizeAbsenceEl.uncheckAll();
-		}
-		teacherCanAuthorizeAbsenceEl.setVisible(authorizedAbsenceEnableEl.isVisible() && authorizedAbsenceEnableEl.isAtLeastSelected(1));
 		
 		if(lectureModule.isOwnerCanViewAllCoursesInCurriculum()) {
 			courseOwnersCanViewAllCoursesInCurriculumEl.select(onKeys[0], true);
@@ -315,6 +318,8 @@ public class LectureSettingsAdminController extends FormBasicController {
 			assessmentFollowupTimeEl.setValue("");
 		}
 		assessmentSafeExamBrowserEl.setValue(lectureModule.getAssessmentModeSebKeys());
+		
+		dayBatchRollCallEnableEl.select(lectureModule.getDailyRollCall().name(), true);
 	}
 	
 	private void updateUI() {
@@ -346,7 +351,6 @@ public class LectureSettingsAdminController extends FormBasicController {
 		reminderPeriodEl.setVisible(reminderEnableEl.isVisible() && reminderEnableEl.isAtLeastSelected(1));
 		
 		countAuthorizedAbsenceAsAttendantEl.setVisible(authorizedAbsenceEnableEl.isVisible() && authorizedAbsenceEnableEl.isAtLeastSelected(1));
-		teacherCanAuthorizeAbsenceEl.setVisible(authorizedAbsenceEnableEl.isVisible() && authorizedAbsenceEnableEl.isAtLeastSelected(1));
 	}
 	
 	@Override
@@ -467,7 +471,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 			boolean authorizedAbsenceenabled = authorizedAbsenceEnableEl.isAtLeastSelected(1);
 			lectureModule.setAuthorizedAbsenceEnabled(authorizedAbsenceEnableEl.isAtLeastSelected(1));
 			lectureModule.setCountAuthorizedAbsenceAsAttendant(authorizedAbsenceenabled && countAuthorizedAbsenceAsAttendantEl.isAtLeastSelected(1));
-			lectureModule.setTeacherCanAuthorizedAbsence(authorizedAbsenceenabled && teacherCanAuthorizeAbsenceEl.isAtLeastSelected(1));
+			
 			
 			lectureModule.setOwnerCanViewAllCoursesInCurriculum(courseOwnersCanViewAllCoursesInCurriculumEl.isAtLeastSelected(1));
 			
@@ -493,8 +497,10 @@ public class LectureSettingsAdminController extends FormBasicController {
 	
 			lectureModule.setTeacherCalendarSyncEnabledDefault(syncTeachersCalendarEnableEl.isAtLeastSelected(1));
 			lectureModule.setCourseCalendarSyncEnabledDefault(syncCourseCalendarEnableEl.isAtLeastSelected(1));
-			
+		
 			lectureModule.setShowLectureBlocksAllTeachersDefault(showAllTeachersLecturesEl.isSelected(0));
+			lectureModule.setDailyRollCall(DailyRollCall.valueOf(dayBatchRollCallEnableEl.getSelectedKey()));
+			
 		}
 		
 		if(assessmentModeEnabled) {
@@ -506,5 +512,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 			lectureModule.setAssessmentModeSebKeys("");
 			lectureModule.setAssessmentModeAdmissibleIps("");
 		}
+		
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 }

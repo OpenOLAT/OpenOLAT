@@ -64,6 +64,13 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.lecture.AbsenceCategory;
+import org.olat.modules.lecture.AbsenceNotice;
+import org.olat.modules.lecture.AbsenceNoticeRef;
+import org.olat.modules.lecture.AbsenceNoticeSearchParameters;
+import org.olat.modules.lecture.AbsenceNoticeTarget;
+import org.olat.modules.lecture.AbsenceNoticeToLectureBlock;
+import org.olat.modules.lecture.AbsenceNoticeToRepositoryEntry;
+import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockAuditLog.Action;
@@ -80,21 +87,29 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.model.AbsenceNoticeInfos;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.IdentityRateWarning;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
+import org.olat.modules.lecture.model.LectureBlockBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockIdentityStatistics;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockRollCallAndCoach;
 import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.lecture.model.LectureBlockToTeacher;
+import org.olat.modules.lecture.model.LectureBlockWithNotice;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LectureCurriculumElementInfos;
+import org.olat.modules.lecture.model.LectureCurriculumElementSearchParameters;
 import org.olat.modules.lecture.model.LectureReportRow;
+import org.olat.modules.lecture.model.LectureRepositoryEntryInfos;
+import org.olat.modules.lecture.model.LectureRepositoryEntrySearchParameters;
 import org.olat.modules.lecture.model.LectureStatisticsSearchParameters;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
+import org.olat.modules.lecture.model.LecturesMemberSearchParameters;
 import org.olat.modules.lecture.model.ParticipantAndLectureSummary;
 import org.olat.modules.lecture.ui.ConfigurationHelper;
-import org.olat.modules.lecture.ui.LectureAdminController;
+import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -139,6 +154,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
+	private AbsenceNoticeDAO absenceNoticeDao;
+	@Autowired
 	private LectureBlockAuditLogDAO auditLogDao;
 	@Autowired
 	private AbsenceCategoryDAO absenceCategoryDao;
@@ -155,9 +172,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Autowired
 	private LectureParticipantSummaryDAO lectureParticipantSummaryDao;
 	@Autowired
+	private AbsenceNoticeToLectureBlockDAO absenceNoticeToLectureBlockDao;
+	@Autowired
 	private LectureBlockToTaxonomyLevelDAO lectureBlockToTaxonomyLevelDao;
 	@Autowired
 	private RepositoryEntryLectureConfigurationDAO lectureConfigurationDao;
+	@Autowired
+	private AbsenceNoticeToRepositoryEntryDAO absenceNoticeToRepositoryEntryDao;
 	
 	
 	@Override
@@ -489,6 +510,165 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	public void deleteAbsenceCategory(AbsenceCategory category) {
 		absenceCategoryDao.deleteAbsenceCategory(category);
 	}
+	
+	@Override
+	public AbsenceNotice createAbsenceNotice(Identity absentIdentity, AbsenceNoticeType type, AbsenceNoticeTarget target, Date start, Date end,
+			AbsenceCategory category, String absenceRason, Boolean authorized, List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks) {
+		if(type == AbsenceNoticeType.dispensation) {
+			authorized = Boolean.TRUE;
+		}
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(absentIdentity, type, target, start, end, category, absenceRason, authorized);
+		if(entries != null && !entries.isEmpty()) {
+			for(RepositoryEntry entry:entries) {
+				absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);
+			}
+		}
+		if(lectureBlocks != null && !lectureBlocks.isEmpty()) {
+			for(LectureBlock lectureBlock:lectureBlocks) {
+				absenceNoticeToLectureBlockDao.createRelation(notice, lectureBlock);
+			}
+		}
+		dbInstance.commit();
+		// calculate roll calls
+		calculateAbsencesOfRollcall(notice);
+		return notice;
+	}
+	
+	@Override
+	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, List<RepositoryEntry> entries,
+			List<LectureBlock> lectureBlocks) {
+
+		AbsenceNotice notice = absenceNoticeDao.updateAbsenceNotice(absenceNotice);
+		List<AbsenceNoticeToLectureBlock> currentNoticeToBlocks = absenceNoticeToLectureBlockDao.getRelations(absenceNotice);
+		List<AbsenceNoticeToRepositoryEntry> currentNoticeToEntries = absenceNoticeToRepositoryEntryDao.getRelations(absenceNotice);
+		
+		if(notice.getNoticeTarget() == AbsenceNoticeTarget.allentries) {
+			absenceNoticeToLectureBlockDao.deleteRelations(currentNoticeToBlocks);
+			absenceNoticeToRepositoryEntryDao.deleteRelations(currentNoticeToEntries);
+		} else if(notice.getNoticeTarget() == AbsenceNoticeTarget.entries) {
+			absenceNoticeToLectureBlockDao.deleteRelations(currentNoticeToBlocks);
+			if(entries != null) {
+				List<RepositoryEntry> currentEntries = new ArrayList<>(currentNoticeToEntries.size());
+				for(AbsenceNoticeToRepositoryEntry currentNoticeToEntry:currentNoticeToEntries) {
+					currentEntries.add(currentNoticeToEntry.getEntry());
+					if(!entries.contains(currentNoticeToEntry.getEntry())) {
+						absenceNoticeToRepositoryEntryDao.deleteRelation(currentNoticeToEntry);
+					}
+				}
+	
+				for(RepositoryEntry entry:entries) {
+					if(!currentEntries.contains(entry)) {
+						absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);
+					}
+				}
+			}
+			
+		} else if(notice.getNoticeTarget() == AbsenceNoticeTarget.lectureblocks) {
+			absenceNoticeToRepositoryEntryDao.deleteRelations(currentNoticeToEntries);
+			if(lectureBlocks != null) {
+				List<LectureBlock> currentBlocks = new ArrayList<>();
+				for(AbsenceNoticeToLectureBlock currentNoticeToBlock:currentNoticeToBlocks) {
+					currentBlocks.add(currentNoticeToBlock.getLectureBlock());
+					if(!lectureBlocks.contains(currentNoticeToBlock.getLectureBlock())) {
+						absenceNoticeToLectureBlockDao.deleteRelation(currentNoticeToBlock);
+					}
+				}
+
+				for(LectureBlock lectureBlock:lectureBlocks) {
+					if(!currentBlocks.contains(lectureBlock)) {
+						absenceNoticeToLectureBlockDao.createRelation(notice, lectureBlock);
+					}
+				}
+			}
+		}
+
+		dbInstance.commit();
+		// calculate roll calls
+		calculateAbsencesOfRollcall(notice);
+		return notice;
+	}
+
+	private void calculateAbsencesOfRollcall(AbsenceNotice notice) {
+		List<LectureBlockRollCall> currentRollCalls = absenceNoticeDao.getRollCalls(notice);
+		Set<LectureBlockRollCall> currentRollCallSet = new HashSet<>(currentRollCalls);
+		
+		List<LectureBlockRollCall> rollCalls;
+		switch(notice.getNoticeTarget()) {
+			case lectureblocks: rollCalls = absenceNoticeToLectureBlockDao.getRollCallsByLectureBlock(notice); break;
+			case entries: rollCalls = absenceNoticeToRepositoryEntryDao.getRollCallsByRepositoryEntry(notice); break;
+			case allentries: rollCalls = absenceNoticeToRepositoryEntryDao.getRollCallsOfAllEntries(notice); break;
+			default: rollCalls = Collections.emptyList();
+		}
+		
+		for(LectureBlockRollCall rollCall:rollCalls) {
+			if(currentRollCallSet.contains(rollCall)) {
+				currentRollCallSet.remove(rollCall);
+			} else {
+				rollCall.setAbsenceNotice(notice);//TODO absences log
+				lectureBlockRollCallDao.update(rollCall);
+			}
+		}
+		
+		for(LectureBlockRollCall toUnlink: currentRollCallSet) {
+			toUnlink.setAbsenceNotice(null);//TODO absences log
+			lectureBlockRollCallDao.update(toUnlink);
+		}
+	}
+	
+	@Override
+	public AbsenceNotice getAbsenceNotice(AbsenceNoticeRef notice) {
+		return absenceNoticeDao.loadAbsenceNotice(notice.getKey());
+	}
+
+	@Override
+	public List<AbsenceNotice> getAbsenceNoticeRelatedTo(LectureBlock block) {
+		return absenceNoticeDao.getAbsenceNotices(null, block);
+	}
+
+	@Override
+	public List<AbsenceNoticeInfos> searchAbsenceNotices(AbsenceNoticeSearchParameters searchParams) {
+		boolean absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
+		return absenceNoticeDao.search(searchParams, absenceDefaultAuthorized);
+	}
+
+	@Override
+	public List<AbsenceNotice> detectCollision(Identity identity, AbsenceNoticeRef notice, Date start, Date end) {
+		return absenceNoticeDao.detectCollision(identity, notice, start, end);
+	}
+
+	@Override
+	public List<LectureBlockWithNotice> getLectureBlocksWithAbsenceNotices(List<AbsenceNotice> notices) {
+		List<AbsenceNotice> noticeWithLectureBlocks = notices.stream()
+				.filter(n -> n.getNoticeTarget() == AbsenceNoticeTarget.lectureblocks)
+				.collect(Collectors.toList());
+		List<LectureBlockWithNotice> blocksWithLectures = absenceNoticeDao.loadLectureBlocksOf(noticeWithLectureBlocks, AbsenceNoticeTarget.lectureblocks);
+
+		List<AbsenceNotice> noticeWithEntries = notices.stream()
+				.filter(n -> n.getNoticeTarget() == AbsenceNoticeTarget.entries)
+				.collect(Collectors.toList());
+		List<LectureBlockWithNotice> blocksWithEntries = absenceNoticeDao.loadLectureBlocksOf(noticeWithEntries, AbsenceNoticeTarget.entries);
+
+		List<AbsenceNotice> noticeWithAllEntries = notices.stream()
+				.filter(n -> n.getNoticeTarget() == AbsenceNoticeTarget.allentries)
+				.collect(Collectors.toList());
+		List<LectureBlockWithNotice> blocksWithAllEntries = absenceNoticeDao.loadLectureBlocksOf(noticeWithAllEntries, AbsenceNoticeTarget.allentries);
+
+		List<LectureBlockWithNotice> lectureBlocks = new ArrayList<>(blocksWithLectures.size() + blocksWithEntries.size() + blocksWithAllEntries.size());
+		lectureBlocks.addAll(blocksWithLectures);
+		lectureBlocks.addAll(blocksWithEntries);
+		lectureBlocks.addAll(blocksWithAllEntries);
+		return lectureBlocks;
+	}
+
+	@Override
+	public List<AbsenceNoticeToLectureBlock> getAbsenceNoticeToLectureBlocks(AbsenceNotice notice) {
+		return absenceNoticeToLectureBlockDao.getRelations(notice);
+	}
+
+	@Override
+	public List<AbsenceNoticeToRepositoryEntry> getAbsenceNoticeToRepositoryEntries(AbsenceNotice notice) {
+		return absenceNoticeToRepositoryEntryDao.getRelations(notice);
+	}
 
 	@Override
 	public List<Group> getLectureBlockToGroups(LectureBlockRef block) {
@@ -508,6 +688,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public List<Identity> getParticipants(RepositoryEntry entry, Identity teacher) {
 		return lectureBlockDao.getParticipants(entry, teacher);
+	}
+
+
+	@Override
+	public List<Identity> searchParticipants(LecturesMemberSearchParameters searchParams) {
+		return lectureBlockDao.getParticipants(searchParams);
 	}
 
 	@Override
@@ -556,7 +742,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 
 		//load data
 		List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(lectureBlock);
-		Map<Identity,LectureBlockRollCall> rollCallMap = rollCalls.stream().collect(Collectors.toMap(r -> r.getIdentity(), r -> r));
+		Map<Identity,LectureBlockRollCall> rollCallMap = rollCalls.stream().collect(Collectors.toMap(LectureBlockRollCall::getIdentity, r -> r));
 		List<ParticipantAndLectureSummary> participantsAndSummaries = lectureParticipantSummaryDao.getLectureParticipantSummaries(lectureBlock);
 		
 		Set<Identity> participants = new HashSet<>();
@@ -576,8 +762,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			LectureBlockRollCall rollCall = rollCallMap.get(participantAndSummary.getIdentity());
 			String before = auditLogDao.toXml(rollCall);
 			if(rollCall == null) {
+				AbsenceNotice notice =  getAbsenceNotice(participantAndSummary.getIdentity(), lectureBlock);
 				rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, participantAndSummary.getIdentity(),
-						null, null, null, null, new ArrayList<>());
+						null, null, null, notice, null, new ArrayList<>());
 			} else if(rollCall.getLecturesAbsentList().isEmpty() && rollCall.getLecturesAttendedList().isEmpty()) {
 				rollCall = lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, new ArrayList<>());
 			}
@@ -612,8 +799,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			Boolean authorizedAbsence, String reasonAbsence, AbsenceCategory category) {
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
 		if(rollCall == null) {//reload in case of concurrent usage
+			AbsenceNotice notice =  getAbsenceNotice(identity, lectureBlock);
 			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity,
-					authorizedAbsence, reasonAbsence, category, null, null);
+					authorizedAbsence, reasonAbsence, category, notice, null, null);
 		} else if(authorizedAbsence != null) {
 			rollCall.setAbsenceAuthorized(authorizedAbsence);
 			rollCall.setAbsenceReason(reasonAbsence);
@@ -646,7 +834,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			if(checkAuthorized && absences != null && !absences.isEmpty()) {
 				authorized = Boolean.TRUE;
 			}
-			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, authorized, null, null, null, absences);
+			AbsenceNotice notice =  getAbsenceNotice(identity, lectureBlock);
+			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, authorized, null, null, notice, null, absences);
 		} else {
 			if(checkAuthorized && absences != null && !absences.isEmpty() && rollCall.getAbsenceAuthorized() == null) {
 				rollCall.setAbsenceAuthorized(Boolean.TRUE);
@@ -667,7 +856,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			if(checkAuthorized && absences != null && !absences.isEmpty()) {
 				authorized = Boolean.TRUE;
 			}
-			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, authorized, null, null, comment, absences);
+			AbsenceNotice notice =  getAbsenceNotice(identity, lectureBlock);
+			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, authorized, null, null, notice, comment, absences);
 		} else {
 			if(comment != null) {
 				rollCall.setComment(comment);
@@ -686,11 +876,84 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			rollCall = lectureBlockRollCallDao.getRollCall(lectureBlock, identity);
 		}
 		if(rollCall == null) {
-			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, absences);
+			AbsenceNotice notice =  getAbsenceNotice(identity, lectureBlock);
+			rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, notice, null, absences);
 		} else {
 			rollCall = lectureBlockRollCallDao.removeLecture(lectureBlock, rollCall, absences);
 		}
 		return rollCall;
+	}
+	
+	
+	
+	@Override
+	public void saveDefaultRollCalls(List<LectureBlock> lectureBlocks, Identity teacher) {
+		for(LectureBlock lectureBlock:lectureBlocks) {
+			lectureBlock = getLectureBlock(lectureBlock);
+			saveDefaultRollCall(lectureBlock, teacher);
+			dbInstance.commit();
+		}
+	}
+	
+	private void saveDefaultRollCall(LectureBlock lectureBlock, Identity teacher) {
+		String before = toAuditXml(lectureBlock);
+		
+		List<Identity> participants = startLectureBlock(teacher, lectureBlock);
+		List<AbsenceNotice> notices = getAbsenceNoticeRelatedTo(lectureBlock);
+		Map<Identity,AbsenceNotice> identityToNotices = notices.stream()
+				.collect(Collectors.toMap(AbsenceNotice::getIdentity, notice -> notice, (u, v) -> u));
+
+		List<LectureBlockRollCall> rollCalls = getRollCalls(lectureBlock);
+		Map<Identity,LectureBlockRollCall> identityToRollCallMap = rollCalls.stream()
+				.collect(Collectors.toMap(LectureBlockRollCall::getIdentity, call -> call, (u, v) -> u));
+		
+		int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+		if(numOfLectures <= 0 && lectureBlock.getStatus() != LectureBlockStatus.cancelled) {
+			numOfLectures = lectureBlock.getPlannedLecturesNumber();
+		}
+		
+		for(Identity participant:participants) {
+			LectureBlockRollCall rollCall = identityToRollCallMap.get(participant);
+			AbsenceNotice notice = identityToNotices.get(participant);
+			
+			List<Integer> absenceList = null;
+			if(notice != null) {
+				absenceList = new ArrayList<>();
+				for(int i=0; i<numOfLectures; i++) {
+					absenceList.add(Integer.valueOf(i));
+				}
+			} else if(rollCall != null) {
+				absenceList = rollCall.getLecturesAbsentList();
+			}
+			addRollCall(participant, lectureBlock, rollCall, null, absenceList);
+		}
+
+		lectureBlock = getLectureBlock(lectureBlock);
+		
+		if(lectureBlock.getRollCallStatus() == null) {
+			lectureBlock.setRollCallStatus(LectureRollCallStatus.open);
+		}
+		if(lectureBlock.getStatus() == null || lectureBlock.getStatus() == LectureBlockStatus.active) {
+			lectureBlock.setStatus(LectureBlockStatus.active);
+		}
+		lectureBlock = save(lectureBlock, null);
+		recalculateSummary(lectureBlock.getEntry());
+		
+		String after = toAuditXml(lectureBlock);
+		auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, teacher);
+	}
+
+	private AbsenceNotice getAbsenceNotice(Identity identity, LectureBlock lectureBlock) {
+		List<AbsenceNotice> notices = absenceNoticeDao.getAbsenceNotices(identity, lectureBlock);
+		AbsenceNotice preferedNotice;
+		if(notices.isEmpty()) {
+			preferedNotice = null;
+		} else if(notices.size() == 1) {
+			preferedNotice = notices.get(0);
+		} else {
+			preferedNotice = notices.get(notices.size() - 1);
+		}
+		return preferedNotice;
 	}
 
 	@Override
@@ -797,8 +1060,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 				
 				String before = auditLogDao.toXml(rollCall);
 				if(rollCall == null) {
+					AbsenceNotice notice = getAbsenceNotice(participantAndSummary.getIdentity(), lectureBlock);
 					rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, participantAndSummary.getIdentity(),
-							null, null, null, null, new ArrayList<>());
+							null, null, null, notice, null, new ArrayList<>());
 				} else if(rollCall.getLecturesAbsentList().isEmpty() && rollCall.getLecturesAttendedList().isEmpty()) {
 					rollCall = lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, new ArrayList<>());
 				}
@@ -903,7 +1167,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 				sb.toString()								// 5 The teachers
 		};
 		
-		Translator trans = Util.createPackageTranslator(LectureAdminController.class, locale);
+		Translator trans = Util.createPackageTranslator(LectureRepositoryAdminController.class, locale);
 		String subject = trans.translate(subjectI18nKey, args);
 		String body = trans.translate(bodyI18nKey, args);
 
@@ -926,13 +1190,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
-	public List<LectureBlock> getLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams) {
-		return lectureBlockDao.loadByTeacher(teacher, searchParams);
-	}
-
-	@Override
-	public List<LectureBlockRef> getAssessedLectureBlocks(IdentityRef teacher, LecturesBlockSearchParameters searchParams) {
-		return lectureBlockDao.loadAssessedByTeacher(teacher, searchParams);
+	public List<LectureBlockRef> getAssessedLectureBlocks(LecturesBlockSearchParameters searchParams) {
+		return lectureBlockDao.searchAssessedLectureBlocks(searchParams);
 	}
 
 	@Override
@@ -944,13 +1203,9 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		return lectureBlockDao.getLecturesBlocksReport(from, to, status);
 	}
 
-	/**
-	 * 
-	 */
 	@Override
-	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(RepositoryEntryRef entry,
-			IdentityRef teacher, LecturesBlockSearchParameters searchParams) {
-		return lectureBlockDao.getLecturesBlockWithTeachers(entry, teacher, searchParams);
+	public List<LectureBlockWithTeachers> getLectureBlocksWithTeachers(LecturesBlockSearchParameters searchParams) {
+		return lectureBlockDao.getLecturesBlockWithTeachers(searchParams);
 	}
 
 	@Override
@@ -958,10 +1213,25 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		LectureBlockImpl block = (LectureBlockImpl)lectureBlock;
 		return groupDao.getMembers(block.getTeacherGroup(), "teacher");
 	}
-	
+
+	@Override
+	public List<Identity> getTeachers(List<LectureBlock> blocks) {
+		return lectureBlockDao.getTeachers(blocks);
+	}
+
 	@Override
 	public List<Identity> getTeachers(RepositoryEntry entry) {
 		return lectureBlockDao.getTeachers(entry);
+	}
+
+	@Override
+	public List<Identity> getTeachers(Identity participant, List<LectureBlock> blocks, List<RepositoryEntry> entries, Date start, Date end) {
+		return lectureBlockDao.getTeachers(participant, blocks, entries, start, end);
+	}
+
+	@Override
+	public List<Identity> searchTeachers(LecturesMemberSearchParameters searchParams) {
+		return lectureBlockDao.getTeachers(searchParams);
 	}
 
 	@Override
@@ -1016,6 +1286,37 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	@Override
 	public LectureParticipantSummary saveParticipantSummary(LectureParticipantSummary summary) {
 		return lectureParticipantSummaryDao.update(summary);
+	}
+	
+	
+
+	@Override
+	public List<LectureBlockBlockStatistics> getLectureBlocksStatistics(LecturesBlockSearchParameters searchParams) {
+		List<LectureBlock> lectureBlocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		if(lectureBlocks == null || lectureBlocks.isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		Map<Long,Long> numOfParticipantMap = lectureBlockDao.getNumOfParticipants(lectureBlocks);
+		Map<Long,LectureBlockBlockStatistics> lectureBlockKeyToStatistics = lectureBlocks.stream()
+				.collect(Collectors.toMap(LectureBlock::getKey, block -> {
+					Long numberOfParticipants = numOfParticipantMap.get(block.getKey());
+					long numOfParticipants = numberOfParticipants == null ? 0l : numberOfParticipants.longValue();
+					return new LectureBlockBlockStatistics(block, numOfParticipants);
+				}, (u, v) -> v));
+		
+		List<LectureBlockRollCall> rollCalls = lectureBlockRollCallDao.getRollCalls(lectureBlocks);
+		for(LectureBlockRollCall rollCall:rollCalls) {
+			AbsenceNotice absenceNotice = rollCall.getAbsenceNotice();
+			LectureBlock lectureBlock = rollCall.getLectureBlock();
+			
+			LectureBlockBlockStatistics statistics = lectureBlockKeyToStatistics.get(lectureBlock.getKey());
+			if(statistics != null) {
+				statistics.aggregate(rollCall, absenceNotice);
+			}
+		}
+
+		return new ArrayList<>(lectureBlockKeyToStatistics.values());
 	}
 
 	@Override
@@ -1133,6 +1434,16 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	public List<LectureBlockAndRollCall> getParticipantLectureBlocks(RepositoryEntryRef entry, IdentityRef participant,
 			String teacherSeaparator) {
 		return lectureBlockRollCallDao.getParticipantLectureBlockAndRollCalls(entry, participant, teacherSeaparator);
+	}
+	
+	@Override
+	public List<LectureRepositoryEntryInfos> searchRepositoryEntries(LectureRepositoryEntrySearchParameters searchParams) {
+		return lectureBlockDao.searchRepositoryEntries(searchParams);
+	}
+
+	@Override
+	public List<LectureCurriculumElementInfos> searchCurriculumElements(LectureCurriculumElementSearchParameters searchParams) {
+		return lectureBlockDao.searchCurriculumElements(searchParams);
 	}
 
 	@Override
@@ -1361,5 +1672,4 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			//
 		}
 	}
-
 }

@@ -21,6 +21,7 @@ package org.olat.modules.coach.site;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.layout.MainLayoutController;
@@ -36,6 +37,8 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.coach.ui.CoachMainController;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -52,12 +55,14 @@ public class CoachSite extends AbstractSiteInstance {
 	
 	private final NavElement origNavElem;
 	private NavElement curNavElem;
+	private CoachingSecurity coachingSec;
 	
 	/**
 	 * @param loccale
 	 */
-	public CoachSite(SiteDefinition siteDef, Locale locale) {
+	public CoachSite(SiteDefinition siteDef, CoachingSecurity coachingSec, Locale locale) {
 		super(siteDef);
+		this.coachingSec = coachingSec;
 		Translator trans = Util.createPackageTranslator(CoachMainController.class, locale);
 		origNavElem = new DefaultNavElement(trans.translate("site.title"), trans.translate("site.title.alt"), "o_site_coaching");
 		curNavElem = new DefaultNavElement(origNavElem);
@@ -73,7 +78,10 @@ public class CoachSite extends AbstractSiteInstance {
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance(CoachSite.class, 0l);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, new StateSite(this), wControl, true);
-		return new CoachMainController(ureq, bwControl);
+		if(coachingSec == null) {
+			coachingSec = CoreSpringFactory.getImpl(CoachingService.class).isCoach(ureq.getIdentity());
+		}
+		return new CoachMainController(ureq, bwControl, coachingSec);
 	}
 
 	@Override

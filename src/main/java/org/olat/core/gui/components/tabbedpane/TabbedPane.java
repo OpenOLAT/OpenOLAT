@@ -163,6 +163,7 @@ public class TabbedPane extends Container implements Activateable2 {
 		tabPanes.add(tab);
 		if (selectedPane == -1) {
 			selectedPane = 0; // if no pane has been selected, select the first one
+
 			super.put("atp", tab.getComponent()); 
 		}
 		return tabPanes.size() - 1;
