@@ -19,14 +19,21 @@
  */
 package org.olat.core.util.filter.impl;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.owasp.html.HtmlPolicyBuilder;
+import org.owasp.html.HtmlStreamEventProcessor;
+import org.owasp.html.HtmlStreamEventReceiver;
+import org.owasp.html.HtmlStreamEventReceiverWrapper;
 import org.owasp.html.PolicyFactory;
 
 import com.google.common.base.Predicate;
 
 /**
+ * The policy allow very specific onclicks values. It has a pre and
+ * post processor to handle the javascript:parent.goto(273846)
+ * 
  * 
  * Initial date: 22 mai 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -160,7 +167,7 @@ public class OpenOLATPolicy {
 			.matching(new Patterns(ONSITEURL, OFFSITEURL, OLATINTERNALURL))
 			.onElements("a")
 	    .allowAttributes("onclick")
-			.matching(false, "o_XHRWikiEvent(this);", "o_XHRWikiEvent(this);return(false);")
+			.matching(new OnClickValues())
 			.onElements("a")
 		// link edu-sharing
 		.allowAttributes("data-es_show_infos")
@@ -267,8 +274,91 @@ public class OpenOLATPolicy {
 			.allowWithoutAttributes("span")
 		.allowElements("center")
 			.allowWithoutAttributes("center")
+		.withPreprocessor(new OpenOLATPreprocessor())
+		.withPostprocessor(new OpenOLATPostprocessor())
 		.toFactory();
 
+	private static class OpenOLATPreprocessor implements HtmlStreamEventProcessor {
+
+		@Override
+		public HtmlStreamEventReceiver wrap(HtmlStreamEventReceiver sink) {
+			return new OpenOLATPreReceiver(sink);
+		}
+	}
+	
+	private static class OpenOLATPreReceiver extends HtmlStreamEventReceiverWrapper {
+		
+		public OpenOLATPreReceiver(HtmlStreamEventReceiver sink) {
+			super(sink);
+		}
+
+		@Override
+		public void openTag(String elementName, List<String> attrs) {
+			if("a".equals(elementName) && attrs != null) {
+				int numOfAttrs = attrs.size();
+				for(int i=0; i<numOfAttrs; i++) {
+					String attr = attrs.get(i);
+					if("href".equals(attr) && i+1 < numOfAttrs
+							&& attrs.get(i+1).startsWith("javascript:parent.goto")
+							&& OLATINTERNALURL.matcher(attrs.get(i + 1)).matches()) {
+						attrs.set(i, "onclick");
+					}	
+				}
+			}
+			super.openTag(elementName, attrs);
+		}
+	}
+	
+	private static class OpenOLATPostprocessor implements HtmlStreamEventProcessor {
+
+		@Override
+		public HtmlStreamEventReceiver wrap(HtmlStreamEventReceiver sink) {
+			return new OpenOLATostReceiver(sink);
+		}
+	}
+	
+	private static class OpenOLATostReceiver extends HtmlStreamEventReceiverWrapper {
+		
+		public OpenOLATostReceiver(HtmlStreamEventReceiver sink) {
+			super(sink);
+		}
+
+		@Override
+		public void openTag(String elementName, List<String> attrs) {
+			if("a".equals(elementName) && attrs != null) {
+				int numOfAttrs = attrs.size();
+				for(int i=0; i<numOfAttrs; i++) {
+					String attr = attrs.get(i);
+					if("onclick".equals(attr) && i+1 < numOfAttrs
+							&& attrs.get(i+1).startsWith("javascript:parent.goto")
+							&& OLATINTERNALURL.matcher(attrs.get(i + 1)).matches()) {
+						attrs.set(i, "href");
+					}	
+				}
+			}
+			super.openTag(elementName, attrs);
+		}
+	}
+	
+	private static class OnClickValues implements Predicate<String> {
+		
+		@Override
+		public boolean apply(String s) {
+			if("o_XHRWikiEvent(this);".equals(s) || "o_XHRWikiEvent(this);return(false);".equals(s)) {
+				return true;
+			}
+			return OLATINTERNALURL.matcher(s).matches();
+		}
+		
+		// Needed for Java8 compat with later Guava that extends
+		// java.util.function.Predicate.
+		// For some reason the default test method implementation that calls
+		// through to apply is not assumed here.
+		@SuppressWarnings("unused")
+		public boolean test(String s) {
+			return apply(s);
+		}
+	}
 	
 	private static class Patterns implements Predicate<String> {
 		
