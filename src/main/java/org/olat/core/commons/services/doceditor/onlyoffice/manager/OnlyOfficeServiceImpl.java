@@ -76,7 +76,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	private static final Logger log = Tracing.createLoggerFor(OnlyOfficeServiceImpl.class);
 	
 	private static final String LOCK_APP_NAME = "onlyoffice";
-	private static final DateFormat LAST_MODIFIED = new SimpleDateFormat("yyyyMMddHHmmSS");
+	private static final DateFormat LAST_MODIFIED = new SimpleDateFormat("yyyyMMddHHmmss");
 	
 	private static ObjectMapper mapper = new ObjectMapper();
 
@@ -223,6 +223,8 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	@Override
 	public boolean canUpdateContent(VFSLeaf vfsLeaf, Identity identity, String documentKey) {
 		String currentDocumentKey = getDocumentKey(vfsLeaf.getMetaInfo());
+		log.debug("ONLYOFFICE currentDokumentKey: {}", currentDocumentKey);
+		log.debug("ONLYOFFICE documentKey:        {}", documentKey);
 		return currentDocumentKey.equals(documentKey) && !isLockedForMe(vfsLeaf, identity);
 	}
 
