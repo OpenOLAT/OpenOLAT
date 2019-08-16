@@ -35,8 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.olat.core.gui.components.table.TableDataModel;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
@@ -117,7 +117,7 @@ public class StatisticResult implements TableDataModel {
 			}
 			
 			String businessPath = (String)columns[0];
-			if (!businessPath.matches("\\[RepositoryEntry:.*\\]\\[CourseNode:"+node.getIdent()+"\\]")) {
+			if (!businessPath.matches("\\[RepositoryEntry:.*\\]\\[CourseNode:"+node.getIdent()+"\\].*")) {
 				continue;
 			}
 			
