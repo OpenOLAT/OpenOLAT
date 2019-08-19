@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -63,7 +64,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String MASTERCOACH_CAN_SEE_APPEAL = "mastercoach.can.see.appeal";
 	private static final String MASTERCOACH_CAN_AUTHORIZED_APPEAL = "mastercoach.can.authorized.appeal";
 
-	private static final String PARTICIPANT_CAN_NOTICE = "mastercoach.can.notice";
+	private static final String PARTICIPANT_CAN_NOTICE = "participant.can.notice";
 	
 	private static final String DAILY_ROLL_CALL = "daily.rollcall";
 	
@@ -233,7 +234,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 			teacherCanAuthorizedAbsence = "true".equals(teacherCanAuthorizedAbsenceObj);
 		}
 		
-		String teacherCanSeeAppealObj = getStringPropertyValue(TEACHER_CAN_AUTHORIZED_ABSENCE, true);
+		String teacherCanSeeAppealObj = getStringPropertyValue(TEACHER_CAN_SEE_APPEAL, true);
 		if(StringHelper.containsNonWhitespace(teacherCanSeeAppealObj)) {
 			teacherCanSeeAppeal = "true".equals(teacherCanSeeAppealObj);
 		}
@@ -268,7 +269,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 			masterCoachCanAuthorizedAppeal = "true".equals(masterCoachCanAuthorizedAppealObj);
 		}
 		
-		String participantCanNoticeObj = getStringPropertyValue(MASTERCOACH_CAN_AUTHORIZED_APPEAL, true);
+		String participantCanNoticeObj = getStringPropertyValue(PARTICIPANT_CAN_NOTICE, true);
 		if(StringHelper.containsNonWhitespace(participantCanNoticeObj)) {
 			participantCanNotice = "true".equals(participantCanNoticeObj);
 		}

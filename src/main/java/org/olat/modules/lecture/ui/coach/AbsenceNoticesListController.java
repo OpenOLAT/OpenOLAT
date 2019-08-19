@@ -218,6 +218,10 @@ public class AbsenceNoticesListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoticeCols.type));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(NoticeCols.tools));
 	}
+	
+	protected void reloadModel() {
+		loadModel(lastSearchParams);
+	}
 
 	protected void loadModel(AbsenceNoticeSearchParameters searchParams) {
 		lastSearchParams = searchParams;
@@ -485,7 +489,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 	private void doEdit(UserRequest ureq, AbsenceNoticeRow row) {
 		AbsenceNotice notice = lectureService.getAbsenceNotice(row.getAbsenceNotice());
 
-		editNoticeCtrl = new EditNoticeController(ureq, getWindowControl(), notice);
+		editNoticeCtrl = new EditNoticeController(ureq, getWindowControl(), notice, secCallback);
 		listenTo(editNoticeCtrl);
 		
 		String title = translate(AbsenceNoticeHelper.getEditKey(row.getAbsenceNotice()));

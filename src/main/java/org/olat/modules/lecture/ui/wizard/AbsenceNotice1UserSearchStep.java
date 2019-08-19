@@ -27,6 +27,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 
 /**
  * 
@@ -38,10 +39,10 @@ public class AbsenceNotice1UserSearchStep extends BasicStep {
 	
 	private final EditAbsenceNoticeWrapper noticeWrapper;
 	
-	public AbsenceNotice1UserSearchStep(UserRequest ureq, EditAbsenceNoticeWrapper noticeWrapper) {
+	public AbsenceNotice1UserSearchStep(UserRequest ureq, EditAbsenceNoticeWrapper noticeWrapper, LecturesSecurityCallback secCallback) {
 		super(ureq);
 		this.noticeWrapper = noticeWrapper;
-		setNextStep(new AbsenceNotice2ConfirmUserStep(ureq));
+		setNextStep(new AbsenceNotice2ConfirmUserStep(ureq, secCallback));
 		setI18nTitleAndDescr("user.search.title", "user.search.title");
 	}
 

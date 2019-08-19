@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.ui.profile;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.olat.admin.user.UserShortDescription;
@@ -29,20 +31,38 @@ import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
+import org.olat.core.util.mail.ContactList;
+import org.olat.core.util.mail.MailBundle;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailContextImpl;
+import org.olat.core.util.mail.MailHelper;
+import org.olat.core.util.mail.MailLoggingAction;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailerResult;
+import org.olat.modules.lecture.AbsenceNoticeType;
+import org.olat.modules.lecture.LectureService;
+import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 import org.olat.modules.lecture.ui.AppealListRepositoryController;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.lecture.ui.coach.DispensationsController;
+import org.olat.modules.lecture.ui.wizard.AbsenceNotice3LecturesEntriesStep;
 import org.olat.user.DisplayPortraitController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -52,22 +72,33 @@ import org.olat.user.DisplayPortraitController;
  */
 public class IdentityProfileController extends BasicController implements Activateable2 {
 	
-	private Link addAbsence;
-	private Link addNoticeOfAbsence;
-	private Link addDispensation;
 	private Link backLink;
+	private Link addAbsence;
+	private Link addDispensation;
+	private Link addNoticeOfAbsence;
 	
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
 	
+	private final Identity profiledIdentity;
+	private final LecturesSecurityCallback secCallback;
+	
+	private StepsMainRunController addNoticeCtrl;
 	private DispensationsController dispensationsCtrl;
 	private AppealListRepositoryController appealsCtrl;
 	private DailyOverviewProfilController dailyOverviewCtrl;
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	
+	@Autowired
+	private MailManager mailService;
+	@Autowired
+	private LectureService lectureService;
+	
 	public IdentityProfileController(UserRequest ureq, WindowControl wControl, Identity profiledIdentity,
 			LecturesSecurityCallback secCallback, boolean withBack) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
+		this.profiledIdentity = profiledIdentity;
+		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("profile");
 		if(withBack) {
@@ -148,6 +179,106 @@ public class IdentityProfileController extends BasicController implements Activa
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == backLink) {
 			fireEvent(ureq, Event.BACK_EVENT);
+		} else if(addAbsence == source) {
+			doAddNotice(ureq, AbsenceNoticeType.absence);
+		} else if(addNoticeOfAbsence == source) {
+			doAddNotice(ureq, AbsenceNoticeType.notified);
+		} else if(addDispensation == source) {
+			doAddNotice(ureq, AbsenceNoticeType.dispensation);
+		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(addNoticeCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					updateModels();
+				}
+				cleanUp();
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(addNoticeCtrl);
+		addNoticeCtrl = null;
+	}
+	
+	private void updateModels() {
+		if(dispensationsCtrl != null) {
+			dispensationsCtrl.reloadModel();
+		}
+		if(dailyOverviewCtrl != null) {
+			dailyOverviewCtrl.reloadModel();
+		}
+	}
+	
+	private void doAddNotice(UserRequest ureq, AbsenceNoticeType type) {
+		final EditAbsenceNoticeWrapper noticeWrapper = new EditAbsenceNoticeWrapper(type);
+		noticeWrapper.setIdentity(profiledIdentity);
+		noticeWrapper.setCurrentDate(new Date());
+		
+		AbsenceNotice3LecturesEntriesStep step = new AbsenceNotice3LecturesEntriesStep(ureq, noticeWrapper, secCallback, true);
+		StepRunnerCallback stop = (uureq, swControl, runContext) -> {
+			if(noticeWrapper.getAbsenceNotice() == null) {
+				Identity absentIdentity = noticeWrapper.getIdentity();
+				lectureService.createAbsenceNotice(absentIdentity, noticeWrapper.getAbsenceNoticeType(), noticeWrapper.getAbsenceNoticeTarget(),
+						noticeWrapper.getStartDate(), noticeWrapper.getEndDate(),
+						noticeWrapper.getAbsenceCategory(), noticeWrapper.getAbsenceReason(), noticeWrapper.getAuthorized(),
+						noticeWrapper.getEntries(), noticeWrapper.getLectureBlocks());
+			}
+			
+			if(noticeWrapper.getIdentitiesToContact() != null && !noticeWrapper.getIdentitiesToContact().isEmpty()) {
+				inform(ureq, noticeWrapper);
+			}
+			return StepsMainRunController.DONE_MODIFIED;
+		};
+		
+		String title = translate("add.dispensation.title");
+		if(type == AbsenceNoticeType.notified) {
+			title = translate("add.notice.absence.title");
+		} else if(type == AbsenceNoticeType.absence) {
+			title = translate("add.absence.title");
+		}
+		
+		removeAsListenerAndDispose(addNoticeCtrl);
+		addNoticeCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
+		listenTo(addNoticeCtrl);
+		getWindowControl().pushAsModalDialog(addNoticeCtrl.getInitialComponent());
+	}
+	
+
+	private void inform(UserRequest ureq, EditAbsenceNoticeWrapper noticeWrapper) {
+		boolean success = false;
+		try {
+			List<ContactList> contactList = new ArrayList<>();
+			ContactList memberList = new ContactList(translate("contact.teachers.list.name"));
+			memberList.addAllIdentites(noticeWrapper.getIdentitiesToContact());
+			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
+			MailBundle bundle = new MailBundle();
+			bundle.setContext(context);
+			bundle.setFromId(getIdentity());						
+			bundle.setContactLists(contactList);
+			bundle.setContent(noticeWrapper.getContactSubject(), noticeWrapper.getContactSubject());
+			MailerResult result = mailService.sendMessage(bundle);
+			success = result.isSuccessful();
+			if (success) {
+				showInfo("msg.send.ok");
+				// do logging
+				ThreadLocalUserActivityLogger.log(MailLoggingAction.MAIL_SENT, getClass());
+				fireEvent(ureq, Event.DONE_EVENT);
+			} else {
+				Roles roles = ureq.getUserSession().getRoles();
+				boolean admin = roles.isAdministrator() || roles.isSystemAdmin();
+				MailHelper.printErrorsAndWarnings(result, getWindowControl(), admin, getLocale());
+				fireEvent(ureq, Event.FAILED_EVENT);
+			}
+		} catch (Exception e) {
+			logError("", e);
+			showWarning("error.msg.send.nok");
 		}
 	}
 }

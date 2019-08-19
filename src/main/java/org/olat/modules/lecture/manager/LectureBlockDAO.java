@@ -554,11 +554,24 @@ public class LectureBlockDAO {
 		if(searchParams.getManager() != null) {
 			sb.and()
 			  .append(" exists (select membership.key from repoentrytogroup as rel, bgroupmember as membership")
-	          .append("    where rel.entry.key=entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
-	          .append("      and membership.role in ('").append(OrganisationRoles.administrator.name()).append("','").append(OrganisationRoles.learnresourcemanager.name()).append("','").append(OrganisationRoles.lecturemanager.name()).append("','").append(GroupRoles.owner.name()).append("')")
+	          .append("   where rel.entry.key=entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
+	          .append("   and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.lecturemanager, GroupRoles.owner.name())
 	          .append(" )");
 		}
-		
+		if(searchParams.getMasterCoach() != null) {
+			sb.and()
+			  .append(" exists (select mcMembership.key from lectureblocktogroup as blockToCoachGroup, bgroupmember as mcMembership")
+	          .append("   where block.key=blockToCoachGroup.lectureBlock.key and blockToCoachGroup.group.key=mcMembership.group.key and mcMembership.identity.key=:masterCoachKey")
+	          .append("   and mcMembership.role ").in(CurriculumRoles.mastercoach)
+	          .append(" )");
+		}
+		if(searchParams.getParticipant() != null) {
+			sb.and()
+			  .append(" exists (select participantship.key from lectureblocktogroup as blockToParticipantGroup, bgroupmember as participantship")
+	          .append("   where block.key=blockToParticipantGroup.lectureBlock.key and blockToParticipantGroup.group.key=participantship.group.key and participantship.identity.key=:participantKey")
+	          .append("   and participantship.role ").in(GroupRoles.participant)
+	          .append(" )");
+		}
 		if(searchParams.getTeacher() != null) {
 			sb.and()
 			  .append(" exists (select teachership.key from bgroupmember teachership where")
@@ -607,8 +620,14 @@ public class LectureBlockDAO {
 		if(searchParams.getManager() != null) {
 			query.setParameter("managerKey", searchParams.getManager().getKey());
 		}
+		if(searchParams.getMasterCoach() != null) {
+			query.setParameter("masterCoachKey", searchParams.getMasterCoach().getKey());
+		}
 		if(searchParams.getTeacher() != null) {
 			query.setParameter("teacherKey", searchParams.getTeacher().getKey());
+		}
+		if(searchParams.getParticipant() != null) {
+			query.setParameter("participantKey", searchParams.getParticipant().getKey());
 		}
 	}
 

@@ -58,11 +58,11 @@ import org.olat.repository.RepositoryEntry;
 public class LecturesCoachingController extends BasicController implements Activateable2 {
 	
 	private Link reportLink;
+	private Link appealsLink;
 	private final Link cockpitLink;
 	private final Link lecturesLink;
 	private final Link absenceLink;
 	private final Link dispensationLink;
-	private final Link appealsLink;
 	private final Link lecturesSearchLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -95,8 +95,11 @@ public class LecturesCoachingController extends BasicController implements Activ
 		segmentView.addSegment(absenceLink, false);
 		dispensationLink = LinkFactory.createLink("coach.dispensation", mainVC, this);
 		segmentView.addSegment(dispensationLink, false);
-		appealsLink = LinkFactory.createLink("coach.appeals", mainVC, this);
-		segmentView.addSegment(appealsLink, false);
+		
+		if(secCallback.canSeeAppeals()) {
+			appealsLink = LinkFactory.createLink("coach.appeals", mainVC, this);
+			segmentView.addSegment(appealsLink, false);
+		}
 		
 		lecturesSearchLink = LinkFactory.createLink("coach.lectures.search", mainVC, this);
 		segmentView.addSegment(lecturesSearchLink, false);
@@ -132,14 +135,15 @@ public class LecturesCoachingController extends BasicController implements Activ
 				doOpenLectures(ureq);
 				segmentView.select(lecturesLink);
 			} else if("Absences".equalsIgnoreCase(type)) {
-				doAbsences(ureq);
 				segmentView.select(absenceLink);
 			} else if("Dispenses".equalsIgnoreCase(type)) {
 				doDispenses(ureq);
 				segmentView.select(dispensationLink);
 			} else if("Appeals".equalsIgnoreCase(type)) {
-				doAppeals(ureq);
-				segmentView.select(appealsLink);
+				if(secCallback.canSeeAppeals()) {
+					doAppeals(ureq);
+					segmentView.select(appealsLink);
+				}
 			} else if("Search".equalsIgnoreCase(type)) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doOpenLecturesSearch(ureq).activate(ureq, subEntries, entries.get(0).getTransientState());

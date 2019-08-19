@@ -41,6 +41,8 @@ import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LectureRoles;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,6 +67,7 @@ public class EditReasonController extends FormBasicController {
 	private final boolean wizard;
 	private final Identity noticedIdentity;
 	private final EditAbsenceNoticeWrapper noticeWrapper;
+	private final LecturesSecurityCallback secCallback;
 	private List<AbsenceCategory> absenceCategories;
 	
 	@Autowired
@@ -73,10 +76,11 @@ public class EditReasonController extends FormBasicController {
 	private LectureService lectureService;
 	
 	public EditReasonController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			EditAbsenceNoticeWrapper noticeWrapper, boolean wizard) {
+			EditAbsenceNoticeWrapper noticeWrapper, LecturesSecurityCallback secCallback, boolean wizard) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		setTranslator(Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		this.wizard = wizard;
+		this.secCallback = secCallback;
 		this.noticeWrapper = noticeWrapper;
 		this.noticedIdentity = noticeWrapper.getIdentity();
 		absenceCategories = lectureService.getAllAbsencesCategories();
@@ -97,12 +101,14 @@ public class EditReasonController extends FormBasicController {
 			translate("noticed.type.absence"), translate("noticed.type.notified"), translate("noticed.type.dispensation")
 		};
 		typeEl = uifactory.addRadiosHorizontal("noticed.type", "noticed.type", formLayout, typeKeys, typeValues);
+		typeEl.setVisible(secCallback.viewAs() != LectureRoles.participant);
 		typeEl.addActionListener(FormEvent.ONCHANGE);
 		if(noticeWrapper.getAbsenceNoticeType() != null) {
 			typeEl.select(noticeWrapper.getAbsenceNoticeType().name(), true);
 		}
 		String[] authorizedValues = new String[] { translate("noticed.autorized.yes") };
 		authorizedEl = uifactory.addCheckboxesHorizontal("noticed.autorized", null, formLayout, authorizedKeys, authorizedValues);
+		authorizedEl.setVisible(secCallback.viewAs() != LectureRoles.participant);
 		if(noticeWrapper.getAuthorized() != null && noticeWrapper.getAuthorized().booleanValue()) {
 			authorizedEl.select(authorizedKeys[0], true);
 		}
@@ -160,7 +166,7 @@ public class EditReasonController extends FormBasicController {
 		}
 		
 		typeEl.clearError();
-		if(!typeEl.isOneSelected()) {
+		if(typeEl.isVisible() && !typeEl.isOneSelected()) {
 			typeEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
 		}
@@ -185,7 +191,15 @@ public class EditReasonController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		noticeWrapper.setAbsenceReason(reasonEl.getValue());
 		noticeWrapper.setAbsenceCategory(getAbsenceCategory());
-		noticeWrapper.setAuthorized(authorizedEl.isAtLeastSelected(1));
-		noticeWrapper.setAbsenceNoticeType(AbsenceNoticeType.valueOf(typeEl.getSelectedKey()));
+		if(authorizedEl.isVisible()) {
+			noticeWrapper.setAuthorized(authorizedEl.isAtLeastSelected(1));
+		} else {
+			noticeWrapper.setAuthorized(null);
+		}
+		if(typeEl.isVisible()) {
+			noticeWrapper.setAbsenceNoticeType(AbsenceNoticeType.valueOf(typeEl.getSelectedKey()));
+		} else if(noticeWrapper.getAbsenceNoticeType() != null)  {
+			noticeWrapper.setAbsenceNoticeType(noticeWrapper.getAbsenceNoticeType());
+		}
 	}
 }

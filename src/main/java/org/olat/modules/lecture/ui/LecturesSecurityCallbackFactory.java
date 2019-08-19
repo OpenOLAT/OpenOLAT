@@ -76,12 +76,36 @@ public class LecturesSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canSeeAppeals() {
+			if(!lectureModule.isAbsenceAppealEnabled()) {
+				return false;
+			}
+			
+			if(viewAs == LectureRoles.teacher) {
+				return teacherRole && lectureModule.isTeacherCanSeeAppeal();
+			}
+			if(viewAs == LectureRoles.mastercoach) {
+				return masterCoachRole && lectureModule.isMasterCoachCanSeeAppeal();
+			}
+			if(viewAs == LectureRoles.lecturemanager) {
+				return adminRole && lectureModule.isAbsenceAppealEnabled();
+			}
+			return false;
+		}
+
+		@Override
 		public boolean canApproveAppeal() {
 			if(adminRole) {
 				return true;
 			}
-			return (masterCoachRole && lectureModule.isMasterCoachCanAuthorizedAppeal())
-					|| (teacherRole && lectureModule.isTeacherCanAuthorizedAppeal());
+			
+			if(viewAs == LectureRoles.teacher) {
+				return teacherRole && lectureModule.isTeacherCanAuthorizedAppeal();
+			}
+			if(viewAs == LectureRoles.mastercoach) {
+				return masterCoachRole && lectureModule.isMasterCoachCanAuthorizedAppeal();
+			}
+			return false;
 		}
 
 		@Override

@@ -443,7 +443,7 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		noticeWrapper.setPredefinedLectureBlocks(lectureBlocksForIdentity);
 		noticeWrapper.setCurrentDate(currentDate);
 		
-		AbsenceNotice3LecturesEntriesStep step = new AbsenceNotice3LecturesEntriesStep(ureq, noticeWrapper, true);
+		AbsenceNotice3LecturesEntriesStep step = new AbsenceNotice3LecturesEntriesStep(ureq, noticeWrapper, secCallback, true);
 		StepRunnerCallback stop = (uureq, swControl, runContext) -> {
 			if(noticeWrapper.getAbsenceNotice() == null) {
 				Identity absentIdentity = noticeWrapper.getIdentity();

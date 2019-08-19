@@ -53,6 +53,7 @@ import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +80,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private final boolean wizard;
 	private final Formatter formatter;
 	private final Identity noticedIdentity;
+	private final LecturesSecurityCallback secCallback;
 	private final EditAbsenceNoticeWrapper noticeWrapper;
 	private List<RepositoryEntry> loadedRepositoryEntries;
 	private List<LectureBlockWithTeachers> loadedLectureBlocks;
@@ -89,10 +91,11 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private LectureService lectureService;
 	
 	public EditDatesLecturesEntriesController(UserRequest ureq, WindowControl wControl, Form rootForm,
-			EditAbsenceNoticeWrapper noticeWrapper, boolean wizard) {
+			EditAbsenceNoticeWrapper noticeWrapper, LecturesSecurityCallback secCallback, boolean wizard) {
 		super(ureq, wControl, LAYOUT_DEFAULT, null, rootForm);
 		setTranslator(Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		this.wizard = wizard;
+		this.secCallback = secCallback;
 		this.noticeWrapper = noticeWrapper;
 		this.noticedIdentity = noticeWrapper.getIdentity();
 		formatter = Formatter.getInstance(getLocale());
@@ -168,6 +171,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		durationEl.setMandatory(true);
 
 		datesEl = uifactory.addDateChooser("noticed.start", null, startDate, formLayout);
+		datesEl.addActionListener(FormEvent.ONCHANGE);
 		datesEl.setDomReplacementWrapperRequired(false);
 		datesEl.setSecondDate(endDate);
 		datesEl.setSeparator("noticed.till");
@@ -266,7 +270,11 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private Map<RepositoryEntry,Long> getRepositoryEntries() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 
-		searchParams.setTeacher(getIdentity());
+		searchParams.setViewAs(getIdentity(), secCallback.viewAs());
+		if(noticedIdentity != null) {
+			searchParams.setParticipant(noticedIdentity);
+		}
+
 		searchParams.setStartDate(datesEl.getDate());
 		if(durationEl.isSelected(0)) {
 			searchParams.setEndDate(CalendarUtils.endOfDay(searchParams.getStartDate()));
@@ -311,7 +319,10 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		if(noticeWrapper.getPredefinedLectureBlocks() != null && !noticeWrapper.getPredefinedLectureBlocks().isEmpty()) {
 			searchParams.setLectureBlocks(noticeWrapper.getPredefinedLectureBlocks());
 		} else {
-			searchParams.setTeacher(getIdentity());
+			searchParams.setViewAs(getIdentity(), secCallback.viewAs());
+			if(noticedIdentity != null) {
+				searchParams.setParticipant(noticedIdentity);
+			}
 			searchParams.setStartDate(datesEl.getDate());
 			if(durationEl.isSelected(0)) {
 				searchParams.setEndDate(CalendarUtils.endOfDay(searchParams.getStartDate()));
@@ -427,7 +438,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if(durationEl == source) {
 			updateDuration();
-		} else if(targetsEl == source) {
+		} else if(targetsEl == source || datesEl == source) {
 			updateTargets();
 		}
 		super.formInnerEvent(ureq, source, event);

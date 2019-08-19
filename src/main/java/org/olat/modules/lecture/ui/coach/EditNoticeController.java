@@ -35,6 +35,7 @@ import org.olat.modules.lecture.AbsenceNoticeToRepositoryEntry;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -55,7 +56,7 @@ public class EditNoticeController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 	
-	public EditNoticeController(UserRequest ureq, WindowControl wControl, AbsenceNotice notice) {
+	public EditNoticeController(UserRequest ureq, WindowControl wControl, AbsenceNotice notice, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "edit_notice");
 		
 		absenceNotice = notice;
@@ -73,10 +74,10 @@ public class EditNoticeController extends FormBasicController {
 			noticeWrapper.setEntries(entries);
 		}
 		
-		datesAndLecturesCtrl = new EditDatesLecturesEntriesController(ureq, wControl, mainForm, noticeWrapper, false);
+		datesAndLecturesCtrl = new EditDatesLecturesEntriesController(ureq, wControl, mainForm, noticeWrapper, secCallback, false);
 		listenTo(datesAndLecturesCtrl);
 
-		editReasonCtrl = new EditReasonController(ureq, wControl, mainForm, noticeWrapper, false);
+		editReasonCtrl = new EditReasonController(ureq, wControl, mainForm, noticeWrapper, secCallback, false);
 		listenTo(editReasonCtrl);
 		
 		initForm(ureq);

@@ -90,6 +90,11 @@ public class DailyOverviewProfilController extends BasicController {
 		lectureBlocksCtrl.setCurrentDate(currentDate);
 		absencesListCtrl.setCurrentDate(currentDate);
 	}
+	
+	
+	public void reloadModel() {
+		absencesListCtrl.reloadModel();
+	}
 
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {

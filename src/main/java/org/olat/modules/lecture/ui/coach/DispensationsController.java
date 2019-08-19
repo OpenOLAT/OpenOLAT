@@ -70,6 +70,7 @@ public class DispensationsController extends BasicController {
 	private final VelocityContainer mainVC;
 
 	private final boolean withAddAbsence;
+	private final LecturesSecurityCallback secCallback;
 	private final AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
 	
 	private StepsMainRunController addNoticeCtrl;
@@ -85,6 +86,7 @@ public class DispensationsController extends BasicController {
 			LecturesSecurityCallback secCallback, boolean withSearch, boolean withAddAbsence) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		
+		this.secCallback = secCallback;
 		this.withAddAbsence = withAddAbsence;
 		
 		searchParams.addTypes(AbsenceNoticeType.notified, AbsenceNoticeType.dispensation);
@@ -153,6 +155,10 @@ public class DispensationsController extends BasicController {
 		}
 	}
 	
+	public void reloadModel() {
+		noticesListCtlr.reloadModel();
+	}
+	
 	private void doSearch(SearchAbsenceNoticeEvent event) {
 		searchParams.setStartDate(event.getStartDate());
 		searchParams.setEndDate(event.getEndDate());
@@ -167,7 +173,7 @@ public class DispensationsController extends BasicController {
 		if(!withAddAbsence) return;
 		
 		final EditAbsenceNoticeWrapper noticeWrapper = new EditAbsenceNoticeWrapper(type);
-		AbsenceNotice1UserSearchStep step = new AbsenceNotice1UserSearchStep(ureq, noticeWrapper);
+		AbsenceNotice1UserSearchStep step = new AbsenceNotice1UserSearchStep(ureq, noticeWrapper, secCallback);
 		StepRunnerCallback stop = (uureq, swControl, runContext) -> {
 			if(noticeWrapper.getAbsenceNotice() == null) {
 				Identity absentIdentity = noticeWrapper.getIdentity();

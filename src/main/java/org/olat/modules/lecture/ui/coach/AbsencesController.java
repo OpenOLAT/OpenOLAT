@@ -175,7 +175,7 @@ public class AbsencesController extends BasicController {
 	
 	private void doAddNotice(UserRequest ureq) {
 		final EditAbsenceNoticeWrapper noticeWrapper = new EditAbsenceNoticeWrapper(AbsenceNoticeType.absence);
-		AbsenceNotice1UserSearchStep step = new AbsenceNotice1UserSearchStep(ureq, noticeWrapper);
+		AbsenceNotice1UserSearchStep step = new AbsenceNotice1UserSearchStep(ureq, noticeWrapper, secCallback);
 		StepRunnerCallback stop = (uureq, swControl, runContext) -> {
 			if(noticeWrapper.getAbsenceNotice() == null) {
 				Identity absentIdentity = noticeWrapper.getIdentity();
