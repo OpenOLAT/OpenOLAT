@@ -48,8 +48,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.DBRuntimeException;
-import org.olat.core.logging.KnownIssueException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -58,7 +56,6 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
-import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -551,99 +548,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	}
 
 	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserCoachComment(java.lang.String,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		if (coachComment != null) {
-			am.saveNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity(), coachComment);
-		}
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserScoreEvaluation(org.olat.course.run.scoring.ScoreEvaluation,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
-	@Override
-	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity, boolean incrementAttempts, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		try {
-			am.saveScoreEvaluation(this, coachingIdentity, mySelf, scoreEvaluation, userCourseEnvironment, incrementAttempts, by);
-		} catch(DBRuntimeException ex) {
-			throw new KnownIssueException("DBRuntimeException - Row was updated or deleted...", 3570, ex);
-		}
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserUserComment(java.lang.String,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
-	@Override
-	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if (userComment != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeComment(this, coachingIdentity, mySelf, userComment);
-		}
-	}
-	
-	@Override
-	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if(document != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.addIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document, filename);
-		}
-	}
-
-	@Override
-	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if(document != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.removeIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document);
-		}
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserCoachComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getNodeCoachComment(this, mySelf);
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserUserComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		return am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-	}
-	
-	@Override
-	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		return am.getIndividualAssessmentDocuments(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-	}
-
-	@Override
-	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
-		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getUserNodeLog(this, mySelf);
-	}
-
-	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
 	@Override
@@ -794,26 +698,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	}
 
 	@Override
-	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getNodeAttempts(this, mySelf);
-	}
-
-	@Override
 	public boolean hasAttemptsConfigured() {
 		return true;
 	}
 
-	@Override
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
-		if (userAttempts != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeAttempts(this, coachingIdentity, mySelf, userAttempts, by);
-		}
-	}
-	
 	public void pullAssessmentTestSession(AssessmentTestSession session, UserCourseEnvironment assessedUserCourseenv, Identity coachingIdentity, Role by) {
 		Boolean visibility;
 		AssessmentEntryStatus assessmentStatus;
@@ -829,41 +717,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		updateUserScoreEvaluation(sceval, assessedUserCourseenv, coachingIdentity, true, by);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
-	}
 	
 	@Override
 	public boolean hasCompletion() {
 		return IQEditController.CONFIG_VALUE_QTI21.equals(getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI));
-	}
-
-	@Override
-	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getNodeCurrentRunCompletion(this, mySelf);
-	}
-	
-	@Override
-	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
-			Double currentCompletion, AssessmentRunStatus runStatus, Role doneBy) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.updateCurrentCompletion(this, assessedIdentity, userCourseEnvironment, currentCompletion, runStatus, doneBy);
-	}
-	
-	@Override
-	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	/**

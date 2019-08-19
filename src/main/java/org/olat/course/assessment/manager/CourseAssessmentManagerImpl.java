@@ -404,7 +404,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
-	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity,
+	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, Identity assessedIdentity,
 			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnv,
 			boolean incrementUserAttempts, Role by) {
 		final ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());

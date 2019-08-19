@@ -37,7 +37,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -261,6 +260,7 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	 * @param identity
 	 * @return
 	 */
+	@Override
 	public Long getAssessmentID(CourseNode courseNode, Identity identity) {
 		return nodeAssessmentID.get(courseNode.getIdent());
 	}
@@ -270,12 +270,8 @@ final class PreviewAssessmentManager implements AssessmentManager {
 		return null;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.course.assessment.AssessmentManager#saveScoreEvaluation(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, org.olat.course.run.scoring.ScoreEvaluation)
-	 */
 	@Override
-	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity, ScoreEvaluation scoreEvaluation, 
+	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, Identity assessedIdentity, ScoreEvaluation scoreEvaluation, 
 			UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts, Role by) {
 		
 		saveNodeScore(courseNode, scoreEvaluation.getScore());

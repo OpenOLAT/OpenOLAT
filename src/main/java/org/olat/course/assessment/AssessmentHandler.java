@@ -1,30 +1,23 @@
 /**
-
-* OLAT - Online Learning and Training<br>
-* http://www.olat.org
-* <p>
-* Licensed under the Apache License, Version 2.0 (the "License"); <br>
-* you may not use this file except in compliance with the License.<br>
-* You may obtain a copy of the License at
-* <p>
-* http://www.apache.org/licenses/LICENSE-2.0
-* <p>
-* Unless required by applicable law or agreed to in writing,<br>
-* software distributed under the License is distributed on an "AS IS" BASIS, <br>
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
-* See the License for the specific language governing permissions and <br>
-* limitations under the License.
-* <p>
-* Copyright (c) since 2004 at Multimedia- & E-Learning Services (MELS),<br>
-* University of Zurich, Switzerland.
-* <hr>
-* <a href="http://www.openolat.org">
-* OpenOLAT - Online Learning and Training</a><br>
-* This file has been modified by the OpenOLAT community. Changes are licensed
-* under the Apache 2.0 license as the original file.
-*/
-
-package org.olat.course.nodes;
+ * <a href="http://www.openolat.org">
+ * OpenOLAT - Online Learning and Training</a><br>
+ * <p>
+ * Licensed under the Apache License, Version 2.0 (the "License"); <br>
+ * you may not use this file except in compliance with the License.<br>
+ * You may obtain a copy of the License at the
+ * <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache homepage</a>
+ * <p>
+ * Unless required by applicable law or agreed to in writing,<br>
+ * software distributed under the License is distributed on an "AS IS" BASIS, <br>
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. <br>
+ * See the License for the specific language governing permissions and <br>
+ * limitations under the License.
+ * <p>
+ * Initial code contributed and copyrighted by<br>
+ * frentix GmbH, http://www.frentix.com
+ * <p>
+ */
+package org.olat.course.assessment;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -39,24 +32,16 @@ import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
-
 /**
- * Initial Date:  Jun 18, 2004
- * @author gnaegi
+ * 
+ * Initial date: 18 Aug 2019<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
- * Comment: 
- * All course nodes that are of an assessement type must implement this 
- * interface so that the assessment results can be managed by the assessment
- * tool.
  */
-public interface AssessableCourseNode extends CourseNode {
+public interface AssessmentHandler {
 	
-	/**
-	 * 
-	 * @return
-	 */
 	public boolean isAssessedBusinessGroups();
-    
+	
 	/**
 	 * @return Returns the maximal score that can be achieved on this node. Throws 
 	 * an OLATRuntimeException if hasScore set to false, maxScore is undefined in this case
@@ -71,7 +56,7 @@ public interface AssessableCourseNode extends CourseNode {
 
 	/**
 	 * @return Returns the passed cut value or null if no such value is defined. A null
-	 * value means that no cut value is definied and therefor the node can be passed having any 
+	 * value means that no cut value is defined and therefore the node can be passed having any 
 	 * score or no score at all. Throws an OLATRuntimeException if hasPassed is set to false, 
 	 * cutValue is undefined in this case
 	 */
@@ -108,7 +93,6 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @return True if this course node can produces a completion variable for the learner
 	 */
 	public boolean hasCompletion();
-
 	
 	/**
 	 * @return True if this course node has additional details to be edited / viewed
@@ -124,6 +108,11 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @return True if this course node has additional result details.
 	 */
 	public boolean hasResultsDetails();
+	
+	/**
+	 * @return True if this course node produces an status variable for the learner
+	 */
+	public boolean hasStatusConfigured();
 
 	
 	/**
@@ -135,6 +124,7 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @return null, if this node cannot deliver any useful scoring info (this is not the case for a test never tried or manual scoring: those have default values 0.0f / false for score/passed; currently only the STNode returns null if there are no scoring rules defined.)
 	 */
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv);
+	
 	
 	/**
 	 * @param userCourseEnvironment
@@ -176,12 +166,6 @@ public interface AssessableCourseNode extends CourseNode {
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback);
-	
 
-	/**
-	 * @return True if this course node produces an status variable for the learner
-	 */
-	public boolean hasStatusConfigured();
-	
 
 }

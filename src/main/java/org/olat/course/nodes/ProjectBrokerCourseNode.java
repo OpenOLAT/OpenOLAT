@@ -81,7 +81,6 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
-import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -106,7 +105,6 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -114,8 +112,6 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
-import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.properties.Property;
@@ -568,117 +564,12 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	}
 
 	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserCoachComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		String coachCommentValue = am.getNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return coachCommentValue;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserUserComment(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		return am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-	}
-	
-	@Override
-	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		return am.getIndividualAssessmentDocuments(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserLog(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
-		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
-		String logValue = am.getUserNodeLog(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return logValue;
-	}
-
-	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
 	 */
 	@Override
 	public boolean isEditableConfigured() {
 		// always true when assessable
 		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserCoachComment(java.lang.String,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		if (coachComment != null) {
-			am.saveNodeCoachComment(this, mySelf, coachComment);
-		}
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserScoreEvaluation(org.olat.course.run.scoring.ScoreEvaluation,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
-	@Override
-	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity, boolean incrementAttempts, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts, by);		
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserUserComment(java.lang.String,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
-	@Override
-	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if (userComment != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeComment(this, coachingIdentity, mySelf, userComment);
-		}
-	}
-	
-	@Override
-	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if(document != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.addIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document, filename);
-		}
-	}
-
-	@Override
-	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if(document != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.removeIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document);
-		}
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		Integer userAttemptsValue = am.getNodeAttempts(this, mySelf);
-		return userAttemptsValue;
-
 	}
 
 	/**
@@ -689,51 +580,9 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#updateUserAttempts(java.lang.Integer,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.core.id.Identity)
-	 */
-	@Override
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
-		if (userAttempts != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeAttempts(this, coachingIdentity, mySelf, userAttempts, by);
-		}
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
-	}
-	
 	@Override
 	public boolean hasCompletion() {
 		return false;
-	}
-
-	@Override
-	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
-		throw new OLATRuntimeException(ProjectBrokerCourseNode.class, "No completion available in project broker nodes", null);
-	}
-	
-	@Override
-	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
-			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
-		throw new OLATRuntimeException(ProjectBrokerCourseNode.class, "Completion variable can't be updated in project broker nodes", null);
-	}
-
-	@Override
-	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	@Override

@@ -72,7 +72,6 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
-import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -101,7 +100,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.properties.Property;
@@ -550,44 +548,13 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	}
 
 	@Override
-	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		return am.getNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-	}
-
-	@Override
-	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		return am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-	}
-
-	@Override
-	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
-		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
-		return am.getUserNodeLog(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-	}
-
-	@Override
 	public boolean isEditableConfigured() {
 		// always true
 		return true;
 	}
 
 	@Override
-	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		if (coachComment != null) {
-			am.saveNodeCoachComment(this, mySelf, coachComment);
-		}
-	}
-
-	@Override
+	//TODO uh anders als die Default Implemntation notwendig?
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEval, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -598,73 +565,13 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	}
 
 	@Override
-	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		if (userComment != null) {
-			am.saveNodeComment(this, coachingIdentity, mySelf, userComment);
-		}
-	}
-
-	@Override
-	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		throw new OLATRuntimeException(STCourseNode.class, "Document can't be uploaded in TA nodes", null);
-	}
-
-	@Override
-	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		throw new OLATRuntimeException(STCourseNode.class, "Document can't be removed in TA nodes", null);
-	}
-
-	@Override
-	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getNodeAttempts(this, mySelf);
-	}
-
-	@Override
 	public boolean hasAttemptsConfigured() {
 		return true;
 	}
 
 	@Override
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
-		if (userAttempts != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeAttempts(this, coachingIdentity, mySelf, userAttempts, by);
-		}
-	}
-
-	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);
-	}
-
-	@Override
 	public boolean hasCompletion() {
 		return false;
-	}
-
-	@Override
-	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
-		throw new OLATRuntimeException(TACourseNode.class, "No completion available in task nodes", null);
-	}
-	
-	@Override
-	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
-			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
-		throw new OLATRuntimeException(TACourseNode.class, "Completion variable can't be updated in task nodes", null);
-	}
-
-	@Override
-	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	@Override

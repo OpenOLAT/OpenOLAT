@@ -53,7 +53,6 @@ import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
-import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -79,7 +78,6 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.forms.EvaluationFormSession;
@@ -405,85 +403,9 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	}
 
 	@Override
-	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		String coachCommentValue = am.getNodeCoachComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return coachCommentValue;
-	}
-
-	@Override
-	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		return am.getNodeComment(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-	}
-	
-	@Override
-	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		return am.getIndividualAssessmentDocuments(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-	}
-
-	@Override
-	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
-		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
-		String logValue = am.getUserNodeLog(this, userCourseEnvironment.getIdentityEnvironment().getIdentity());
-		return logValue;
-	}
-
-	@Override
 	public boolean isEditableConfigured() {
 		// manual scoring fields can be edited manually
 		return true;
-	}
-
-	@Override
-	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
-		if (coachComment != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeCoachComment(this, mySelf, coachComment);
-		}
-	}
-
-	@Override
-	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity, boolean incrementAttempts, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, mySelf, new ScoreEvaluation(scoreEvaluation), userCourseEnvironment, incrementAttempts, by);
-	}
-
-	@Override
-	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if (userComment != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeComment(this, coachingIdentity, mySelf, userComment);
-		}
-	}
-	
-	@Override
-	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if(document != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.addIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document, filename);
-		}
-	}
-
-	@Override
-	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if(document != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.removeIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document);
-		}
-	}
-
-	@Override
-	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
-		throw new OLATRuntimeException(MSCourseNode.class, "No attempts available in MS nodes", null);
-
 	}
 
 	@Override
@@ -492,36 +414,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	}
 
 	@Override
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
-		throw new OLATRuntimeException(MSCourseNode.class, "Attempts variable can't be updated in MS nodes", null);
-	}
-
-	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
-		throw new OLATRuntimeException(MSCourseNode.class, "Attempts variable can't be updated in MS nodes", null);
-	}
-	
-	@Override
 	public boolean hasCompletion() {
 		return false;
-	}
-
-	@Override
-	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
-		throw new OLATRuntimeException(MSCourseNode.class, "No completion available in MS nodes", null);
-	}
-	
-	@Override
-	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
-			Double currentCompletion, AssessmentRunStatus status, Role doneBy) {
-		throw new OLATRuntimeException(MSCourseNode.class, "Completion variable can't be updated in MS nodes", null);
-	}
-
-	@Override
-	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	@Override

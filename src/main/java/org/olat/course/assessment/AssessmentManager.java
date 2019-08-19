@@ -32,7 +32,6 @@ import java.util.List;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.event.GenericEventListener;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -245,7 +244,7 @@ public interface AssessmentManager {
 	 * @param incrementUserAttempts
 	 */
 	
-	public void saveScoreEvaluation(AssessableCourseNode courseNode, Identity identity, Identity assessedIdentity,
+	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, Identity assessedIdentity,
 			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
 			boolean incrementUserAttempts, Role by);
 	
