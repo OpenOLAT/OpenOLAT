@@ -87,6 +87,7 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.model.AbsenceNoticeImpl;
 import org.olat.modules.lecture.model.AbsenceNoticeInfos;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.IdentityRateWarning;
@@ -513,11 +514,18 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	
 	@Override
 	public AbsenceNotice createAbsenceNotice(Identity absentIdentity, AbsenceNoticeType type, AbsenceNoticeTarget target, Date start, Date end,
-			AbsenceCategory category, String absenceRason, Boolean authorized, List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks) {
+			AbsenceCategory category, String absenceRason, Boolean authorized, List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks,
+			Identity actingIdentity) {
 		if(type == AbsenceNoticeType.dispensation) {
 			authorized = Boolean.TRUE;
 		}
-		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(absentIdentity, type, target, start, end, category, absenceRason, authorized);
+		Identity authorizer = null;
+		if(authorized != null && authorized.booleanValue()) {
+			authorizer = actingIdentity;
+		}
+		
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(absentIdentity, type, target, start, end,
+				category, absenceRason, authorized, authorizer, actingIdentity);
 		if(entries != null && !entries.isEmpty()) {
 			for(RepositoryEntry entry:entries) {
 				absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);
@@ -535,9 +543,12 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 	
 	@Override
-	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, List<RepositoryEntry> entries,
-			List<LectureBlock> lectureBlocks) {
-
+	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
+			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks) {
+		
+		if(authorizer != null && absenceNotice.getAuthorizer() == null) {
+			((AbsenceNoticeImpl)absenceNotice).setAuthorizer(authorizer);
+		}
 		AbsenceNotice notice = absenceNoticeDao.updateAbsenceNotice(absenceNotice);
 		List<AbsenceNoticeToLectureBlock> currentNoticeToBlocks = absenceNoticeToLectureBlockDao.getRelations(absenceNotice);
 		List<AbsenceNoticeToRepositoryEntry> currentNoticeToEntries = absenceNoticeToRepositoryEntryDao.getRelations(absenceNotice);

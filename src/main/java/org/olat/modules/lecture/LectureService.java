@@ -286,16 +286,18 @@ public interface LectureService {
 	 */
 	public AbsenceNotice createAbsenceNotice(Identity absentIdentity, AbsenceNoticeType type, AbsenceNoticeTarget target,
 			Date startDate, Date endDate, AbsenceCategory category, String absenceRason, Boolean authorized,
-			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks);
+			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks, Identity actingIdentity);
 	
 	/**
 	 * 
 	 * @param absenceNotice The absence notice to update
+	 * @param authorizer The user which authorize the absence (or null)
 	 * @param entries A new list of repository entries
 	 * @param lectureBlocks Or a new list of lecture blocks
 	 * @return A refreshed absence notice
 	 */
-	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks);
+	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
+			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks);
 	
 	/**
 	 * Reload the absence notice.

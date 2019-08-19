@@ -63,5 +63,9 @@ public interface AbsenceNotice extends AbsenceNoticeRef, ModifiedInfo, CreateInf
 	public Boolean getAbsenceAuthorized();
 
 	public void setAbsenceAuthorized(Boolean absenceAuthorized);
+	
+	public Identity getNotifier();
+	
+	public Identity getAuthorizer();
 
 }

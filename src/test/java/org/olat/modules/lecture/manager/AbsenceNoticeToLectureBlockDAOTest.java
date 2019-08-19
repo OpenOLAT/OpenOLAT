@@ -56,7 +56,7 @@ public class AbsenceNoticeToLectureBlockDAOTest extends OlatTestCase {
 	public void createAbsenceNoticeToLectureBlock() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null);
+				null, null, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 
 		LectureBlock lectureBlock = createLectureBlock();

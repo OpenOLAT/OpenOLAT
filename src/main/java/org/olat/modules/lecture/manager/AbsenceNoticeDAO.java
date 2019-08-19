@@ -62,7 +62,8 @@ public class AbsenceNoticeDAO {
 	private DB dbInstance;
 	
 	public AbsenceNotice createAbsenceNotice(Identity identity, AbsenceNoticeType type, AbsenceNoticeTarget target,
-			Date start, Date end, AbsenceCategory category, String absenceRason, Boolean authorized) {
+			Date start, Date end, AbsenceCategory category, String absenceRason, Boolean authorized,
+			Identity authorizer, Identity notifier) {
 		AbsenceNoticeImpl notice = new AbsenceNoticeImpl();
 		notice.setCreationDate(new Date());
 		notice.setLastModified(notice.getCreationDate());
@@ -74,6 +75,8 @@ public class AbsenceNoticeDAO {
 		notice.setNoticeTarget(target);
 		notice.setAbsenceAuthorized(authorized);
 		notice.setIdentity(identity);
+		notice.setNotifier(notifier);
+		notice.setAuthorizer(authorizer);
 		dbInstance.getCurrentEntityManager().persist(notice);
 		return notice;
 	}

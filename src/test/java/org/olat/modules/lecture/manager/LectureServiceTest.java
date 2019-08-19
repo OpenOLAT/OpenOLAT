@@ -380,7 +380,7 @@ public class LectureServiceTest extends OlatTestCase {
 		List<LectureBlock> lectureBlocks = new ArrayList<>();
 		lectureBlocks.add(block1);
 		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null, null, lectureBlocks);
+				null, null, null, null, null, null, lectureBlocks, teacher);
 		dbInstance.commitAndCloseSession();
 
 		// first roll call
@@ -421,7 +421,7 @@ public class LectureServiceTest extends OlatTestCase {
 		List<RepositoryEntry> entries = new ArrayList<>();
 		entries.add(entry);
 		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
-				null, null, null, null, null, entries, null);
+				null, null, null, null, null, entries, null, teacher);
 		dbInstance.commitAndCloseSession();
 
 		// first roll call
@@ -471,7 +471,7 @@ public class LectureServiceTest extends OlatTestCase {
 		lectureBlocks.add(block1);
 		lectureBlocks.add(block2);
 		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null, null, lectureBlocks);
+				null, null, null, null, null, null, lectureBlocks, teacher);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(notice);
 

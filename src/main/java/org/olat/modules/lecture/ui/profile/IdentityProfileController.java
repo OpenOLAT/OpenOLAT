@@ -228,7 +228,7 @@ public class IdentityProfileController extends BasicController implements Activa
 				lectureService.createAbsenceNotice(absentIdentity, noticeWrapper.getAbsenceNoticeType(), noticeWrapper.getAbsenceNoticeTarget(),
 						noticeWrapper.getStartDate(), noticeWrapper.getEndDate(),
 						noticeWrapper.getAbsenceCategory(), noticeWrapper.getAbsenceReason(), noticeWrapper.getAuthorized(),
-						noticeWrapper.getEntries(), noticeWrapper.getLectureBlocks());
+						noticeWrapper.getEntries(), noticeWrapper.getLectureBlocks(), getIdentity());
 			}
 			
 			if(noticeWrapper.getIdentitiesToContact() != null && !noticeWrapper.getIdentitiesToContact().isEmpty()) {

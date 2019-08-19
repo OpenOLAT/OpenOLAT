@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.AbsenceNoticeTarget;
 import org.olat.modules.lecture.AbsenceNoticeToLectureBlock;
@@ -103,6 +104,8 @@ public class EditNoticeController extends FormBasicController {
 		datesAndLecturesCtrl.formOK(ureq);
 		
 		absenceNotice = lectureService.getAbsenceNotice(absenceNotice);
+		Boolean authorized = absenceNotice.getAbsenceAuthorized();
+		
 		absenceNotice.setStartDate(noticeWrapper.getStartDate());
 		absenceNotice.setEndDate(noticeWrapper.getEndDate());
 		absenceNotice.setAbsenceAuthorized(noticeWrapper.getAuthorized());
@@ -117,7 +120,14 @@ public class EditNoticeController extends FormBasicController {
 		} else if(noticeWrapper.getAbsenceNoticeTarget() == AbsenceNoticeTarget.lectureblocks) {
 			lectureBlocks = noticeWrapper.getLectureBlocks();
 		}
-		absenceNotice = lectureService.updateAbsenceNotice(absenceNotice, entries, lectureBlocks);
+		
+		Identity authorizer = null;
+		if(absenceNotice.getAbsenceAuthorized() != null && absenceNotice.getAbsenceAuthorized().booleanValue()
+				&& (authorized == null || !authorized.booleanValue())) {
+			authorizer = getIdentity();
+		}
+		
+		absenceNotice = lectureService.updateAbsenceNotice(absenceNotice, authorizer, entries, lectureBlocks);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

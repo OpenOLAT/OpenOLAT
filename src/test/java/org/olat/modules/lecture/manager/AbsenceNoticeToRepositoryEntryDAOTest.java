@@ -69,7 +69,7 @@ public class AbsenceNoticeToRepositoryEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
-				null, null, null, null, null);
+				null, null, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		AbsenceNoticeToRepositoryEntry relation = absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);
@@ -91,7 +91,7 @@ public class AbsenceNoticeToRepositoryEntryDAOTest extends OlatTestCase {
 		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
 		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
 				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()),
-				null, null, Boolean.TRUE, Collections.singletonList(entry), null);
+				null, null, Boolean.TRUE, Collections.singletonList(entry), null, null);
 		dbInstance.commit();
 		
 		LectureBlockRollCall rollCall = lectureService.getOrCreateRollCall(participant, lectureBlock, null, null, null);
@@ -120,7 +120,7 @@ public class AbsenceNoticeToRepositoryEntryDAOTest extends OlatTestCase {
 		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
 		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
 				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()),
-				null, null, Boolean.TRUE, Collections.singletonList(entry), null);
+				null, null, Boolean.TRUE, Collections.singletonList(entry), null, null);
 		dbInstance.commit();
 		
 		LectureBlockRollCall rollCall = lectureService.getOrCreateRollCall(participant, lectureBlock, null, null, null);
