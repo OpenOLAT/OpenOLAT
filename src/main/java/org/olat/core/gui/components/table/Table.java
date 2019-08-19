@@ -520,7 +520,11 @@ public class Table extends AbstractComponent {
 					}
 				}
 				currentSortingCd.sortingAboutToStart();
-				Collections.sort(sorter, new TableComparator(currentSortingCd, sortAscending));
+				try {
+					Collections.sort(sorter, new TableComparator(currentSortingCd, sortAscending));
+				} catch (IllegalArgumentException e) {
+					log.error("Sort column: {} in columns: {}", sortColumn, columnOrder, e);
+				}
 			} else {
 				log.error("Sort column not found:" + sortColumn + " in columns: " + columnOrder);
 			}
