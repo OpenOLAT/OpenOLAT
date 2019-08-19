@@ -357,7 +357,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			String userComment = row.getComment();
 			if(hasUserComment && userComment != null){
 				// Update userComment in db
-				courseNode.updateUserUserComment(userComment, uce, coachIdentity);
+				courseNode.updatedUserComment(userComment, uce, coachIdentity);
 				//LD: why do we have to update the efficiency statement?
 				//EfficiencyStatementManager esm =	EfficiencyStatementManager.getInstance();
 				//esm.updateUserEfficiencyStatement(uce);

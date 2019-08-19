@@ -726,14 +726,14 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 
 	@Override
-	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment) {
+	public String getUserComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		return am.getNodeComment(this, assessedIdentity);
 	}
 	
 	@Override
-	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment,
+	public void updatedUserComment(String userComment, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity) {
 		if (userComment != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -743,14 +743,14 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	}
 	
 	@Override
-	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment) {
+	public String getCoachComment(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		return am.getNodeCoachComment(this, assessedIdentity);
 	}
 	
 	@Override
-	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
+	public void updateCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
 		if (coachComment != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();

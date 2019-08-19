@@ -76,7 +76,7 @@ public class EditCommentController extends FormBasicController {
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-		gtaNode.updateUserUserComment(comment, userCourseEnv, getIdentity());
+		gtaNode.updatedUserComment(comment, userCourseEnv, getIdentity());
 		
 		if(StringHelper.containsNonWhitespace(comment)) {
 			row.getCommentEditLink().setIconLeftCSS("o_icon o_icon_comments");

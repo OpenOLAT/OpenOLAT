@@ -567,7 +567,7 @@ public class AssessmentHelper {
 				  // comments are invisible in the table but if configured the node must be in the list
 					// for the efficiency statement this can be ignored, this is the case when discardComments is true
 					hasDisplayableValuesConfigured = true;
-					if (assessableCourseNode.getUserUserComment(userCourseEnv) != null) {
+					if (assessableCourseNode.getUserComment(userCourseEnv) != null) {
 						hasDisplayableUserValues = true;
 					}
 				}

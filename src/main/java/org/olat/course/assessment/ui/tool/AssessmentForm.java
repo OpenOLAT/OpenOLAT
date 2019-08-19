@@ -385,13 +385,13 @@ public class AssessmentForm extends FormBasicController {
 		if (isHasComment() && isUserCommentDirty()) {
 			String newComment = getUserComment().getValue();
 			// Update properties in db
-			assessableCourseNode.updateUserUserComment(newComment, assessedUserCourseEnv, getIdentity());
+			assessableCourseNode.updatedUserComment(newComment, assessedUserCourseEnv, getIdentity());
 		}
 
 		if (isCoachCommentDirty()) {
 			String newCoachComment = getCoachComment().getValue();
 			// Update properties in db
-			assessableCourseNode.updateUserCoachComment(newCoachComment, assessedUserCourseEnv);
+			assessableCourseNode.updateCoachComment(newCoachComment, assessedUserCourseEnv);
 		}
 	}
 	
@@ -425,7 +425,7 @@ public class AssessmentForm extends FormBasicController {
 		}
 		
 		if(hasComment) {
-			userCommentValue = assessableCourseNode.getUserUserComment(assessedUserCourseEnv);
+			userCommentValue = assessableCourseNode.getUserComment(assessedUserCourseEnv);
 			userComment.setValue(userCommentValue);
 		}
 		
@@ -565,7 +565,7 @@ public class AssessmentForm extends FormBasicController {
 
 		if (hasComment) {
 			// Use init variables from db, not available from wrapper
-			userCommentValue = assessableCourseNode.getUserUserComment(assessedUserCourseEnv);
+			userCommentValue = assessableCourseNode.getUserComment(assessedUserCourseEnv);
 			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, false, userCommentValue, formLayout);
 			userComment.setNotLongerThanCheck(2500, "input.toolong");
 		}
@@ -582,7 +582,7 @@ public class AssessmentForm extends FormBasicController {
 			uploadDocsEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		
-		coachCommentValue = assessableCourseNode.getUserCoachComment(assessedUserCourseEnv);
+		coachCommentValue = assessableCourseNode.getCoachComment(assessedUserCourseEnv);
 		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, false, coachCommentValue, formLayout);
 		coachComment.setNotLongerThanCheck(2500, "input.toolong");
 		

@@ -490,7 +490,7 @@ public interface CourseNode extends INode, ShortName {
 	 * @param userCourseEnvironment
 	 * @return the user comment for this user for this node, given by coach
 	 */
-	public String getUserUserComment(UserCourseEnvironment userCourseEnvironment);
+	public String getUserComment(UserCourseEnvironment userCourseEnvironment);
 	
 	/**
 	 * Updates the user comment for this node and this user. This comment is visible to the user.
@@ -499,15 +499,14 @@ public interface CourseNode extends INode, ShortName {
 	 * @param userCourseEnvironment
 	 * @param coachingIdentity
 	 */
-	public void updateUserUserComment(String userComment, UserCourseEnvironment userCourseEnvironment,
+	public void updatedUserComment(String userComment, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity);
 	
 	/**
 	 * @param userCourseEnvironment
 	 * @return The coach comment for this user for this node (not visible to user)
 	 */
-	//TODO uh rename getCoachComment (auch update und bei useruser)
-	public String getUserCoachComment(UserCourseEnvironment userCourseEnvironment);
+	public String getCoachComment(UserCourseEnvironment userCourseEnvironment);
 	
 	/**
 	 * Updates the coach comment for this node and this user. This comment is not visible to the user.
@@ -515,7 +514,7 @@ public interface CourseNode extends INode, ShortName {
 	 * @param coachComment
 	 * @param userCourseEnvironment
 	 */
-	public void updateUserCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment);
+	public void updateCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment);
 	
 	
 	/**

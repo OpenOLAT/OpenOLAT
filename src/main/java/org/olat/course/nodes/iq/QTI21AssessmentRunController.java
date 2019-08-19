@@ -295,7 +295,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("passed", passed);
 				if(resultsVisible) {
 					if(testCourseNode.hasCommentConfigured()) {
-						StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserUserComment(userCourseEnv));
+						StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserComment(userCourseEnv));
 						if (comment != null && comment.length() > 0) {
 							mainVC.contextPut("comment", StringHelper.xssScan(comment));
 							mainVC.contextPut("incomment", isPanelOpen(ureq, "comment", true));

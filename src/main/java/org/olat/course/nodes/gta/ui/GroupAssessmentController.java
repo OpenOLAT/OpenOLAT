@@ -558,7 +558,7 @@ public class GroupAssessmentController extends FormBasicController {
 			if(withComment) {
 				String comment = row.getComment();
 				if(StringHelper.containsNonWhitespace(comment)) {
-					gtaNode.updateUserUserComment(comment, userCourseEnv, getIdentity());
+					gtaNode.updatedUserComment(comment, userCourseEnv, getIdentity());
 				}
 			}
 		}
@@ -600,7 +600,7 @@ public class GroupAssessmentController extends FormBasicController {
 			if(StringHelper.containsNonWhitespace(comment)) {
 				for(AssessmentRow row:rows) {
 					UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-					gtaNode.updateUserUserComment(comment, userCourseEnv, getIdentity());
+					gtaNode.updatedUserComment(comment, userCourseEnv, getIdentity());
 				}
 			}
 		}
