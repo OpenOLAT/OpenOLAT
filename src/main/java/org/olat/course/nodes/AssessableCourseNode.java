@@ -65,10 +65,6 @@ public interface AssessableCourseNode extends CourseNode {
 	 * the user list. if hasDetails= false this returns null
 	 */	
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment);
-	/**
-	 * @return the details list view header key that is used to label the table row
-	 */	
-	public String getDetailsListViewHeaderKey();
 	
 	/**
 	 * Returns the controller with the list of assessed identities for

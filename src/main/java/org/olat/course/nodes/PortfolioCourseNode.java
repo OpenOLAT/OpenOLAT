@@ -342,11 +342,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public String getDetailsListViewHeaderKey() {
-		return null;
-	}
-
-	@Override
 	public void exportNode(File exportDirectory, ICourse course) {
 		RepositoryEntry re = getReferencedRepositoryEntry();
 		if (re == null) return;

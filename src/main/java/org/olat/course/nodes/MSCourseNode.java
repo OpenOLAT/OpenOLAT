@@ -47,7 +47,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
@@ -358,11 +357,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
-	}
-
-	@Override
-	public String getDetailsListViewHeaderKey() {
-		throw new OLATRuntimeException(MSCourseNode.class, "Details not available in MS nodes", null);
 	}
 	
 	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv,

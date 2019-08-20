@@ -505,11 +505,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	}
 
 	@Override
-	public String getDetailsListViewHeaderKey() {
-		return null;
-	}
-
-	@Override
 	public void postImport(File importDirectory, ICourse course, CourseEnvironmentMapper envMapper, Processing processType) {
 		// initialize managers
 		if(processType == Processing.editor && importDirectory != null) {

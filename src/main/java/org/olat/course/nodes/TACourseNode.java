@@ -500,11 +500,6 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	}
 
 	@Override
-	public String getDetailsListViewHeaderKey() {
-		return "table.header.details.ta";
-	}
-
-	@Override
 	public void copyConfigurationTo(CourseNode courseNode, ICourse course) {
 		if(courseNode instanceof GTACourseNode) {
 			ConvertToGTACourseNode convert = new ConvertToGTACourseNode();

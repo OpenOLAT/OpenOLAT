@@ -47,7 +47,6 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -383,11 +382,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
-	}
-
-	@Override
-	public String getDetailsListViewHeaderKey() {
-		throw new OLATRuntimeException(STCourseNode.class, "Details not available in ST nodes", null);
 	}
 	
 	@Override

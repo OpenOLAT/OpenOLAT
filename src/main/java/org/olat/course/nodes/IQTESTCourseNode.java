@@ -592,11 +592,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		return null;
 	}
 
-	@Override
-	public String getDetailsListViewHeaderKey() {
-		return null;
-	}
-
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
 	 * set to usefull default values

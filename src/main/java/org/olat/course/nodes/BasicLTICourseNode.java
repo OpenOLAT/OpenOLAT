@@ -296,11 +296,6 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}
-
-	@Override
-	public String getDetailsListViewHeaderKey() {
-		return null;
-	}
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,

@@ -282,11 +282,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		return null;
 	}
 
-	@Override
-	public String getDetailsListViewHeaderKey() {
-		return null;
-	}
-
 	/**
 	 * Make an archive of all datas.
 	 */

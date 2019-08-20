@@ -781,14 +781,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		CoreSpringFactory.getImpl(GTAManager.class).createIfNotExists(re, this);
 		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
-
-	@Override
-	public String getDetailsListViewHeaderKey() {
-		if(getModuleConfiguration().getBooleanSafe(GTASK_ASSIGNMENT)) {
-			return "table.header.details.gta";
-		}
-		return null;
-	}
 	
 	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
