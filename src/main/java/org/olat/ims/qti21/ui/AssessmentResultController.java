@@ -369,6 +369,10 @@ public class AssessmentResultController extends FormBasicController {
 		Identifier identifier = testPlanNodeKey.getIdentifier();
 		AssessmentItemRef itemRef = identifierToRefs.get(identifier);
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
+		if(resolvedAssessmentItem == null) {
+			return new Results(true, node.getSectionPartTitle());
+		}
+		
 		AssessmentItem assessmentItem = resolvedAssessmentItem.getRootNodeLookup().extractIfSuccessful();
 		QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
 		AssessmentItemSession itemSession = identifierToItemSession.get(identifier.toString());
@@ -641,10 +645,21 @@ public class AssessmentResultController extends FormBasicController {
 		private int numberOfQuestions = 0;
 		private int numberOfAnsweredQuestions = 0;
 		
+		private boolean deleted = false;
+		
 		private FormItem questionItem;
 		private FormItem correctSolutionItem;
 		private InteractionResults interactionResults;
 		private final List<Results> subResults = new ArrayList<>();
+		
+		public Results(boolean deleted, String title) {
+			this.deleted = deleted;
+			this.title = title;
+			this.section = false;
+			this.rubrics = null;
+			this.metadataVisible = false;
+			this.cssClass = null;
+		}
 		
 		public Results(boolean section, String cssClass, boolean metadataVisible) {
 			this.section = section;
@@ -675,6 +690,10 @@ public class AssessmentResultController extends FormBasicController {
 			entryTime = sessionState.getEntryTime();
 			endTime = sessionState.getEndTime();
 			duration = sessionState.getDurationAccumulated();
+		}
+		
+		public boolean isDeleted() {
+			return deleted;
 		}
 		
 		public boolean isMetadataVisible() {

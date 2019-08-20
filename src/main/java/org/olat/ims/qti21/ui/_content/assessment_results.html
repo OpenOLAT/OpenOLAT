@@ -405,6 +405,9 @@
 			</h4>
 		</div>
 		#set($inItem = true)
+		#if($r.isTrue($itemResult.isDeleted()))
+			<div class="o_error">$r.translate("error.assessment.item.missing")</div>
+		#end
 	 	#if($itemResult.metadataVisible)
 		<table class="table"><tbody>
 			<tr class="o_qti_item_id">
