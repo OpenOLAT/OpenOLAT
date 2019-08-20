@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
@@ -40,7 +41,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -55,6 +55,7 @@ import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ExportFormat;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.fileresource.FileResourceManager;
@@ -324,11 +325,12 @@ public class QTI21ArchiveFormat {
 		// course node points and passed
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
-			if(assessableCourseNode.hasScoreConfigured()) {
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			if(assessmentConfig.hasScoreConfigured()) {
 				header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
 			}
-			if(assessableCourseNode.hasPassedConfigured()) {
-				if(assessableCourseNode.hasScoreConfigured()) {
+			if(assessmentConfig.hasPassedConfigured()) {
+				if(assessmentConfig.hasScoreConfigured()) {
 					col++;
 				} else {
 					header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
@@ -402,10 +404,11 @@ public class QTI21ArchiveFormat {
 		// course node points and passed
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
-			if(assessableCourseNode.hasScoreConfigured()) {
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			if(assessmentConfig.hasScoreConfigured()) {
 				header2Row.addCell(col++, translator.translate("archive.table.header.node.points"), headerStyle);
 			}
-			if(assessableCourseNode.hasPassedConfigured()) {
+			if(assessmentConfig.hasPassedConfigured()) {
 				header2Row.addCell(col++, translator.translate("archive.table.header.node.passed"), headerStyle);
 			}
 		}
@@ -535,14 +538,15 @@ public class QTI21ArchiveFormat {
 		// course node points and passed
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
-			if(assessableCourseNode.hasScoreConfigured()) {
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			if(assessmentConfig.hasScoreConfigured()) {
 				if(entry.getScore() != null) {
 					dataRow.addCell(col++, entry.getScore(), null);
 				} else {
 					col++;
 				}
 			}
-			if(assessableCourseNode.hasPassedConfigured()) {
+			if(assessmentConfig.hasPassedConfigured()) {
 				if(entry.getPassed() != null) {
 					dataRow.addCell(col++, entry.getPassed().toString(), null);
 				} else {

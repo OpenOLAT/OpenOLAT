@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -589,10 +590,11 @@ class GTANotifications {
 			if(resultsVisible) {
 				String score = null;
 				String status = null;
-				if(gtaNode.hasScoreConfigured() && assessment.getScore() != null) {
+				AssessmentConfig assessmentConfig = gtaNode.getAssessmentConfig();
+				if(assessmentConfig.hasScoreConfigured() && assessment.getScore() != null) {
 					score = AssessmentHelper.getRoundedScore(assessment.getScore());
 				}
-				if(gtaNode.hasPassedConfigured() && assessment.getPassed() != null) {
+				if(assessmentConfig.hasPassedConfigured() && assessment.getPassed() != null) {
 					status = assessment.getPassed().booleanValue()
 							? translator.translate("notifications.assessment.passed.true") : translator.translate("notifications.assessment.passed.false");
 				}

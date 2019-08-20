@@ -55,6 +55,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
@@ -68,6 +69,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.nodes.sp.SPPeekviewController;
+import org.olat.course.nodes.st.STAssessmentConfig;
 import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.st.STCourseNodeRunController;
 import org.olat.course.nodes.st.STIdentityListCourseNodeController;
@@ -251,6 +253,11 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		}
 	}
 
+	@Override
+	public AssessmentConfig getAssessmentConfig() {
+		return new STAssessmentConfig(getScoreCalculator());
+	}
+
 	/**
 	 * the structure node does not have a score itself, but calculates the
 	 * score/passed info by evaluating the configured expression in the the
@@ -378,74 +385,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		failedExpression.setExpertMode(true);
 		failedExpression.setConditionExpression(failed);
 		failedExpression.setConditionId("failed");
-	}
-
-	@Override
-	public boolean isAssessedBusinessGroups() {
-		return false;
-	}
-
-	@Override
-	public Float getCutValueConfiguration() {
-		throw new OLATRuntimeException(STCourseNode.class, "Cut value never defined for ST nodes", null);
-	}
-
-	@Override
-	public Float getMaxScoreConfiguration() {
-		throw new OLATRuntimeException(STCourseNode.class, "Max score never defined for ST nodes", null);
-	}
-
-	@Override
-	public Float getMinScoreConfiguration() {
-		throw new OLATRuntimeException(STCourseNode.class, "Min score never defined for ST nodes", null);
-	}
-
-	@Override
-	public boolean hasCommentConfigured() {
-		// never has comments
-		return false;
-	}
-
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		return false;
-	}
-
-	@Override
-	public boolean hasPassedConfigured() {
-		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getPassedExpression())) {
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public boolean hasScoreConfigured() {
-		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getScoreExpression())) {
-			return true;
-		}
-		return false;
-	}
-
-	@Override
-	public boolean hasStatusConfigured() {
-		return false;
-	}
-
-	@Override
-	public boolean isEditableConfigured() {
-		// ST nodes never editable, data generated on the fly
-		return false;
-	}
-
-	@Override
-	public boolean hasCompletion() {
-		return false;
-	}
-
-	@Override
-	public boolean hasAttemptsConfigured() {
-		return false;
 	}
 
 	@Override

@@ -59,6 +59,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -120,11 +121,12 @@ public class AssessmentForm extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
-		hasAttempts = assessableCourseNode.hasAttemptsConfigured();
-		hasScore = assessableCourseNode.hasScoreConfigured();
-		hasPassed = assessableCourseNode.hasPassedConfigured();
-		hasComment = assessableCourseNode.hasCommentConfigured();
-		hasIndividualAssessmentDocs = assessableCourseNode.hasIndividualAsssessmentDocuments();
+		AssessmentConfig assessmentConfig = assessableCourseNode.getAssessmentConfig();
+		hasAttempts = assessmentConfig.hasAttemptsConfigured();
+		hasScore = assessmentConfig.hasScoreConfigured();
+		hasPassed = assessmentConfig.hasPassedConfigured();
+		hasComment = assessmentConfig.hasCommentConfigured();
+		hasIndividualAssessmentDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
 		
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
@@ -496,6 +498,8 @@ public class AssessmentForm extends FormBasicController {
 		setFormTitle("form.title", null);
 		formLayout.setElementCssClass("o_sel_assessment_form");
 		
+		AssessmentConfig assessmentConfig = assessableCourseNode.getAssessmentConfig();
+		
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
 		if (scoreEval == null) {
 			scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
@@ -512,10 +516,10 @@ public class AssessmentForm extends FormBasicController {
 		}
 
 		if (hasScore) {
-			min = assessableCourseNode.getMinScoreConfiguration();
-			max = assessableCourseNode.getMaxScoreConfiguration();
+			min = assessmentConfig.getMinScoreConfiguration();
+			max = assessmentConfig.getMaxScoreConfiguration();
 			if (hasPassed) {
-				cut = assessableCourseNode.getCutValueConfiguration();
+				cut = assessmentConfig.getCutValueConfiguration();
 			}
 			
 			String minStr = AssessmentHelper.getRoundedScore(min);

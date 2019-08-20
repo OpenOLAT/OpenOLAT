@@ -80,6 +80,7 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -89,6 +90,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.ms.MSEditFormController;
+import org.olat.course.nodes.projectbroker.ProjectBrokerAssessmentConfig;
 import org.olat.course.nodes.projectbroker.ProjectBrokerControllerFactory;
 import org.olat.course.nodes.projectbroker.ProjectBrokerCourseEditorController;
 import org.olat.course.nodes.projectbroker.ProjectBrokerIdentityListCourseNodeController;
@@ -470,6 +472,11 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		condition.setConditionId("projectbroker");
 		this.conditionProjectBroker = condition;
 	}
+	
+	@Override
+	public AssessmentConfig getAssessmentConfig() {
+		return new ProjectBrokerAssessmentConfig(getModuleConfiguration());
+	}
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
@@ -486,103 +493,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		return am.getAssessmentEntry(this, mySelf);
-	}
-	
-	@Override
-	public boolean isAssessedBusinessGroups() {
-		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
-	 */
-	@Override
-	public boolean hasCommentConfigured() {
-		return false;
-	}
-
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
-	 */
-	@Override
-	public boolean hasPassedConfigured() {
-		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
-	 */
-	@Override
-	public boolean hasScoreConfigured() {
-		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()
-	 */
-	@Override
-	public boolean hasStatusConfigured() {
-		return false; // Project broker Course node has no status-field
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMaxScoreConfiguration()
-	 */
-	@Override
-	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) { throw new OLATRuntimeException(ProjectBrokerCourseNode.class, "getMaxScore not defined when hasScore set to false", null); }
-		ModuleConfiguration config = getModuleConfiguration();
-		Float max = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		return max;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getMinScoreConfiguration()
-	 */
-	@Override
-	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) { throw new OLATRuntimeException(ProjectBrokerCourseNode.class, "getMinScore not defined when hasScore set to false", null); }
-		ModuleConfiguration config = getModuleConfiguration();
-		Float min = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-		return min;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getCutValueConfiguration()
-	 */
-	@Override
-	public Float getCutValueConfiguration() {
-		if (!hasPassedConfigured()) { throw new OLATRuntimeException(ProjectBrokerCourseNode.class, "getCutValue not defined when hasPassed set to false", null); }
-		ModuleConfiguration config = getModuleConfiguration();
-		Float cut = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		return cut;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
-	 */
-	@Override
-	public boolean isEditableConfigured() {
-		// always true when assessable
-		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
-	 */
-	@Override
-	public boolean hasAttemptsConfigured() {
-		return false;
-	}
-
-	@Override
-	public boolean hasCompletion() {
-		return false;
 	}
 
 	@Override

@@ -21,6 +21,7 @@ package org.olat.course.run.scoring;
 
 import java.util.Date;
 
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -122,29 +123,31 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			return AssessmentEvaluation.EMPTY_EVAL;
 		}
 		
+		AssessmentConfig assessmentConfig = node.getAssessmentConfig();
+		
 		Integer attempts = null;
-		if(node.hasAttemptsConfigured()) {
+		if(assessmentConfig.hasAttemptsConfigured()) {
 			attempts = entry.getAttempts();
 		}
 		
 		Float score = null;
-		if(node.hasScoreConfigured()) {
+		if(assessmentConfig.hasScoreConfigured()) {
 			score = entry.getScore() == null ? null : entry.getScore().floatValue();
 		}
 		
 		Boolean passed = null;
-		if(node.hasPassedConfigured()) {
+		if(assessmentConfig.hasPassedConfigured()) {
 			passed = entry.getPassed();
 		}
 		
 		String comment = null;
-		if(node.hasCommentConfigured()) {
+		if(assessmentConfig.hasCommentConfigured()) {
 			comment = entry.getComment();
 		}
 		
 		Double currentRunCompletion = null;
 		AssessmentRunStatus runStatus = null;
-		if(node.hasCompletion()) {
+		if(assessmentConfig.hasCompletion()) {
 			currentRunCompletion = entry.getCurrentRunCompletion();
 			runStatus = entry.getCurrentRunStatus();
 		}

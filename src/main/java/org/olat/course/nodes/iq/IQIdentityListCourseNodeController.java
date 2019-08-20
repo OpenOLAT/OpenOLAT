@@ -51,6 +51,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
@@ -140,7 +141,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void initStatusColumns(FlexiTableColumnModel columnsModel) {
 		super.initStatusColumns(columnsModel);
 		IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
-		if(testCourseNode != null && testCourseNode.hasCompletion()) {
+		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+		if(testCourseNode != null && assessmentConfig.hasCompletion()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.currentCompletion));
 		}
 		

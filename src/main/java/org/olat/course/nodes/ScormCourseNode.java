@@ -53,12 +53,14 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.cp.CPEditController;
+import org.olat.course.nodes.scorm.ScormAssessmentConfig;
 import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.nodes.scorm.ScormRunController;
 import org.olat.course.properties.CoursePropertyManager;
@@ -373,6 +375,11 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	}
 
 	@Override
+	public AssessmentConfig getAssessmentConfig() {
+		return new ScormAssessmentConfig(getModuleConfiguration());
+	}
+
+	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 	}
@@ -387,91 +394,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		return am.getAssessmentEntry(this, mySelf);//we want t
-	}
-
-	@Override
-	public boolean isAssessedBusinessGroups() {
-		return false;
-	}
-
-	@Override
-	public Float getCutValueConfiguration() {
-		ModuleConfiguration config = this.getModuleConfiguration();
-		int cutValue = config.getIntegerSafe(ScormEditController.CONFIG_CUTVALUE, 0); 
-		return Float.valueOf(cutValue);
-	}
-
-	@Override
-	public Float getMaxScoreConfiguration() {
-		// According to SCORM Standard, SCORE is between 0 and 100.
-		return Float.valueOf(100);
-	}
-
-	@Override
-	public Float getMinScoreConfiguration() {
-		// According to SCORM Standard, SCORE is between 0 and 100.
-		return Float.valueOf(0);
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasCommentConfigured()
-	 */
-	@Override
-	public boolean hasCommentConfigured() {
-		return false;
-	}
-
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
-	 */
-	@Override
-	public boolean hasPassedConfigured() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
-	 */
-	@Override
-	public boolean hasScoreConfigured() {
-		boolean assessable = getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
-		if(assessable) {
-			String type = getModuleConfiguration().getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
-					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
-			return ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(type);
-		}
-		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()
-	 */
-	@Override
-	public boolean hasStatusConfigured() {
-		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
-	 */
-	@Override
-	public boolean isEditableConfigured() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
-	}
-	
-	@Override
-	public boolean hasAttemptsConfigured() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
-	}
-	
-	@Override
-	public boolean hasCompletion() {
-		return false;
 	}
 
 	@Override

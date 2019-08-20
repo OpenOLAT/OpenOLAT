@@ -61,6 +61,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -241,7 +242,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 
 		if (courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
-			if (assessableCourseNode.hasScoreConfigured() || userCourseEnv.isCoach()){
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			if (assessmentConfig.hasScoreConfigured() || userCourseEnv.isCoach()){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 				if (highScoreCtr.isViewHighscore()) {
 					Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -294,7 +296,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("hasPassedValue", (passed == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", passed);
 				if(resultsVisible) {
-					if(testCourseNode.hasCommentConfigured()) {
+					AssessmentConfig assessmentConfig = testCourseNode.getAssessmentConfig();
+					if(assessmentConfig.hasCommentConfigured()) {
 						StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserComment(userCourseEnv));
 						if (comment != null && comment.length() > 0) {
 							mainVC.contextPut("comment", StringHelper.xssScan(comment));
@@ -302,7 +305,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 						}
 					}
 					
-					if(testCourseNode.hasIndividualAsssessmentDocuments()) {
+					if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
 						List<File> docs = testCourseNode.getIndividualAssessmentDocuments(userCourseEnv);
 						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 						mainVC.contextPut("docsMapperUri", mapperUri);

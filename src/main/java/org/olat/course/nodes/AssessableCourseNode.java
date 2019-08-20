@@ -52,74 +52,10 @@ import org.olat.repository.RepositoryEntry;
 public interface AssessableCourseNode extends CourseNode {
 	
 	/**
-	 * 
-	 * @return
-	 */
-	public boolean isAssessedBusinessGroups();
-    
-	/**
-	 * @return Returns the maximal score that can be achieved on this node. Throws 
-	 * an OLATRuntimeException if hasScore set to false, maxScore is undefined in this case
-	 */
-	public Float getMaxScoreConfiguration();
-
-	/**
-	 * @return Returns the minimal score that can be achieved on this node. Throws 
-	 * an OLATRuntimeException if hasScore set to false, maxScore is undefined in this case
-	 */
-	public Float getMinScoreConfiguration();
-
-	/**
-	 * @return Returns the passed cut value or null if no such value is defined. A null
-	 * value means that no cut value is definied and therefor the node can be passed having any 
-	 * score or no score at all. Throws an OLATRuntimeException if hasPassed is set to false, 
-	 * cutValue is undefined in this case
-	 */
-	public Float getCutValueConfiguration();
-	
-	/**
-	 * @return True if this course node produces a score variable for the learner
-	 */
-	public boolean hasScoreConfigured();
-	
-	/**
-	 * @return True if this course node produces a passed variable for the learner
-	 */
-	public boolean hasPassedConfigured();
-	
-	/**
-	 * @return True if this course node produces a comment variable for the learner
-	 */
-	public boolean hasCommentConfigured();
-	
-	/**
-	 * @return True if this course node produces an attempts variable for the learner
-	 */
-	public boolean hasAttemptsConfigured();
-	
-	/**
-	 * 
-	 * @return True if this course node can hold some documents about the assessment of the learner
-	 */
-	public boolean hasIndividualAsssessmentDocuments();
-	
-	
-	/**
-	 * @return True if this course node can produces a completion variable for the learner
-	 */
-	public boolean hasCompletion();
-
-	
-	/**
 	 * @return True if this course node has additional details to be edited / viewed
 	 */
 	public boolean hasDetails();
 
-	/**
-	 * @return True if score, passed, attempts and comment are editable by the assessment tool
-	 */
-	public boolean isEditableConfigured();
-	
 	/**
 	 * @return True if this course node has additional result details.
 	 */
@@ -178,10 +114,6 @@ public interface AssessableCourseNode extends CourseNode {
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback);
 	
 
-	/**
-	 * @return True if this course node produces an status variable for the learner
-	 */
-	public boolean hasStatusConfigured();
 	
 
 }

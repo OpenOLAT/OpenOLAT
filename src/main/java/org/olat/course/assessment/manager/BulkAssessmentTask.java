@@ -73,6 +73,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentFeedback;
 import org.olat.course.assessment.model.BulkAssessmentRow;
@@ -310,10 +311,11 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		final Identity coachIdentity = securityManager.loadIdentityByKey(coachedIdentity);
 		final ICourse course = CourseFactory.loadCourse(courseRes);
 		final AssessableCourseNode courseNode = getCourseNode();
+		final AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 		
-		final boolean hasUserComment = courseNode.hasCommentConfigured();
-		final boolean hasScore = courseNode.hasScoreConfigured();
-		final boolean hasPassed = courseNode.hasPassedConfigured();
+		final boolean hasUserComment = assessmentConfig.hasCommentConfigured();
+		final boolean hasScore = assessmentConfig.hasScoreConfigured();
+		final boolean hasPassed = assessmentConfig.hasPassedConfigured();
 		final boolean hasReturnFiles = (StringHelper.containsNonWhitespace(datas.getReturnFiles())
 				&& (courseNode instanceof TACourseNode || courseNode instanceof GTACourseNode));
 		
@@ -333,11 +335,11 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		Float max = null;
 		Float cut = null;
 		if (hasScore) {
-			min = courseNode.getMinScoreConfiguration();
-			max = courseNode.getMaxScoreConfiguration();
+			min = assessmentConfig.getMinScoreConfiguration();
+			max = assessmentConfig.getMaxScoreConfiguration();
 		}
 		if (hasPassed) {
-			cut = courseNode.getCutValueConfiguration();
+			cut = assessmentConfig.getCutValueConfiguration();
 		}
 		
 		int count = 0;

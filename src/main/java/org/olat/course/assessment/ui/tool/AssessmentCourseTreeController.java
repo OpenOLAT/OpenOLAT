@@ -308,7 +308,7 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresGroups, null, getWindowControl());
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(courseNode.getIdent()));
 		WindowControl bbwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, bwControl);
-		if(courseNode instanceof AssessableCourseNode && ((AssessableCourseNode)courseNode).isAssessedBusinessGroups()) {
+		if(courseNode instanceof AssessableCourseNode && ((AssessableCourseNode)courseNode).getAssessmentConfig().isAssessedBusinessGroups()) {
 			if(courseNode instanceof GTACourseNode) {
 				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 				

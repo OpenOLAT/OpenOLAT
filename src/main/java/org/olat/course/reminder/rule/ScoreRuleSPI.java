@@ -24,12 +24,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.id.Identity;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -101,7 +102,8 @@ public class ScoreRuleSPI implements FilterRuleSPI {
 				scores = new HashMap<>();
 				
 				STCourseNode structureNode = (STCourseNode)courseNode;
-				if(structureNode.hasScoreConfigured()) {
+				AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+				if(assessmentConfig.hasScoreConfigured()) {
 					for(Identity identity:identities) {
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
 						ScoreEvaluation scoreEval = structureNode.getUserScoreEvaluation(uce);

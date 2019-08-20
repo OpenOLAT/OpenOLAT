@@ -51,6 +51,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessedBusinessGroupTableModel.ABGCols;
@@ -117,11 +118,12 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 		
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode aNode = (AssessableCourseNode)courseNode;
-			if(aNode.hasPassedConfigured()) {
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			if(assessmentConfig.hasPassedConfigured()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.countPassed,
 						new ProgressRenderer(false, getTranslator())));
 			}
-			if(aNode.hasScoreConfigured()) {
+			if(assessmentConfig.hasScoreConfigured()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.averageScore,
 						new ScoreCellRenderer()));
 			}

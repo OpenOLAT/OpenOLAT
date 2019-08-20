@@ -57,6 +57,7 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -133,9 +134,10 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		this.coachCourseEnv = coachCourseEnv;
 		assessmentManager = courseEnv.getAssessmentManager();
 		
-		withScore = gtaNode.hasScoreConfigured();
-		withPassed = gtaNode.hasPassedConfigured();
-		withComment = gtaNode.hasCommentConfigured();
+		AssessmentConfig assessmentConfig = gtaNode.getAssessmentConfig();
+		withScore = assessmentConfig.hasScoreConfigured();
+		withPassed = assessmentConfig.hasPassedConfigured();
+		withComment = assessmentConfig.hasCommentConfigured();
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);

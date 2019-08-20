@@ -39,13 +39,13 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.condition.Condition;
@@ -54,6 +54,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodes.portfolio.PortfolioAssessmentConfig;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
@@ -309,84 +310,12 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public boolean isAssessedBusinessGroups() {
-		return false;
-	}
-
-	@Override
-	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) { 
-			throw new OLATRuntimeException(PortfolioCourseNode.class, "getMaxScore not defined when hasScore set to false", null);
-		}
-		ModuleConfiguration config = getModuleConfiguration();
-		Float max = (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-		return max;
-	}
-
-	@Override
-	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) { 
-			throw new OLATRuntimeException(PortfolioCourseNode.class, "getMinScore not defined when hasScore set to false", null);
-		}
-		ModuleConfiguration config = getModuleConfiguration();
-		Float min = (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-		return min;
-	}
-
-	@Override
-	public Float getCutValueConfiguration() {
-		if (!hasPassedConfigured()) { 
-			throw new OLATRuntimeException(PortfolioCourseNode.class, "getCutValue not defined when hasPassed set to false", null);
-		}
-		ModuleConfiguration config = getModuleConfiguration();
-		Float cut = (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-		return cut;
-	}
-
-	@Override
-	public boolean hasScoreConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean score = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		return (score == null) ? false : score.booleanValue();
-	}
-
-	@Override
-	public boolean hasPassedConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean passed = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
-		return (passed == null) ? false : passed.booleanValue();
-	}
-
-	@Override
-	public boolean hasCommentConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean comment = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-		return (comment == null) ? false : comment.booleanValue();
-	}
-	
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		return getModuleConfiguration()
-				.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
-	}
-
-	@Override
-	public boolean hasAttemptsConfigured() {
-		return true;
-	}
-
-	@Override
-	public boolean hasCompletion() {
-		return false;
+	public AssessmentConfig getAssessmentConfig() {
+		return new PortfolioAssessmentConfig(getModuleConfiguration());
 	}
 
 	@Override
 	public boolean hasDetails() {
-		return true;
-	}
-
-	@Override
-	public boolean isEditableConfigured() {
 		return true;
 	}
 
@@ -454,11 +383,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment assessedUserCourseEnv) {
 		return null;
-	}
-	
-	@Override
-	public boolean hasStatusConfigured() {
-		return true;
 	}
 
 	@Override

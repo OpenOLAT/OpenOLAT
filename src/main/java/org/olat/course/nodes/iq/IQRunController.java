@@ -71,6 +71,7 @@ import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -423,6 +424,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startButton && startButton.isEnabled() && startButton.isVisible()){
 			long courseResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
@@ -565,6 +567,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == displayController) {
 			if (event instanceof IQSubmittedEvent) {
@@ -660,13 +663,14 @@ public class IQRunController extends BasicController implements GenericEventList
 	    		myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 	    		myContent.contextPut("passed", assessmentEntry.getPassed());
 	    		if(resultsVisible) {
-	    			if(acn.hasCommentConfigured()) {
+	    			AssessmentConfig assessmentConfig = acn.getAssessmentConfig();
+	    			if(assessmentConfig.hasCommentConfigured()) {
 	    				StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEntry.getComment());
 	    				myContent.contextPut("comment", StringHelper.xssScan(comment));
 						myContent.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 	    			}
 
-	    			if(acn.hasIndividualAsssessmentDocuments()) {
+	    			if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
 	    				List<File> docs = acn.getIndividualAssessmentDocuments(userCourseEnv);
 						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 						myContent.contextPut("docsMapperUri", mapperUri);
@@ -778,6 +782,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * 
 	 * @see org.olat.core.gui.control.DefaultController#doDisspose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// child controllers disposed by basic controller
 		if (!type.equals(AssessmentInstance.QMD_ENTRY_TYPE_ASSESS)) {

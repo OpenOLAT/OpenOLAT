@@ -42,6 +42,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
@@ -49,7 +50,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -61,6 +61,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ArchiveOptions;
@@ -175,10 +176,11 @@ public class ScoreAccountingHelper {
 			headerRow1.addCell(header1ColCnt++, acNode.getShortTitle());
 			header1ColCnt += acNode.getType().equals("ita") ? 1 : 0;
 			
-			boolean scoreOk = acNode.hasScoreConfigured();
-			boolean passedOk = acNode.hasPassedConfigured();
-			boolean attemptsOk = acNode.hasAttemptsConfigured();
-			boolean commentOk = acNode.hasCommentConfigured();
+			AssessmentConfig assessmentConfig = acNode.getAssessmentConfig();
+			boolean scoreOk = assessmentConfig.hasScoreConfigured();
+			boolean passedOk = assessmentConfig.hasPassedConfigured();
+			boolean attemptsOk = assessmentConfig.hasAttemptsConfigured();
+			boolean commentOk = assessmentConfig.hasCommentConfigured();
 			if (scoreOk || passedOk || commentOk || attemptsOk) {
 				header1ColCnt += scoreOk ? 1 : 0;
 				header1ColCnt += passedOk ? 1 : 0;
@@ -197,10 +199,11 @@ public class ScoreAccountingHelper {
 				headerRow2.addCell(header2ColCnt++, submitted);
 			}
 			
-			boolean scoreOk = acNode.hasScoreConfigured();
-			boolean passedOk = acNode.hasPassedConfigured();
-			boolean attemptsOk = acNode.hasAttemptsConfigured();
-			boolean commentOk = acNode.hasCommentConfigured();
+			AssessmentConfig assessmentConfig = acNode.getAssessmentConfig();
+			boolean scoreOk = assessmentConfig.hasScoreConfigured();
+			boolean passedOk = assessmentConfig.hasPassedConfigured();
+			boolean attemptsOk = assessmentConfig.hasAttemptsConfigured();
+			boolean commentOk = assessmentConfig.hasCommentConfigured();
 			if (scoreOk || passedOk || commentOk || attemptsOk) {
 				if(scoreOk) {
 					headerRow2.addCell(header2ColCnt++, sc);
@@ -259,10 +262,11 @@ public class ScoreAccountingHelper {
 			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 
 			for (AssessableCourseNode acnode:myNodes) {
-				boolean scoreOk = acnode.hasScoreConfigured();
-				boolean passedOk = acnode.hasPassedConfigured();
-				boolean attemptsOk = acnode.hasAttemptsConfigured();
-				boolean commentOk = acnode.hasCommentConfigured();
+				AssessmentConfig assessmentConfig = acnode.getAssessmentConfig();
+				boolean scoreOk = assessmentConfig.hasScoreConfigured();
+				boolean passedOk = assessmentConfig.hasPassedConfigured();
+				boolean attemptsOk = assessmentConfig.hasAttemptsConfigured();
+				boolean commentOk = assessmentConfig.hasCommentConfigured();
 
 				if (acnode.getType().equals("ita")) {
 					String log = acnode.getUserLog(uce);
@@ -348,7 +352,8 @@ public class ScoreAccountingHelper {
 		//min. max. informations
 		boolean first = true;
 		for (AssessableCourseNode acnode:myNodes) {
-			if (!acnode.hasScoreConfigured()) {
+			AssessmentConfig assessmentConfig = acnode.getAssessmentConfig();
+			if (!assessmentConfig.hasScoreConfigured()) {
 				// only show min/max/cut legend when score configured
 				continue;
 			}
@@ -364,15 +369,15 @@ public class ScoreAccountingHelper {
 			String minVal;
 			String maxVal;
 			String cutVal;
-			if(acnode instanceof STCourseNode || !acnode.hasScoreConfigured()) {
+			if(acnode instanceof STCourseNode || !assessmentConfig.hasScoreConfigured()) {
 				minVal = maxVal = cutVal = "-";
 			} else {
-				Float minScoreConfig = acnode.getMinScoreConfiguration();
-				Float maxScoreConfig = acnode.getMaxScoreConfiguration();
+				Float minScoreConfig = assessmentConfig.getMinScoreConfiguration();
+				Float maxScoreConfig = assessmentConfig.getMaxScoreConfiguration();
 				minVal = minScoreConfig == null ? "-" : AssessmentHelper.getRoundedScore(minScoreConfig);
 				maxVal = maxScoreConfig == null ? "-" : AssessmentHelper.getRoundedScore(maxScoreConfig);
-				if (acnode.hasPassedConfigured()) {
-					Float cutValueConfig = acnode.getCutValueConfiguration();
+				if (assessmentConfig.hasPassedConfigured()) {
+					Float cutValueConfig = assessmentConfig.getCutValueConfiguration();
 					cutVal = cutValueConfig == null ? "-" : AssessmentHelper.getRoundedScore(cutValueConfig);
 				} else {
 					cutVal = "-";

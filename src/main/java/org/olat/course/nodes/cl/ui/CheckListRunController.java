@@ -55,6 +55,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CheckListCourseNode;
@@ -207,18 +208,19 @@ public class CheckListRunController extends FormBasicController implements Contr
 			layoutCont.contextPut("comment", null);
 			layoutCont.contextPut("docs", null);
 		} else {
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 			boolean resultsVisible = scoreEval.getUserVisibility() == null || scoreEval.getUserVisibility().booleanValue();
 			layoutCont.contextPut("resultsVisible", resultsVisible);
 			layoutCont.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
 			layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			layoutCont.contextPut("passed", scoreEval.getPassed());
 			if(resultsVisible) {
-				if(courseNode.hasCommentConfigured()) {
+				if(assessmentConfig.hasCommentConfigured()) {
 					StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
 					layoutCont.contextPut("comment", StringHelper.xssScan(comment));
 					layoutCont.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 				}
-				if(courseNode.hasIndividualAsssessmentDocuments()) {
+				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
 					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
 					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					layoutCont.contextPut("docsMapperUri", mapperUri);
@@ -337,7 +339,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		exposeUserDataToVC(ureq, flc);
-		return courseNode.hasScoreConfigured() || courseNode.hasPassedConfigured();
+		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+		return assessmentConfig.hasScoreConfigured() || assessmentConfig.hasPassedConfigured();
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {

@@ -52,12 +52,14 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.nodes.ms.MSEvaluationFormExecutionController;
@@ -277,10 +279,10 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
 		moduleConfig.remove(CONFIG_KEY_EVAL_FORM_SOFTKEY);
 	}
-
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		if(hasPassedConfigured() || hasScoreConfigured() || hasCommentConfigured()) {
+		AssessmentConfig assessmentConfig = getAssessmentConfig();
+		if(assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured() || assessmentConfig.hasCommentConfigured()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
 		return AssessmentEvaluation.EMPTY_EVAL;
@@ -325,58 +327,16 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	}
 
 	@Override
-	public boolean hasCommentConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean comment = (Boolean) config.get(CONFIG_KEY_HAS_COMMENT_FIELD);
-		if (comment == null) return false;
-		return comment.booleanValue();
-	}
-
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
-	}
-
-	@Override
-	public boolean hasPassedConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean passed = (Boolean) config.get(CONFIG_KEY_HAS_PASSED_FIELD);
-		if (passed == null) return false;
-		return passed.booleanValue();
-	}
-
-	@Override
-	public boolean hasScoreConfigured() {
+	public AssessmentConfig getAssessmentConfig() {
 		updateModuleConfigDefaults(false);
-		ModuleConfiguration config = getModuleConfiguration();
-		String scoreKey = config.getStringValue(CONFIG_KEY_SCORE);
-		return !CONFIG_VALUE_SCORE_NONE.equals(scoreKey);
-	}
-	
-	@Override
-	public boolean hasStatusConfigured() {
-		return false;
-	}
-	
-	@Override
-	public boolean isAssessedBusinessGroups() {
-		return false;
-	}
-
-	@Override
-	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined", null); }
-		return getMinMax().getMax();
-	}
-
-	@Override
-	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getMinScore not defined", null); }
-		return getMinMax().getMin();
+		return new MSAssessmentConfig(getModuleConfiguration());
 	}
 	
 	private MinMax getMinMax() {
-		ModuleConfiguration config = getModuleConfiguration();
+		return getMinMax(getModuleConfiguration());
+	}
+	
+	public static MinMax getMinMax(ModuleConfiguration config) {
 		String scoreConfig = config.getStringValue(CONFIG_KEY_SCORE);
 		String scaleConfig = config.getStringValue(CONFIG_KEY_EVAL_FORM_SCALE);
 		
@@ -392,30 +352,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			return  msService.calculateMinMaxAvg(getEvaluationForm(config), Float.parseFloat(scaleConfig));
 		}
 		return MinMax.of(0.0f,  0.0f);
-	}
-
-	@Override
-	public Float getCutValueConfiguration() {
-		if (!hasPassedConfigured()) { throw new OLATRuntimeException(MSCourseNode.class, "getCutValue not defined when hasPassed set to false", null); }
-		ModuleConfiguration config = getModuleConfiguration();
-		Float cut = (Float) config.get(CONFIG_KEY_PASSED_CUT_VALUE);
-		return cut;
-	}
-
-	@Override
-	public boolean isEditableConfigured() {
-		// manual scoring fields can be edited manually
-		return true;
-	}
-
-	@Override
-	public boolean hasAttemptsConfigured() {
-		return false;
-	}
-
-	@Override
-	public boolean hasCompletion() {
-		return false;
 	}
 
 	@Override

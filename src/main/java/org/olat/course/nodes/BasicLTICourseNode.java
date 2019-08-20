@@ -39,16 +39,17 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodes.basiclti.LTIAssessmentConfig;
 import org.olat.course.nodes.basiclti.LTIConfigForm;
 import org.olat.course.nodes.basiclti.LTIEditController;
 import org.olat.course.nodes.basiclti.LTIRunController;
@@ -274,94 +275,14 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
-
+	
 	@Override
-	public boolean isAssessedBusinessGroups() {
-		return false;
-	}
-
-	@Override
-	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) {
-			throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null);
-		}
-		ModuleConfiguration config = getModuleConfiguration();
-		Float scaleFactor = (Float) config.get(CONFIG_KEY_SCALEVALUE);
-		if(scaleFactor == null || scaleFactor.floatValue() < 0.0000001f) {
-			return 1.0f;
-		}
-		return 1.0f * scaleFactor.floatValue();//LTI 1.1 return between 0.0 - 1.0
-	}
-
-	@Override
-	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) { 
-			throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null);
-		}
-		return 0.0f;
-	}
-
-	@Override
-	public Float getCutValueConfiguration() {
-		if (!hasPassedConfigured()) { 
-			throw new OLATRuntimeException(MSCourseNode.class, "getCutValue not defined when hasPassed set to false", null);
-		}
-		ModuleConfiguration config = getModuleConfiguration();
-		return config.getFloatEntry(CONFIG_KEY_PASSED_CUT_VALUE);
-	}
-
-	@Override
-	public boolean hasScoreConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);
-		return (score == null) ? false : score.booleanValue();
-	}
-
-	@Override
-	public boolean hasPassedConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean passed = config.getBooleanEntry(CONFIG_KEY_HAS_PASSED_FIELD);
-		return (passed == null) ? false : passed.booleanValue();
-	}
-
-	@Override
-	public boolean hasCommentConfigured() {
-		return false;
-	}
-
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
-	}
-
-	@Override
-	public boolean hasAttemptsConfigured() {
-		// having score defined means the node is assessable
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);
-		return (score == null) ? false : score.booleanValue();
+	public AssessmentConfig getAssessmentConfig() {
+		return new LTIAssessmentConfig(getModuleConfiguration());
 	}
 
 	@Override
 	public boolean hasDetails() {
-		// having score defined means the node is assessable
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);
-		return (score == null) ? false : score.booleanValue();
-	}
-
-	@Override
-	public boolean hasStatusConfigured() {
-		return false;
-	}
-	
-	@Override
-	public boolean hasCompletion() {
-		return false;
-	}
-
-	@Override
-	public boolean isEditableConfigured() {
 		// having score defined means the node is assessable
 		ModuleConfiguration config = getModuleConfiguration();
 		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);

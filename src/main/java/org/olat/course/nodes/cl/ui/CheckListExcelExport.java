@@ -45,6 +45,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.AssessmentData;
@@ -73,6 +74,8 @@ public class CheckListExcelExport {
 	private Translator translator;
 	private final ICourse course;
 	private final CheckListCourseNode courseNode;
+	private final boolean hasScore;
+	private final boolean hasPassed;
 	private final List<UserPropertyHandler> userPropertyHandlers;
 	
 	private final UserManager userManager;
@@ -81,6 +84,9 @@ public class CheckListExcelExport {
 	public CheckListExcelExport(CheckListCourseNode courseNode, ICourse course, Locale locale) {
 		this.courseNode = courseNode;
 		this.course = course;
+		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+		this.hasScore = assessmentConfig.hasScoreConfigured();
+		this.hasPassed = assessmentConfig.hasPassedConfigured();
 		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
@@ -134,10 +140,10 @@ public class CheckListExcelExport {
 		header2Row.addCell(col++, translator.translate("column.header.homepage"), headerStyle);
 
 		// course node points and passed
-		if(courseNode.hasScoreConfigured()) {
+		if(hasScore) {
 			header2Row.addCell(col++, translator.translate("column.header.node.points"), headerStyle);
 		}
-		if(courseNode.hasPassedConfigured()) {
+		if(hasPassed) {
 			header2Row.addCell(col++, translator.translate("column.header.node.passed"), headerStyle);
 		}
 
@@ -148,7 +154,7 @@ public class CheckListExcelExport {
 			for(Checkbox checkbox:checkboxList) {
 				String boxTitle = checkbox.getTitle();
 				header2Row.addCell(col++, boxTitle, headerStyle);
-				if(courseNode.hasScoreConfigured() && checkbox.getPoints() != null) {
+				if(hasScore && checkbox.getPoints() != null) {
 					header2Row.addCell(col++, translator.translate("column.header.points"), headerStyle);
 				}	
 			}
@@ -190,14 +196,14 @@ public class CheckListExcelExport {
 		dataRow.addCell(col++, homepage, null);
 		
 		// course node points and passed
-		if(courseNode.hasScoreConfigured()) {
+		if(hasScore) {
 			if(entry != null && entry.getScore() != null) {
 				dataRow.addCell(col++, entry.getScore(), null);
 			} else {
 				col++;
 			}
 		}
-		if(courseNode.hasPassedConfigured()) {
+		if(hasPassed) {
 			if(entry != null && entry.getPassed() != null) {
 				dataRow.addCell(col++, entry.getPassed().toString(), null);
 			} else {
@@ -220,7 +226,7 @@ public class CheckListExcelExport {
 					col++;
 				}
 				
-				if(courseNode.hasScoreConfigured() && checkbox.getPoints() != null) {
+				if(hasScore && checkbox.getPoints() != null) {
 					if(check != null && check.getScore() != null ) {
 						dataRow.addCell(col++, check.getScore(), null);
 					} else {

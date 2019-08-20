@@ -48,6 +48,8 @@ import org.olat.core.util.nodes.GenericNode;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
@@ -678,6 +680,13 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		//
 	}
 	
+	// Assessment stuff
+	
+	@Override
+	public AssessmentConfig getAssessmentConfig() {
+		return NonAssessmentConfig.create();
+	}
+	
 	@Override
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts, Role by) {
@@ -686,7 +695,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 		am.saveScoreEvaluation(this, coachingIdentity, assessedIdentity, new ScoreEvaluation(scoreEvaluation),
 				userCourseEnvironment, incrementAttempts, by);
 	}
-	
+
 	@Override
 	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();

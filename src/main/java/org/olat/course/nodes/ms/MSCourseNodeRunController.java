@@ -46,6 +46,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
@@ -192,17 +193,18 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	}
 	
 	private void exposeConfigToVC(UserRequest ureq) {
+		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		myContent.contextPut("hasScoreField", courseNode.hasScoreConfigured());
-		if (courseNode.hasScoreConfigured()) {
-			myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(courseNode.getMinScoreConfiguration()));
-			myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(courseNode.getMaxScoreConfiguration()));
+		myContent.contextPut("hasScoreField", assessmentConfig.hasScoreConfigured());
+		if (assessmentConfig.hasScoreConfigured()) {
+			myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(assessmentConfig.getMinScoreConfiguration()));
+			myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(assessmentConfig.getMaxScoreConfiguration()));
 		}
-		myContent.contextPut("hasPassedField", courseNode.hasPassedConfigured());
-		if (courseNode.hasPassedConfigured()) {
-			myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(courseNode.getCutValueConfiguration()));
+		myContent.contextPut("hasPassedField", assessmentConfig.hasPassedConfigured());
+		if (assessmentConfig.hasPassedConfigured()) {
+			myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValueConfiguration()));
 		}
-		myContent.contextPut("hasCommentField", courseNode.hasCommentConfigured());
+		myContent.contextPut("hasCommentField", assessmentConfig.hasCommentConfigured());
 		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		if(StringHelper.containsNonWhitespace(infoTextUser)) {
 				myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
@@ -220,7 +222,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			String rawComment = assessmentEntry.getComment();
 			hasPassed = assessmentEntry.getPassed() != null;
 			hasScore = assessmentEntry.getScore() != null;
-			hasComment = courseNode.hasCommentConfigured() && StringHelper.containsNonWhitespace(rawComment);
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			hasComment = assessmentConfig.hasCommentConfigured() && StringHelper.containsNonWhitespace(rawComment);
 		
 			boolean resultsVisible = overrideUserResultsVisiblity
 					|| assessmentEntry.getUserVisibility() == null
@@ -237,7 +240,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 					myContent.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 				}
 				
-				if(courseNode.hasIndividualAsssessmentDocuments()) {
+				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
 					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
 					mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					myContent.contextPut("docsMapperUri", mapperUri);

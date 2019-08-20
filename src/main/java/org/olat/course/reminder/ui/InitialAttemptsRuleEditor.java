@@ -35,6 +35,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.rule.InitialAttemptsRuleSPI;
@@ -154,7 +155,8 @@ public class InitialAttemptsRuleEditor extends RuleEditorFragment {
 	private void searchAttemptableNodes(CourseNode courseNode, List<CourseNode> nodes) {
 		if (courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
-			if (assessableCourseNode.hasAttemptsConfigured()) {
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			if (assessmentConfig.hasAttemptsConfigured()) {
 				nodes.add(courseNode);
 			}
 		}

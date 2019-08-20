@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentMap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -31,9 +32,9 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.Filterable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -64,12 +65,15 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		super(columnModel);
 		this.locale = locale;
 		this.courseNode = courseNode;
-		
-		if(courseNode != null && !(courseNode instanceof STCourseNode) && courseNode.hasScoreConfigured()) {
-			maxScore = courseNode.getMaxScoreConfiguration();
-			minScore = courseNode.getMinScoreConfiguration();
-			if (courseNode.hasPassedConfigured()) {
-				cutValue = courseNode.getCutValueConfiguration();
+	
+		if (courseNode != null) {
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			if(!(courseNode instanceof STCourseNode) && assessmentConfig.hasScoreConfigured()) {
+				maxScore = assessmentConfig.getMaxScoreConfiguration();
+				minScore = assessmentConfig.getMinScoreConfiguration();
+				if (assessmentConfig.hasPassedConfigured()) {
+					cutValue = assessmentConfig.getCutValueConfiguration();
+				}
 			}
 		}
 	}

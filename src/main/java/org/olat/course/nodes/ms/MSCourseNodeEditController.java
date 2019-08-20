@@ -139,7 +139,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 	
 	private void updateHighscoreTab() {
-		myTabbedPane.setEnabled(4, msNode.hasScoreConfigured());
+		myTabbedPane.setEnabled(4, msNode.getAssessmentConfig().hasScoreConfigured());
 	}
 
 	@Override

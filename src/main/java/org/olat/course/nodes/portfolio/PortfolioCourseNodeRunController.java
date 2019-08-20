@@ -52,6 +52,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -308,40 +309,42 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 			scoreAccounting.evaluateAll();			
 			ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
-
+			
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			
 			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
 			assessmentInfosContainer.contextPut("resultsVisible", resultsVisible);
 			//score
-			assessmentInfosContainer.contextPut("hasScoreField", new Boolean(courseNode.hasScoreConfigured()));
-			if(courseNode.hasScoreConfigured()) {
+			assessmentInfosContainer.contextPut("hasScoreField", new Boolean(assessmentConfig.hasScoreConfigured()));
+			if(assessmentConfig.hasScoreConfigured()) {
 				Float score = scoreEval.getScore();
-				Float minScore = courseNode.getMinScoreConfiguration();
-				Float maxScore = courseNode.getMaxScoreConfiguration();
+				Float minScore = assessmentConfig.getMinScoreConfiguration();
+				Float maxScore = assessmentConfig.getMaxScoreConfiguration();
 				assessmentInfosContainer.contextPut("scoreMin", AssessmentHelper.getRoundedScore(minScore));
 				assessmentInfosContainer.contextPut("scoreMax", AssessmentHelper.getRoundedScore(maxScore));
 				assessmentInfosContainer.contextPut("score", AssessmentHelper.getRoundedScore(score));
 			}
 
 			//passed
-			assessmentInfosContainer.contextPut("hasPassedField", new Boolean(courseNode.hasPassedConfigured()));
-			if(courseNode.hasPassedConfigured()) {
+			assessmentInfosContainer.contextPut("hasPassedField", new Boolean(assessmentConfig.hasPassedConfigured()));
+			if(assessmentConfig.hasPassedConfigured()) {
 				Boolean passed = scoreEval.getPassed();
 				assessmentInfosContainer.contextPut("passed", passed);
 				assessmentInfosContainer.contextPut("hasPassedValue", new Boolean(passed != null));
-				Float cutValue = courseNode.getCutValueConfiguration();
+				Float cutValue = assessmentConfig.getCutValueConfiguration();
 				assessmentInfosContainer.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(cutValue));
 			}
 
 			// get comment
 			if(resultsVisible) {
-				if(courseNode.hasCommentConfigured()) {
+				if(assessmentConfig.hasCommentConfigured()) {
 					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 					String comment = am.getNodeComment(courseNode, getIdentity());
 					assessmentInfosContainer.contextPut("comment", comment);
 					assessmentInfosContainer.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 				}
 				
-				if(courseNode.hasIndividualAsssessmentDocuments()) {
+				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
 					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
 					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					assessmentInfosContainer.contextPut("docsMapperUri", mapperUri);

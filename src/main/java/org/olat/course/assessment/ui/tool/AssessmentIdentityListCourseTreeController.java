@@ -159,7 +159,7 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		if(courseNode instanceof AssessableCourseNode) {
-			if(((AssessableCourseNode)courseNode).isAssessedBusinessGroups() && courseNode instanceof GTACourseNode) {
+			if(((AssessableCourseNode)courseNode).getAssessmentConfig().isAssessedBusinessGroups() && courseNode instanceof GTACourseNode) {
 				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 				
 				List<BusinessGroup> coachedGroups;

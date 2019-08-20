@@ -55,6 +55,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -64,6 +65,7 @@ import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQIdentityListCourseNodeController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQRunController;
+import org.olat.course.nodes.iq.IQTESTAssessmentConfig;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.properties.CoursePropertyManager;
@@ -103,7 +105,6 @@ import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
-import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
@@ -421,130 +422,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	}
 	
 	@Override
-	public boolean isAssessedBusinessGroups() {
-		return false;
-	}
-
-	@Override
-	public Float getCutValueConfiguration() {
-		Float cutValue = null;
-		
-		ModuleConfiguration config = getModuleConfiguration();
-		// for onyx and QTI 1.2
-		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
-				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
-			cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
-		} else {
-			RepositoryEntry testEntry = getReferencedRepositoryEntry();
-			if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
-				if(assessmentTest != null) {
-					Double cut = QtiNodesExtractor.extractCutValue(assessmentTest);
-					if(cut != null) {
-						cutValue = Float.valueOf(cut.floatValue());
-					}
-				}
-			} else {
-				cutValue = (Float) config.get(IQEditController.CONFIG_KEY_CUTVALUE);
-			}
-		}
-		return cutValue;
-	}
-
-	@Override
-	public Float getMaxScoreConfiguration() {
-		Float maxScore = null;
-
-		ModuleConfiguration config = getModuleConfiguration();
-		// for onyx and QTI 1.2
-		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
-				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
-			maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
-		} else {
-			RepositoryEntry testEntry = getReferencedRepositoryEntry();
-			if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
-				if(assessmentTest != null) {
-					Double max = QtiNodesExtractor.extractMaxScore(assessmentTest);
-					if(max != null) {
-						maxScore = Float.valueOf(max.floatValue());
-					}
-				}
-			} else {
-				maxScore = (Float) config.get(IQEditController.CONFIG_KEY_MAXSCORE);
-			}
-		}
-		
-		return maxScore;
-	}
-
-	@Override
-	public Float getMinScoreConfiguration() {
-		Float minScore = null;
-		ModuleConfiguration config = getModuleConfiguration();
-		// for onyx and QTI 1.2
-		if (IQEditController.CONFIG_VALUE_QTI2.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))
-				|| IQEditController.CONFIG_VALUE_QTI1.equals(config.get(IQEditController.CONFIG_KEY_TYPE_QTI))) {
-			minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
-		} else {
-			RepositoryEntry testEntry = getReferencedRepositoryEntry();
-			if(QTIResourceTypeModule.isQtiWorks(testEntry.getOlatResource())) {
-				AssessmentTest assessmentTest = loadAssessmentTest(testEntry);
-				if(assessmentTest != null) {
-					Double min = QtiNodesExtractor.extractMinScore(assessmentTest);
-					if(min != null) {
-						minScore = Float.valueOf(min.floatValue());
-					}
-				}
-			} else {
-				minScore = (Float) config.get(IQEditController.CONFIG_KEY_MINSCORE);
-			}
-		}
-		return minScore;
-	}
-
-	@Override
-	public boolean hasCommentConfigured() {
-		// coach should be able to add comments here, visible to users
-		return true;
-	}
-
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		return true;// like user comment
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasPassedConfigured()
-	 */
-	@Override
-	public boolean hasPassedConfigured() {
-		return true;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasScoreConfigured()
-	 */
-	@Override
-	public boolean hasScoreConfigured() {
-		return true;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasStatusConfigured()
-	 */
-	@Override
-	public boolean hasStatusConfigured() {
-		return false;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#isEditableConfigured()
-	 */
-	@Override
-	public boolean isEditableConfigured() {
-		// test scoring fields can be edited manually
-		return true;
+	public AssessmentConfig getAssessmentConfig() {
+		return new IQTESTAssessmentConfig(this);
 	}
 
 	/**
@@ -697,11 +576,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 	}
 
-	@Override
-	public boolean hasAttemptsConfigured() {
-		return true;
-	}
-
 	public void pullAssessmentTestSession(AssessmentTestSession session, UserCourseEnvironment assessedUserCourseenv, Identity coachingIdentity, Role by) {
 		Boolean visibility;
 		AssessmentEntryStatus assessmentStatus;
@@ -715,12 +589,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		ScoreEvaluation sceval = new ScoreEvaluation(session.getScore().floatValue(), session.getPassed(), assessmentStatus, visibility, Boolean.TRUE,
 				1.0d, AssessmentRunStatus.done, session.getKey());
 		updateUserScoreEvaluation(sceval, assessedUserCourseenv, coachingIdentity, true, by);
-	}
-
-	
-	@Override
-	public boolean hasCompletion() {
-		return IQEditController.CONFIG_VALUE_QTI21.equals(getModuleConfiguration().get(IQEditController.CONFIG_KEY_TYPE_QTI));
 	}
 
 	/**
@@ -808,6 +676,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 				config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 			}
 		}
+	}
+
+	@Override
+	public boolean hasAttemptsConfigured() {
+		return getAssessmentConfig().hasAttemptsConfigured();
 	}
 
 }

@@ -71,6 +71,7 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -84,6 +85,7 @@ import org.olat.course.nodes.ta.ConvertToGTACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.DropboxScoringViewController;
 import org.olat.course.nodes.ta.ReturnboxController;
+import org.olat.course.nodes.ta.TAAssessmentConfig;
 import org.olat.course.nodes.ta.TACourseNodeEditController;
 import org.olat.course.nodes.ta.TACourseNodeRunController;
 import org.olat.course.nodes.ta.TAIdentityListCourseNodeController;
@@ -451,10 +453,16 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		conditionSolution.setConditionId("solution");
 		this.conditionSolution = conditionSolution;
 	}
+	
+	@Override
+	public AssessmentConfig getAssessmentConfig() {
+		return new TAAssessmentConfig(getModuleConfiguration());
+	}
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		if(hasPassedConfigured() || hasScoreConfigured()) {
+		AssessmentConfig assessmentConfig = getAssessmentConfig();
+		if(assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
 		return AssessmentEvaluation.EMPTY_EVAL;
@@ -473,87 +481,6 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	}
 
 	@Override
-	public boolean hasCommentConfigured() {
-		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
-		if (hasScoring) {
-			ModuleConfiguration config = getModuleConfiguration();
-			Boolean comment = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-			if (comment != null) {
-				return comment.booleanValue();
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		return false;
-	}
-
-	@Override
-	public boolean hasPassedConfigured() {
-		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
-		if (hasScoring) {
-			ModuleConfiguration config = getModuleConfiguration();
-			Boolean passed = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
-			if (passed != null) {
-				return passed.booleanValue();
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public boolean hasScoreConfigured() {
-		Boolean hasScoring = (Boolean) getModuleConfiguration().get(CONF_SCORING_ENABLED);
-		if (hasScoring) {
-			ModuleConfiguration config = getModuleConfiguration();
-			Boolean score = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-			if (score != null) {
-				return score.booleanValue();
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public boolean isAssessedBusinessGroups() {
-		return false;
-	}
-
-	@Override
-	public boolean hasStatusConfigured() {
-		return true; // Task Course node has always a status-field
-	}
-
-	@Override
-	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) { throw new OLATRuntimeException(TACourseNode.class, "getMaxScore not defined when hasScore set to false", null); }
-		ModuleConfiguration config = getModuleConfiguration();
-		return (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-	}
-
-	@Override
-	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) { throw new OLATRuntimeException(TACourseNode.class, "getMinScore not defined when hasScore set to false", null); }
-		ModuleConfiguration config = getModuleConfiguration();
-		return (Float) config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-	}
-
-	@Override
-	public Float getCutValueConfiguration() {
-		if (!hasPassedConfigured()) { throw new OLATRuntimeException(TACourseNode.class, "getCutValue not defined when hasPassed set to false", null); }
-		ModuleConfiguration config = getModuleConfiguration();
-		return (Float) config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-	}
-
-	@Override
-	public boolean isEditableConfigured() {
-		// always true
-		return true;
-	}
-
-	@Override
 	//TODO uh anders als die Default Implemntation notwendig?
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEval, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts, Role by) {
@@ -562,16 +489,6 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		ScoreEvaluation newScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
 				null, null, null, null);
 		am.saveScoreEvaluation(this, coachingIdentity, mySelf, newScoreEval, userCourseEnvironment, incrementAttempts, by);		
-	}
-
-	@Override
-	public boolean hasAttemptsConfigured() {
-		return true;
-	}
-
-	@Override
-	public boolean hasCompletion() {
-		return false;
 	}
 
 	@Override

@@ -40,6 +40,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -200,7 +201,8 @@ public class ScoreAccounting {
 		 */
 		private AssessmentEvaluation calculateScoreEvaluation(AssessmentEntry entry, CalculatedAssessableCourseNode cNode) {
 			AssessmentEvaluation se;
-			if(cNode.hasScoreConfigured() || cNode.hasPassedConfigured()) {
+			AssessmentConfig assessmentConfig = cNode.getAssessmentConfig();
+			if(assessmentConfig.hasScoreConfigured() || assessmentConfig.hasPassedConfigured()) {
 				ScoreCalculator scoreCalculator = cNode.getScoreCalculator();
 				String scoreExpressionStr = scoreCalculator.getScoreExpression();
 				String passedExpressionStr = scoreCalculator.getPassedExpression();
@@ -216,10 +218,10 @@ public class ScoreAccounting {
 				
 				AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 				ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
-				if (cNode.hasScoreConfigured() && scoreExpressionStr != null) {
+				if (assessmentConfig.hasScoreConfigured() && scoreExpressionStr != null) {
 					score = Float.valueOf(ci.evaluateCalculation(scoreExpressionStr));
 				}
-				if (cNode.hasPassedConfigured() && passedExpressionStr != null) {
+				if (assessmentConfig.hasPassedConfigured() && passedExpressionStr != null) {
 					boolean hasPassed = ci.evaluateCondition(passedExpressionStr);
 					if(hasPassed) {
 						passed = Boolean.TRUE;

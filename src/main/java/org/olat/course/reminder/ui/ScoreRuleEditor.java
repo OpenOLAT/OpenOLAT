@@ -143,7 +143,7 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 	private void searchScoreableNodes(CourseNode courseNode, List<CourseNode> nodes) {
 		if (courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
-			if (assessableCourseNode.hasScoreConfigured()) {
+			if (assessableCourseNode.getAssessmentConfig().hasScoreConfigured()) {
 				nodes.add(courseNode);
 			}
 		}

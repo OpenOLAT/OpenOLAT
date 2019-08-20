@@ -45,7 +45,6 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -57,6 +56,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.editor.CourseEditorEnv;
@@ -64,6 +64,7 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.nodes.cl.CheckListAssessmentConfig;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
@@ -166,7 +167,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		if(hasPassedConfigured() || hasScoreConfigured()) {
+		AssessmentConfig assessmentConfig = getAssessmentConfig();
+		if(assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
 		return AssessmentEvaluation.EMPTY_EVAL;
@@ -269,81 +271,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	}
 	
 	@Override
-	public boolean isAssessedBusinessGroups() {
-		return false;
-	}
-
-	@Override
-	public Float getCutValueConfiguration() {
-		if (!hasPassedConfigured()) {
-			throw new OLATRuntimeException(MSCourseNode.class, "getCutValue not defined when hasPassed set to false", null);
-		}
-		ModuleConfiguration config = getModuleConfiguration();
-		return (Float)config.get(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-	}
-
-	@Override
-	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) {
-			throw new OLATRuntimeException(MSCourseNode.class, "getMaxScore not defined when hasScore set to false", null);
-		}
-		ModuleConfiguration config = getModuleConfiguration();
-		return (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-	}
-
-	@Override
-	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) {
-			throw new OLATRuntimeException(MSCourseNode.class, "getMinScore not defined when hasScore set to false", null);
-		}
-		ModuleConfiguration config = getModuleConfiguration();
-		return (Float)config.get(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-	}
-
-	@Override
-	public boolean hasCommentConfigured() {
-		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD, false);
-	}
-	
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
-	}
-
-	@Override
-	public boolean hasPassedConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean passed = (Boolean) config.get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
-		if (passed == null) return false;
-		return passed.booleanValue();
-	}
-
-	@Override
-	public boolean hasScoreConfigured() {
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean score = (Boolean)config.get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		if (score == null) return false;
-		return score.booleanValue();
-	}
-
-	@Override
-	public boolean hasStatusConfigured() {
-		return false;
-	}
-
-	@Override
-	public boolean isEditableConfigured() {
-		return true;
-	}
-
-	@Override
-	public boolean hasAttemptsConfigured() {
-		return false;
-	}
-	
-	@Override
-	public boolean hasCompletion() {
-		return false;
+	public AssessmentConfig getAssessmentConfig() {
+		return new CheckListAssessmentConfig(getModuleConfiguration());
 	}
 
 	@Override
@@ -432,7 +361,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		new CheckListExcelExport(this, course, locale).exportAll(filename, exportStream);
 		
 		//assessment documents
-		if(hasIndividualAsssessmentDocuments()) {
+		if(getAssessmentConfig().hasIndividualAsssessmentDocuments()) {
 			List<AssessmentEntry> assessmentEntries = course.getCourseEnvironment()
 					.getAssessmentManager().getAssessmentEntries(this);
 			if(assessmentEntries != null && !assessmentEntries.isEmpty()) {

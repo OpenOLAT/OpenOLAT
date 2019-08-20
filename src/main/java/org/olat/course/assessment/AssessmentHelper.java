@@ -47,6 +47,7 @@ import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -156,7 +157,8 @@ public class AssessmentHelper {
 		Integer attempts = null;
 		String details = null;
 		if (courseNode != null) {
-			if (courseNode.hasAttemptsConfigured()) {
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			if (assessmentConfig.hasAttemptsConfigured()) {
 				attempts = courseNode.getUserAttempts(uce);
 			}
 			if (courseNode.hasDetails()) {
@@ -222,12 +224,14 @@ public class AssessmentHelper {
 		if (node instanceof AssessableCourseNode) {
 			if (node instanceof STCourseNode) {
 				STCourseNode scn = (STCourseNode) node;
-				if (scn.hasPassedConfigured() || scn.hasScoreConfigured()) {
+				AssessmentConfig assessmentConfig = scn.getAssessmentConfig();
+				if (assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured()) {
 					return true;
 				}
 			} else if (node instanceof ScormCourseNode) {
 				ScormCourseNode scormn = (ScormCourseNode) node;
-				if (scormn.hasPassedConfigured() || scormn.hasScoreConfigured()) {
+				AssessmentConfig assessmentConfig = scormn.getAssessmentConfig();
+				if (assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured()) {
 					return true;
 				}
 			} else if (node instanceof ProjectBrokerCourseNode) {
@@ -394,11 +398,12 @@ public class AssessmentHelper {
 		boolean assessable = false;
 		if (courseNode instanceof AssessableCourseNode && !(courseNode instanceof ProjectBrokerCourseNode)) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
+			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 			if (assessableCourseNode.hasDetails()
-				|| assessableCourseNode.hasAttemptsConfigured()
-				|| assessableCourseNode.hasScoreConfigured()
-				|| assessableCourseNode.hasPassedConfigured()
-				|| assessableCourseNode.hasCommentConfigured()) {
+				|| assessmentConfig.hasAttemptsConfigured()
+				|| assessmentConfig.hasScoreConfigured()
+				|| assessmentConfig.hasPassedConfigured()
+				|| assessmentConfig.hasCommentConfigured()) {
 
 				assessable = true;
 			}
@@ -488,6 +493,7 @@ public class AssessmentHelper {
 				assessmentNodeData.setSelectable(false);
 			} else if (courseNode instanceof AssessableCourseNode) {
 				AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
+				AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(assessableCourseNode);
 				if(scoreEvaluation != null) {
 					assessmentNodeData.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
@@ -517,7 +523,7 @@ public class AssessmentHelper {
 						}
 					}
 					// attempts
-					if (assessableCourseNode.hasAttemptsConfigured()) {
+					if (assessmentConfig.hasAttemptsConfigured()) {
 						hasDisplayableValuesConfigured = true;
 						Integer attemptsValue = scoreEvaluation.getAttempts(); 
 						if (attemptsValue != null) {
@@ -529,7 +535,7 @@ public class AssessmentHelper {
 						}
 					}
 					// score
-					if (assessableCourseNode.hasScoreConfigured()) {
+					if (assessmentConfig.hasScoreConfigured()) {
 						hasDisplayableValuesConfigured = true;
 						Float score = scoreEvaluation.getScore();
 						if (score != null) {
@@ -538,12 +544,12 @@ public class AssessmentHelper {
 							hasDisplayableUserValues = true;
 						}
 						if(!(assessableCourseNode instanceof STCourseNode)) {
-							assessmentNodeData.setMaxScore(assessableCourseNode.getMaxScoreConfiguration());
-							assessmentNodeData.setMinScore(assessableCourseNode.getMinScoreConfiguration());
+							assessmentNodeData.setMaxScore(assessableCourseNode.getAssessmentConfig().getMaxScoreConfiguration());
+							assessmentNodeData.setMinScore(assessmentConfig.getMinScoreConfiguration());
 						}
 					}
 					// passed
-					if (assessableCourseNode.hasPassedConfigured()) {
+					if (assessmentConfig.hasPassedConfigured()) {
 						hasDisplayableValuesConfigured = true;
 						Boolean passed = scoreEvaluation.getPassed();
 						if (passed != null) {
@@ -553,8 +559,7 @@ public class AssessmentHelper {
 					}
 				}
 				// selection command available
-				AssessableCourseNode acn = (AssessableCourseNode) courseNode;
-				if (acn.isEditableConfigured()) {
+				if (assessmentConfig.isEditableConfigured()) {
 					// Assessable course nodes are selectable
 					assessmentNodeData.setSelectable(true);
 				} else {
@@ -563,7 +568,7 @@ public class AssessmentHelper {
 					assessmentNodeData.setSelectable(false);
 				}
 				
-				if (!hasDisplayableUserValues && assessableCourseNode.hasCommentConfigured() && !discardComments) {
+				if (!hasDisplayableUserValues && assessmentConfig.hasCommentConfigured() && !discardComments) {
 				  // comments are invisible in the table but if configured the node must be in the list
 					// for the efficiency statement this can be ignored, this is the case when discardComments is true
 					hasDisplayableValuesConfigured = true;

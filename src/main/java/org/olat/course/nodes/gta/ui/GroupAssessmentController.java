@@ -57,6 +57,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.ui.GroupAssessmentModel.Cols;
@@ -122,12 +123,13 @@ public class GroupAssessmentController extends FormBasicController {
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
 
-		withScore = courseNode.hasScoreConfigured();
-		withPassed = courseNode.hasPassedConfigured();
+		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+		withScore = assessmentConfig.hasScoreConfigured();
+		withPassed = assessmentConfig.hasPassedConfigured();
 		if(withPassed) {
-			cutValue = courseNode.getCutValueConfiguration();
+			cutValue = assessmentConfig.getCutValueConfiguration();
 		}
-		withComment = courseNode.hasCommentConfigured();
+		withComment = assessmentConfig.hasCommentConfigured();
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);

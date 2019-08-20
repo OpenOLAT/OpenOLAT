@@ -52,6 +52,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
@@ -243,7 +244,8 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			startPage.contextPut("passed", scoreEval.getPassed());
 			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
 			startPage.contextPut("resultsVisible", resultsVisible);
-			if(resultsVisible && scormNode.hasCommentConfigured()) {
+			AssessmentConfig assessmentConfig = scormNode.getAssessmentConfig();
+			if(resultsVisible && assessmentConfig.hasCommentConfigured()) {
 				StringBuilder comment = Formatter.stripTabsAndReturns(scormNode.getUserComment(userCourseEnv));
 				startPage.contextPut("comment", StringHelper.xssScan(comment));
 			}

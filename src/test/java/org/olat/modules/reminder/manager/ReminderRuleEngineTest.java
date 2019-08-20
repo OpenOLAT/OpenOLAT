@@ -1086,7 +1086,7 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 			}
 		}
 		Assert.assertNotNull(testNode);
-		Assert.assertTrue(testNode.hasScoreConfigured());
+		Assert.assertTrue(testNode.getAssessmentConfig().hasScoreConfigured());
 		
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(student);

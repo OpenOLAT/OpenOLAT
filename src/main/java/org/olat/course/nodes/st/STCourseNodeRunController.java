@@ -46,6 +46,7 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.CourseNode;
@@ -97,7 +98,8 @@ public class STCourseNodeRunController extends BasicController {
 		myContent = createVelocityContainer("run");
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
-		if (se != null && (stCourseNode.hasScoreConfigured() || stCourseNode.hasPassedConfigured())) {
+		AssessmentConfig assessmentConfig = stCourseNode.getAssessmentConfig();
+		if (se != null && (assessmentConfig.hasScoreConfigured() || assessmentConfig.hasPassedConfigured())) {
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, stCourseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -172,10 +174,10 @@ public class STCourseNodeRunController extends BasicController {
 			myContent.contextPut("hasScore", Boolean.FALSE);
 			myContent.contextPut("hasPassed", Boolean.FALSE);
 		} else {
-			myContent.contextPut("hasScore", new Boolean(stCourseNode.hasScoreConfigured()));
-			myContent.contextPut("hasPassed", new Boolean(stCourseNode.hasPassedConfigured()));
+			myContent.contextPut("hasScore", new Boolean(assessmentConfig.hasScoreConfigured()));
+			myContent.contextPut("hasPassed", new Boolean(assessmentConfig.hasPassedConfigured()));
 
-			if(stCourseNode.hasScoreConfigured() || stCourseNode.hasPassedConfigured()) {
+			if(assessmentConfig.hasScoreConfigured() || assessmentConfig.hasPassedConfigured()) {
 				CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 				if((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled())
 						&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {
@@ -244,6 +246,7 @@ public class STCourseNodeRunController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 	// nothing to do yet
 	}

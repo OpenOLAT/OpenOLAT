@@ -36,6 +36,7 @@ import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -44,11 +45,11 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.StringMediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.scorm.ScormEditController;
@@ -113,10 +114,11 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 	private void currentScore() {
 		if(isAssessable) {
 			checkForLms();
-			if(scormNode.hasScoreConfigured()) {
+			AssessmentConfig assessmentConfig = scormNode.getAssessmentConfig();
+			if(assessmentConfig.hasScoreConfigured()) {
 				currentScore = scormNode.getUserScoreEvaluation(userCourseEnv).getScore();
 			}
-			if(scormNode.hasPassedConfigured()) {
+			if(assessmentConfig.hasPassedConfigured()) {
 				currentPassed = scormNode.getUserScoreEvaluation(userCourseEnv).getPassed();
 			}
 		}
@@ -251,7 +253,8 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			score += ascore;
 		}
 		
-		float cutval = scormNode.getCutValueConfiguration().floatValue();
+		AssessmentConfig assessmentConfig = scormNode.getAssessmentConfig();
+		float cutval = assessmentConfig.getCutValueConfiguration().floatValue();
 		boolean passed = (score >= cutval);
 		// if advanceScore option is set update the score only if it is higher
 		// <OLATEE-27>
@@ -300,6 +303,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		}
 	}
 
+	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
 		check();
 		

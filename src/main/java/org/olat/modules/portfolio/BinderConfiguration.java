@@ -24,6 +24,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.repository.RepositoryEntry;
@@ -142,13 +143,13 @@ public class BinderConfiguration {
 				displayname = course.getCourseTitle();
 				CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
 				if(courseNode instanceof PortfolioCourseNode) {
-					PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
-					withScore = pfNode.hasScoreConfigured();
+					AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+					withScore = assessmentConfig.hasScoreConfigured();
 					if(withScore) {
-						maxScore = pfNode.getMaxScoreConfiguration();
-						minScore = pfNode.getMinScoreConfiguration();
+						maxScore = assessmentConfig.getMaxScoreConfiguration();
+						minScore = assessmentConfig.getMinScoreConfiguration();
 					}
-					withPassed = pfNode.hasPassedConfigured();
+					withPassed = assessmentConfig.hasPassedConfigured();
 					assessable = withPassed || withScore;
 				} else {
 					withPassed = true;

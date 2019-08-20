@@ -22,6 +22,7 @@ package org.olat.course.assessment.model;
 
 import java.io.Serializable;
 
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
@@ -47,9 +48,10 @@ public class BulkAssessmentSettings implements Serializable {
 	private final Float cut;
 
 	public BulkAssessmentSettings(AssessableCourseNode courseNode) {
-		hasUserComment = courseNode.hasCommentConfigured();
-		hasScore = courseNode.hasScoreConfigured();
-		hasPassed = courseNode.hasPassedConfigured();
+		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+		hasUserComment = assessmentConfig.hasCommentConfigured();
+		hasScore = assessmentConfig.hasScoreConfigured();
+		hasPassed = assessmentConfig.hasPassedConfigured();
 		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		if (courseNode instanceof TACourseNode) {
@@ -66,13 +68,13 @@ public class BulkAssessmentSettings implements Serializable {
 		}
 
 		if (hasScore) {
-			min = courseNode.getMinScoreConfiguration();
-			max = courseNode.getMaxScoreConfiguration();
+			min = assessmentConfig.getMinScoreConfiguration();
+			max = assessmentConfig.getMaxScoreConfiguration();
 		} else {
 			min = max = null;
 		}
 		if (hasPassed) {
-			cut = courseNode.getCutValueConfiguration();
+			cut = assessmentConfig.getCutValueConfiguration();
 		} else {
 			cut = null;
 		}

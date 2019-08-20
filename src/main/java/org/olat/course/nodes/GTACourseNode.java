@@ -48,7 +48,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
@@ -64,6 +63,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -71,6 +71,7 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.gta.GTAAssessmentConfig;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
@@ -743,94 +744,14 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		SubscriptionContext subscriptionContext = gtaManager.getSubscriptionContext(course.getCourseEnvironment(), this, false);
 		NotificationsManager.getInstance().delete(subscriptionContext);
 	}
-
+	
 	@Override
-	public boolean isAssessedBusinessGroups() {
-		return GTAType.group.name().equals(getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE));
+	public AssessmentConfig getAssessmentConfig() {
+		return new GTAAssessmentConfig(getModuleConfiguration());
 	}
 	
 	public boolean isOptional() {
 		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
-	}
-
-	@Override
-	public boolean hasStatusConfigured() {
-		return true; // Task Course node has always a status-field
-	}
-
-	@Override
-	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) {
-			throw new OLATRuntimeException(TACourseNode.class, "getMaxScore not defined when hasScore set to false", null);
-		}
-		return getModuleConfiguration().getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MAX);
-	}
-
-	@Override
-	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) {
-			throw new OLATRuntimeException(TACourseNode.class, "getMinScore not defined when hasScore set to false", null);
-		}
-		return getModuleConfiguration().getFloatEntry(MSCourseNode.CONFIG_KEY_SCORE_MIN);
-	}
-
-	@Override
-	public Float getCutValueConfiguration() {
-		if (!hasPassedConfigured()) {
-			throw new OLATRuntimeException(TACourseNode.class, "getCutValue not defined when hasPassed set to false", null);
-		}
-		return getModuleConfiguration().getFloatEntry(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
-	}
-
-	@Override
-	public boolean hasScoreConfigured() {
-		boolean hasGrading = getModuleConfiguration().getBooleanSafe(GTASK_GRADING);
-		if (hasGrading) {
-			Boolean score = (Boolean) getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-			if (score != null) {
-				return score.booleanValue();
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public boolean hasPassedConfigured() {
-		boolean hasGrading = getModuleConfiguration().getBooleanSafe(GTASK_GRADING);
-		if (hasGrading) {
-			Boolean passed = (Boolean)getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
-			if (passed != null) {
-				return passed.booleanValue();
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public boolean hasCommentConfigured() {
-		boolean hasGrading = getModuleConfiguration().getBooleanSafe(GTASK_GRADING);
-		if (hasGrading) {
-			Boolean comment = (Boolean) getModuleConfiguration().get(MSCourseNode.CONFIG_KEY_HAS_COMMENT_FIELD);
-			if (comment != null) {
-				return comment.booleanValue();
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public boolean hasIndividualAsssessmentDocuments() {
-		boolean hasGrading = getModuleConfiguration().getBooleanSafe(GTASK_GRADING);
-		if (hasGrading) {
-			return getModuleConfiguration()
-					.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false);
-		}
-		return false;
-	}
-
-	@Override
-	public boolean hasAttemptsConfigured(){
-		return true;
 	}
 
 	@Override
@@ -840,16 +761,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 				|| config.getBooleanSafe(GTASK_SUBMIT)
 				|| config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
 				|| config.getBooleanSafe(GTASK_REVISION_PERIOD);
-	}
-	
-	@Override
-	public boolean hasCompletion() {
-		return false;
-	}
-
-	@Override
-	public boolean isEditableConfigured() {
-		return true;
 	}
 	
 	@Override
@@ -942,7 +853,8 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		if(hasPassedConfigured() || hasScoreConfigured()) {
+		AssessmentConfig assessmentConfig = getAssessmentConfig();
+		if(assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
 		return AssessmentEvaluation.EMPTY_EVAL;

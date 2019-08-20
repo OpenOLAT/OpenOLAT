@@ -33,6 +33,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.logging.activity.UserActivityLoggerImpl;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -86,9 +87,10 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 		CourseNode node = course.getRunStructure().getNode(courseNodeId);
 		if(node instanceof BasicLTICourseNode) {
 			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
+			AssessmentConfig assessmentConfig = ltiNode.getAssessmentConfig();
 			
 			Identity assessedId = getIdentity();
-			Float cutValue = getCutValue(ltiNode);
+			Float cutValue = getCutValue(assessmentConfig);
 			
 			Float scaledScore = null;
 			Boolean passed = null;
@@ -158,7 +160,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 	}
 	
 	private float getScalingFactor(BasicLTICourseNode ltiNode) {
-		if(ltiNode.hasScoreConfigured()) {
+		if(ltiNode.getAssessmentConfig().hasScoreConfigured()) {
 			Float scale = ltiNode.getModuleConfiguration().getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 			if(scale == null) {
 				return 1.0f;
@@ -168,9 +170,9 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 		return 1.0f;
 	}
 	
-	private Float getCutValue(BasicLTICourseNode ltiNode) {
-		if(ltiNode.hasPassedConfigured()) {
-			Float cutValue = ltiNode.getCutValueConfiguration();
+	private Float getCutValue(AssessmentConfig assessmentConfig) {
+		if(assessmentConfig.hasPassedConfigured()) {
+			Float cutValue = assessmentConfig.getCutValueConfiguration();
 			if(cutValue == null) {
 				return null;
 			}
