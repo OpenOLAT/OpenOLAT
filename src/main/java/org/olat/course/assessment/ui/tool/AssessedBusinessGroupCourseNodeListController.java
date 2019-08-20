@@ -119,11 +119,11 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode aNode = (AssessableCourseNode)courseNode;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-			if(assessmentConfig.hasPassedConfigured()) {
+			if(assessmentConfig.hasPassed()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.countPassed,
 						new ProgressRenderer(false, getTranslator())));
 			}
-			if(assessmentConfig.hasScoreConfigured()) {
+			if(assessmentConfig.hasScore()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.averageScore,
 						new ScoreCellRenderer()));
 			}

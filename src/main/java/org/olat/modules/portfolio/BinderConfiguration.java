@@ -144,12 +144,12 @@ public class BinderConfiguration {
 				CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
 				if(courseNode instanceof PortfolioCourseNode) {
 					AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-					withScore = assessmentConfig.hasScoreConfigured();
+					withScore = assessmentConfig.hasScore();
 					if(withScore) {
-						maxScore = assessmentConfig.getMaxScoreConfiguration();
-						minScore = assessmentConfig.getMinScoreConfiguration();
+						maxScore = assessmentConfig.getMaxScore();
+						minScore = assessmentConfig.getMinScore();
 					}
-					withPassed = assessmentConfig.hasPassedConfigured();
+					withPassed = assessmentConfig.hasPassed();
 					assessable = withPassed || withScore;
 				} else {
 					withPassed = true;

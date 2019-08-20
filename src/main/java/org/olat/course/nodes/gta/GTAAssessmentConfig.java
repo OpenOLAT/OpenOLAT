@@ -39,29 +39,29 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScoreConfigured() {
+	public boolean hasScore() {
 		if (hasNoGrading) return false;
 		
-		return super.hasScoreConfigured();
+		return super.hasScore();
 	}
 	
 	@Override
-	public boolean hasPassedConfigured() {
+	public boolean hasPassed() {
 		if (hasNoGrading) return false;
 		
-		return super.hasPassedConfigured();
+		return super.hasPassed();
 	}
 
 	@Override
-	public boolean hasAttemptsConfigured(){
+	public boolean hasAttempts(){
 		return true;
 	}
 	
 	@Override
-	public boolean hasCommentConfigured() {
+	public boolean hasComment() {
 		if (hasNoGrading) return false;
 		
-		return super.hasCommentConfigured();
+		return super.hasComment();
 	}
 	
 	@Override
@@ -72,7 +72,7 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return true; // Task Course node has always a status-field
 	}
 
@@ -82,7 +82,7 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		return true;
 	}
 	

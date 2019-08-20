@@ -42,12 +42,12 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScoreConfigured() {
+	public boolean hasScore() {
 		return true;
 	}
 	
 	@Override
-	public Float getMaxScoreConfiguration() {
+	public Float getMaxScore() {
 		Float maxScore = null;
 
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
@@ -75,7 +75,7 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 
 
 	@Override
-	public Float getMinScoreConfiguration() {
+	public Float getMinScore() {
 		Float minScore = null;
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		// for onyx and QTI 1.2
@@ -100,12 +100,12 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasPassedConfigured() {
+	public boolean hasPassed() {
 		return true;
 	}
 
 	@Override
-	public Float getCutValueConfiguration() {
+	public Float getCutValue() {
 		Float cutValue = null;
 		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
@@ -136,12 +136,12 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttempts() {
 		return true;
 	}
 	
 	@Override
-	public boolean hasCommentConfigured() {
+	public boolean hasComment() {
 		// coach should be able to add comments here, visible to users
 		return true;
 	}
@@ -152,7 +152,7 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return false;
 	}
 
@@ -162,7 +162,7 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		// test scoring fields can be edited manually
 		return true;
 	}

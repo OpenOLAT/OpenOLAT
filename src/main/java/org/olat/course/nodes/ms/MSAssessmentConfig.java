@@ -37,39 +37,39 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScoreConfigured() {
+	public boolean hasScore() {
 		String scoreKey = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);
 		return !MSCourseNode.CONFIG_VALUE_SCORE_NONE.equals(scoreKey);
 	}
 	
 	@Override
-	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) {
+	public Float getMaxScore() {
+		if (!hasScore()) {
 			throw new OLATRuntimeException(MSAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
 		}
 		return MSCourseNode.getMinMax(config).getMax();
 	}
 	
 	@Override
-	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) {
+	public Float getMinScore() {
+		if (!hasScore()) {
 			throw new OLATRuntimeException(MSAssessmentConfig.class, "getMinScore not defined when hasScoreConfigured set to false", null);
 		}
 		return MSCourseNode.getMinMax(config).getMin();
 	}
 
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttempts() {
 		return false;
 	}
 
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return false;
 	}
 
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		// manual scoring fields can be edited manually
 		return true;
 	}

@@ -211,7 +211,7 @@ public class DropboxScoringViewController extends BasicController {
 		// insert Status Pull-Down Menu depending on user role == author
 		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor();
 		boolean isTutor  = userCourseEnv.isCoach();
-		if ( ((AssessableCourseNode)node).getAssessmentConfig().hasStatusConfigured() && (isAuthor || isTutor)) {
+		if ( ((AssessableCourseNode)node).getAssessmentConfig().hasStatus() && (isAuthor || isTutor)) {
 			myContent.contextPut("hasStatusPullDown", Boolean.TRUE);
 			statusForm = new StatusForm(ureq, getWindowControl(), userCourseEnv.isCourseReadOnly());
 			listenTo(statusForm);

@@ -243,7 +243,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-			if (assessmentConfig.hasScoreConfigured() || userCourseEnv.isCoach()){
+			if (assessmentConfig.hasScore() || userCourseEnv.isCoach()){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 				if (highScoreCtr.isViewHighscore()) {
 					Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -297,7 +297,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("passed", passed);
 				if(resultsVisible) {
 					AssessmentConfig assessmentConfig = testCourseNode.getAssessmentConfig();
-					if(assessmentConfig.hasCommentConfigured()) {
+					if(assessmentConfig.hasComment()) {
 						StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserComment(userCourseEnv));
 						if (comment != null && comment.length() > 0) {
 							mainVC.contextPut("comment", StringHelper.xssScan(comment));

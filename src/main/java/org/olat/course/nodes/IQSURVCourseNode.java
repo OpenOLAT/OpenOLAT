@@ -378,7 +378,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttemptsConfigured()
+	 * @see org.olat.course.nodes.AssessableCourseNode#hasAttempts()
 	 */
 	@Override
 	public boolean hasAttemptsConfigured() {

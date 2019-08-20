@@ -357,28 +357,28 @@ public class IdentityListCourseNodeController extends FormBasicController
 			AssessableCourseNode assessableNode = (AssessableCourseNode)courseNode;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 			
-			if(assessmentConfig.hasAttemptsConfigured()) {
+			if(assessmentConfig.hasAttempts()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
 			}
 			if(!(courseNode instanceof CalculatedAssessableCourseNode)) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility,
 						new UserVisibilityCellRenderer(getTranslator())));
 			}
-			if(assessmentConfig.hasScoreConfigured()) {
+			if(assessmentConfig.hasScore()) {
 				if(!(assessableNode instanceof STCourseNode)) {
-					if(assessmentConfig.getMinScoreConfiguration() != null) {
+					if(assessmentConfig.getMinScore() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.min, new ScoreCellRenderer()));
 					}
-					if(assessmentConfig.getMaxScoreConfiguration() != null) {
+					if(assessmentConfig.getMaxScore() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.max, new ScoreCellRenderer()));
 					}
-					if(assessmentConfig.hasPassedConfigured() && assessmentConfig.getCutValueConfiguration() != null) {
+					if(assessmentConfig.hasPassed() && assessmentConfig.getCutValue() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, IdentityCourseElementCols.cut, new ScoreCellRenderer()));
 					}
 				}
 				initScoreColumns(columnsModel);
 			}
-			if(assessmentConfig.hasPassedConfigured()) {
+			if(assessmentConfig.hasPassed()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.passed, new PassedCellRenderer()));
 			}
 			if(assessmentConfig.hasIndividualAsssessmentDocuments()) {

@@ -35,22 +35,22 @@ public class ProjectBrokerAssessmentConfig extends ModuleAssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasScoreConfigured() {
+	public boolean hasScore() {
 		return false;
 	}
 
 	@Override
-	public boolean hasPassedConfigured() {
+	public boolean hasPassed() {
 		return false;
 	}
 
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttempts() {
 		return false;
 	}
 
 	@Override
-	public boolean hasCommentConfigured() {
+	public boolean hasComment() {
 		return false;
 	}
 
@@ -60,12 +60,12 @@ public class ProjectBrokerAssessmentConfig extends ModuleAssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return false; // Project broker Course node has no status-field
 	}
 	
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		return false;
 	}
 

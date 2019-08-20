@@ -122,10 +122,10 @@ public class AssessmentForm extends FormBasicController {
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
 		AssessmentConfig assessmentConfig = assessableCourseNode.getAssessmentConfig();
-		hasAttempts = assessmentConfig.hasAttemptsConfigured();
-		hasScore = assessmentConfig.hasScoreConfigured();
-		hasPassed = assessmentConfig.hasPassedConfigured();
-		hasComment = assessmentConfig.hasCommentConfigured();
+		hasAttempts = assessmentConfig.hasAttempts();
+		hasScore = assessmentConfig.hasScore();
+		hasPassed = assessmentConfig.hasPassed();
+		hasComment = assessmentConfig.hasComment();
 		hasIndividualAssessmentDocs = assessmentConfig.hasIndividualAsssessmentDocuments();
 		
 		this.coachCourseEnv = coachCourseEnv;
@@ -516,10 +516,10 @@ public class AssessmentForm extends FormBasicController {
 		}
 
 		if (hasScore) {
-			min = assessmentConfig.getMinScoreConfiguration();
-			max = assessmentConfig.getMaxScoreConfiguration();
+			min = assessmentConfig.getMinScore();
+			max = assessmentConfig.getMaxScore();
 			if (hasPassed) {
-				cut = assessmentConfig.getCutValueConfiguration();
+				cut = assessmentConfig.getCutValue();
 			}
 			
 			String minStr = AssessmentHelper.getRoundedScore(min);

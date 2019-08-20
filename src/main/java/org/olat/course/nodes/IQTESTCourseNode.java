@@ -680,7 +680,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 
 	@Override
 	public boolean hasAttemptsConfigured() {
-		return getAssessmentConfig().hasAttemptsConfigured();
+		return getAssessmentConfig().hasAttempts();
 	}
 
 }

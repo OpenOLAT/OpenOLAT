@@ -313,9 +313,9 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		final AssessableCourseNode courseNode = getCourseNode();
 		final AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 		
-		final boolean hasUserComment = assessmentConfig.hasCommentConfigured();
-		final boolean hasScore = assessmentConfig.hasScoreConfigured();
-		final boolean hasPassed = assessmentConfig.hasPassedConfigured();
+		final boolean hasUserComment = assessmentConfig.hasComment();
+		final boolean hasScore = assessmentConfig.hasScore();
+		final boolean hasPassed = assessmentConfig.hasPassed();
 		final boolean hasReturnFiles = (StringHelper.containsNonWhitespace(datas.getReturnFiles())
 				&& (courseNode instanceof TACourseNode || courseNode instanceof GTACourseNode));
 		
@@ -335,11 +335,11 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		Float max = null;
 		Float cut = null;
 		if (hasScore) {
-			min = assessmentConfig.getMinScoreConfiguration();
-			max = assessmentConfig.getMaxScoreConfiguration();
+			min = assessmentConfig.getMinScore();
+			max = assessmentConfig.getMaxScore();
 		}
 		if (hasPassed) {
-			cut = assessmentConfig.getCutValueConfiguration();
+			cut = assessmentConfig.getCutValue();
 		}
 		
 		int count = 0;

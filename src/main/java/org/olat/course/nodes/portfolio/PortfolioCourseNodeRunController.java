@@ -315,29 +315,29 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
 			assessmentInfosContainer.contextPut("resultsVisible", resultsVisible);
 			//score
-			assessmentInfosContainer.contextPut("hasScoreField", new Boolean(assessmentConfig.hasScoreConfigured()));
-			if(assessmentConfig.hasScoreConfigured()) {
+			assessmentInfosContainer.contextPut("hasScoreField", new Boolean(assessmentConfig.hasScore()));
+			if(assessmentConfig.hasScore()) {
 				Float score = scoreEval.getScore();
-				Float minScore = assessmentConfig.getMinScoreConfiguration();
-				Float maxScore = assessmentConfig.getMaxScoreConfiguration();
+				Float minScore = assessmentConfig.getMinScore();
+				Float maxScore = assessmentConfig.getMaxScore();
 				assessmentInfosContainer.contextPut("scoreMin", AssessmentHelper.getRoundedScore(minScore));
 				assessmentInfosContainer.contextPut("scoreMax", AssessmentHelper.getRoundedScore(maxScore));
 				assessmentInfosContainer.contextPut("score", AssessmentHelper.getRoundedScore(score));
 			}
 
 			//passed
-			assessmentInfosContainer.contextPut("hasPassedField", new Boolean(assessmentConfig.hasPassedConfigured()));
-			if(assessmentConfig.hasPassedConfigured()) {
+			assessmentInfosContainer.contextPut("hasPassedField", new Boolean(assessmentConfig.hasPassed()));
+			if(assessmentConfig.hasPassed()) {
 				Boolean passed = scoreEval.getPassed();
 				assessmentInfosContainer.contextPut("passed", passed);
 				assessmentInfosContainer.contextPut("hasPassedValue", new Boolean(passed != null));
-				Float cutValue = assessmentConfig.getCutValueConfiguration();
+				Float cutValue = assessmentConfig.getCutValue();
 				assessmentInfosContainer.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(cutValue));
 			}
 
 			// get comment
 			if(resultsVisible) {
-				if(assessmentConfig.hasCommentConfigured()) {
+				if(assessmentConfig.hasComment()) {
 					AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 					String comment = am.getNodeComment(courseNode, getIdentity());
 					assessmentInfosContainer.contextPut("comment", comment);

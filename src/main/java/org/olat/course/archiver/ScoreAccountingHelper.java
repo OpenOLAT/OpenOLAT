@@ -177,10 +177,10 @@ public class ScoreAccountingHelper {
 			header1ColCnt += acNode.getType().equals("ita") ? 1 : 0;
 			
 			AssessmentConfig assessmentConfig = acNode.getAssessmentConfig();
-			boolean scoreOk = assessmentConfig.hasScoreConfigured();
-			boolean passedOk = assessmentConfig.hasPassedConfigured();
-			boolean attemptsOk = assessmentConfig.hasAttemptsConfigured();
-			boolean commentOk = assessmentConfig.hasCommentConfigured();
+			boolean scoreOk = assessmentConfig.hasScore();
+			boolean passedOk = assessmentConfig.hasPassed();
+			boolean attemptsOk = assessmentConfig.hasAttempts();
+			boolean commentOk = assessmentConfig.hasComment();
 			if (scoreOk || passedOk || commentOk || attemptsOk) {
 				header1ColCnt += scoreOk ? 1 : 0;
 				header1ColCnt += passedOk ? 1 : 0;
@@ -200,10 +200,10 @@ public class ScoreAccountingHelper {
 			}
 			
 			AssessmentConfig assessmentConfig = acNode.getAssessmentConfig();
-			boolean scoreOk = assessmentConfig.hasScoreConfigured();
-			boolean passedOk = assessmentConfig.hasPassedConfigured();
-			boolean attemptsOk = assessmentConfig.hasAttemptsConfigured();
-			boolean commentOk = assessmentConfig.hasCommentConfigured();
+			boolean scoreOk = assessmentConfig.hasScore();
+			boolean passedOk = assessmentConfig.hasPassed();
+			boolean attemptsOk = assessmentConfig.hasAttempts();
+			boolean commentOk = assessmentConfig.hasComment();
 			if (scoreOk || passedOk || commentOk || attemptsOk) {
 				if(scoreOk) {
 					headerRow2.addCell(header2ColCnt++, sc);
@@ -263,10 +263,10 @@ public class ScoreAccountingHelper {
 
 			for (AssessableCourseNode acnode:myNodes) {
 				AssessmentConfig assessmentConfig = acnode.getAssessmentConfig();
-				boolean scoreOk = assessmentConfig.hasScoreConfigured();
-				boolean passedOk = assessmentConfig.hasPassedConfigured();
-				boolean attemptsOk = assessmentConfig.hasAttemptsConfigured();
-				boolean commentOk = assessmentConfig.hasCommentConfigured();
+				boolean scoreOk = assessmentConfig.hasScore();
+				boolean passedOk = assessmentConfig.hasPassed();
+				boolean attemptsOk = assessmentConfig.hasAttempts();
+				boolean commentOk = assessmentConfig.hasComment();
 
 				if (acnode.getType().equals("ita")) {
 					String log = acnode.getUserLog(uce);
@@ -353,7 +353,7 @@ public class ScoreAccountingHelper {
 		boolean first = true;
 		for (AssessableCourseNode acnode:myNodes) {
 			AssessmentConfig assessmentConfig = acnode.getAssessmentConfig();
-			if (!assessmentConfig.hasScoreConfigured()) {
+			if (!assessmentConfig.hasScore()) {
 				// only show min/max/cut legend when score configured
 				continue;
 			}
@@ -369,15 +369,15 @@ public class ScoreAccountingHelper {
 			String minVal;
 			String maxVal;
 			String cutVal;
-			if(acnode instanceof STCourseNode || !assessmentConfig.hasScoreConfigured()) {
+			if(acnode instanceof STCourseNode || !assessmentConfig.hasScore()) {
 				minVal = maxVal = cutVal = "-";
 			} else {
-				Float minScoreConfig = assessmentConfig.getMinScoreConfiguration();
-				Float maxScoreConfig = assessmentConfig.getMaxScoreConfiguration();
+				Float minScoreConfig = assessmentConfig.getMinScore();
+				Float maxScoreConfig = assessmentConfig.getMaxScore();
 				minVal = minScoreConfig == null ? "-" : AssessmentHelper.getRoundedScore(minScoreConfig);
 				maxVal = maxScoreConfig == null ? "-" : AssessmentHelper.getRoundedScore(maxScoreConfig);
-				if (assessmentConfig.hasPassedConfigured()) {
-					Float cutValueConfig = assessmentConfig.getCutValueConfiguration();
+				if (assessmentConfig.hasPassed()) {
+					Float cutValueConfig = assessmentConfig.getCutValue();
 					cutVal = cutValueConfig == null ? "-" : AssessmentHelper.getRoundedScore(cutValueConfig);
 				} else {
 					cutVal = "-";

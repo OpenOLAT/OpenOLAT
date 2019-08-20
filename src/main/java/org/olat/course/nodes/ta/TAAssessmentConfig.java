@@ -39,29 +39,29 @@ public class TAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScoreConfigured() {
+	public boolean hasScore() {
 		if (hasNoScoring) return false;
 		
-		return super.hasScoreConfigured();
+		return super.hasScore();
 	}
 	
 	@Override
-	public boolean hasPassedConfigured() {
+	public boolean hasPassed() {
 		if (hasNoScoring) return false;
 		
-		return super.hasPassedConfigured();
+		return super.hasPassed();
 	}
 
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttempts() {
 		return true;
 	}
 	
 	@Override
-	public boolean hasCommentConfigured() {
+	public boolean hasComment() {
 		if (hasNoScoring) return false;
 		
-		return super.hasCommentConfigured();
+		return super.hasComment();
 	}
 
 	@Override
@@ -70,12 +70,12 @@ public class TAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return true; // Task Course node has always a status-field
 	}
 
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		return true;
 	}
 

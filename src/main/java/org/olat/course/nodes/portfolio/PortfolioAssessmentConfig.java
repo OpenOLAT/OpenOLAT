@@ -35,17 +35,17 @@ public class PortfolioAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttempts() {
 		return true;
 	}
 	
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return true;
 	}
 
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		return true;
 	}
 

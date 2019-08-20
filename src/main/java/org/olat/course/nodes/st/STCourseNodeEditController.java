@@ -429,7 +429,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 	
 	private void updateHighscoreTab() {
-		Boolean sf = stNode.getAssessmentConfig().hasScoreConfigured();
+		Boolean sf = stNode.getAssessmentConfig().hasScore();
 		myTabbedPane.setEnabled(5, sf);
 	}
 	/**

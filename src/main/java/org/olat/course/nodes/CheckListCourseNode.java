@@ -168,7 +168,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		AssessmentConfig assessmentConfig = getAssessmentConfig();
-		if(assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured()) {
+		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
 		return AssessmentEvaluation.EMPTY_EVAL;

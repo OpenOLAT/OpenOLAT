@@ -39,7 +39,7 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScoreConfigured() {
+	public boolean hasScore() {
 		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getScoreExpression())) {
 			return true;
 		}
@@ -47,17 +47,17 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public Float getMaxScoreConfiguration() {
+	public Float getMaxScore() {
 		throw new OLATRuntimeException(STAssessmentConfig.class, "Max score never defined for ST nodes", null);
 	}
 
 	@Override
-	public Float getMinScoreConfiguration() {
+	public Float getMinScore() {
 		throw new OLATRuntimeException(STAssessmentConfig.class, "Min score never defined for ST nodes", null);
 	}
 
 	@Override
-	public boolean hasPassedConfigured() {
+	public boolean hasPassed() {
 		if (scoreCalculator != null && StringHelper.containsNonWhitespace(scoreCalculator.getPassedExpression())) {
 			return true;
 		}
@@ -65,7 +65,7 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
-	public Float getCutValueConfiguration() {
+	public Float getCutValue() {
 		throw new OLATRuntimeException(STAssessmentConfig.class, "Cut value never defined for ST nodes", null);
 	}
 
@@ -75,12 +75,12 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttempts() {
 		return false;
 	}
 
 	@Override
-	public boolean hasCommentConfigured() {
+	public boolean hasComment() {
 		return false;
 	}
 
@@ -90,7 +90,7 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return false;
 	}
 
@@ -100,7 +100,7 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		// ST nodes never editable, data generated on the fly
 		return false;
 	}

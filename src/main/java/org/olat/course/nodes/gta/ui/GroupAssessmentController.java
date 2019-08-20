@@ -124,12 +124,12 @@ public class GroupAssessmentController extends FormBasicController {
 		this.assessedGroup = assessedGroup;
 
 		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-		withScore = assessmentConfig.hasScoreConfigured();
-		withPassed = assessmentConfig.hasPassedConfigured();
+		withScore = assessmentConfig.hasScore();
+		withPassed = assessmentConfig.hasPassed();
 		if(withPassed) {
-			cutValue = assessmentConfig.getCutValueConfiguration();
+			cutValue = assessmentConfig.getCutValue();
 		}
-		withComment = assessmentConfig.hasCommentConfigured();
+		withComment = assessmentConfig.hasComment();
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);

@@ -99,7 +99,7 @@ public class STCourseNodeRunController extends BasicController {
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
 		AssessmentConfig assessmentConfig = stCourseNode.getAssessmentConfig();
-		if (se != null && (assessmentConfig.hasScoreConfigured() || assessmentConfig.hasPassedConfigured())) {
+		if (se != null && (assessmentConfig.hasScore() || assessmentConfig.hasPassed())) {
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, stCourseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();
@@ -174,10 +174,10 @@ public class STCourseNodeRunController extends BasicController {
 			myContent.contextPut("hasScore", Boolean.FALSE);
 			myContent.contextPut("hasPassed", Boolean.FALSE);
 		} else {
-			myContent.contextPut("hasScore", new Boolean(assessmentConfig.hasScoreConfigured()));
-			myContent.contextPut("hasPassed", new Boolean(assessmentConfig.hasPassedConfigured()));
+			myContent.contextPut("hasScore", new Boolean(assessmentConfig.hasScore()));
+			myContent.contextPut("hasPassed", new Boolean(assessmentConfig.hasPassed()));
 
-			if(assessmentConfig.hasScoreConfigured() || assessmentConfig.hasPassedConfigured()) {
+			if(assessmentConfig.hasScore() || assessmentConfig.hasPassed()) {
 				CourseConfig cc = userCourseEnv.getCourseEnvironment().getCourseConfig();
 				if((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled())
 						&& userCourseEnv.hasEfficiencyStatementOrCertificate(false)) {

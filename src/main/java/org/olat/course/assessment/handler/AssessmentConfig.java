@@ -30,24 +30,24 @@ public interface AssessmentConfig {
 	/**
 	 * @return True if this course node produces a score variable for the learner
 	 */
-	public boolean hasScoreConfigured();
+	public boolean hasScore();
 	
 	/**
 	 * @return Returns the maximal score that can be achieved on this node. Throws 
 	 * an OLATRuntimeException if hasScore set to false, maxScore is undefined in this case
 	 */
-	public Float getMaxScoreConfiguration();
+	public Float getMaxScore();
 
 	/**
 	 * @return Returns the minimal score that can be achieved on this node. Throws 
 	 * an OLATRuntimeException if hasScore set to false, maxScore is undefined in this case
 	 */
-	public Float getMinScoreConfiguration();
+	public Float getMinScore();
 	
 	/**
 	 * @return True if this course node produces a passed variable for the learner
 	 */
-	public boolean hasPassedConfigured();
+	public boolean hasPassed();
 
 	/**
 	 * @return Returns the passed cut value or null if no such value is defined. A null
@@ -55,7 +55,7 @@ public interface AssessmentConfig {
 	 * score or no score at all. Throws an OLATRuntimeException if hasPassed is set to false, 
 	 * cutValue is undefined in this case
 	 */
-	public Float getCutValueConfiguration();
+	public Float getCutValue();
 	
 	/**
 	 * @return True if this course node can produces a completion variable for the learner
@@ -65,12 +65,12 @@ public interface AssessmentConfig {
 	/**
 	 * @return True if this course node produces an attempts variable for the learner
 	 */
-	public boolean hasAttemptsConfigured();
+	public boolean hasAttempts();
 	
 	/**
 	 * @return True if this course node produces a comment variable for the learner
 	 */
-	public boolean hasCommentConfigured();
+	public boolean hasComment();
 	
 	/**
 	 * @return True if this course node can hold some documents about the assessment of the learner
@@ -80,13 +80,13 @@ public interface AssessmentConfig {
 	/**
 	 * @return True if this course node produces an status variable for the learner
 	 */
-	public boolean hasStatusConfigured();
+	public boolean hasStatus();
 	
 	public boolean isAssessedBusinessGroups();
 
 	/**
 	 * @return True if score, passed, attempts and comment are editable by the assessment tool
 	 */
-	public boolean isEditableConfigured();
+	public boolean isEditable();
 
 }

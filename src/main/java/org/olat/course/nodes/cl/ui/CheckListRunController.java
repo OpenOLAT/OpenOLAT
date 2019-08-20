@@ -215,7 +215,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			layoutCont.contextPut("hasPassedValue", (scoreEval.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
 			layoutCont.contextPut("passed", scoreEval.getPassed());
 			if(resultsVisible) {
-				if(assessmentConfig.hasCommentConfigured()) {
+				if(assessmentConfig.hasComment()) {
 					StringBuilder comment = Formatter.stripTabsAndReturns(scoreEval.getComment());
 					layoutCont.contextPut("comment", StringHelper.xssScan(comment));
 					layoutCont.contextPut("incomment", isPanelOpen(ureq, "comment", true));
@@ -340,7 +340,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		
 		exposeUserDataToVC(ureq, flc);
 		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-		return assessmentConfig.hasScoreConfigured() || assessmentConfig.hasPassedConfigured();
+		return assessmentConfig.hasScore() || assessmentConfig.hasPassed();
 	}
 	
 	private void logUpdateCheck(String checkboxId, String boxTitle) {

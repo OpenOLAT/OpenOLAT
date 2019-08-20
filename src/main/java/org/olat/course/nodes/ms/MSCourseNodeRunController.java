@@ -195,16 +195,16 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private void exposeConfigToVC(UserRequest ureq) {
 		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		myContent.contextPut("hasScoreField", assessmentConfig.hasScoreConfigured());
-		if (assessmentConfig.hasScoreConfigured()) {
-			myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(assessmentConfig.getMinScoreConfiguration()));
-			myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(assessmentConfig.getMaxScoreConfiguration()));
+		myContent.contextPut("hasScoreField", assessmentConfig.hasScore());
+		if (assessmentConfig.hasScore()) {
+			myContent.contextPut("scoreMin", AssessmentHelper.getRoundedScore(assessmentConfig.getMinScore()));
+			myContent.contextPut("scoreMax", AssessmentHelper.getRoundedScore(assessmentConfig.getMaxScore()));
 		}
-		myContent.contextPut("hasPassedField", assessmentConfig.hasPassedConfigured());
-		if (assessmentConfig.hasPassedConfigured()) {
-			myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValueConfiguration()));
+		myContent.contextPut("hasPassedField", assessmentConfig.hasPassed());
+		if (assessmentConfig.hasPassed()) {
+			myContent.contextPut("passedCutValue", AssessmentHelper.getRoundedScore(assessmentConfig.getCutValue()));
 		}
-		myContent.contextPut("hasCommentField", assessmentConfig.hasCommentConfigured());
+		myContent.contextPut("hasCommentField", assessmentConfig.hasComment());
 		String infoTextUser = (String) config.get(MSCourseNode.CONFIG_KEY_INFOTEXT_USER);
 		if(StringHelper.containsNonWhitespace(infoTextUser)) {
 				myContent.contextPut(MSCourseNode.CONFIG_KEY_INFOTEXT_USER, infoTextUser);
@@ -223,7 +223,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			hasPassed = assessmentEntry.getPassed() != null;
 			hasScore = assessmentEntry.getScore() != null;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-			hasComment = assessmentConfig.hasCommentConfigured() && StringHelper.containsNonWhitespace(rawComment);
+			hasComment = assessmentConfig.hasComment() && StringHelper.containsNonWhitespace(rawComment);
 		
 			boolean resultsVisible = overrideUserResultsVisiblity
 					|| assessmentEntry.getUserVisibility() == null

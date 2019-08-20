@@ -126,22 +126,22 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		AssessmentConfig assessmentConfig = node.getAssessmentConfig();
 		
 		Integer attempts = null;
-		if(assessmentConfig.hasAttemptsConfigured()) {
+		if(assessmentConfig.hasAttempts()) {
 			attempts = entry.getAttempts();
 		}
 		
 		Float score = null;
-		if(assessmentConfig.hasScoreConfigured()) {
+		if(assessmentConfig.hasScore()) {
 			score = entry.getScore() == null ? null : entry.getScore().floatValue();
 		}
 		
 		Boolean passed = null;
-		if(assessmentConfig.hasPassedConfigured()) {
+		if(assessmentConfig.hasPassed()) {
 			passed = entry.getPassed();
 		}
 		
 		String comment = null;
-		if(assessmentConfig.hasCommentConfigured()) {
+		if(assessmentConfig.hasComment()) {
 			comment = entry.getComment();
 		}
 		

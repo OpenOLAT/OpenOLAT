@@ -85,8 +85,8 @@ public class CheckListExcelExport {
 		this.courseNode = courseNode;
 		this.course = course;
 		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-		this.hasScore = assessmentConfig.hasScoreConfigured();
-		this.hasPassed = assessmentConfig.hasPassedConfigured();
+		this.hasScore = assessmentConfig.hasScore();
+		this.hasPassed = assessmentConfig.hasPassed();
 		
 		userManager = CoreSpringFactory.getImpl(UserManager.class);
 		checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);

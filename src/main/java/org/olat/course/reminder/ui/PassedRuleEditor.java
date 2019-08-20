@@ -142,7 +142,7 @@ public class PassedRuleEditor extends RuleEditorFragment {
 		if (courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-			if (assessmentConfig.hasPassedConfigured()) {
+			if (assessmentConfig.hasPassed()) {
 				nodes.add(courseNode);
 			}
 		}

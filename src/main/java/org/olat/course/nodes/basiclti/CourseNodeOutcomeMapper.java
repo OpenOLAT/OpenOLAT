@@ -160,7 +160,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 	}
 	
 	private float getScalingFactor(BasicLTICourseNode ltiNode) {
-		if(ltiNode.getAssessmentConfig().hasScoreConfigured()) {
+		if(ltiNode.getAssessmentConfig().hasScore()) {
 			Float scale = ltiNode.getModuleConfiguration().getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 			if(scale == null) {
 				return 1.0f;
@@ -171,8 +171,8 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 	}
 	
 	private Float getCutValue(AssessmentConfig assessmentConfig) {
-		if(assessmentConfig.hasPassedConfigured()) {
-			Float cutValue = assessmentConfig.getCutValueConfiguration();
+		if(assessmentConfig.hasPassed()) {
+			Float cutValue = assessmentConfig.getCutValue();
 			if(cutValue == null) {
 				return null;
 			}

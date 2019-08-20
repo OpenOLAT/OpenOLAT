@@ -245,7 +245,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
 			startPage.contextPut("resultsVisible", resultsVisible);
 			AssessmentConfig assessmentConfig = scormNode.getAssessmentConfig();
-			if(resultsVisible && assessmentConfig.hasCommentConfigured()) {
+			if(resultsVisible && assessmentConfig.hasComment()) {
 				StringBuilder comment = Formatter.stripTabsAndReturns(scormNode.getUserComment(userCourseEnv));
 				startPage.contextPut("comment", StringHelper.xssScan(comment));
 			}

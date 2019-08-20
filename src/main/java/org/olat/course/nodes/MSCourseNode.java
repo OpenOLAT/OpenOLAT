@@ -282,7 +282,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		AssessmentConfig assessmentConfig = getAssessmentConfig();
-		if(assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured() || assessmentConfig.hasCommentConfigured()) {
+		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore() || assessmentConfig.hasComment()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
 		return AssessmentEvaluation.EMPTY_EVAL;

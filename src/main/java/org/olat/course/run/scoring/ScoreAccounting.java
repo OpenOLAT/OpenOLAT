@@ -202,7 +202,7 @@ public class ScoreAccounting {
 		private AssessmentEvaluation calculateScoreEvaluation(AssessmentEntry entry, CalculatedAssessableCourseNode cNode) {
 			AssessmentEvaluation se;
 			AssessmentConfig assessmentConfig = cNode.getAssessmentConfig();
-			if(assessmentConfig.hasScoreConfigured() || assessmentConfig.hasPassedConfigured()) {
+			if(assessmentConfig.hasScore() || assessmentConfig.hasPassed()) {
 				ScoreCalculator scoreCalculator = cNode.getScoreCalculator();
 				String scoreExpressionStr = scoreCalculator.getScoreExpression();
 				String passedExpressionStr = scoreCalculator.getPassedExpression();
@@ -218,10 +218,10 @@ public class ScoreAccounting {
 				
 				AssessmentEntryStatus assessmentStatus = AssessmentEntryStatus.inProgress;
 				ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
-				if (assessmentConfig.hasScoreConfigured() && scoreExpressionStr != null) {
+				if (assessmentConfig.hasScore() && scoreExpressionStr != null) {
 					score = Float.valueOf(ci.evaluateCalculation(scoreExpressionStr));
 				}
-				if (assessmentConfig.hasPassedConfigured() && passedExpressionStr != null) {
+				if (assessmentConfig.hasPassed() && passedExpressionStr != null) {
 					boolean hasPassed = ci.evaluateCondition(passedExpressionStr);
 					if(hasPassed) {
 						passed = Boolean.TRUE;

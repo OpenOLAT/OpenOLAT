@@ -147,7 +147,7 @@ public class AttemptsRuleEditor extends RuleEditorFragment {
 		if (courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-			if (assessmentConfig.hasAttemptsConfigured()) {
+			if (assessmentConfig.hasAttempts()) {
 				nodes.add(courseNode);
 			}
 		} else if (courseNode instanceof QTICourseNode) {

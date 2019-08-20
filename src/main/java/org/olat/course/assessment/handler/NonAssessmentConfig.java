@@ -38,27 +38,27 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScoreConfigured() {
+	public boolean hasScore() {
 		return false;
 	}
 
 	@Override
-	public Float getMaxScoreConfiguration() {
+	public Float getMaxScore() {
 		return null;
 	}
 
 	@Override
-	public Float getMinScoreConfiguration() {
+	public Float getMinScore() {
 		return null;
 	}
 
 	@Override
-	public boolean hasPassedConfigured() {
+	public boolean hasPassed() {
 		return false;
 	}
 
 	@Override
-	public Float getCutValueConfiguration() {
+	public Float getCutValue() {
 		return null;
 	}
 
@@ -68,12 +68,12 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttempts() {
 		return false;
 	}
 
 	@Override
-	public boolean hasCommentConfigured() {
+	public boolean hasComment() {
 		return false;
 	}
 
@@ -83,12 +83,12 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		return false;
 	}
 
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return false;
 	}
 

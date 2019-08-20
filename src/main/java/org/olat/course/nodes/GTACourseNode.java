@@ -854,7 +854,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		AssessmentConfig assessmentConfig = getAssessmentConfig();
-		if(assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured()) {
+		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
 		return AssessmentEvaluation.EMPTY_EVAL;

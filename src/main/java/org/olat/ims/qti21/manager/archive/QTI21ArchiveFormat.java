@@ -326,11 +326,11 @@ public class QTI21ArchiveFormat {
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-			if(assessmentConfig.hasScoreConfigured()) {
+			if(assessmentConfig.hasScore()) {
 				header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
 			}
-			if(assessmentConfig.hasPassedConfigured()) {
-				if(assessmentConfig.hasScoreConfigured()) {
+			if(assessmentConfig.hasPassed()) {
+				if(assessmentConfig.hasScore()) {
 					col++;
 				} else {
 					header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
@@ -405,10 +405,10 @@ public class QTI21ArchiveFormat {
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-			if(assessmentConfig.hasScoreConfigured()) {
+			if(assessmentConfig.hasScore()) {
 				header2Row.addCell(col++, translator.translate("archive.table.header.node.points"), headerStyle);
 			}
-			if(assessmentConfig.hasPassedConfigured()) {
+			if(assessmentConfig.hasPassed()) {
 				header2Row.addCell(col++, translator.translate("archive.table.header.node.passed"), headerStyle);
 			}
 		}
@@ -539,14 +539,14 @@ public class QTI21ArchiveFormat {
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-			if(assessmentConfig.hasScoreConfigured()) {
+			if(assessmentConfig.hasScore()) {
 				if(entry.getScore() != null) {
 					dataRow.addCell(col++, entry.getScore(), null);
 				} else {
 					col++;
 				}
 			}
-			if(assessmentConfig.hasPassedConfigured()) {
+			if(assessmentConfig.hasPassed()) {
 				if(entry.getPassed() != null) {
 					dataRow.addCell(col++, entry.getPassed().toString(), null);
 				} else {

@@ -115,10 +115,10 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		if(isAssessable) {
 			checkForLms();
 			AssessmentConfig assessmentConfig = scormNode.getAssessmentConfig();
-			if(assessmentConfig.hasScoreConfigured()) {
+			if(assessmentConfig.hasScore()) {
 				currentScore = scormNode.getUserScoreEvaluation(userCourseEnv).getScore();
 			}
-			if(assessmentConfig.hasPassedConfigured()) {
+			if(assessmentConfig.hasPassed()) {
 				currentPassed = scormNode.getUserScoreEvaluation(userCourseEnv).getPassed();
 			}
 		}
@@ -254,7 +254,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		}
 		
 		AssessmentConfig assessmentConfig = scormNode.getAssessmentConfig();
-		float cutval = assessmentConfig.getCutValueConfiguration().floatValue();
+		float cutval = assessmentConfig.getCutValue().floatValue();
 		boolean passed = (score >= cutval);
 		// if advanceScore option is set update the score only if it is higher
 		// <OLATEE-27>

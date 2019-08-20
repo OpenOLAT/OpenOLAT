@@ -158,7 +158,7 @@ public class AssessmentHelper {
 		String details = null;
 		if (courseNode != null) {
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-			if (assessmentConfig.hasAttemptsConfigured()) {
+			if (assessmentConfig.hasAttempts()) {
 				attempts = courseNode.getUserAttempts(uce);
 			}
 			if (courseNode.hasDetails()) {
@@ -225,13 +225,13 @@ public class AssessmentHelper {
 			if (node instanceof STCourseNode) {
 				STCourseNode scn = (STCourseNode) node;
 				AssessmentConfig assessmentConfig = scn.getAssessmentConfig();
-				if (assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured()) {
+				if (assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
 					return true;
 				}
 			} else if (node instanceof ScormCourseNode) {
 				ScormCourseNode scormn = (ScormCourseNode) node;
 				AssessmentConfig assessmentConfig = scormn.getAssessmentConfig();
-				if (assessmentConfig.hasPassedConfigured() || assessmentConfig.hasScoreConfigured()) {
+				if (assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
 					return true;
 				}
 			} else if (node instanceof ProjectBrokerCourseNode) {
@@ -400,10 +400,10 @@ public class AssessmentHelper {
 			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 			if (assessableCourseNode.hasDetails()
-				|| assessmentConfig.hasAttemptsConfigured()
-				|| assessmentConfig.hasScoreConfigured()
-				|| assessmentConfig.hasPassedConfigured()
-				|| assessmentConfig.hasCommentConfigured()) {
+				|| assessmentConfig.hasAttempts()
+				|| assessmentConfig.hasScore()
+				|| assessmentConfig.hasPassed()
+				|| assessmentConfig.hasComment()) {
 
 				assessable = true;
 			}
@@ -523,7 +523,7 @@ public class AssessmentHelper {
 						}
 					}
 					// attempts
-					if (assessmentConfig.hasAttemptsConfigured()) {
+					if (assessmentConfig.hasAttempts()) {
 						hasDisplayableValuesConfigured = true;
 						Integer attemptsValue = scoreEvaluation.getAttempts(); 
 						if (attemptsValue != null) {
@@ -535,7 +535,7 @@ public class AssessmentHelper {
 						}
 					}
 					// score
-					if (assessmentConfig.hasScoreConfigured()) {
+					if (assessmentConfig.hasScore()) {
 						hasDisplayableValuesConfigured = true;
 						Float score = scoreEvaluation.getScore();
 						if (score != null) {
@@ -544,12 +544,12 @@ public class AssessmentHelper {
 							hasDisplayableUserValues = true;
 						}
 						if(!(assessableCourseNode instanceof STCourseNode)) {
-							assessmentNodeData.setMaxScore(assessableCourseNode.getAssessmentConfig().getMaxScoreConfiguration());
-							assessmentNodeData.setMinScore(assessmentConfig.getMinScoreConfiguration());
+							assessmentNodeData.setMaxScore(assessableCourseNode.getAssessmentConfig().getMaxScore());
+							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());
 						}
 					}
 					// passed
-					if (assessmentConfig.hasPassedConfigured()) {
+					if (assessmentConfig.hasPassed()) {
 						hasDisplayableValuesConfigured = true;
 						Boolean passed = scoreEvaluation.getPassed();
 						if (passed != null) {
@@ -559,7 +559,7 @@ public class AssessmentHelper {
 					}
 				}
 				// selection command available
-				if (assessmentConfig.isEditableConfigured()) {
+				if (assessmentConfig.isEditable()) {
 					// Assessable course nodes are selectable
 					assessmentNodeData.setSelectable(true);
 				} else {
@@ -568,7 +568,7 @@ public class AssessmentHelper {
 					assessmentNodeData.setSelectable(false);
 				}
 				
-				if (!hasDisplayableUserValues && assessmentConfig.hasCommentConfigured() && !discardComments) {
+				if (!hasDisplayableUserValues && assessmentConfig.hasComment() && !discardComments) {
 				  // comments are invisible in the table but if configured the node must be in the list
 					// for the efficiency statement this can be ignored, this is the case when discardComments is true
 					hasDisplayableValuesConfigured = true;

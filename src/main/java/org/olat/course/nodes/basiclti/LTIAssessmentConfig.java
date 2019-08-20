@@ -40,13 +40,13 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScoreConfigured() {
+	public boolean hasScore() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 	}
 
 	@Override
-	public Float getMaxScoreConfiguration() {
-		if (!hasScoreConfigured()) {
+	public Float getMaxScore() {
+		if (!hasScore()) {
 			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
 		}
 		
@@ -58,21 +58,21 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public Float getMinScoreConfiguration() {
-		if (!hasScoreConfigured()) { 
+	public Float getMinScore() {
+		if (!hasScore()) { 
 			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getMaxScore not defined when hasScoreConfigured set to false", null);
 		}
 		return 0.0f;
 	}
 	
 	@Override
-	public boolean hasPassedConfigured() {
+	public boolean hasPassed() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_PASSED_FIELD);
 	}
 	
 	@Override
-	public Float getCutValueConfiguration() {
-		if (!hasPassedConfigured()) { 
+	public Float getCutValue() {
+		if (!hasPassed()) { 
 			throw new OLATRuntimeException(LTIAssessmentConfig.class, "getCutValue not defined when hasPassedConfigured set to false", null);
 		}
 		return config.getFloatEntry(MSCourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
@@ -84,13 +84,13 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttempts() {
 		// having score defined means the node is assessable
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 	}
 	
 	@Override
-	public boolean hasCommentConfigured() {
+	public boolean hasComment() {
 		return false;
 	}
 
@@ -100,7 +100,7 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return false;
 	}
 
@@ -110,7 +110,7 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		// having score defined means the node is assessable
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 	}

@@ -591,10 +591,10 @@ class GTANotifications {
 				String score = null;
 				String status = null;
 				AssessmentConfig assessmentConfig = gtaNode.getAssessmentConfig();
-				if(assessmentConfig.hasScoreConfigured() && assessment.getScore() != null) {
+				if(assessmentConfig.hasScore() && assessment.getScore() != null) {
 					score = AssessmentHelper.getRoundedScore(assessment.getScore());
 				}
-				if(assessmentConfig.hasPassedConfigured() && assessment.getPassed() != null) {
+				if(assessmentConfig.hasPassed() && assessment.getPassed() != null) {
 					status = assessment.getPassed().booleanValue()
 							? translator.translate("notifications.assessment.passed.true") : translator.translate("notifications.assessment.passed.false");
 				}

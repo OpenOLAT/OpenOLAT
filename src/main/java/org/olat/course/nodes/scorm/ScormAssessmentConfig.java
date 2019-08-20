@@ -37,7 +37,7 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasScoreConfigured() {
+	public boolean hasScore() {
 		boolean assessable = config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 		if (assessable) {
 			String type = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
@@ -48,24 +48,24 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public Float getMaxScoreConfiguration() {
+	public Float getMaxScore() {
 		// According to SCORM Standard, SCORE is between 0 and 100.
 		return Float.valueOf(100);
 	}
 
 	@Override
-	public Float getMinScoreConfiguration() {
+	public Float getMinScore() {
 		// According to SCORM Standard, SCORE is between 0 and 100.
 		return Float.valueOf(0);
 	}
 	
 	@Override
-	public boolean hasPassedConfigured() {
+	public boolean hasPassed() {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 	
 	@Override
-	public Float getCutValueConfiguration() {
+	public Float getCutValue() {
 		int cutValue = config.getIntegerSafe(ScormEditController.CONFIG_CUTVALUE, 0); 
 		return Float.valueOf(cutValue);
 	}
@@ -76,12 +76,12 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasAttemptsConfigured() {
+	public boolean hasAttempts() {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
 	@Override
-	public boolean hasCommentConfigured() {
+	public boolean hasComment() {
 		return false;
 	}
 
@@ -91,7 +91,7 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasStatusConfigured() {
+	public boolean hasStatus() {
 		return false;
 	}
 
@@ -101,7 +101,7 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEditableConfigured() {
+	public boolean isEditable() {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 

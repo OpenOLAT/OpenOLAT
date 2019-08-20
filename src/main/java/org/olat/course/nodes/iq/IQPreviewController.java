@@ -76,7 +76,7 @@ public class IQPreviewController extends BasicController {
 		if (source == pf) {
 			if (event == Event.DONE_EVENT) {
 				int score = pf.getPointValue();
-				Float cutValue = cn.getAssessmentConfig().getCutValueConfiguration();
+				Float cutValue = cn.getAssessmentConfig().getCutValue();
 				boolean passed = score >= (cutValue == null ? 0 : cutValue.floatValue());
 				ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), new Boolean(passed));
 				boolean incrementUserAttempts = true;

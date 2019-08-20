@@ -49,9 +49,9 @@ public class BulkAssessmentSettings implements Serializable {
 
 	public BulkAssessmentSettings(AssessableCourseNode courseNode) {
 		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-		hasUserComment = assessmentConfig.hasCommentConfigured();
-		hasScore = assessmentConfig.hasScoreConfigured();
-		hasPassed = assessmentConfig.hasPassedConfigured();
+		hasUserComment = assessmentConfig.hasComment();
+		hasScore = assessmentConfig.hasScore();
+		hasPassed = assessmentConfig.hasPassed();
 		
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		if (courseNode instanceof TACourseNode) {
@@ -68,13 +68,13 @@ public class BulkAssessmentSettings implements Serializable {
 		}
 
 		if (hasScore) {
-			min = assessmentConfig.getMinScoreConfiguration();
-			max = assessmentConfig.getMaxScoreConfiguration();
+			min = assessmentConfig.getMinScore();
+			max = assessmentConfig.getMaxScore();
 		} else {
 			min = max = null;
 		}
 		if (hasPassed) {
-			cut = assessmentConfig.getCutValueConfiguration();
+			cut = assessmentConfig.getCutValue();
 		} else {
 			cut = null;
 		}

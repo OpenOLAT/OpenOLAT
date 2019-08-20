@@ -135,9 +135,9 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		assessmentManager = courseEnv.getAssessmentManager();
 		
 		AssessmentConfig assessmentConfig = gtaNode.getAssessmentConfig();
-		withScore = assessmentConfig.hasScoreConfigured();
-		withPassed = assessmentConfig.hasPassedConfigured();
-		withComment = assessmentConfig.hasCommentConfigured();
+		withScore = assessmentConfig.hasScore();
+		withPassed = assessmentConfig.hasPassed();
+		withComment = assessmentConfig.hasComment();
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);

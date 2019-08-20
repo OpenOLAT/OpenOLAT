@@ -103,7 +103,7 @@ public class ScoreRuleSPI implements FilterRuleSPI {
 				
 				STCourseNode structureNode = (STCourseNode)courseNode;
 				AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
-				if(assessmentConfig.hasScoreConfigured()) {
+				if(assessmentConfig.hasScore()) {
 					for(Identity identity:identities) {
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
 						ScoreEvaluation scoreEval = structureNode.getUserScoreEvaluation(uce);
