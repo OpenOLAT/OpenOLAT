@@ -20,41 +20,32 @@
 package org.olat.modules.lecture.ui.wizard;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.wizard.BasicStep;
-import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
-import org.olat.core.gui.control.generic.wizard.StepFormController;
+import org.olat.core.gui.control.generic.wizard.Step;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
-import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 
 /**
  * 
- * Initial date: 25 juil. 2019<br>
+ * Initial date: 20 août 2019<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AbsenceNotice1UserSearchStep extends BasicStep {
+public class AbsenceNoticeCancelStepCallback implements StepRunnerCallback {
 	
 	private final EditAbsenceNoticeWrapper noticeWrapper;
 	
-	public AbsenceNotice1UserSearchStep(UserRequest ureq, EditAbsenceNoticeWrapper noticeWrapper, LecturesSecurityCallback secCallback) {
-		super(ureq);
+	public AbsenceNoticeCancelStepCallback(EditAbsenceNoticeWrapper noticeWrapper) {
 		this.noticeWrapper = noticeWrapper;
-		setNextStep(new AbsenceNotice2ConfirmUserStep(ureq, secCallback));
-		setI18nTitleAndDescr("user.search.title", "user.search.title");
 	}
 
 	@Override
-	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
-		return new PrevNextFinishConfig(false, true, false);
-	}
-
-	@Override
-	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
-		runContext.put("absence", noticeWrapper);
-		form.setMultipartEnabled(true);
-		return new UserSearchController(ureq, wControl, form, runContext);
+	public Step execute(UserRequest ureq, WindowControl wControl, StepsRunContext runContext) {
+		if(noticeWrapper.getTempUploadFolder() != null) {
+			noticeWrapper.getTempUploadFolder().deleteSilently();
+		}
+		return StepsMainRunController.DONE_UNCHANGED;
 	}
 }

@@ -75,6 +75,8 @@ import org.olat.modules.lecture.ui.coach.IdentitiesLecturesRollCallTableModel.Id
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.modules.lecture.ui.profile.IdentityProfileController;
 import org.olat.modules.lecture.ui.wizard.AbsenceNotice3LecturesEntriesStep;
+import org.olat.modules.lecture.ui.wizard.AbsenceNoticeCancelStepCallback;
+import org.olat.modules.lecture.ui.wizard.AbsenceNoticeFinishStepCallback;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -444,16 +446,8 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		noticeWrapper.setCurrentDate(currentDate);
 		
 		AbsenceNotice3LecturesEntriesStep step = new AbsenceNotice3LecturesEntriesStep(ureq, noticeWrapper, secCallback, true);
-		StepRunnerCallback stop = (uureq, swControl, runContext) -> {
-			if(noticeWrapper.getAbsenceNotice() == null) {
-				Identity absentIdentity = noticeWrapper.getIdentity();
-				lectureService.createAbsenceNotice(absentIdentity, noticeWrapper.getAbsenceNoticeType(),
-						noticeWrapper.getAbsenceNoticeTarget(), noticeWrapper.getStartDate(), noticeWrapper.getEndDate(),
-						noticeWrapper.getAbsenceCategory(), noticeWrapper.getAbsenceReason(), noticeWrapper.getAuthorized(),
-						noticeWrapper.getEntries(), noticeWrapper.getLectureBlocks(), getIdentity());
-			}
-			return StepsMainRunController.DONE_MODIFIED;
-		};
+		StepRunnerCallback stop = new AbsenceNoticeFinishStepCallback(noticeWrapper, getTranslator());
+		StepRunnerCallback cancel = new AbsenceNoticeCancelStepCallback(noticeWrapper);
 		
 		String title = translate("add.dispensation.title");
 		if(type == AbsenceNoticeType.notified) {
@@ -463,7 +457,7 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 		}
 		
 		removeAsListenerAndDispose(addNoticeCtrl);
-		addNoticeCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
+		addNoticeCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, cancel, title, "");
 		listenTo(addNoticeCtrl);
 		getWindowControl().pushAsModalDialog(addNoticeCtrl.getInitialComponent());
 	}

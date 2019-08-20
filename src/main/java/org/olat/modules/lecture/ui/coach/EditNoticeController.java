@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui.coach;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.AbsenceNoticeTarget;
 import org.olat.modules.lecture.AbsenceNoticeToLectureBlock;
@@ -95,7 +98,7 @@ public class EditNoticeController extends FormBasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		editReasonCtrl.deleteTempStorage();
 	}
 
 	@Override
@@ -128,6 +131,11 @@ public class EditNoticeController extends FormBasicController {
 		}
 		
 		absenceNotice = lectureService.updateAbsenceNotice(absenceNotice, authorizer, entries, lectureBlocks);
+		List<VFSItem> newFiles = new ArrayList<>();
+		if(noticeWrapper.getTempUploadFolder() != null) {
+			newFiles.addAll(noticeWrapper.getTempUploadFolder().getItems(new VFSSystemItemFilter()));
+		}
+		lectureService.updateAbsenceNoticeAttachments(absenceNotice, newFiles, noticeWrapper.getAttachmentsToDelete());
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

@@ -1,0 +1,13 @@
+#if($files && $files.size() > 0)
+<table class="table table-condensed table-striped"><tbody>		
+	#foreach ($file in $files)
+		#set( $fname = $file.getName() )
+		<tr>
+			<td style="width:1%"><i class="o_icon o_icon-fw $r.getFiletypeIconCss($fname)"> </i></td>
+			<td><a href="$mapperUri/$fname" target="_blank">$r.escapeHtml($fname)</a></td>
+			<td>$r.formatBytes($file.getSize())</td>
+			<td style="width:1%">$r.render("delete_$foreach.count")</td>
+		</tr>
+	#end
+</tbody></table>
+#end

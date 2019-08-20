@@ -26,6 +26,8 @@ import java.util.List;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.lecture.model.AbsenceNoticeInfos;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.IdentityRateWarning;
@@ -298,6 +300,10 @@ public interface LectureService {
 	 */
 	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
 			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks);
+	
+	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete);
+	
+	public VFSContainer getAbsenceNoticeAttachmentsContainer(AbsenceNotice absenceNotice);
 	
 	/**
 	 * Reload the absence notice.

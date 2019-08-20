@@ -52,6 +52,7 @@ public class AbsenceNotice4ReasonStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form form) {
+		form.setMultipartEnabled(true);
 		return new ReasonStepController(ureq, wControl, form, runContext, secCallback);
 	}
 }

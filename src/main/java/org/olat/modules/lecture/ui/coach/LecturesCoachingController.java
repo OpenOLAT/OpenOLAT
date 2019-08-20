@@ -135,6 +135,7 @@ public class LecturesCoachingController extends BasicController implements Activ
 				doOpenLectures(ureq);
 				segmentView.select(lecturesLink);
 			} else if("Absences".equalsIgnoreCase(type)) {
+				doAbsences(ureq);
 				segmentView.select(absenceLink);
 			} else if("Dispenses".equalsIgnoreCase(type)) {
 				doDispenses(ureq);

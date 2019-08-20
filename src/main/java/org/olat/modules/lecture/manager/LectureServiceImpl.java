@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -60,6 +62,10 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
@@ -626,6 +632,63 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		}
 	}
 	
+	@Override
+	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete) {
+		if(!filesToDelete.isEmpty()) {
+			for(VFSItem file:filesToDelete) {
+				file.delete();
+			}
+		}
+	
+		if(!newFiles.isEmpty()) {
+			LocalFolderImpl rootContainer = getAbsenceNoticesAttachmentsPath();
+			File rootDir = rootContainer.getBasefile();
+			String noticeStorage = ((AbsenceNoticeImpl)absenceNotice).getAttachmentsDirectory();
+			if(noticeStorage == null) {	
+				File userDir = new File(rootDir, absenceNotice.getIdentity().getKey().toString());
+				File noticeDir = new File(userDir, absenceNotice.getKey().toString());
+				noticeDir.mkdirs();
+				
+				Path relativePath = rootDir.toPath().relativize(noticeDir.toPath());
+				noticeStorage = relativePath.toString();
+				((AbsenceNoticeImpl)absenceNotice).setAttachmentsDirectory(noticeStorage);
+				absenceNotice = absenceNoticeDao.updateAbsenceNotice(absenceNotice);
+				dbInstance.commit();
+			}
+			
+			VFSItem noticeItem = rootContainer.resolve(noticeStorage);
+			if(noticeItem instanceof VFSContainer) {
+				VFSContainer noticeContainer = (VFSContainer)noticeItem;
+				for(VFSItem file:newFiles) {
+					noticeContainer.copyFrom(file);
+				}
+			}
+		}
+		
+		return absenceNotice;
+	}
+
+	
+    @Override
+	public VFSContainer getAbsenceNoticeAttachmentsContainer(AbsenceNotice absenceNotice) {
+    	if(absenceNotice == null || absenceNotice.getKey() == null) return null;
+
+		LocalFolderImpl rootContainer = getAbsenceNoticesAttachmentsPath();
+		VFSItem userItem = rootContainer.resolve(absenceNotice.getIdentity().getKey().toString());
+    	if(userItem instanceof VFSContainer) {
+    		VFSContainer userContainer = (VFSContainer)userItem;
+    		VFSItem noticeItem = userContainer.resolve(absenceNotice.getKey().toString());
+    		if(noticeItem instanceof VFSContainer) {
+    			return (VFSContainer)noticeItem;
+    		}
+    	}
+		return null;
+	}
+
+	private LocalFolderImpl getAbsenceNoticesAttachmentsPath() {
+    	return VFSManager.olatRootContainer("/lectures/notices/", null);
+	}
+
 	@Override
 	public AbsenceNotice getAbsenceNotice(AbsenceNoticeRef notice) {
 		return absenceNoticeDao.loadAbsenceNotice(notice.getKey());

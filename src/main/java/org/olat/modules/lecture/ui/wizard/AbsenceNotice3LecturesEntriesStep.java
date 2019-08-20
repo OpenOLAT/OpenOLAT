@@ -69,6 +69,7 @@ public class AbsenceNotice3LecturesEntriesStep extends BasicStep {
 		if(noticeWrapper != null) {
 			runContext.put("absence", noticeWrapper);
 		}
+		form.setMultipartEnabled(true);
 		return new DatesLecturesEntriesStepController(ureq, wControl, form, runContext, secCallback);
 	}
 }

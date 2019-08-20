@@ -19,23 +19,45 @@
  */
 package org.olat.modules.lecture.ui.coach;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FileElement;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.core.util.vfs.VFSManager;
+import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureService;
@@ -61,11 +83,16 @@ public class EditReasonController extends FormBasicController {
 	
 	private TextElement reasonEl;
 	private SingleSelection typeEl;
+	private FileElement documentUploadEl;
+	private FormLayoutContainer filesLayout;
 	private SingleSelection absenceCategoriesEl;
 	private MultipleSelectionElement authorizedEl;
-	
+
+	private String mapperUri;
 	private final boolean wizard;
 	private final Identity noticedIdentity;
+	private VFSContainer tempUploadFolder;
+	private final VFSContainer documentContainer;
 	private final EditAbsenceNoticeWrapper noticeWrapper;
 	private final LecturesSecurityCallback secCallback;
 	private List<AbsenceCategory> absenceCategories;
@@ -83,12 +110,16 @@ public class EditReasonController extends FormBasicController {
 		this.secCallback = secCallback;
 		this.noticeWrapper = noticeWrapper;
 		this.noticedIdentity = noticeWrapper.getIdentity();
+		documentContainer = lectureService.getAbsenceNoticeAttachmentsContainer(noticeWrapper.getAbsenceNotice());
 		absenceCategories = lectureService.getAllAbsencesCategories();
 		initForm(ureq);
+		updateAttachments(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		mainForm.setMultipartEnabled(true);
+		
 		if(wizard) {
 			formLayout.setElementCssClass("o_sel_absence_edit_reason");
 			setFormTitle("notice.reason.title");
@@ -133,11 +164,25 @@ public class EditReasonController extends FormBasicController {
 
 		String currentReason = noticeWrapper.getAbsenceReason();
 		reasonEl = uifactory.addTextAreaElement("reason", "noticed.reason", 2048, 4, 36, false, false, currentReason, formLayout);
+		
+		String editPage = Util.getPackageVelocityRoot(getClass()) + "/notice_files.html";
+		filesLayout = FormLayoutContainer.createCustomFormLayout("filesLayout", getTranslator(), editPage);
+		filesLayout.setLabel("attachment.upload", null);
+		formLayout.add(filesLayout);
+
+		documentUploadEl = uifactory.addFileElement(getWindowControl(), "attachment.upload", formLayout);
+		documentUploadEl.addActionListener(FormEvent.ONCHANGE);
 	}
 
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	protected void deleteTempStorage() {
+		if(tempUploadFolder != null) {
+			tempUploadFolder.delete();
+		}
 	}
 	
 	public AbsenceCategory getAbsenceCategory() {
@@ -153,6 +198,59 @@ public class EditReasonController extends FormBasicController {
 			}
 		}
 		return null;
+	}
+	
+	private void updateAttachments(UserRequest ureq) {
+		if(mapperUri == null) {
+			mapperUri = registerCacheableMapper(ureq, "assigment-" + CodeHelper.getRAMUniqueID(), new DocumentMapper());
+			filesLayout.contextPut("mapperUri", mapperUri);
+		}
+		
+		List<VFSItem> files = new ArrayList<>();
+		if(documentContainer != null) {
+			List<VFSItem> currentItems = documentContainer.getItems(new VFSSystemItemFilter());
+			List<VFSItem> deletedItems = noticeWrapper.getAttachmentsToDelete();
+			for(VFSItem currentItem:currentItems) {
+				boolean deleted = false;
+				for(VFSItem deletedItem:deletedItems) {
+					if(deletedItem.isSame(currentItem)) {
+						deleted = true;
+					}
+				}
+				if(!deleted) {
+					files.add(currentItem);
+				}
+			}
+			
+		}
+		// add files from TempFolder
+		if(tempUploadFolder != null) {
+			files.addAll(tempUploadFolder.getItems(new VFSSystemItemFilter()));
+		}
+		
+		Collections.sort(files, new Comparator<VFSItem>(){
+			final Collator c = Collator.getInstance(getLocale());
+			@Override
+			public int compare(final VFSItem o1, final VFSItem o2) {
+				return c.compare((o1).getName(), (o2).getName());
+			}
+		});		
+
+		filesLayout.contextPut("files", files);
+
+		// add delete links for each attachment if user is allowed to see them
+		int count = 0;
+		for (VFSItem file : files) {
+			FormLink deleteLink = uifactory.addFormLink("delete_" + (++count), filesLayout, Link.BUTTON_XSMALL);
+			deleteLink.setUserObject(file);
+			deleteLink.setI18nKey("delete");
+		}
+
+		boolean hasFile = !files.isEmpty();
+		filesLayout.setVisible(hasFile);
+		filesLayout.showLabel(hasFile);
+		documentUploadEl.showLabel(!hasFile);
+		documentUploadEl.getComponent().setDirty(true);
 	}
 	
 	@Override
@@ -183,6 +281,22 @@ public class EditReasonController extends FormBasicController {
 				authorizedEl.select(authorizedKeys[0], true);
 			}
 			authorizedEl.setEnabled(!forceAuthorized);
+		} else if (source == documentUploadEl) {
+			if (documentUploadEl.isUploadSuccess()) {
+				doUploadDocument(ureq);
+			}
+		} else if (source instanceof FormLink) {
+			FormLink activeLink = (FormLink) source;
+			Object uobject = activeLink.getUserObject();
+			if (uobject instanceof VFSLeaf) {
+				VFSLeaf file = (VFSLeaf)uobject;
+				if(tempUploadFolder != null && tempUploadFolder.resolve(file.getName()) != null) {
+					file.delete();
+				} else {
+					noticeWrapper.getAttachmentsToDelete().add(file);
+				}
+			}
+			updateAttachments(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -200,6 +314,58 @@ public class EditReasonController extends FormBasicController {
 			noticeWrapper.setAbsenceNoticeType(AbsenceNoticeType.valueOf(typeEl.getSelectedKey()));
 		} else if(noticeWrapper.getAbsenceNoticeType() != null)  {
 			noticeWrapper.setAbsenceNoticeType(noticeWrapper.getAbsenceNoticeType());
+		}
+	}
+	
+	private void doUploadDocument(UserRequest ureq) {
+		String fileName = documentUploadEl.getUploadFileName();
+		// checking tmp-folder and msg-container for filename
+		boolean fileExists = false;
+		if ((tempUploadFolder != null && tempUploadFolder.resolve(fileName) != null)
+				|| (documentContainer != null && documentContainer.resolve(fileName) != null)) {
+			fileExists = true;
+		}
+
+		if (fileExists) {
+			try {
+				Files.delete(documentUploadEl.getUploadFile().toPath());
+				documentUploadEl.setErrorKey("attachments.error.file.exists", null);
+				documentUploadEl.showError(true);
+			} catch (IOException e) {
+				logError("Cannot delete uploaded file", e);
+			}
+		} else {
+			// files got stored in an extra tempFolder, to use the same
+			// fileUploader multiple times
+			if(tempUploadFolder == null) {
+				tempUploadFolder = VFSManager.olatRootContainer(File.separator + "tmp/" + CodeHelper.getGlobalForeverUniqueID() + "/", null);
+				noticeWrapper.setTempUploadFolder(tempUploadFolder);
+			}
+			documentUploadEl.moveUploadFileTo(tempUploadFolder);
+			documentUploadEl.showError(false);
+			documentUploadEl.reset();
+			updateAttachments(ureq);
+			showInfo("attachments.upload.successful", fileName);
+		}
+	}
+	
+	public class DocumentMapper implements Mapper {
+		@Override
+		public MediaResource handle(String relPath, HttpServletRequest request) {
+			if(relPath.startsWith("/")) {
+				relPath = relPath.substring(1, relPath.length());
+			}
+			
+			@SuppressWarnings("unchecked")
+			List<VFSItem> files = (List<VFSItem>)filesLayout.contextGet("files");
+			if(files != null) {
+				for(VFSItem file:files) {
+					if(relPath.equalsIgnoreCase(file.getName()) && file instanceof VFSLeaf) {
+						return new VFSMediaResource((VFSLeaf)file);
+					}
+				}
+			}
+			return null;
 		}
 	}
 }

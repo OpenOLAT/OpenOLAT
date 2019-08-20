@@ -24,6 +24,8 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.lecture.AbsenceCategory;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.AbsenceNoticeTarget;
@@ -59,6 +61,10 @@ public class EditAbsenceNoticeWrapper {
 	private List<LectureBlock> lectureBlocks;
 	
 	private List<LectureBlock> predefinedLectureBlocks;
+
+	private VFSContainer tempUploadFolder;
+	private VFSContainer documentContainer;
+	private List<VFSItem> attachmentsToDelete = new ArrayList<>();
 	
 	private EditAbsenceNoticeWrapper(AbsenceNotice notice) {
 		absenceNotice = notice;
@@ -213,6 +219,26 @@ public class EditAbsenceNoticeWrapper {
 
 	public void setIdentitiesToContact(List<Identity> identitiesToContact) {
 		this.identitiesToContact = identitiesToContact;
+	}
+
+	public VFSContainer getTempUploadFolder() {
+		return tempUploadFolder;
+	}
+
+	public void setTempUploadFolder(VFSContainer tempUploadFolder) {
+		this.tempUploadFolder = tempUploadFolder;
+	}
+
+	public VFSContainer getDocumentContainer() {
+		return documentContainer;
+	}
+
+	public void setDocumentContainer(VFSContainer documentContainer) {
+		this.documentContainer = documentContainer;
+	}
+	
+	public List<VFSItem> getAttachmentsToDelete() {
+		return attachmentsToDelete;
 	}
 
 	public void commitChanges(AbsenceNotice notice) {
