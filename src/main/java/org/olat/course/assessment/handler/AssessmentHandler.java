@@ -40,7 +40,7 @@ public interface AssessmentHandler {
 	
 	/**
 	 * Returns a controller to edit the node specific details. Check
-	 * AssessmentConfig.hasDeatils() before invoking this method.
+	 * AssessmentConfig.hasEditableDetails() before invoking this method.
 	 * 
 	 * @param ureq
 	 * @param wControl

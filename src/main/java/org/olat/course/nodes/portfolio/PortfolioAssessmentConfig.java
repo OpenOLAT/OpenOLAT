@@ -50,7 +50,7 @@ public class PortfolioAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasDetails() {
+	public boolean hasEditableDetails() {
 		return true;
 	}
 

@@ -90,8 +90,8 @@ public interface AssessmentConfig {
 	public boolean isEditable();
 	
 	/**
-	 * @return True if this course node has additional details to be edited / viewed
+	 * @return True if this course node has additional details to be edited.
 	 */
-	public boolean hasDetails();
+	public boolean hasEditableDetails();
 
 }

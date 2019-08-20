@@ -80,7 +80,7 @@ public class TAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasDetails() {
+	public boolean hasEditableDetails() {
 		return config.getBooleanSafe(TACourseNode.CONF_TASK_ENABLED)
 				|| config.getBooleanSafe(TACourseNode.CONF_DROPBOX_ENABLED)
 				|| config.getBooleanSafe(TACourseNode.CONF_RETURNBOX_ENABLED);

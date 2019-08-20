@@ -50,7 +50,7 @@ public class CheckListAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasDetails() {
+	public boolean hasEditableDetails() {
 		return true;
 	}
 

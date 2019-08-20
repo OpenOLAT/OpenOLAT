@@ -106,7 +106,7 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasDetails() {
+	public boolean hasEditableDetails() {
 		return false;
 	}
 }

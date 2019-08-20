@@ -71,7 +71,7 @@ public class ProjectBrokerAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
-	public boolean hasDetails() {
+	public boolean hasEditableDetails() {
 		return config.getBooleanSafe(ProjectBrokerCourseNode.CONF_DROPBOX_ENABLED);
 	}
 

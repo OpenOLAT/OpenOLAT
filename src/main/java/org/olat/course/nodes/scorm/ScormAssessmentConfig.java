@@ -106,7 +106,7 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasDetails() {
+	public boolean hasEditableDetails() {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
