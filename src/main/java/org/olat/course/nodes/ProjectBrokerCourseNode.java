@@ -99,7 +99,6 @@ import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
 import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
-import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -493,15 +492,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		return new ProjectBrokerIdentityListCourseNodeController(ureq, wControl, stackPanel,
 				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
-	}
-
-	@Override
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		CoursePropertyManager propMgr = userCourseEnvironment.getCourseEnvironment().getCoursePropertyManager();
-		List<Property> samples = propMgr.findCourseNodeProperties(this, identity, null, TaskController.PROP_ASSIGNED);
-		if (samples.size() == 0) return null; // no sample assigned yet
-		return samples.get(0).getStringValue();
 	}
 
 	@Override

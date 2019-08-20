@@ -585,13 +585,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		courseAssessmentService.updateUserScoreEvaluation(this, sceval, assessedUserCourseenv, coachingIdentity, true, by);
 	}
 
-	
-
-	@Override
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		return null;
-	}
-
 	/**
 	 * Update the module configuration to have all mandatory configuration flags
 	 * set to usefull default values

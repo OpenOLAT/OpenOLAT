@@ -277,11 +277,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
-	@Override
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		return null;
-	}
-
 	/**
 	 * Make an archive of all datas.
 	 */

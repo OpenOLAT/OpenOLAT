@@ -291,11 +291,6 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
 		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
 	}
-
-	@Override
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		return null;
-	}
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,

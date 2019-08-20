@@ -378,11 +378,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		failedExpression.setConditionExpression(failed);
 		failedExpression.setConditionId("failed");
 	}
-
-	@Override
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		return null;
-	}
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,

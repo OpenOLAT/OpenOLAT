@@ -112,70 +112,6 @@ public class AssessmentHelper {
 
 	private static final DecimalFormat scoreFormat = new DecimalFormat("#0.###", new DecimalFormatSymbols(Locale.ENGLISH));
 
-	/**
-	 * Wraps an identity and it's score evaluation / attempts in a wrapper object
-	 * for a given course node
-	 * 
-	 * @param identity
-	 * @param localUserCourseEnvironmentCache
-	 * @param course the course
-	 * @param courseNode an assessable course node or null if no details and
-	 *          attempts must be fetched
-	 * @return a wrapped identity
-	 */
-	public static AssessedIdentityWrapper wrapIdentity(Identity identity, Map<Long,UserCourseEnvironment> localUserCourseEnvironmentCache,
-			Map<Long, Date> initialLaunchDates, ICourse course, AssessableCourseNode courseNode) {
-		// Try to get user course environment from local hash map cache. If not
-		// successful
-		// create the environment and add it to the map for later performance
-		// optimization
-			UserCourseEnvironment uce = localUserCourseEnvironmentCache.get(identity.getKey());
-			if (uce == null) {
-				uce = createAndInitUserCourseEnvironment(identity, course);
-				// add to cache for later usage
-				localUserCourseEnvironmentCache.put(identity.getKey(), uce);
-				if (log.isDebugEnabled()){
-					log.debug("localUserCourseEnvironmentCache hit failed, adding course environment for user::" + identity.getKey());
-				}
-			}
-			
-			Date initialLaunchDate = initialLaunchDates.get(identity.getKey());
-			return wrapIdentity(uce, initialLaunchDate, courseNode);
-	}
-
-	/**
-	 * Wraps an identity and it's score evaluation / attempts in a wrapper object
-	 * for a given course node
-	 * 
-	 * @param uce The users course environment. Must be initialized
-	 *          (uce.getScoreAccounting().evaluateAll() must be called previously)
-	 * @param courseNode an assessable course node or null if no details and
-	 *          attempts must be fetched
-	 * @return a wrapped identity
-	 */
-	public static AssessedIdentityWrapper wrapIdentity(UserCourseEnvironment uce, Date initialLaunchDate, AssessableCourseNode courseNode) {
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		// Fetch attempts and details for this node if available
-		Integer attempts = null;
-		String details = null;
-		if (courseNode != null) {
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if (assessmentConfig.hasAttempts()) {
-				attempts = courseAssessmentService.getUserAttempts(courseNode, uce);
-			}
-			if (assessmentConfig.hasEditableDetails()) {
-				details = courseNode.getDetailsListView(uce);
-				if (details == null) {
-					details = DETAILS_NA_VALUE;
-				}
-			}
-		}
-
-		Identity identity = uce.getIdentityEnvironment().getIdentity();
-		Date lastModified = uce.getCourseEnvironment().getAssessmentManager().getScoreLastModifiedDate(courseNode, identity);
-		return new AssessedIdentityWrapper(uce, attempts, details, initialLaunchDate, lastModified);
-	}
-	
 	public static UserCourseEnvironment createInitAndUpdateUserCourseEnvironment(Identity identity, ICourse course) {
 		// create an identenv with no roles, no attributes, no locale
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
@@ -499,10 +435,8 @@ public class AssessmentHelper {
 				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(assessableCourseNode);
-				if(scoreEvaluation != null) {
-					assessmentNodeData.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
-					assessmentNodeData.setNumOfAssessmentDocs(scoreEvaluation.getNumOfAssessmentDocs());
-				}
+				assessmentNodeData.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
+				assessmentNodeData.setNumOfAssessmentDocs(scoreEvaluation.getNumOfAssessmentDocs());
 				assessmentNodeData.setUserVisibility(scoreEvaluation.getUserVisible());
 				assessmentNodeData.setLastModified(scoreEvaluation.getLastModified());
 				assessmentNodeData.setLastUserModified(scoreEvaluation.getLastUserModified());
@@ -514,18 +448,6 @@ public class AssessmentHelper {
 				}
 				
 				if(!followUserVisibility || scoreEvaluation.getUserVisible() == null || scoreEvaluation.getUserVisible().booleanValue()) {
-					// details 
-					if (assessmentConfig.hasEditableDetails()) {
-						hasDisplayableValuesConfigured = true;
-						String detailValue = assessableCourseNode.getDetailsListView(userCourseEnv);
-						if (detailValue == null) {
-							// ignore unset details in discardEmptyNodes mode
-							assessmentNodeData.setDetails(AssessmentHelper.DETAILS_NA_VALUE);
-						} else {
-							assessmentNodeData.setDetails(detailValue);
-							hasDisplayableUserValues = true;
-						}
-					}
 					// attempts
 					if (assessmentConfig.hasAttempts()) {
 						hasDisplayableValuesConfigured = true;

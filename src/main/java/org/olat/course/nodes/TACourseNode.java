@@ -491,15 +491,6 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	}
 
 	@Override
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		CoursePropertyManager propMgr = userCourseEnvironment.getCourseEnvironment().getCoursePropertyManager();
-		List<Property> samples = propMgr.findCourseNodeProperties(this, identity, null, TaskController.PROP_ASSIGNED);
-		if (samples.size() == 0) return null; // no sample assigned yet
-		return samples.get(0).getStringValue();
-	}
-
-	@Override
 	public void copyConfigurationTo(CourseNode courseNode, ICourse course) {
 		if(courseNode instanceof GTACourseNode) {
 			ConvertToGTACourseNode convert = new ConvertToGTACourseNode();

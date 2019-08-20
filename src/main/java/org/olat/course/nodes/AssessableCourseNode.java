@@ -60,13 +60,6 @@ public interface AssessableCourseNode extends CourseNode {
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv);
 	
 	/**
-	 * @param userCourseEnvironment
-	 * @return the details view for this node and this user. will be displayed in 
-	 * the user list. if hasDetails= false this returns null
-	 */	
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment);
-	
-	/**
 	 * Returns the controller with the list of assessed identities for
 	 * a specific course node.
 	 * 

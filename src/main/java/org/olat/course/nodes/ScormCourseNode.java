@@ -390,11 +390,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	}
 
 	@Override
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		return null;
-	}
-
-	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
 		

@@ -142,14 +142,6 @@ public class AssessmentNodeData {
 		this.longTitle = longTitle;
 	}
 
-	public String getDetails() {
-		return details;
-	}
-
-	public void setDetails(String details) {
-		this.details = details;
-	}
-
 	public Integer getAttempts() {
 		return attempts;
 	}

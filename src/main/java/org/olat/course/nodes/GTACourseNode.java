@@ -782,13 +782,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
 	
-	@Override
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		RepositoryEntry entry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		return CoreSpringFactory.getImpl(GTAManager.class).getDetails(assessedIdentity, entry, this);
-	}
-	
 	public GTACoachedGroupListController getCoachedGroupListController(UserRequest ureq, WindowControl wControl,
 			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, boolean admin, List<BusinessGroup> coachedGroups) {
 		

@@ -353,11 +353,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		return new MSIdentityListCourseNodeController(ureq, wControl, stackPanel,
 				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback, true);
 	}
-
-	@Override
-	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
-		return null;
-	}
 	
 	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv,
 			Identity assessedIdentity, Role by, EvaluationFormSession session) {
