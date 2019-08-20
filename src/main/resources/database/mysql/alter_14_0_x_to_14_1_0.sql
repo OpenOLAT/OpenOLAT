@@ -69,4 +69,8 @@ alter table o_lecture_block_roll_call add column l_absence_notice_lectures varch
 alter table o_lecture_block_roll_call add column fk_absence_notice bigint default null;
 alter table o_lecture_block_roll_call add constraint rollcall_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
 
+alter table o_lecture_block_audit_log add column fk_absence_notice bigint default null;
+
+
+
 

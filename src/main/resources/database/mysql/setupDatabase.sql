@@ -2579,6 +2579,7 @@ create table o_lecture_block_audit_log (
   l_message mediumtext,
   fk_lecture_block bigint,
   fk_roll_call bigint,
+  fk_absence_notice bigint,
   fk_entry bigint,
   fk_identity bigint,
   fk_author bigint,

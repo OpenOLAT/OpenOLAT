@@ -140,6 +140,10 @@ public interface LectureService {
 
 	public String toAuditXml(LectureParticipantSummary summary);
 	
+	public String toAuditXml(AbsenceNotice absenceNotice);
+	
+	public AbsenceNotice toAuditAbsenceNotice(String xml);
+	
 	public LectureParticipantSummary toAuditLectureParticipantSummary(String xml);
 
 	
@@ -152,6 +156,19 @@ public interface LectureService {
 	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
 			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
 			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author);
+	
+	/**
+	 * 
+	 * @param action
+	 * @param before
+	 * @param after
+	 * @param message
+	 * @param absenceNotice
+	 * @param assessedIdentity
+	 * @param author
+	 */
+	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
+			AbsenceNoticeRef absenceNotice, IdentityRef assessedIdentity, IdentityRef author);
 	
 	public List<LectureBlockAuditLog> getAuditLog(LectureBlockRef lectureBlock);
 	
@@ -299,7 +316,7 @@ public interface LectureService {
 	 * @return A refreshed absence notice
 	 */
 	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
-			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks);
+			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks, Identity actingIdentity);
 	
 	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete);
 	

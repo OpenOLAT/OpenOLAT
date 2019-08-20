@@ -77,14 +77,21 @@ public class AbsenceNoticeToRepositoryEntryDAO {
 		dbInstance.getCurrentEntityManager().remove(relation);	
 	}
 	
+	/**
+	 * List of roll call with the suitable dates and repository entries
+	 * @param notice
+	 * @return
+	 */
 	public List<LectureBlockRollCall> getRollCallsByRepositoryEntry(AbsenceNotice notice) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rollCall from absencenoticetoentry noticeToEntry")
 		  .append(" inner join noticeToEntry.entry as entry")
+		  .append(" inner join noticeToEntry.absenceNotice as notice")
 		  .append(" inner join lectureblock as block on (block.entry.key=entry.key)")
 		  .append(" inner join lectureblockrollcall as rollCall on (rollCall.lectureBlock.key=block.key)")
 		  .append(" inner join fetch rollCall.absenceNotice as currentNotice")
-		  .append(" where noticeToEntry.absenceNotice.key=:noticeKey");
+		  .append(" where notice.key=:noticeKey and ");
+		AbsenceNoticeDAO.noticeBlockDates(sb);
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockRollCall.class)
@@ -92,13 +99,24 @@ public class AbsenceNoticeToRepositoryEntryDAO {
 				.getResultList();
 	}
 	
+	/**
+	 * 
+	 * @param notice
+	 * @return
+	 */
 	public List<LectureBlockRollCall> getRollCallsOfAllEntries(AbsenceNotice notice) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rollCall from lectureblock block")
 		  .append(" inner join lectureblockrollcall as rollCall on (rollCall.lectureBlock.key=block.key)")
 		  .append(" inner join fetch rollCall.absenceNotice as currentNotice")
 		  .append(" where rollCall.identity.key=:identityKey")
-		  .append(" and block.startDate>=:startDate and block.endDate<=:endDate");
+		  .append(" and (")
+		  .append("  (block.startDate>=:startDate and block.endDate<=:endDate)")
+		  .append("  or ")
+		  .append("  (block.startDate<=:startDate and block.startDate>=:endDate)")
+		  .append("  or ")
+		  .append("  (block.endDate<=:startDate and block.endDate>=:endDate)")
+		  .append(" )");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockRollCall.class)

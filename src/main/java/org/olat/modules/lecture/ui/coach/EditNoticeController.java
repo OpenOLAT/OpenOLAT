@@ -37,6 +37,7 @@ import org.olat.modules.lecture.AbsenceNoticeTarget;
 import org.olat.modules.lecture.AbsenceNoticeToLectureBlock;
 import org.olat.modules.lecture.AbsenceNoticeToRepositoryEntry;
 import org.olat.modules.lecture.LectureBlock;
+import org.olat.modules.lecture.LectureBlockAuditLog.Action;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
@@ -107,6 +108,8 @@ public class EditNoticeController extends FormBasicController {
 		datesAndLecturesCtrl.formOK(ureq);
 		
 		absenceNotice = lectureService.getAbsenceNotice(absenceNotice);
+		String before = lectureService.toAuditXml(absenceNotice);
+		
 		Boolean authorized = absenceNotice.getAbsenceAuthorized();
 		
 		absenceNotice.setStartDate(noticeWrapper.getStartDate());
@@ -130,13 +133,16 @@ public class EditNoticeController extends FormBasicController {
 			authorizer = getIdentity();
 		}
 		
-		absenceNotice = lectureService.updateAbsenceNotice(absenceNotice, authorizer, entries, lectureBlocks);
+		absenceNotice = lectureService.updateAbsenceNotice(absenceNotice, authorizer, entries, lectureBlocks, getIdentity());
 		List<VFSItem> newFiles = new ArrayList<>();
 		if(noticeWrapper.getTempUploadFolder() != null) {
 			newFiles.addAll(noticeWrapper.getTempUploadFolder().getItems(new VFSSystemItemFilter()));
 		}
-		lectureService.updateAbsenceNoticeAttachments(absenceNotice, newFiles, noticeWrapper.getAttachmentsToDelete());
+		absenceNotice = lectureService.updateAbsenceNoticeAttachments(absenceNotice, newFiles, noticeWrapper.getAttachmentsToDelete());
 		fireEvent(ureq, Event.CHANGED_EVENT);
+		
+		String after = lectureService.toAuditXml(absenceNotice);
+		lectureService.auditLog(Action.updateAbsenceNotice, before, after, null, absenceNotice, noticeWrapper.getIdentity(), getIdentity());
 	}
 
 	@Override

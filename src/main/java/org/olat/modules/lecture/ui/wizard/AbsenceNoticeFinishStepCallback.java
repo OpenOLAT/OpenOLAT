@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -46,6 +47,7 @@ import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.modules.lecture.AbsenceNotice;
+import org.olat.modules.lecture.LectureBlockAuditLog.Action;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,8 +89,10 @@ public class AbsenceNoticeFinishStepCallback implements StepRunnerCallback {
 			if(noticeWrapper.getTempUploadFolder() != null) {
 				newFiles.addAll(noticeWrapper.getTempUploadFolder().getItems(new VFSSystemItemFilter()));
 			}
-			lectureService.updateAbsenceNoticeAttachments(notice, newFiles, noticeWrapper.getAttachmentsToDelete());
-
+			notice = lectureService.updateAbsenceNoticeAttachments(notice, newFiles, noticeWrapper.getAttachmentsToDelete());
+			
+			String after = lectureService.toAuditXml(notice);
+			lectureService.auditLog(Action.createAbsenceNotice, null, after, null, notice, absentIdentity, ureq.getIdentity());
 		}
 		
 		if(noticeWrapper.getTempUploadFolder() != null) {

@@ -90,6 +90,7 @@ public class AbsenceNoticeDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rollCall from lectureblockrollcall rollCall")
 		  .append(" inner join fetch rollCall.absenceNotice as notice")
+		  .append(" left join fetch rollCall.lectureBlock as lectureBlock")
 		  .append(" where notice.key=:noticeKey");
 		
 		return dbInstance.getCurrentEntityManager()
@@ -120,16 +121,12 @@ public class AbsenceNoticeDAO {
 			  .append(" inner join bGroup.members participants on (participants.role='").append(GroupRoles.participant.name()).append("')")
 			  .append(" inner join absencenotice notice on (participants.identity.key=notice.identity.key)")
 			  .append(" where notice.key in (:noticeKeys)");
+		}
+		
+		if(target == AbsenceNoticeTarget.entries || target == AbsenceNoticeTarget.allentries) {
 			// date constraints
-			sb.append(" and (")
-			  .append("(notice.startDate<=block.startDate and notice.endDate>=block.endDate)")
-			  .append(" or ")
-			  .append("(notice.startDate>=block.startDate and notice.endDate<=block.startDate)")
-			  .append(" or ")
-			  .append("(notice.startDate>=block.endDate and notice.endDate<=block.endDate)")
-			  .append(" or ")
-			  .append("(notice.startDate is null and notice.endDate is null)")
-			  .append(")");
+			sb.append(" and ");
+			noticeBlockDates(sb);
 		}
 		
 		List<Long> noticeKeys = notices.stream()
@@ -148,6 +145,19 @@ public class AbsenceNoticeDAO {
 			blockWithNotices.add(new LectureBlockWithNotice(block, entry, noticeRef));
 		}
 		return blockWithNotices;
+	}
+	
+	protected static QueryBuilder noticeBlockDates(QueryBuilder sb) {
+		sb.append("(")
+		  .append("(notice.startDate<=block.startDate and notice.endDate>=block.endDate)")
+		  .append(" or ")
+		  .append("(notice.startDate>=block.startDate and notice.endDate<=block.startDate)")
+		  .append(" or ")
+		  .append("(notice.startDate>=block.endDate and notice.endDate<=block.endDate)")
+		  .append(" or ")
+		  .append("(notice.startDate is null and notice.endDate is null)")
+		  .append(")");
+		return sb;
 	}
 	
 	public AbsenceNotice loadAbsenceNotice(Long noticeKey) {
@@ -335,7 +345,7 @@ public class AbsenceNoticeDAO {
 			  .append("    and noticeToEntry.absenceNotice.key=notice.key and noticeToEntry.entry.key=:entryKey")
 			  .append("  ) or (notice.target ").in(AbsenceNoticeTarget.allentries)
 			  .append("    and notice.startDate<=:startDate and notice.endDate>=:endDate")
-			  .append("  )")
+			  .append("  )")//TODO absences date for entries and all entries
 			  .append(")");
 		}
 

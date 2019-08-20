@@ -2605,6 +2605,7 @@ create table o_lecture_block_audit_log (
   l_message text,
   fk_lecture_block int8,
   fk_roll_call int8,
+  fk_absence_notice int8,
   fk_entry int8,
   fk_identity int8,
   fk_author int8,

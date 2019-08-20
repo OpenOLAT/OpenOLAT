@@ -72,6 +72,8 @@ alter table o_lecture_block_roll_call add column fk_absence_notice bigint defaul
 alter table o_lecture_block_roll_call add constraint rollcall_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
 create index idx_rollcall_to_notice_idx on o_lecture_block_roll_call (fk_absence_notice);
 
+alter table o_lecture_block_audit_log add column fk_absence_notice int8 default null;
+
 
 
 

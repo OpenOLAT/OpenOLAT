@@ -67,6 +67,8 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 	private Long lectureBlockKey;
 	@Column(name="fk_roll_call", nullable=true, insertable=true, updatable=false)
 	private Long rollCallKey;
+	@Column(name="fk_absence_notice", nullable=true, insertable=true, updatable=false)
+	private Long absenceNoticeKey;
 
 	@Column(name="fk_entry", nullable=true, insertable=true, updatable=false)
 	private Long entryKey;
@@ -150,6 +152,15 @@ public class LectureBlockAuditLogImpl implements LectureBlockAuditLog, Persistab
 
 	public void setEntryKey(Long entryKey) {
 		this.entryKey = entryKey;
+	}
+
+	@Override
+	public Long getAbsenceNoticeKey() {
+		return absenceNoticeKey;
+	}
+
+	public void setAbsenceNoticeKey(Long absenceNoticeKey) {
+		this.absenceNoticeKey = absenceNoticeKey;
 	}
 
 	@Override

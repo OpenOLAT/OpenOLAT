@@ -2658,6 +2658,7 @@ create table o_lecture_block_audit_log (
   l_message CLOB,
   fk_lecture_block number(20),
   fk_roll_call number(20),
+  fk_absence_notice number(20),
   fk_entry number(20),
   fk_identity number(20),
   fk_author number(20),
