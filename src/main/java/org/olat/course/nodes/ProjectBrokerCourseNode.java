@@ -60,7 +60,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.DirectoryFilter;
@@ -487,24 +486,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		return am.getAssessmentEntry(this, mySelf);
 	}
-
-	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		// prepare file component
-		throw new AssertException("ProjectBroker does not support AssessmentTool");
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return false;
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
-		return null;
-	}
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -526,13 +507,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		return null;
-	}
-
-	@Override
-	public boolean hasDetails() {
-		Boolean hasDropbox = (Boolean) getModuleConfiguration().get(CONF_DROPBOX_ENABLED);
-		if (hasDropbox == null) hasDropbox = Boolean.FALSE;
-		return  hasDropbox.booleanValue();
 	}
 
 	@Override

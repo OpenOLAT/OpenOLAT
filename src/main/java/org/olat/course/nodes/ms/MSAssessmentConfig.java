@@ -74,4 +74,9 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 		return true;
 	}
 
+	@Override
+	public boolean hasDetails() {
+		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
+	}
+
 }

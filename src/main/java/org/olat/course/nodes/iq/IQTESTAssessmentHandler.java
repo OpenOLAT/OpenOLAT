@@ -19,11 +19,28 @@
  */
 package org.olat.course.nodes.iq;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.controller.BlankController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
+import org.olat.core.util.Util;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.ims.qti.QTI12ResultDetailsController;
+import org.olat.ims.qti.process.AssessmentInstance;
+import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
+import org.olat.repository.RepositoryEntry;
+import org.olat.resource.OLATResource;
 import org.springframework.stereotype.Service;
 
 /**
@@ -48,6 +65,35 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 			return new IQTESTAssessmentConfig(iqtestNode);
 		}
 		return NonAssessmentConfig.create();
+	}
+	
+	@Override
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
+		Controller detailsCtrl = null;
+		RepositoryEntry ref = courseNode.getReferencedRepositoryEntry();
+		if(ref != null) {
+			OLATResource resource = ref.getOlatResource();
+			Long courseResourceableId = assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId();
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			
+			if(ImsQTI21Resource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
+				if (courseNode instanceof IQTESTCourseNode) {
+					IQTESTCourseNode iqtestNode = (IQTESTCourseNode)courseNode;
+					RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+					detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, (TooledStackedPanel) stackPanel,
+							courseEntry, iqtestNode, coachCourseEnv, assessedUserCourseEnv);
+				}
+			} else if(QTIResourceTypeModule.isOnyxTest(ref.getOlatResource())) {
+				Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
+				detailsCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
+			} else {
+				detailsCtrl = new QTI12ResultDetailsController(ureq, wControl, courseResourceableId,
+						courseNode.getIdent(), coachCourseEnv, assessedIdentity, ref,
+						AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
+			}	
+		}
+		return detailsCtrl != null? detailsCtrl: new BlankController(ureq, wControl);
 	}
 
 }

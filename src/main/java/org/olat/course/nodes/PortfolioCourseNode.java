@@ -57,7 +57,6 @@ import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeRunController;
-import org.olat.course.nodes.portfolio.PortfolioResultDetailsController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -68,8 +67,6 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.portfolio.PortfolioService;
-import org.olat.modules.portfolio.handler.BinderTemplateResource;
-import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.portfolio.manager.EPStructureManager;
@@ -308,11 +305,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	}
 
 	@Override
-	public boolean hasDetails() {
-		return true;
-	}
-
-	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
 		return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 	}
@@ -351,30 +343,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 
 	@Override
 	public String getDetailsListViewHeaderKey() {
-		return null;
-	}
-
-	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		RepositoryEntry mapEntry = getReferencedRepositoryEntry();
-		if(mapEntry != null && BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
-			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			return new PortfolioAssessmentDetailsController(ureq, wControl,
-					courseEntry, this, mapEntry, assessedIdentity);
-		}
-		return new PortfolioResultDetailsController(ureq, wControl, stackPanel, this, assessedUserCourseEnv);
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return false;
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
 		return null;
 	}
 

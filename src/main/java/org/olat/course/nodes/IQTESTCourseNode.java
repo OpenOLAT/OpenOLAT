@@ -81,7 +81,6 @@ import org.olat.course.statistic.StatisticType;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
-import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.QTIResultManager;
 import org.olat.ims.qti.export.QTIExportEssayItemFormatConfig;
 import org.olat.ims.qti.export.QTIExportFIBItemFormatConfig;
@@ -106,7 +105,6 @@ import org.olat.ims.qti21.manager.AssessmentTestSessionDAO;
 import org.olat.ims.qti21.manager.archive.QTI21ArchiveFormat;
 import org.olat.ims.qti21.model.QTI21StatisticSearchParams;
 import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
-import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.modules.ModuleConfiguration;
@@ -587,44 +585,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		courseAssessmentService.updateUserScoreEvaluation(this, sceval, assessedUserCourseenv, coachingIdentity, true, by);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getDetailsEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		Controller detailsCtrl = null;
-		RepositoryEntry ref = getReferencedRepositoryEntry();
-		if(ref != null) {
-			OLATResource resource = ref.getOlatResource();
-			Long courseResourceableId = assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-			
-			if(ImsQTI21Resource.TYPE_NAME.equals(resource.getResourceableTypeName())) {
-				RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				detailsCtrl = new QTI21AssessmentDetailsController(ureq, wControl, (TooledStackedPanel)stackPanel, courseEntry, this, coachCourseEnv, assessedUserCourseEnv);
-			} else if(QTIResourceTypeModule.isOnyxTest(ref.getOlatResource())) {
-				Translator trans = Util.createPackageTranslator(IQEditController.class, ureq.getLocale());
-				detailsCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, "", trans.translate("error.onyx"));
-			} else {
-				detailsCtrl = new QTI12ResultDetailsController(ureq, wControl, courseResourceableId, getIdent(), coachCourseEnv, assessedIdentity, ref, AssessmentInstance.QMD_ENTRY_TYPE_ASSESS);
-			}	
-		}
-		return detailsCtrl;
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return false;
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
-		return null;
-	}
+	
 
 	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
@@ -634,11 +595,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		return null;
-	}
-
-	@Override
-	public boolean hasDetails() {
-		return true;
 	}
 
 	/**

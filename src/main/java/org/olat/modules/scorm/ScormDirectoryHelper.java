@@ -25,7 +25,7 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
-import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 
 /**
@@ -54,7 +54,7 @@ public class ScormDirectoryHelper {
 	 * @param node
 	 * @return
 	 */
-	public static VFSContainer getScoDirectory(String username, CourseEnvironment courseEnv, ScormCourseNode node) {
+	public static VFSContainer getScoDirectory(String username, CourseEnvironment courseEnv, CourseNode node) {
 		Long courseId = courseEnv.getCourseResourceableId();
 		VFSItem userFolder = ScormDirectoryHelper.getScormRootFolder().resolve(username);
 		if(userFolder != null) {

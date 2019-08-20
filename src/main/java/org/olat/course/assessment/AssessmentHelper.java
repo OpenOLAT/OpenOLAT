@@ -163,7 +163,7 @@ public class AssessmentHelper {
 			if (assessmentConfig.hasAttempts()) {
 				attempts = courseAssessmentService.getUserAttempts(courseNode, uce);
 			}
-			if (courseNode.hasDetails()) {
+			if (assessmentConfig.hasDetails()) {
 				details = courseNode.getDetailsListView(uce);
 				if (details == null) {
 					details = DETAILS_NA_VALUE;
@@ -400,10 +400,9 @@ public class AssessmentHelper {
 	private static boolean isAssessable(CourseNode courseNode) {
 		boolean assessable = false;
 		if (courseNode instanceof AssessableCourseNode && !(courseNode instanceof ProjectBrokerCourseNode)) {
-			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if (assessableCourseNode.hasDetails()
+			if (assessmentConfig.hasDetails()
 				|| assessmentConfig.hasAttempts()
 				|| assessmentConfig.hasScore()
 				|| assessmentConfig.hasPassed()
@@ -516,7 +515,7 @@ public class AssessmentHelper {
 				
 				if(!followUserVisibility || scoreEvaluation.getUserVisible() == null || scoreEvaluation.getUserVisible().booleanValue()) {
 					// details 
-					if (assessableCourseNode.hasDetails()) {
+					if (assessmentConfig.hasDetails()) {
 						hasDisplayableValuesConfigured = true;
 						String detailValue = assessableCourseNode.getDetailsListView(userCourseEnv);
 						if (detailValue == null) {

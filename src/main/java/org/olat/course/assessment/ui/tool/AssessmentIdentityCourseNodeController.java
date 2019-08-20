@@ -47,6 +47,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.OpenSubDetailsEvent;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -125,8 +126,11 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
 
 			// Add the users details controller
-			if (aCourseNode.hasDetails() && courseNodeDetails) {
-				detailsEditController = aCourseNode.getDetailsEditController(ureq, wControl, stackPanel, coachCourseEnv, assessedUserCourseEnvironment);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			if (assessmentConfig.hasDetails() && courseNodeDetails) {
+				detailsEditController = courseAssessmentService.getAssessmentHandler(aCourseNode)
+						.getDetailsEditController(ureq, wControl, stackPanel, courseNode, coachCourseEnv,
+								assessedUserCourseEnvironment);
 				listenTo(detailsEditController);
 				identityAssessmentVC.put("details", detailsEditController.getInitialComponent());
 			}
@@ -135,7 +139,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			listenTo(assessmentForm);
 			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
 			
-			String nodeLog = courseAssessmentService.getUserLog(aCourseNode, assessedUserCourseEnvironment);
+			String nodeLog = courseAssessmentService.getUserLog(courseNode, assessedUserCourseEnvironment);
 			if(StringHelper.containsNonWhitespace(nodeLog)) {
 				identityAssessmentVC.contextPut("log", nodeLog);
 			}

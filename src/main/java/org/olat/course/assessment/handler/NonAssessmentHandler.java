@@ -19,7 +19,12 @@
  */
 package org.olat.course.assessment.handler;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,6 +46,13 @@ public class NonAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return NonAssessmentConfig.create();
+	}
+
+	@Override
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			UserCourseEnvironment assessedUserCourseEnvironment) {
+		return null;
 	}
 
 }

@@ -19,10 +19,15 @@
  */
 package org.olat.course.nodes.ms;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.springframework.stereotype.Service;
 
 /**
@@ -43,6 +48,12 @@ public class MSAssessmentHandler implements AssessmentHandler {
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		courseNode.updateModuleConfigDefaults(false);
 		return new MSAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+	
+	@Override
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
+		return new MSEvaluationFormExecutionController(ureq, wControl, assessedUserCourseEnv, courseNode);
 	}
 
 }

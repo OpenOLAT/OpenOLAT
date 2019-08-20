@@ -255,8 +255,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 						myContent.put("download", download);
 					}
 				}
-				if (courseNode.hasResultsDetails()) {
-					detailsCtrl = courseNode.getResultDetailsController(ureq, getWindowControl(), userCourseEnv);
+				if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED)) {
+					detailsCtrl = new MSResultDetailsController(ureq, getWindowControl(), userCourseEnv, courseNode);
 					listenTo(detailsCtrl);
 					myContent.put("details", detailsCtrl.getInitialComponent());
 				}

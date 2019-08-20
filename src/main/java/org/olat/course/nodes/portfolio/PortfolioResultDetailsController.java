@@ -47,7 +47,7 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
-import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.portfolio.Binder;
 import org.olat.modules.portfolio.BinderConfiguration;
@@ -96,8 +96,8 @@ public class PortfolioResultDetailsController extends FormBasicController {
 	@Autowired
 	private PortfolioService portfolioService;
 	
-	public PortfolioResultDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, PortfolioCourseNode courseNode,
-			UserCourseEnvironment userCourseEnv) {
+	public PortfolioResultDetailsController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 
 		this.stackPanel = stackPanel;

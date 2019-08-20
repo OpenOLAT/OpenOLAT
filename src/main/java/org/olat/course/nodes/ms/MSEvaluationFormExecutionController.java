@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.ui.tool.AssessmentFormCallback;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -58,7 +59,7 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final ModuleConfiguration config;
-	private final MSCourseNode msCourseNode;
+	private final CourseNode courseNode;
 
 	private final AuditEnv auditEnv;
 	private EvaluationFormSession session;
@@ -68,10 +69,10 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	private MSService msService;
 
 	public MSEvaluationFormExecutionController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv, MSCourseNode msCourseNode) {
+			UserCourseEnvironment assessedUserCourseEnv, CourseNode msCourseNode) {
 		super(ureq, wControl);
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
-		this.msCourseNode = msCourseNode;
+		this.courseNode = msCourseNode;
 		this.config = msCourseNode.getModuleConfiguration();
 		
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
@@ -154,7 +155,8 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 	private void doSetAssessmentScore() {
 		session = msService.getSession(session);
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		msCourseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach, session);
+		//TODO uh enable
+//		msCourseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach, session);
 		updateUIReopen();
 	}
 

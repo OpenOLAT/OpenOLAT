@@ -68,7 +68,6 @@ import org.olat.course.nodes.cl.CheckListAssessmentConfig;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
-import org.olat.course.nodes.cl.ui.AssessedIdentityCheckListController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.course.nodes.cl.ui.CheckListExcelExport;
 import org.olat.course.nodes.cl.ui.CheckListRunController;
@@ -269,26 +268,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
-
-	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		Long resId = assessedUserCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resId);
-		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, coachCourseEnv, assessedUserCourseEnv, this, false, false);
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return false;
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
-		return null;
-	}
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -306,11 +285,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		return null;
-	}
-
-	@Override
-	public boolean hasDetails() {
-		return true;
 	}
 
 	/**

@@ -49,4 +49,9 @@ public class PortfolioAssessmentConfig extends ModuleAssessmentConfig {
 		return true;
 	}
 
+	@Override
+	public boolean hasDetails() {
+		return true;
+	}
+
 }

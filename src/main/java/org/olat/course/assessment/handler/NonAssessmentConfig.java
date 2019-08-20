@@ -97,4 +97,9 @@ public class NonAssessmentConfig implements AssessmentConfig {
 		return false;
 	}
 
+	@Override
+	public boolean hasDetails() {
+		return false;
+	}
+
 }

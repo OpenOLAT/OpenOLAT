@@ -78,7 +78,6 @@ import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
 import org.olat.course.nodes.gta.model.TaskDefinition;
-import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
 import org.olat.course.nodes.gta.ui.GTACoachedGroupListController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTAIdentityListCourseNodeController;
@@ -748,15 +747,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public boolean isOptional() {
 		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
 	}
-
-	@Override
-	public boolean hasDetails() {
-		ModuleConfiguration config =  getModuleConfiguration();
-		return config.getBooleanSafe(GTASK_ASSIGNMENT)
-				|| config.getBooleanSafe(GTASK_SUBMIT)
-				|| config.getBooleanSafe(GTASK_REVIEW_AND_CORRECTION)
-				|| config.getBooleanSafe(GTASK_REVISION_PERIOD);
-	}
 	
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
@@ -764,17 +754,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		GTAEditController editCtrl = new GTAEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, editCtrl);
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return false;
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
-		return null;
 	}
 
 	@Override
@@ -816,12 +795,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		RepositoryEntry entry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		return CoreSpringFactory.getImpl(GTAManager.class).getDetails(assessedIdentity, entry, this);
-	}
-
-	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUsserCourseEnv) {
-		return new GTAAssessmentDetailsController(ureq, wControl, coachCourseEnv, assessedUsserCourseEnv, this);
 	}
 	
 	public GTACoachedGroupListController getCoachedGroupListController(UserRequest ureq, WindowControl wControl,

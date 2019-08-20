@@ -20,6 +20,7 @@
 package org.olat.course.nodes.projectbroker;
 
 import org.olat.course.assessment.handler.ModuleAssessmentConfig;
+import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -67,6 +68,11 @@ public class ProjectBrokerAssessmentConfig extends ModuleAssessmentConfig {
 	@Override
 	public boolean isEditable() {
 		return false;
+	}
+
+	@Override
+	public boolean hasDetails() {
+		return config.getBooleanSafe(ProjectBrokerCourseNode.CONF_DROPBOX_ENABLED);
 	}
 
 }

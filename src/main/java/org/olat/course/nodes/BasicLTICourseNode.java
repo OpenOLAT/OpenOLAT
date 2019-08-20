@@ -58,7 +58,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
-import org.olat.ims.lti.ui.LTIResultDetailsController;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -273,14 +272,6 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
-
-	@Override
-	public boolean hasDetails() {
-		// having score defined means the node is assessable
-		ModuleConfiguration config = getModuleConfiguration();
-		Boolean score = config.getBooleanEntry(CONFIG_KEY_HAS_SCORE_FIELD);
-		return (score == null) ? false : score.booleanValue();
-	}
 	
 	@Override
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
@@ -308,25 +299,6 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 
 	@Override
 	public String getDetailsListViewHeaderKey() {
-		return null;
-	}
-
-	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
-			BreadcrumbPanel stackPanel, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		OLATResource resource = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-		return new LTIResultDetailsController(ureq, wControl, assessedIdentity, resource, getIdent());
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return false;
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
 		return null;
 	}
 	

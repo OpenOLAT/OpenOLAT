@@ -19,10 +19,16 @@
  */
 package org.olat.course.nodes.scorm;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.scorm.assessment.ScormResultDetailsController;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,6 +48,12 @@ public class ScormAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return new ScormAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
+		return new ScormResultDetailsController(ureq, wControl, courseNode, coachCourseEnv, assessedUserCourseEnv);
 	}
 
 }

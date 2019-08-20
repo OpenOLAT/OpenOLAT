@@ -381,23 +381,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	}
 
 	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		throw new OLATRuntimeException(STCourseNode.class, "Details controler not available in ST nodes", null);
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return false;
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
-		return null;
-	}
-
-	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}
@@ -413,11 +396,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
 		return new STIdentityListCourseNodeController(ureq, wControl, stackPanel,
 				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
-	}
-
-	@Override
-	public boolean hasDetails() {
-		return false;
 	}
 
 	/**

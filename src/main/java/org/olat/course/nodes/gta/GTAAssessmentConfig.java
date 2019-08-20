@@ -85,5 +85,13 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	public boolean isEditable() {
 		return true;
 	}
+
+	@Override
+	public boolean hasDetails() {
+		return config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_REVIEW_AND_CORRECTION)
+				|| config.getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD);
+	}
 	
 }

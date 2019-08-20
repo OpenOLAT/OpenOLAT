@@ -19,10 +19,19 @@
  */
 package org.olat.course.nodes.portfolio;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
+import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,6 +51,19 @@ public class PortfolioAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return new PortfolioAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
+		RepositoryEntry mapEntry = courseNode.getReferencedRepositoryEntry();
+		if(mapEntry != null && BinderTemplateResource.TYPE_NAME.equals(mapEntry.getOlatResource().getResourceableTypeName())) {
+			Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
+			RepositoryEntry courseEntry = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			return new PortfolioAssessmentDetailsController(ureq, wControl, courseEntry, courseNode, mapEntry,
+					assessedIdentity);
+		}
+		return new PortfolioResultDetailsController(ureq, wControl, stackPanel, courseNode, assessedUserCourseEnv);
 	}
 
 }

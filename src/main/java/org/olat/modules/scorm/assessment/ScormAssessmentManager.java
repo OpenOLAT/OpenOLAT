@@ -28,14 +28,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.olat.core.logging.OLATRuntimeException;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.modules.scorm.ScormDirectoryHelper;
@@ -80,7 +81,7 @@ public class ScormAssessmentManager {
 	}
 	
 	//fxdiff FXOLAT-108: reset SCORM test
-	public boolean deleteResults(String username, CourseEnvironment courseEnv, ScormCourseNode node) {
+	public boolean deleteResults(String username, CourseEnvironment courseEnv, CourseNode node) {
 		VFSContainer scoDirectory = ScormDirectoryHelper.getScoDirectory(username, courseEnv, node);
 		if(scoDirectory == null) return true; //nothing to reset -> ok
 		
@@ -96,7 +97,7 @@ public class ScormAssessmentManager {
 	 * @param node
 	 * @return
 	 */
-	public Map<Date, List<CmiData>> visitScoDatasMultiResults(String username, CourseEnvironment courseEnv, ScormCourseNode node) {
+	public Map<Date, List<CmiData>> visitScoDatasMultiResults(String username, CourseEnvironment courseEnv, CourseNode node) {
 		Map<Date, List<CmiData>> cmiDataObjects = new HashMap<>();
 		VFSContainer scoContainer = ScormDirectoryHelper.getScoDirectory(username, courseEnv, node);
 		if(scoContainer == null) {
@@ -185,6 +186,7 @@ public class ScormAssessmentManager {
 	}
 	
 	public class XMLFilter implements VFSItemFilter {
+		@Override
 		public boolean accept(VFSItem file) {
 			String name = file.getName();
 			if(name.endsWith(".xml") && !(name.equals(RELOAD_SETTINGS_FILE)))

@@ -75,7 +75,6 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.archiver.ScormExportManager;
-import org.olat.modules.scorm.assessment.ScormResultDetailsController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.handlers.RepositoryHandler;
@@ -391,23 +390,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	}
 
 	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		return new ScormResultDetailsController(ureq, wControl, this, coachCourseEnv, assessedUserCourseEnv);
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return false;
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
-		return null;
-	}
-
-	@Override
 	public String getDetailsListView(UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}
@@ -415,11 +397,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		return null;
-	}
-
-	@Override
-	public boolean hasDetails() {
-		return getModuleConfiguration().getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -62,18 +63,18 @@ public class MSResultDetailsController extends BasicController {
 	private MSService msService;
 
 	public MSResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv, MSCourseNode msCourseNode) {
+			UserCourseEnvironment assessedUserCourseEnv, CourseNode courseNode) {
 		super(ureq, wControl);
 
 		mainVC = createVelocityContainer("result_details");
 		
-		ModuleConfiguration config = msCourseNode.getModuleConfiguration();
+		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		RepositoryEntry formEntry = MSCourseNode.getEvaluationForm(config);
 		RepositoryEntry ores = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		String nodeIdent = msCourseNode.getIdent();
+		String nodeIdent = courseNode.getIdent();
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		UserNodeAuditManager auditManager = assessedUserCourseEnv.getCourseEnvironment().getAuditManager();
-		AuditEnv auditEnv = AuditEnv.of(auditManager , msCourseNode, assessedIdentity, getIdentity(), Role.coach);
+		AuditEnv auditEnv = AuditEnv.of(auditManager , courseNode, assessedIdentity, getIdentity(), Role.coach);
 		session =  msService.getOrCreateSession(formEntry, ores, nodeIdent, assessedIdentity, auditEnv);
 		
 		String scoreConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_SCORE);

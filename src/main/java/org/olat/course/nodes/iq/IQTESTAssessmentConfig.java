@@ -167,4 +167,9 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 		return true;
 	}
 
+	@Override
+	public boolean hasDetails() {
+		return true;
+	}
+
 }

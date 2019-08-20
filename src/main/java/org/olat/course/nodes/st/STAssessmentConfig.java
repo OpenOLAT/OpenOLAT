@@ -104,4 +104,9 @@ public class STAssessmentConfig implements AssessmentConfig {
 		// ST nodes never editable, data generated on the fly
 		return false;
 	}
+
+	@Override
+	public boolean hasDetails() {
+		return false;
+	}
 }

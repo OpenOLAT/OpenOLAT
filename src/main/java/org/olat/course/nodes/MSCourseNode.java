@@ -62,9 +62,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
-import org.olat.course.nodes.ms.MSEvaluationFormExecutionController;
 import org.olat.course.nodes.ms.MSIdentityListCourseNodeController;
-import org.olat.course.nodes.ms.MSResultDetailsController;
 import org.olat.course.nodes.ms.MSRunController;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
@@ -348,26 +346,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		}
 		return MinMax.of(0.0f,  0.0f);
 	}
-
-	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		return new MSEvaluationFormExecutionController(ureq, wControl, assessedUserCourseEnv, this);
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_EVAL_FORM_ENABLED);
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
-		if (hasResultsDetails()) {
-			return new MSResultDetailsController(ureq, wControl, assessedUserCourseEnv, this);
-		}
-		return null;
-	}
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -385,11 +363,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		throw new OLATRuntimeException(MSCourseNode.class, "Details not available in MS nodes", null);
-	}
-
-	@Override
-	public boolean hasDetails() {
-		return getModuleConfiguration().getBooleanSafe(CONFIG_KEY_EVAL_FORM_ENABLED);
 	}
 	
 	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv,

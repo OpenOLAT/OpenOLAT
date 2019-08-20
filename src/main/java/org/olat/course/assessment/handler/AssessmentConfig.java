@@ -88,5 +88,10 @@ public interface AssessmentConfig {
 	 * @return True if score, passed, attempts and comment are editable by the assessment tool
 	 */
 	public boolean isEditable();
+	
+	/**
+	 * @return True if this course node has additional details to be edited / viewed
+	 */
+	public boolean hasDetails();
 
 }

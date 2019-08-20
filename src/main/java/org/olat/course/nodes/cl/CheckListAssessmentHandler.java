@@ -19,10 +19,19 @@
  */
 package org.olat.course.nodes.cl;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.cl.ui.AssessedIdentityCheckListController;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,6 +51,18 @@ public class CheckListAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return new CheckListAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+	
+	@Override
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			UserCourseEnvironment assessedUserCourseEnvironment) {
+		Identity assessedIdentity = assessedUserCourseEnvironment.getIdentityEnvironment().getIdentity();
+		Long resId = assessedUserCourseEnvironment.getCourseEnvironment().getCourseResourceableId();
+		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resId);
+		
+		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, coachCourseEnv,
+				assessedUserCourseEnvironment, courseNode, false, false);
 	}
 
 }

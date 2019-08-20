@@ -27,9 +27,7 @@
 package org.olat.course.nodes;
 
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -50,18 +48,7 @@ import org.olat.repository.RepositoryEntry;
  * tool.
  */
 public interface AssessableCourseNode extends CourseNode {
-	
-	/**
-	 * @return True if this course node has additional details to be edited / viewed
-	 */
-	public boolean hasDetails();
 
-	/**
-	 * @return True if this course node has additional result details.
-	 */
-	public boolean hasResultsDetails();
-
-	
 	/**
 	 * this method implementation must not cache any results!
 	 * 
@@ -82,18 +69,6 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @return the details list view header key that is used to label the table row
 	 */	
 	public String getDetailsListViewHeaderKey();
-	/**
-	 * Returns a controller to edit the node specific details
-	 * @param ureq
-	 * @param wControl
-	 * @param userCourseEnvironment
-	 * @return a controller or null if hasDetails=false
-	 */
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
-	
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv);
 	
 	/**
 	 * Returns the controller with the list of assessed identities for

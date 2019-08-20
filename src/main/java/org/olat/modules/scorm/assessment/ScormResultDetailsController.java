@@ -49,7 +49,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
-import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.scorm.server.servermodels.ScoUtils;
@@ -76,12 +76,12 @@ public class ScormResultDetailsController extends BasicController {
 	private Link resetButton;
 	private DialogBoxController resetConfirmationBox;
 	
-	private final ScormCourseNode node;
+	private final CourseNode node;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 
 
-	public ScormResultDetailsController(UserRequest ureq, WindowControl wControl, ScormCourseNode node,
+	public ScormResultDetailsController(UserRequest ureq, WindowControl wControl, CourseNode node,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
 		
@@ -187,14 +187,17 @@ public class ScormResultDetailsController extends BasicController {
 			this.translator = translator;
 		}
 
+		@Override
 		public int getColumnCount() {
 			return 3;
 		}
 
+		@Override
 		public int getRowCount() {
 			return datas.size();
 		}
 
+		@Override
 		public Object getValueAt(int row, int col) {
 			CmiData data = datas.get(row);
 			switch(col) {
@@ -261,14 +264,17 @@ public class ScormResultDetailsController extends BasicController {
 			}
 		}
 
+		@Override
 		public int getColumnCount() {
 			return 3;
 		}
 
+		@Override
 		public int getRowCount() {
 			return objects == null ? 0 : objects.size();
 		}
 
+		@Override
 		public Object getValueAt(int row, int col) {
 			Date dateKey = objectKeys[row];
 			List<CmiData> cmiObject = objects.get(dateKey);

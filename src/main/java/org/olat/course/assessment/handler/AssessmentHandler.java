@@ -19,7 +19,12 @@
  */
 package org.olat.course.assessment.handler;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -32,5 +37,18 @@ public interface AssessmentHandler {
 	public String acceptCourseNodeType();
 	
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
-
+	
+	/**
+	 * Returns a controller to edit the node specific details. Check
+	 * AssessmentConfig.hasDeatils() before invoking this method.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @return a controller or null
+	 */
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
+	
 }

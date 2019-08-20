@@ -83,7 +83,6 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.ta.ConvertToGTACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
-import org.olat.course.nodes.ta.DropboxScoringViewController;
 import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.TAAssessmentConfig;
 import org.olat.course.nodes.ta.TACourseNodeEditController;
@@ -482,24 +481,6 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 				null, null, null, null);
 		am.saveScoreEvaluation(this, coachingIdentity, mySelf, newScoreEval, userCourseEnvironment, incrementAttempts, by);		
 	}
-
-	@Override
-	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
-		// prepare file component
-		return new DropboxScoringViewController(ureq, wControl, this, assessedUserCourseEnv);
-	}
-
-	@Override
-	public boolean hasResultsDetails() {
-		return false;
-	}
-
-	@Override
-	public Controller getResultDetailsController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment assessedUserCourseEnv) {
-		return null;
-	}
 	
 	@Override
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
@@ -521,19 +502,6 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	@Override
 	public String getDetailsListViewHeaderKey() {
 		return "table.header.details.ta";
-	}
-
-	@Override
-	public boolean hasDetails() {
-		ModuleConfiguration modConfig = getModuleConfiguration();
-		Boolean hasTask = (Boolean) modConfig.get(TACourseNode.CONF_TASK_ENABLED);
-		if (hasTask == null) hasTask = Boolean.FALSE;
-		Boolean hasDropbox = (Boolean) modConfig.get(TACourseNode.CONF_DROPBOX_ENABLED);
-		if (hasDropbox == null) hasDropbox = Boolean.FALSE;		
-		Boolean hasReturnbox = (Boolean) modConfig.get(TACourseNode.CONF_RETURNBOX_ENABLED);
-		if (hasReturnbox == null) hasReturnbox = hasDropbox;
-		
-		return (hasTask.booleanValue() || hasDropbox.booleanValue() || hasReturnbox.booleanValue());
 	}
 
 	@Override

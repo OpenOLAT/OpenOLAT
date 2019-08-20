@@ -78,5 +78,12 @@ public class TAAssessmentConfig extends ModuleAssessmentConfig {
 	public boolean isEditable() {
 		return true;
 	}
+	
+	@Override
+	public boolean hasDetails() {
+		return config.getBooleanSafe(TACourseNode.CONF_TASK_ENABLED)
+				|| config.getBooleanSafe(TACourseNode.CONF_DROPBOX_ENABLED)
+				|| config.getBooleanSafe(TACourseNode.CONF_RETURNBOX_ENABLED);
+	}
 
 }
