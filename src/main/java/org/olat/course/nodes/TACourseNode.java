@@ -480,7 +480,6 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		return am.getAssessmentEntry(this, mySelf);
 	}
 
-	@Override
 	//TODO uh anders als die Default Implemntation notwendig?
 	public void updateUserScoreEvaluation(ScoreEvaluation scoreEval, UserCourseEnvironment userCourseEnvironment,
 			Identity coachingIdentity, boolean incrementAttempts, Role by) {

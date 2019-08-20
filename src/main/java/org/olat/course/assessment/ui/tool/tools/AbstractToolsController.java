@@ -36,6 +36,7 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -46,6 +47,7 @@ import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -76,6 +78,9 @@ public abstract class AbstractToolsController extends BasicController {
 	private final AssessmentEvaluation scoreEval;
 	protected final AssessableCourseNode courseNode;
 	protected final UserCourseEnvironment assessedUserCourseEnv;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public AbstractToolsController(UserRequest ureq, WindowControl wControl,
 			AssessableCourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
@@ -236,7 +241,8 @@ public abstract class AbstractToolsController extends BasicController {
 				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 				scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running,
 				scoreEval.getAssessmentID());
-		courseNode.updateUserScoreEvaluation(reopenedEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+		courseAssessmentService.updateUserScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
+				getIdentity(), false, Role.coach);
 	}
 	
 	private void doSetDone(UserRequest ureq) {
@@ -251,7 +257,8 @@ public abstract class AbstractToolsController extends BasicController {
 				AssessmentEntryStatus.done, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(),
 				scoreEval.getAssessmentID());
-		courseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+		courseAssessmentService.updateUserScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
+				false, Role.coach);
 	}
 	
 	private void doSetVisibility(UserRequest ureq, boolean visible) {
@@ -260,7 +267,8 @@ public abstract class AbstractToolsController extends BasicController {
 					AssessmentEntryStatus.done, visible, scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(),
 					scoreEval.getAssessmentID());
-			courseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+			courseAssessmentService.updateUserScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
+					getIdentity(), false, Role.coach);
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}

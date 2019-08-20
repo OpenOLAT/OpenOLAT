@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -105,6 +106,8 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 	private MailManager mailManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public GTAParticipantRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment assessedUserCourseEnv,Task assignedTask,
@@ -356,10 +359,10 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 
 			for(Identity identity:identities) {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(userCourseEnv, Role.user);
+				courseAssessmentService.incrementUserAttempts(gtaNode, userCourseEnv, Role.user);
 			}
 		} else {
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv, Role.user);
+			courseAssessmentService.incrementUserAttempts(gtaNode, assessedUserCourseEnv, Role.user);
 		}
 		
 		//do send e-mail

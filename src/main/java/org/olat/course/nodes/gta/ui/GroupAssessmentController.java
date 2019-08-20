@@ -57,6 +57,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -113,6 +114,8 @@ public class GroupAssessmentController extends FormBasicController {
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	private final List<Long> duplicateMemberKeys;
 	
@@ -555,12 +558,12 @@ public class GroupAssessmentController extends FormBasicController {
 			} else {
 				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
 			}
-			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
+			courseAssessmentService.updateUserScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 			
 			if(withComment) {
 				String comment = row.getComment();
 				if(StringHelper.containsNonWhitespace(comment)) {
-					gtaNode.updatedUserComment(comment, userCourseEnv, getIdentity());
+					courseAssessmentService.updatedUserComment(gtaNode, comment, userCourseEnv, getIdentity());
 				}
 			}
 		}
@@ -594,7 +597,7 @@ public class GroupAssessmentController extends FormBasicController {
 			} else {
 				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
 			}
-			gtaNode.updateUserScoreEvaluation(newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
+			courseAssessmentService.updateUserScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}
 
 		if(withComment) {
@@ -602,7 +605,7 @@ public class GroupAssessmentController extends FormBasicController {
 			if(StringHelper.containsNonWhitespace(comment)) {
 				for(AssessmentRow row:rows) {
 					UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-					gtaNode.updatedUserComment(comment, userCourseEnv, getIdentity());
+					courseAssessmentService.updatedUserComment(gtaNode, comment, userCourseEnv, getIdentity());
 				}
 			}
 		}

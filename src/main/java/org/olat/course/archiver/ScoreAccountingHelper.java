@@ -61,6 +61,7 @@ import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -134,6 +135,7 @@ public class ScoreAccountingHelper {
 	 * @param bos The output stream (which will be closed at the end, if you use a zip stream don't forget to shield it).
 	 */
 	public static void createCourseResultsOverviewXMLTable(List<Identity> identities, List<AssessableCourseNode> myNodes, ICourse course, Locale locale, OutputStream bos) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		OpenXMLWorkbook workbook = new OpenXMLWorkbook(bos, 1);
 		OpenXMLWorksheet sheet = workbook.nextWorksheet();
 		sheet.setHeaderRows(2);
@@ -269,7 +271,7 @@ public class ScoreAccountingHelper {
 				boolean commentOk = assessmentConfig.hasComment();
 
 				if (acnode.getType().equals("ita")) {
-					String log = acnode.getUserLog(uce);
+					String log = courseAssessmentService.getUserLog(acnode, uce);
 					String date = null;
 					Date lastUploaded = null;
 					try {

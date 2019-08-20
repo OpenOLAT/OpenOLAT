@@ -52,6 +52,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.MSCourseNode;
@@ -112,6 +113,8 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	private EPFrontendManager ePFMgr;
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public PortfolioCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			PortfolioCourseNode courseNode) {
@@ -345,7 +348,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 				}
 				
 				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
+					List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
 					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					assessmentInfosContainer.contextPut("docsMapperUri", mapperUri);
 					assessmentInfosContainer.contextPut("docs", docs);

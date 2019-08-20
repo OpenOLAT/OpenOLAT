@@ -51,6 +51,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
@@ -116,6 +117,8 @@ class GTANotifications {
 	private RepositoryService repositoryService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentEntryDAO courseNodeAssessmentDao;
 	
@@ -622,7 +625,8 @@ class GTANotifications {
 				ICourse course = CourseFactory.loadCourse(courseEnv.getCourseGroupManager().getCourseEntry());
 				UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 						.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				List<File> docs = gtaNode.getIndividualAssessmentDocuments(assessedUserCourseEnv);
+				List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(gtaNode,
+						assessedUserCourseEnv);
 				for(File doc:docs) {
 					String[] docParams = new String[] {
 							getTaskName(task),
@@ -821,17 +825,18 @@ class GTANotifications {
 	}
 	
 	private void doUpdateAttempts(Identity assessedIdentity, BusinessGroup assessedGroup) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseGroupManager().getCourseEntry());
 		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
 			for(Identity identity:identities) {
 				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(uce, Role.auto);
+				courseAssessmentService.incrementUserAttempts(gtaNode, uce, Role.auto);
 			}
 		} else {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(assessedIdentity, course);
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv, Role.auto);
+			courseAssessmentService.incrementUserAttempts(gtaNode, assessedUserCourseEnv, Role.auto);
 		}
 	}
 	

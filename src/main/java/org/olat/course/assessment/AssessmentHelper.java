@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeModel;
@@ -153,13 +154,14 @@ public class AssessmentHelper {
 	 * @return a wrapped identity
 	 */
 	public static AssessedIdentityWrapper wrapIdentity(UserCourseEnvironment uce, Date initialLaunchDate, AssessableCourseNode courseNode) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		// Fetch attempts and details for this node if available
 		Integer attempts = null;
 		String details = null;
 		if (courseNode != null) {
 			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
 			if (assessmentConfig.hasAttempts()) {
-				attempts = courseNode.getUserAttempts(uce);
+				attempts = courseAssessmentService.getUserAttempts(courseNode, uce);
 			}
 			if (courseNode.hasDetails()) {
 				details = courseNode.getDetailsListView(uce);
@@ -572,7 +574,8 @@ public class AssessmentHelper {
 				  // comments are invisible in the table but if configured the node must be in the list
 					// for the efficiency statement this can be ignored, this is the case when discardComments is true
 					hasDisplayableValuesConfigured = true;
-					if (assessableCourseNode.getUserComment(userCourseEnv) != null) {
+					CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+					if (courseAssessmentService.getUserComment(assessableCourseNode, userCourseEnv) != null) {
 						hasDisplayableUserValues = true;
 					}
 				}

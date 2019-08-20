@@ -55,6 +55,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.editor.CourseEditorEnv;
@@ -586,9 +587,10 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 			assessmentStatus = AssessmentEntryStatus.done;
 			visibility = Boolean.TRUE;
 		}
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ScoreEvaluation sceval = new ScoreEvaluation(session.getScore().floatValue(), session.getPassed(), assessmentStatus, visibility, Boolean.TRUE,
 				1.0d, AssessmentRunStatus.done, session.getKey());
-		updateUserScoreEvaluation(sceval, assessedUserCourseenv, coachingIdentity, true, by);
+		courseAssessmentService.updateUserScoreEvaluation(this, sceval, assessedUserCourseenv, coachingIdentity, true, by);
 	}
 
 	/**

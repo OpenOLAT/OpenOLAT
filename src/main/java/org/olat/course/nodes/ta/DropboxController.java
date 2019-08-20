@@ -77,8 +77,8 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.FullAccessWithQuotaCallback;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.auditing.UserNodeAuditManager;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -112,6 +112,8 @@ public class DropboxController extends BasicController {
 	private QuotaManager quotaManager;
 	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	// Constructor for ProjectBrokerDropboxController
 	protected DropboxController(UserRequest ureq, WindowControl wControl) {
@@ -201,6 +203,7 @@ public class DropboxController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == ulButton) {
 			
@@ -360,8 +363,7 @@ public class DropboxController extends BasicController {
 		c.put("time", f.formatTime(now));
 		
 		// update attempts counter for this user: one file - one attempts
-		AssessableCourseNode acn = (AssessableCourseNode) node;
-		acn.incrementUserAttempts(userCourseEnv, Role.user);
+		courseAssessmentService.incrementUserAttempts(node, userCourseEnv, Role.user);
 				
 		// log entry for this file
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();

@@ -28,11 +28,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -45,6 +47,9 @@ public class ResetAttemptsConfirmationController extends FormBasicController {
 	private final Identity assessedIdentity;
 	private final CourseEnvironment courseEnv;
 	private final AssessableCourseNode courseNode;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public ResetAttemptsConfirmationController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, AssessableCourseNode courseNode, Identity assessedIdentity) {
@@ -71,7 +76,8 @@ public class ResetAttemptsConfirmationController extends FormBasicController {
 		AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, courseEnv);
 		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(assessedIdentity, courseEnv);
-		courseNode.updateUserAttempts(new Integer(0), assessedUserCourseEnv, getIdentity(), Role.coach);
+		courseAssessmentService.updateUserAttempts(courseNode, Integer.valueOf(0), assessedUserCourseEnv, getIdentity(),
+				Role.coach);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

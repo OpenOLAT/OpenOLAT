@@ -49,6 +49,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.nodes.ScormCourseNode;
@@ -197,20 +198,23 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		boolean passed = (found == scormAdapter.getNumOfSCOs()) && passedScos;
 		// if advanceScore option is set update the score only if it is higher
 		// <OLATEE-27>
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ModuleConfiguration config = scormNode.getModuleConfiguration();
 		if (config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)) {
 			if (currentPassed == null || !currentPassed.booleanValue()) {
 				// </OLATEE-27>
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), Boolean.valueOf(passed));
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment, Role.user);
+				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
+						Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
 			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment, Role.user);
+				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
+						Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
@@ -218,7 +222,8 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		} else {
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), Boolean.valueOf(passed));
-			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false, Role.user);
+			courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, false,
+					Role.user);
 			if(increment) {
 				attemptsIncremented = true;
 			}
@@ -258,20 +263,23 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		boolean passed = (score >= cutval);
 		// if advanceScore option is set update the score only if it is higher
 		// <OLATEE-27>
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ModuleConfiguration config = scormNode.getModuleConfiguration();
 		if (config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)) {
 			if (score > (currentScore != null ? currentScore : -1f)) {
 				// </OLATEE-27>
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), Boolean.valueOf(passed));
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment, Role.user);
+				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
+						Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
 			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
-				scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, increment, Role.user);
+				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
+						Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
@@ -284,7 +292,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			// </OLATEE-27>
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), Boolean.valueOf(passed));
-			scormNode.updateUserScoreEvaluation(sceval, userCourseEnv, identity, false, Role.user);
+			courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, false, Role.user);
 			if(increment) {
 				attemptsIncremented = true;
 			}

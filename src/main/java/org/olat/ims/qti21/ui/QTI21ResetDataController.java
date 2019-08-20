@@ -47,6 +47,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
@@ -92,6 +93,8 @@ public class QTI21ResetDataController extends FormBasicController {
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public QTI21ResetDataController(UserRequest ureq, WindowControl wControl, 
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, QTICourseNode courseNode) {
@@ -195,7 +198,6 @@ public class QTI21ResetDataController extends FormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		if(courseNode instanceof IQTESTCourseNode) {
-			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
 			RepositoryEntry testEntry = courseNode.getReferencedRepositoryEntry();
 			RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
 			
@@ -207,8 +209,10 @@ public class QTI21ResetDataController extends FormBasicController {
 				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, null, Boolean.FALSE, 0.0d, AssessmentRunStatus.notStarted, null);
 				IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-				testCourseNode.updateUserScoreEvaluation(scoreEval, uce, getIdentity(), false, Role.coach);
-				testCourseNode.updateCurrentCompletion(uce, getIdentity(), null, AssessmentRunStatus.notStarted, Role.coach);
+				courseAssessmentService.updateUserScoreEvaluation(courseNode, scoreEval, uce, getIdentity(), false,
+						Role.coach);
+				courseAssessmentService.updateCurrentCompletion(courseNode, uce, getIdentity(), null,
+						AssessmentRunStatus.notStarted, Role.coach);
 			}
 		} else if(assessedEntry != null) {
 			archiveData(assessedEntry);

@@ -40,6 +40,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -77,6 +78,8 @@ public class QTI12PullTestsToolController extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public QTI12PullTestsToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			AssessmentToolOptions asOptions, IQTESTCourseNode courseNode) {
@@ -184,7 +187,8 @@ public class QTI12PullTestsToolController extends FormBasicController {
 		Boolean passed = new Boolean(ac.isPassed());
 		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, Boolean.FALSE, new Long(ai.getAssessID()));
 		UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-		courseNode.updateUserScoreEvaluation(sceval, userCourseEnv, assessedIdentity, true, Role.coach);
+		courseAssessmentService.updateUserScoreEvaluation(courseNode, sceval, userCourseEnv, assessedIdentity, true,
+				Role.coach);
 		
 		//cleanup
 		ai.cleanUp();

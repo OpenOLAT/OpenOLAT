@@ -51,6 +51,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
@@ -118,7 +119,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	private QTI21Service qtiService;
 	@Autowired
 	private BusinessGroupService groupService;
-
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public IQIdentityListCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup group, IQTESTCourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -449,7 +451,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
 					finalStatus, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
-			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+			courseAssessmentService.updateUserScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
+					getIdentity(), false, Role.coach);
 		}
 	}
 	

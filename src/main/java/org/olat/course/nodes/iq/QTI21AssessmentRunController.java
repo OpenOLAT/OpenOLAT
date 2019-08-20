@@ -61,6 +61,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -145,6 +146,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private CourseModule courseModule;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	
@@ -256,7 +259,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		if (courseNode instanceof SelfAssessableCourseNode) {
 			SelfAssessableCourseNode acn = (SelfAssessableCourseNode)courseNode; 
 			ScoreEvaluation scoreEval = acn.getUserScoreEvaluation(userCourseEnv);
-			Integer attempts = acn.getUserAttempts(userCourseEnv);
+			Integer attempts = acn.getUserAttempts(null, userCourseEnv);
 			if (scoreEval != null) {
 				mainVC.contextPut("resultsVisible", Boolean.TRUE);
 				mainVC.contextPut("hasResults", Boolean.TRUE);
@@ -298,7 +301,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				if(resultsVisible) {
 					AssessmentConfig assessmentConfig = testCourseNode.getAssessmentConfig();
 					if(assessmentConfig.hasComment()) {
-						StringBuilder comment = Formatter.stripTabsAndReturns(testCourseNode.getUserComment(userCourseEnv));
+						StringBuilder comment = Formatter.stripTabsAndReturns(
+								courseAssessmentService.getUserComment(testCourseNode, userCourseEnv));
 						if (comment != null && comment.length() > 0) {
 							mainVC.contextPut("comment", StringHelper.xssScan(comment));
 							mainVC.contextPut("incomment", isPanelOpen(ureq, "comment", true));
@@ -306,7 +310,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					}
 					
 					if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-						List<File> docs = testCourseNode.getIndividualAssessmentDocuments(userCourseEnv);
+						List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(testCourseNode,
+								userCourseEnv);
 						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 						mainVC.contextPut("docsMapperUri", mapperUri);
 						mainVC.contextPut("docs", docs);
@@ -749,7 +754,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		removeHistory(ureq);
 		if(courseNode instanceof IQTESTCourseNode) {
-			((IQTESTCourseNode)courseNode).updateCurrentCompletion(userCourseEnv, getIdentity(), null, null, Role.user);
+			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, getIdentity(), null, null,
+					Role.user);
 		}
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
@@ -828,7 +834,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	@Override
 	public void updateOutcomes(Float score, Boolean pass, Double completion) {
 		if(courseNode instanceof IQTESTCourseNode) {
-			((IQTESTCourseNode)courseNode).updateCurrentCompletion(userCourseEnv, getIdentity(), completion, AssessmentRunStatus.running, Role.user);
+			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, getIdentity(), completion,
+					AssessmentRunStatus.running, Role.user);
 			coordinatorManager.getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(), completion, AssessmentRunStatus.running, getIdentity().getKey()),
 						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());
@@ -856,7 +863,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					completion, AssessmentRunStatus.done, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
-			((IQTESTCourseNode)courseNode).updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), increment, Role.user);
+			courseAssessmentService.updateUserScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(),
+					increment, Role.user);
 			if(increment) {
 				ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_IN_COURSE, getClass());
 			}
@@ -868,7 +876,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		} else if(courseNode instanceof SelfAssessableCourseNode) {
 			boolean increment = incrementAttempts.getAndSet(false);
 			if(increment) {
-				((SelfAssessableCourseNode)courseNode).incrementUserAttempts(userCourseEnv, Role.user);
+				((SelfAssessableCourseNode)courseNode).incrementUserAttempts(null, userCourseEnv, Role.user);
 			}
 		}
 	}

@@ -40,6 +40,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -92,6 +93,8 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public CorrectionIdentityAssessmentItemController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest,
@@ -252,6 +255,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
 				scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
-		courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+		courseAssessmentService.updateUserScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
+				getIdentity(), false, Role.coach);
 	}
 }

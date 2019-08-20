@@ -27,6 +27,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -53,6 +54,8 @@ public class ConfirmReopenController extends FormBasicController {
 	
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public ConfirmReopenController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, IQTESTCourseNode courseNode, AssessmentTestSession testSession) {
@@ -86,7 +89,8 @@ public class ConfirmReopenController extends FormBasicController {
 			ScoreEvaluation reopenedScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 					AssessmentEntryStatus.inProgress, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running, testSession.getKey());
-			courseNode.updateUserScoreEvaluation(reopenedScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+			courseAssessmentService.updateUserScoreEvaluation(courseNode, reopenedScoreEval, assessedUserCourseEnv,
+					getIdentity(), false, Role.coach);
 
 			ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_REOPEN_IN_COURSE, getClass());
 		}

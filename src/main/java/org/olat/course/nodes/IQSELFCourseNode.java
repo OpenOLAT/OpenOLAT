@@ -395,7 +395,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	}
 	
 	@Override
-	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
+	public Integer getUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		return am.getNodeAttempts(this, mySelf);
@@ -405,7 +405,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
+	public void incrementUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);

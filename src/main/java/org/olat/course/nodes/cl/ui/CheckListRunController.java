@@ -55,6 +55,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -96,6 +97,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 	
 	@Autowired
 	private CheckboxManager checkboxManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	/**
 	 * Use this constructor to launch the checklist.
@@ -221,7 +224,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 					layoutCont.contextPut("incomment", isPanelOpen(ureq, "comment", true));
 				}
 				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
+					List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
 					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					layoutCont.contextPut("docsMapperUri", mapperUri);
 					layoutCont.contextPut("docs", docs);

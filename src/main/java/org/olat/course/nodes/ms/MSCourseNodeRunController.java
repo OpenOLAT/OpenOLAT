@@ -46,6 +46,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.CourseModule;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -77,6 +78,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	/**
 	 * Constructor for a manual scoring course run controller
@@ -241,7 +244,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 				}
 				
 				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-					List<File> docs = courseNode.getIndividualAssessmentDocuments(userCourseEnv);
+					List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode,
+							userCourseEnv);
 					mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 					myContent.contextPut("docsMapperUri", mapperUri);
 					myContent.contextPut("docs", docs);

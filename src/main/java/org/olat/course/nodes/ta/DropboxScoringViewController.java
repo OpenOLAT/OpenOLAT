@@ -72,6 +72,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -112,6 +113,8 @@ public class DropboxScoringViewController extends BasicController {
 	
 	@Autowired
 	private QuotaManager quotaManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	/**
 	 * Scoring view of the dropbox.
@@ -305,7 +308,7 @@ public class DropboxScoringViewController extends BasicController {
 						AssessmentEvaluation eval = acn.getUserScoreEvaluation(userCourseEnv);
 						if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 							eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-							acn.updateUserScoreEvaluation(eval, userCourseEnv, coach, false, Role.coach);
+							courseAssessmentService.updateUserScoreEvaluation(acn, eval, userCourseEnv, coach, false, Role.coach);
 						}
 					}
 
@@ -344,7 +347,7 @@ public class DropboxScoringViewController extends BasicController {
 					}
 					if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 						eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-						acn.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false, Role.coach);
+						courseAssessmentService.updateUserScoreEvaluation(acn, eval, userCourseEnv, getIdentity(), false, Role.coach);
 						fireEvent(ureq, Event.CHANGED_EVENT);
 					}
 				}

@@ -50,6 +50,7 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.OpenSubDetailsEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -70,6 +71,7 @@ import org.olat.modules.iq.IQManager;
 import org.olat.modules.iq.IQRetrievedEvent;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  12.01.2005
@@ -94,6 +96,9 @@ public class QTI12ResultDetailsController extends BasicController {
 	private QTIResultTableModel tableModel;
 	private DialogBoxController retrieveConfirmationCtr;
 	private QTI12XSLTResultDetailsController xsltDetailsCtr;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	/**
 	 * @param courseResourceableId
@@ -263,7 +268,7 @@ public class QTI12ResultDetailsController extends BasicController {
 		Boolean passed = Boolean.valueOf(ac.isPassed());
 		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, Boolean.FALSE, new Long(ai.getAssessID()));
 		UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-		testNode.updateUserScoreEvaluation(sceval, userCourseEnv, assessedIdentity, true, Role.coach);
+		courseAssessmentService.updateUserScoreEvaluation(testNode, sceval, userCourseEnv, assessedIdentity, true, Role.coach);
 		
 		//cleanup
 		ai.cleanUp();

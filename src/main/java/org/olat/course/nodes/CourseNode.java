@@ -49,7 +49,6 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.TreeFilter;
@@ -58,8 +57,6 @@ import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 
 /**
@@ -448,117 +445,7 @@ public interface CourseNode extends INode, ShortName {
 	public void updateModuleConfigDefaults(boolean isNewNode);
 	
 	
-	// Assessment methods
-	
 	public AssessmentConfig getAssessmentConfig();
-
-	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity, boolean incrementAttempts, Role by);
-	
-	/**
-	 * @param userCourseEnvironment
-	 * @return The completion of its current task before being committed and official.
-	 */
-	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment);
-	
-	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
-			Double currentCompletion, AssessmentRunStatus status, Role doneBy);
-	
-	/**
-	 * @param userCourseEnvironment
-	 * @return the users attempts of this node
-	 */
-	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment);
-	
-	/**
-	 * Increments the users attempts for this node and this user.
-	 *
-	 * @param userCourseEnvironment
-	 * @param doneBy
-	 */
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role doneBy);
-	
-	/**
-	 * Updates the users attempts for this node and this user. 
-	 *
-	 * @param userAttempts
-	 * @param userCourseEnvironment
-	 * @param coachingIdentity
-	 * @param doneBy
-	 */
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity, Role doneBy);
-
-	/**
-	 * @param userCourseEnvironment
-	 * @return the user comment for this user for this node, given by coach
-	 */
-	public String getUserComment(UserCourseEnvironment userCourseEnvironment);
-	
-	/**
-	 * Updates the user comment for this node and this user. This comment is visible to the user.
-	 * 
-	 * @param userComment
-	 * @param userCourseEnvironment
-	 * @param coachingIdentity
-	 */
-	public void updatedUserComment(String userComment, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity);
-	
-	/**
-	 * @param userCourseEnvironment
-	 * @return The coach comment for this user for this node (not visible to user)
-	 */
-	public String getCoachComment(UserCourseEnvironment userCourseEnvironment);
-	
-	/**
-	 * Updates the coach comment for this node and this user. This comment is not visible to the user.
-	 * 
-	 * @param coachComment
-	 * @param userCourseEnvironment
-	 */
-	public void updateCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment);
-	
-	
-	/**
-	 * @param userCourseEnvironment The course environment of the assessed user.
-	 * @return The list of assessment document associated with this user and course element.
-	 */
-	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment);
-	
-	/**
-	 * Add a document for the assessed user, if allowed.
-	 * 
-	 * @param document The document
-	 * @param userCourseEnvironment The course environment of the assessed user
-	 * @param coachingIdentity The coach who upload the document
-	 */
-	public void addIndividualAssessmentDocument(File document, String filename,
-			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity);
-	
-	/**
-	 * Remove a document.
-	 * 
-	 * @param document The document to remove
-	 * @param userCourseEnvironment The course environment of the assessed user
-	 * @param coachingIdentity The coach who delete the document
-	 */
-	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity);
-	
-	/**
-	 * 
-	 * @param userCourseEnvironment The user course environment of the assessed identity
-	 * @param identity The identity which do the action
-	 * @param doneBy The role of the identity which do the action
-	 */
-	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role doneBy);
-	
-	/**
-	 * @param userCourseEnvironment
-	 * @return the users log of this node
-	 */
-	public String getUserLog(UserCourseEnvironment userCourseEnvironment);
 	
 	public enum Processing {
 		runstructure,

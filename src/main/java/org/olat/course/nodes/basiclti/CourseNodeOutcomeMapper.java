@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.imsglobal.basiclti.XMLMap;
 import org.imsglobal.pox.IMSPOXRequest;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.activity.IUserActivityLogger;
@@ -33,6 +34,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.logging.activity.UserActivityLoggerImpl;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -86,8 +88,8 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 		ICourse course = CourseFactory.loadCourse(courseOresId);
 		CourseNode node = course.getRunStructure().getNode(courseNodeId);
 		if(node instanceof BasicLTICourseNode) {
-			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
-			AssessmentConfig assessmentConfig = ltiNode.getAssessmentConfig();
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = node.getAssessmentConfig();
 			
 			Identity assessedId = getIdentity();
 			Float cutValue = getCutValue(assessmentConfig);
@@ -95,7 +97,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 			Float scaledScore = null;
 			Boolean passed = null;
 			if(score != null) {
-				float scale = getScalingFactor(ltiNode);
+				float scale = getScalingFactor(node);
 				scaledScore = score * scale;
 				if(cutValue != null) {
 					passed = scaledScore >= cutValue;
@@ -104,7 +106,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 			
 			ScoreEvaluation eval = new ScoreEvaluation(scaledScore, passed);
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
-			ltiNode.updateUserScoreEvaluation(eval, userCourseEnv, assessedId, false, Role.user);
+			courseAssessmentService.updateUserScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
 		}
 		
 		return super.doUpdateResult(score);
@@ -115,11 +117,11 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 		ICourse course = CourseFactory.loadCourse(courseOresId);
 		CourseNode node = course.getRunStructure().getNode(courseNodeId);
 		if(node instanceof BasicLTICourseNode) {
-			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			Identity assessedId = getIdentity();
 			ScoreEvaluation eval = new ScoreEvaluation(0.0f, false);
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
-			ltiNode.updateUserScoreEvaluation(eval, userCourseEnv, assessedId, false, Role.user);
+			courseAssessmentService.updateUserScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
 		}
 
 		return super.doDeleteResult();
@@ -159,9 +161,9 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 		return userCourseEnv;
 	}
 	
-	private float getScalingFactor(BasicLTICourseNode ltiNode) {
-		if(ltiNode.getAssessmentConfig().hasScore()) {
-			Float scale = ltiNode.getModuleConfiguration().getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
+	private float getScalingFactor(CourseNode node) {
+		if(node.getAssessmentConfig().hasScore()) {
+			Float scale = node.getModuleConfiguration().getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 			if(scale == null) {
 				return 1.0f;
 			}

@@ -48,12 +48,14 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -331,9 +333,9 @@ public class CourseAssessmentWebService {
 		if (node instanceof IQTESTCourseNode) {
 			importTestItems(course, nodeKey, requestIdentity, resultsVO);
 		} else {
-			AssessableCourseNode assessableNode = (AssessableCourseNode) node;
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Boolean.TRUE, Long.valueOf(nodeKey));//not directly pass this key
-			assessableNode.updateUserScoreEvaluation(scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
+			courseAssessmentService.updateUserScoreEvaluation(node, scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
 		}
 
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
@@ -424,7 +426,8 @@ public class CourseAssessmentWebService {
 				AssessableCourseNode acn = (AssessableCourseNode) courseNode;
 				// assessment nodes are assessable
 				boolean incrementUserAttempts = true;
-				acn.updateUserScoreEvaluation(sceval, userCourseEnv, identity, incrementUserAttempts, Role.coach);
+				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				courseAssessmentService.updateUserScoreEvaluation(acn, sceval, userCourseEnv, identity, incrementUserAttempts, Role.coach);
 			} else {
 				log.error("Result set already saved");
 			}

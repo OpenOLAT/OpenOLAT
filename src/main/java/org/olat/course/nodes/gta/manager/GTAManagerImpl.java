@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.persistence.LockModeType;
 import javax.persistence.Query;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.LazyInitializationException;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
@@ -46,7 +47,6 @@ import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -58,6 +58,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
@@ -129,6 +130,8 @@ public class GTAManagerImpl implements GTAManager {
 	private GTAIdentityMarkDAO gtaMarkDao;
 	@Autowired
 	private BGAreaManager areaManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentService assessmentService;
 	@Autowired
@@ -1702,7 +1705,7 @@ public class GTAManagerImpl implements GTAManager {
 
 			ICourse course = CourseFactory.loadCourse(courseRepoEntry);
 			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-			cNode.updateLastModifications(userCourseEnv, taskImpl.getIdentity(), by);
+			courseAssessmentService.updateLastModifications(cNode, userCourseEnv, taskImpl.getIdentity(), by);
 		}
 	}
 

@@ -51,12 +51,12 @@ public interface SelfAssessableCourseNode extends CourseNode {
 	 * @param userCourseEnvironment
 	 * @return The users attempts of this node
 	 */
-	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment);
+	public Integer getUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 	
 	/**
 	 * Increments the users attempts for this node and this user + 1. 
 	 * @param userCourseEnvironment
 	 */
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by);
+	public void incrementUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by);
 	
 }

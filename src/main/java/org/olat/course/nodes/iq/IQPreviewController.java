@@ -31,10 +31,12 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description: <br>
@@ -48,6 +50,9 @@ public class IQPreviewController extends BasicController {
 	private PreviewForm pf;
 	private final UserCourseEnvironment userCourseEnv;
 	private IQTESTCourseNode cn;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	/**
 	 * @param ureq
@@ -80,7 +85,8 @@ public class IQPreviewController extends BasicController {
 				boolean passed = score >= (cutValue == null ? 0 : cutValue.floatValue());
 				ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), new Boolean(passed));
 				boolean incrementUserAttempts = true;
-				cn.updateUserScoreEvaluation(sceval, userCourseEnv, ureq.getIdentity(), incrementUserAttempts, Role.user);				
+				courseAssessmentService.updateUserScoreEvaluation(cn, sceval, userCourseEnv, ureq.getIdentity(),
+						incrementUserAttempts, Role.user);
 				getWindowControl().setInfo(translate("preview.points.set"));
 			}
 		}

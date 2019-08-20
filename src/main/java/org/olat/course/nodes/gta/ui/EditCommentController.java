@@ -30,8 +30,10 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -45,6 +47,9 @@ public class EditCommentController extends FormBasicController {
 	private final AssessmentRow row;
 	private final GTACourseNode gtaNode;
 	private final OLATResourceable courseOres;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public EditCommentController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable courseOres, GTACourseNode gtaNode, AssessmentRow row) {
@@ -76,7 +81,7 @@ public class EditCommentController extends FormBasicController {
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
-		gtaNode.updatedUserComment(comment, userCourseEnv, getIdentity());
+		courseAssessmentService.updatedUserComment(gtaNode, comment, userCourseEnv, getIdentity());
 		
 		if(StringHelper.containsNonWhitespace(comment)) {
 			row.getCommentEditLink().setIconLeftCSS("o_icon o_icon_comments");

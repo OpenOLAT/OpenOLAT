@@ -45,6 +45,7 @@ import org.olat.core.util.coordinate.LockResult;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.OpenSubDetailsEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -84,6 +85,8 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 	
 	@Autowired
 	private BaseSecurity securityManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public AssessmentIdentityCourseNodeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -132,7 +135,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			listenTo(assessmentForm);
 			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
 			
-			String nodeLog = aCourseNode.getUserLog(assessedUserCourseEnvironment);
+			String nodeLog = courseAssessmentService.getUserLog(aCourseNode, assessedUserCourseEnvironment);
 			if(StringHelper.containsNonWhitespace(nodeLog)) {
 				identityAssessmentVC.contextPut("log", nodeLog);
 			}

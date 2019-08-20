@@ -52,6 +52,7 @@ import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -105,6 +106,8 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 	
 	@Autowired
 	private ScormMainManager scormMainManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	/**
 	 * Use this constructor to launch a CP via Repository reference key set in
@@ -178,7 +181,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		int maxAttempts = config.getIntegerSafe(ScormEditController.CONFIG_MAXATTEMPTS, 0);
 		boolean maxAttemptsReached = false;
 		if (maxAttempts > 0) {
-			if (scormNode.getUserAttempts(userCourseEnv) >= maxAttempts) {
+			if (courseAssessmentService.getUserAttempts(scormNode, userCourseEnv) >= maxAttempts) {
 				maxAttemptsReached = true;
 			}
 		}
@@ -246,10 +249,11 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			startPage.contextPut("resultsVisible", resultsVisible);
 			AssessmentConfig assessmentConfig = scormNode.getAssessmentConfig();
 			if(resultsVisible && assessmentConfig.hasComment()) {
-				StringBuilder comment = Formatter.stripTabsAndReturns(scormNode.getUserComment(userCourseEnv));
+				StringBuilder comment = Formatter
+						.stripTabsAndReturns(courseAssessmentService.getUserComment(scormNode, userCourseEnv));
 				startPage.contextPut("comment", StringHelper.xssScan(comment));
 			}
-			startPage.contextPut("attempts", scormNode.getUserAttempts(userCourseEnv));
+			startPage.contextPut("attempts", courseAssessmentService.getUserAttempts(scormNode, userCourseEnv));
 			
 			if(ureq == null) {// High score need one
 				ureq = new SyntheticUserRequest(getIdentity(), getLocale(), userSession);
@@ -313,7 +317,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			//increment user attempts only once!
 			if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
 					|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
-				scormNode.incrementUserAttempts(userCourseEnv, Role.user);
+				courseAssessmentService.incrementUserAttempts(scormNode, userCourseEnv, Role.user);
 				attemptsIncremented = true;
 			}
 			

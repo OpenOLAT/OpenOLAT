@@ -73,6 +73,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -156,6 +157,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 	private RepositoryService repositoryService;
 	@Autowired
 	private CoordinatorManager coordinatorManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
 	
@@ -846,7 +849,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 					scoreEval.getAssessmentStatus(), visibility, scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-			assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+			courseAssessmentService.updateUserScoreEvaluation(assessableCourseNode, doneEval, assessedUserCourseEnv,
+					getIdentity(), false, Role.coach);
 		}
 		loadModel(ureq);
 	}
@@ -885,7 +889,8 @@ public class IdentityListCourseNodeController extends FormBasicController
 		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 				AssessmentEntryStatus.done, null, scoreEval.getFullyAssessed(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-		assessableCourseNode.updateUserScoreEvaluation(doneEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+		courseAssessmentService.updateUserScoreEvaluation(assessableCourseNode, doneEval, assessedUserCourseEnv,
+				getIdentity(), false, Role.coach);
 		
 	}
 	

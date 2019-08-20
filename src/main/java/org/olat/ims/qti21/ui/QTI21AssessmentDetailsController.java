@@ -67,6 +67,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
@@ -156,6 +157,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private RepositoryManager repositoryManager;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	/**
 	 * The constructor used by the assessment tool of the course.
@@ -441,7 +444,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
 				finalStatus, null, scoreEval.getFullyAssessed(), 
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
-		courseNode.updateUserScoreEvaluation(manualScoreEval, assessedUserCourseEnv, getIdentity(), false, Role.coach);
+		courseAssessmentService.updateUserScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
+				getIdentity(), false, Role.coach);
 	}
 	
 	private void doUpdateEntry(AssessmentTestSession session) {

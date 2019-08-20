@@ -71,11 +71,11 @@ import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
@@ -147,6 +147,9 @@ public class IQRunController extends BasicController implements GenericEventList
 	private AssessmentNotificationsHandler assessmentNotificationsHandler;
 	@Autowired
 	private CourseModule courseModule;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+
 	
 	/**
 	 * Constructor for a test run controller
@@ -535,8 +538,7 @@ public class IQRunController extends BasicController implements GenericEventList
 			}
 			
 			ScoreEvaluation sceval = new ScoreEvaluation(ac.getScore(), ac.isPassed(), assessmentStatus, userVisibility, fullyAssed, null, null, ai.getAssessID());
-			AssessableCourseNode acn = (AssessableCourseNode)courseNode; // assessment nodes are assessable		
-			acn.updateUserScoreEvaluation(sceval, userCourseEnv, getIdentity(), true, Role.user);
+			courseAssessmentService.updateUserScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(), true, Role.user);
 				
 			// Mark publisher for notifications
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
@@ -671,7 +673,7 @@ public class IQRunController extends BasicController implements GenericEventList
 	    			}
 
 	    			if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-	    				List<File> docs = acn.getIndividualAssessmentDocuments(userCourseEnv);
+						List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(acn, userCourseEnv);
 						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
 						myContent.contextPut("docsMapperUri", mapperUri);
 						myContent.contextPut("docs", docs);

@@ -54,6 +54,7 @@ import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -180,6 +181,9 @@ public class PortfolioServiceImpl implements PortfolioService {
 	private AssessmentSectionDAO assessmentSectionDao;
 	@Autowired
 	private AssessmentService assessmentService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -1298,7 +1302,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
 				for(Identity assessedIdentity:assessedIdentities) {
 					UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-					pfNode.updateLastModifications(userCourseEnv, doer, by);
+					courseAssessmentService.updateLastModifications(pfNode, userCourseEnv, doer, by);
 				}
 			}
 		} else {
@@ -1408,10 +1412,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 			ICourse course = CourseFactory.loadCourse(entry);
 			CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
 			if(courseNode instanceof PortfolioCourseNode) {
-				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
 				ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), totalPassed, binderStatus, true, true, null, null, binder.getKey());
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				pfNode.updateUserScoreEvaluation(scoreEval, userCourseEnv, coachingIdentity, false, Role.coach);
+				courseAssessmentService.updateUserScoreEvaluation(courseNode, scoreEval, userCourseEnv,
+						coachingIdentity, false, Role.coach);
 			}
 		} else {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
@@ -1467,7 +1471,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 				AssessmentEvaluation eval = pfNode.getUserScoreEvaluation(userCourseEnv);
 				
 				ScoreEvaluation scoreEval= new ScoreEvaluation(eval.getScore(), eval.getPassed(), status, true, fullyAssessed, null, null, binder.getKey());
-				pfNode.updateUserScoreEvaluation(scoreEval, userCourseEnv, coachingIdentity, false, Role.coach);
+				courseAssessmentService.updateUserScoreEvaluation(courseNode, scoreEval, userCourseEnv,
+						coachingIdentity, false, Role.coach);
 			}
 		} else {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();

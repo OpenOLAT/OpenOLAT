@@ -47,10 +47,8 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.GenericNode;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.NonAssessmentConfig;
-import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
@@ -63,7 +61,6 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.TreeFilter;
@@ -72,8 +69,6 @@ import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.course.statistic.StatisticType;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * Description:<br>
@@ -685,125 +680,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public AssessmentConfig getAssessmentConfig() {
 		return NonAssessmentConfig.create();
-	}
-	
-	@Override
-	public void updateUserScoreEvaluation(ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity, boolean incrementAttempts, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.saveScoreEvaluation(this, coachingIdentity, assessedIdentity, new ScoreEvaluation(scoreEvaluation),
-				userCourseEnvironment, incrementAttempts, by);
-	}
-
-	@Override
-	public Double getUserCurrentRunCompletion(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getNodeCurrentRunCompletion(this, assessedIdentity);
-	}
-	
-	@Override
-	public void updateCurrentCompletion(UserCourseEnvironment userCourseEnvironment, Identity identity,
-			Double currentCompletion, AssessmentRunStatus runStatus, Role doneBy) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.updateCurrentCompletion(this, assessedIdentity, userCourseEnvironment, currentCompletion, runStatus, doneBy);
-	}
-	
-	@Override
-	public Integer getUserAttempts(UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getNodeAttempts(this, assessedIdentity);
-	}
-	
-	@Override
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.incrementNodeAttempts(this, assessedIdentity, userCourseEnvironment, by);
-	}
-	
-	@Override
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
-		if (userAttempts != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeAttempts(this, coachingIdentity, assessedIdentity, userAttempts, by);
-		}
-	}
-
-	@Override
-	public String getUserComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getNodeComment(this, assessedIdentity);
-	}
-	
-	@Override
-	public void updatedUserComment(String userComment, UserCourseEnvironment userCourseEnvironment,
-			Identity coachingIdentity) {
-		if (userComment != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeComment(this, coachingIdentity, assessedIdentity, userComment);
-		}
-	}
-	
-	@Override
-	public String getCoachComment(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getNodeCoachComment(this, assessedIdentity);
-	}
-	
-	@Override
-	public void updateCoachComment(String coachComment, UserCourseEnvironment userCourseEnvironment) {
-		if (coachComment != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.saveNodeCoachComment(this, assessedIdentity, coachComment);
-		}
-	}
-	
-	@Override
-	public List<File> getIndividualAssessmentDocuments(UserCourseEnvironment userCourseEnvironment) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getIndividualAssessmentDocuments(this, assessedIdentity);
-	}
-	
-	@Override
-	public void addIndividualAssessmentDocument(File document, String filename, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if(document != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.addIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document, filename);
-		}
-	}
-
-	@Override
-	public void removeIndividualAssessmentDocument(File document, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity) {
-		if(document != null) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.removeIndividualAssessmentDocument(this, coachingIdentity, assessedIdentity, document);
-		}
-	}
-	
-	@Override
-	public void updateLastModifications(UserCourseEnvironment userCourseEnvironment, Identity identity, Role by) {
-		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.updateLastModifications(this, assessedIdentity, userCourseEnvironment, by);
-	}
-	
-	@Override
-	public String getUserLog(UserCourseEnvironment userCourseEnvironment) {
-		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
-		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		return am.getUserNodeLog(this, assessedIdentity);
 	}
 
 }

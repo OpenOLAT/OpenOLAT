@@ -367,9 +367,9 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
+	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(CourseNode, org.olat.course.run.userview.UserCourseEnvironment)
 	 */
-	public Integer getUserAttempts(UserCourseEnvironment userCourseEnvironment) {
+	public Integer getUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		Integer userAttemptsValue = am.getNodeAttempts(this, mySelf);
@@ -390,7 +390,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.core.id.Identity)
 	 */
-	public void updateUserAttempts(Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
+	public void updateUserAttempts(CourseNode courseNode, Integer userAttempts, UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
 		if (userAttempts != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -401,7 +401,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	/**
 	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
 	 */
-	public void incrementUserAttempts(UserCourseEnvironment userCourseEnvironment, Role by) {
+	public void incrementUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.incrementNodeAttempts(this, mySelf, userCourseEnvironment, by);

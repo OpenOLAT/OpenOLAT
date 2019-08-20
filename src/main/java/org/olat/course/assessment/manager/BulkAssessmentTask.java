@@ -72,6 +72,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.BulkAssessmentOverviewController;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
@@ -308,6 +309,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 	private void doProcess(List<BulkAssessmentFeedback> feedbacks) {
 		final DB dbInstance = DBFactory.getInstance();
 		final BaseSecurity securityManager = CoreSpringFactory.getImpl(BaseSecurity.class);
+		final CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		final Identity coachIdentity = securityManager.loadIdentityByKey(coachedIdentity);
 		final ICourse course = CourseFactory.loadCourse(courseRes);
 		final AssessableCourseNode courseNode = getCourseNode();
@@ -358,8 +360,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			//update comment, empty string will reset comment
 			String userComment = row.getComment();
 			if(hasUserComment && userComment != null){
-				// Update userComment in db
-				courseNode.updatedUserComment(userComment, uce, coachIdentity);
+				courseAssessmentService.updatedUserComment(courseNode, userComment, uce, coachIdentity);
 				//LD: why do we have to update the efficiency statement?
 				//EfficiencyStatementManager esm =	EfficiencyStatementManager.getInstance();
 				//esm.updateUserEfficiencyStatement(uce);
@@ -389,7 +390,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 					}
 					
 					// Update score,passed properties in db, and the user's efficiency statement
-					courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, false, Role.auto);
+					courseAssessmentService.updateUserScoreEvaluation(courseNode, se, uce, coachIdentity, false, Role.auto);
 					statusVisibilitySet = true;
 				}
 			}
@@ -401,7 +402,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 				ScoreEvaluation se = new ScoreEvaluation(oldScore, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
-				courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, incrementAttempts, Role.auto);
+				courseAssessmentService.updateUserScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);
 				statusVisibilitySet = true;
 			}
 			
@@ -436,7 +437,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 						seOld.getCurrentRunCompletion(), seOld.getCurrentRunStatus(), seOld.getAssessmentID());
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
-				courseNode.updateUserScoreEvaluation(se, uce, coachIdentity, incrementAttempts, Role.auto);
+				courseAssessmentService.updateUserScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);
 			}
 			
 			if(count++ % 5 == 0) {

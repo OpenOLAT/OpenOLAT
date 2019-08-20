@@ -50,6 +50,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -102,6 +103,8 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	private UserManager userManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public GTACoachRevisionAndCorrectionsController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv,
 			Task assignedTask, GTACourseNode gtaNode, UserCourseEnvironment coachCourseEnv, BusinessGroup assessedGroup,
@@ -385,10 +388,10 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
 			for(Identity identity:identities) {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(userCourseEnv, Role.coach);
+				courseAssessmentService.incrementUserAttempts(gtaNode, userCourseEnv, Role.coach);
 			}
 		} else {
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv, Role.coach);
+			courseAssessmentService.incrementUserAttempts(gtaNode, assessedUserCourseEnv, Role.coach);
 		}
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUBMIT_REVISION,

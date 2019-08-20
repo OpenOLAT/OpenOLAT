@@ -46,6 +46,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -112,6 +113,8 @@ public abstract class GTAAbstractController extends BasicController implements G
 	protected UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	protected CourseModule courseModule;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public GTAAbstractController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, CourseEnvironment courseEnv, boolean withTitle, boolean withGrading, boolean withSubscription) {
@@ -485,11 +488,11 @@ public abstract class GTAAbstractController extends BasicController implements G
 			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseGroupManager().getCourseEntry());
 			for(Identity identity:identities) {
 				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(uce, by);
+				courseAssessmentService.incrementUserAttempts(gtaNode, uce, by);
 			}
 		} else {
 			UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv, by);
+			courseAssessmentService.incrementUserAttempts(gtaNode, assessedUserCourseEnv, by);
 		}
 	}
 	

@@ -53,6 +53,7 @@ import org.olat.core.util.Encoder;
 import org.olat.core.util.SortedProperties;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.highscore.ui.HighScoreRunController;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -106,6 +107,8 @@ public class LTIRunController extends BasicController {
 	private LTIModule ltiModule;
 	@Autowired
 	private LTIManager ltiManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public LTIRunController(WindowControl wControl, ModuleConfiguration config, UserRequest ureq, BasicLTICourseNode ltCourseNode,
 			CourseEnvironment courseEnv) {
@@ -336,7 +339,7 @@ public class LTIRunController extends BasicController {
 		if(assessable != null && assessable.booleanValue()) {
 			startPage.contextPut("isassessable", assessable);
 	    
-			Integer attempts = courseNode.getUserAttempts(userCourseEnv);
+			Integer attempts = courseAssessmentService.getUserAttempts(courseNode, userCourseEnv);
 			startPage.contextPut("attempts", attempts);
 	    
 			ScoreEvaluation eval = courseNode.getUserScoreEvaluation(userCourseEnv);
@@ -363,7 +366,7 @@ public class LTIRunController extends BasicController {
 			Boolean skipLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
 			if(!ltiModule.isForceLaunchPage() && skipLaunchPage != null && skipLaunchPage.booleanValue()) {
 				// start the content immediately
-				courseNode.incrementUserAttempts(userCourseEnv, Role.user);
+				courseAssessmentService.incrementUserAttempts(courseNode, userCourseEnv, Role.user);
 				openBasicLTIContent(ureq);
 			} else {
 				// or show the start button
@@ -403,7 +406,7 @@ public class LTIRunController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == startButton) {
-			courseNode.incrementUserAttempts(userCourseEnv, Role.user);
+			courseAssessmentService.incrementUserAttempts(courseNode, userCourseEnv, Role.user);
 			openBasicLTIContent(ureq);
 		} else if (source == acceptLink) {
 			storeDataExchangeAcceptance();

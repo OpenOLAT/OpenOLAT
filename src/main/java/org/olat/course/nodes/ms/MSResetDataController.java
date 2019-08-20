@@ -33,6 +33,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.course.archiver.ScoreAccountingHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -67,6 +68,8 @@ public class MSResetDataController extends FormBasicController {
 	private MSService msService;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public MSResetDataController(UserRequest ureq, WindowControl wControl,
 			CourseEnvironment courseEnv, AssessmentToolOptions asOptions, MSCourseNode courseNode) {
@@ -122,7 +125,8 @@ public class MSResetDataController extends FormBasicController {
 		for(Identity identity:identities) {
 			IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-			courseNode.updateUserScoreEvaluation(scoreEval, uce, getIdentity(), false, Role.coach);
+			courseAssessmentService.updateUserScoreEvaluation(courseNode, scoreEval, uce, getIdentity(), false,
+					Role.coach);
 			AuditEnv auditEnv = AuditEnv.of(auditManager, courseNode, identity, getIdentity(), Role.coach);
 			msService.deleteSession(courseEntry, courseNode.getIdent(), identity, auditEnv);
 		}
