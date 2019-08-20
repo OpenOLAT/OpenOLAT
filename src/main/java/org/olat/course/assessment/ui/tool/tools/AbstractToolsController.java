@@ -157,7 +157,7 @@ public abstract class AbstractToolsController extends BasicController {
 	}
 	
 	protected void initResetAttempts() {
-		if(courseNode.getAssessmentConfig().hasAttempts()) {
+		if(courseAssessmentService.getAssessmentConfig(courseNode).hasAttempts()) {
 			resetAttemptsButton = addLink("tool.reset.attempts", "reset.attempts", "o_icon o_icon-fw o_icon_reset");
 		}
 	}

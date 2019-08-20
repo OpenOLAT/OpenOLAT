@@ -56,6 +56,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -120,6 +121,8 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public GTACoachedGroupGradingController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment coachCourseEnv, CourseEnvironment courseEnv, GTACourseNode gtaNode,
@@ -134,7 +137,7 @@ public class GTACoachedGroupGradingController extends FormBasicController {
 		this.coachCourseEnv = coachCourseEnv;
 		assessmentManager = courseEnv.getAssessmentManager();
 		
-		AssessmentConfig assessmentConfig = gtaNode.getAssessmentConfig();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(gtaNode);
 		withScore = assessmentConfig.hasScore();
 		withPassed = assessmentConfig.hasPassed();
 		withComment = assessmentConfig.hasComment();

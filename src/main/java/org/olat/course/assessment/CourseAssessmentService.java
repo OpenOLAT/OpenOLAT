@@ -23,6 +23,8 @@ import java.io.File;
 import java.util.List;
 
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -37,6 +39,10 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
  *
  */
 public interface CourseAssessmentService {
+	
+	public AssessmentHandler getAssessmentHandler(CourseNode courseNode);
+	
+	public AssessmentConfig getAssessmentConfig(CourseNode node);
 
 	public void updateUserScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by);

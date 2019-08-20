@@ -593,7 +593,8 @@ class GTANotifications {
 			if(resultsVisible) {
 				String score = null;
 				String status = null;
-				AssessmentConfig assessmentConfig = gtaNode.getAssessmentConfig();
+				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(gtaNode);
 				if(assessmentConfig.hasScore() && assessment.getScore() != null) {
 					score = AssessmentHelper.getRoundedScore(assessment.getScore());
 				}

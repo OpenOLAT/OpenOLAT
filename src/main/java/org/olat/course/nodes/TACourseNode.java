@@ -116,21 +116,19 @@ import org.olat.resource.OLATResource;
  */
 
 public class TACourseNode extends GenericCourseNode implements PersistentAssessableCourseNode {
+	
 	private static final long serialVersionUID = -7266553843441305310L;
 
 	private static final String PACKAGE_TA = Util.getPackageName(TACourseNodeRunController.class);
-
 	private static final String PACKAGE = Util.getPackageName(TACourseNode.class);
 
-	private static final String TYPE = "ta";
+	public static final String TYPE = "ta";
 	
 	// NLS support:
-	
 	private static final String NLS_GUESTNOACCESS_TITLE = "guestnoaccess.title";
 	private static final String NLS_GUESTNOACCESS_MESSAGE = "guestnoaccess.message";
 	private static final String NLS_ERROR_MISSINGSCORECONFIG_SHORT = "error.missingscoreconfig.short";
 	private static final String NLS_WARN_NODEDELETE = "warn.nodedelete";
-	
 	
 	private static final int CURRENT_CONFIG_VERSION = 2;
 
@@ -453,15 +451,10 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		conditionSolution.setConditionId("solution");
 		this.conditionSolution = conditionSolution;
 	}
-	
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return new TAAssessmentConfig(getModuleConfiguration());
-	}
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		AssessmentConfig assessmentConfig = getAssessmentConfig();
+		AssessmentConfig assessmentConfig = new TAAssessmentConfig(getModuleConfiguration());
 		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}

@@ -211,7 +211,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 			layoutCont.contextPut("comment", null);
 			layoutCont.contextPut("docs", null);
 		} else {
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			boolean resultsVisible = scoreEval.getUserVisibility() == null || scoreEval.getUserVisibility().booleanValue();
 			layoutCont.contextPut("resultsVisible", resultsVisible);
 			layoutCont.contextPut("score", AssessmentHelper.getRoundedScore(scoreEval.getScore()));
@@ -342,7 +342,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 		
 		exposeUserDataToVC(ureq, flc);
-		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		return assessmentConfig.hasScore() || assessmentConfig.hasPassed();
 	}
 	

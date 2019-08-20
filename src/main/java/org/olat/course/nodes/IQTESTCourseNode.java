@@ -56,7 +56,6 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -421,11 +420,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		}
 		return null;
 	}
-	
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return new IQTESTAssessmentConfig(this);
-	}
 
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
@@ -682,7 +676,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 
 	@Override
 	public boolean hasAttemptsConfigured() {
-		return getAssessmentConfig().hasAttempts();
+		return new IQTESTAssessmentConfig(this).hasAttempts();
 	}
 
 }

@@ -43,13 +43,11 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.nodes.basiclti.LTIAssessmentConfig;
 import org.olat.course.nodes.basiclti.LTIConfigForm;
 import org.olat.course.nodes.basiclti.LTIEditController;
 import org.olat.course.nodes.basiclti.LTIRunController;
@@ -76,7 +74,7 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 
 	private static final long serialVersionUID = 2210572148308757127L;
 	private static final String translatorPackage = Util.getPackageName(LTIEditController.class);
-	private static final String TYPE = "lti";
+	public static final String TYPE = "lti";
 	
 	public static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_KEY_AUTHORROLE = "authorRole";
@@ -274,11 +272,6 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 			}
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
-	}
-	
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return new LTIAssessmentConfig(getModuleConfiguration());
 	}
 
 	@Override

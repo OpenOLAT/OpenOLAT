@@ -99,7 +99,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	private static final String PACKAGE_CL = Util.getPackageName(CheckListEditController.class);
 	private static final long serialVersionUID = -7460670977531082040L;
 	
-	private static final String TYPE = "checklist";
+	public static final String TYPE = "checklist";
 	private static final String ICON_CSS_CLASS = "o_cl_icon";
 	
 	public static final String CONFIG_KEY_PASSED_SUM_CHECKBOX = "passedSumCheckbox";
@@ -167,7 +167,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		AssessmentConfig assessmentConfig = getAssessmentConfig();
+		AssessmentConfig assessmentConfig = new CheckListAssessmentConfig(getModuleConfiguration());
 		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
@@ -269,11 +269,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
-	
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return new CheckListAssessmentConfig(getModuleConfiguration());
-	}
 
 	@Override
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl,
@@ -361,7 +356,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		new CheckListExcelExport(this, course, locale).exportAll(filename, exportStream);
 		
 		//assessment documents
-		if(getAssessmentConfig().hasIndividualAsssessmentDocuments()) {
+		AssessmentConfig assessmentConfig = new CheckListAssessmentConfig(getModuleConfiguration());
+		if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
 			List<AssessmentEntry> assessmentEntries = course.getCourseEnvironment()
 					.getAssessmentManager().getAssessmentEntries(this);
 			if(assessmentEntries != null && !assessmentEntries.isEmpty()) {

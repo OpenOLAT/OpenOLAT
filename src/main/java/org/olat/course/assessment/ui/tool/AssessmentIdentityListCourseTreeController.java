@@ -44,6 +44,8 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -54,6 +56,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -73,6 +76,9 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 	private final BusinessGroup businessGroup;
 	private final UserCourseEnvironment coachCourseEnv;
 	private AssessmentToolSecurityCallback assessmentCallback;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public AssessmentIdentityListCourseTreeController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, BusinessGroup businessGroup, UserCourseEnvironment coachCourseEnv,
@@ -159,7 +165,8 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 		if(courseNode instanceof AssessableCourseNode) {
-			if(((AssessableCourseNode)courseNode).getAssessmentConfig().isAssessedBusinessGroups() && courseNode instanceof GTACourseNode) {
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			if(assessmentConfig.isAssessedBusinessGroups() && courseNode instanceof GTACourseNode) {
 				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
 				
 				List<BusinessGroup> coachedGroups;

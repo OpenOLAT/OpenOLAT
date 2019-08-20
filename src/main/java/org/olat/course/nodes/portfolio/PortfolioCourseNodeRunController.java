@@ -313,7 +313,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 			scoreAccounting.evaluateAll();			
 			ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
 			
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			
 			boolean resultsVisible = scoreEval.getUserVisible() == null || scoreEval.getUserVisible().booleanValue();
 			assessmentInfosContainer.contextPut("resultsVisible", resultsVisible);

@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -81,7 +82,8 @@ public class IQPreviewController extends BasicController {
 		if (source == pf) {
 			if (event == Event.DONE_EVENT) {
 				int score = pf.getPointValue();
-				Float cutValue = cn.getAssessmentConfig().getCutValue();
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cn);
+				Float cutValue = assessmentConfig.getCutValue();
 				boolean passed = score >= (cutValue == null ? 0 : cutValue.floatValue());
 				ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), new Boolean(passed));
 				boolean incrementUserAttempts = true;

@@ -196,7 +196,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	}
 	
 	private void exposeConfigToVC(UserRequest ureq) {
-		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
 		myContent.contextPut("hasScoreField", assessmentConfig.hasScore());
 		if (assessmentConfig.hasScore()) {
@@ -225,7 +225,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 			String rawComment = assessmentEntry.getComment();
 			hasPassed = assessmentEntry.getPassed() != null;
 			hasScore = assessmentEntry.getScore() != null;
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			hasComment = assessmentConfig.hasComment() && StringHelper.containsNonWhitespace(rawComment);
 		
 			boolean resultsVisible = overrideUserResultsVisiblity

@@ -106,7 +106,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	private static final String PACKAGE_MS = Util.getPackageName(MSCourseNodeRunController.class);
 
 	public static final int CURRENT_VERSION = 2;
-	private static final String TYPE = "ms";
+	public static final String TYPE = "ms";
 	/** configuration: score can be set */
 	public static final String CONFIG_KEY_HAS_SCORE_FIELD = "hasScoreField";
 	/** configuration: score min value */
@@ -281,7 +281,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	}
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		AssessmentConfig assessmentConfig = getAssessmentConfig();
+		updateModuleConfigDefaults(false); //TODO uh remove
+		AssessmentConfig assessmentConfig =  new MSAssessmentConfig(getModuleConfiguration());
 		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore() || assessmentConfig.hasComment()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}
@@ -324,12 +325,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		MSService msService = CoreSpringFactory.getImpl(MSService.class);
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		msService.deleteSessions(ores, getIdent());
-	}
-
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		updateModuleConfigDefaults(false);
-		return new MSAssessmentConfig(getModuleConfiguration());
 	}
 	
 	private MinMax getMinMax() {

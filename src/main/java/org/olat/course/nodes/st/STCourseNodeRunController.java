@@ -46,6 +46,7 @@ import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
@@ -60,6 +61,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<br>
@@ -81,6 +83,9 @@ public class STCourseNodeRunController extends BasicController {
 	private final VelocityContainer myContent;
 	
 	private final UserCourseEnvironment userCourseEnv;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	/**
 	 * @param ureq
@@ -98,7 +103,7 @@ public class STCourseNodeRunController extends BasicController {
 		myContent = createVelocityContainer("run");
 		myContent.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
 		
-		AssessmentConfig assessmentConfig = stCourseNode.getAssessmentConfig();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(stCourseNode);
 		if (se != null && (assessmentConfig.hasScore() || assessmentConfig.hasPassed())) {
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, wControl, userCourseEnv, stCourseNode);
 			if (highScoreCtr.isViewHighscore()) {

@@ -178,7 +178,7 @@ public class ScoreAccountingHelper {
 			headerRow1.addCell(header1ColCnt++, acNode.getShortTitle());
 			header1ColCnt += acNode.getType().equals("ita") ? 1 : 0;
 			
-			AssessmentConfig assessmentConfig = acNode.getAssessmentConfig();
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acNode);
 			boolean scoreOk = assessmentConfig.hasScore();
 			boolean passedOk = assessmentConfig.hasPassed();
 			boolean attemptsOk = assessmentConfig.hasAttempts();
@@ -201,7 +201,7 @@ public class ScoreAccountingHelper {
 				headerRow2.addCell(header2ColCnt++, submitted);
 			}
 			
-			AssessmentConfig assessmentConfig = acNode.getAssessmentConfig();
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acNode);
 			boolean scoreOk = assessmentConfig.hasScore();
 			boolean passedOk = assessmentConfig.hasPassed();
 			boolean attemptsOk = assessmentConfig.hasAttempts();
@@ -264,7 +264,7 @@ public class ScoreAccountingHelper {
 			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 
 			for (AssessableCourseNode acnode:myNodes) {
-				AssessmentConfig assessmentConfig = acnode.getAssessmentConfig();
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acnode);
 				boolean scoreOk = assessmentConfig.hasScore();
 				boolean passedOk = assessmentConfig.hasPassed();
 				boolean attemptsOk = assessmentConfig.hasAttempts();
@@ -354,7 +354,7 @@ public class ScoreAccountingHelper {
 		//min. max. informations
 		boolean first = true;
 		for (AssessableCourseNode acnode:myNodes) {
-			AssessmentConfig assessmentConfig = acnode.getAssessmentConfig();
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acnode);
 			if (!assessmentConfig.hasScore()) {
 				// only show min/max/cut legend when score configured
 				continue;

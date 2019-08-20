@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
@@ -34,6 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -67,7 +69,8 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 		this.courseNode = courseNode;
 	
 		if (courseNode != null) {
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			if(!(courseNode instanceof STCourseNode) && assessmentConfig.hasScore()) {
 				maxScore = assessmentConfig.getMaxScore();
 				minScore = assessmentConfig.getMinScore();

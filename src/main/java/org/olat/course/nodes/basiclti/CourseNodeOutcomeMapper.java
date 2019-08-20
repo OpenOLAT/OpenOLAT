@@ -89,7 +89,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 		CourseNode node = course.getRunStructure().getNode(courseNodeId);
 		if(node instanceof BasicLTICourseNode) {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = node.getAssessmentConfig();
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
 			
 			Identity assessedId = getIdentity();
 			Float cutValue = getCutValue(assessmentConfig);
@@ -162,7 +162,9 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 	}
 	
 	private float getScalingFactor(CourseNode node) {
-		if(node.getAssessmentConfig().hasScore()) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
+		if(assessmentConfig.hasScore()) {
 			Float scale = node.getModuleConfiguration().getFloatEntry(BasicLTICourseNode.CONFIG_KEY_SCALEVALUE);
 			if(scale == null) {
 				return 1.0f;

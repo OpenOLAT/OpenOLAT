@@ -745,11 +745,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		NotificationsManager.getInstance().delete(subscriptionContext);
 	}
 	
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return new GTAAssessmentConfig(getModuleConfiguration());
-	}
-	
 	public boolean isOptional() {
 		return getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_OPTIONAL);
 	}
@@ -853,7 +848,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		AssessmentConfig assessmentConfig = getAssessmentConfig();
+		AssessmentConfig assessmentConfig = new GTAAssessmentConfig(getModuleConfiguration());
 		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
 			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
 		}

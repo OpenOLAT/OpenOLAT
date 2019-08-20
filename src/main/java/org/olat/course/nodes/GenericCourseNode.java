@@ -47,8 +47,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.nodes.GenericNode;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
@@ -673,13 +671,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		//
-	}
-	
-	// Assessment stuff
-	
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return NonAssessmentConfig.create();
 	}
 
 }

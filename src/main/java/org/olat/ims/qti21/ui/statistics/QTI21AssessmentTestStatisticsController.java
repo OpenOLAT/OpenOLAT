@@ -53,6 +53,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.CodeHelper;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.ims.qti.statistics.QTIType;
@@ -85,6 +86,8 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	
 	@Autowired
 	private QTI21StatisticsManager qtiStatisticsManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public QTI21AssessmentTestStatisticsController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			QTI21StatisticResourceResult resourceResult, boolean withFilter, boolean printMode) {
@@ -154,7 +157,9 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private Float getMaxScoreSetting(QTICourseNode testNode) {
 		Float maxScoreSetting = null;
 		if(QTIType.qtiworks.equals(type)) {
-			maxScoreSetting = testNode instanceof IQTESTCourseNode ? ((IQTESTCourseNode)testNode).getAssessmentConfig().getMaxScore() : null;
+			maxScoreSetting = testNode instanceof IQTESTCourseNode
+					? courseAssessmentService.getAssessmentConfig(courseNode).getMaxScore()
+					: null;
 		}
 		return maxScoreSetting;
 	}
@@ -162,7 +167,9 @@ public class QTI21AssessmentTestStatisticsController extends BasicController imp
 	private Float getCutValueSetting(QTICourseNode testNode) {
 		Float cutValueSetting = null;
 		if(QTIType.qtiworks.equals(type)) {
-			cutValueSetting = testNode instanceof IQTESTCourseNode ? ((IQTESTCourseNode)testNode).getAssessmentConfig().getCutValue() : null;
+			cutValueSetting = testNode instanceof IQTESTCourseNode
+					? courseAssessmentService.getAssessmentConfig(courseNode).getCutValue()
+					: null;
 		}
 		return cutValueSetting;
 	}

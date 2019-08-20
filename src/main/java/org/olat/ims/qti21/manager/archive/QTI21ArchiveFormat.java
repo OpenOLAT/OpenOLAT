@@ -55,6 +55,7 @@ import org.olat.core.util.openxml.workbookstyle.CellStyle;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ExportFormat;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -324,8 +325,8 @@ public class QTI21ArchiveFormat {
 
 		// course node points and passed
 		if(courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			if(assessmentConfig.hasScore()) {
 				header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
 			}
@@ -403,8 +404,8 @@ public class QTI21ArchiveFormat {
 
 		// course node points and passed
 		if(courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			if(assessmentConfig.hasScore()) {
 				header2Row.addCell(col++, translator.translate("archive.table.header.node.points"), headerStyle);
 			}
@@ -537,8 +538,8 @@ public class QTI21ArchiveFormat {
 		
 		// course node points and passed
 		if(courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode assessableCourseNode = (AssessableCourseNode)courseNode;
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			if(assessmentConfig.hasScore()) {
 				if(entry.getScore() != null) {
 					dataRow.addCell(col++, entry.getScore(), null);

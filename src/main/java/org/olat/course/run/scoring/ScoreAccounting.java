@@ -40,6 +40,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.groupsandrights.CourseGroupManager;
@@ -200,8 +201,9 @@ public class ScoreAccounting {
 		 * @return
 		 */
 		private AssessmentEvaluation calculateScoreEvaluation(AssessmentEntry entry, CalculatedAssessableCourseNode cNode) {
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cNode);
 			AssessmentEvaluation se;
-			AssessmentConfig assessmentConfig = cNode.getAssessmentConfig();
 			if(assessmentConfig.hasScore() || assessmentConfig.hasPassed()) {
 				ScoreCalculator scoreCalculator = cNode.getScoreCalculator();
 				String scoreExpressionStr = scoreCalculator.getScoreExpression();

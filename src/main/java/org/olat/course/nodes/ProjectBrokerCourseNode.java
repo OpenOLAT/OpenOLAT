@@ -80,7 +80,6 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
@@ -90,7 +89,6 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.ms.MSEditFormController;
-import org.olat.course.nodes.projectbroker.ProjectBrokerAssessmentConfig;
 import org.olat.course.nodes.projectbroker.ProjectBrokerControllerFactory;
 import org.olat.course.nodes.projectbroker.ProjectBrokerCourseEditorController;
 import org.olat.course.nodes.projectbroker.ProjectBrokerIdentityListCourseNodeController;
@@ -135,7 +133,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 	private transient static final String PACKAGE_PROJECTBROKER = Util.getPackageName(ProjectListController.class);
 	private transient static final String PACKAGE = Util.getPackageName(ProjectBrokerCourseNode.class);
 
-	private transient static final String TYPE = "projectbroker";
+	public transient static final String TYPE = "projectbroker";
 	
 	// NLS support:
 	
@@ -471,11 +469,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		}
 		condition.setConditionId("projectbroker");
 		this.conditionProjectBroker = condition;
-	}
-	
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return new ProjectBrokerAssessmentConfig(getModuleConfiguration());
 	}
 
 	@Override

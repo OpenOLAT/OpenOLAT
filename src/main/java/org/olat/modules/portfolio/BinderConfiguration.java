@@ -20,10 +20,12 @@
 package org.olat.modules.portfolio;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
@@ -143,7 +145,8 @@ public class BinderConfiguration {
 				displayname = course.getCourseTitle();
 				CourseNode courseNode = course.getRunStructure().getNode(binder.getSubIdent());
 				if(courseNode instanceof PortfolioCourseNode) {
-					AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+					CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+					AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 					withScore = assessmentConfig.hasScore();
 					if(withScore) {
 						maxScore = assessmentConfig.getMaxScore();

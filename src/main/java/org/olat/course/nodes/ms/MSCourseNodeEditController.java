@@ -39,6 +39,8 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
@@ -47,6 +49,7 @@ import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *  Initial Date:  Jun 16, 2004
@@ -69,6 +72,9 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	
 	private boolean hasLogEntries;
 	private Link editScoringConfigButton;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	/**
 	 * Constructor for a manual scoring course edit controller
@@ -139,7 +145,8 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 	
 	private void updateHighscoreTab() {
-		myTabbedPane.setEnabled(4, msNode.getAssessmentConfig().hasScore());
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(msNode);
+		myTabbedPane.setEnabled(4, assessmentConfig.hasScore());
 	}
 
 	@Override

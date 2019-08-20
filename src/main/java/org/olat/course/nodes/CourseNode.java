@@ -40,7 +40,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -443,9 +442,6 @@ public interface CourseNode extends INode, ShortName {
 	 *  
 	 */
 	public void updateModuleConfigDefaults(boolean isNewNode);
-	
-	
-	public AssessmentConfig getAssessmentConfig();
 	
 	public enum Processing {
 		runstructure,

@@ -22,6 +22,7 @@ package org.olat.course.reminder.ui;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -34,6 +35,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -140,8 +142,8 @@ public class PassedRuleEditor extends RuleEditorFragment {
 	
 	private void searchPassedNodes(CourseNode courseNode, List<CourseNode> nodes) {
 		if (courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			if (assessmentConfig.hasPassed()) {
 				nodes.add(courseNode);
 			}

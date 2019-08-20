@@ -126,7 +126,7 @@ public class GroupAssessmentController extends FormBasicController {
 		this.courseEntry = courseEntry;
 		this.assessedGroup = assessedGroup;
 
-		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);;
 		withScore = assessmentConfig.hasScore();
 		withPassed = assessmentConfig.hasPassed();
 		if(withPassed) {

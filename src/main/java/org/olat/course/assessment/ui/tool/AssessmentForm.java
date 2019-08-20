@@ -127,7 +127,7 @@ public class AssessmentForm extends FormBasicController {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
-		AssessmentConfig assessmentConfig = assessableCourseNode.getAssessmentConfig();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(assessableCourseNode);
 		hasAttempts = assessmentConfig.hasAttempts();
 		hasScore = assessmentConfig.hasScore();
 		hasPassed = assessmentConfig.hasPassed();
@@ -508,7 +508,7 @@ public class AssessmentForm extends FormBasicController {
 		setFormTitle("form.title", null);
 		formLayout.setElementCssClass("o_sel_assessment_form");
 		
-		AssessmentConfig assessmentConfig = assessableCourseNode.getAssessmentConfig();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(assessableCourseNode);
 		
 		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
 		if (scoreEval == null) {

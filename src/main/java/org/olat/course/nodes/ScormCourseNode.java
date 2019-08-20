@@ -53,14 +53,12 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.cp.CPEditController;
-import org.olat.course.nodes.scorm.ScormAssessmentConfig;
 import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.nodes.scorm.ScormRunController;
 import org.olat.course.properties.CoursePropertyManager;
@@ -89,9 +87,10 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 public class ScormCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
+	
 	private static final Logger log = Tracing.createLoggerFor(ScormCourseNode.class);
 	private static final long serialVersionUID = 2970594874787761801L;
-	private static final String TYPE = "scorm";
+	public static final String TYPE = "scorm";
 	private static final int CURRENT_CONFIG_VERSION = 5;
 	
 
@@ -372,11 +371,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 			log.error("", e);
 		}
 		return true;
-	}
-
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return new ScormAssessmentConfig(getModuleConfiguration());
 	}
 
 	@Override

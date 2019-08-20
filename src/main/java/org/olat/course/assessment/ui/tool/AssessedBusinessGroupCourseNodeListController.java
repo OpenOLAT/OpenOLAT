@@ -51,6 +51,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.AssessmentToolManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
@@ -94,6 +95,8 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 	private BusinessGroupService businessGroupService;
 	@Autowired
 	private AssessmentToolManager assessmentToolManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public AssessedBusinessGroupCourseNodeListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
@@ -118,7 +121,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 		
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode aNode = (AssessableCourseNode)courseNode;
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			if(assessmentConfig.hasPassed()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.countPassed,
 						new ProgressRenderer(false, getTranslator())));

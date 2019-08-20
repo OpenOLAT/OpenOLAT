@@ -55,7 +55,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
@@ -69,7 +68,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.sp.SPEditController;
 import org.olat.course.nodes.sp.SPPeekviewController;
-import org.olat.course.nodes.st.STAssessmentConfig;
 import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.st.STCourseNodeRunController;
 import org.olat.course.nodes.st.STIdentityListCourseNodeController;
@@ -110,7 +108,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 	private static final Logger log = Tracing.createLoggerFor(STCourseNode.class);
 
 	private static final long serialVersionUID = -7460670977531082040L;
-	private static final String TYPE = "st";
+	public static final String TYPE = "st";
 	private static final String ICON_CSS_CLASS = "o_st_icon";
 
 	private ScoreCalculator scoreCalculator;
@@ -251,11 +249,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 			// use standard peekview without content
 			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
 		}
-	}
-
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return new STAssessmentConfig(getScoreCalculator());
 	}
 
 	/**

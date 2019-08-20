@@ -45,7 +45,6 @@ import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.condition.Condition;
@@ -54,7 +53,6 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
-import org.olat.course.nodes.portfolio.PortfolioAssessmentConfig;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.DeadlineType;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
@@ -100,7 +98,7 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 	public static final String EDIT_CONDITION_ID = "editportfolio";
 	
 	private static final String PACKAGE_EP = Util.getPackageName(PortfolioCourseNodeRunController.class);
-	private static final String TYPE = "ep";
+	public static final String TYPE = "ep";
 	
 	private Condition preConditionEdit;
 	
@@ -307,11 +305,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		// evaluate the preconditions
 		boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
 		nodeEval.putAccessStatus(EDIT_CONDITION_ID, editor);
-	}
-
-	@Override
-	public AssessmentConfig getAssessmentConfig() {
-		return new PortfolioAssessmentConfig(getModuleConfiguration());
 	}
 
 	@Override

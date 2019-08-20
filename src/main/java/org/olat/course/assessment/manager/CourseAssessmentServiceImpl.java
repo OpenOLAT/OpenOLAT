@@ -20,17 +20,25 @@
 package org.olat.course.assessment.manager;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
 
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentHandler;
+import org.olat.course.assessment.handler.NonAssessmentHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -41,6 +49,38 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CourseAssessmentServiceImpl implements CourseAssessmentService {
+	
+	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;
+	
+	@Autowired
+	private List<AssessmentHandler> loadedAssessmentHandlers;
+	private Map<String, AssessmentHandler> assessmentHandlers = new HashMap<>();
+	private AssessmentHandler nonAssessmentHandler;
+	
+	@PostConstruct
+	void initProviders() {
+		for (AssessmentHandler handler: loadedAssessmentHandlers) {
+			if (NON_ASSESSMENT_TYPE.equals(handler.acceptCourseNodeType())) {
+				nonAssessmentHandler = handler;
+			} else {
+				assessmentHandlers.put(handler.acceptCourseNodeType(), handler);
+			}
+		}
+	}
+
+	@Override
+	public AssessmentConfig getAssessmentConfig(CourseNode node) {
+		return getAssessmentHandler(node).getAssessmentConfig(node);
+	}
+	
+	@Override
+	public AssessmentHandler getAssessmentHandler(CourseNode courseNode) {
+		AssessmentHandler handler = assessmentHandlers.get(courseNode.getType());
+		if (handler == null) {
+			handler = nonAssessmentHandler;
+		}
+		return handler;
+	}
 
 	@Override
 	public void updateUserScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,

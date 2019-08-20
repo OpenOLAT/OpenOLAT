@@ -48,6 +48,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorHelper;
@@ -64,6 +66,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Description:<BR/> Edit controller for a course node of type structure <P/>
@@ -135,6 +138,9 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private TabbedPane myTabbedPane;
 	private CourseEditorTreeModel editorModel;
 	private final Long repoKey;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public STCourseNodeEditController(UserRequest ureq, WindowControl wControl, STCourseNode stNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
@@ -429,8 +435,8 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	}
 	
 	private void updateHighscoreTab() {
-		Boolean sf = stNode.getAssessmentConfig().hasScore();
-		myTabbedPane.setEnabled(5, sf);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(stNode);
+		myTabbedPane.setEnabled(5, assessmentConfig.hasScore());
 	}
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)

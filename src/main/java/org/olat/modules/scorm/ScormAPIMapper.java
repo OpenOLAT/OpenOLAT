@@ -115,7 +115,8 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 	private void currentScore() {
 		if(isAssessable) {
 			checkForLms();
-			AssessmentConfig assessmentConfig = scormNode.getAssessmentConfig();
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
 			if(assessmentConfig.hasScore()) {
 				currentScore = scormNode.getUserScoreEvaluation(userCourseEnv).getScore();
 			}
@@ -258,12 +259,12 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			score += ascore;
 		}
 		
-		AssessmentConfig assessmentConfig = scormNode.getAssessmentConfig();
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
 		float cutval = assessmentConfig.getCutValue().floatValue();
 		boolean passed = (score >= cutval);
 		// if advanceScore option is set update the score only if it is higher
 		// <OLATEE-27>
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ModuleConfiguration config = scormNode.getModuleConfiguration();
 		if (config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)) {
 			if (score > (currentScore != null ? currentScore : -1f)) {

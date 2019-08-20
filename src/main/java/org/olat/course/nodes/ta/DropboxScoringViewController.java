@@ -73,6 +73,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -214,7 +215,9 @@ public class DropboxScoringViewController extends BasicController {
 		// insert Status Pull-Down Menu depending on user role == author
 		boolean isAuthor = ureq.getUserSession().getRoles().isAuthor();
 		boolean isTutor  = userCourseEnv.isCoach();
-		if ( ((AssessableCourseNode)node).getAssessmentConfig().hasStatus() && (isAuthor || isTutor)) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
+		if (assessmentConfig.hasStatus() && (isAuthor || isTutor)) {
 			myContent.contextPut("hasStatusPullDown", Boolean.TRUE);
 			statusForm = new StatusForm(ureq, getWindowControl(), userCourseEnv.isCourseReadOnly());
 			listenTo(statusForm);

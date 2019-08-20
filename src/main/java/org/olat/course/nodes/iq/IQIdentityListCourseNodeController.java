@@ -143,7 +143,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	protected void initStatusColumns(FlexiTableColumnModel columnsModel) {
 		super.initStatusColumns(columnsModel);
 		IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
-		AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if(testCourseNode != null && assessmentConfig.hasCompletion()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.currentCompletion));
 		}

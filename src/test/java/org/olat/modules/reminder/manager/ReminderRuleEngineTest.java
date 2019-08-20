@@ -41,6 +41,8 @@ import org.olat.core.util.Formatter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
 import org.olat.course.nodes.AssessableCourseNode;
@@ -105,6 +107,8 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 	private RepositoryEntryRelationDAO repositoryEntryRelationDao;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	@Test
 	public void dateRule() {
@@ -1086,7 +1090,8 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 			}
 		}
 		Assert.assertNotNull(testNode);
-		Assert.assertTrue(testNode.getAssessmentConfig().hasScore());
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(testNode);
+		Assert.assertTrue(assessmentConfig.hasScore());
 		
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(student);

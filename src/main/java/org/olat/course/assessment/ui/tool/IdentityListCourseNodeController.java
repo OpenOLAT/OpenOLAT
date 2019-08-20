@@ -358,7 +358,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 	protected void initAssessmentColumns(FlexiTableColumnModel columnsModel) {
 		if(courseNode instanceof AssessableCourseNode) {
 			AssessableCourseNode assessableNode = (AssessableCourseNode)courseNode;
-			AssessmentConfig assessmentConfig = courseNode.getAssessmentConfig();
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 			
 			if(assessmentConfig.hasAttempts()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
