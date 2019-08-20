@@ -26,16 +26,8 @@
 
 package org.olat.course.nodes;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
-import org.olat.modules.assessment.ui.AssessmentToolContainer;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
-import org.olat.repository.RepositoryEntry;
 
 
 /**
@@ -58,26 +50,5 @@ public interface AssessableCourseNode extends CourseNode {
 	 * @return null, if this node cannot deliver any useful scoring info (this is not the case for a test never tried or manual scoring: those have default values 0.0f / false for score/passed; currently only the STNode returns null if there are no scoring rules defined.)
 	 */
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv);
-	
-	/**
-	 * Returns the controller with the list of assessed identities for
-	 * a specific course node.
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param stackPanel
-	 * @param courseEntry
-	 * @param group
-	 * @param coachCourseEnv
-	 * @param toolContainer
-	 * @param assessmentCallback
-	 * @return
-	 */
-	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
-			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback);
-	
-
-	
 
 }

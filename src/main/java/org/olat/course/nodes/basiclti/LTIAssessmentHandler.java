@@ -21,15 +21,21 @@ package org.olat.course.nodes.basiclti;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.lti.ui.LTIResultDetailsController;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.springframework.stereotype.Service;
 
@@ -58,6 +64,19 @@ public class LTIAssessmentHandler implements AssessmentHandler {
 		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
 		OLATResource resource = assessedUserCourseEnv.getCourseEnvironment().getCourseGroupManager() .getCourseResource();
 		return new LTIResultDetailsController(ureq, wControl, assessedIdentity, resource, courseNode.getIdent());
+	}
+
+	@Override
+	public boolean hasCustomIdentityList() {
+		return false;
+	}
+	
+	@Override
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
+			AssessmentToolSecurityCallback assessmentCallback) {
+		return null;
 	}
 
 }

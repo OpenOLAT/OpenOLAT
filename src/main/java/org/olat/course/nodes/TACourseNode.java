@@ -44,7 +44,6 @@ import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -72,7 +71,6 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -87,7 +85,6 @@ import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.nodes.ta.TAAssessmentConfig;
 import org.olat.course.nodes.ta.TACourseNodeEditController;
 import org.olat.course.nodes.ta.TACourseNodeRunController;
-import org.olat.course.nodes.ta.TAIdentityListCourseNodeController;
 import org.olat.course.nodes.ta.TaskController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
@@ -97,12 +94,9 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.ui.AssessmentToolContainer;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -480,14 +474,6 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 		ScoreEvaluation newScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
 				null, null, null, null);
 		am.saveScoreEvaluation(this, coachingIdentity, mySelf, newScoreEval, userCourseEnvironment, incrementAttempts, by);		
-	}
-	
-	@Override
-	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
-			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
-		return new TAIdentityListCourseNodeController(ureq, wControl, stackPanel,
-				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 	@Override

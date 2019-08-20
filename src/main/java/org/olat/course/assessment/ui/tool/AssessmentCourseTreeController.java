@@ -46,6 +46,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -296,12 +297,13 @@ public class AssessmentCourseTreeController extends BasicController implements A
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresUsers, null, getWindowControl());
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("Node", Long.valueOf(courseNode.getIdent()));
 		WindowControl bbwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(oresNode, null, bwControl);
-		if(courseNode instanceof AssessableCourseNode) {
-			identityListCtrl = ((AssessableCourseNode)courseNode).getIdentityListController(ureq, getWindowControl(), stackPanel,
-					courseEntry, null, coachCourseEnv, toolContainer, assessmentCallback);
+		AssessmentHandler assessmentHandler = courseAssessmentService.getAssessmentHandler(courseNode);
+		if (assessmentHandler.hasCustomIdentityList()) {
+			identityListCtrl = assessmentHandler.getIdentityListController(ureq, getWindowControl(), stackPanel,
+					courseNode, courseEntry, null, coachCourseEnv, toolContainer, assessmentCallback);
 		} else {
-			identityListCtrl = new IdentityListCourseNodeController(ureq, bbwControl, stackPanel,
-				courseEntry, null, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+			identityListCtrl = new IdentityListCourseNodeController(ureq, bbwControl, stackPanel, courseEntry, null,
+					courseNode, coachCourseEnv, toolContainer, assessmentCallback);
 		}
 		
 		return identityListCtrl;

@@ -21,6 +21,7 @@ package org.olat.course.nodes.cl;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
@@ -28,10 +29,15 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.cl.ui.AssessedIdentityCheckListController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
 /**
@@ -63,6 +69,19 @@ public class CheckListAssessmentHandler implements AssessmentHandler {
 		
 		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, coachCourseEnv,
 				assessedUserCourseEnvironment, courseNode, false, false);
+	}
+
+	@Override
+	public boolean hasCustomIdentityList() {
+		return false;
+	}
+
+	@Override
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
+			AssessmentToolSecurityCallback assessmentCallback) {
+		return null;
 	}
 
 }

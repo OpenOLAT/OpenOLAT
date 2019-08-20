@@ -32,13 +32,17 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentConfig;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
+import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 import org.springframework.stereotype.Service;
@@ -94,6 +98,20 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 			}	
 		}
 		return detailsCtrl != null? detailsCtrl: new BlankController(ureq, wControl);
+	}
+
+	@Override
+	public boolean hasCustomIdentityList() {
+		return true;
+	}
+	
+	@Override
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
+			AssessmentToolSecurityCallback assessmentCallback) {
+		return new IQIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group, courseNode,
+				coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 }

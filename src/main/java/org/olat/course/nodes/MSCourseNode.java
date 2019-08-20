@@ -36,7 +36,6 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.taskexecutor.TaskExecutorManager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
-import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
@@ -52,7 +51,6 @@ import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -61,7 +59,6 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
-import org.olat.course.nodes.ms.MSIdentityListCourseNodeController;
 import org.olat.course.nodes.ms.MSRunController;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
@@ -73,12 +70,9 @@ import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.group.BusinessGroup;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.ui.AssessmentToolContainer;
-import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.properties.Property;
@@ -344,14 +338,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			return  msService.calculateMinMaxAvg(getEvaluationForm(config), Float.parseFloat(scaleConfig));
 		}
 		return MinMax.of(0.0f,  0.0f);
-	}
-	
-	@Override
-	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			RepositoryEntry courseEntry, BusinessGroup group, UserCourseEnvironment coachCourseEnv,
-			AssessmentToolContainer toolContainer, AssessmentToolSecurityCallback assessmentCallback) {
-		return new MSIdentityListCourseNodeController(ureq, wControl, stackPanel,
-				courseEntry, group, this, coachCourseEnv, toolContainer, assessmentCallback, true);
 	}
 	
 	public void updateScoreEvaluation(Identity identity, UserCourseEnvironment assessedUserCourseEnv,

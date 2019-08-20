@@ -21,10 +21,16 @@ package org.olat.course.assessment.handler;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -51,4 +57,30 @@ public interface AssessmentHandler {
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
 	
+	/**
+	 * 
+	 * @return whether this node has a custom controller for the identity list.
+	 */
+	public boolean hasCustomIdentityList();
+	
+	/**
+	 * Returns the controller with the list of assessed identities for a specific
+	 * course node. Check AssessmentHandler.hasCustomIdentityList() before invoking
+	 * this method.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param stackPanel
+	 * @param courseNode
+	 * @param courseEntry
+	 * @param group
+	 * @param coachCourseEnv
+	 * @param toolContainer
+	 * @param assessmentCallback
+	 * @return
+	 */
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
+			AssessmentToolSecurityCallback assessmentCallback);
 }

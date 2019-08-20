@@ -21,15 +21,22 @@ package org.olat.course.nodes.gta;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BlankController;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
+import org.olat.course.nodes.gta.ui.GTAIdentityListCourseNodeController;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -52,6 +59,20 @@ public abstract class AbstractGTAAssessmentHandler implements AssessmentHandler 
 			return new GTAAssessmentDetailsController(ureq, wControl, coachCourseEnv, assessedUsserCourseEnv, gtaNode);
 		}
 		return new BlankController(ureq, wControl);
+	}
+	
+	@Override
+	public boolean hasCustomIdentityList() {
+		return true;
+	}
+
+	@Override
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
+			AssessmentToolSecurityCallback assessmentCallback) {
+		return new GTAIdentityListCourseNodeController(ureq, wControl, stackPanel, courseEntry, group, courseNode,
+				coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 }

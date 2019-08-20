@@ -46,8 +46,8 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -164,28 +164,27 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-		if(courseNode instanceof AssessableCourseNode) {
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if(assessmentConfig.isAssessedBusinessGroups() && courseNode instanceof GTACourseNode) {
-				CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
-				
-				List<BusinessGroup> coachedGroups;
-				if(businessGroup != null) {
-					coachedGroups = Collections.singletonList(businessGroup);
-				} else if(assessmentCallback.isAdmin()) {
-					coachedGroups = courseEnv.getCourseGroupManager().getAllBusinessGroups();
-				} else {
-					coachedGroups = assessmentCallback.getCoachedGroups();
-				}
-				currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, bwControl, stackPanel,
-						coachCourseEnv, assessmentCallback.isAdmin(), coachedGroups);
+
+		AssessmentHandler assessmentHandler = courseAssessmentService.getAssessmentHandler(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.isAssessedBusinessGroups() && courseNode instanceof GTACourseNode) {
+			CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
+			List<BusinessGroup> coachedGroups;
+			if(businessGroup != null) {
+				coachedGroups = Collections.singletonList(businessGroup);
+			} else if(assessmentCallback.isAdmin()) {
+				coachedGroups = courseEnv.getCourseGroupManager().getAllBusinessGroups();
 			} else {
-				currentCtrl = ((AssessableCourseNode)courseNode).getIdentityListController(ureq, bwControl, stackPanel,
-						courseEntry, businessGroup, coachCourseEnv, toolContainer, assessmentCallback);
+				coachedGroups = assessmentCallback.getCoachedGroups();
 			}
+			currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, bwControl, stackPanel,
+					coachCourseEnv, assessmentCallback.isAdmin(), coachedGroups);
+		} else if (assessmentHandler.hasCustomIdentityList()) {
+			currentCtrl = assessmentHandler.getIdentityListController(ureq, bwControl, stackPanel, courseNode,
+					courseEntry, businessGroup, coachCourseEnv, toolContainer, assessmentCallback);
 		} else {
-			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel,
-					courseEntry, businessGroup, courseNode, coachCourseEnv, toolContainer, assessmentCallback);
+			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel, courseEntry, businessGroup,
+					courseNode, coachCourseEnv, toolContainer, assessmentCallback);
 		}
 		listenTo(currentCtrl);
 		mainPanel.setContent(currentCtrl.getInitialComponent());
