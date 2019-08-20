@@ -195,6 +195,44 @@ public class GTAManagerTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void getTaskList_byTask() {
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-3");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-4");
+		BusinessGroup businessGroup = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
+		businessGroupRelationDao.addRole(participant, businessGroup, GroupRole.participant.name());
+		dbInstance.commit();
+		RepositoryEntry re = deployGTACourse();
+		GTACourseNode node = getGTACourseNode(re);
+		node.getModuleConfiguration().setStringValue(GTACourseNode.GTASK_TYPE, GTAType.group.name());
+		TaskList tasks = gtaManager.createIfNotExists(re, node);
+		File taskFile = new File("bg.txt");
+		Assert.assertNotNull(tasks);
+		dbInstance.commit();
+		
+		//select
+		AssignmentResponse response = gtaManager.selectTask(businessGroup, tasks, node, taskFile);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNotNull(response);
+		
+		List<Task> assignedTasks = gtaManager.getTasks(participant, re, node);
+		Assert.assertNotNull(assignedTasks);
+		Assert.assertEquals(1, assignedTasks.size());
+		
+		//reload and check
+		TaskList reloadedTasks = gtaManager.getTaskList(assignedTasks.get(0));
+		dbInstance.commitAndCloseSession();// entry nneed to be fetched
+		Assert.assertNotNull(reloadedTasks);
+		Assert.assertEquals(tasks, reloadedTasks);
+		Assert.assertTrue(reloadedTasks instanceof TaskListImpl);
+		TaskListImpl tasksImpl = (TaskListImpl)reloadedTasks;
+		Assert.assertNotNull(tasksImpl.getCreationDate());
+		Assert.assertNotNull(tasksImpl.getLastModified());
+		Assert.assertEquals(re, tasksImpl.getEntry());
+		Assert.assertEquals(node.getIdent(), tasksImpl.getCourseNodeIdent());
+		dbInstance.commit();
+	}
+	
+	@Test
 	public void isTaskAssigned() {
 		//create an individual task
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-6");
