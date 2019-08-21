@@ -31,7 +31,6 @@ import java.util.Enumeration;
 import java.util.Map;
 
 import org.imsglobal.basiclti.BasicLTIUtil;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.dispatcher.mapper.Mapper;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -90,7 +89,7 @@ public class LTIRunController extends BasicController {
 	private BasicLTICourseNode courseNode;
 	private ModuleConfiguration config;
 	private final CourseEnvironment courseEnv;
-	private UserCourseEnvironment userCourseEnv;
+	private final UserCourseEnvironment userCourseEnv;
 	private SortedProperties userData = new SortedProperties(); 
 	private SortedProperties customUserData = new SortedProperties(); 
 	private Link acceptLink;
@@ -107,13 +106,24 @@ public class LTIRunController extends BasicController {
 	@Autowired
 	private LTIManager ltiManager;
 	
+	/**
+	 * Constructor for the preview in the editor of the course element.
+	 *  
+	 * @param wControl The window control
+	 * @param config The course element configuration
+	 * @param ureq The user request
+	 * @param ltCourseNode The course element
+	 * @param userCourseEnv The user course environment of the author
+	 * @param courseEnv The course environment
+	 */
 	public LTIRunController(WindowControl wControl, ModuleConfiguration config, UserRequest ureq, BasicLTICourseNode ltCourseNode,
-			CourseEnvironment courseEnv) {
+			UserCourseEnvironment userCourseEnv, CourseEnvironment courseEnv) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		this.courseNode = ltCourseNode;
 		this.config = config;
 		this.roles = ureq.getUserSession().getRoles();
 		this.courseEnv = courseEnv;
+		this.userCourseEnv = userCourseEnv;
 		display = LTIDisplayOptions.iframe;
 
 		run = createVelocityContainer("run");
@@ -134,13 +144,13 @@ public class LTIRunController extends BasicController {
 	}
 
 	/**
-	 * Constructor for tunneling run controller
+	 * Constructor for LTI run controller
 	 * 
-	 * @param wControl
+	 * @param wControl The window conntrol
 	 * @param config The module configuration
 	 * @param ureq The user request
 	 * @param ltCourseNode The current course node
-	 * @param cenv the course environment
+	 * @param userCourseEnv The course environment
 	 */
 	public LTIRunController(WindowControl wControl, ModuleConfiguration config, UserRequest ureq, BasicLTICourseNode ltCourseNode,
 			UserCourseEnvironment userCourseEnv) {
@@ -150,7 +160,6 @@ public class LTIRunController extends BasicController {
 		this.userCourseEnv = userCourseEnv;
 		this.roles = ureq.getUserSession().getRoles();
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
-		this.ltiManager = CoreSpringFactory.getImpl(LTIManager.class);
 		String displayStr = config.getStringValue(BasicLTICourseNode.CONFIG_DISPLAY, "iframe");
 		display = LTIDisplayOptions.valueOfOrDefault(displayStr); 
 
@@ -171,7 +180,7 @@ public class LTIRunController extends BasicController {
 	 */
 	private boolean checkHasDataExchangeAccepted(String hash) {
 		boolean dataAccepted = false;
-		CoursePropertyManager propMgr = this.userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
+		CoursePropertyManager propMgr = courseEnv.getCoursePropertyManager();
 		Property prop = propMgr.findCourseNodeProperty(this.courseNode, getIdentity(), null, PROP_NAME_DATA_EXCHANGE_ACCEPTED);
 		if (prop != null) {
 			// compare if value in property is the same as calculated today. If not, user as to accept again
@@ -202,7 +211,7 @@ public class LTIRunController extends BasicController {
 	 * Helper to save the user accepted data exchange
 	 */
 	private void storeDataExchangeAcceptance() {
-		CoursePropertyManager propMgr = this.userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
+		CoursePropertyManager propMgr = courseEnv.getCoursePropertyManager();
 		String hash = createHashFromExchangeDataProperties();
 		Property prop = propMgr.createCourseNodePropertyInstance(this.courseNode, getIdentity(), null, PROP_NAME_DATA_EXCHANGE_ACCEPTED, null, null, hash, null);
 		propMgr.saveProperty(prop);
@@ -321,7 +330,7 @@ public class LTIRunController extends BasicController {
 		startPage.contextPut("menuTitle", courseNode.getShortTitle());
 		startPage.contextPut("displayTitle", courseNode.getLongTitle());
 		
-		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false)){
+		if (courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD, false)){
 			HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 			if (highScoreCtr.isViewHighscore()) {
 				Component highScoreComponent = highScoreCtr.getInitialComponent();

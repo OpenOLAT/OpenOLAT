@@ -68,8 +68,9 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 	private static final String[] paneKeys = {PANE_TAB_LTCONFIG, PANE_TAB_ACCESSIBILITY};
 
 	private ModuleConfiguration config;
-	private CourseEnvironment editCourseEnv;
-	private VelocityContainer myContent;
+	private final VelocityContainer myContent;
+	private final CourseEnvironment editCourseEnv;
+	private final UserCourseEnvironment userCourseEnv;
 	private HighScoreEditController highScoreNodeConfigController;
 
 	private LTIConfigForm ltConfigForm;	
@@ -93,6 +94,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		
 		this.config = config;
 		this.courseNode = ltCourseNode;
+		this.userCourseEnv = euce;
 		this.editCourseEnv = course.getCourseEnvironment();
 		
 		myContent = createVelocityContainer("edit");
@@ -120,13 +122,10 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == previewButton) {
-			Controller runCtr = new LTIRunController(getWindowControl(), config, ureq, courseNode, editCourseEnv);
+			Controller runCtr = new LTIRunController(getWindowControl(), config, ureq, courseNode, userCourseEnv, editCourseEnv);
 			previewLayoutCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null, runCtr.getInitialComponent(), null);
 			previewLayoutCtr.addDisposableChildController(runCtr);
 			previewLayoutCtr.activate();
@@ -134,9 +133,6 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == accessibilityCondContr) {
@@ -168,10 +164,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		Boolean sf = courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false);
 		myTabbedPane.setEnabled(4, sf);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
+
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
@@ -181,10 +174,6 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		updateHighscoreTab();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//
