@@ -68,8 +68,11 @@ public class AbsenceNoticeToRepositoryEntryDAOTest extends OlatTestCase {
 	public void createAbsenceNoticeToRepositoryEntry() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
-				null, null, null, null, null, null, null);
+				start, end, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		AbsenceNoticeToRepositoryEntry relation = absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);

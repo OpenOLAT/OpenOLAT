@@ -73,10 +73,10 @@ public class AbsenceNoticeImpl implements AbsenceNotice, Persistable {
 	private Boolean absenceAuthorized;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="l_start_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="l_start_date", nullable=false, insertable=true, updatable=true)
 	private Date startDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="l_end_date", nullable=true, insertable=true, updatable=true)
+	@Column(name="l_end_date", nullable=false, insertable=true, updatable=true)
 	private Date endDate;
 	@Column(name="l_target", nullable=false, insertable=true, updatable=true)
 	private String target;

@@ -23,6 +23,7 @@ import java.util.Date;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.AbsenceNotice;
@@ -55,8 +56,11 @@ public class AbsenceNoticeToLectureBlockDAOTest extends OlatTestCase {
 	@Test
 	public void createAbsenceNoticeToLectureBlock() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null, null, null);
+				start, end, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 
 		LectureBlock lectureBlock = createLectureBlock();

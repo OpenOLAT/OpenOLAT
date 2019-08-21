@@ -149,13 +149,11 @@ public class AbsenceNoticeDAO {
 	
 	protected static QueryBuilder noticeBlockDates(QueryBuilder sb) {
 		sb.append("(")
-		  .append("(notice.startDate<=block.startDate and notice.endDate>=block.endDate)")
+		  .append(" (notice.startDate<=block.startDate and notice.endDate>=block.endDate)")
 		  .append(" or ")
-		  .append("(notice.startDate>=block.startDate and notice.endDate<=block.startDate)")
+		  .append(" (notice.startDate>=block.startDate and notice.endDate<=block.startDate)")
 		  .append(" or ")
-		  .append("(notice.startDate>=block.endDate and notice.endDate<=block.endDate)")
-		  .append(" or ")
-		  .append("(notice.startDate is null and notice.endDate is null)")
+		  .append(" (notice.startDate>=block.endDate and notice.endDate<=block.endDate)")
 		  .append(")");
 		return sb;
 	}
@@ -343,9 +341,18 @@ public class AbsenceNoticeDAO {
 			  .append("  ) or exists (select noticeToEntry.key from absencenoticetoentry noticeToEntry")
 			  .append("    where notice.target ").in(AbsenceNoticeTarget.entries)
 			  .append("    and noticeToEntry.absenceNotice.key=notice.key and noticeToEntry.entry.key=:entryKey")
+			  .append("    and (")
+			  .append("      (notice.startDate<=:startDate and notice.endDate>=:endDate)")
+			  .append("      or (notice.startDate>=:startDate and notice.startDate<:endDate)")
+			  .append("      or (notice.endDate>=:startDate and notice.endDate<:endDate)")
+			  .append("    )")
 			  .append("  ) or (notice.target ").in(AbsenceNoticeTarget.allentries)
-			  .append("    and notice.startDate<=:startDate and notice.endDate>=:endDate")
-			  .append("  )")//TODO absences date for entries and all entries
+			  .append("    and (")
+			  .append("      (notice.startDate<=:startDate and notice.endDate>=:endDate)")
+			  .append("      or (notice.startDate>=:startDate and notice.startDate<:endDate)")
+			  .append("      or (notice.endDate>=:startDate and notice.endDate<:endDate)")
+			  .append("    )")
+			  .append("  )")
 			  .append(")");
 		}
 

@@ -30,6 +30,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
@@ -379,8 +380,11 @@ public class LectureServiceTest extends OlatTestCase {
 		
 		List<LectureBlock> lectureBlocks = new ArrayList<>();
 		lectureBlocks.add(block1);
+
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null, null, lectureBlocks, teacher);
+				start, end, null, null, null, null, lectureBlocks, teacher);
 		dbInstance.commitAndCloseSession();
 
 		// first roll call
@@ -420,8 +424,11 @@ public class LectureServiceTest extends OlatTestCase {
 		
 		List<RepositoryEntry> entries = new ArrayList<>();
 		entries.add(entry);
+
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
-				null, null, null, null, null, entries, null, teacher);
+				start, end, null, null, null, entries, null, teacher);
 		dbInstance.commitAndCloseSession();
 
 		// first roll call
@@ -470,8 +477,11 @@ public class LectureServiceTest extends OlatTestCase {
 		List<LectureBlock> lectureBlocks = new ArrayList<>();
 		lectureBlocks.add(block1);
 		lectureBlocks.add(block2);
+
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.notified, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null, null, lectureBlocks, teacher);
+				start, end, null, null, null, null, lectureBlocks, teacher);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(notice);
 
