@@ -28,8 +28,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * Description:<br>
@@ -51,8 +53,12 @@ import java.util.Set;
  * @author gnaegi
  */
 public class SortedProperties extends Properties {
+
+	private static final long serialVersionUID = -5930211273975255180L;
+
 	/**
-	 * Overriden to be able to write properties sorted by keys to the disk
+	 * Override to be able to write properties sorted by keys
+	 * to the disk (only Java 8)
 	 * 
 	 * @see java.util.Hashtable#keys()
 	 */
@@ -61,7 +67,20 @@ public class SortedProperties extends Properties {
 	public synchronized Enumeration<Object> keys() {
 		// sort elements based on detector (prop key) names
 		Set set = keySet();
-		return (Enumeration<Object>)sortKeys(set);
+		return sortKeys(set);
+	}
+	
+	/**
+	 * Override to be able to write properties sorted by keys
+	 * to the disk (Java 11)
+	 */
+	@Override
+	public Set<Entry<Object, Object>> entrySet() {
+		TreeMap<Object,Object> map = new TreeMap<>();
+		for(Object propertyName:keySet()) {
+			map.put(propertyName, get(propertyName));
+		}		
+		return map.entrySet();
 	}
 
 	/**
@@ -74,7 +93,7 @@ public class SortedProperties extends Properties {
 	 * @return non null list wich contains all given keys, sorted
 	 *         lexicographically. The list may be empty if given set was empty
 	 */
-	static public Enumeration<?> sortKeys(Set<String> keySet) {
+	public static Enumeration<?> sortKeys(Set<String> keySet) {
 		List<String> sortedList = new ArrayList<>();
 		sortedList.addAll(keySet);
 		Collections.sort(sortedList);
