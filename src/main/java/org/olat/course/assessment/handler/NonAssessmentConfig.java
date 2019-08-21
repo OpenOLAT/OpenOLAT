@@ -32,6 +32,11 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	public static final AssessmentConfig create() {
 		return INSATNCE;
 	}
+
+	@Override
+	public boolean isScoreEvaluationCalculated() {
+		return false;
+	}
 	
 	private NonAssessmentConfig() {
 		//

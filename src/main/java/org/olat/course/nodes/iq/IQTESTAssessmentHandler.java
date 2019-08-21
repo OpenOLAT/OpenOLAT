@@ -35,6 +35,7 @@ import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
@@ -58,8 +59,7 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 
 	@Override
 	public String acceptCourseNodeType() {
-		// TODO uh Auto-generated method stub
-		return null;
+		return IQTESTCourseNode.TYPE;
 	}
 
 	@Override
@@ -69,6 +69,11 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 			return new IQTESTAssessmentConfig(iqtestNode);
 		}
 		return NonAssessmentConfig.create();
+	}
+
+	@Override
+	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
+		return null;
 	}
 	
 	@Override

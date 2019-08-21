@@ -19,7 +19,6 @@
  */
 package org.olat.course.nodes;
 
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 
@@ -32,13 +31,6 @@ import org.olat.modules.assessment.AssessmentEntry;
  *
  */
 public interface PersistentAssessableCourseNode extends AssessableCourseNode {
-	
-	/**
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry); 
 	
 	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv);
 

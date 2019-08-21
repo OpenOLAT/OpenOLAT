@@ -45,9 +45,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
-import org.olat.course.nodes.CalculatedAssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -156,25 +154,24 @@ public class ScoreAccounting {
 			recursionLevel++;
 			AssessmentEvaluation se = null;
 			if (recursionLevel <= 15) {
-				se = cachedScoreEvals.get(cn);
-				if (se == null) { // result of this node has not been calculated yet, do it
+				
+				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cn);
+				if (update && assessmentConfig.isScoreEvaluationCalculated()) {
 					AssessmentEntry entry = identToEntries.get(cn.getIdent());
-					if(cn instanceof PersistentAssessableCourseNode) {
-						se = ((PersistentAssessableCourseNode)cn).getUserScoreEvaluation(entry);
-					} else if(cn instanceof CalculatedAssessableCourseNode) {
-						if(update) {
-							se = calculateScoreEvaluation(entry, (CalculatedAssessableCourseNode)cn);
+					se = calculateScoreEvaluation(entry, cn, assessmentConfig);
+					cachedScoreEvals.put(cn, se);
+				} else {
+					se = cachedScoreEvals.get(cn);
+					if (se == null) { // result of this node has not been cached yet, do it
+						AssessmentEntry entry = identToEntries.get(cn.getIdent());
+						if(cn instanceof AssessableCourseNode) { // check isScoreEvaluationPersited()
+							se = cn.getUserScoreEvaluation(entry);
 						} else {
-							se = ((CalculatedAssessableCourseNode)cn).getUserScoreEvaluation(entry);
+							se = cn.getUserScoreEvaluation(userCourseEnvironment);
 						}
-					} else {
-						se = cn.getUserScoreEvaluation(userCourseEnvironment);
+						cachedScoreEvals.put(cn, se);
 					}
-					cachedScoreEvals.put(cn, se);
-				} else if(update && cn instanceof CalculatedAssessableCourseNode) {
-					AssessmentEntry entry = identToEntries.get(cn.getIdent());
-					se = calculateScoreEvaluation(entry, (CalculatedAssessableCourseNode)cn);
-					cachedScoreEvals.put(cn, se);
 				}
 			}
 			recursionLevel--;
@@ -198,14 +195,14 @@ public class ScoreAccounting {
 		 * 
 		 * @param entry
 		 * @param cNode
+		 * @param assessmentConfig 
 		 * @return
 		 */
-		private AssessmentEvaluation calculateScoreEvaluation(AssessmentEntry entry, CalculatedAssessableCourseNode cNode) {
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cNode);
+		private AssessmentEvaluation calculateScoreEvaluation(AssessmentEntry entry, CourseNode cNode, AssessmentConfig assessmentConfig) {
 			AssessmentEvaluation se;
 			if(assessmentConfig.hasScore() || assessmentConfig.hasPassed()) {
-				ScoreCalculator scoreCalculator = cNode.getScoreCalculator();
+				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				ScoreCalculator scoreCalculator = courseAssessmentService.getScoreCalculator(cNode);
 				String scoreExpressionStr = scoreCalculator.getScoreExpression();
 				String passedExpressionStr = scoreCalculator.getPassedExpression();
 

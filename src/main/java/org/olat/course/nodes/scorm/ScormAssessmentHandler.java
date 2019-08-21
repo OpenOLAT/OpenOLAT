@@ -29,6 +29,7 @@ import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ScormCourseNode;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -54,6 +55,11 @@ public class ScormAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return new ScormAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
+		return null;
 	}
 
 	@Override

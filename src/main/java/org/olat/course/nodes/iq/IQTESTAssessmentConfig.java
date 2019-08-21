@@ -42,6 +42,11 @@ public class IQTESTAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean isScoreEvaluationCalculated() {
+		return false;
+	}
+
+	@Override
 	public boolean hasScore() {
 		return true;
 	}

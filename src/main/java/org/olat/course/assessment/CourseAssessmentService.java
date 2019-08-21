@@ -31,6 +31,7 @@ import org.olat.core.id.Identity;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -53,7 +54,16 @@ public interface CourseAssessmentService {
 
 	public void updateUserScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by);
-
+	
+	/**
+	 * Returns the ScoreCalculator if the course nod can calculate its score. Check
+	 * AssessmentConfig.isScoreCalculated() before invoking this method.
+	 *
+	 * @param courseNode
+	 * @return
+	 */
+	public ScoreCalculator getScoreCalculator(CourseNode courseNode);
+	
 	/**
 	 * 
 	 * @param courseNode
@@ -201,7 +211,7 @@ public interface CourseAssessmentService {
 	
 	/**
 	 * Returns the controller with the list of assessed identities for a specific
-	 * course node. Check AssessmentHandler.hasCustomIdentityList() before invoking
+	 * course node. Check hasCustomIdentityList(CourseNode courseNode) before invoking
 	 * this method.
 	 * 
 	 * @param ureq

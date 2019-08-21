@@ -29,6 +29,7 @@ import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -54,6 +55,11 @@ public class MSAssessmentHandler implements AssessmentHandler {
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		courseNode.updateModuleConfigDefaults(false);
 		return new MSAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
+		return null;
 	}
 	
 	@Override

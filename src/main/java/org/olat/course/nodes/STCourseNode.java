@@ -96,7 +96,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Mike Stock
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class STCourseNode extends AbstractAccessableCourseNode implements CalculatedAssessableCourseNode {
+public class STCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
 	
 	private static final Logger log = Tracing.createLoggerFor(STCourseNode.class);
 
@@ -321,7 +321,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Calcul
 		return false;
 	}
 
-	@Override
 	public ScoreCalculator getScoreCalculator() {
 		if (scoreCalculator == null) {
 			scoreCalculator = new ScoreCalculator();

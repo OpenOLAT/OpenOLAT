@@ -30,6 +30,7 @@ import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.lti.ui.LTIResultDetailsController;
@@ -56,6 +57,11 @@ public class LTIAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return new LTIAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
+		return null;
 	}
 	
 	@Override

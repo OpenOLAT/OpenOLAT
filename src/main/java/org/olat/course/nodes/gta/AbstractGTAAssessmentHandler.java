@@ -32,6 +32,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
 import org.olat.course.nodes.gta.ui.GTAIdentityListCourseNodeController;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -49,6 +50,11 @@ public abstract class AbstractGTAAssessmentHandler implements AssessmentHandler 
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return new GTAAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
+		return null;
 	}
 	
 	@Override

@@ -40,6 +40,11 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean isScoreEvaluationCalculated() {
+		return false;
+	}
+
+	@Override
 	public boolean hasScore() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
 	}

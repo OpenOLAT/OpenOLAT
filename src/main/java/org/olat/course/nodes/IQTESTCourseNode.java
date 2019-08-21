@@ -128,7 +128,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	private static final long serialVersionUID = 5806292895738005387L;
 	private static final Logger log = Tracing.createLoggerFor(IQTESTCourseNode.class);
 	private static final String translatorStr = Util.getPackageName(IQEditController.class);
-	private static final String TYPE = "iqtest";
+	public static final String TYPE = "iqtest";
 
 	private static final int CURRENT_CONFIG_VERSION = 2;
 

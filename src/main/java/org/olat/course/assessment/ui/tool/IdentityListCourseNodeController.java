@@ -80,7 +80,6 @@ import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
 import org.olat.course.nodes.AssessableCourseNode;
-import org.olat.course.nodes.CalculatedAssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
@@ -363,7 +362,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if(assessmentConfig.hasAttempts()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
 			}
-			if(!(courseNode instanceof CalculatedAssessableCourseNode)) {
+			if(!assessmentConfig.isScoreEvaluationCalculated()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility,
 						new UserVisibilityCellRenderer(getTranslator())));
 			}

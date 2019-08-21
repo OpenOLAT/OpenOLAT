@@ -30,6 +30,7 @@ import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -58,6 +59,15 @@ public class STAssessmentHandler implements AssessmentHandler {
 			return new STAssessmentConfig(stCourseNode.getScoreCalculator());
 		}
 		return NonAssessmentConfig.create();
+	}
+
+	@Override
+	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
+		if (courseNode instanceof STCourseNode) {
+			STCourseNode stCourseNode = (STCourseNode) courseNode;
+			return stCourseNode.getScoreCalculator();
+		}
+		return new ScoreCalculator();
 	}
 
 	@Override
