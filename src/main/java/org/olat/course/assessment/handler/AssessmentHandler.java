@@ -33,8 +33,11 @@ import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
 
 /**
+ * The course nodes can implement some details individually. Have a look at the
+ * CourseAssessmentService for the descriptions of the methods.
  * 
  * Initial date: 20 Aug 2019<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
@@ -44,41 +47,11 @@ public interface AssessmentHandler {
 	
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
 	
-	/**
-	 * Returns a controller to edit the node specific details. Check
-	 * AssessmentConfig.hasEditableDetails() before invoking this method.
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param courseNode
-	 * @param userCourseEnvironment
-	 * @return a controller or null
-	 */
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
 	
-	/**
-	 * 
-	 * @return whether this node has a custom controller for the identity list.
-	 */
 	public boolean hasCustomIdentityList();
 	
-	/**
-	 * Returns the controller with the list of assessed identities for a specific
-	 * course node. Check AssessmentHandler.hasCustomIdentityList() before invoking
-	 * this method.
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param stackPanel
-	 * @param courseNode
-	 * @param courseEntry
-	 * @param group
-	 * @param coachCourseEnv
-	 * @param toolContainer
-	 * @param assessmentCallback
-	 * @return
-	 */
 	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,

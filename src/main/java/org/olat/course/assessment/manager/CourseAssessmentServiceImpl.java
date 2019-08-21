@@ -26,18 +26,28 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentHandler;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -68,13 +78,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 		}
 	}
 
-	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode node) {
-		return getAssessmentHandler(node).getAssessmentConfig(node);
-	}
-	
-	@Override
-	public AssessmentHandler getAssessmentHandler(CourseNode courseNode) {
+	private  AssessmentHandler getAssessmentHandler(CourseNode courseNode) {
 		AssessmentHandler handler = assessmentHandlers.get(courseNode.getType());
 		if (handler == null) {
 			handler = nonAssessmentHandler;
@@ -82,6 +86,11 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 		return handler;
 	}
 
+	@Override
+	public AssessmentConfig getAssessmentConfig(CourseNode node) {
+		return getAssessmentHandler(node).getAssessmentConfig(node);
+	}
+	
 	@Override
 	public void updateUserScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by) {
@@ -205,6 +214,28 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		return am.getUserNodeLog(courseNode, assessedIdentity);
+	}
+
+	@Override
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
+			UserCourseEnvironment assessedUserCourseEnvironment) {
+		return getAssessmentHandler(courseNode).getDetailsEditController(ureq, wControl, stackPanel, courseNode,
+				coachCourseEnv, assessedUserCourseEnvironment);
+	}
+
+	@Override
+	public boolean hasCustomIdentityList(CourseNode courseNode) {
+		return getAssessmentHandler(courseNode).hasCustomIdentityList();
+	}
+
+	@Override
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
+			AssessmentToolSecurityCallback assessmentCallback) {
+		return getAssessmentHandler(courseNode).getIdentityListController(ureq, wControl, stackPanel, courseNode,
+				courseEntry, group, coachCourseEnv, toolContainer, assessmentCallback);
 	}
 
 }

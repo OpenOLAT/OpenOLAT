@@ -46,7 +46,6 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
@@ -165,7 +164,6 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("Node", new Long(courseNode.getIdent()));
 		WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
 
-		AssessmentHandler assessmentHandler = courseAssessmentService.getAssessmentHandler(courseNode);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if(assessmentConfig.isAssessedBusinessGroups() && courseNode instanceof GTACourseNode) {
 			CourseEnvironment courseEnv = CourseFactory.loadCourse(courseEntry).getCourseEnvironment();
@@ -179,8 +177,8 @@ public class AssessmentIdentityListCourseTreeController extends BasicController 
 			}
 			currentCtrl = ((GTACourseNode)courseNode).getCoachedGroupListController(ureq, bwControl, stackPanel,
 					coachCourseEnv, assessmentCallback.isAdmin(), coachedGroups);
-		} else if (assessmentHandler.hasCustomIdentityList()) {
-			currentCtrl = assessmentHandler.getIdentityListController(ureq, bwControl, stackPanel, courseNode,
+		} else if (courseAssessmentService.hasCustomIdentityList(courseNode)) {
+			currentCtrl = courseAssessmentService.getIdentityListController(ureq, bwControl, stackPanel, courseNode,
 					courseEntry, businessGroup, coachCourseEnv, toolContainer, assessmentCallback);
 		} else {
 			currentCtrl = new IdentityListCourseNodeController(ureq, bwControl, stackPanel, courseEntry, businessGroup,

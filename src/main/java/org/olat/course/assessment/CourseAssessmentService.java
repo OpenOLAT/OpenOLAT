@@ -22,14 +22,23 @@ package org.olat.course.assessment;
 import java.io.File;
 import java.util.List;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.stack.BreadcrumbPanel;
+import org.olat.core.gui.components.stack.TooledStackedPanel;
+import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.handler.AssessmentHandler;
+import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.ui.AssessmentToolContainer;
+import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -39,8 +48,6 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
  *
  */
 public interface CourseAssessmentService {
-	
-	public AssessmentHandler getAssessmentHandler(CourseNode courseNode);
 	
 	public AssessmentConfig getAssessmentConfig(CourseNode node);
 
@@ -172,5 +179,45 @@ public interface CourseAssessmentService {
 	 * @return the users log of this node
 	 */
 	public String getUserLog(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * Returns a controller to edit the node specific details. Check
+	 * AssessmentConfig.hasEditableDetails() before invoking this method.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @return a controller or null
+	 */
+	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
+			CourseNode courseNode, UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnvironment);
+	
+	/**
+	 * 
+	 * @return whether this node has a custom controller for the identity list.
+	 */
+	public boolean hasCustomIdentityList(CourseNode courseNode);
+	
+	/**
+	 * Returns the controller with the list of assessed identities for a specific
+	 * course node. Check AssessmentHandler.hasCustomIdentityList() before invoking
+	 * this method.
+	 * 
+	 * @param ureq
+	 * @param wControl
+	 * @param stackPanel
+	 * @param courseNode
+	 * @param courseEntry
+	 * @param group
+	 * @param coachCourseEnv
+	 * @param toolContainer
+	 * @param assessmentCallback
+	 * @return
+	 */
+	public AssessmentCourseNodeController getIdentityListController(UserRequest ureq, WindowControl wControl,
+			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
+			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
+			AssessmentToolSecurityCallback assessmentCallback);
 
 }
