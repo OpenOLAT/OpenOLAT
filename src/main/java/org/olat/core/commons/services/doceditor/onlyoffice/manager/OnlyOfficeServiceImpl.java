@@ -206,7 +206,7 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	}
 
 	private String getDocumentKey(VFSMetadata metadata) {
-		String lastModified = LAST_MODIFIED.format(metadata.getLastModified());
+		String lastModified = LAST_MODIFIED.format(metadata.getFileLastModified());
 		return metadata.getUuid() + "-" + lastModified;
 	}
 	
