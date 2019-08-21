@@ -19,6 +19,7 @@
  */
 package org.olat.ims.qti21.model.xml;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -96,34 +97,46 @@ public class AssessmentHtmlBuilder {
 	}
 	
 	public String flowStaticString(List<? extends FlowStatic> statics) {
-		StringOutput sb = new StringOutput();
-		if(statics != null && !statics.isEmpty()) {
-			for(FlowStatic flowStatic:statics) {
-				serializeJqtiObject(flowStatic, sb);
+		try(StringOutput sb = new StringOutput()) {
+			if(statics != null && !statics.isEmpty()) {
+				for(FlowStatic flowStatic:statics) {
+					serializeJqtiObject(flowStatic, sb);
+				}
 			}
+			return cleanUpNamespaces(sb);
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
 		}
-		return cleanUpNamespaces(sb);
 	}
 	
 	public String blocksString(List<? extends Block> statics) {
-		StringOutput sb = new StringOutput();
-		if(statics != null && !statics.isEmpty()) {
-			for(Block flowStatic:statics) {
-				serializeJqtiObject(flowStatic, sb);
+		try(StringOutput sb = new StringOutput()) {
+			if(statics != null && !statics.isEmpty()) {
+				for(Block flowStatic:statics) {
+					serializeJqtiObject(flowStatic, sb);
+				}
 			}
+			
+			return cleanUpNamespaces(sb);
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
 		}
-		
-		return cleanUpNamespaces(sb);
 	}
 	
 	public String inlineStaticString(List<? extends InlineStatic> statics) {
-		StringOutput sb = new StringOutput();
-		if(statics != null && !statics.isEmpty()) {
-			for(InlineStatic inlineStatic:statics) {
-				serializeJqtiObject(inlineStatic, sb);
+		try(StringOutput sb = new StringOutput()) {
+			if(statics != null && !statics.isEmpty()) {
+				for(InlineStatic inlineStatic:statics) {
+					serializeJqtiObject(inlineStatic, sb);
+				}
 			}
+			return cleanUpNamespaces(sb);
+		} catch(IOException e) {
+			log.error("", e);
+			return null;
 		}
-		return cleanUpNamespaces(sb);
 	}
 	
 	private void serializeJqtiObject(QtiNode node, StringOutput sb) {
@@ -146,6 +159,10 @@ public class AssessmentHtmlBuilder {
 	}
 	
 	public void appendHtml(AbstractNode parent, String htmlFragment) {
+		appendHtml(parent, htmlFragment, false);
+	}
+	
+	public void appendHtml(AbstractNode parent, String htmlFragment, boolean convertInputValue) {
 		if(StringHelper.containsNonWhitespace(htmlFragment)) {
 			htmlFragment = htmlFragment.trim();
 			//tinymce bad habits
@@ -157,7 +174,7 @@ public class AssessmentHtmlBuilder {
 				htmlFragment = "<p>" + htmlFragment + "</p>";
 			}
 			//root element is an <html> element
-			Document document = filter(htmlFragment);
+			Document document = filter(htmlFragment, convertInputValue);
 			if(document != null) {
 				Element docElement = document.getDocumentElement();
 				cleanUpNamespaces(docElement);
@@ -203,7 +220,7 @@ public class AssessmentHtmlBuilder {
 	 * @return A document object with an HTML root element with the actual
 	 * 		blocks under this root element.
 	 */
-	private Document filter(String content) {
+	private Document filter(String content, boolean convertInputValue) {
 		try {
 			// Alter infoset because of special namespace on tag p
 			HtmlParser parser = new HtmlParser(XmlViolationPolicy.ALTER_INFOSET);
@@ -211,7 +228,7 @@ public class AssessmentHtmlBuilder {
 	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document document = builder.newDocument();
-			HtmlToDomBuilderHandler contentHandler = new HtmlToDomBuilderHandler(document);
+			HtmlToDomBuilderHandler contentHandler = new HtmlToDomBuilderHandler(document, convertInputValue);
 			parser.setContentHandler(contentHandler);
 			parser.parse(new InputSource(new StringReader(content)));
 			return document;
@@ -236,8 +253,11 @@ public class AssessmentHtmlBuilder {
 		private boolean video = false;
 		private StringBuilder scriptBuffer = new StringBuilder();
 		
-		public HtmlToDomBuilderHandler(Document document) {
+		private final boolean convertInputValue;
+		
+		public HtmlToDomBuilderHandler(Document document, boolean convertInputValue) {
 			super(document);
+			this.convertInputValue = convertInputValue;
 		}
 
 		@Override
@@ -245,7 +265,7 @@ public class AssessmentHtmlBuilder {
 			if(video || "head".equalsIgnoreCase(localName) || "body".equalsIgnoreCase(localName)) {
 				return;
 			}
-			
+
 			if("textentryinteraction".equalsIgnoreCase(localName)) {
 				localName = qName = "textEntryInteraction";
 
@@ -263,6 +283,24 @@ public class AssessmentHtmlBuilder {
 				attributes = new AttributesDelegate(attributesCleaned);
 				super.startElement(uri, localName, qName, attributes);
 				super.endElement(uri, localName, qName);
+				return;
+			} else if(convertInputValue && "input".equalsIgnoreCase(localName)) {
+				for(int i=0; i<attributes.getLength(); i++) {
+					String name = attributes.getLocalName(i);
+					if("value".equalsIgnoreCase(name)) {
+						String val = attributes.getValue(i);
+						if(val != null) {
+							char[] valArray = val.toCharArray();
+							localName = qName = "span";
+
+							AttributesImpl attributesCleaned = new AttributesImpl("");
+							attributesCleaned.addAttribute("class", "o_input_value o_input_value_wrapper");
+							super.startElement(uri, localName, qName, attributesCleaned);
+							super.characters(valArray, 0, valArray.length);
+							super.endElement(uri, localName, qName);
+						}
+					}
+				}
 				return;
 			} else if("span".equalsIgnoreCase(localName)) {
 				String cssClass = attributes.getValue("class");
@@ -302,19 +340,20 @@ public class AssessmentHtmlBuilder {
 					if(start >= 0) {
 						int end = content.indexOf(')', start);
 						String parameters = content.substring(start + startScript.length(), end);
-						translateToObject(uri, parameters);
+						translateToObject(parameters);
 					}
 					video = false;
 				}
 				return;
 			}
-			if("textentryinteraction".equalsIgnoreCase(localName)) {
+			if("textentryinteraction".equalsIgnoreCase(localName)
+					|| (convertInputValue && "input".equalsIgnoreCase(localName))) {
 				return;
 			}
 			super.endElement(uri, localName, qName);
 		}
 		
-		private void translateToObject(String uri, String parameters) {
+		private void translateToObject(String parameters) {
 			String[] array = parameters.split(",");
 			
 			String data = array[0].replace("\"", "");

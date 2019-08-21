@@ -1,0 +1,24 @@
+/* For TinyMCE */
+.textEntryInteraction {
+	input, span.o_input_value {
+		margin: -1px 2px;
+		line-height: 90%;		
+		vertical-align: middle;
+		font-size: ($font-size-base * 0.98);
+		line-height: 1.5; /* smaller than #itemBody */
+		border: 1px solid $o-qti-textEntryInteraction-border-color;
+		background: $o-qti-textEntryInteraction-bg;
+		padding: 1px 1px;
+		color: $o-qti-textEntryInteraction-color;
+		max-width: 100%;
+		/* format fields with values in it in separate style */
+		&:valid,
+		&:disabled,
+		&.o_input_value_wrapper {
+			color: $o-qti-textEntryInteraction-filled-color;
+			-webkit-text-fill-color: $o-qti-textEntryInteraction-filled-color;
+			background: $o-qti-textEntryInteraction-filled-bg;				
+			border: 1px solid $o-qti-textEntryInteraction-filled-border-color;
+		}
+	}
+}
