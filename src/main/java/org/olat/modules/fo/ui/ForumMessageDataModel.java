@@ -92,7 +92,7 @@ public class ForumMessageDataModel extends DefaultFlexiTreeTableDataModel<Messag
 			switch(ForumMessageCols.values()[col]) {
 				case type: return row.getView().getStatusCode();
 				case mark: return row.getMarkLink();
-				case thread: return StringHelper.escapeHtml(row.getView().getTitle());
+				case thread: return row.getView().getTitle();
 				case lastModified: return row.getView().getLastModified();
 				case newMessage: return row.getView().isNewMessage()? Boolean.TRUE: null;
 				default: return "ERROR";
