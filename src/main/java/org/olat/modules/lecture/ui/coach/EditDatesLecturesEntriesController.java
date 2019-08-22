@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarUtils;
@@ -48,6 +49,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.AbsenceNoticeTarget;
+import org.olat.modules.lecture.AbsenceNoticeToLectureBlock;
+import org.olat.modules.lecture.AbsenceNoticeToRepositoryEntry;
 import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureService;
@@ -456,7 +459,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		} else if(targetsEl == source || datesEl == source) {
 			updateTargets();
 		} else if(prolongateButton == source) {
-			doProlongate();
+			doProlongate(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -485,7 +488,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		}
 	}
 	
-	private void doProlongate() {
+	private void doProlongate(UserRequest ureq) {
 		Dates dates = getDates();
 		List<AbsenceNotice> notices = lectureService.detectCollision(noticedIdentity,
 				noticeWrapper.getAbsenceNotice(), dates.getStartDate(), dates.getEndDate());
@@ -504,6 +507,24 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			}
 			updateTargets();
 			
+			List<AbsenceNoticeToLectureBlock> noticesToBlocks = lectureService.getAbsenceNoticeToLectureBlocks(notice);
+			Set<String> lectureBlocksKeys = lectureBlocksEl.getKeys();
+			for(AbsenceNoticeToLectureBlock noticeToBlock:noticesToBlocks) {
+				String lectureBlockKey = noticeToBlock.getLectureBlock().getKey().toString();
+				if(lectureBlocksKeys.contains(lectureBlockKey)) {
+					lectureBlocksEl.select(lectureBlockKey, true);
+				}
+			}
+			
+			List<AbsenceNoticeToRepositoryEntry> noticesToEntries = lectureService.getAbsenceNoticeToRepositoryEntries(notice);
+			Set<String> entriesKeys = entriesEl.getKeys();
+			for(AbsenceNoticeToRepositoryEntry noticeToEntry:noticesToEntries) {
+				String repositoryEntryKey = noticeToEntry.getEntry().getKey().toString();
+				if(entriesKeys.contains(repositoryEntryKey)) {
+					entriesEl.select(repositoryEntryKey, true);
+				}
+			}
+			
 			Date startDate = noticeWrapper.getStartDate();
 			Date endDate = noticeWrapper.getEndDate();
 			boolean sameDay = CalendarUtils.isSameDay(startDate, endDate);
@@ -520,6 +541,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			}
 			durationEl.select(selectedDurationKey, true);
 			updateDuration();
+			validateFormLogic(ureq);
 		}
 	}
 	

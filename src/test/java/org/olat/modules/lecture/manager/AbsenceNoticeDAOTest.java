@@ -169,6 +169,49 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void detectCollision() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Date now = new Date();
+		Date start = CalendarUtils.startOfDay(now);
+		Date end = CalendarUtils.endOfDay(now);
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				start, end, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.set(Calendar.HOUR_OF_DAY, 13);
+		Date collisionStart = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 16);
+		Date collisionEnd = cal.getTime();
+		List<AbsenceNotice> collisions = absenceNoticeDao.detectCollision(identity, null, collisionStart, collisionEnd);
+		Assert.assertNotNull(collisions);
+		Assert.assertEquals(1, collisions.size());
+		Assert.assertTrue(collisions.contains(notice));
+	}
+	
+	@Test
+	public void detectCollision_inThePast() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Date now = new Date();
+		Date start = CalendarUtils.startOfDay(now);
+		Date end = CalendarUtils.endOfDay(now);
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity1, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				start, end, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.add(Calendar.DATE, -3);
+		Date oldStart = CalendarUtils.startOfDay(cal.getTime());
+		Date oldEnd = CalendarUtils.endOfDay(cal.getTime());
+		List<AbsenceNotice> collisions = absenceNoticeDao.detectCollision(identity1, null, oldStart, oldEnd);
+		Assert.assertNotNull(collisions);
+		Assert.assertFalse(collisions.contains(notice));
+		Assert.assertTrue(collisions.isEmpty());
+	}
+	
+	@Test
 	public void searchAbsenceNotice() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3");
 		
