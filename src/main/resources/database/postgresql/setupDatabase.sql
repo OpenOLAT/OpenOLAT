@@ -1804,7 +1804,7 @@ create table o_pf_media (
    p_content text,
    p_signature int8 not null default 0,
    p_reference_id varchar(255) default null,
-   p_business_path varchar(255) not null,
+   p_business_path varchar(255) default null,
    p_creators varchar(1024) default null,
    p_place varchar(255) default null,
    p_publisher varchar(255) default null,

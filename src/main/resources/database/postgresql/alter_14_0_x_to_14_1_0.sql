@@ -77,5 +77,6 @@ alter table o_lecture_block_audit_log add column fk_absence_notice int8 default 
 -- curriculum
 update o_cur_curriculum set c_status='active' where c_status is null;
 
-
+-- portfolio
+alter table o_pf_media alter column p_business_path drop not null;
 

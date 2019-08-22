@@ -1815,7 +1815,7 @@ create table o_pf_media (
    p_content CLOB,
    p_signature number(20) default 0 not null,
    p_reference_id varchar2(255 char) default null,
-   p_business_path varchar2(255 char) not null,
+   p_business_path varchar2(255 char) default null,
    p_creators varchar2(1024 char) default null,
    p_place varchar2(255 char) default null,
    p_publisher varchar2(255 char) default null,

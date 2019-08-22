@@ -73,7 +73,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class MediaDetailsController extends FormBasicController implements Activateable2, TooledController {
 
-	private Link editLink, deleteLink;
+	private Link editLink;
+	private Link deleteLink;
 	private Link gotoOriginalLink;
 	private final TooledStackedPanel stackPanel;
 
@@ -154,7 +155,7 @@ public class MediaDetailsController extends FormBasicController implements Activ
 				metaCont.contextPut("collectionDate", collectionDate);
 			}
 			
-			if (media.getBusinessPath() != null) {
+			if (StringHelper.containsNonWhitespace(media.getBusinessPath())) {
 				gotoOriginalLink = LinkFactory.createLink("goto.original", metaCont.getFormItemComponent(), this);
 			}
 			
@@ -164,9 +165,9 @@ public class MediaDetailsController extends FormBasicController implements Activ
 			}
 			
 			List<Category> categories = portfolioService.getCategories(media);
-			if(categories != null && categories.size() > 0) {
+			if(categories != null && !categories.isEmpty()) {
 				Map<String,String> categoriesMap = categories.stream()
-						.collect(Collectors.toMap(c -> c.getName(), c -> c.getName()));
+						.collect(Collectors.toMap(Category::getName, Category::getName));
 				TextBoxListElement categoriesEl = uifactory.addTextBoxListElement("categories", "categories", "categories.hint", categoriesMap, metaCont, getTranslator());
 				categoriesEl.setHelpText(translate("categories.hint"));
 				categoriesEl.setElementCssClass("o_sel_ep_tagsinput");
