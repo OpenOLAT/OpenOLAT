@@ -75,4 +75,5 @@ create index idx_rollcall_to_notice_idx on o_lecture_block_roll_call (fk_absence
 
 alter table o_lecture_block_audit_log add fk_absence_notice number(20) default null;
 
-
+-- curriculum
+update o_cur_curriculum set c_status='active' where c_status is null;

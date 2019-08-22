@@ -54,8 +54,7 @@ public class CurriculumSearchController extends FormBasicController implements E
 	private TextElement elementTextEl;
 	private TextElement entryIdEl;
 	private TextElement entryTextEl;
-	private DateChooser elementEndEl;
-	private DateChooser elementBeginEl;
+	private DateChooser elementDatesEl;
 	
 	private boolean enabled = true;
 	
@@ -79,8 +78,9 @@ public class CurriculumSearchController extends FormBasicController implements E
 		elementTextEl.setElementCssClass("o_sel_cur_search_text");
 		elementTextEl.setFocus(true);
 
-		elementBeginEl = uifactory.addDateChooser("search.element.begin", null, leftContainer);
-		elementEndEl = uifactory.addDateChooser("search.element.end", null, leftContainer);
+		elementDatesEl = uifactory.addDateChooser("search.element.begin", null, leftContainer);
+		elementDatesEl.setSecondDate(true);
+		elementDatesEl.setSeparator("search.element.end");
 
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
 		rightContainer.setRootForm(mainForm);
@@ -116,14 +116,6 @@ public class CurriculumSearchController extends FormBasicController implements E
 	public List<String> getConditionalQueries() {
 		return Collections.emptyList();
 	}
-	
-	@Override
-	protected boolean validateFormLogic(UserRequest ureq) {
-		if(!enabled) return true;
-		
-
-		return true;
-	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
@@ -149,9 +141,9 @@ public class CurriculumSearchController extends FormBasicController implements E
 		CurriculumSearchEvent e = new CurriculumSearchEvent();
 		e.setElementId(elementIdEl.getValue());
 		e.setElementText(elementTextEl.getValue());
-		e.setElementBegin(elementBeginEl.getDate());
-		if(elementEndEl.getDate() != null) {
-			Date endDate = CalendarUtils.endOfDay(elementEndEl.getDate());
+		e.setElementBegin(elementDatesEl.getDate());
+		if(elementDatesEl.getSecondDate() != null) {
+			Date endDate = CalendarUtils.endOfDay(elementDatesEl.getSecondDate());
 			e.setElementEnd(endDate);
 		}
 		e.setEntryId(entryIdEl.getValue());

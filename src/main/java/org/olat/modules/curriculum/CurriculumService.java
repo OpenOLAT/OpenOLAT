@@ -245,7 +245,14 @@ public interface CurriculumService {
 
 	public List<CurriculumElement> getCurriculumElements(Collection<? extends CurriculumElementRef> elementRefs);
 	
-	public void deleteCurriculumElement(CurriculumElementRef element);
+	/**
+	 * The element will deleted from the database if possible
+	 * or flagged as deleted.
+	 * 
+	 * @param element The curriculum elemennt to delete
+	 * @return true if the element is deleted, false if it's only flagged as deleted
+	 */
+	public boolean deleteCurriculumElement(CurriculumElementRef element);
 	
 	/**
 	 * Return all the elements of a curriculum, but flat.

@@ -148,12 +148,18 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public void deleteCurriculum(CurriculumRef curriculumRef) {
 		CurriculumImpl curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
+		boolean deleted = true;
 		for(CurriculumElement rootElement:curriculum.getRootElements()) {
-			deleteCurriculumElement(rootElement);
+			deleted &= deleteCurriculumElement(rootElement);
 		}
 		dbInstance.commit();
 		curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
-		curriculumDao.delete(curriculum);
+		if(deleted) {
+			curriculumDao.delete(curriculum);
+		} else {
+			curriculumDao.flagAsDelete(curriculum);
+		}
+		
 		dbInstance.commit();
 	}
 
@@ -376,7 +382,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public void deleteCurriculumElement(CurriculumElementRef element) {
+	public boolean deleteCurriculumElement(CurriculumElementRef element) {
 		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
 		for(CurriculumElement child:children) {
 			deleteCurriculumElement(child);
@@ -413,6 +419,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			reloadedElement.setElementStatus(CurriculumElementStatus.deleted);
 			curriculumElementDao.update(reloadedElement);
 		}
+		return delete;
 	}
 
 	@Override
@@ -878,6 +885,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation) {
 		CurriculumSearchParameters searchParams = new CurriculumSearchParameters();
 		searchParams.setOrganisations(Collections.singletonList(organisation));
+		searchParams.setWithDeleted(true);
 		List<Curriculum> curriculums = curriculumDao.search(searchParams);
 		for(Curriculum curriculum:curriculums) {
 			curriculum.setOrganisation(replacementOrganisation);

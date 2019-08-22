@@ -43,6 +43,7 @@ import org.olat.modules.curriculum.Curriculum;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumRef;
 import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumStatus;
 import org.olat.modules.curriculum.model.CurriculumImpl;
 import org.olat.modules.curriculum.model.CurriculumInfos;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
@@ -69,6 +70,7 @@ public class CurriculumDAO {
 		curriculum.setCreationDate(new Date());
 		curriculum.setLastModified(curriculum.getCreationDate());
 		curriculum.setGroup(groupDao.createGroup());
+		curriculum.setStatus(CurriculumStatus.active.name());
 		curriculum.setDisplayName(displayName);
 		curriculum.setIdentifier(identifier);
 		curriculum.setDescription(description);
@@ -126,8 +128,9 @@ public class CurriculumDAO {
 		  .append("  inner join curElement.group as bGroup")
 		  .append("  inner join bGroup.members membership")
 		  .append("  where curElement.curriculum.key=cur.key and membership.identity.key=:memberKey and membership.role ").in(CurriculumRoles.participant, CurriculumRoles.coach, CurriculumRoles.owner)
-		  .append(" )");
-	
+		  .append(" )")
+		  .append(" and (cur.status is null or cur.status ").in(CurriculumStatus.active.name()).append(")");
+
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Curriculum.class)
 				.setParameter("memberKey", identity.getKey())
@@ -157,6 +160,12 @@ public class CurriculumDAO {
 		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation organis")
 		  .append(" inner join fetch cur.group baseGroup");
 		
+		
+		if(!params.isWithDeleted()) {
+			sb.and()
+			  .append(" (cur.status is null or cur.status ").in(CurriculumStatus.active.name()).append(")");
+		}
+
 		if(!params.getOrganisations().isEmpty()) {
 			sb.and()
 			  .append(" organis.key in (:organisationKeys)");
@@ -225,6 +234,11 @@ public class CurriculumDAO {
 		  .append(" from curriculum cur")
 		  .append(" inner join fetch cur.group baseGroup")
 		  .append(" ").append(params.getOrganisations().isEmpty() ? "left" : "inner").append(" join fetch cur.organisation organis");
+		
+		if(!params.isWithDeleted()) {
+			sb.and()
+			  .append(" (cur.status is null or cur.status ").in(CurriculumStatus.active.name()).append(")");
+		}
 		
 		if(!params.getOrganisations().isEmpty()) {
 			sb.and().append(" organis.key in (:organisationKeys)");
@@ -348,6 +362,13 @@ public class CurriculumDAO {
 		groupDao.removeMemberships(group);
 		dbInstance.getCurrentEntityManager().remove(curriculum);
 		groupDao.removeGroup(group);
+	}
+	
+	public Curriculum flagAsDelete(CurriculumImpl curriculum) {
+		Group group = curriculum.getGroup();
+		groupDao.removeMemberships(group);
+		curriculum.setStatus(CurriculumStatus.deleted.name());
+		return update(curriculum);
 	}
 	
 	public List<Identity> getMembersIdentity(CurriculumRef curriculum, String role) {

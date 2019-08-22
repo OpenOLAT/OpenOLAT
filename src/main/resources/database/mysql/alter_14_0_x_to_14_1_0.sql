@@ -71,6 +71,6 @@ alter table o_lecture_block_roll_call add constraint rollcall_to_notice_idx fore
 
 alter table o_lecture_block_audit_log add column fk_absence_notice bigint default null;
 
-
-
+-- curriculum
+update o_cur_curriculum set c_status='active' where c_status is null;
 
