@@ -112,11 +112,14 @@ public class RepositoryEntryAuthorQueries {
 			Number numOfReferences = (Number)object[3];
 			int references = numOfReferences == null ? 0 : numOfReferences.intValue();
 			
+			Number numOfBinders = (Number)object[4];
+			references += numOfBinders == null ? 0 : numOfBinders.intValue();
+
 			boolean lectureEnabled = false;
 			boolean rollCallEnabled = false;
-			if(object.length > 4) {
-				lectureEnabled = PersistenceHelper.extractBoolean(object, 4, false);
-				rollCallEnabled = PersistenceHelper.extractBoolean(object, 5, false);
+			if(object.length > 5) {
+				lectureEnabled = PersistenceHelper.extractBoolean(object, 5, false);
+				rollCallEnabled = PersistenceHelper.extractBoolean(object, 6, false);
 			}
 			
 			String deletedByName = null;
@@ -161,7 +164,15 @@ public class RepositoryEntryAuthorQueries {
 			  .append(" ) as offers,")
 			  .append(" (select count(ref.key) from references as ref ")
 			  .append("   where ref.target.key=res.key")
-			  .append(" ) as references");
+			  .append(" ) as references,");
+			if(params.includeResourceType("BinderTemplate")) {
+				sb.append(" (select count(binder.key) from pfbinder as binder")
+				  .append("   inner join binder.template as template")
+				  .append("   where res.resName='BinderTemplate' and res.key=template.olatResource.key")
+				  .append(" ) as binders");
+			} else {
+				sb.append(" 0 as binders");
+			}
 			if(lectureModule.isEnabled()) {
 				sb.append(", lectureConfig.lectureEnabled")
 				  .append(", case when lectureConfig.rollCallEnabled=true then true else ").append(lectureModule.isRollCallDefaultEnabled()).append(" end as rollCallEnabled");

@@ -663,6 +663,11 @@ public class PortfolioServiceImpl implements PortfolioService {
 	public boolean isTemplateInUse(Binder binder, RepositoryEntry courseEntry, String subIdent) {
 		return binderDao.isTemplateInUse(binder, courseEntry, subIdent);
 	}
+	
+	@Override
+	public int getTemplateUsage(RepositoryEntryRef templateEntry) {
+		return binderDao.getTemplateUsage(templateEntry);
+	}
 
 	@Override
 	public Binder getBinder(Identity owner, BinderRef templateBinder, RepositoryEntryRef courseEntry, String subIdent) {
