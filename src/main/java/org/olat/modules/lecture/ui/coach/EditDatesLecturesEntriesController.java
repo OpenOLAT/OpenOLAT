@@ -32,11 +32,13 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -74,6 +76,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	private DateChooser datesEl;
 	private SingleSelection targetsEl;
 	private SingleSelection durationEl;
+	private FormLink prolongateButton;
 	private MultipleSelectionElement entriesEl;
 	private MultipleSelectionElement lectureBlocksEl;
 
@@ -176,6 +179,11 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		datesEl.setSecondDate(endDate);
 		datesEl.setSeparator("noticed.till");
 		datesEl.setMandatory(true);
+
+		if(noticeWrapper.getAbsenceNotice() == null) {
+			prolongateButton = uifactory.addFormLink("prolongate.notice", formLayout, Link.BUTTON);
+			prolongateButton.setVisible(false);
+		}
 
 		// targets: all, courses, lectureblocks
 		String[] targetValues = new String[] {
@@ -408,6 +416,9 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 		allOk &= validate(entriesEl);
 		
 		datesEl.clearError();
+		if(prolongateButton != null) {
+			prolongateButton.setVisible(false);
+		}
 		if(datesEl.getDate() == null || datesEl.getSecondDate() == null) {
 			datesEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
@@ -418,6 +429,10 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			if(!notices.isEmpty()) {
 				datesEl.setErrorKey("error.collision", null);
 				allOk &= false;
+				if(prolongateButton != null) {
+					prolongateButton.setVisible(true);
+					prolongateButton.setUserObject(notices);
+				}
 			}
 		}
 
@@ -440,6 +455,8 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 			updateDuration();
 		} else if(targetsEl == source || datesEl == source) {
 			updateTargets();
+		} else if(prolongateButton == source) {
+			doProlongate();
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -465,6 +482,44 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 					.map(LectureBlockWithTeachers::getLectureBlock)
 					.collect(Collectors.toList());
 			noticeWrapper.setLectureBlocks(blocks);
+		}
+	}
+	
+	private void doProlongate() {
+		Dates dates = getDates();
+		List<AbsenceNotice> notices = lectureService.detectCollision(noticedIdentity,
+				noticeWrapper.getAbsenceNotice(), dates.getStartDate(), dates.getEndDate());
+		if(!notices.isEmpty()) {
+			AbsenceNotice notice = notices.get(0);
+			noticeWrapper.wrap(notice);
+			if(notice.getStartDate().before(dates.getStartDate())) {
+				datesEl.setDate(notice.getStartDate());
+			} else {
+				noticeWrapper.setStartDate(dates.getStartDate());
+			}
+			if(notice.getEndDate().after(dates.getEndDate())) {
+				datesEl.setSecondDate(notice.getEndDate());
+			} else {
+				noticeWrapper.setEndDate(dates.getEndDate());
+			}
+			updateTargets();
+			
+			Date startDate = noticeWrapper.getStartDate();
+			Date endDate = noticeWrapper.getEndDate();
+			boolean sameDay = CalendarUtils.isSameDay(startDate, endDate);
+			boolean startDay = AbsenceNoticeHelper.isStartOfWholeDay(startDate);
+			boolean endDay = AbsenceNoticeHelper.isEndOfWholeDay(endDate);
+
+			String selectedDurationKey;
+			if(sameDay && startDay && endDay) {
+				selectedDurationKey = "today";
+			} else if(startDay && endDay) {
+				selectedDurationKey = "days";
+			} else {
+				selectedDurationKey = "exact";
+			}
+			durationEl.select(selectedDurationKey, true);
+			updateDuration();
 		}
 	}
 	

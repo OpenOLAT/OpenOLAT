@@ -67,6 +67,10 @@ public class EditAbsenceNoticeWrapper {
 	private List<VFSItem> attachmentsToDelete = new ArrayList<>();
 	
 	private EditAbsenceNoticeWrapper(AbsenceNotice notice) {
+		wrap(notice);
+	}
+	
+	public void wrap(AbsenceNotice notice) {
 		absenceNotice = notice;
 		identity = notice.getIdentity();
 		startDate = notice.getStartDate();

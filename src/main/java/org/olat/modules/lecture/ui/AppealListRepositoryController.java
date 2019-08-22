@@ -205,6 +205,10 @@ public class AppealListRepositoryController extends FormBasicController {
 		loadModel(true);
 	}
 	
+	public void reloadModel() {
+		loadModel(false);
+	}
+	
 	protected void loadModel(boolean reset) {
 		searchParams.setEntry(entry);
 		searchParams.setCalledIdentity(profiledIdentity);

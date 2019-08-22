@@ -86,7 +86,7 @@ public class AbsenceNoticeToRepositoryEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getRollCalls() {
+	public void searchRollCallsByRepositoryEntry() {
 		// make a course, with a participant, with a lecture block, an absence
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		LectureBlock lectureBlock = createMinimalLectureBlock(entry, new Date(), new Date());
@@ -102,14 +102,87 @@ public class AbsenceNoticeToRepositoryEntryDAOTest extends OlatTestCase {
 		
 		dbInstance.commitAndCloseSession();
 		
-		List<LectureBlockRollCall> rollCallList = absenceNoticeToRepositoryEntryDao.getRollCallsByRepositoryEntry(notice);
+		List<LectureBlockRollCall> rollCallList = absenceNoticeToRepositoryEntryDao.searchRollCallsByRepositoryEntry(notice);
 		Assert.assertNotNull(rollCallList);
 		Assert.assertEquals(1, rollCallList.size());
 		Assert.assertTrue(rollCallList.contains(rollCall));
 	}
 	
+	/**
+	 * The test make sure that the search method returns the roll call
+	 * of the right user, at the right dates, with the right course. It
+	 * adds noise in the form of a second course, second lecture block
+	 * with different dates and a second participant (with a lecture at
+	 * the moment of the search).
+	 * 
+	 */
 	@Test
-	public void getRollCallsOfAllEntries() {
+	public void searchRollCallsByRepositoryEntry_severalParticipants() {
+		// make a course, with a participant, with a lecture block, an absence
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 12);
+		Date startLecture = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		Date endLecture = cal.getTime();
+		
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry, startLecture, endLecture);
+		
+		cal.add(Calendar.DATE, -7);
+		cal.set(Calendar.HOUR_OF_DAY, 12);
+		Date oldStartLecture = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		Date oldEndLecture = cal.getTime();
+		LectureBlock oldLectureBlock = createMinimalLectureBlock(entry, oldStartLecture, oldEndLecture);
+		
+		// second repository entry for some noise
+		RepositoryEntry entry2 = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlockEntry2 = createMinimalLectureBlock(entry2, startLecture, endLecture);
+		
+		// memberships
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-2");
+		repositoryEntryRelationDAO.addRole(participant1, entry, GroupRole.participant.name());
+		repositoryEntryRelationDAO.addRole(participant2, entry, GroupRole.participant.name());
+		repositoryEntryRelationDAO.addRole(participant1, entry2, GroupRole.participant.name());
+		repositoryEntryRelationDAO.addRole(participant2, entry2, GroupRole.participant.name());
+		
+		
+		AbsenceNotice notice1 = lectureService.createAbsenceNotice(participant1, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()),
+				null, null, Boolean.TRUE, Collections.singletonList(entry), null, null);
+		AbsenceNotice notice2 = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()),
+				null, null, Boolean.TRUE, Collections.singletonList(entry), null, null);
+		dbInstance.commit();
+		Assert.assertNotNull(notice1);
+		Assert.assertNotNull(notice2);
+		
+		// roll call first entry
+		LectureBlockRollCall rollCall1 = lectureService.getOrCreateRollCall(participant1, lectureBlock, null, null, null);
+		Assert.assertNotNull(rollCall1);
+		LectureBlockRollCall rollCall2 = lectureService.getOrCreateRollCall(participant2, lectureBlock, null, null, null);
+		Assert.assertNotNull(rollCall2);
+		LectureBlockRollCall oldRollCall1 = lectureService.getOrCreateRollCall(participant1, oldLectureBlock, null, null, null);
+		Assert.assertNotNull(oldRollCall1);
+		// roll call second entry
+		LectureBlockRollCall rollCall1Entry2 = lectureService.getOrCreateRollCall(participant1, lectureBlockEntry2 , null, null, null);
+		Assert.assertNotNull(rollCall1Entry2);
+		LectureBlockRollCall rollCall2Entry2  = lectureService.getOrCreateRollCall(participant2, lectureBlockEntry2, null, null, null);
+		Assert.assertNotNull(rollCall2Entry2);
+		
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlockRollCall> rollCallList = absenceNoticeToRepositoryEntryDao.searchRollCallsByRepositoryEntry(notice1);
+		Assert.assertNotNull(rollCallList);
+		Assert.assertEquals(1, rollCallList.size());
+		Assert.assertTrue(rollCallList.contains(rollCall1));
+		Assert.assertFalse(rollCallList.contains(rollCall2));
+		Assert.assertFalse(rollCallList.contains(oldRollCall1));
+	}
+	
+	@Test
+	public void searchRollCallsOfAllEntries() {
 		// make a course, with a participant, with a lecture block, an absence
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		Calendar cal = Calendar.getInstance();
@@ -123,7 +196,7 @@ public class AbsenceNoticeToRepositoryEntryDAOTest extends OlatTestCase {
 		repositoryEntryRelationDAO.addRole(participant, entry, GroupRole.participant.name());
 		AbsenceNotice notice = lectureService.createAbsenceNotice(participant, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
 				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()),
-				null, null, Boolean.TRUE, Collections.singletonList(entry), null, null);
+				null, null, Boolean.TRUE, null, null, null);
 		dbInstance.commit();
 		
 		LectureBlockRollCall rollCall = lectureService.getOrCreateRollCall(participant, lectureBlock, null, null, null);
@@ -131,10 +204,70 @@ public class AbsenceNoticeToRepositoryEntryDAOTest extends OlatTestCase {
 		
 		dbInstance.commitAndCloseSession();
 		
-		List<LectureBlockRollCall> rollCallList = absenceNoticeToRepositoryEntryDao.getRollCallsOfAllEntries(notice);
+		List<LectureBlockRollCall> rollCallList = absenceNoticeToRepositoryEntryDao
+				.searchRollCallsOfAllEntries(notice.getIdentity(), notice.getStartDate(), notice.getEndDate());
 		Assert.assertNotNull(rollCallList);
 		Assert.assertEquals(1, rollCallList.size());
 		Assert.assertTrue(rollCallList.contains(rollCall));
+	}
+	
+	/**
+	 * The test make sure that the search method returns the roll call
+	 * of the right user, at the right dates, with the right course. It
+	 * adds noise in the form of a second course, second lecture block
+	 * with different dates and a second participant (with a lecture at
+	 * the moment of the search).
+	 * 
+	 */
+	@Test
+	public void searchRollCallsOfAllEntries_severalParticipants() {
+		// make a course, with a participant, with a lecture block, an absence
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 12);
+		Date startLecture = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		Date endLecture = cal.getTime();
+		
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry, startLecture, endLecture);
+		
+		cal.add(Calendar.DATE, -7);
+		cal.set(Calendar.HOUR_OF_DAY, 12);
+		Date oldStartLecture = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		Date oldEndLecture = cal.getTime();
+		LectureBlock oldLectureBlock = createMinimalLectureBlock(entry, oldStartLecture, oldEndLecture);
+		
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-2");
+		repositoryEntryRelationDAO.addRole(participant1, entry, GroupRole.participant.name());
+		repositoryEntryRelationDAO.addRole(participant2, entry, GroupRole.participant.name());
+		AbsenceNotice notice1 = lectureService.createAbsenceNotice(participant1, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
+				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()),
+				null, null, Boolean.TRUE, null, null, null);
+		AbsenceNotice notice2 = lectureService.createAbsenceNotice(participant2, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
+				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()),
+				null, null, Boolean.TRUE, null, null, null);
+		dbInstance.commit();
+		Assert.assertNotNull(notice1);
+		Assert.assertNotNull(notice2);
+		
+		LectureBlockRollCall rollCall1 = lectureService.getOrCreateRollCall(participant1, lectureBlock, null, null, null);
+		Assert.assertNotNull(rollCall1);
+		LectureBlockRollCall rollCall2 = lectureService.getOrCreateRollCall(participant2, lectureBlock, null, null, null);
+		Assert.assertNotNull(rollCall2);
+		LectureBlockRollCall oldRollCall1 = lectureService.getOrCreateRollCall(participant1, oldLectureBlock, null, null, null);
+		Assert.assertNotNull(oldRollCall1);
+		
+		dbInstance.commitAndCloseSession();
+		
+		List<LectureBlockRollCall> rollCallList = absenceNoticeToRepositoryEntryDao
+				.searchRollCallsOfAllEntries(notice1.getIdentity(), notice1.getStartDate(), notice1.getEndDate());
+		Assert.assertNotNull(rollCallList);
+		Assert.assertEquals(1, rollCallList.size());
+		Assert.assertTrue(rollCallList.contains(rollCall1));
+		Assert.assertFalse(rollCallList.contains(rollCall2));
+		Assert.assertFalse(rollCallList.contains(oldRollCall1));
 	}
 	
 	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry, Date start, Date end) {

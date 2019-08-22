@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.persistence.TemporalType;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.modules.lecture.AbsenceNotice;
@@ -82,20 +83,29 @@ public class AbsenceNoticeToRepositoryEntryDAO {
 	 * @param notice
 	 * @return
 	 */
-	public List<LectureBlockRollCall> getRollCallsByRepositoryEntry(AbsenceNotice notice) {
+	public List<LectureBlockRollCall> searchRollCallsByRepositoryEntry(AbsenceNotice notice) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rollCall from absencenoticetoentry noticeToEntry")
 		  .append(" inner join noticeToEntry.entry as entry")
 		  .append(" inner join noticeToEntry.absenceNotice as notice")
 		  .append(" inner join lectureblock as block on (block.entry.key=entry.key)")
 		  .append(" inner join lectureblockrollcall as rollCall on (rollCall.lectureBlock.key=block.key)")
-		  .append(" inner join fetch rollCall.absenceNotice as currentNotice")
-		  .append(" where notice.key=:noticeKey and ");
-		AbsenceNoticeDAO.noticeBlockDates(sb);
+		  .append(" left join fetch rollCall.absenceNotice as currentNotice")
+		  .append(" where notice.key=:noticeKey and rollCall.identity.key=:identityKey")
+		  .append(" and (")
+		  .append("  (block.startDate>=:startDate and block.endDate<=:endDate)")
+		  .append("  or ")
+		  .append("  (block.startDate<=:startDate and block.startDate>=:endDate)")
+		  .append("  or ")
+		  .append("  (block.endDate<=:startDate and block.endDate>=:endDate)")
+		  .append(" )");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockRollCall.class)
 				.setParameter("noticeKey", notice.getKey())
+				.setParameter("identityKey", notice.getIdentity().getKey())
+				.setParameter("startDate", notice.getStartDate())
+				.setParameter("endDate", notice.getEndDate())
 				.getResultList();
 	}
 	
@@ -104,11 +114,11 @@ public class AbsenceNoticeToRepositoryEntryDAO {
 	 * @param notice
 	 * @return
 	 */
-	public List<LectureBlockRollCall> getRollCallsOfAllEntries(AbsenceNotice notice) {
+	public List<LectureBlockRollCall> searchRollCallsOfAllEntries(IdentityRef identity, Date start, Date end) {
 		QueryBuilder sb = new QueryBuilder();
-		sb.append("select rollCall from lectureblock block")
-		  .append(" inner join lectureblockrollcall as rollCall on (rollCall.lectureBlock.key=block.key)")
-		  .append(" inner join fetch rollCall.absenceNotice as currentNotice")
+		sb.append("select rollCall from lectureblockrollcall as rollCall")
+		  .append(" inner join rollCall.lectureBlock as block")
+		  .append(" left join fetch rollCall.absenceNotice as currentNotice")
 		  .append(" where rollCall.identity.key=:identityKey")
 		  .append(" and (")
 		  .append("  (block.startDate>=:startDate and block.endDate<=:endDate)")
@@ -120,9 +130,9 @@ public class AbsenceNoticeToRepositoryEntryDAO {
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockRollCall.class)
-				.setParameter("identityKey", notice.getIdentity().getKey())
-				.setParameter("startDate", notice.getStartDate(), TemporalType.TIMESTAMP)
-				.setParameter("endDate", notice.getEndDate(), TemporalType.TIMESTAMP)
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("startDate", start, TemporalType.TIMESTAMP)
+				.setParameter("endDate", end, TemporalType.TIMESTAMP)
 				.getResultList();
 	}
 

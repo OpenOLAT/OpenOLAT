@@ -203,6 +203,8 @@ public class LecturesCoachingController extends BasicController implements Activ
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Cockpit"), null);
 			cockpitController = new LecturesCockpitController(ureq, swControl, secCallback);
 			listenTo(cockpitController);
+		} else {
+			cockpitController.reloadModels();
 		}
 		addToHistory(ureq, cockpitController);
 		mainVC.put("segmentCmp", cockpitController.getInitialComponent()); 
@@ -230,6 +232,8 @@ public class LecturesCoachingController extends BasicController implements Activ
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Absences"), null);
 			absencesController = new AbsencesController(ureq, swControl, getCurrentDate(), secCallback);
 			listenTo(absencesController);
+		} else {
+			absencesController.reloadModels();
 		}
 		addToHistory(ureq, absencesController);
 		mainVC.put("segmentCmp", absencesController.getInitialComponent());  
@@ -240,6 +244,8 @@ public class LecturesCoachingController extends BasicController implements Activ
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Dispenses"), null);
 			dispensationsController = new DispensationsController(ureq, swControl, getCurrentDate(), secCallback, true, true);
 			listenTo(dispensationsController);
+		} else {
+			dispensationsController.reloadModel();
 		}
 		addToHistory(ureq, dispensationsController);
 		mainVC.put("segmentCmp", dispensationsController.getInitialComponent());   
@@ -250,6 +256,8 @@ public class LecturesCoachingController extends BasicController implements Activ
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Appeals"), null);
 			appealsController = new AppealsController(ureq, swControl, secCallback);
 			listenTo(appealsController);
+		} else {
+			appealsController.reloadModels();
 		}
 		addToHistory(ureq, appealsController);
 		mainVC.put("segmentCmp", appealsController.getInitialComponent());   

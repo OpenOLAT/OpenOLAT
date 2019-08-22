@@ -96,6 +96,10 @@ public class AppealsController extends BasicController {
 		}
 	}
 	
+	protected void reloadModels() {
+		loadPendentAppeals();
+	}
+	
 	private void loadPendentAppeals() {
 		LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
 		searchParams.setAppealStatus(Collections.singletonList(LectureBlockAppealStatus.pending));

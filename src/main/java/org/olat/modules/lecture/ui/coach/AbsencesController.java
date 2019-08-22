@@ -60,6 +60,7 @@ public class AbsencesController extends BasicController {
 	private Link addAbsenceButton;
 	private VelocityContainer mainVC;
 
+	private final Roles roles;
 	private final LecturesSecurityCallback secCallback;
 	private final AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
 	
@@ -74,6 +75,7 @@ public class AbsencesController extends BasicController {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		
 		this.secCallback = secCallback;
+		this.roles = ureq.getUserSession().getRoles();
 		searchParams.addTypes(AbsenceNoticeType.absence);
 		searchParams.setViewAs(getIdentity(), ureq.getUserSession().getRoles(), secCallback.viewAs());
 		searchParams.setLinkedToRollCall(true);
@@ -95,14 +97,13 @@ public class AbsencesController extends BasicController {
 		
 		putInitialPanel(mainVC);
 		noticesListCtlr.loadModel(searchParams);
-		loadUnauthorizedAbsences(ureq);
+		loadUnauthorizedAbsences();
 	}
 	
-	private void loadUnauthorizedAbsences(UserRequest ureq) {
+	private void loadUnauthorizedAbsences() {
 		AbsenceNoticeSearchParameters unauthorizedSearchParams = new AbsenceNoticeSearchParameters();
 		unauthorizedSearchParams.addTypes(AbsenceNoticeType.absence);
 		unauthorizedSearchParams.setLinkedToRollCall(true);
-		Roles roles = ureq.getUserSession().getRoles();
 		unauthorizedSearchParams.setViewAs(getIdentity(), roles, secCallback.viewAs());
 
 		List<AbsenceNoticeInfos> unauthorizedAbsences = lectureService.searchAbsenceNotices(unauthorizedSearchParams);
@@ -150,6 +151,11 @@ public class AbsencesController extends BasicController {
 		if(source == addAbsenceButton) {
 			doAddNotice(ureq);
 		}
+	}
+	
+	protected void reloadModels() {
+		noticesListCtlr.reloadModel();
+		loadUnauthorizedAbsences();
 	}
 	
 	private void doSearch(SearchAbsenceNoticeEvent event) {

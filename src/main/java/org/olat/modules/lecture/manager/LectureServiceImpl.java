@@ -662,15 +662,22 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		}
 		Set<LectureBlockRollCall> currentRollCallSet = new HashSet<>(currentRollCalls);
 		
+		IdentityRef identity = notice.getIdentity();
+		Date start = notice.getStartDate();
+		Date end = notice.getEndDate();
+		
 		List<LectureBlockRollCall> rollCalls;
 		switch(notice.getNoticeTarget()) {
-			case lectureblocks: rollCalls = absenceNoticeToLectureBlockDao.getRollCallsByLectureBlock(notice); break;
-			case entries: rollCalls = absenceNoticeToRepositoryEntryDao.getRollCallsByRepositoryEntry(notice); break;
-			case allentries: rollCalls = absenceNoticeToRepositoryEntryDao.getRollCallsOfAllEntries(notice); break;
+			case lectureblocks: rollCalls = absenceNoticeToLectureBlockDao.searchRollCallsByLectureBlock(notice); break;
+			case entries: rollCalls = absenceNoticeToRepositoryEntryDao.searchRollCallsByRepositoryEntry(notice); break;
+			case allentries: rollCalls = absenceNoticeToRepositoryEntryDao.searchRollCallsOfAllEntries(identity, start, end); break;
 			default: rollCalls = Collections.emptyList();
 		}
 		
 		for(LectureBlockRollCall rollCall:rollCalls) {
+			if(!rollCall.getIdentity().equals(notice.getIdentity())) {
+				continue;// this is a paranoia check, the search methods already do this
+			}
 			if(currentRollCallSet.contains(rollCall)) {
 				currentRollCallSet.remove(rollCall);
 			} else {

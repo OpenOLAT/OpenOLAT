@@ -188,6 +188,14 @@ public class LecturesCockpitController extends BasicController implements Activa
 		cleanUp();
 	}
 	
+	protected void reloadModels() {
+		if(lectureBlocksCtrl != null) {
+			lectureBlocksCtrl.loadModel();
+		}
+		absencesListCtrl.reloadModel();
+		loadPendingLectureBlocks();
+	}
+	
 	private void doRollCall(UserRequest ureq, List<LectureBlock> lectureBlocks) {
 		if(lectureBlocks.isEmpty()) {
 			// msg

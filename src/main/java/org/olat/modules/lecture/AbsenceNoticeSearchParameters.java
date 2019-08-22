@@ -70,6 +70,7 @@ public class AbsenceNoticeSearchParameters {
 		if(types == null || types.isEmpty()) {
 			typesList.clear();
 		} else {
+			typesList.clear();
 			typesList.addAll(types);
 		}
 	}

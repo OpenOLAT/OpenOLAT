@@ -29,6 +29,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -65,6 +66,11 @@ public class IdentityProfileController extends BasicController implements Activa
 	private Link addAbsence;
 	private Link addDispensation;
 	private Link addNoticeOfAbsence;
+	
+	private final int dailyTab;
+	private final int lecturesTab;
+	private final int appealsTab;
+	private final int dispensationsTab;
 	
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
@@ -118,10 +124,10 @@ public class IdentityProfileController extends BasicController implements Activa
 		// day overview
 		dailyOverviewCtrl = new DailyOverviewProfilController(ureq, getWindowControl(), profiledIdentity, secCallback);
 		listenTo(dailyOverviewCtrl);
-		tabPane.addTab(translate("cockpit.day.overview"), dailyOverviewCtrl);
+		dailyTab = tabPane.addTab(translate("cockpit.day.overview"), dailyOverviewCtrl);
 		
 		// list of lectures
-		tabPane.addTab(translate("user.overview.lectures"), uureq -> {
+		lecturesTab = tabPane.addTab(translate("user.overview.lectures"), uureq -> {
 			lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), profiledIdentity, null,
 					true, true, true, true, true, false);
 			listenTo(lecturesCtrl);
@@ -133,14 +139,14 @@ public class IdentityProfileController extends BasicController implements Activa
 		});
 
 		// dispensation
-		tabPane.addTab(translate("user.overview.dispensation"), uureq -> {
+		dispensationsTab = tabPane.addTab(translate("user.overview.dispensation"), uureq -> {
 			dispensationsCtrl = new DispensationsController(uureq, getWindowControl(), null, secCallback, false, false);
 			listenTo(dispensationsCtrl);
 			return dispensationsCtrl.getInitialComponent();
 		});
 
 		// appeals
-		tabPane.addTab(translate("user.overview.appeals"), uureq -> {
+		appealsTab = tabPane.addTab(translate("user.overview.appeals"), uureq -> {
 			appealsCtrl = new AppealListRepositoryController(uureq, getWindowControl(), profiledIdentity, secCallback);
 			listenTo(appealsCtrl);
 			return appealsCtrl.getInitialComponent();
@@ -169,6 +175,10 @@ public class IdentityProfileController extends BasicController implements Activa
 			doAddNotice(ureq, AbsenceNoticeType.notified);
 		} else if(addDispensation == source) {
 			doAddNotice(ureq, AbsenceNoticeType.dispensation);
+		} else if(source == tabPane) {
+			if(event instanceof TabbedPaneChangedEvent) {
+				reload();
+			}
 		}
 	}
 	
@@ -189,6 +199,19 @@ public class IdentityProfileController extends BasicController implements Activa
 	private void cleanUp() {
 		removeAsListenerAndDispose(addNoticeCtrl);
 		addNoticeCtrl = null;
+	}
+	
+	private void reload() {
+		int selectedPane = tabPane.getSelectedPane();
+		if(dispensationsCtrl != null && dispensationsTab == selectedPane) {
+			dispensationsCtrl.reloadModel();
+		} else if(dailyOverviewCtrl != null && dailyTab == selectedPane) {
+			dailyOverviewCtrl.reloadModel();
+		} else if(lecturesCtrl != null && lecturesTab == selectedPane) {
+			lecturesCtrl.loadModel();
+		} else if(appealsCtrl != null && appealsTab == selectedPane) {
+			appealsCtrl.reloadModel();
+		}
 	}
 	
 	private void updateModels() {

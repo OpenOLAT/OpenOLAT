@@ -225,9 +225,11 @@ public class AbsenceNoticeDAO {
 			  .append("(notice.startDate>=:startDate and notice.startDate<=:endDate)")
 			  .append(" or ")
 			  .append("(notice.endDate>=:startDate and notice.endDate<=:endDate)")
-			  .append(" or ")
-			  .append("(notice.startDate is null and notice.endDate is null)")
 			  .append(")");
+		} else if(searchParams.getStartDate() != null) {
+			sb.and().append(" notice.startDate>=:startDate");
+		} else if(searchParams.getEndDate() != null) {
+			sb.and().append(" notice.endDate<=:endDate");
 		}
 		
 		if(searchParams.getParticipant() != null) {
