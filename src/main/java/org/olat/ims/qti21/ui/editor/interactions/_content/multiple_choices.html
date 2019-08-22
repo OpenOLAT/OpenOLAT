@@ -1,4 +1,7 @@
 <fieldset class="o_form form-horizontal">
+#if($r.isTrue($scoreWarning))
+	<div class="o_warning" role="alert">$r.translate("warning.correct.answers.score")</div>
+#end
 <div class="form-group #if($f.hasError($item)) has-feedback has-error #end clearfix">
 	<div class="col-sm-1 col-md-offset-1"><strong>$r.translate("correct.answers")</strong></div>
 	<div class="col-sm-10"><strong>$r.translate("answers")</strong></div>

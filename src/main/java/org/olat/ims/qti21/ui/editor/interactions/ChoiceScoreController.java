@@ -256,7 +256,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateMinMaxScores(minScoreEl, maxScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
@@ -265,7 +265,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -301,7 +301,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			itemBuilder.clearMapping();
 			for(ChoiceWrapper wrapper:wrappers) {
 				String pointsStr = wrapper.getPointsEl().getValue();
-				Double points = new Double(pointsStr);
+				Double points = Double.valueOf(pointsStr);
 				itemBuilder.setMapping(wrapper.getChoice().getIdentifier(), points);
 			}
 		} else {

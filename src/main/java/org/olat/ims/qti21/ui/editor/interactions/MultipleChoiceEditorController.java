@@ -44,11 +44,14 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.ims.qti21.QTI21Constants;
 import org.olat.ims.qti21.model.IdentifierGenerator;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
+import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
+import org.olat.ims.qti21.ui.editor.SyncAssessmentItem;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 
 import uk.ac.ed.ph.jqtiplus.node.content.basic.FlowStatic;
@@ -64,7 +67,7 @@ import uk.ac.ed.ph.jqtiplus.value.Orientation;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class MultipleChoiceEditorController extends FormBasicController {
+public class MultipleChoiceEditorController extends FormBasicController implements SyncAssessmentItem {
 
 	private TextElement titleEl;
 	private RichTextElement textEl;
@@ -102,6 +105,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		itemContainer = (VFSContainer)rootContainer.resolve(relativePath);
 		
 		initForm(ureq);
+		validateScoreOfCorrectAnswer();
 	}
 
 	@Override
@@ -233,8 +237,6 @@ public class MultipleChoiceEditorController extends FormBasicController {
 		
 		choiceWrappers.add(new SimpleChoiceWrapper(choice, choiceEl, choiceReadOnlyEl, removeLink, addLink, upLink, downLink));
 	}
-	
-
 
 	@Override
 	protected void doDispose() {
@@ -242,8 +244,13 @@ public class MultipleChoiceEditorController extends FormBasicController {
 	}
 
 	@Override
+	public void sync(UserRequest ureq, AssessmentItemBuilder itemBuilder) {
+		validateScoreOfCorrectAnswer();
+	}
+
+	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 
 		titleEl.clearError();
 		if(!StringHelper.containsNonWhitespace(titleEl.getValue())) {
@@ -259,8 +266,37 @@ public class MultipleChoiceEditorController extends FormBasicController {
 				allOk &= false;
 			}
 		}
-		
-		return allOk & super.validateFormLogic(ureq);
+		validateScoreOfCorrectAnswer();// show only a warning
+		return allOk;
+	}
+	
+	private void validateScoreOfCorrectAnswer() {
+		try {
+			Boolean warning = (Boolean)answersCont.contextGet("scoreWarning");
+			Boolean newWarning;
+			if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
+				boolean wrongAnswerHasPoint = false;
+				boolean correctAnswerHasNotPoint = true;
+				for(SimpleChoiceWrapper choiceWrapper:choiceWrappers) {
+					Double score = itemBuilder.getMapping(choiceWrapper.getIdentifier());
+					if(choiceWrapper.isCorrect()) {
+						correctAnswerHasNotPoint &= (score == null || score.doubleValue() < 0.000001);
+					} else {
+						wrongAnswerHasPoint |= (score != null && score.doubleValue() > 0.6);
+					}	
+				}
+				newWarning = Boolean.valueOf(wrongAnswerHasPoint && correctAnswerHasNotPoint);
+			} else {
+				newWarning = Boolean.FALSE;
+			}
+			
+			if(warning == null || !warning.equals(newWarning)) {
+				answersCont.contextPut("scoreWarning", newWarning);
+			}
+		} catch (Exception e) {
+			// not a critical feature, don't produce red screen
+			logError("", e);
+		}
 	}
 
 	@Override
@@ -306,6 +342,7 @@ public class MultipleChoiceEditorController extends FormBasicController {
 			choiceList.add(choice);
 		}
 		itemBuilder.setSimpleChoices(choiceList);
+		validateScoreOfCorrectAnswer();
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), QTI21QuestionType.sc));
 	}
