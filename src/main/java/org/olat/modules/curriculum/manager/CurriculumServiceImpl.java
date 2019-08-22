@@ -78,6 +78,7 @@ import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -110,6 +111,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumDAO curriculumDao;
 	@Autowired
 	private CurriculumMemberQueries memberQueries;
+	@Autowired
+	private LectureBlockToGroupDAO lectureBlockToGroupDao;
 	@Autowired
 	private RepositoryEntryMyCourseQueries myCourseQueries;
 	@Autowired
@@ -390,6 +393,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		// remove relations to taxonomy
 		curriculumElementToTaxonomyLevelDao.deleteRelation(reloadedElement);
+		// remove relations to lecture blocks
+		lectureBlockToGroupDao.deleteLectureBlockToGroup(reloadedElement.getGroup());
 		
 		boolean delete = true;
 		Map<String,CurriculumDataDeletable> deleteDelegates = CoreSpringFactory.getBeansOfType(CurriculumDataDeletable.class);
