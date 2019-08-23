@@ -81,7 +81,6 @@ import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQSURVCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
-import org.olat.course.nodes.PersistentAssessableCourseNode;
 import org.olat.course.nodes.SelfAssessableCourseNode;
 import org.olat.course.nodes.ms.DocumentsMapper;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -211,10 +210,6 @@ public class IQRunController extends BasicController implements GenericEventList
 		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 	}
 
-	/**
-	 * @param ureq
-	 * @return
-	 */
 	private StringBuilder createChangelogMsg(UserRequest ureq) {
 		//re could be null, but if we are here it should not be null!
 		Roles userRoles = ureq.getUserSession().getRoles();
@@ -350,9 +345,6 @@ public class IQRunController extends BasicController implements GenericEventList
 		myContent.contextPut("infobox", courseModule.isDisplayInfoBox());
 		myContent.contextPut("changelogconfig", courseModule.isDisplayChangeLog());
 	}
-
-	
-	
 	
 	private void init(UserRequest ureq) {
 		startButton = LinkFactory.createButton("start", myContent, this);
@@ -424,9 +416,6 @@ public class IQRunController extends BasicController implements GenericEventList
 		}
 	}
 	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == startButton && startButton.isEnabled() && startButton.isVisible()){
@@ -486,7 +475,7 @@ public class IQRunController extends BasicController implements GenericEventList
 			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 			Long assessmentID = am.getAssessmentID(courseNode, ureq.getIdentity());			
 			if(assessmentID==null) {
-        //fallback solution: if the assessmentID is not available via AssessmentManager than try to get it via IQManager
+				//fallback solution: if the assessmentID is not available via AssessmentManager than try to get it via IQManager
 				long callingResId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().longValue();
 				String callingResDetail = courseNode.getIdent();
 				assessmentID = iqManager.getLastAssessmentID(ureq.getIdentity(), callingResId, callingResDetail);
@@ -566,9 +555,6 @@ public class IQRunController extends BasicController implements GenericEventList
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == displayController) {
@@ -637,54 +623,51 @@ public class IQRunController extends BasicController implements GenericEventList
 
 		// user data
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-    	if(courseNode instanceof PersistentAssessableCourseNode) {
-    		PersistentAssessableCourseNode acn = (PersistentAssessableCourseNode)courseNode;
-    		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
-    		if(assessmentEntry == null) {
-    			myContent.contextPut("blockAfterSuccess", Boolean.FALSE);
-	    		myContent.contextPut("score", null);
-	    		myContent.contextPut("hasPassedValue", Boolean.FALSE);
-	    		myContent.contextPut("passed", Boolean.FALSE);
-	    		myContent.contextPut("comment", null);
-	    		myContent.contextPut("docs", null);
-	    		myContent.contextPut("attempts", 0);
-    		} else {
-	    		//block if test passed (and config set to check it)
-	    		Boolean blockAfterSuccess = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
-	    		Boolean blocked = Boolean.FALSE;
-	    		if(blockAfterSuccess != null && blockAfterSuccess.booleanValue()) {
-	        		Boolean passed = assessmentEntry.getPassed();
-	        		if(passed != null && passed.booleanValue()) {
-	        			blocked = Boolean.TRUE;
-	        		}
-	    		}
-	    		myContent.contextPut("blockAfterSuccess", blocked);
-	    		boolean resultsVisible = assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue();
-	    		myContent.contextPut("resultsVisible", resultsVisible);
-	    		myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
-	    		myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
-	    		myContent.contextPut("passed", assessmentEntry.getPassed());
-	    		if(resultsVisible) {
-	    			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-	    			if(assessmentConfig.hasComment()) {
-	    				StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEntry.getComment());
-	    				myContent.contextPut("comment", StringHelper.xssScan(comment));
-						myContent.contextPut("incomment", isPanelOpen(ureq, "comment", true));
-	    			}
+		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
+		if(assessmentEntry == null) {
+			myContent.contextPut("blockAfterSuccess", Boolean.FALSE);
+			myContent.contextPut("score", null);
+			myContent.contextPut("hasPassedValue", Boolean.FALSE);
+			myContent.contextPut("passed", Boolean.FALSE);
+			myContent.contextPut("comment", null);
+			myContent.contextPut("docs", null);
+			myContent.contextPut("attempts", 0);
+		} else {
+			//block if test passed (and config set to check it)
+			Boolean blockAfterSuccess = modConfig.getBooleanEntry(IQEditController.CONFIG_KEY_BLOCK_AFTER_SUCCESS);
+			Boolean blocked = Boolean.FALSE;
+			if(blockAfterSuccess != null && blockAfterSuccess.booleanValue()) {
+				Boolean passed = assessmentEntry.getPassed();
+				if(passed != null && passed.booleanValue()) {
+					blocked = Boolean.TRUE;
+				}
+			}
+			myContent.contextPut("blockAfterSuccess", blocked);
+			boolean resultsVisible = assessmentEntry.getUserVisibility() == null || assessmentEntry.getUserVisibility().booleanValue();
+			myContent.contextPut("resultsVisible", resultsVisible);
+			myContent.contextPut("score", AssessmentHelper.getRoundedScore(assessmentEntry.getScore()));
+			myContent.contextPut("hasPassedValue", (assessmentEntry.getPassed() == null ? Boolean.FALSE : Boolean.TRUE));
+			myContent.contextPut("passed", assessmentEntry.getPassed());
+			if(resultsVisible) {
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+				if(assessmentConfig.hasComment()) {
+					StringBuilder comment = Formatter.stripTabsAndReturns(assessmentEntry.getComment());
+					myContent.contextPut("comment", StringHelper.xssScan(comment));
+					myContent.contextPut("incomment", isPanelOpen(ureq, "comment", true));
+				}
 
-	    			if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
-						List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(acn, userCourseEnv);
-						String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
-						myContent.contextPut("docsMapperUri", mapperUri);
-						myContent.contextPut("docs", docs);
-						myContent.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
-	    			}
-	    		}
-	    		myContent.contextPut("attempts", assessmentEntry.getAttempts() == null ? 0 : assessmentEntry.getAttempts());
-    		}
-    	}
-    	
-    	UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
+				if(assessmentConfig.hasIndividualAsssessmentDocuments()) {
+					List<File> docs = courseAssessmentService.getIndividualAssessmentDocuments(courseNode, userCourseEnv);
+					String mapperUri = registerCacheableMapper(ureq, null, new DocumentsMapper(docs));
+					myContent.contextPut("docsMapperUri", mapperUri);
+					myContent.contextPut("docs", docs);
+					myContent.contextPut("inassessmentDocuments", isPanelOpen(ureq, "assessmentDocuments", true));
+				}
+			}
+			myContent.contextPut("attempts", assessmentEntry.getAttempts() == null ? 0 : assessmentEntry.getAttempts());
+		}
+		
+		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 		myContent.contextPut("log", am.getUserNodeLog(courseNode, identity));
 						
 		exposeResults(ureq);
@@ -780,10 +763,6 @@ public class IQRunController extends BasicController implements GenericEventList
 		return panelId + "::" + userCourseEnv.getCourseEnvironment().getCourseResourceableId() + "::" + courseNode.getIdent();
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDisspose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		// child controllers disposed by basic controller

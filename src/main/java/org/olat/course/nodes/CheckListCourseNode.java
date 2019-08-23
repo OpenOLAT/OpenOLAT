@@ -87,7 +87,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CheckListCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
+public class CheckListCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
 	
 	private static final String PACKAGE_CL = Util.getPackageName(CheckListEditController.class);
 	private static final long serialVersionUID = -7460670977531082040L;

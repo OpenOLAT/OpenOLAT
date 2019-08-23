@@ -30,13 +30,13 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.Formatter;
@@ -130,7 +130,7 @@ public class GroupBulkDownloadResource implements MediaResource {
 						.getMembers(groups, GroupRoles.participant.name());
 				String courseTitle = course.getCourseTitle();
 				String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
-				List<AssessableCourseNode> nodes = Collections.<AssessableCourseNode>singletonList(courseNode);
+				List<AssessableCourseNode> nodes = Collections.singletonList(courseNode);
 				try(OutputStream out = new ShieldOutputStream(zout)) {
 					zout.putNextEntry(new ZipEntry(fileName));
 					ScoreAccountingHelper.createCourseResultsOverviewXMLTable(assessableIdentities, nodes, course, locale, out);

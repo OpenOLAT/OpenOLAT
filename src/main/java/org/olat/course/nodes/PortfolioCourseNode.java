@@ -78,7 +78,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * Initial Date:  6 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
-public class PortfolioCourseNode extends AbstractAccessableCourseNode implements PersistentAssessableCourseNode {
+public class PortfolioCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
 	
 	private static final Logger log = Tracing.createLoggerFor(PortfolioCourseNode.class);
 	private static final int CURRENT_CONFIG_VERSION = 2;

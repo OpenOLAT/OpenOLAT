@@ -101,7 +101,7 @@ import org.olat.resource.OLATResource;
  * 	 @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 
-public class TACourseNode extends GenericCourseNode implements PersistentAssessableCourseNode {
+public class TACourseNode extends GenericCourseNode implements AssessableCourseNode {
 	
 	private static final long serialVersionUID = -7266553843441305310L;
 
@@ -505,7 +505,7 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 			
 			String courseTitle = course.getCourseTitle();
 			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
-			List<AssessableCourseNode> nodes = Collections.<AssessableCourseNode>singletonList(this);
+			List<AssessableCourseNode> nodes = Collections.singletonList(this);
 			// write course results overview table to filesystem
 			try(OutputStream out = new ShieldOutputStream(exportStream)) {
 				exportStream.putNextEntry(new ZipEntry(dirName + "/" + fileName));
