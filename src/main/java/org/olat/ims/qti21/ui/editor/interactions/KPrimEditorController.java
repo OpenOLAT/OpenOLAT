@@ -101,7 +101,7 @@ public class KPrimEditorController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FormLayoutContainer metadata = FormLayoutContainer.createDefaultFormLayout("metadata", getTranslator());
-		metadata.setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_kprim");
+		metadata.setFormContextHelp("Configure test questions");
 		metadata.setRootForm(mainForm);
 		formLayout.add(metadata);
 		formLayout.add("metadata", metadata);
