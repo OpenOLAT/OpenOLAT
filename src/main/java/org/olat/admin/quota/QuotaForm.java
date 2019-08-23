@@ -38,6 +38,8 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Mike Stock
  */
 public class QuotaForm extends FormBasicController {
+	
+	private static final long MAX_QUOTA = 5l * 1000l * 1000l * 1000l;
 
 	private TextElement path;
 	private TextElement quotaKB;
@@ -101,9 +105,7 @@ public class QuotaForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		if (quota != null && quota.getPath() != null && !quota.getPath().equals("")) {
 			path = uifactory.addTextElement("qf_path", "qf.path", 255, quota.getPath(), formLayout);
-			if (quota != null) {
-				path.setEnabled(false);
-			}
+			path.setEnabled(false);
 		} else {
 			path = uifactory.addTextElement("qf_path", "qf.path", 255, "", formLayout);
 			path.setNotEmptyCheck("qf.error.path.invalid");
@@ -148,6 +150,36 @@ public class QuotaForm extends FormBasicController {
 		if (!quotaManager.isValidQuotaPath(path.getValue())) {
 			path.setErrorKey("qf.error.path.invalid", null);
 			allOk &= false;	
+		}
+		allOk &= validateQuota(quotaKB);
+		allOk &= validateQuota(ulLimitKB);
+		return allOk;
+	}
+	
+	private boolean validateQuota(TextElement textEl) {
+		boolean allOk = true;
+		
+		textEl.clearError();
+		if(textEl.isEnabled()) {
+			
+			if(!StringHelper.containsNonWhitespace(textEl.getValue())) {
+				textEl.setErrorKey("form.legende.mandatory", null);
+				allOk &= false;
+			} else if(!StringHelper.isLong(textEl.getValue())) {
+				textEl.setErrorKey("form.error.nointeger", null);
+				allOk &= false;
+			} else {
+				try {
+					long val = Long.parseLong(textEl.getValue());
+					if(val <= 0 || val > MAX_QUOTA) {
+						textEl.setErrorKey("error.quota.range", new String[] { Long.toString(MAX_QUOTA), Formatter.formatBytes(MAX_QUOTA * 1000l) });
+						allOk &= false;
+					}
+				} catch (NumberFormatException e) {
+					textEl.setErrorKey("form.error.nointeger", null);
+					allOk &= false;
+				}
+			}
 		}
 		
 		return allOk;
