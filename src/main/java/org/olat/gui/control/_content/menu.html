@@ -9,6 +9,16 @@
 			#foreach($personalTool in $personalTools)
 			 	<li>$r.render($personalTool)</li>
 			#end
+				<li><a href="https://portfolio.switch.ch" target="_blank"
+					   title="SWITCHportfolio"><i class="o_icon o_icon-fw o_icon_manual o_icon-lg"></i> SWITCHportfolio</a></li>
+				<li><a href="https://drive.switch.ch" target="_blank"
+					   title="SWITCHdrive"><i class="o_icon o_icon-fw o_icon_provider_oauth o_icon-lg"></i> SWITCHdrive</a></li>
+			#if($isAdmin)
+				<li><a href="/epis/exams"
+					   title="EPIS 2.0"><i class="o_icon o_icon-fw o_icon_checkbox_checked o_icon-lg"></i> EPIS 2.0 <sup style="color:orange;">BETA</sup></a></li>
+				<li><a href="/lehrpreisumfrage"
+					   title="Lehrpreisumfrage"><i class="o_icon o_icon-fw o_icon_edit o_icon-lg"></i> Lehrpreisumfrage <sup style="color:orange;">BETA</sup></a></li>
+			#end
 		#end
 		#if($configs && $configs.size() > 0)
 			<li role="presentation" class="divider"></li>

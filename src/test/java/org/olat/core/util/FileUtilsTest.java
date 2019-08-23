@@ -80,11 +80,11 @@ public class FileUtilsTest {
 		Assert.assertFalse(FileUtils.isMetaFilename(".Jüdelidü"));
 		Assert.assertFalse(FileUtils.isMetaFilename("./dings"));
 		
-		Assert.assertTrue(FileUtils.isMetaFilename(".DS_Store"));
-		Assert.assertTrue(FileUtils.isMetaFilename(".CVS"));
-		Assert.assertTrue(FileUtils.isMetaFilename(".nfs"));
-		Assert.assertTrue(FileUtils.isMetaFilename(".sass-cache"));
-		Assert.assertTrue(FileUtils.isMetaFilename(".hg"));
+		Assert.assertFalse(FileUtils.isMetaFilename(".DS_Store"));
+		Assert.assertFalse(FileUtils.isMetaFilename(".CVS"));
+		Assert.assertFalse(FileUtils.isMetaFilename(".nfs"));
+		Assert.assertFalse(FileUtils.isMetaFilename(".sass-cache"));
+		Assert.assertFalse(FileUtils.isMetaFilename(".hg"));
 
 		Assert.assertTrue(FileUtils.isMetaFilename("._"));
 		Assert.assertTrue(FileUtils.isMetaFilename("._gugus"));

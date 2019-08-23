@@ -366,6 +366,54 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		dbInstance.getCurrentEntityManager().persist(tk);
 		return tk;
 	}
+
+	/**
+	 * A temporary key is created
+	 *
+	 * @param email address of new user
+	 * @param ip address of new user
+	 * @param action REGISTRATION or PWCHANGE
+	 *
+	 * @return TemporaryKey
+	 */
+	public TemporaryKey createTemporaryKeyByEmail(String email, String ip, String action) {
+		// check if the user is already registered
+		// we also try to find it in the temporarykey list
+		List<TemporaryKey> tks = dbInstance.getCurrentEntityManager()
+				.createNamedQuery("loadTemporaryKeyByEmailAddress", TemporaryKey.class)
+				.setParameter("email", email)
+				.getResultList();
+		TemporaryKey tk;
+		if ((tks == null) || (tks.size() != 1)) { // no user found, create a new one
+			tk = register(email, ip, action);
+		} else {
+			tk = tks.get(0);
+		}
+		return tk;
+	}
+
+	/**
+	 * Creates a TemporaryKey and saves it permanently
+	 *
+	 * @param emailaddress
+	 * @param ipaddress
+	 * @param action REGISTRATION or PWCHANGE
+	 *
+	 * @return newly created temporary key
+	 */
+	public TemporaryKey register(String emailaddress, String ipaddress, String action) {
+		String today = new Date().toString();
+		String encryptMe = Encoder.md5hash(emailaddress + ipaddress + today);
+		TemporaryKeyImpl tk = new TemporaryKeyImpl();
+		tk.setCreationDate(new Date());
+		tk.setEmailAddress(emailaddress);
+		tk.setIpAddress(ipaddress);
+		tk.setRegistrationKey(encryptMe);
+		tk.setRegAction(action);
+		dbInstance.getCurrentEntityManager().persist(tk);
+		return tk;
+	}
+
 	
 	private Date addHours(Date date, Integer seconds) {
 		Calendar c = Calendar.getInstance();

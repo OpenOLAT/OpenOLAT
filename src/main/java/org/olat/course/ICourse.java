@@ -93,7 +93,9 @@ public interface ICourse extends OLATResourceable {
 	 * @return the container to the coursefolder of this course
 	 */
 	public VFSContainer getCourseFolderContainer();
-	
+
+	public boolean exceedsSizeLimit();
+
 	/**
 	 * Return the merged course container with the desired directories:
 	 * course folder, shared resource folder, folders course elements 

@@ -30,6 +30,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.logging.AssertException;
 
 /**
@@ -49,6 +50,10 @@ public abstract class TabbableDefaultController extends BasicController implemen
 
 	public TabbableDefaultController(UserRequest ureq, WindowControl wControl) {
 		super(ureq,wControl);
+	}
+
+	public TabbableDefaultController(UserRequest ureq, WindowControl wControl, Translator fallBackTranslator) {
+		super(ureq, wControl, fallBackTranslator);
 	}
 
 	/**

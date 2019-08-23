@@ -54,6 +54,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
 import org.olat.group.manager.BusinessGroupDAO;
+import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.ui.main.BusinessGroupListController;
 import org.olat.repository.RepositoryEntryShort;
 import org.olat.user.UserManager;
@@ -213,7 +214,7 @@ public class BGMailHelper {
 		String body = trans.translate(bodyKey, bodyArgs);
 		
 		// build learning resources as list of url as string
-		final BGMailTemplateInfos infos; 
+		final BGMailTemplateInfos infos;
 		if(group != null) {
 			BusinessGroupService businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 			List<RepositoryEntryShort> repoEntries = businessGroupService.findShortRepositoryEntries(Collections.singletonList(group), 0, -1);
@@ -282,47 +283,49 @@ public class BGMailHelper {
 			         .append(BusinessControlFactory.getInstance().getURLFromBusinessPathString("[BusinessGroup:" + group.getKey() + "]"))
 			         .append(")\n");
 			groupNameWithUrl = sb.toString();
-	
+
 			String description;
 			if(group instanceof BusinessGroup) {
-				description = ((BusinessGroup)group).getDescription(); 
+				description = ((BusinessGroup)group).getDescription();
+			} else if (group instanceof BusinessGroupRow){
+				description = ((BusinessGroupRow) group).getDescription();
 			} else {
 				description = CoreSpringFactory.getImpl(BusinessGroupDAO.class).loadDescription(group.getKey());
 			}
 			groupDescription = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
 		}
 		return new BGMailTemplateInfos(group.getName(), groupNameWithUrl, groupDescription, courseList);
-		
+
 	}
-	
+
 	public static final class BGMailTemplateInfos {
 		private final String groupName;
 		private final String groupNameWithUrl;
 		private final String groupDescription;
 		private final String courseList;
-		
+
 		public BGMailTemplateInfos(String groupName, String groupNameWithUrl, String groupDescription, String courseList) {
 			this.groupName = groupName;
 			this.groupNameWithUrl = groupNameWithUrl;
 			this.groupDescription = groupDescription;
 			this.courseList = courseList;
 		}
-		
+
 		public String getGroupName() {
 			if(groupName == null) return "";
 			return groupName;
 		}
-		
+
 		public String getGroupNameWithUrl() {
 			if(groupNameWithUrl == null) return "";
 			return groupNameWithUrl;
 		}
-		
+
 		public String getGroupDescription() {
 			if(groupDescription == null) return "";
 			return groupDescription;
 		}
-		
+
 		public String getCourseList() {
 			if(courseList == null) return "";
 			return courseList;

@@ -108,6 +108,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private boolean extendedSearchExpanded = false;
 	private int columnLabelForDragAndDrop;
 	private String emptyTableMessageKey = null;
+
+	private final int minSearchLength;
 	
 	private VelocityContainer rowRenderer;
 	private VelocityContainer detailsRenderer;
@@ -148,11 +150,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	private Map<String,FormItem> components = new HashMap<>();
 	
 	public FlexiTableElementImpl(WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel) {
-		this(wControl, name, translator, tableModel, -1, true);
+		this(wControl, name, translator, tableModel, -1, true, 0);
+	}
+
+	public FlexiTableElementImpl(WindowControl wControl, String name, Translator translator, FlexiTableDataModel<?> tableModel, int minSearchLength) {
+		this(wControl, name, translator, tableModel, -1, true, minSearchLength);
 	}
 	
 	public FlexiTableElementImpl(WindowControl wControl, String name, Translator translator,
-			FlexiTableDataModel<?> tableModel, int pageSize, boolean loadOnStart) {
+			FlexiTableDataModel<?> tableModel, int pageSize, boolean loadOnStart, int minSearchLength) {
 		super(name);
 		this.wControl = wControl;
 		this.dataModel = tableModel;
@@ -183,6 +189,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			//preload it
 			dataSource.load(null, null, null, 0, pageSize);
 		}
+
+		this.minSearchLength = minSearchLength;
 	}
 
 	@Override

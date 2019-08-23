@@ -63,13 +63,13 @@ public class RepositoryEntryLifeCycleChangeController extends BasicController{
 	public static final Event closedEvent = new Event("closed");
 	public static final Event deletedEvent = new Event("deleted");
 	public static final Event unclosedEvent = new Event("unclosed");
-	
-	private Link deleteLink;
-	private VelocityContainer lifeCycleVC;
 
-	private RepositoryEntry re;
+	private Link closeLink, uncloseLink, deleteLink;
+	protected VelocityContainer lifeCycleVC;
+
+	protected RepositoryEntry re;
 	private final RepositoryEntrySecurity reSecurity;
-	
+
 	private CloseableModalController cmc;
 	private ConfirmDeleteSoftlyController confirmDeleteCtrl;
 

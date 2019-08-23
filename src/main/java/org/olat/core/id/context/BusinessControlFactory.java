@@ -372,31 +372,33 @@ public class BusinessControlFactory {
 		}
 
 		Matcher m = PAT_CE.matcher(businessControlString);
-		while (m.find()) {
-			String ces = m.group(1);
-			int pos = ces.lastIndexOf(':');
-			OLATResourceable ores;
-			if(pos == -1) {
-				if(ces.startsWith("path=")) {
-					ces = ces.replace("|", "/");
+		try {
+			while (m.find()) {
+				OLATResourceable ores;
+				String ces = URLDecoder.decode(m.group(1), "UTF8");
+
+				if (ces.startsWith("path=")) {
+					ces = ces.replace("~~", "/");
 				}
-				ores = OresHelper.createOLATResourceableTypeWithoutCheck(ces);
-			} else {
-				String type = ces.substring(0, pos);
-				String keyS = ces.substring(pos+1);
-				if(type.startsWith("path=")) {
-					ces = type.replace("|", "/");
+
+				int pos = ces.lastIndexOf(':');
+				if (pos == -1) {
+					ores = OresHelper.createOLATResourceableTypeWithoutCheck(ces);
+				} else {
+					String type = ces.substring(0, pos);
+					String key = ces.substring(pos + 1);
+					try {
+						ores = OresHelper.createOLATResourceableInstanceWithoutCheck(type, Long.parseLong(key));
+					} catch (NumberFormatException e) {
+						log.warn("Cannot parse business path:" + businessControlString, e);
+						ores = OresHelper.createOLATResourceableTypeWithoutCheck(ces);
+					}
 				}
-				try {
-					Long key = Long.parseLong(keyS);
-					ores = OresHelper.createOLATResourceableInstanceWithoutCheck(type, key);
-				} catch (NumberFormatException e) {
-					log.warn("Cannot parse business path:" + businessControlString, e);
-					return entries;//return what we decoded
-				}
+				ContextEntry ce = createContextEntry(ores);
+				entries.add(ce);
 			}
-			ContextEntry ce = createContextEntry(ores);
-			entries.add(ce);
+		} catch (UnsupportedEncodingException e) {
+			log.error("", e);
 		}
 		return entries;
 	}
@@ -512,7 +514,6 @@ public class BusinessControlFactory {
 
 	public String getPath(ContextEntry entry) {
 		String path = entry.getOLATResourceable().getResourceableTypeName();
-		path = path.endsWith(":0") ? path.substring(0, path.length() - 2) : path;
 		path = path.startsWith("path=") ? path.substring(5, path.length()) : path;
 		return path;
 	}
@@ -581,12 +582,6 @@ public class BusinessControlFactory {
 	}
 	
 	public String formatFromURI(String restPart) {
-		try {
-			restPart = URLDecoder.decode(restPart, "UTF8");
-		} catch (UnsupportedEncodingException e) {
-			log.error("Unsupported encoding", e);
-		}
-		
 		String[] split = restPart.split("/");
 		if (split.length % 2 != 0) {
 			return null;

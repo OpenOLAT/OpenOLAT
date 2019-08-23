@@ -16,6 +16,8 @@
 <!ENTITY score_min "$t.translate('score.min')">
 <!ENTITY score_max "$t.translate('score.max')">
 <!ENTITY score_cut "$t.translate('score.cut')">
+<!ENTITY answer_not_rated "$t.translate('answer.not.rated')">
+<!ENTITY answers_not_rated "$t.translate('answers.not.rated')">
 <!ENTITY ans_min "$t.translate('ans.min')">
 <!ENTITY ans_max "$t.translate('ans.max')">
 <!ENTITY ans_correct "$t.translate('ans.correct')">
@@ -38,11 +40,26 @@
 		<style type="text/css"><![CDATA[
 <!--
 .o_disabled_input {
-padding: 0px;
-border-spacing: 0px;
-border: 1px solid silver;
-margin: 0px;
-border-collapse: collapse;
+	padding: 0px;
+	border-spacing: 0px;
+	border: 1px solid silver;
+	margin: 0px;
+	border-collapse: collapse;
+}
+
+.o_essay_solution_table {
+	width: 100%;
+	border: 1px solid silver;
+	border-collapse: collapse;
+	margin-top: 10px;
+}
+
+.o_essay_solution_table_cell {
+	padding: 1px 5px 2px 5px;
+}
+
+.o_essay_solution_table_cell>font>p:last-of-type {
+	margin: 0;
 }
 -->
 		]]></style>
@@ -136,44 +153,82 @@ border-collapse: collapse;
 	
 	<!-- render scores -->
 	<xsl:template match="score">
-		<table border="0"><tbody><tr>
-			<td width="160">
-		<table border="0" cellpadding="0" cellspacing="0" height="12" width="150">
+		<table border="0">
 			<tbody>
 				<tr>
+					<td width="160">
+						<table border="0" cellpadding="0" cellspacing="0" height="12" width="150">
+							<tbody>
+								<tr>
+									<td>
+										<div class="progress" style="width:150px;">
+											<div class="progress-bar">
+												<xsl:choose>
+													<xsl:when test="score_value = 'N/A'">
+														<xsl:attribute name="style">width:150px;background-color:#ffe102</xsl:attribute>
+														<xsl:attribute name="title">N/A</xsl:attribute>
+													</xsl:when>
+													<xsl:when test="(number(score_max) &gt; 0) and (number(score_value) &lt;= number(score_max))">
+														<xsl:attribute name="style">width:<xsl:value-of select="number(score_value) div number(score_max) * 150"/>px</xsl:attribute>
+														<xsl:attribute name="title"><xsl:value-of select="number(score_value) div number(score_max) * 100"/>%</xsl:attribute>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:attribute name="style">width:150px</xsl:attribute>
+														<xsl:attribute name="title">100%</xsl:attribute>
+													</xsl:otherwise>
+												</xsl:choose>
+											</div>
+										</div>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
 					<td>
-						<div class="progress" style="width:150px;">
-							<div class="progress-bar">
+						<xsl:choose>
+							<xsl:when test="score_value = 'N/A'">N/A</xsl:when>
+							<xsl:when test="(number(score_max) &gt; 0) and (number(score_value) &lt;= number(score_max))">
+								<xsl:value-of select="round(number(score_value) div number(score_max) * 100)"/>&#37;
+							</xsl:when>
+							<xsl:otherwise>0&#37;</xsl:otherwise>
+						</xsl:choose>
+						<xsl:choose>
+							<xsl:when test="number(num_nan_score_items) &gt;= 1">
+								&nbsp;&nbsp;&#40;<xsl:value-of select="num_nan_score_items"/>&nbsp;
 								<xsl:choose>
-									<xsl:when test="(number(score_max) &gt; 0) and (number(score_value) &lt;= number(score_max))">
-										<xsl:attribute name="style">width:<xsl:value-of select="number(score_value) div number(score_max) * 150"/>px</xsl:attribute>
-										<xsl:attribute name="title"><xsl:value-of select="number(score_value) div number(score_max) * 100"/>%</xsl:attribute>
-									</xsl:when>
-									<xsl:otherwise>
-										<xsl:attribute name="style">width:150px</xsl:attribute>
-										<xsl:attribute name="title">100%</xsl:attribute>
-									</xsl:otherwise>
-								</xsl:choose>
-							</div>
-						</div>
+									<xsl:when test="number(num_nan_score_items) = 1">&answer_not_rated;</xsl:when>
+									<xsl:otherwise>&answers_not_rated;</xsl:otherwise>
+								</xsl:choose>&#41;
+							</xsl:when>
+							<xsl:when test="score_value = 'N/A'">
+								&nbsp;&nbsp;&#40;&answer_not_rated;&#41;
+							</xsl:when>
+						</xsl:choose>
 					</td>
 				</tr>
 			</tbody>
 		</table>
-		</td>
-		<td>
-			<xsl:choose>
-					<xsl:when test="(number(score_max) &gt; 0) and (number(score_value) &lt;= number(score_max))">
-						<xsl:value-of select="round(number(score_value) div number(score_max) * 100)"/>
-					</xsl:when>
-					<xsl:otherwise>0</xsl:otherwise>
-			</xsl:choose>
-			&#37;
-		</td>
-		</tr></tbody></table>
 		<table border="0" cellpadding="0" cellspacing="0">
 			<tbody>
-				<tr><td>&score_val;</td><td width="10"/><td><xsl:value-of select="score_value"/></td></tr>
+				<tr>
+					<td>&score_val;</td>
+					<td width="10"/>
+					<td>
+						<xsl:value-of select="score_value"/>
+						<xsl:choose>
+							<xsl:when test="number(num_nan_score_items) &gt;= 1">
+								&nbsp;&nbsp;&#40;<xsl:value-of select="num_nan_score_items"/>&nbsp;
+								<xsl:choose>
+									<xsl:when test="number(num_nan_score_items) = 1">&answer_not_rated;</xsl:when>
+									<xsl:otherwise>&answers_not_rated;</xsl:otherwise>
+								</xsl:choose>&#41;
+							</xsl:when>
+							<xsl:when test="score_value = 'N/A'">
+								&nbsp;&nbsp;&#40;&answer_not_rated;&#41;
+							</xsl:when>
+						</xsl:choose>
+					</td>
+				</tr>
 				<xsl:if test="score_min"><tr><td>&score_min;</td><td width="10"/><td><xsl:value-of select="score_min"/></td></tr></xsl:if>
 				<xsl:if test="score_max"><tr><td>&score_max;</td><td width="10"/><td><xsl:value-of select="score_max"/></td></tr></xsl:if>
 				<xsl:if test="score_cut"><tr><td>&score_cut;</td><td width="10"/><td><xsl:value-of select="score_cut"/></td></tr></xsl:if>
@@ -222,7 +277,6 @@ border-collapse: collapse;
 	<xsl:template match="render_fib | render_choice | render_num | render_str">
 
 		<!-- extract response for further processing (i.e. response_label) -->
-		<xsl:param name="this" select="descendant-or-self::*"/>
 		<xsl:param name="item_id"><xsl:value-of select="ancestor::item/@ident"/></xsl:param>
 		<xsl:param name="lid_id"><xsl:value-of select="../@ident"/></xsl:param>
 		<xsl:param name="response" select="//item_result[@ident_ref=$item_id]/response[@ident_ref=$lid_id]"/>
@@ -250,7 +304,10 @@ border-collapse: collapse;
 		<xsl:if test="ancestor::item[starts-with(@ident, 'QTIEDIT:KPRIM:')]">
 				<b>&ans_plus;&nbsp;&nbsp;&ans_minus;</b><br/>
 			</xsl:if>
-		<xsl:apply-templates><xsl:with-param name="response" select="$response"/></xsl:apply-templates>
+		<xsl:apply-templates>
+			<xsl:with-param name="item_id" select="$item_id"/>
+			<xsl:with-param name="response" select="$response"/>
+		</xsl:apply-templates>
 		<p><xsl:if test="$ext_res">
 			<!--This item has a complex result, we need to display it first -->
 			<!-- Because it was not possible to graphically display the response. -->			
@@ -324,74 +381,98 @@ border-collapse: collapse;
 	<!-- Display correct answers -->
 	<!-- render a single label according to its parent enclosing type -->
 	<xsl:template match="response_label">
+		<xsl:param name="item_id"/>
 		<xsl:param name="response"/> <!-- the response for this label -->
 		<xsl:choose>
-			<!-- case Kprim -->
-			<xsl:when test="ancestor::item[starts-with(@ident, 'QTIEDIT:KPRIM:')]">
-				<xsl:choose>
-					<xsl:when test="$response/response_form/correct_response = concat(@ident, ':correct')">
-						<i class="o_icon o_icon_radio_on"> </i>
-						<i class="o_icon o_icon_radio_off"> </i>
-					</xsl:when>
-					<xsl:otherwise>
-						<i class="o_icon o_icon_radio_off"> </i>
-						<i class="o_icon o_icon_radio_on"> </i>
-					</xsl:otherwise>
-				</xsl:choose>
+			<!-- case Essay -->
+			<xsl:when test="((ancestor::item[starts-with(@ident, 'QTIEDIT:ESSAY:')]) and ($response/response_form) and (string-length(//item[@ident=$item_id]/itemfeedback[@ident='Solution']/solution/solutionmaterial/material/mattext) &gt; 0))">
+				<table class="o_essay_solution_table">
+					<tbody>
+						<tr>
+							<td class="o_essay_solution_table_cell">
+								<font color="gray"><xsl:apply-templates select="//item[@ident=$item_id]/itemfeedback[@ident='Solution']/solution/solutionmaterial/material/mattext"/></font>
+							</td>
+						</tr>
+					</tbody>
+				</table>
 			</xsl:when>
 			<xsl:otherwise>
-			<!-- multiple response label -->
 				<xsl:choose>
-					<xsl:when test="ancestor::response_lid/@rcardinality = 'Multiple'">
+					<!-- case Kprim -->
+					<xsl:when test="ancestor::item[starts-with(@ident, 'QTIEDIT:KPRIM:')]">
 						<xsl:choose>
-							<xsl:when test="$response/response_form/correct_response = @ident"> 
-								<!-- case correct MC answer -->
-								<i class="o_icon o_icon_check_on"> </i>
-							</xsl:when>
-							<xsl:otherwise>
-								<!-- case incorrect MC answer -->
-								<i class="o_icon o_icon_check_off"> </i>
-							</xsl:otherwise>
-						</xsl:choose>
-					</xsl:when>
-				<!-- single response label -->
-					<xsl:when test="ancestor::response_lid/@rcardinality = 'Single'">
-						<xsl:choose>
-							<xsl:when test="$response/response_form/correct_response = @ident">
-								<!-- case correct SC answer -->
+							<xsl:when test="$response/response_form/correct_response = concat(@ident, ':correct')">
 								<i class="o_icon o_icon_radio_on"> </i>
+								<i class="o_icon o_icon_radio_off"> </i>
 							</xsl:when>
 							<xsl:otherwise>
-								<!-- case incorrect SC answer -->
 								<i class="o_icon o_icon_radio_off"> </i>
+								<i class="o_icon o_icon_radio_on"> </i>
 							</xsl:otherwise>
 						</xsl:choose>
 					</xsl:when>
-				<!-- fill-in-blank -->
-					<xsl:when test="ancestor::render_fib">
-						<xsl:for-each select="$response/response_form/correct_response">
-						<table cellpadding="2" class="o_disabled_input">
-						<xsl:if test="string-length(.) &lt; 20"><xsl:attribute name="width">100px</xsl:attribute></xsl:if>
-							<tbody>
-						<tr><td>
-							&nbsp;<font color="gray"><xsl:value-of select="."/></font>
-						</td></tr>
-							</tbody>
-							</table>
-						</xsl:for-each>
-					</xsl:when>
-			<!-- everything else -->
 					<xsl:otherwise>
-						<xsl:apply-templates/>
+						<xsl:choose>
+							<!-- multiple response label -->
+							<xsl:when test="ancestor::response_lid/@rcardinality = 'Multiple'">
+								<xsl:choose>
+									<xsl:when test="$response/response_form/correct_response = @ident">
+										<!-- case correct MC answer -->
+										<i class="o_icon o_icon_check_on"> </i>
+									</xsl:when>
+									<xsl:otherwise>
+										<!-- case incorrect MC answer -->
+										<i class="o_icon o_icon_check_off"> </i>
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:when>
+							<!-- single response label -->
+							<xsl:when test="ancestor::response_lid/@rcardinality = 'Single'">
+								<xsl:choose>
+									<xsl:when test="$response/response_form/correct_response = @ident">
+										<!-- case correct SC answer -->
+										<i class="o_icon o_icon_radio_on"> </i>
+									</xsl:when>
+									<xsl:otherwise>
+										<!-- case incorrect SC answer -->
+										<i class="o_icon o_icon_radio_off"> </i>
+									</xsl:otherwise>
+								</xsl:choose>
+							</xsl:when>
+							<!-- fill-in-blank -->
+							<xsl:when test="ancestor::render_fib">
+								<xsl:for-each select="$response/response_form/correct_response">
+									<table cellpadding="2" class="o_disabled_input">
+										<xsl:if test="string-length(.) &lt; 20">
+											<xsl:attribute name="width">100px</xsl:attribute>
+										</xsl:if>
+										<tbody>
+											<tr>
+												<td>
+													&nbsp;<font color="gray"><xsl:value-of select="."/></font>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</xsl:for-each>
+							</xsl:when>
+							<!-- everything else -->
+							<xsl:otherwise>
+								<xsl:apply-templates/>
+							</xsl:otherwise>
+						</xsl:choose>
+					</xsl:otherwise>
+				</xsl:choose>
+				<xsl:text>&nbsp;</xsl:text>
+				<xsl:apply-templates/>
+				<xsl:choose>
+					<xsl:when test="parent::flow_label/@class = 'Block'">
+					</xsl:when>
+					<xsl:otherwise>
+						<br />
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:otherwise>
-		</xsl:choose>
-		<xsl:text>&nbsp;</xsl:text>
-		<xsl:apply-templates/>
-		<xsl:choose>
-			<xsl:when test="parent::flow_label/@class = 'Block'"></xsl:when>
-			<xsl:otherwise><br /></xsl:otherwise>
 		</xsl:choose>
 	</xsl:template>
 	

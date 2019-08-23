@@ -76,7 +76,10 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 					final Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
 
 					String cssClass = new DENCourseNodeConfiguration().getIconCSSClass();
-					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(trans.translate("notifications.header", new String[]{course.getCourseTitle()}), cssClass), null);
+					CourseNode node = CourseFactory.loadCourse(p.getResId()).getRunStructure().getNode(p.getSubidentifier());
+					String shortName = (node != null ? node.getShortName() : "");
+					String title = trans.translate("notifications.header", new String[]{course.getCourseTitle(), shortName});
+					si = new SubscriptionInfo(subscriber.getKey(), p.getType(), new TitleItem(title, cssClass), null);
 					SubscriptionListItem subListItem;
 
 					for (DENCourseNode denNode : denNodes) {
@@ -158,10 +161,13 @@ public class DENCourseNodeNotificationHandler implements NotificationsHandler {
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		try {
-			Long resId = subscriber.getPublisher().getResId();
+			Publisher publisher = subscriber.getPublisher();
+			Long resId = publisher.getResId();
 			String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
+			CourseNode node = CourseFactory.loadCourse(publisher.getResId()).getRunStructure().getNode(publisher.getSubidentifier());
+			String shortName = (node != null ? node.getShortName() : "");
 			Translator trans = Util.createPackageTranslator(DENCourseNodeNotificationHandler.class, locale);
-			return trans.translate("notifications.header", new String[]{displayName});
+			return trans.translate("notifications.header", new String[]{displayName, shortName});
 		} catch (Exception e) {
 			log.error("Error while creating assessment notifications for subscriber: " + subscriber.getKey(), e);
 			checkPublisher(subscriber.getPublisher());

@@ -91,6 +91,11 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.listener.AfterRepositoryEntryPermanentDeletionListener;
+import org.olat.repository.listener.AfterRepositoryEntryRestoreListener;
+import org.olat.repository.listener.AfterRepositoryEntrySoftDeletionListener;
+import org.olat.repository.listener.BeforeRepositoryEntryPermanentDeletionListener;
+import org.olat.repository.listener.BeforeRepositoryEntrySoftDeletionListener;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryStatistics;
 import org.olat.repository.model.RepositoryEntryStatusChangedEvent;
@@ -171,6 +176,17 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	private RepositoryEntryToOrganisationDAO repositoryEntryToOrganisationDao;
 	@Autowired
 	private RepositoryEntryToTaxonomyLevelDAO repositoryEntryToTaxonomyLevelDao;
+
+	@Autowired
+	private BeforeRepositoryEntrySoftDeletionListener[] beforeRepositoryEntrySoftDeletionListeners;
+	@Autowired
+	private AfterRepositoryEntrySoftDeletionListener[] afterRepositoryEntrySoftDeletionListeners;
+	@Autowired
+	private BeforeRepositoryEntryPermanentDeletionListener[] beforeRepositoryEntryPermanentDeletionListeners;
+	@Autowired
+	private AfterRepositoryEntryPermanentDeletionListener[] afterRepositoryEntryPermanentDeletionListeners;
+	@Autowired
+	private AfterRepositoryEntryRestoreListener[] afterRepositoryEntryRestoreListeners;
 
 	@Autowired
 	private LifeFullIndexer lifeIndexer;
@@ -424,9 +440,15 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) {
+	public RepositoryEntry deleteSoftly(RepositoryEntry re, Identity deletedBy, boolean owners, boolean sendNotifications) throws RepositoryEntryDeletionException {
 		// start delete
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(re);
+
+		for (BeforeRepositoryEntrySoftDeletionListener beforeRepositoryEntrySoftDeletionListener : beforeRepositoryEntrySoftDeletionListeners) {
+			beforeRepositoryEntrySoftDeletionListener.onAction(reloadedRe);
+		}
+
+		reloadedRe.setAccess(RepositoryEntry.DELETED);
 		reloadedRe.setAllUsers(false);
 		reloadedRe.setGuests(false);
 		reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.trash);
@@ -457,6 +479,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			}
 		}
 		dbInstance.commit();
+
+		for (AfterRepositoryEntrySoftDeletionListener afterRepositoryEntrySoftDeletionListener : afterRepositoryEntrySoftDeletionListeners) {
+			afterRepositoryEntrySoftDeletionListener.onAction(reloadedRe);
+		}
 		
 		if(sendNotifications && deletedBy != null) {
 			sendStatusChangedNotifications(ownerList, deletedBy, reloadedRe, RepositoryMailing.Type.deleteSoftEntry);
@@ -477,7 +503,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry) {
+	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, Identity restoredBy) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedRe.setAllUsers(false);
 		reloadedRe.setGuests(false);
@@ -488,11 +514,14 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		}
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
+		for (AfterRepositoryEntryRestoreListener afterRepositoryEntryRestoreListener : afterRepositoryEntryRestoreListeners) {
+			afterRepositoryEntryRestoreListener.onAction(reloadedRe, restoredBy);
+		}
 		return reloadedRe;
 	}
 
 	@Override
-	public ErrorList deletePermanently(RepositoryEntryRef entryRef, Identity identity, Roles roles, Locale locale) {
+	public ErrorList deletePermanently(RepositoryEntryRef entryRef, Identity identity, Roles roles, Locale locale) throws RepositoryEntryDeletionException{
 		ErrorList errors = new ErrorList();
 
 		boolean debug = log.isDebugEnabled();
@@ -506,6 +535,11 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		if(debug) log.debug("deleteRepositoryEntry after load entry=" + entry);
 		RepositoryHandler handler = repositoryHandlerFactory.getRepositoryHandler(entry);
 		OLATResource resource = entry.getOlatResource();
+
+		for (BeforeRepositoryEntryPermanentDeletionListener beforeRepositoryEntryPermanentDeletionListener : beforeRepositoryEntryPermanentDeletionListeners) {
+			beforeRepositoryEntryPermanentDeletionListener.onAction(entry, resource);
+		}
+
 		//delete old context
 		if (!handler.readyToDelete(entry, identity, roles, locale, errors)) {
 			return errors;
@@ -546,6 +580,10 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		// referenced resourceable a swell.
 		handler.cleanupOnDelete(entry, resource);
 		dbInstance.commit();
+
+		for (AfterRepositoryEntryPermanentDeletionListener afterRepositoryEntryPermanentDeletionListener : afterRepositoryEntryPermanentDeletionListeners) {
+			afterRepositoryEntryPermanentDeletionListener.onAction(entry, resource);
+		}
 
 		//delete all test sessions
 		assessmentTestSessionDao.deleteAllUserTestSessionsByCourse(entry);

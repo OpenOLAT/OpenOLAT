@@ -49,6 +49,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryDeletionException;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -366,7 +367,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void deleteCourse()  throws URISyntaxException  {
+	public void deleteCourse() throws URISyntaxException, RepositoryEntryDeletionException {
 		//create a course with a certificate
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-del-2");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(identity);
@@ -405,7 +406,7 @@ public class CertificatesManagerTest extends OlatTestCase {
 	 * @throws URISyntaxException
 	 */
 	@Test
-	public void deleteCourse_paranoiaCheck()  throws URISyntaxException  {
+	public void deleteCourse_paranoiaCheck() throws URISyntaxException, RepositoryEntryDeletionException {
 		//create a course with a certificate
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("cer-del-3");
 		RepositoryEntry entryToDelete = JunitTestHelper.deployBasicCourse(identity);

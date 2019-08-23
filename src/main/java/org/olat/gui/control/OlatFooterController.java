@@ -120,8 +120,10 @@ public class OlatFooterController extends BasicController implements LockableCon
 				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(ureq.getIdentity());
 				olatFootervc.contextPut("username", StringHelper.escapeHtml(fullName) + " " + translate("logged.in.invitee"));
 			} else {
-				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(ureq.getIdentity());
-				olatFootervc.contextPut("username", StringHelper.escapeHtml(fullName));
+				// OLATNG-249 Show user name instead of full display name. Old code is commented below for possible revert.
+//				String fullName = CoreSpringFactory.getImpl(UserManager.class).getUserDisplayName(ureq.getIdentity());
+				String userName = ureq.getIdentity().getName();
+				olatFootervc.contextPut("username", StringHelper.escapeHtml(userName));
 			}
 		} else {
 			olatFootervc.contextPut("loggedIn", Boolean.FALSE);

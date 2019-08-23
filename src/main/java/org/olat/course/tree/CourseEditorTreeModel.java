@@ -71,6 +71,10 @@ public class CourseEditorTreeModel extends GenericTreeModel implements DnDTreeMo
 		return ctn == null ? null : ctn.getCourseNode();
 	}
 
+	public boolean isRootNode(CourseNode courseNode) {
+		return courseNode == ((CourseEditorTreeNode) getRootNode()).getCourseNode();
+	}
+
 	/**
 	 * @param newNode
 	 * @param parentNode

@@ -19,28 +19,18 @@
  */
 package org.olat.repository.ui.list;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.olat.NewControllerFactory;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
-import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
-import org.olat.core.dispatcher.mapper.MapperService;
-import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
-import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
-import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.form.flexible.elements.*;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
@@ -55,11 +45,11 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
-import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
@@ -88,6 +78,12 @@ import org.olat.repository.ui.author.TypeRenderer;
 import org.olat.repository.ui.list.RepositoryEntryDataModel.Cols;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -95,7 +91,19 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class RepositoryEntryListController extends FormBasicController
-	implements Activateable2, RepositoryEntryDataSourceUIFactory, FlexiTableComponentDelegate {
+	implements Activateable2, FlexiTableComponentDelegate {
+
+	/**
+	 * In order the event listener array is never null, one listener must
+	 * exists. Therefore this listener is implemented as class.
+	 */
+	@org.springframework.stereotype.Component
+	@Scope(BeanDefinition.SCOPE_SINGLETON)
+	public static class RepositoryEntryListControllerFormInnerEventListener {
+		public void event(UserRequest ureq, FormItem source, FormEvent event,
+						  WindowControl windowControl, ControllerEventListener parent) {
+		}
+	}
 
 	private final List<Link> filterLinks = new ArrayList<>();
 	private final List<Link> orderByLinks = new ArrayList<>();
@@ -113,19 +121,22 @@ public class RepositoryEntryListController extends FormBasicController
 	private final BreadcrumbPanel stackPanel;
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryEntrySearchController searchCtrl;
-	
-	private final MapperKey mapperThumbnailKey;
+
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
-	@Autowired
-	private MapperService mapperService;
+
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private RepositoryService repositoryService;
-	
+	@Autowired
+	private ApplicationContext applicationContext;
+	@Autowired
+	private RepositoryEntryListControllerFormInnerEventListener[] formInnerEventListerners;
+
+	private final RepositoryEntryRowsFactory repositoryEntryRowsFactory;
 	private final boolean guestOnly;
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
@@ -133,19 +144,29 @@ public class RepositoryEntryListController extends FormBasicController
 			boolean withSearch, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
-		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.name = name;
 		this.stackPanel = stackPanel;
 		this.withSearch = withSearch;
+		repositoryEntryRowsFactory = (RepositoryEntryRowsFactory)
+				applicationContext.getBean("repositoryEntryRowFactory", ureq);
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		
 		this.searchParams = searchParams;
-		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
+		/**
+		 * SEV:
+		 * Why "this"? A inner class would be more readable!
+		 */
+		dataSource = new DefaultRepositoryEntryDataSource(searchParams, repositoryEntryRowsFactory);
 		initForm(ureq);
-		
+
+		/**
+		 * SEV:
+		 * This method is the place to provide the data source i.e. where the
+		 * controller put the view together with the model.
+		 */
 		if(load) {
 			tableEl.reloadData();
 		}
@@ -207,8 +228,13 @@ public class RepositoryEntryListController extends FormBasicController
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
 		}
 
+		/**
+		 * TODO sev26
+		 * Why mixing the "columnsModel" i.e. view with the "dataSource" i.e.
+		 * model already here?
+		 */
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
-		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
+		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout, RepositoryEntrySearchController.MINIMAL_CHAR_LENGTH_SEARCH_FIELD);
 		tableEl.setAvailableRendererTypes(FlexiTableRendererType.custom, FlexiTableRendererType.classic);
 		tableEl.setRendererType(FlexiTableRendererType.custom);
 		tableEl.setSearchEnabled(withSearch);
@@ -216,17 +242,20 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
-		VelocityContainer row = createVelocityContainer("row_1");
-		row.setDomReplacementWrapperRequired(false); // sets its own DOM id in velocity container
-		tableEl.setRowRenderer(row, this);
-		
+		VelocityContainer row1 = (VelocityContainer)applicationContext.getBean("row_1", this);
+		tableEl.setRowRenderer(row1, this);
+
 		initFilters(tableEl);
 		initSorters(tableEl);
 		
 		tableEl.setAndLoadPersistedPreferences(ureq, "re-list-v2-".concat(name));
 		loadFilterPreferences(ureq);
 	}
-	
+
+	/**
+	 * TODO sev26
+	 * Must be a static method with such a signature.
+	 */
 	private void initFilters(FlexiTableElement tableElement) {
 		List<FlexiTableFilter> filters = new ArrayList<>(16);
 		filters.add(new FlexiTableFilter(translate("filter.show.all"), Filter.showAll.name(), true));
@@ -267,7 +296,8 @@ public class RepositoryEntryListController extends FormBasicController
 		}
 		
 		FlexiTableSortOptions options = new FlexiTableSortOptions(sorters);
-		options.setDefaultOrderBy(new SortKey(OrderBy.title.name(), true));
+		// OLATNG-244 Change default sorting to creation date
+		options.setDefaultOrderBy(new SortKey(OrderBy.creationDate.name(), false));
 		tableElement.setSortSettings(options);
 	}
 	
@@ -285,11 +315,6 @@ public class RepositoryEntryListController extends FormBasicController
 		ureq.getUserSession().getGuiPreferences()
 		.putAndSave(RepositoryEntryListController.class, "rev-filters-".concat(name),
 				FilterPreferences.valueOf(filters));
-	}
-
-	@Override
-	public String getMapperThumbnailUrl() {
-		return mapperThumbnailKey.getUrl();
 	}
 
 	@Override
@@ -317,7 +342,10 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 
 	@Override
-	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {	
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		for (RepositoryEntryListControllerFormInnerEventListener formInnerEventListerner : formInnerEventListerners) {
+			formInnerEventListerner.event(ureq, source, event, getWindowControl(), this);
+		}
 		if(source instanceof RatingWithAverageFormItem && event instanceof RatingFormEvent) {
 			RatingFormEvent ratingEvent = (RatingFormEvent)event;
 			RatingWithAverageFormItem ratingItem = (RatingWithAverageFormItem)source;
@@ -408,7 +436,7 @@ public class RepositoryEntryListController extends FormBasicController
 						Long rowKey = Long.valueOf(rowKeyStr);
 						List<RepositoryEntryRow> rows = model.getObjects();
 						for(RepositoryEntryRow row:rows) {
-							if(row != null && row.getKey().equals(rowKey)) {
+							if(row != null && rowKey.equals(row.getKey())) {
 								if (row.isMember()) {
 									doOpen(ureq, row, null);					
 								} else {
@@ -496,7 +524,6 @@ public class RepositoryEntryListController extends FormBasicController
 		searchParams.setAuthor(se.getAuthor());
 		searchParams.setText(se.getDisplayname());
 		searchParams.setMembershipMandatory(se.isMembershipMandatory());
-		searchParams.setClosed(se.getClosed());
 		tableEl.reset(true, true, true);
 		
 		RepositoryEntryListState state = new RepositoryEntryListState();
@@ -642,46 +669,8 @@ public class RepositoryEntryListController extends FormBasicController
 	}
 
 	@Override
-	public void forgeRatings(RepositoryEntryRow row) {
-		if(repositoryModule.isRatingEnabled()) {
-			if(guestOnly) {
-				Double averageRating = row.getAverageRating();
-				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingFormItem ratingCmp = uifactory.addRatingItem("rat_" + row.getKey(), null,  averageRatingValue, 5, false, null);
-				row.setRatingFormItem(ratingCmp);
-				ratingCmp.setUserObject(row);
-			} else {
-				Integer myRating = row.getMyRating();
-				Double averageRating = row.getAverageRating();
-				long numOfRatings = row.getNumOfRatings();
-		
-				float ratingValue = myRating == null ? 0f : myRating.floatValue();
-				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingWithAverageFormItem ratingCmp
-					= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, numOfRatings);
-				row.setRatingFormItem(ratingCmp);
-				ratingCmp.setUserObject(row);
-			}
-		}
-	}
-
-	@Override
-	public void forgeComments(RepositoryEntryRow row) {
-		if(repositoryModule.isCommentEnabled()) {
-			long numOfComments = row.getNumOfComments();
-			String title = "(" + numOfComments + ")";
-			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
-			commentsLink.setUserObject(row);
-			String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
-			commentsLink.setCustomEnabledLinkCSS("o_comments");
-			commentsLink.setIconLeftCSS(css);
-			row.setCommentsLink(commentsLink);
-		}
-	}
-
-	@Override
 	public Translator getTranslator() {
 		return super.getTranslator();
 	}
-	
+
 }

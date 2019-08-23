@@ -91,6 +91,10 @@ public class CourseEditorTreeNode extends GenericTreeNode {
 		throw new UnsupportedOperationException("title is given by associated coursenode's shorttitle");
 	}
 
+	public void setLongTitle(String title) {
+		cn.setLongTitle(title);
+	}
+
 	/**
 	 * @see org.olat.core.gui.components.tree.TreeNode#getAltText()
 	 */

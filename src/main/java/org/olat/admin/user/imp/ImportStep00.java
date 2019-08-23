@@ -148,6 +148,7 @@ class ImportStep00 extends BasicStep {
 			addToRunContext("newIdents", newIdents);
 			addToRunContext("updateIdents", updateIdents);
 			addToRunContext("validImport", Boolean.TRUE);
+			addToRunContext("sendChangePasswordMail", Boolean.TRUE);
 			boolean newUsers = false;
 			if (newIdents.size() != 0) {
 				setNextStep(new ImportStep01(ureq, canCreateOLATPassword, true));

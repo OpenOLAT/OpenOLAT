@@ -46,7 +46,10 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<Group
 	private List<UserPropertyHandler> userPropertyHandlers;
 	private boolean isAdministrativeUser;
 
-   
+	public List<UserPropertyHandler> getUserPropertyHandlers() {
+		return userPropertyHandlers;
+	}
+
 	/**
 	 * @param combo a List of Object[] with the array[0] = Identity, array[1] = addedToGroupTimestamp
 	 */
@@ -60,7 +63,7 @@ public class IdentitiesOfGroupTableDataModel extends DefaultTableDataModel<Group
 	/**
 	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
 	 */
-	public final Object getValueAt(int row, int col) {
+	public Object getValueAt(int row, int col) {
 		GroupMemberView co = getObject(row);
 		switch(col) {
 			case 0: return co.getIdentity().getName();

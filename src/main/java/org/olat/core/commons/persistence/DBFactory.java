@@ -26,6 +26,11 @@
 
 package org.olat.core.commons.persistence;
 
+/**
+ * Factories with static method are deprecated because they cannot be
+ * replaced.
+ */
+@Deprecated
 public class DBFactory {
 
 	/**
@@ -33,7 +38,7 @@ public class DBFactory {
 	 * Get the DB instance. The DB Session is lazy initialized.
 	 * Make sure you don't save the instance in a class variable as you do not
 	 * have a guarantee that a Hibernate session is already initialized.
-	 * 
+	 *
 	 * @return the DB instance.
 	 */
 	public static DB getInstance() {

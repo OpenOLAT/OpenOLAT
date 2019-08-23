@@ -285,7 +285,7 @@ public class ItemMetadataFormController extends FormBasicController {
 			showSolution.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
 			
 			boolean essay = (q.getType() == Question.TYPE_ESSAY);
-			String solLabel = essay ? "form.imd.correctsolution.word" : "form.imd.correctsolution";
+			String solLabel = "form.imd.correctsolution";
 			solution = uifactory.addRichTextElementForStringData("solution", solLabel, item.getQuestion().getSolutionText(), 8,
 					-1, true, qti.getBaseDir(), null, formLayout, ureq.getUserSession(), getWindowControl());
 			solution.setEnabled(!isRestrictedEditMode && !isBlockedEdit);

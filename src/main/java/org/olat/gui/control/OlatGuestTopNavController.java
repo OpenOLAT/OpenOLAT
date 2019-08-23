@@ -25,6 +25,7 @@
 
 package org.olat.gui.control;
 
+import ch.uzh.lms.listener.LogoutListener;
 import org.olat.admin.user.tools.UserTool;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.core.CoreSpringFactory;
@@ -64,7 +65,10 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 	private SearchModule searchModule;
 	@Autowired
 	private ImpressumModule impressumModule;
-	
+
+	@Autowired
+	private LogoutListener[] logoutListeners;
+
 	public OlatGuestTopNavController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
 		VelocityContainer vc = createVelocityContainer("guesttopnav");
@@ -114,6 +118,9 @@ public class OlatGuestTopNavController extends BasicController implements Lockab
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == loginLink) {
 			AuthHelper.doLogout(ureq);
+			for (LogoutListener logoutListener : logoutListeners) {
+				logoutListener.onLogout(ureq);
+			}
 		} else if (source == impressumLink) {
 			ControllerCreator impressumControllerCreator = new ControllerCreator() {
 				@Override

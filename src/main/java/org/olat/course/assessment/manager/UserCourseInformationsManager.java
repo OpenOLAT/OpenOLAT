@@ -61,7 +61,9 @@ public interface UserCourseInformationsManager {
 	public Map<Long,Date> getRecentLaunchDates(OLATResource resource);
 	
 	public Map<Long,Date> getRecentLaunchDates(OLATResource resource, List<Identity> identities);
-	
+
+	public Map<Long,Date> getRecentLaunchDates(Identity identity);
+
 	/**
 	 * Return the initial launch dates of a list of users.
 	 * @param courseResourceId

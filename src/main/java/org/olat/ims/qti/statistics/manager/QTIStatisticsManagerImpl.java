@@ -421,7 +421,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 				FIBResponse fibResponse = (FIBResponse)response;
 				if(FIBResponse.TYPE_BLANK.equals(fibResponse.getType())) {
 					String ident = fibResponse.getIdent();
-					String[] correctFIBs = fibResponse.getCorrectBlank().split(";");
+					String[] correctFIBs = fibResponse.getCorrectSynonyms();
 					if(correctFIBs == null || correctFIBs.length == 0) {
 						continue;
 					}

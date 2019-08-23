@@ -42,14 +42,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
  * 
  * @author Felix Jost
  */
-public class SequentialSectionNavigator extends DefaultNavigator implements Navigator, Serializable {
-
-	/**
-	 * 
-	 */
-	public void Navigator() {
-	//
-	}
+public class SequentialSectionNavigator extends DefaultNavigator {
 
 	/**
 	 * @param assessmentInstance

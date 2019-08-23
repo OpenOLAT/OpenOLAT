@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.WindowManager;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -67,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PreferencesFormController extends FormBasicController {
 	private static final String[] cssFontsizeKeys = new String[] { "80", "90", "100", "110", "120", "140" };
 	private Identity tobeChangedIdentity;
-	private SingleSelection language, fontsize, charset, notificationInterval, mailSystem;
+	private SingleSelection language, fontsize, notificationInterval, mailSystem;
 	private static final String[] mailIntern = new String[]{"intern.only","send.copy"};
 	
 	@Autowired

@@ -38,6 +38,8 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 
+import javax.annotation.Nullable;
+
 
 /**
 *  Description:<br>
@@ -69,7 +71,7 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	 * @param action name of event that should be fired when rows column is clicken. null allowed for no action
 	 * @param locale the users locale
 	 */
-	public DefaultColumnDescriptor(final String headerKey, final int dataColumn, final String action, final Locale locale) {
+	public DefaultColumnDescriptor(final String headerKey, final int dataColumn, @Nullable final String action, final Locale locale) {
 		this(headerKey, dataColumn, action, locale, ColumnDescriptor.ALIGNMENT_LEFT);
 	}
 

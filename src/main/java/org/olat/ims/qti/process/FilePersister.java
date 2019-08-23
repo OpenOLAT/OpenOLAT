@@ -59,6 +59,7 @@ public class FilePersister implements Persister {
 	private static final String QTI_SER = "qtiser";
 	private static final String RES_REPORTING = "resreporting";
 	private static final String QTI_FILE = "qti.ser";
+	private static final String QTI_FILE_BAK = "qti.ser.bak";
 	private String subjectName;
 	private String resourcePathInfo; // <Course_ID>/<Node_ID>
 
@@ -172,11 +173,32 @@ public class FilePersister implements Persister {
 	public void cleanUp() {
 		File fSerialDir = new File(getFullQtiPath());
 		try {
-			FileUtils.deleteDirsAndFiles(fSerialDir, true, true);
+			// OLATNG-29 back-porting of changes from OLAT 7.8.x: Rename qti.ser instead of deleting it
+			boolean renamed = renameQtiSer(fSerialDir);
+			if (!renamed) {
+				log.warn("could not rename qti.ser file in clean-up process " + getFullQtiPath() + File.separator + QTI_FILE);
+			}
 		} catch (Exception e) {
-			throw new OLATRuntimeException(FilePersister.class, "could not delete qti.ser file in clean-up process " + getFullQtiPath() + File.separator
+			throw new OLATRuntimeException(FilePersister.class, "could not rename qti.ser file in clean-up process " + getFullQtiPath() + File.separator
 					+ QTI_FILE, e);
 		}
+	}
+
+	private boolean renameQtiSer(File fSerialDir) {
+		if (fSerialDir != null && fSerialDir.exists()) {
+			File qtiSerFile = new File(fSerialDir, QTI_FILE);
+			if (qtiSerFile.exists()) {
+				File bakFile = new File(fSerialDir, QTI_FILE_BAK);
+				if (bakFile.exists()) {
+					boolean bakFileDeleted = bakFile.delete();
+					if (!bakFileDeleted) {
+						log.warn(QTI_FILE_BAK + " could not be deleted to rename the qti.ser file");
+					}
+				}
+				return qtiSerFile.renameTo(new File(fSerialDir, QTI_FILE_BAK));
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -184,8 +206,9 @@ public class FilePersister implements Persister {
 	 * this case.
 	 * 
 	 * @param doc
+	 * @param subj
 	 * @param type
-	 * @param info
+	 * @param aiid
 	 */
 	public static void createResultsReporting(Document doc, Identity subj, String type, long aiid) {
 		File fUserdataRoot = new File(WebappHelper.getUserDataRoot());

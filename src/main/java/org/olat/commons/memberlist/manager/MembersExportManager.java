@@ -181,14 +181,44 @@ public class MembersExportManager {
 			rows.add(member);
 		}
 	}
-	
+
+	public MediaResource getGroupMembersXlsMediaResource(Translator translator, List<UserPropertyHandler> userPropertyHandlers, List<BusinessGroup> groups) {
+		Map<Long,BusinessGroupMembership> groupmemberships = getGroupMembershipMap(groups);
+		Map<Long,RepositoryEntryMembership> repomemberships = new HashMap<>();
+
+		XlsGroupMembersExport exporter = new XlsGroupMembersExport();
+		Map<String, GroupData> preparedGroups = new HashMap<>();
+		for (BusinessGroup group : groups) {
+			// find all role members for the group
+			List<List<Identity>> roleMembers = new ArrayList<>();
+			roleMembers.add(businessGroupService.getMembers(group, GroupRoles.coach.name())); // coaches
+			roleMembers.add(businessGroupService.getMembers(group, GroupRoles.participant.name())); // participants
+			roleMembers.add(businessGroupService.getMembers(group, GroupRoles.waiting.name())); // waiting list
+			// calculate rows and membersMap for the group
+			List<Identity> rows = new ArrayList<>();
+			Map<Identity, StringBuilder> membersMap = new HashMap<>();
+			prepareExportData(rows, membersMap, roleMembers, groupmemberships, repomemberships, translator);
+			// store to the map of prepared groups
+			preparedGroups.put(group.getName(), new GroupData(rows, membersMap));
+		}
+		Translator handlerTranslator = userManager.getPropertyHandlerTranslator(translator);
+
+		return exporter.export(preparedGroups, handlerTranslator, userPropertyHandlers);
+	}
+
 	public MediaResource getXlsMediaResource(boolean showOwners, boolean showCoaches, boolean showParticipants, boolean showWaiting, 
 			List<Identity> owners, List<Identity> coaches, List<Identity> participants, List<Identity> waiting, Map<Long,CurriculumMemberInfos> curriculumInfos,		
 			Translator translator, List<UserPropertyHandler> userPropertyHandlers, RepositoryEntry repoEntry, BusinessGroup businessGroup) {
+		Map<Long, BusinessGroupMembership> groupmemberships;
+		Map<Long, RepositoryEntryMembership> repomemberships;
 		List<MemberView> memberViews;
 		SearchMembersParams params = new SearchMembersParams();
 		params.setRoles(new GroupRoles[] { GroupRoles.owner, GroupRoles.coach, GroupRoles.participant, GroupRoles.waiting});
-		if(repoEntry != null) {
+		if (repoEntry == null) {
+			List<BusinessGroup> groups = new ArrayList<>(); 
+			groups.add(businessGroup);
+			groupmemberships = getGroupMembershipMap(groups);
+			repomemberships = new HashMap<>();
 			memberViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, userPropertyHandlers, translator.getLocale());
 		} else if(businessGroup != null) {
 			memberViews = memberQueries.getBusinessGroupMembers(businessGroup, params, userPropertyHandlers, translator.getLocale());
@@ -216,6 +246,21 @@ public class MembersExportManager {
 		
 		Map<Identity, StringBuilder> membersMap = new HashMap<>();
 		List<Identity> rows = new ArrayList<>();
+		prepareExportData(rows, membersMap, roleMembers, groupmemberships, repomemberships, translator);
+		
+		Translator handlerTranslator = userManager.getPropertyHandlerTranslator(translator);
+		XlsMembersExport exporter = new XlsMembersExport();
+
+		return exporter.export(rows, membersMap, handlerTranslator, userPropertyHandlers);
+	}
+
+	private void prepareExportData(List<Identity> rows, Map<Identity, StringBuilder> membersMap,
+								   List<List<Identity>> roleMembers,
+								   Map<Long,BusinessGroupMembership> groupmemberships,
+								   Map<Long,RepositoryEntryMembership> repomemberships,
+								   Translator translator) {
+		Translator repoTranslator = Util.createPackageTranslator(Member.class, translator.getLocale());
+		Translator groupTranslator = Util.createPackageTranslator(GroupMembersRunController.class, translator.getLocale());
 		for (List<Identity> membersList : roleMembers) {
 			for (Identity member : membersList) {
 				Long memberKey = member.getKey();
@@ -248,6 +293,11 @@ public class MembersExportManager {
 					if (membership.isCurriculumElementOwner()) {
 						putRoleToMember(rows, membersMap, member, "curriculum.owners", repoTranslator);
 					}
+					if (groupmembership.isParticipant()) {
+						putRoleToMember(rows, membersMap, member, "participants", groupTranslator);
+					}
+					if (groupmembership.isWaiting()) {
+						putRoleToMember(rows, membersMap, member, "waiting", groupTranslator);
 					if (membership.isCurriculumElementCoach()) {
 						putRoleToMember(rows, membersMap, member, "curriculum.coaches", repoTranslator);
 					} 
@@ -255,11 +305,12 @@ public class MembersExportManager {
 						putRoleToMember(rows, membersMap, member, "curriculum.participants", repoTranslator);
 					}
 				}
-			}			
+			}
 		}
 		
 		Translator handlerTranslator = userManager.getPropertyHandlerTranslator(translator);
 		XlsMembersExport exporter = new XlsMembersExport();
 		return exporter.export(rows, membersMap, curriculumInfos, handlerTranslator, userPropertyHandlers);		
 	}
+}
 }

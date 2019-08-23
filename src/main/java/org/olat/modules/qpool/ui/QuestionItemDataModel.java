@@ -94,8 +94,9 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			case differentiation: return MetaUIFactory.bigDToString(item.getDifferentiation());
 			case numOfAnswerAlternatives:
 				return item.getNumOfAnswerAlternatives() > 0 ? Integer.toString(item.getNumOfAnswerAlternatives()) : "";
-			case usage:
-				return item.getUsage() > 0 ? Integer.toString(item.getUsage()) : "";
+			// Disabled as a quick fix for LMSUZH-671
+			//case usage:
+			//	return item.getUsage() > 0 ? Integer.toString(item.getUsage()) : "";
 			case type: {
 				String type = item.getItemType();
 				if(type == null) {
@@ -138,7 +139,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		stdevDifficulty("question.stdevDifficulty"),
 		differentiation("question.differentiation"),
 		numOfAnswerAlternatives("question.numOfAnswerAlternatives"),
-		usage("question.usage"),
+		//usage("question.usage"), // Disabled as a quick fix for LMSUZH-671
 		type("question.type"),
 		format("technical.format"),
 		rating("rating"),

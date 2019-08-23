@@ -71,6 +71,7 @@ import org.olat.ims.qti.container.ItemsInput;
 import org.olat.ims.qti.container.SectionContext;
 import org.olat.ims.qti.navigator.Navigator;
 import org.olat.ims.qti.navigator.NavigatorDelegate;
+import org.olat.ims.qti.navigator.SequentialItemNavigator;
 import org.olat.ims.qti.process.AssessmentFactory;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.FilePersister;
@@ -457,6 +458,7 @@ public class IQDisplayController extends DefaultController implements GenericEve
 			}
 			
 			if (wfCommand.equals("memo")) {
+				// OLATNG-12: url-decode memo text before saving
 				try {
 					String memo = java.net.URLDecoder.decode(ureq.getParameter("p"), "UTF-8");
 					ai.setMemo(ureq.getParameter("id"), memo);
@@ -469,10 +471,14 @@ public class IQDisplayController extends DefaultController implements GenericEve
 
 			logAudit(ureq);
 			
-			if (wfCommand.equals("sitse")) { // submitItemorSection
+			if (wfCommand.equals("sitse")) { // submitItemOrSection
 				ItemsInput iInp = iqm.getItemsInput(ureq);
 				if(iInp.getItemCount() > 0) {
 					navig.submitItems(iInp);
+				} else {
+					// OLATNG-200 (back-porting OLAT-7130)
+					getWindowControl().setInfo(translator.translate("status.results.notsaved.noparams"));
+					return;
 				}
 				if (ai.isClosed()) { // do all the finishing stuff
 					if(navig.getInfo().isFeedback()) {
@@ -512,6 +518,17 @@ public class IQDisplayController extends DefaultController implements GenericEve
 					WindowControl bwControl = addToHistory(ureq, sres, null, getWindowControl(), false);
 					OLATResourceable ires = OresHelper.createOLATResourceableInstance("git", new Long(itemPos));
 					addToHistory(ureq, ires, null, bwControl, true);
+				}
+			} else if (wfCommand.equals("gitnext")) { // goToNextItem
+				// OLATNG-208: back-porting OLAT-6177
+				// In order to display feedback of CURRENT item we won't proceed automatically after editing an item.
+				// This is triggered by the user via the "next" button which executes the "gitnext" command.
+				// This applies only to the SequentialItemNavigator in case navigation is not displayed or
+				// is not editable and only one item per page is shown.
+				((SequentialItemNavigator)navig).goToNextItem();
+				if (ai.isClosed()) { // do all the finishing stuff
+					event(ureq, source, new Event(QTIConstants.QTI_WF_SUBMIT));
+					return;
 				}
 			} else if (wfCommand.equals("gse")) { // goToSection
 				String seid = ureq.getParameter("seid");

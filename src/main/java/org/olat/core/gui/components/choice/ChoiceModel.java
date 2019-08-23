@@ -1,3 +1,5 @@
+package org.olat.core.gui.components.choice;
+
 /**
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
@@ -16,23 +18,20 @@
  * Initial code contributed and copyrighted by<br>
  * frentix GmbH, http://www.frentix.com
  * <p>
- */
-package org.olat.core.gui.components.choice;
-
-/**
- * 
+ *
  * Initial date: 27.05.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public interface ChoiceModel {
 	
-	public int getRowCount();
+	int getRowCount();
 	
-	public Boolean isEnabled(int row);
+	Boolean isEnabled(int row);
 	
-	public String getLabel(int row);
+	String getLabel(int row);
 	
-	public boolean isDisabled(int row);
+	boolean isDisabled(int row);
 
+	boolean isForExportOnly(int row);
 }

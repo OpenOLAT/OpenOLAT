@@ -416,8 +416,10 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	}
 
 	/**
-	 * Return a map of identity keys to initial launch date.
-	 * @param courseEnv
+	 * Returns a map of identity keys to recent launch date.
+	 *
+	 * @param resource
+	 * @param identities
 	 * @return
 	 */
 	@Override
@@ -456,7 +458,42 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			}
 			return dateMap;
 		} catch (Exception e) {
-			log.error("Cannot retrieve course informations for: " + resource.getResourceableId(), e);
+			log.error("Cannot retrieve course information for resource: " + resource.getResourceableId(), e);
+			return Collections.emptyMap();
+		}
+	}
+
+	/**
+	 * Returns a map of resource keys to recent launch dates.
+	 *
+	 * @param identity
+	 * @return
+	 */
+	@Override
+	public Map<Long, Date> getRecentLaunchDates(Identity identity) {
+		if(identity == null) {
+			return new HashMap<Long,Date>();
+		}
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select resource.key, infos.recentLaunch from ").append(UserCourseInfosImpl.class.getName()).append(" as infos ")
+					.append(" inner join infos.resource as resource")
+					.append(" where resource.resName='CourseModule'")
+					.append(" and infos.identity.key=:identityKey");
+
+			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
+					.setParameter("identityKey", identity.getKey());
+
+			List<Object[]> infoList = query.getResultList();
+			Map<Long,Date> dateMap = new HashMap<Long,Date>();
+			for (Object[] infos:infoList) {
+				Long resourceKey = (Long)infos[0];
+				Date initialLaunch = (Date)infos[1];
+				dateMap.put(resourceKey, initialLaunch);
+			}
+			return dateMap;
+		} catch (Exception e) {
+			log.error("Cannot retrieve course information for identity: " + identity.getKey(), e);
 			return Collections.emptyMap();
 		}
 	}
@@ -475,7 +512,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 					.executeUpdate();
 			return count;
 		} catch (Exception e) {
-			log.error("Cannot Delete course informations for: " + entry, e);
+			log.error("Cannot delete course information for: " + entry, e);
 			return -1;
 		}
 	}

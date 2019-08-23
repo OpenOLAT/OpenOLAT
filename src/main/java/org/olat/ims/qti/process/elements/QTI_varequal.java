@@ -28,7 +28,7 @@ package org.olat.ims.qti.process.elements;
 import org.dom4j.Element;
 import org.olat.ims.qti.container.ItemContext;
 import org.olat.ims.qti.container.ItemInput;
-
+import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 
 
 /**
@@ -50,7 +50,7 @@ public class QTI_varequal implements BooleanEvaluable {
 		String respident = boolElement.attributeValue("respident");
 		String yescase = boolElement.attributeValue("case");
 		boolean caseimp = (yescase == null) ? true : yescase.equals("Yes"); 	// make it compatible with faulty QTI documentation
-		String shouldVal = boolElement.getText(); // the answer is tested against content of elem.
+		String shouldVal = boolElement.getText().replaceAll(FIBResponse.SYNONYM_SPLIT_ESCAPED_STRING, FIBResponse.SYNONYM_SPLIT_STRING); // the answer is tested against content of elem.
 		boolean ok = (caseimp ? iinp.contains(respident,shouldVal) : iinp.containsIgnoreCase(respident,shouldVal));
 		return ok;
 	}

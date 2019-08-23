@@ -23,6 +23,8 @@ import java.io.Serializable;
 
 import org.olat.core.id.OLATResourceable;
 
+import javax.annotation.Nullable;
+
 /**
  * An implementation of the OLATresourceable which is serializable
  * 
@@ -41,7 +43,7 @@ public class Resourceable implements OLATResourceable, Serializable, Cloneable {
 		//
 	}
 	
-	public Resourceable(String type, Long key) {
+	public Resourceable(String type, @Nullable Long key) {
 		this.resourceableTypeName = type;
 		this.resourceableId = key;
 	}

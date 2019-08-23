@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.control.navigation;
 
+import javax.annotation.Nullable;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -40,7 +41,8 @@ import org.olat.core.gui.control.WindowControl;
  * @author Felix Jost
  */
 public interface SiteInstance {
-	
+
+	@Nullable
 	public NavElement getNavElement();
 	
 	public Controller createController(UserRequest ureq, WindowControl wControl);

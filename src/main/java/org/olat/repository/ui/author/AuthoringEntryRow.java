@@ -209,8 +209,16 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 		return lifecycleLabel;
 	}
 
+	public void setLifecycleLabel(String lifecycleLabel) {
+		this.lifecycleLabel = lifecycleLabel;
+	}
+
 	public String getLifecycleSoftKey() {
 		return lifecycleSoftKey;
+	}
+
+	public void setLifecycleSoftKey(String lifecycleSoftKey) {
+		this.lifecycleSoftKey = lifecycleSoftKey;
 	}
 
 	public Date getLifecycleStart() {

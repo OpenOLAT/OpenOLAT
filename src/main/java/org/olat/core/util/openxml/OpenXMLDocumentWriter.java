@@ -19,7 +19,6 @@
  */
 package org.olat.core.util.openxml;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,7 +42,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- * 
+ *
  * Initial date: 03.09.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
@@ -59,7 +58,7 @@ public class OpenXMLDocumentWriter {
 	public static final String SCHEMA_DC_TERMS = "http://purl.org/dc/terms/";
 	public static final String SCHEMA_DC = "http://purl.org/dc/elements/1.1/";
 	public static final String SCHEMA_RELATIONSHIPS = "http://schemas.openxmlformats.org/package/2006/relationships";
-	
+
 	public static final String CT_RELATIONSHIP = "application/vnd.openxmlformats-package.relationships+xml";
 	public static final String CT_EXT_PROPERTIES = "application/vnd.openxmlformats-officedocument.extended-properties+xml";
 	public static final String CT_CORE_PROPERTIES = "application/vnd.openxmlformats-package.core-properties+xml";
@@ -68,41 +67,41 @@ public class OpenXMLDocumentWriter {
 	public static final String CT_STYLES = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
 	public static final String CT_HEADER = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
 	public static final String CT_THEME = "application/vnd.openxmlformats-officedocument.theme+xml";
-	
-	
+
+
 	public void createDocument(ZipOutputStream out, OpenXMLDocument document)
-	throws IOException {
+			throws IOException {
 		//flush header...
 		document.appendPageSettings();
-		
+
 		//_rels
 		out.putNextEntry(new ZipEntry("_rels/.rels"));
 		createShadowDocumentRelationships(out);
 		out.closeEntry();
-		
+
 		//[Content_Types].xml
 		out.putNextEntry(new ZipEntry("[Content_Types].xml"));
 		createContentTypes(document, out);
 		out.closeEntry();
-		
+
 		//docProps/app.xml
 		out.putNextEntry(new ZipEntry("docProps/app.xml"));
 		createDocPropsApp(out);
 		out.closeEntry();
-		
+
 		//docProps/core.xml
 		out.putNextEntry(new ZipEntry("docProps/core.xml"));
 		createDocPropsCore(out);
 		out.closeEntry();
-		
+
 		//word/_rels/document.xml.rels
 		out.putNextEntry(new ZipEntry("word/_rels/document.xml.rels"));
 		createDocumentRelationships(out, document);
 		out.closeEntry();
-		
+
 		//word/media
 		appendMedias(out, document);
-		
+
 		// word/theme/theme1.xml
 		out.putNextEntry(new ZipEntry("word/theme/theme1.xml"));
 		try(InputStream in = OpenXMLDocumentWriter.class.getResourceAsStream("_resources/theme1.xml")) {
@@ -138,14 +137,14 @@ public class OpenXMLDocumentWriter {
 		appendPredefinedStyles(out, document.getStyles());
 		out.closeEntry();
 	}
-	
+
 	protected void appendMedias(ZipOutputStream out, OpenXMLDocument document)
-	throws IOException {
+			throws IOException {
 		for(DocReference img:document.getImages()) {
-			try(FileInputStream in = new FileInputStream(img.getFile())) {
+			try(InputStream in = img.getUrl().openStream()) {
 				ZipEntry wordDocument = new ZipEntry("word/media/" + img.getFilename());
 				out.putNextEntry(wordDocument);
-	
+
 				IOUtils.copy(in, out);
 				OpenXMLUtils.writeTo(document.getDocument(), out, false);
 				out.closeEntry();
@@ -278,16 +277,16 @@ public class OpenXMLDocumentWriter {
 			log.error("", e);
 		}
 	}
-	
+
 	private final void addRelationship(String id, String type, String target, XMLStreamWriter writer)
-	throws XMLStreamException {
+			throws XMLStreamException {
 		writer.writeStartElement("Relationship");
 		writer.writeAttribute("Id", id);
 		writer.writeAttribute("Type", type);
 		writer.writeAttribute("Target", target);
 		writer.writeEndElement();
 	}
-	
+
 	/*
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
@@ -311,25 +310,25 @@ public class OpenXMLDocumentWriter {
 			log.error("", e);
 		}
 	}
-	
+
 	private final void addCPProperty(String name, String value, Element propertiesEl, Document doc) {
 		Element defaultEl = (Element)propertiesEl.appendChild(doc.createElement("cp:" + name));
 		defaultEl.appendChild(doc.createTextNode(value));
 	}
-	
+
 	private final void addDCProperty(String name, String value, Element propertiesEl, Document doc) {
 		Element defaultEl = (Element)propertiesEl.appendChild(doc.createElement("dc:" + name));
 		defaultEl.appendChild(doc.createTextNode(value));
 	}
-	
-/*
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<properties:Properties xmlns:properties="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
-  xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
-	<properties:Application>OpenOLAT</properties:Application>
-	<properties:AppVersion>9.1.0.</properties:AppVersion>
-</properties:Properties>
- */
+
+	/*
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <properties:Properties xmlns:properties="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties"
+      xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+        <properties:Application>OpenOLAT</properties:Application>
+        <properties:AppVersion>9.1.0.</properties:AppVersion>
+    </properties:Properties>
+     */
 	protected void createDocPropsApp(OutputStream out) {
 		try {
 			Document doc = OpenXMLUtils.createDocument();
@@ -342,30 +341,30 @@ public class OpenXMLDocumentWriter {
 			log.error("", e);
 		}
 	}
-	
+
 	private final void addExtProperty(String name, String value, Element propertiesEl, Document doc) {
 		Element defaultEl = (Element)propertiesEl.appendChild(doc.createElement("properties:" + name));
 		defaultEl.appendChild(doc.createTextNode(value));
 	}
-	
-/*
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-	<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />
-	<Override ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml" PartName="/docProps/app.xml" />
-	<Override ContentType="application/vnd.openxmlformats-package.core-properties+xml" PartName="/docProps/core.xml" />
-	<Override ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml" PartName="/word/document.xml" />
-	<Override ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml" PartName="/word/numbering.xml" />
-	<Override ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml" PartName="/word/styles.xml" />
-</Types>
- */
+
+	/*
+    <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+        <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />
+        <Override ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml" PartName="/docProps/app.xml" />
+        <Override ContentType="application/vnd.openxmlformats-package.core-properties+xml" PartName="/docProps/core.xml" />
+        <Override ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml" PartName="/word/document.xml" />
+        <Override ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml" PartName="/word/numbering.xml" />
+        <Override ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml" PartName="/word/styles.xml" />
+    </Types>
+     */
 	protected void createContentTypes(OpenXMLDocument document, ZipOutputStream out) {
 		try {
 			XMLStreamWriter writer = OpenXMLUtils.createStreamWriter(out);
 			writer.writeStartDocument("UTF-8", "1.0");
 			writer.writeStartElement("Types");
 			writer.writeNamespace("", SCHEMA_CONTENT_TYPES);
-			
+
 			//Default
 			createContentTypesDefault("rels", CT_RELATIONSHIP, writer);
 			createContentTypesDefault("xml", "application/xml", writer);

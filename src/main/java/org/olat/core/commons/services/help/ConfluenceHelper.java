@@ -56,7 +56,7 @@ public class ConfluenceHelper {
 	private static final Map<String, String> translatedPages = new ConcurrentHashMap<>();
 	private static final Map<String, Date> translatTrials = new ConcurrentHashMap<>();
 
-	private static final String confluenceBaseUrl = "https://confluence.openolat.org";
+	private static final String confluenceBaseUrl = "https://help.olat.uzh.ch";
 	private static final String confluenceDisplayUrl = confluenceBaseUrl + "/display";
 	private static final String confluencePagesUrl = confluenceBaseUrl + "/pages/";
 	

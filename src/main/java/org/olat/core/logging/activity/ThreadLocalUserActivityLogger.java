@@ -147,7 +147,12 @@ public class ThreadLocalUserActivityLogger {
 	public static void log(ILoggingAction loggingAction, Class<?> callingClass, ILoggingResourceable... loggingResourceables) {
 		IUserActivityLogger logger = userActivityLogger_.get();
 		if (logger==null) {
-			log_.error("No ThreadLocal IUserActivityLogger set - cannot log to database: "+loggingAction.getActionVerb());
+			/*
+			 * TODO sev26
+			 * An error must abort the execution. Therefore change it to a
+			 * warning log message.
+			 */
+			log_.info("No ThreadLocal IUserActivityLogger set - cannot log to database: "+loggingAction.getActionVerb());
 		} else {
 			logger.log(loggingAction, callingClass, loggingResourceables);
 		}

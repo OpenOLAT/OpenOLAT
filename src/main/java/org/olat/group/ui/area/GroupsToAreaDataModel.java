@@ -85,7 +85,12 @@ public class GroupsToAreaDataModel implements ChoiceModel {
 	public boolean isDisabled(int row) {
 		return false;
 	}
-	
+
+	@Override
+	public boolean isForExportOnly(int row) {
+		return false;
+	}
+
 	public BusinessGroup getObject(int row) {
 		return allGroups.get(row);
 	}

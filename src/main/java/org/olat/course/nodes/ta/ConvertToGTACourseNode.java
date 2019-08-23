@@ -340,6 +340,9 @@ public class ConvertToGTACourseNode {
 		if(StringHelper.containsNonWhitespace(confirmation)) {
 			gtaConfig.setStringValue(GTACourseNode.GTASK_SUBMISSION_TEXT, confirmation);
 			gtaConfig.setBooleanEntry(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION, modConfig.getBooleanSafe(TACourseNode.CONF_DROPBOX_ENABLEMAIL));
+			// LMSUZH-676: GTA confirmations are now role based and exist for both assignment and submission.
+			gtaConfig.setBooleanEntry(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION_PARTICIPANT, modConfig.getBooleanSafe(TACourseNode.CONF_DROPBOX_ENABLEMAIL));
+			gtaConfig.setBooleanEntry(GTACourseNode.GTASK_ASSIGNMENT_MAIL_CONFIRMATION_PARTICIPANT, modConfig.getBooleanSafe(TACourseNode.CONF_DROPBOX_ENABLEMAIL));
 		}
 		
 		gtaConfig.setBooleanEntry(GTACourseNode.GTASK_REVIEW_AND_CORRECTION, modConfig.getBooleanSafe(TACourseNode.CONF_RETURNBOX_ENABLED));

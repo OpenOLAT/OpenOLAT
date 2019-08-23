@@ -98,7 +98,8 @@ public class ErrorFeedbackMailer implements Dispatcher {
 				MailBundle bundle = new MailBundle();
 				bundle.setFromId(ident);
 				bundle.setTo(WebappHelper.getMailConfig("mailError"));
-				bundle.setContent("Feedback from Error Nr.: " + errorNr, out.toString());
+				// OLATNG-331: Do not send out Traceback via Mail
+				bundle.setContent("Feedback from Error Nr.: " + errorNr, "");
 				mailManager.sendExternMessage(bundle, null, false);
 			} else {
 				log.error("Try to send a feedback without identity");

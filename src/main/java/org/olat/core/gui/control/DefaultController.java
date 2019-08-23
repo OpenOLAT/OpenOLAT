@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -117,7 +119,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 		
 	}
 	
-	public Locale getLocale() {
+	public Locale getLocale(@UnknownInitialization DefaultController this) {
 		return locale;
 	}
 	
@@ -142,7 +144,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * 
 	 * @return the windowcontrol for this controller
 	 */
-	protected WindowControl getWindowControl() {
+	public WindowControl getWindowControl(@UnknownInitialization DefaultController this) {
 		if (newWControl == null) {
 			throw new AssertException("no windowcontrol set!");
 		}
@@ -155,7 +157,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	}
 
 	@Override
-	public void addControllerListener(ControllerEventListener el) {
+	public void addControllerListener(@UnknownInitialization DefaultController this, @UnknownInitialization ControllerEventListener el) {
 		if (listeners == null) {
 			listeners = new ArrayList<>();
 		}
@@ -324,7 +326,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	/**
 	 * @return Component
 	 */
-	public Component getInitialComponent() {
+	public Component getInitialComponent(@UnknownInitialization DefaultController this) {
 		return initialComponent;
 	}
 	
@@ -353,7 +355,7 @@ public abstract class DefaultController implements Controller, ControllerEventLi
 	 * @param loggingResourceable the loggingResourceable to be set on this Controller's 
 	 * IUserActivityLogger
 	 */
-	public void addLoggingResourceable(ILoggingResourceable loggingResourceable) {
+	public void addLoggingResourceable(@UnderInitialization DefaultController this, ILoggingResourceable loggingResourceable) {
 		IUserActivityLogger logger = getUserActivityLogger();
 		if (logger==null) {
 			// logger is never null - guaranteed. 

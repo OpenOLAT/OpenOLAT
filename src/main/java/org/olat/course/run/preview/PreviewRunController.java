@@ -130,6 +130,10 @@ public class PreviewRunController extends MainLayoutBasicController {
 		detail.contextPut("groups", assembleNamesFromGroupList(cgm.getAllBusinessGroups()));
 		detail.contextPut("areas", assembleNamesFromAreaList(cgm.getAllAreas()));
 		detail.contextPut("asRole",role);
+		Condition c = currentCourseNode.getPreConditionVisibility();
+		String visibilityExpr = (c.getConditionExpression() == null? translate("details.visibility.none") : c.getConditionExpression());
+		detail.contextPut("visibilityExpr", visibilityExpr);
+		detail.contextPut("coursenode", currentCourseNode);
 		previewLayoutCtr.setCol3(detail);
 	}
 

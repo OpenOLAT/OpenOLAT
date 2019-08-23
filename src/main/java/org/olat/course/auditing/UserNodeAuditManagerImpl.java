@@ -138,7 +138,7 @@ public class UserNodeAuditManagerImpl implements UserNodeAuditManager {
 	@Override
 	public String getUserNodeLog(CourseNode courseNode, Identity identity) {
 		Property property = cpm.findCourseNodeProperty(courseNode, identity, null, LOG_IDENTIFYER);
-		return property == null ? null : property.getTextValue();
+		return property == null ? null : property.getTextValue().replace("null", "undefined");
 	}
 
 	@Override

@@ -119,7 +119,7 @@ public class OLATResourceableListeningWrapperController extends MainLayoutBasicC
 	 * needs to be overridden since the originator of the event is not me, but the wrapped controller
 	 * @see org.olat.core.gui.control.DefaultController#fireEvent(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Event)
 	 */
-	protected void fireEvent(UserRequest ureq, Event event) {
+	public void fireEvent(UserRequest ureq, Event event) {
 		List<ControllerEventListener> listeners = getListeners();
 		if (listeners == null) return;
 		for (Iterator<ControllerEventListener> iter = listeners.iterator(); iter.hasNext();) {

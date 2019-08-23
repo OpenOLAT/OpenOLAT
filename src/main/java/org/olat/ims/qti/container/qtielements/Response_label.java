@@ -70,8 +70,17 @@ public class Response_label extends GenericQTIElement {
 		String renderClass = (String) ri.get(RenderInstructions.KEY_RENDER_CLASS);
 		if(renderClass == null) {
 			//we don't know what to do
-		} else if (renderClass.equals("choice")) {
-			renderChoice(buffer, ri, iinput);
+			throw new AssertException("Render class must be set previousely to call respnse_label.render.");
+		}
+
+		// OLATNG-208: Back-porting OLAT-6617 (use renderMode variable to generate disabled attribute when needed)
+		int renderMode = RenderInstructions.RENDER_MODE_FORM;
+		if (ri.containsKey(RenderInstructions.KEY_RENDER_MODE)) {
+			renderMode = (Integer) ri.get(RenderInstructions.KEY_RENDER_MODE);
+		}
+
+		if (renderClass.equals("choice")) {
+			renderChoice(buffer, ri, iinput, renderMode);
 		} else if (renderClass.equals("kprim")) {
 			buffer.append("<tr><td class='o_qti_item_kprim_input'><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"radio\" name=\"");
 			appendParameterIdent(buffer, ri);
@@ -80,6 +89,9 @@ public class Response_label extends GenericQTIElement {
 				List<String> responses = iinput.getAsList(responseIdent);
 				if (responses != null && responses.contains(getQTIIdent() + ":correct")) buffer.append("\" checked=\"checked");
 			}
+			if (renderMode == RenderInstructions.RENDER_MODE_STATIC) {
+				buffer.append("\" disabled=\"disabled");
+			}
 			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\"/>");
 			buffer.append("</td><td class='o_qti_item_kprim_input'><input id=\"QTI_").append(ri.get(RenderInstructions.KEY_ITEM_IDENT)).append(getQTIIdent()).append("\" type=\"radio\" class=\"radio\" name=\"");
 			appendParameterIdent(buffer, ri);
@@ -87,6 +99,9 @@ public class Response_label extends GenericQTIElement {
 			if (iinput != null && !iinput.isEmpty()) {
 				List<String> responses = iinput.getAsList(responseIdent);
 				if (responses != null && responses.contains(getQTIIdent() + ":wrong")) buffer.append("\" checked=\"checked");
+			}
+			if (renderMode == RenderInstructions.RENDER_MODE_STATIC) {
+				buffer.append("\" disabled=\"disabled");
 			}
 			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\"/>");
 			buffer.append("</td><td>");
@@ -105,6 +120,9 @@ public class Response_label extends GenericQTIElement {
 				// render as textarea
 				buffer.append("<textarea id=\"QTI_").append(getQTIIdent()).append("\" name=\"");
 				appendParameterIdent(buffer, ri);
+				if (renderMode == RenderInstructions.RENDER_MODE_STATIC) {
+					buffer.append("\" readonly=\"readonly");
+				}
 				buffer.append("\" class='form-control' rows=\"").append(rows).append("\" cols=\"").append(columns)
 						.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\">");
 				if (iinput != null && !iinput.isEmpty() && iinput.getSingle(responseIdent) != null) {
@@ -118,7 +136,12 @@ public class Response_label extends GenericQTIElement {
 				appendParameterIdent(buffer, ri);
 				buffer.append("\" type=\"text\" size=\"").append(columns).append("\" maxlength=\"").append(maxlength);
 				if (iinput != null && !iinput.isEmpty() && iinput.getSingle(responseIdent) != null) {
-					buffer.append("\" value=\"").append(StringHelper.escapeHtml(iinput.getSingle(getQTIIdent())));
+					// OLATNG-199 (back-porting OLAT-6989: escaped fillInText)
+					String fillInText = StringHelper.escapeHtml(iinput.getSingle(getQTIIdent()));
+					buffer.append("\" value=\"").append(fillInText);
+				}
+				if (renderMode == RenderInstructions.RENDER_MODE_STATIC) {
+					buffer.append("\" disabled=\"disabled");
 				}
 				buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" /><span> </span>");
 			}
@@ -126,7 +149,7 @@ public class Response_label extends GenericQTIElement {
 		}
 	}
 	
-	private void renderChoice(StringBuilder buffer, RenderInstructions ri, ItemInput iinput) {
+	private void renderChoice(StringBuilder buffer, RenderInstructions ri, ItemInput iinput, int renderMode) {
 		String responseIdent = (String) ri.get(RenderInstructions.KEY_RESPONSE_IDENT);
 		// render multiple/single choice
 		buffer.append("<div class='form-group o_qti_item_choice_option");
@@ -167,6 +190,9 @@ public class Response_label extends GenericQTIElement {
 				String response = iinput.getSingle(responseIdent);
 				if (response.equals(getQTIIdent())) buffer.append("\" checked=\"checked");
 			}
+			if (renderMode == RenderInstructions.RENDER_MODE_STATIC) {
+				buffer.append("\" disabled=\"disabled");
+			}
 			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" />");
 			super.render(buffer, ri);
 			buffer.append("</label></div>");
@@ -181,6 +207,9 @@ public class Response_label extends GenericQTIElement {
 			if (iinput != null) {
 				List<String> responses = iinput.getAsList(responseIdent);
 				if (responses != null && responses.contains(getQTIIdent())) buffer.append("\" checked=\"checked");
+			}
+			if (renderMode == RenderInstructions.RENDER_MODE_STATIC) {
+				buffer.append("\" disabled=\"disabled");
 			}
 			buffer.append("\" onchange=\"return setFormDirty('ofo_iq_item')\" onclick=\"return setFormDirty('ofo_iq_item')\" />");
 			super.render(buffer, ri);

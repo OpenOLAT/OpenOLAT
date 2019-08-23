@@ -89,6 +89,8 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	
   // used to save user data in the properties table 
   private static final String CHARSET = "charset";
+  private static final String HIDDEN_FILES = "hiddenfiles";
+
   private UserDisplayNameCreator userDisplayNameCreator;
   
   @Autowired
@@ -328,6 +330,29 @@ public class UserManagerImpl extends UserManager implements UserDataDeletable, U
 	       charset = WebappHelper.getDefaultCharset();
 	   }
 	   return charset;
+	}
+
+	public void setShowHiddenFiles(Identity identity, boolean showHiddenFiles) {
+		PropertyManager pm = PropertyManager.getInstance();
+		Property p = pm.findProperty(identity, null, null, null, HIDDEN_FILES);
+
+		if(p != null){
+			p.setStringValue(Boolean.toString(showHiddenFiles));
+			pm.updateProperty(p);
+		} else {
+			Property newP = pm.createUserPropertyInstance(identity, null, HIDDEN_FILES, null, null, Boolean.toString(showHiddenFiles), null);
+			pm.saveProperty(newP);
+		}
+	}
+
+	public boolean getShowHiddenFiles(Identity identity) {
+		boolean showHiddenFiles = false;
+		PropertyManager pm = PropertyManager.getInstance();
+		Property p = pm.findProperty(identity, null, null, null, HIDDEN_FILES);
+		if (p != null) {
+			showHiddenFiles = Boolean.valueOf(p.getStringValue());
+		}
+		return showHiddenFiles;
 	}
 
 	@Override

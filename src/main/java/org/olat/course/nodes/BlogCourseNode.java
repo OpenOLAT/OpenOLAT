@@ -86,9 +86,8 @@ public class BlogCourseNode extends AbstractFeedCourseNode {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl,  BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
-		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		TabbableController blogChildController = new BlogNodeEditController(this, course, euce, ureq, wControl);
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, blogChildController);
+		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, euce, blogChildController);
 	}
 
 	@Override

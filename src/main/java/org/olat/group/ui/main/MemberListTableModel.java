@@ -19,6 +19,7 @@
  */
 package org.olat.group.ui.main;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
+import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupShort;
 import org.olat.instantMessaging.model.Presence;
 
 /**
@@ -39,11 +42,17 @@ import org.olat.instantMessaging.model.Presence;
 public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> implements SortableFlexiTableDataModel<MemberRow> {
 	
 	private final boolean onlineStatusEnabled;
+	private final List<BusinessGroup> businessGroupColumnHeaders;
+
 	private Map<Long,CurriculumMemberInfos> curriculumInfos;
 	
 	public MemberListTableModel(FlexiTableColumnModel columnModel, boolean onlineStatusEnabled) {
+		//
+	}
+	public MemberListTableModel(FlexiTableColumnModel columnModel, boolean onlineStatusEnabled, List<BusinessGroup> businessGroupColumnHeaders) {
 		super(columnModel);
 		this.onlineStatusEnabled = onlineStatusEnabled;
+		this.businessGroupColumnHeaders = businessGroupColumnHeaders;
 	}
 
 	@Override
@@ -109,9 +118,27 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 				default: return "ERROR";
 			}
 		}
-		
-		int propPos = col - AbstractMemberListController.USER_PROPS_OFFSET;
-		return row.getView().getIdentityProp(propPos);
+
+		if (col >= AbstractMemberListController.USER_PROPS_OFFSET && col < AbstractMemberListController.BUSINESS_COLUMNS_OFFSET) {
+			int propPos = col - AbstractMemberListController.USER_PROPS_OFFSET;
+			return row.getIdentityProp(propPos);
+		}
+
+		// Group columns (for export only)
+		List<BusinessGroupShort> businessGroupsOfMember = row.getGroups();
+		if (businessGroupsOfMember != null && !businessGroupsOfMember.isEmpty()) {
+			List<Long> businessGroupKeysOfMember = new ArrayList<>();
+			for (BusinessGroupShort businessGroupOfMember : businessGroupsOfMember) {
+				businessGroupKeysOfMember.add(businessGroupOfMember.getKey());
+			}
+
+			// Check if identity is member of the group of the current column
+			BusinessGroup businessGroupColumnHeader = businessGroupColumnHeaders.get(col - AbstractMemberListController.BUSINESS_COLUMNS_OFFSET);
+			if (businessGroupKeysOfMember.contains(businessGroupColumnHeader.getKey())) {
+				return "X";
+			}
+		}
+		return "";
 	}
 	
 	private CurriculumElementInfos getCurriculumElementInfos(MemberRow row) {
@@ -130,7 +157,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 
 	@Override
 	public MemberListTableModel createCopyWithEmptyList() {
-		return new MemberListTableModel(getTableColumnModel(), onlineStatusEnabled);
+		return new MemberListTableModel(getTableColumnModel(), onlineStatusEnabled, businessGroupColumnHeaders);
 	}
 
 	public enum Cols implements FlexiSortableColumnDef {

@@ -142,8 +142,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		}
 		StaticTextElement typeEl = uifactory.addStaticTextElement("cif.type", typeName, formLayout);
 		typeEl.setElementCssClass("o_sel_author_type");
-		
-		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 100, "", formLayout);
+
+		displaynameEl = uifactory.addTextElement("cif.displayname", "cif.displayname", 255, "", formLayout);
 		displaynameEl.setElementCssClass("o_sel_author_displayname");
 		displaynameEl.setFocus(true);
 		displaynameEl.setDisplaySize(30);

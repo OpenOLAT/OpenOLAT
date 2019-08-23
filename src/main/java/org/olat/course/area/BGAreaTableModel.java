@@ -67,7 +67,7 @@ public class BGAreaTableModel extends DefaultTableDataModel<BGArea> {
 				return area.getName();
 			case 1:
 				String description = area.getDescription();
-				description = FilterFactory.getHtmlTagsFilter().filter(description);
+				description = FilterFactory.getHtmlTagAndDescapingFilter().filter(description);
 				description = Formatter.truncate(description, 256);
 				return description;
 			default:

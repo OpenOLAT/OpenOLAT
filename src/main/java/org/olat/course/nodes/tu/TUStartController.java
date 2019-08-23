@@ -24,8 +24,8 @@
 */
 package org.olat.course.nodes.tu;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -44,20 +44,30 @@ public class TUStartController extends BasicController {
 		super(ureq, wControl);
 		
 		runVC = createVelocityContainer("run");
-		
-		URL url = null;
+		URI uri = null;
 		try {
-			url = new URL((String)config.get(TUConfigForm.CONFIGKEY_PROTO), 
-							(String)config.get(TUConfigForm.CONFIGKEY_HOST),
-							((Integer)config.get(TUConfigForm.CONFIGKEY_PORT)).intValue(),
-							(String) config.get(TUConfigForm.CONFIGKEY_URI));
-		} catch (MalformedURLException e) {
+			if (config.get(TUConfigForm.CONFIGKEY_USER) != null && config.get(TUConfigForm.CONFIGKEY_PASS) != null) {
+				uri = new URI((String) config.get(TUConfigForm.CONFIGKEY_PROTO),
+						config.get(TUConfigForm.CONFIGKEY_USER) + ":" + config.get(TUConfigForm.CONFIGKEY_PASS),
+						(String) config.get(TUConfigForm.CONFIGKEY_HOST),
+						(Integer) config.get(TUConfigForm.CONFIGKEY_PORT),
+						(String) config.get(TUConfigForm.CONFIGKEY_URI),
+						null, null);
+			} else {
+				uri = new URI((String) config.get(TUConfigForm.CONFIGKEY_PROTO),
+						null,
+						(String) config.get(TUConfigForm.CONFIGKEY_HOST),
+						(Integer) config.get(TUConfigForm.CONFIGKEY_PORT),
+						(String) config.get(TUConfigForm.CONFIGKEY_URI),
+						null, null);
+			}
+		} catch (URISyntaxException e) {
 			// this should not happen since the url was already validated in edit mode
 			runVC.contextPut("url", "");
 		}
-		if (url != null) {
+		if (uri != null) {
 			StringBuilder sb = new StringBuilder(128);
-			sb.append(url.toString());
+			sb.append(uri.toASCIIString());
 			// since the url only includes the path, but not the query (?...), append it here, if any
 			String query = (String)config.get(TUConfigForm.CONFIGKEY_QUERY);
 			if (query != null) {

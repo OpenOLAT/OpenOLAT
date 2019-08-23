@@ -37,6 +37,7 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -50,7 +51,8 @@ public class OLATResourceManager {
 	private static final Logger log = Tracing.createLoggerFor(OLATResourceManager.class);
 	
 	private static OLATResourceManager INSTANCE;
-	private DB dbInstance;
+
+	private final DB dbInstance;
 	
 	/**
 	 * @return Singleton
@@ -58,19 +60,11 @@ public class OLATResourceManager {
 	public static OLATResourceManager getInstance() {
 		return INSTANCE;
 	}
-	
-	/**
-	 * [used by spring]
-	 */
-	private OLATResourceManager() {
+
+	@Autowired
+	private OLATResourceManager(DB dbInstance) {
+		this.dbInstance = dbInstance;
 		INSTANCE = this;
-	}
-	
-	/**
-	 * @param db
-	 */
-	public void setDbInstance(DB db) {
-		this.dbInstance = db;
 	}
 	
 	/**
@@ -215,13 +209,7 @@ public class OLATResourceManager {
 	
 	public OLATResource findResourceById(Long key) {
 		if (key == null) return null;
-
-		String s = "select ori from org.olat.resource.OLATResourceImpl ori where ori.key=:resourceKey";
-		List<OLATResource> resources = dbInstance.getCurrentEntityManager()
-				.createQuery(s, OLATResource.class)
-				.setParameter("resourceKey", key)
-				.getResultList();
-		return resources.isEmpty() ? null : resources.get(0);
+		return dbInstance.getCurrentEntityManager().find(OLATResourceImpl.class, key);
 	}
 	
 	public List<OLATResource> findResourceByTypes(List<String> types) {

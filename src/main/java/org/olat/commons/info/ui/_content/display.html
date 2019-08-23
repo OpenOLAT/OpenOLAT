@@ -53,6 +53,23 @@
 				</a>	
 			</div>
 			#end
+
+            #if ($info.hasAttachments())
+                <div class="o_forum">
+                    <div class="o_forum_message_attachments" style="border-top-style:hidden;">
+                        <strong>$r.translateWithPackage("org.olat.modules.fo","attachments")</strong>
+                        <ul class="list-inline">
+                            #foreach( $attachment in $info.getAttachments())
+                                #set( $downlCompName = "download.${info.getKey()}.${velocityCount}")
+                                <li class="o_attachment">
+                                    $r.render($downlCompName)
+                                </li>
+                            #end
+                        </ul>
+                    </div>
+                </div>
+            #end
+
 			#if($r.available("info.delete.${info.getKey()}") or $r.available("info.edit.${info.getKey()}"))
 				<div class="o_button_group">
 					#if($r.available("info.edit.${info.getKey()}"))

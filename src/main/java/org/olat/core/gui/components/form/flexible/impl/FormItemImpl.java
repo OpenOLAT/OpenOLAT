@@ -28,6 +28,8 @@ package org.olat.core.gui.components.form.flexible.impl;
 import java.util.List;
 import java.util.Locale;
 
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.help.HelpModule;
 import org.olat.core.gui.UserRequest;
@@ -194,9 +196,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	public Form getRootForm() {
 		return rootForm;
 	}
-
+	
 	@Override
-	public void setRootForm(Form rootForm){
+	public void setRootForm(@UnknownInitialization(FormItemImpl.class) FormItemImpl this, Form rootForm){
 		this.rootForm = rootForm;
 		rootFormAvailable();
 	}
@@ -209,7 +211,17 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 
 	@Override
 	public void setTranslator(Translator translator) {
-		this.translator = translator;		
+		/**
+		 * TODO sev26
+		 * Report bug.
+		 * The bug cannot be fixed because a lot of {@link FormItem} set
+		 * during their initialization a custom {@link Translator} but
+		 * actually depend on the translator that is set here.
+		 */
+//		if (this.translator == null) {
+//			this.translator = translator;
+//		}
+		this.translator = translator;
 		//(re)translate label, error, example
 		//typically setTranslator is called form parent container if the FormItem
 		//is added.
@@ -257,7 +269,7 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	}
 
 	@Override
-	public void setLabel(String label, String[] params) {
+	public void setLabel(@UnderInitialization(FormItemImpl.class) FormItemImpl this, String label, String[] params) {
 		setLabel(label, params,  true); 
 	}
 
@@ -502,9 +514,9 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 	public boolean hasExample(){
 		return hasExample;
 	}
-
+	
 	@Override
-	public void showLabel(boolean show){
+	public void showLabel(@UnderInitialization(FormItemImpl.class) FormItemImpl this, boolean show){
 		if(show) {
 			labelPanel.setContent(labelC);
 		}else{

@@ -173,12 +173,11 @@ public class CustomfieldsFormController extends FormBasicController {
 	}
 
 	private void createFormElemente(FormItemContainer formLayout, int i, CustomField customField) {
-		TextElement nameElement = uifactory.addTextElement("customfield_name_" + i, "-", 50, customField.getName(), formLayout);
-		nameElement.setLabel("customfield.name.label", null);
+		TextElement nameElement = uifactory.addTextElement("customfield_name_" + i, "customfield.name.label", 50, customField.getName(), formLayout);
 		if (i == 0) nameElement.setExampleKey("customfield.example.name", null);
 		customFieldNameElementList.add(nameElement);
 		
-		TextElement valueElement = uifactory.addTextAreaElement("customfield_value_" + i, "-", 2500, 5, 2, true, false, customField.getValue(), formLayout);
+		TextElement valueElement = uifactory.addTextAreaElement("customfield_value_" + i, "customfield.value.label", 2500, 5, 2, true, customField.getValue(), formLayout);
 		valueElement.setLabel("customfield.value.label", null);
 		if (i == 0)  valueElement.setExampleKey("customfield.example.value", null);
 		customFieldValueElementList.add(valueElement);

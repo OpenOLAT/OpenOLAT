@@ -55,10 +55,14 @@ public class QTIExportSet {
 		return qtir.getResultSet().getIdentity().getName();
 	}
 	
-	public String getInstitutionalUserIdentifier(){
-		return qtir.getResultSet().getIdentity().getUser().getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, null);
+	public String getInstitutionalMatriculationNumber(){
+		return qtir.getResultSet().getIdentity().getUser().getProperty(UserConstants.INSTITUTIONAL_MATRICULATION_NUMBER, null);
 	}
 	
+	public String getInstitutionalEmployeeNumber(){
+		return qtir.getResultSet().getIdentity().getUser().getProperty(UserConstants.INSTITUTIONAL_EMPLOYEE_NUMBER, null);
+	}
+
 	public float getScore(){
 		return qtir.getResultSet().getScore();
 	}

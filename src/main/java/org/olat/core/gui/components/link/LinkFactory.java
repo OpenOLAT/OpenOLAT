@@ -26,6 +26,8 @@
 
 package org.olat.core.gui.components.link;
 
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.translator.Translator;
@@ -70,7 +72,7 @@ public class LinkFactory {
 	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createLinkBack(VelocityContainer vc, ComponentEventListener listener){
+	public static Link createLinkBack(VelocityContainer vc, @UnderInitialization ComponentEventListener listener){
 		Link backLink = new Link("backLink", "back", "back", Link.LINK_BACK, vc, listener);
 		backLink.setAccessKey("b");
 		backLink.setIconLeftCSS("o_icon o_icon_back");
@@ -93,7 +95,7 @@ public class LinkFactory {
 	 * @param listener
 	 * @return Link which display just the close icon
 	 */
-	public static Link createIconClose(String title, VelocityContainer vc, ComponentEventListener listener){
+	public static Link createIconClose(String title, VelocityContainer vc, @UnknownInitialization ComponentEventListener listener){
 		Link closeIcon = new Link("closeIcon", "close", "", Link.LINK_CUSTOM_CSS + Link.NONTRANSLATED, vc, listener);
 		closeIcon.setIconLeftCSS("close o_icon o_icon_close o_icon-lg");
 		closeIcon.setTooltip(title);
@@ -117,17 +119,17 @@ public class LinkFactory {
 	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createLink(String name, VelocityContainer vc, ComponentEventListener listener){
+	public static Link createLink(String name, VelocityContainer vc, @UnknownInitialization ComponentEventListener listener){
 		return new Link(name, name, name, Link.LINK, vc, listener);
 	}
 	
-	public static Link createLink(String name, Translator translator, ComponentEventListener listener){
+	public static Link createLink(String name, Translator translator, @UnknownInitialization ComponentEventListener listener){
 		Link link = new Link(name, name, name, Link.LINK, null, listener);
 		link.setTranslator(translator);
 		return link;
 	}
 	
-	public static Link createLink(String name, String cmd, Translator translator, VelocityContainer vc, ComponentEventListener listener, int presentation) {
+	public static Link createLink(String name, String cmd, Translator translator, VelocityContainer vc, @UnknownInitialization ComponentEventListener listener, int presentation) {
 		Link link = new Link(name, cmd, name, presentation, vc, listener);
 		link.setTranslator(translator);
 		return link;
@@ -138,7 +140,7 @@ public class LinkFactory {
 		link.setTranslator(translator);
 		return link;
 	}
-	
+
 	/**
 	 * add a link to the <code>vc</code> Velocity Container and make the <code>listeningController</code> listen to this link.<p>
 	 * Follow these instructions to show the link and catch its events:
@@ -154,10 +156,10 @@ public class LinkFactory {
 	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createLink(String id, String name, VelocityContainer vc, ComponentEventListener listener){
+	public static Link createLink(String id, String name, VelocityContainer vc, @UnknownInitialization ComponentEventListener listener){
 		return new Link(id, name, name, name, Link.LINK, vc, listener);
 	}
-	
+
 	public static Link createLink(String id, String name, String cmd,  VelocityContainer vc, ComponentEventListener listener) {
 		return new Link(id, name, cmd, name, Link.LINK, vc, listener);
 	}
@@ -181,25 +183,23 @@ public class LinkFactory {
 	 * @return the link component
 	 */
 	
-	public static Link createCustomLink(String name, String cmd, String i18nKey, int presentation, VelocityContainer vc, ComponentEventListener listener){
+	public static Link createCustomLink(String name, String cmd, String i18nKey, int presentation, VelocityContainer vc, @UnknownInitialization ComponentEventListener listener){
 		return new Link(name, cmd, i18nKey, presentation, vc, listener);
 	}
 	
-
-	
-	public static Link createToolLink(String name, String label, ComponentEventListener listener){
+	public static Link createToolLink(String name, String label, @UnknownInitialization ComponentEventListener listener){
 		Link link = new Link(name, name, label, Link.LINK | Link.NONTRANSLATED, null, listener);
 		link.setDomReplacementWrapperRequired(false);
 		return link;
 	}
 	
-	public static Link createToolLink(String name, String cmd, String label, ComponentEventListener listener){
+	public static Link createToolLink(String name, String cmd, String label, @UnknownInitialization ComponentEventListener listener){
 		Link link = new Link(name, cmd, label, Link.LINK | Link.NONTRANSLATED, null, listener);
 		link.setDomReplacementWrapperRequired(false);
 		return link;
 	}
 	
-	public static Link createToolLink(String name, String label, ComponentEventListener listener, String iconCssClass){
+	public static Link createToolLink(String name, String label, @UnknownInitialization ComponentEventListener listener, String iconCssClass){
 		Link link = new Link(name, name, label, Link.LINK | Link.NONTRANSLATED, null, listener);
 		link.setDomReplacementWrapperRequired(false);
 		if (iconCssClass != null) {			
@@ -222,7 +222,7 @@ public class LinkFactory {
 	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createButtonLarge(String name, VelocityContainer vc, ComponentEventListener listener){
+	public static Link createButtonLarge(String name, VelocityContainer vc, @UnknownInitialization ComponentEventListener listener){
 		return new Link(name, name, name, Link.BUTTON_LARGE, vc, listener);
 	}
 
@@ -240,7 +240,7 @@ public class LinkFactory {
 	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createButton(String name, VelocityContainer vc, ComponentEventListener listener){
+	public static Link createButton(String name, VelocityContainer vc, @UnknownInitialization ComponentEventListener listener){
 		return new Link(name, name, name, Link.BUTTON, vc, listener);
 	}
 	
@@ -258,7 +258,7 @@ public class LinkFactory {
 	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createButtonSmall(String name, VelocityContainer vc, ComponentEventListener listener){
+	public static Link createButtonSmall(String name, VelocityContainer vc, @UnknownInitialization ComponentEventListener listener){
 		return new Link(name, name, name, Link.BUTTON_SMALL, vc, listener);
 	}
 	
@@ -276,7 +276,7 @@ public class LinkFactory {
 	 * @param listener
 	 * @return the link component
 	 */
-	public static Link createButtonXSmall(String name, VelocityContainer vc, ComponentEventListener listener){
+	public static Link createButtonXSmall(String name, VelocityContainer vc, @UnknownInitialization ComponentEventListener listener){
 		return new Link(name, name, name, Link.BUTTON_XSMALL, vc, listener);
 	}
 }

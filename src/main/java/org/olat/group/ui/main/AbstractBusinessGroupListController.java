@@ -559,7 +559,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());
 	}
 	
-	private void doConfirmLeaving(UserRequest ureq, BusinessGroup businessGroup) {
+	protected void doConfirmLeaving(UserRequest ureq, BusinessGroup businessGroup) {
 		if (businessGroupService.hasRoles(getIdentity(), businessGroup, GroupRoles.coach.name())
 				|| businessGroupService.hasRoles(getIdentity(), businessGroup, GroupRoles.waiting.name()) ) {
 			doOpenConfirmLeavingDialog(ureq, businessGroup);
@@ -927,7 +927,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	
 	protected void doSearch(FlexiTableSearchEvent event) {
 		BusinessGroupQueryParams params = getDefaultSearchParams();
-		params.setNameOrDesc(event.getSearch());
+		params.setNameOrDesc("*" + event.getSearch() + "*");
 		loadModel(params);
 	}
 
@@ -944,7 +944,7 @@ public abstract class AbstractBusinessGroupListController extends FormBasicContr
 	
 	protected abstract BusinessGroupQueryParams getDefaultSearchParams();
 	
-	protected boolean doDefaultSearch() {
+	public boolean doDefaultSearch() {
 		BusinessGroupQueryParams params = getDefaultSearchParams();
 		return loadModel(params) > 0;
 	}

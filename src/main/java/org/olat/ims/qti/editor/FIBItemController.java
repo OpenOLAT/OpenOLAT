@@ -217,7 +217,7 @@ public class FIBItemController extends BasicController implements ControllerEven
 							// find longest correct blank in all synonyms of
 							// correct answers, fix max lenght if a longer value
 							// is found
-							String[] allCorrect = response.getCorrectBlank().split(";");
+							String[] allCorrect = response.getCorrectSynonyms();
 							int longestCorrect = 0;
 							for (int j = 0; j < allCorrect.length; j++) {
 								String singleCorrect = allCorrect[j];

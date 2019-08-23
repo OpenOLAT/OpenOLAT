@@ -52,6 +52,8 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.repository.RepositoryEntry;
@@ -175,7 +177,9 @@ public class FolderNotificationsHandler implements NotificationsHandler {
 				title = translator.translate("notifications.header.group", new String[]{bg.getName()});
 			} else if("CourseModule".equals(resName)) {
 				String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(p.getResId());
-				title = translator.translate("notifications.header.course", new String[]{displayName});
+				CourseNode node = CourseFactory.loadCourse(p.getResId()).getRunStructure().getNode(p.getSubidentifier());
+				String shortName = (node != null ? node.getShortName() : "");
+				title = translator.translate("notifications.header.course", new String[]{displayName, shortName});
 			} else {
 				title = translator.translate("notifications.header");
 			}

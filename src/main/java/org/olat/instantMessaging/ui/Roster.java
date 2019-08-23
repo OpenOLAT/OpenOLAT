@@ -131,7 +131,14 @@ public class Roster {
 	}
 
 	public synchronized List<Buddy> getEntries() {
-		return entries;
+		List<Buddy> orderedEntries = new ArrayList<Buddy>(entries.size());
+		for(Buddy entry:entries) {
+			Buddy clone = entry.clone();
+			orderedEntries.add(clone);
+		}
+		Collections.sort(orderedEntries);
+
+		return orderedEntries;
 	}
 	
 	public synchronized void update(List<Buddy> newBuddies) {

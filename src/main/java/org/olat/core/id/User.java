@@ -26,6 +26,7 @@
 
 package org.olat.core.id;
 
+import javax.annotation.Nullable;
 import java.util.Locale;
 import java.util.Map;
 
@@ -87,7 +88,7 @@ public interface User extends CreateInfo, Persistable {
 	 *          property.
 	 * @return The value or NULL if no value is set
 	 */
-	public String getProperty(String propertyName, Locale locale);
+	public String getProperty(String propertyName, @Nullable Locale locale);
 
 	/**
 	 * internal use only.

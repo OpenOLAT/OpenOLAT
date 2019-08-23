@@ -178,7 +178,7 @@
 	            <prop key="hibernate.hikari.minimumIdle">4</prop>
 	            <prop key="hibernate.hikari.idleTimeout">1800000</prop>
 	            <prop key="hibernate.hikari.autoCommit">false</prop>
-	            <prop key="hibernate.hikari.leakDetectionThreshold">120000</prop>
+	            <prop key="hibernate.hikari.leakDetectionThreshold">${db.hibernate.hikari.leakDetectionThreshold}</prop>
 	            <prop key="hibernate.hikari.transactionIsolation">TRANSACTION_READ_COMMITTED</prop>
 	            <prop key="hibernate.hikari.registerMbeans">true</prop>
 	        </props>
@@ -203,7 +203,7 @@
 		<property name="jndiName" value="${db.jndi}"/>
 	</bean>
 
-	<bean id="postgresql_local_DataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" lazy-init="true">
+	<bean id="postgresql_local_DataSource" class="org.olat.core.commons.persistence.WaitForTheDatabaseDriverManagerDataSource" lazy-init="true" init-method="init">
 		<property name="driverClassName"><value>org.postgresql.Driver</value></property>
 		<property name="url"><value>jdbc:postgresql://${db.host}:${db.host.port}/${db.name}</value></property>
 		<property name="username" value="${db.user}" />

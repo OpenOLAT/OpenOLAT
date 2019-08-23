@@ -35,7 +35,7 @@
 				<entry key="mailFrom" value="${fromemail}"/>
 				<entry key="mailFromName" value="${fromname}"/>
 				<entry key="smtpFrom" value="${smtp.from}"/>
-				<entry key="mailReplyTo" value="${adminemail}"/>
+				<entry key="mailReplyTo" value="${fromemail}"/>
 				<entry key="mailSupport" value="${supportemail}"/>
 				<entry key="mailQuota" value="${quotaemail}"/>
 				<entry key="mailDeleteUser" value="${deleteuseremail}"/>
@@ -105,6 +105,12 @@
 	</bean>
 
 	<bean id="httpClientFactory" class="org.olat.core.util.httpclient.HttpClientFactory" destroy-method="destroy"/>
+
+	<bean id="org.olat.core.util.vfs.QuotaManager" class="org.olat.admin.quota.QuotaManagerImpl"/>
+	
+	<bean id="vfsLockManager" class="org.olat.core.util.vfs.lock.VFSLockManagerImpl" >
+		<property name="metaInfoFactory" ref="metaInfoFactory"/>
+	</bean>
 	
 	<!--  gui prefs via database -->
 	<bean id="core.preferences.PreferencesStorage"
@@ -112,6 +118,8 @@
 
 	
 	<!-- Cache -->
+	<bean class="org.olat.core.util.cache.infinispan.InfinispanBeanFactory" />
+
 	<bean id="infinispanCacheManager" class="org.olat.core.util.cache.infinispan.InfinispanCacheManager" destroy-method="stop">
 		<property name="configuration" value="infinispan-config.xml"/>
 		<property name="jndiName" value="${infinispan.jndi}"/>

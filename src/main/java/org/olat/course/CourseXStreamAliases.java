@@ -88,6 +88,14 @@ public class CourseXStreamAliases {
 	
 	private static final XStream readXstream = XStreamHelper.createXStreamInstance();
 	private static final XStream writeXstream = XStreamHelper.createXStreamInstance();
+
+	/**
+	 * Turn on auto detection of XStream annotations for LMS UZH extension
+	 */
+	static {
+		readXstream.autodetectAnnotations(true);
+		writeXstream.autodetectAnnotations(true);
+	}
 	
 
 	/**

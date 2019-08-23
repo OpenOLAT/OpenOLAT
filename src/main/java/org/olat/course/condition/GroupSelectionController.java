@@ -55,6 +55,7 @@ public class GroupSelectionController extends FormBasicController {
 	private MultipleSelectionElement entrySelector;
 	private FormLink createNew;
 	private CourseGroupManager courseGrpMngr;
+	private final boolean disableSelectionOfGroupsWithManagedMembersManagement;
 	private NewBGController groupCreateCntrllr;
 	private CloseableModalController cmc;
 	
@@ -65,10 +66,18 @@ public class GroupSelectionController extends FormBasicController {
 	@Autowired
 	private RepositoryManager repositoryManager;
 
+	// OpenOlat behavior ...
+	@Deprecated
 	public GroupSelectionController(UserRequest ureq, WindowControl wControl, boolean allowCreate,
-			CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
+									CourseGroupManager courseGrpMngr, List<Long> selectionKeys) {
+		this(ureq, wControl, allowCreate, courseGrpMngr, selectionKeys, false);
+	}
+
+	public GroupSelectionController(UserRequest ureq, WindowControl wControl, boolean allowCreate,
+			CourseGroupManager courseGrpMngr, List<Long> selectionKeys, boolean disableSelectionOfGroupsWithManagedMembersManagement) {
 		super(ureq, wControl, "group_or_area_selection");
 		this.courseGrpMngr = courseGrpMngr;
+		this.disableSelectionOfGroupsWithManagedMembersManagement = disableSelectionOfGroupsWithManagedMembersManagement;
 
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(courseGrpMngr.getCourseResource(), false);
 		createEnable = allowCreate && !RepositoryEntryManagedFlag.isManaged(re, RepositoryEntryManagedFlag.groups);

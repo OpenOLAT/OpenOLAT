@@ -30,6 +30,9 @@ import java.io.InputStream;
 import java.io.Serializable;
 
 import org.olat.admin.quota.QuotaConstants;
+import org.olat.commons.fileutil.CourseConfigUtil;
+import org.olat.commons.fileutil.CustomQuotaDetectedException;
+import org.olat.commons.fileutil.FileSizeLimitExceededException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
@@ -215,8 +218,10 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	public String getCourseTitle() {	
 		if (courseTitle == null) {
 			synchronized (courseTitleSyncObj) { //o_clusterOK by:ld/se
-				// load repository entry for this course and get title from it
-				courseTitle = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resourceableId);	
+				if (courseTitle == null) {
+					// load repository entry for this course and get title from it
+					courseTitle = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resourceableId);
+				}
 			}
 		}
 		return courseTitle;
@@ -225,6 +230,27 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	public void updateCourseEntry(RepositoryEntry courseEntry) {
 		courseTitle = courseEntry.getDisplayname();
 		courseEnvironment.updateCourseEntry(courseEntry);
+		synchronizeLongCourseTitle();
+	}
+
+	@Override
+	public boolean exceedsSizeLimit() {
+		File exportDirectory = getCourseBaseContainer().getBasefile();
+		// LMSUZH-45: just detect custom quotas on course elements instead of calculating the folder size
+		try {
+			CourseConfigUtil.checkAgainstCustomQuotas(exportDirectory);
+		} catch (CustomQuotaDetectedException e) {
+			log.error("Custom quota detected for " + exportDirectory.getPath() + " or its nodes");
+			return true;
+		}
+// LMSUZH-45 Keeping the old code based on calculation of folder size, in case we want to build more complex solution
+//		try {
+//			CourseConfigUtil.checkAgainstConfiguredMaxSize(getCourseBaseContainer().getBasefile());
+//		} catch (FileSizeLimitExceededException e) {
+//			return true;
+//		}
+
+		return false;
 	}
 
 	/**
@@ -296,7 +322,8 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	 * <p>
 	 */
 	@Override
-	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory, boolean runtimeDatas) {
+	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory,
+			boolean runtimeDatas, boolean backwardsCompatible) throws FileSizeLimitExceededException {
 		long s = System.currentTimeMillis();
 		log.info("exportToFilesystem: exporting course "+this+" to "+exportDirectory+"...");
 		File fCourseBase = getCourseBaseContainer().getBasefile();
@@ -436,7 +463,14 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 		
 		obj = readObject(EDITORTREEMODEL_XML);
 		if (!(obj instanceof CourseEditorTreeModel)) throw new AssertException("Error reading course editor tree model.");
-		editorTreeModel = (CourseEditorTreeModel) obj;	
+		editorTreeModel = (CourseEditorTreeModel) obj;
+
+		synchronizeLongCourseTitle();
+	}
+
+	private void synchronizeLongCourseTitle() {
+		runStructure.getRootNode().setLongTitle(getCourseTitle());
+		((CourseEditorTreeNode) editorTreeModel.getRootNode()).setLongTitle(getCourseTitle());
 	}
 
 	/**
@@ -541,7 +575,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 
 	@Override
 	public String toString() {
-		return "Course:[" + getResourceableId() + "," + courseTitle + "], " + super.toString();
+		return "Course:[" + getResourceableId() + "," + getCourseTitle() + "], " + super.toString();
 	}
 
 }

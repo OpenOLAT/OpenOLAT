@@ -46,6 +46,7 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.manager.RepositoryEntryDeletionException;
 import org.olat.resource.references.ReferenceInfos;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -178,7 +179,12 @@ public class ConfirmDeleteSoftlyController extends FormBasicController {
 			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
 			if(reloadedEntry != null) {
 				boolean sendNotifications = notificationEl.isAtLeastSelected(1);
-				reloadedEntry = repositoryService.deleteSoftly(reloadedEntry, getIdentity(), false, sendNotifications);
+				try {
+					reloadedEntry = repositoryService.deleteSoftly(reloadedEntry, getIdentity(), false, sendNotifications);
+				} catch (RepositoryEntryDeletionException e) {
+					allOk = false;
+					continue;
+				}
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 				

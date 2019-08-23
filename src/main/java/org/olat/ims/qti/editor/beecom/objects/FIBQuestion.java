@@ -238,7 +238,7 @@ public class FIBQuestion extends Question implements QTIObject {
 		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			FIBResponse fib = (FIBResponse) i.next();
 			if (fib.getType().equals(FIBResponse.TYPE_BLANK)) {
-				String[] correctFIBs = fib.getCorrectBlank().split(";");
+				String[] correctFIBs = fib.getCorrectSynonyms();
 				Element or = and.addElement("or");
 				for (int j = 0; j < correctFIBs.length; j++) {
 					Element varequal = or.addElement("varequal");
@@ -287,7 +287,7 @@ public class FIBQuestion extends Question implements QTIObject {
 				correct.addAttribute("title", "Fail");  
 
 			Element or = correct.addElement("conditionvar").addElement("or");
-			String[] correctFIBs = fib.getCorrectBlank().split(";");
+			String[] correctFIBs = fib.getCorrectSynonyms();
 			for (int j = 0; j < correctFIBs.length; j++) {
 				Element varequal = or.addElement("varequal");
 				varequal.addAttribute("respident", fib.getIdent());
@@ -312,7 +312,7 @@ public class FIBQuestion extends Question implements QTIObject {
 		for (Iterator<Response> i = getResponses().iterator(); i.hasNext();) {
 			FIBResponse tmpResponse = (FIBResponse) i.next();
 			if (!tmpResponse.getType().equals(FIBResponse.TYPE_BLANK)) continue;
-			String[] correctFIBs = tmpResponse.getCorrectBlank().split(";");
+			String[] correctFIBs = tmpResponse.getCorrectSynonyms();
 			Element or = and.addElement("or");
 			for (int j = 0; j < correctFIBs.length; j++) {
 				Element varequal = or.addElement("varequal");
@@ -354,7 +354,7 @@ public class FIBQuestion extends Question implements QTIObject {
 				continue;
 			}
 			
-			String[] correctFIBs = tmpResponse.getCorrectBlank().split(";");
+			String[] correctFIBs = tmpResponse.getCorrectSynonyms();
 			if(correctFIBs.length > 1) {
 				Element not = or.addElement("not");
 				Element orVal = not.addElement("or");

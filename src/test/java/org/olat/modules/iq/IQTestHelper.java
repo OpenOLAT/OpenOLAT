@@ -35,7 +35,6 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
-import org.olat.test.OlatTestCase;
 
 /**
  * some functions usefull for unit testing the QTI statistics and QTI database
@@ -44,8 +43,8 @@ import org.olat.test.OlatTestCase;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class IQTestHelper extends OlatTestCase {
-	
+public class IQTestHelper {
+
 	public static Date modDate(int day, int hour, int minute) {
 		Calendar cal = Calendar.getInstance();
 		cal.set(Calendar.YEAR, 2014);
@@ -75,7 +74,7 @@ public class IQTestHelper extends OlatTestCase {
 		test.setAssessmentID(assessmentId);
 		test.setCreationDate(creationDate);
 		test.setLastModified(modDate);
-		
+
 		DB dbInstance = DBFactory.getInstance();
 		dbInstance.getCurrentEntityManager().persist(test);
 		return test;

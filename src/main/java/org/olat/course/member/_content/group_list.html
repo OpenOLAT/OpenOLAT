@@ -36,4 +36,7 @@ $r.render("table")
 	#if($r.available("table.header.remove"))
 		$r.render("table.header.remove")
 	#end
+	#if($r.available("table.header.export"))
+		$r.render("table.header.export")
+	#end
 </div>

@@ -20,6 +20,7 @@
 package org.olat.modules.fo.archiver.formatters;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,8 +29,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.id.Identity;
 import org.olat.core.id.UserConstants;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
@@ -44,21 +47,23 @@ import org.olat.core.util.vfs.filters.VFSItemMetaFilter;
 import org.olat.modules.fo.archiver.MessageNode;
 
 /**
- * 
+ *
  * Initial date: 13.11.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
 public class ForumOpenXMLFormatter extends ForumFormatter {
-	
+
+	private static final Logger log = Tracing.createLoggerFor(ForumOpenXMLFormatter.class);
+
 	private final VFSItemMetaFilter filter = new VFSItemMetaFilter();
 
 	private boolean firstThread = true;
-	
+
 	private final Formatter formatter;
 	private final VFSContainer forumContainer;
 	private final OpenXMLDocument document = new OpenXMLDocument();
-	
+
 	private final Set<String> attachmentsFilenames = new HashSet<>();
 	private final Map<File,DocReference> fileToAttachmentsMap = new HashMap<>();
 
@@ -184,11 +189,15 @@ public class ForumOpenXMLFormatter extends ForumFormatter {
 						attach = false;
 					}
 				}
-				
+
 				if(attach) {
 					StringBuilder attachSb = new StringBuilder(64);
 					String uniqueFilename = getUniqueFilename(file);
-					fileToAttachmentsMap.put(file, new DocReference("", uniqueFilename, null, file));
+					try {
+						fileToAttachmentsMap.put(file, new DocReference("", uniqueFilename, null, file.toURI().toURL()));
+					} catch (MalformedURLException e) {
+						log.error(e.getMessage());
+					}
 					attachSb.append(filename).append(": /attachments/").append(uniqueFilename);
 					document.appendText(attachSb.toString(), true);
 				}

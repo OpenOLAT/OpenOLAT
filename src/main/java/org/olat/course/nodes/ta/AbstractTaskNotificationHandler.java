@@ -54,6 +54,8 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
+import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
@@ -86,7 +88,7 @@ public abstract class AbstractTaskNotificationHandler {
 				}
 				final List<FileInfo> fInfos = FolderManager.getFileInfos(folderRoot, compareDate);
 				final Translator translator = Util.createPackageTranslator(AbstractTaskNotificationHandler.class, locale);
-				
+
 				RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(OresHelper.createOLATResourceableInstance("CourseModule", p.getResId()), false);
 				if(re == null) {
 					if(!checkPublisher(p)) {
@@ -116,7 +118,7 @@ public abstract class AbstractTaskNotificationHandler {
 						iconCssClass = metaInfo.getIconCssClass();
 					}
 					subListItem = new SubscriptionListItem(desc, urlToSend, businessPath, modDate, iconCssClass);
-					si.addSubscriptionListItem(subListItem);						
+					si.addSubscriptionListItem(subListItem);
 				}
 			} else {
 				si = NotificationsManager.getInstance().getNoSubscriptionInfo();
@@ -171,14 +173,23 @@ public abstract class AbstractTaskNotificationHandler {
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		try {
 			Translator translator = Util.createPackageTranslator(AbstractTaskNotificationHandler.class, locale);
-			Long resId = subscriber.getPublisher().getResId();
+			Publisher publisher = subscriber.getPublisher();
+			Long resId = publisher.getResId();
 			String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
-			return translator.translate(getNotificationHeaderKey(), new String[]{displayName});
+			CourseNode node = CourseFactory.loadCourse(resId).getRunStructure().getNode(getNodeId(publisher.getBusinessPath()));
+			String shortName = (node != null ? node.getShortName() : "");
+			return translator.translate(getNotificationHeaderKey(), new String[]{displayName, shortName});
 		} catch (Exception e) {
 			log.error("Error while creating task notifications for subscriber: " + subscriber.getKey(), e);
 			checkPublisher(subscriber.getPublisher());
 			return "-";
 		}
+	}
+
+	private String getNodeId(String businessPath) {
+		String[] parts = businessPath.split(":");
+		if (parts.length < 3) return "";
+		return parts[2].substring(0, parts[2].lastIndexOf("]"));
 	}
 
 	public static ContextualSubscriptionController createContextualSubscriptionController(UserRequest ureq, WindowControl wControl, String folderPath,

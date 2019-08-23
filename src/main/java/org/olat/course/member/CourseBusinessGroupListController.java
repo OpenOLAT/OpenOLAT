@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.olat.commons.memberlist.manager.MembersExportManager;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.EscapeMode;
@@ -45,7 +46,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
+import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.StringHelper;
+import org.olat.course.nodes.members.MembersCourseNodeRunController;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupManagedFlag;
 import org.olat.group.BusinessGroupMembership;
@@ -66,24 +69,35 @@ import org.olat.group.ui.main.UnmanagedGroupFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.UserPropertyHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class CourseBusinessGroupListController extends AbstractBusinessGroupListController {
+
+	public static final String USER_PROPS_ID = MembersCourseNodeRunController.class.getName();
 	
+	public static final String TABLE_ACTION_MULTI_EXPORT = "tblMultiExport";
 	public static final String TABLE_ACTION_UNLINK = "tblUnlink";
 	public static final String TABLE_ACTION_MULTI_UNLINK = "tblMultiUnlink";
 	
 	private final RepositoryEntry re;
 	private final boolean groupManagementRight;
-	private FormLink createGroup, addGroup, removeGroups;
+	private FormLink createGroup, addGroup, removeGroups, exportGroups;
 
 	private DialogBoxController confirmRemoveResource;
 	private DialogBoxController confirmRemoveMultiResource;
 	private SelectBusinessGroupController selectController;
-	
+
+	@Autowired
+	private MembersExportManager exportManager;
+	@Autowired
+	private UserManager userManager;
+
 	public CourseBusinessGroupListController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
 			boolean groupManagementRight, boolean readOnly) {
 		super(ureq, wControl, "group_list", false, false, readOnly, "course", re);
@@ -111,6 +125,7 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 
 		if(!managed && !readOnly) {
 			removeGroups = uifactory.addFormLink("table.header.remove", TABLE_ACTION_MULTI_UNLINK, "table.header.remove", null, formLayout, Link.BUTTON);
+			exportGroups = uifactory.addFormLink("table.header.export", TABLE_ACTION_MULTI_EXPORT, "table.header.export", null, formLayout, Link.BUTTON);
 		}
 
 		createGroup = uifactory.addFormLink("group.create", formLayout, Link.BUTTON);
@@ -200,6 +215,13 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 				showWarning("error.select.one");
 			} else {
 				doConfirmRemove(ureq, selectedItems);
+			}
+		} else if(source == exportGroups) {
+			List<BusinessGroupRow> selectedItems = getSelectedItems();
+			if(selectedItems.isEmpty()) {
+				showWarning("error.select.one");
+			} else {
+				doExportGroups(ureq, selectedItems);
 			}
 		} else if (source == tableEl) {
 			if(event instanceof SelectionEvent) {
@@ -309,6 +331,18 @@ public class CourseBusinessGroupListController extends AbstractBusinessGroupList
 			confirmRemoveMultiResource = activateYesNoDialog(ureq, null, text, confirmRemoveResource);
 			confirmRemoveMultiResource.setUserObject(selectedItems);
 		}
+	}
+
+	private void doExportGroups(UserRequest ureq, List<BusinessGroupRow> selectedItems) {
+		List<BusinessGroup> groups = new ArrayList<>();
+		for (BusinessGroupRow groupRow : selectedItems) {
+			groups.add(businessGroupService.loadBusinessGroup(groupRow.getKey()));
+		}
+
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(USER_PROPS_ID, false);
+		MediaResource resource = exportManager.getGroupMembersXlsMediaResource(getTranslator(), userPropertyHandlers, groups);
+
+		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
 	
 	@Override

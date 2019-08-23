@@ -85,7 +85,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 abstract class AbstractAssignmentEditController extends FormBasicController implements Activateable2 {
 
-	private FormLink addTaskLink, createTaskLink;
+	private FormLink addMultipleTasksLink, addTaskLink, createTaskLink;
 	private FlexiTableElement taskDefTableEl;
 	private TaskDefinitionTableModel taskModel;
 	private WarningFlexiCellRenderer fileExistsRenderer;
@@ -94,6 +94,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	private NewTaskController newTaskCtrl;
 	private DialogBoxController confirmDeleteCtrl;
 	private EditTaskController addTaskCtrl, editTaskCtrl;
+	private BulkUploadTasksController addMultipleTasksCtrl;
 	private DocEditorFullscreenController docEditorCtrl;
 	
 	private final File tasksFolder;
@@ -131,7 +132,10 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		FormLayoutContainer tasksCont = FormLayoutContainer.createCustomFormLayout("tasks", getTranslator(), tasksPage);
 		tasksCont.setRootForm(mainForm);
 		formLayout.add(tasksCont);
-		
+
+		addMultipleTasksLink = uifactory.addFormLink("add.multipleTasks", tasksCont, Link.BUTTON);
+		addMultipleTasksLink.setElementCssClass("o_sel_course_gta_add_multipleTasks");
+		addMultipleTasksLink.setIconLeftCSS("o_icon o_icon_upload");
 		addTaskLink = uifactory.addFormLink("add.task", tasksCont, Link.BUTTON);
 		addTaskLink.setElementCssClass("o_sel_course_gta_add_task");
 		addTaskLink.setIconLeftCSS("o_icon o_icon_upload");
@@ -205,6 +209,19 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			}
 			cmc.deactivate();
 			cleanUp();
+			//fireEvent(ureq, Event.DONE_EVENT);
+		} else if (addMultipleTasksCtrl == source) {
+			if (event == Event.DONE_EVENT) {
+				List<TaskDefinition> newTaskList = addMultipleTasksCtrl.getTaskList();
+				for(TaskDefinition newTask:newTaskList){
+					gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
+				}
+				fireEvent(ureq, Event.DONE_EVENT);
+				updateModel();
+				notificationsManager.markPublisherNews(subscriptionContext, null, false);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(editTaskCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				doFinishReplacementOfTask(editTaskCtrl.getFilenameToReplace(), editTaskCtrl.getTask());
@@ -247,17 +264,21 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		removeAsListenerAndDispose(docEditorCtrl);
 		removeAsListenerAndDispose(editTaskCtrl);
 		removeAsListenerAndDispose(addTaskCtrl);
+		removeAsListenerAndDispose(addMultipleTasksCtrl);
 		removeAsListenerAndDispose(cmc);
 		confirmDeleteCtrl = null;
 		docEditorCtrl = null;
 		editTaskCtrl = null;
 		addTaskCtrl = null;
+		addMultipleTasksCtrl = null;
 		cmc = null;
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(addTaskLink == source) {
+		if(addMultipleTasksLink == source){
+			doAddMultipleTasks(ureq);
+		} else if(addTaskLink == source) {
 			doAddTask(ureq);
 		} else if(createTaskLink == source) {
 			doCreateTask(ureq);
@@ -279,6 +300,16 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doAddMultipleTasks(UserRequest ureq){
+		addMultipleTasksCtrl = new BulkUploadTasksController(ureq, getWindowControl(), tasksFolder);
+		listenTo(addMultipleTasksCtrl);
+
+		String title = translate("add.multipleTasks");
+		cmc = new CloseableModalController(getWindowControl(), null, addMultipleTasksCtrl.getInitialComponent(), true, title, false);
+		listenTo(cmc);
+		cmc.activate();
 	}
 
 	private void doAddTask(UserRequest ureq) {

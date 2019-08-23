@@ -46,6 +46,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.text.translate.*;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
 import org.apache.logging.log4j.Logger;
@@ -80,6 +82,22 @@ public class StringHelper {
 	private static final Pattern ALL_WITHOUT_COMMA_2POINT_STRPNT_PATTERN = Pattern.compile(ALL_WITHOUT_COMMA_2POINT_STRPNT);
 	private static final String X_MAC_ENC = "x-mac-";
 	private static final String MAC_ENC = "mac";
+
+	/**
+	 * Code copied from {@link StringEscapeUtils#ESCAPE_ECMASCRIPT}.
+	 */
+	private static final CharSequenceTranslator OLAT_ESCAPE_ECMASCRIPT =
+		new AggregateTranslator(
+				new LookupTranslator(
+						new String[][] {
+								{"'", "\\x27"},
+								{"\"", "\\x22"},
+								{"\\", "\\\\"},
+								{"/", "\\/"}
+						}),
+				new LookupTranslator(EntityArrays.JAVA_CTRL_CHARS_ESCAPE()),
+				JavaUnicodeEscaper.outsideOf(32, 0x7f)
+		);
 
 	static {
 		DecimalFormatSymbols dfs = new DecimalFormatSymbols();
@@ -180,6 +198,9 @@ public class StringHelper {
 	 * @return formatted float
 	 */
 	public static String formatFloat(float f, int fractionDigits) {
+		if (Float.isNaN(f)) {
+			return "N/A";
+		}
 		numFormatter.setMaximumFractionDigits(fractionDigits);
 		return numFormatter.format(f);
 	}
@@ -401,7 +422,7 @@ public class StringHelper {
 	public static final String unescapeHtml(String str) {
 		return org.apache.commons.text.StringEscapeUtils.unescapeHtml4(str);
 	}
-	
+
 	public static final void escapeHtml(Writer writer, String str) {
 		try {
 			org.apache.commons.text.StringEscapeUtils.ESCAPE_HTML4.translate(str, writer);

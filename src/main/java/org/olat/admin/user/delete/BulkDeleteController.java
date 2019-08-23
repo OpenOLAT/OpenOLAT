@@ -127,9 +127,7 @@ public class BulkDeleteController extends BasicController {
 			if(login.equals(""))
 				continue;
 			Identity ident = securityManager.findIdentityByName(login);
-			if(ident == null) {
-				lstLoginsNotfound.add(login);
-			} else if(ident.getStatus().intValue() == Identity.STATUS_DELETED.intValue()) {
+			if(!isDeletableIdentity(ident)) {
 				lstLoginsNotfound.add(login);
 			} else {
 				// prevent double entries
@@ -140,7 +138,15 @@ public class BulkDeleteController extends BasicController {
 			}
 		}
 	}
-	
+
+	public static boolean isDeletableIdentity(Identity ident) {
+		if (ident != null) {
+			Integer status = ident.getStatus();
+			return (status != Identity.STATUS_DELETED.intValue() && status != Identity.STATUS_PERMANENT.intValue());
+		}
+		return false;
+	}
+
 	/**
 	 * Send the mail with informations: who deletes, when, list of deleted users
 	 * list of not deleted users, reason for deletion

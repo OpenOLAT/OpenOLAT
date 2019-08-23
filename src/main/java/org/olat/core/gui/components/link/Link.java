@@ -26,6 +26,7 @@
 
 package org.olat.core.gui.components.link;
 
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.ComponentEventListener;
@@ -512,7 +513,7 @@ public class Link extends AbstractComponent {
 		return customDisplayText;
 	}
 
-	public void setCustomDisplayText(String customDisplayText) {
+	public void setCustomDisplayText(@UnknownInitialization Link this, String customDisplayText) {
 		this.customDisplayText = customDisplayText;
 		setDirty(true);
 	}

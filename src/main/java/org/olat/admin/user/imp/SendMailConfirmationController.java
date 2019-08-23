@@ -43,6 +43,7 @@ public class SendMailConfirmationController extends StepFormBasicController {
 	private static final String[] keys = { "send" };
 	
 	private MultipleSelectionElement typEl;
+	private MultipleSelectionElement sendChangePasswordMailEl;
 
 	public SendMailConfirmationController(UserRequest ureq, WindowControl wControl, Form form, StepsRunContext stepsRunContext) {
 		super(ureq, wControl, form, stepsRunContext, LAYOUT_DEFAULT, null);
@@ -58,14 +59,15 @@ public class SendMailConfirmationController extends StepFormBasicController {
 		List<Long> ownGroups = (List<Long>) getFromRunContext("ownerGroups");
 		@SuppressWarnings("unchecked")
 		List<Long> partGroups = (List<Long>) getFromRunContext("partGroups");
-		@SuppressWarnings("unchecked")
-		List<TransientIdentity> newIdents = (List<TransientIdentity>)getFromRunContext("newIdents");
 		
 		String[] values = new String[] { translate("step3.send.mail") };
 		typEl = uifactory.addCheckboxesVertical("typ", "step3.send.label", formLayout, keys, values, 1);
-		typEl.setEnabled((ownGroups != null && ownGroups.size() > 0)
-				|| (partGroups != null && partGroups.size() > 0)
-				|| (newIdents != null && newIdents.size() > 0));
+		// OLATNG-5: always allow sending messages regardless of groups being sent (by commenting the next line)
+		// typEl.setEnabled(ownGroups.size() > 0 || partGroups.size() > 0);
+
+		// OLATNG-5: add option to send change password mails for new users
+		values = new String[] { translate("step3.send.new.passwords.mail") };
+		sendChangePasswordMailEl = uifactory.addCheckboxesVertical("newPass", "step3.send.new.passwords.label", formLayout, keys, values, 1);
 	}
 	
 	@Override
@@ -76,6 +78,7 @@ public class SendMailConfirmationController extends StepFormBasicController {
 	@Override
 	protected void formOK(UserRequest ureq) {
 		addToRunContext("sendMail", new Boolean(typEl.isSelected(0)));
+		addToRunContext("sendChangePasswordMail", new Boolean(sendChangePasswordMailEl.isSelected(0)));
 		fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
 	}
 }

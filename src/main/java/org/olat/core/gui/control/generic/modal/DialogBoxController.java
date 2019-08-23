@@ -86,7 +86,11 @@ public class DialogBoxController extends BasicController {
 	private Link closeLink;
 	private Object userObject = null;
 
-	DialogBoxController(UserRequest ureq, WindowControl control, String title, String text, List<String> buttonLabels) {
+	/**
+	 * TODO sev26
+	 * Extending a dialog box should be possible.
+	 */
+	protected DialogBoxController(UserRequest ureq, WindowControl control, String title, String text, List<String> buttonLabels) {
 		super(ureq, control);
 		dialogBoxVC = createVelocityContainer("dialogbox");
 		// add optional title to velocity

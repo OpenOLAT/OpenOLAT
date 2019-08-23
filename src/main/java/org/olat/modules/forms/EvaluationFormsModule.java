@@ -106,7 +106,7 @@ public class EvaluationFormsModule extends AbstractSpringModule implements Confi
 
 	@Override
 	public boolean isEnabled() {
-		return enabled;
+		return false;
 	}
 
 	public void setEnabled(boolean enabled) {

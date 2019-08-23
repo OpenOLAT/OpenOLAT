@@ -172,6 +172,10 @@ public class BusinessGroupImpl implements Persistable, ModifiedInfo, BusinessGro
 		return creationDate;
 	}
 
+	public void setCreationDate(Date date) {
+		this.creationDate = date;
+	}
+
 	@Override
 	public Date getLastModified() {
 		return lastModified;

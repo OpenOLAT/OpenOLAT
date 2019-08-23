@@ -27,6 +27,8 @@ package org.olat.core.gui.components.form.flexible;
 
 import java.util.List;
 
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.Container;
@@ -289,7 +291,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * @param errorKey i18n key for the error message.
 	 * @param params Additional error message contents. 
 	 */
-	public void setErrorKey(String errorKey, String[] params);
+	public void setErrorKey(String errorKey, String @Nullable [] params);
 
 	/**
 	 * a complex "error" message, or a helper wizard to fix the error.<br>
@@ -487,7 +489,7 @@ public interface FormItem extends FormBaseComponentIdProvider {
 	 * 
 	 * @param userObject
 	 */
-	public void setUserObject(Object userObject);
+	public void setUserObject(@UnknownInitialization Object userObject);
 
 	/**
 	 * 

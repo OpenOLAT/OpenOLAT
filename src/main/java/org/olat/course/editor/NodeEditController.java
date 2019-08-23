@@ -35,6 +35,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -74,24 +75,45 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
   /** Take the same encoding as the content **/
 	public final static String CONFIG_JS_ENCODING_AUTO = "auto";
 	
-	private CourseNode courseNode;
-	private VelocityContainer descriptionVc, visibilityVc;
+	private final CourseNode courseNode;
+	private final VelocityContainer descriptionVc, visibilityVc;
 
-	private NodeConfigFormController nodeConfigController;
+	private final NodeConfigFormController nodeConfigController;
 
-	private ConditionEditController visibilityCondContr;
-	private NoAccessExplEditController noAccessContr;
+	private final ConditionEditController visibilityCondContr;
+	private final NoAccessExplEditController noAccessContr;
 	private TabbedPane myTabbedPane;
-	private TabbableController childTabsCntrllr;
+	private final TabbableController childTabsCntrllr;
 
 	/** Event that signals that the node configuration has been changed * */
 	public static final Event NODECONFIG_CHANGED_EVENT = new Event("nodeconfigchanged");
 	private static final String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_GENERAL };
 
 	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course, CourseNode luNode,
-			UserCourseEnvironment euce, TabbableController childTabsController) {
-		super(ureq,wControl);
-		this.courseNode = luNode;
+							  UserCourseEnvironment euce, TabbableController childTabsController) {
+		this(ureq, wControl, editorModel, course, euce, childTabsController, null);
+
+	}
+
+	public NodeEditController(UserRequest ureq, WindowControl wControl,
+							  CourseEditorTreeModel editorModel,
+							  ICourse course, UserCourseEnvironment euce,
+							  TabbableController childTabsController) {
+		this(ureq, wControl, editorModel, course, euce, childTabsController,
+				null);
+	}
+
+	/**
+	 * @param ureq
+	 * @param editorModel
+	 * @param course
+	 * @param luNode
+	 * @param groupMgr
+	 */
+	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course,
+			UserCourseEnvironment userCourseEnvironment, TabbableController childTabsController, Translator translator) {
+		super(ureq, wControl, translator);
+		courseNode = course.getEditorTreeModel().getCourseNode(userCourseEnvironment.getCourseEditorEnv().getCurrentCourseNodeId());
 		
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
@@ -110,13 +132,13 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		StringBuilder extLink = new StringBuilder();
 		extLink.append(Settings.getServerContextPathURI())
 			.append("/url/RepositoryEntry/").append(repoKey)
-			.append("/CourseNode/").append(luNode.getIdent());
+			.append("/CourseNode/").append(courseNode.getIdent());
 		StringBuilder intLink = new StringBuilder();
-		intLink.append("javascript:parent.gotonode(").append(luNode.getIdent()).append(")");
+		intLink.append("javascript:parent.gotonode(").append(courseNode.getIdent()).append(")");
 		
 		descriptionVc.contextPut("extLink", extLink.toString());
 		descriptionVc.contextPut("intLink", intLink.toString());
-		descriptionVc.contextPut("nodeId", luNode.getIdent());
+		descriptionVc.contextPut("nodeId", courseNode.getIdent());
 		
 		putInitialPanel(descriptionVc);
 
@@ -128,9 +150,9 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		visibilityVc = createVelocityContainer("visibilityedit");
 
 		// Visibility precondition
-		Condition visibCondition = luNode.getPreConditionVisibility();
-		visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, visibCondition, 
-				AssessmentHelper.getAssessableNodes(editorModel, luNode));
+		Condition visibCondition = courseNode.getPreConditionVisibility();
+		visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnvironment, visibCondition,
+				AssessmentHelper.getAssessableNodes(editorModel, courseNode));
 		//set this useractivity logger for the visibility condition controller
 		listenTo(visibilityCondContr);
 		visibilityVc.put("visibilityCondition", visibilityCondContr.getInitialComponent());

@@ -208,8 +208,9 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		wrapper(""),
 		card("table.header.businesscard"),
 		externalId("table.header.externalid"),
-		unlink("table.header.unlink");
-		
+		unlink("table.header.unlink"),
+		export("table.header.export");
+
 		private final String i18n;
 		
 		private Cols(String i18n) {

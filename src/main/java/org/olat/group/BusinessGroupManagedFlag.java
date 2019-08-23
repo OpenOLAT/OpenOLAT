@@ -43,6 +43,7 @@ public enum BusinessGroupManagedFlag {
 	  members(all),//members tab
 	    display(members,all),// members display options
 	    membersmanagement(members,all),
+	excludeGroupCoachesFromMembersmanagement,
 	  resources(all),//add/remove courses
 	  bookings(all),// change booking rules
 	  delete(all);
@@ -126,7 +127,7 @@ public enum BusinessGroupManagedFlag {
 	}
 
 	private static boolean contains(BusinessGroupManagedFlag[] flags, BusinessGroupManagedFlag... markers) {
-		if(flags == null || flags.length == 0) return false;
+		if(flags == null || flags.length == 0 || markers == null) return false;
 
 		for(BusinessGroupManagedFlag flag:flags) {
 			for(BusinessGroupManagedFlag marker:markers) {

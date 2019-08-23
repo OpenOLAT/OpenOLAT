@@ -82,11 +82,22 @@ public class DBImpl implements DB, Destroyable {
 			try {
 				emf = Persistence.createEntityManagerFactory("default", databaseProperties);
 			} catch (Exception e) {
+				// Our application is useless without DB, so fail fast and deliver a clear message
+				System.err.println("Could not create EntityManagerFactory with given database properties");
 				e.printStackTrace();
-				log.error("", e);
-				throw e;
+				System.exit(-1);
 			}
 		}
+	}
+
+	/**
+	 * Used by lmsuzh-extension-olatreplacement
+	 *
+	 * @param emf
+	 */
+	protected DBImpl(EntityManagerFactory emf) {
+        DBImpl.emf = emf;
+		INSTANCE = this;
 	}
 	
 	protected static DBImpl getInstance() {
@@ -649,5 +660,40 @@ public class DBImpl implements DB, Destroyable {
 				log.error("Could not unregister database driver.", e);
 			}
 		}
+	}
+
+	private void closeEntityManagerAndRemoveThreadLocalData(EntityManager entityManager) {
+		getData().resetAccessCounter();
+		if (entityManager != null) {
+			entityManager.close();
+		}
+		data.remove();
+	}
+
+	@Override
+	public void commitTransactionAndCloseEntityManager() {
+		EntityManager entityManager = getCurrentEntityManager();
+		entityManager.getTransaction().commit();
+		closeEntityManagerAndRemoveThreadLocalData(entityManager);
+	}
+
+	@Override
+	public void rollbackTransactionAndCloseEntityManager() {
+		EntityManager entityManager = getCurrentEntityManager();
+		EntityTransaction transaction = entityManager.getTransaction();
+		if (transaction != null && transaction.isActive()) {
+			transaction.rollback();
+		}
+		closeEntityManagerAndRemoveThreadLocalData(entityManager);
+	}
+
+	@Override
+	public void flush() {
+		getCurrentEntityManager().flush();
+	}
+
+	@Override
+	public void clear() {
+		getCurrentEntityManager().clear();
 	}
 }

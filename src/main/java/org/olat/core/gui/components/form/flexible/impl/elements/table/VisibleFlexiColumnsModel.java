@@ -68,6 +68,12 @@ public class VisibleFlexiColumnsModel implements ChoiceModel {
 		return cd.isAlwaysVisible();
 	}
 
+	@Override
+	public boolean isForExportOnly(int row) {
+		FlexiColumnModel cd = getObject(row);
+		return cd.isForExportOnly();
+	}
+
 	public FlexiColumnModel getObject(int row) {
 		if(columns == null) return null;
 		return columns.getColumnModel(row);

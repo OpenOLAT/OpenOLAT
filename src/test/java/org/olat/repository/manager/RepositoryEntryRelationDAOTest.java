@@ -105,6 +105,9 @@ public class RepositoryEntryRelationDAOTest extends OlatTestCase {
 		Assert.assertTrue(owner);
 		boolean participant = repositoryEntryRelationDao.hasRole(id, re, GroupRoles.participant.name());
 		Assert.assertFalse(participant);
+
+		Group group = repositoryEntryRelationDao.getDefaultGroup(re);
+		Assert.assertTrue(repositoryEntryRelationDao.hasRole(id, group, GroupRoles.owner.name()));
 	}
 	
 	@Test

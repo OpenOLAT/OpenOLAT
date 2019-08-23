@@ -65,6 +65,10 @@ public class TableListProvider implements ListProvider {
 		
 		int rowCount = unfilteredModel.getRowCount();
 		int colCount = table.getColumnCountFromAllCDs();
+
+		// Apply the filter that will applied to the table entries also to the search value.
+		// Otherwise the search will not work correctly for non ascii characters due to different encodings.
+		searchValue = htmlFilter.filter(searchValue);
 		
 		a_a:
 		for (int colIndex=0; colIndex < colCount; colIndex++) {

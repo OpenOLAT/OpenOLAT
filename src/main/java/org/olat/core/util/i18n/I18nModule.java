@@ -101,8 +101,8 @@ public class I18nModule extends AbstractSpringModule {
 	private String fallbackLanguage;
 
 	// General configuration
-	private final String overlayName = "customizing";
-	private final boolean overlayEnabled = true;
+	private static final String overlayName = "customizing";
+	private static final boolean overlayEnabled = true;
 
 	@Value("${localization.cache:true}")
 	private boolean cachingEnabled;
@@ -116,7 +116,7 @@ public class I18nModule extends AbstractSpringModule {
 	// keys: orig Locale, values: overlay Locale
 	private final Map<Locale, Locale> overlayLocales = new HashMap<>();
 	private final Set<String> overlayLanguagesKeys = new HashSet<>();
-	private final Set<String> enabledLanguagesKeys = new HashSet<>();
+	private static final Set<String> enabledLanguagesKeys = new HashSet<>();
 	// The default locale (used on loginscreen and as first fallback) and the
 	// fallback (used as second fallback)
 	private static Locale defaultLocale;
@@ -140,7 +140,7 @@ public class I18nModule extends AbstractSpringModule {
 	private String transToolEnabled;
 	private final String referenceLanguages = "en,de";
 
-	private final ConcurrentMap<Locale,String> localeToLocaleKey = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<Locale,String> localeToLocaleKey = new ConcurrentHashMap<>();
 	
 	// When running on a cluster, we need an event when flushing the i18n cache to do this on all machines
 	private static OLATResourceable I18N_CACHE_FLUSHED_EVENT_CHANNEL;
@@ -507,7 +507,7 @@ public class I18nModule extends AbstractSpringModule {
 	 * @param locale
 	 * @return
 	 */
-	public String getLocaleKey(Locale locale) {
+	public static String getLocaleKey(Locale locale) {
 		String key = localeToLocaleKey.get(locale);
 		if(key == null) {
 			String langKey = locale.getLanguage();
@@ -671,7 +671,7 @@ public class I18nModule extends AbstractSpringModule {
 	 *         de_CH, en, ...). those are the languages which can be chosen by the
 	 *         user
 	 */
-	public Collection<String> getEnabledLanguageKeys() {
+	public static Collection<String> getEnabledLanguageKeys() {
 		synchronized (enabledLanguagesKeys) {
 			return new HashSet<String>(enabledLanguagesKeys);
 		}
@@ -745,7 +745,7 @@ public class I18nModule extends AbstractSpringModule {
 	 * 
 	 * @return true: enabled; false: disabled
 	 */
-	public boolean isOverlayEnabled() {
+	public static boolean isOverlayEnabled() {
 		return (overlayEnabled && StringHelper.containsNonWhitespace(overlayName));
 	}
 
@@ -755,7 +755,7 @@ public class I18nModule extends AbstractSpringModule {
 	 * 
 	 * @return name of the overlay
 	 */
-	public String getOverlayName() {
+	public static String getOverlayName() {
 		if (isOverlayEnabled()) return overlayName;
 		else return null;
 	}

@@ -32,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntryMyView;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
@@ -53,27 +52,24 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  *
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
-	
-	private final RepositoryEntryDataSourceUIFactory uifactory;
+
+	private final RepositoryEntryRowsFactory repositoryEntryRowsFactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
-	
 
 	private final ACService acService;
 	private final AccessControlModule acModule;
 	private final RepositoryService repositoryService;
-	private final RepositoryManager repositoryManager;
 	
 	private Integer count;
 	
 	public DefaultRepositoryEntryDataSource(SearchMyRepositoryEntryViewParams searchParams,
-			RepositoryEntryDataSourceUIFactory uifactory) {
-		this.uifactory = uifactory;
+											RepositoryEntryRowsFactory repositoryEntryRowsFactory) {
+		this.repositoryEntryRowsFactory = repositoryEntryRowsFactory;
 		this.searchParams = searchParams;
-		
+
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 	}
 	
 	public void setFilters(List<Filter> filters) {
@@ -142,7 +138,9 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<Long> repoKeys = new ArrayList<>(repoEntries.size());
 		List<OLATResource> resourcesWithAC = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryMyView entry:repoEntries) {
-			repoKeys.add(entry.getKey());
+			if (entry.getKey() != null) {
+				repoKeys.add(entry.getKey());
+			}
 			if(entry.isValidOfferAvailable()) {
 				resourcesWithAC.add(entry.getOlatResource());
 			}
@@ -150,6 +148,26 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
 		repositoryService.filterMembership(searchParams.getIdentity(), repoKeys);
 
+		/*
+<<<<<<< HEAD
+		LinkedHashMap<RepositoryEntryMyView, RepositoryEntryRow> mapOfRepositoryEntryViewsAndRepositoryEntryRows =
+				repositoryEntryRowsFactory.create(repoEntries);
+
+		List<RepositoryEntryRow> items = new ArrayList<>();
+		for (Map.Entry<RepositoryEntryMyView, RepositoryEntryRow> mapEntry : mapOfRepositoryEntryViewsAndRepositoryEntryRows.entrySet()) {
+
+			RepositoryEntryMyView entry = mapEntry.getKey();
+			RepositoryEntryRow row = mapEntry.getValue();
+
+			List<PriceMethod> types = new ArrayList<PriceMethod>();
+			if (entry.isMembersOnly()) {
+				// members only always show lock icon
+				types.add(new PriceMethod("", "o_ac_membersonly_icon",
+						repositoryEntryRowsFactory.getUiFactory()
+								.getTranslator()
+								.translate("cif.access.membersonly.short")));
+			} else {
+======= */
 		List<RepositoryEntryRow> items = new ArrayList<>();
 		for(RepositoryEntryMyView entry:repoEntries) {
 			RepositoryEntryRow row = new RepositoryEntryRow(entry);
@@ -161,6 +179,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 
 			List<PriceMethod> types = new ArrayList<>(3);
 			if(entry.isBookable()) {
+// >>>>>>> OpenOLAT_14.0.2
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
 				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -169,7 +188,9 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 							String type = (bundle.getMethod().getMethodCssClass() + "_icon").intern();
 							String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
 							AccessMethodHandler amh = acModule.getAccessMethodHandler(bundle.getMethod().getType());
-							String displayName = amh.getMethodName(uifactory.getTranslator().getLocale());
+							String displayName = amh.getMethodName(
+									repositoryEntryRowsFactory.getUiFactory()
+											.getTranslator().getLocale());
 							types.add(new PriceMethod(price, type, displayName));
 						}
 					}
@@ -180,18 +201,11 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			} 
 			
 			row.setMember(repoKeys.contains(entry.getKey()));
-			
+
 			if(!types.isEmpty()) {
 				row.setAccessTypes(types);
 			}
-			
-			uifactory.forgeMarkLink(row);
-			uifactory.forgeSelectLink(row);
-			uifactory.forgeStartLink(row);
-			uifactory.forgeDetails(row);
-			uifactory.forgeRatings(row);
-			uifactory.forgeComments(row);
-			
+
 			items.add(row);
 		}
 		return items;

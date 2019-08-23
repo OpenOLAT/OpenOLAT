@@ -249,7 +249,9 @@ public class WikiPageChangeOrCreateNotificationHandler implements NotificationsH
 			title = translator.translate("notifications.header.group", new String[]{bg.getName()});
 		} else if (CourseModule.getCourseTypeName().equals(type)) {
 			String displayName = RepositoryManager.getInstance().lookupDisplayNameByOLATResourceableId(resId);
-			title = translator.translate("notifications.header.course", new String[]{displayName});
+			CourseNode node = CourseFactory.loadCourse(p.getResId()).getRunStructure().getNode(p.getSubidentifier());
+			String shortName = (node != null ? node.getShortName() : "");
+			title = translator.translate("notifications.header.course", new String[]{displayName, shortName});
 		} else {
 			title = translator.translate("notifications.header");
 		}

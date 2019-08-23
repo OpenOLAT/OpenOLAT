@@ -163,7 +163,7 @@ public class ProjectBrokerMailerImpl implements ProjectBrokerMailer {
 		if (groupKey != null) {
 			BusinessGroup accountManagerGroup = businessGroupService.loadBusinessGroup(groupKey);
 			List<Identity> participants = businessGroupService
-					.getMembers(accountManagerGroup, GroupRoles.participant.name());
+					.getMembers(accountManagerGroup, GroupRoles.coach.name());
 			return sendEmailProjectChanged(participants, changer, project, 
 	        pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_SUBJECT), 
 	        pT.translate(KEY_PROJECT_DELETED_EMAIL_TO_PARTICIPANT_BODY), pT.getLocale());

@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.dom4j.Element;
 import org.olat.ims.qti.container.ItemContext;
+import org.olat.ims.qti.container.Variable;
 import org.olat.ims.qti.process.QTIHelper;
 
 /**
@@ -68,7 +69,16 @@ public class QTI_resprocessing {
 		
 		// first initialize all variables as stated in decvar elements
 		userContext.resetVariables();
-		
+
+		// Essays cannot be evaluated automatically -> set score to NaN
+		if (userContext.getIdent() != null && userContext.getIdent().contains("ESSAY")) {
+			Variable scoreVariable = userContext.getVariables().getSCOREVariable();
+			if (scoreVariable != null) {
+				scoreVariable.setFloatValue(Float.NaN);
+			}
+			return;
+		}
+
 		// now eval all respconditions as long as continue="Yes"
 		QTI_respcondition respCondition = QTIHelper.getQTI_respcondition();
 		List el_respconditions = n.selectNodes("respcondition");

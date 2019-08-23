@@ -140,7 +140,13 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public static final String GTASK_TASKS = "grouptask.tasks";
 	
 	public static final String GTASK_RELATIVE_DATES = "grouptask.rel.dates";
-	
+
+	public static final String GTASK_ASSIGNMENT_TEXT = "grouptask.assignment.text";
+	public static final String GTASK_ASSIGNMENT_MAIL_CONFIRMATION_OWNER = "grouptask.assignment.mail.confirmation.owner";
+	public static final String GTASK_ASSIGNMENT_MAIL_CONFIRMATION_COACH_COURSE = "grouptask.assignment.mail.confirmation.coach.course";
+	public static final String GTASK_ASSIGNMENT_MAIL_CONFIRMATION_COACH_GROUP = "grouptask.assignment.mail.confirmation.coach.group";
+	public static final String GTASK_ASSIGNMENT_MAIL_CONFIRMATION_PARTICIPANT = "grouptask.assignment.mail.confirmation.participant";
+
 	public static final String GTASK_ASSIGNEMENT_TYPE = "grouptask.assignement.type";
 	public static final String GTASK_ASSIGNEMENT_TYPE_AUTO = "auto";
 	public static final String GTASK_ASSIGNEMENT_TYPE_MANUAL = "manual";
@@ -160,12 +166,24 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION = "grouptask.submission.mail.confirmation";
 	
 	public static final String GTASK_MAX_REVISED_DOCS = "grouptask.max.revised.docs";
-	
+
+	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION_OWNER = "grouptask.submission.mail.confirmation.owner";
+	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION_COACH_COURSE = "grouptask.submission.mail.confirmation.coach.course";
+	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION_COACH_GROUP = "grouptask.submission.mail.confirmation.coach.group";
+	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION_PARTICIPANT = "grouptask.submission.mail.confirmation.participant";
+
 	public static final String GTASK_SOLUTIONS = "grouptask.solutions";
-	
 
 	public static final String TYPE_GROUP = "gta";
 	public static final String TYPE_INDIVIDUAL = "ita";
+
+
+	public static final String[] emailRecipientKeys = new String[] {
+			GTASK_ASSIGNMENT_MAIL_CONFIRMATION_OWNER,
+			GTASK_ASSIGNMENT_MAIL_CONFIRMATION_COACH_COURSE,
+			GTASK_ASSIGNMENT_MAIL_CONFIRMATION_COACH_GROUP,
+			GTASK_ASSIGNMENT_MAIL_CONFIRMATION_PARTICIPANT
+	};
 
 	public GTACourseNode() {
 		super(TYPE_GROUP);
@@ -871,8 +889,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
 		GTAEditController editCtrl = new GTAEditController(ureq, wControl, this, course, euce);
-		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, editCtrl);
+		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, euce, editCtrl);
 	}
 
 	@Override

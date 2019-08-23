@@ -60,6 +60,10 @@ public class UserConstants {
 	public static final String INSTITUTIONALUSERIDENTIFIER = "institutionalUserIdentifier";
 	/** INSTITUTIONALNAME user field identifier. */
 	public static final String INSTITUTIONALNAME = "institutionalName";
+	/** INSTITUTIONAL_EMPLOYEE_NUMBER user field identifier => used @uzh.ch */
+	public static final String INSTITUTIONAL_EMPLOYEE_NUMBER = "institutionalEmployeeNumber";
+	/** INSTITUTIONAL_MATRICULATION_NUMBER user field identifier => used @uzh.ch */
+	public static final String INSTITUTIONAL_MATRICULATION_NUMBER = "institutionalMatriculationNumber";
 	/** INSTITUTIONALEMAIL user field identifier. */
 	public static final String INSTITUTIONALEMAIL = "institutionalEmail";
 	/** STREET user field identifier. */

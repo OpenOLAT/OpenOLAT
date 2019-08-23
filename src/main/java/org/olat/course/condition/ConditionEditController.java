@@ -170,7 +170,7 @@ public class ConditionEditController extends BasicController {
 				condition = cloneCondition(validatedCondition);
 				// Inform all listeners about the changed condition
 				// this event goes to the NodeEditController and from there to the 
-				// CourseEditorController which then saves the condition
+				// EditorMainController which then saves the condition
 				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		} else if (source == conditionExpertForm) {

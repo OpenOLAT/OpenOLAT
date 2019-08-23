@@ -28,6 +28,8 @@ import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.table.ColumnDescriptor;
 import org.olat.core.id.User;
 
+import javax.annotation.Nullable;
+
 /**
  * <h3>Description:</h3> A UserPropertyHandler represents a user field and its
  * configuration. It offers the following functionality:
@@ -209,7 +211,7 @@ public interface UserPropertyHandler {
 	 * @param locale
 	 * @return
 	 */
-	public ColumnDescriptor getColumnDescriptor(int position, String action, Locale locale);
+	public ColumnDescriptor getColumnDescriptor(int position, @Nullable String action, Locale locale);
 
 	/**
 	 * @return The i18n key for the UserPropertyHandler column label

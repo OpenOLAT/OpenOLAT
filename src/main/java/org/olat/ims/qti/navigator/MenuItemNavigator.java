@@ -41,7 +41,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
  *  
  * @author Felix Jost
  */
-public class MenuItemNavigator extends DefaultNavigator implements Navigator, Serializable {
+public class MenuItemNavigator extends DefaultNavigator {
 
 	
 	/**

@@ -21,11 +21,14 @@ package org.olat.course.nodes.gta;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.util.mail.MailContext;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.model.DueDate;
@@ -293,7 +296,14 @@ public interface GTAManager {
 	
 	public List<TaskRevisionDate> getTaskRevisions(Task task);
 
-	
+
+	public List<Identity> getCourseOwners(RepositoryEntry repositoryEntry);
+
+	public List<Identity> getCourseCoaches(RepositoryEntry repositoryEntry);
+
+	public List<Identity> getGroupCoaches(GTACourseNode gtaNode);
+
+
 	/**
 	 * Return the tasks assigned to a person, individually or via a
 	 * business group.
@@ -383,4 +393,9 @@ public interface GTAManager {
 	public void log(String step, SubmitEvent event, Task assignedTask, Identity actor, Identity assessedIdentity, BusinessGroup assessedGroup,
 			CourseEnvironment courseEnv, GTACourseNode cNode, Role by);
 
+	public void addUniqueIdentities(Map<Long, Identity> map, List<Identity> list);
+
+	public List<Identity> addRecipients(RepositoryEntry courseEntry, GTACourseNode gtaNode, Identity assessedIdentity);
+
+	public void sendGradedEmail(GTACourseNode gtaNode, Identity assessedIdentity, List<Identity> recipients, String subject, String taskName, MailContext context, Translator translator);
 }

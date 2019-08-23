@@ -55,6 +55,8 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
+import javax.annotation.Nullable;
+
 /**
  * Desciption: 
  * <p>
@@ -260,6 +262,13 @@ public class UserImpl implements Persistable, User {
 	@Column(name="u_swissedupersonstudybranch3", nullable=true, insertable=true, updatable=true)
 	private String swissEduPersonStudyBranch3;
 
+	@Column(name="u_institutional_employee_number", nullable=true, insertable=true, updatable=true)
+	private String institutionalEmployeeNumber;
+	@Column(name="u_institutional_matriculation_number", nullable=true, insertable=true, updatable=true)
+	private String institutionalMatriculationNumber;
+	@Column(name="u_matriculation_number", nullable=true, insertable=true, updatable=true)
+	private String matriculationNumber;
+
 	@Embedded
 	private PreferencesImpl preferences;
 	
@@ -441,6 +450,9 @@ public class UserImpl implements Persistable, User {
 			case "swissEduPersonStudyBranch1": return swissEduPersonStudyBranch1;
 			case "swissEduPersonStudyBranch2": return swissEduPersonStudyBranch2;
 			case "swissEduPersonStudyBranch3": return swissEduPersonStudyBranch3;
+			case "institutionalEmployeeNumber": return institutionalEmployeeNumber;
+			case "institutionalMatriculationNumber": return institutionalMatriculationNumber;
+			case "matriculationNumber": return matriculationNumber;
 			default: return null;
 		}
 	}
@@ -516,6 +528,9 @@ public class UserImpl implements Persistable, User {
 			case "swissEduPersonStudyBranch1": swissEduPersonStudyBranch1 = value; break;
 			case "swissEduPersonStudyBranch2": swissEduPersonStudyBranch2 = value; break;
 			case "swissEduPersonStudyBranch3": swissEduPersonStudyBranch3 = value; break;
+			case "institutionalEmployeeNumber": institutionalEmployeeNumber = value; break;
+			case "institutionalMatriculationNumber": institutionalMatriculationNumber = value; break;
+			case "matriculationNumber": matriculationNumber = value; break;
 		}
 	}
 
@@ -567,7 +582,7 @@ public class UserImpl implements Persistable, User {
 	 * @see org.olat.core.id.User#getProperty(java.lang.String, java.util.Locale)
 	 */
 	@Override
-	public String getProperty(String propertyName, Locale locale) {
+	public String getProperty(String propertyName, @Nullable Locale locale) {
 		UserManager um = UserManager.getInstance();
 		UserPropertyHandler propertyHandler = um.getUserPropertiesConfig().getPropertyHandler(propertyName);
 		if (propertyHandler == null)

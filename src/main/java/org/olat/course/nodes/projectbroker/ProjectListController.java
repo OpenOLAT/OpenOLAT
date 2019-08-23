@@ -25,10 +25,6 @@
 
 package org.olat.course.nodes.projectbroker;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.olat.NewControllerFactory;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -37,13 +33,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.SimpleStackedPanel;
 import org.olat.core.gui.components.panel.StackedPanel;
-import org.olat.core.gui.components.table.BooleanColumnDescriptor;
-import org.olat.core.gui.components.table.ColumnDescriptor;
-import org.olat.core.gui.components.table.CustomRenderColumnDescriptor;
-import org.olat.core.gui.components.table.DefaultColumnDescriptor;
-import org.olat.core.gui.components.table.TableController;
-import org.olat.core.gui.components.table.TableEvent;
-import org.olat.core.gui.components.table.TableGuiConfiguration;
+import org.olat.core.gui.components.table.*;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -72,6 +62,11 @@ import org.olat.course.nodes.projectbroker.service.ProjectGroupManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  *
@@ -313,6 +308,7 @@ public class ProjectListController extends BasicController implements GenericEve
 				projectBrokerMailer.sendCancelEnrollmentEmailToManager(urequest.getIdentity(), selectedProject, this.getTranslator());
 			}
 			projectGroupManager.sendGroupChangeEvent(selectedProject, courseId, urequest.getIdentity());
+
 		} else {
 			showInfo("info.msg.could.not.cancel.enrollment");
 		}

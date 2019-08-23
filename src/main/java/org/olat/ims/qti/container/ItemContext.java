@@ -212,8 +212,7 @@ public class ItemContext implements Serializable {
 			Element parent = response.getParent();
 			int pos = parent.elements().indexOf(response);
 			posList[j++] = pos;
-			respList.add((Element)response.clone()); // need to use clones so they are not
-			// attached anymore
+			respList.add((Element)response.clone()); // need to use clones so they are not attached anymore
 			parentList.add(parent);
 		}
 		Collections.shuffle(respList);
@@ -222,6 +221,7 @@ public class ItemContext implements Serializable {
 			Element parent = parentList.get(i);
 			int pos = posList[i];
 			Element child = respList.get(i);
+			@SuppressWarnings("unchecked")
 			List<Element> elements = parent.elements();
 			if(pos < elements.size()) {
 				elements.set(pos, child);
@@ -412,18 +412,17 @@ public class ItemContext implements Serializable {
 	 * 
 	 * @return
 	 */
-	public float getScore() {
+	public float getScore(boolean nanAsZero) {
 		Variable var = getVariables().getSCOREVariable();
 		if (var == null) {
-			if(ident.startsWith("QTIEDIT:ESSAY")) {
-				return 0.0f;
+			if (ident.startsWith("QTIEDIT:ESSAY")) {
+				return (nanAsZero ? 0.0f : Float.NaN);
 			}
 			
 			// we demand that a SCORE variable must always exist
 			throw new RuntimeException("no SCORE def for " + getIdent());
 		} else {
-			float sc = var.getTruncatedValue();
-			return sc;
+			return var.getTruncatedValue(nanAsZero);
 		}
 	}
 

@@ -36,6 +36,7 @@ import org.olat.modules.reminder.model.ReminderInfos;
 import org.olat.modules.reminder.model.SentReminderImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryDeletionException;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -149,7 +150,7 @@ public class ReminderDAOTest extends OlatTestCase {
 	}
 
 	@Test
-	public void getReminders_repositoryEntry_softDeleted() {
+	public void getReminders_repositoryEntry_softDeleted() throws RepositoryEntryDeletionException {
 		//create and reminder and an identity
 		Identity creator = JunitTestHelper.createAndPersistIdentityAsRndUser("creator-rem-12");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();

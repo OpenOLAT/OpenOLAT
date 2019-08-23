@@ -58,7 +58,8 @@ CREATE TABLE o_bs_group_member (
    g_inheritance_mode varchar2(16 char) default 'none' not null,
    fk_group_id number(20) not null,
    fk_identity_id number(20) not null,
-   PRIMARY KEY (id)
+   PRIMARY KEY (id),
+   CONSTRAINT u_o_bs_group_member UNIQUE (g_role, fk_group_id, fk_identity_id)
 );
 
 CREATE TABLE o_bs_grant (
@@ -560,7 +561,8 @@ CREATE TABLE o_re_to_group (
    r_defgroup number default 0 not null,
    fk_group_id number(20) not null,
    fk_entry_id number(20) not null,
-   PRIMARY KEY (id)
+   PRIMARY KEY (id),
+   CONSTRAINT u_o_re_to_group UNIQUE (r_defgroup, fk_group_id, fk_entry_id)
 );
 CREATE TABLE o_re_to_tax_level (
   id number(20) generated always as identity,

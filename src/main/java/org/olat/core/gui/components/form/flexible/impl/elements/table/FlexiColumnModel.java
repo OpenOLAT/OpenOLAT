@@ -32,49 +32,49 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
  */
 public interface FlexiColumnModel {
 
-	public static int ALIGNMENT_LEFT = 1;
-	public static int ALIGNMENT_RIGHT = 2;
-	public static int ALIGNMENT_CENTER = 3;
-	
+	int ALIGNMENT_LEFT = 1;
+	int ALIGNMENT_RIGHT = 2;
+	int ALIGNMENT_CENTER = 3;
 
+	boolean isSortable();
 	
-	public boolean isSortable();
+	void setSortable(boolean enable);
 	
-	public void setSortable(boolean enable);
+	boolean isExportable();
 	
-	public boolean isExportable();
+	void setExportable(boolean export);
 	
-	public void setExportable(boolean export);
+	boolean isDefaultVisible();
 	
-	public boolean isDefaultVisible();
-	
-	public boolean isAlwaysVisible();
-	
-	public String getSortKey();
+	boolean isAlwaysVisible();
 
-	public void setSortKey(String sortedKey);
+	boolean isForExportOnly();
+	
+	String getSortKey();
 
-	public String getHeaderKey();
-	
-	public String getHeaderLabel();
-	
-	public String getIconHeader();
-	
-	public Integer getHeaderAlignment();
-	
-	public String getColumnKey();
-	
-	public int getColumnIndex();
-	
-	public String getAction();
+	void setSortKey(String sortedKey);
 
-	public int getAlignment();
+	String getHeaderKey();
+	
+	String getHeaderLabel();
+	
+	String getColumnKey();
 
-	public void setAlignment(int alignment);
+	String getIconHeader();
+	
+	Integer getHeaderAlignment();
 
-	public FlexiCellRenderer getCellRenderer();
+	int getColumnIndex();
+	
+	String getAction();
 
-	public void setCellRenderer(FlexiCellRenderer cellRenderer);
+	int getAlignment();
+
+	void setAlignment(int alignment);
+
+	FlexiCellRenderer getCellRenderer();
+
+	void setCellRenderer(FlexiCellRenderer cellRenderer);
 
 	public FlexiCellRenderer getFooterCellRenderer();
 	

@@ -152,7 +152,9 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	public static final String CONF_DROPBOX_ENABLEMAIL = "dropbox_enablemail";
 	/** CONF_DROPBOX_CONFIRMATION configuration parameter key. */
 	public static final String CONF_DROPBOX_CONFIRMATION = "dropbox_confirmation";
-	
+	/** CONF_DROPBOX_CONFIRMATION_LINK configuration parameter key. */
+	public static final String CONF_DROPBOX_CONFIRMATION_LINK = "dropbox_confirmation_link";
+
 	/** CONF_RETURNBOX_ENABLED configuration parameter key. */
 	public static final String CONF_RETURNBOX_ENABLED = "returnbox_enabled";
 
@@ -198,8 +200,7 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
 		TACourseNodeEditController childTabCntrllr = new TACourseNodeEditController(ureq, wControl, course, this, euce);
-		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, euce, childTabCntrllr);
 	}
 
 	@Override

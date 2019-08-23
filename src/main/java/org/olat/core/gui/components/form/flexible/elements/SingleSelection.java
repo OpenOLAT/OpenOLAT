@@ -27,6 +27,7 @@
 package org.olat.core.gui.components.form.flexible.elements;
 
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 
 /**
  * @author patrickb
@@ -78,7 +79,7 @@ public interface SingleSelection extends SelectionElement {
 	 *            The CSS classes that should be used in the form element for
 	 *            each key-value pair or NULL not not use special styling
 	 */
-	public void setKeysAndValues(String[] keys, String[] values,String[] cssClasses);
+	public void setKeysAndValues(String[] keys, String[] values, String @Nullable [] cssClasses);
 	
 	public enum Layout {
 		vertical,

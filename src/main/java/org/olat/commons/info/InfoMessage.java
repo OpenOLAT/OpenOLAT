@@ -20,6 +20,7 @@
 
 package org.olat.commons.info;
 
+import java.io.File;
 import java.util.Date;
 
 import org.olat.core.id.Identity;
@@ -53,6 +54,8 @@ public interface InfoMessage {
 	
 	public void setAttachmentPath(String path);
 
+	public void setAttachments(File[] attachments);
+
 	public Long getResId();
 
 	public String getResName();
@@ -68,4 +71,5 @@ public interface InfoMessage {
 	public void setModifier(Identity modifier);
 
 	public OLATResourceable getOLATResourceable();
+
 }

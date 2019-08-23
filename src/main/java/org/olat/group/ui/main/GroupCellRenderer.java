@@ -31,6 +31,16 @@ import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroupShort;
 import org.olat.modules.curriculum.CurriculumElementShort;
 
+import org.olat.core.gui.components.table.CustomCellRenderer;
+
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+import static org.jcodec.common.Assert.assertNotNull;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -40,6 +50,47 @@ public class GroupCellRenderer implements FlexiCellRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
+		if (cellValue instanceof MemberRow) {
+			render(target, (MemberRow) cellValue, translator.getLocale());
+		}
+	}
+
+	@Override
+	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
+		if (val instanceof MemberRow) {
+			render(sb, (MemberRow) val, locale);
+		}
+	}
+	
+	private void render(StringOutput sb, MemberRow member, Locale locale) {
+		assertNotNull(locale);
+
+		List<BusinessGroupShort> groups = member.getGroups();
+
+		if (groups == null) {
+			return;
+		}
+
+		List<String> groupNames = new ArrayList<>();
+		for (BusinessGroupShort group : groups) {
+			if (group.getName() == null) {
+				groupNames.add(group.getKey().toString());
+			} else {
+				groupNames.add(group.getName());
+			}
+		}
+
+		// Sort group names
+		Collator collator = Collator.getInstance(locale);
+		groupNames.sort(collator);
+
+		// Concat group names
+		for (String groupName : groupNames) {
+			sb.append(groupName).append(", ");
+		}
+
+		// Remove last ", "
+		sb.setLength(sb.length() - 2);
 		if (cellValue instanceof MemberRow) {
 			render(target, (MemberRow) cellValue);
 		}

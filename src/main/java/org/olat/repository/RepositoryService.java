@@ -35,6 +35,7 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSLeaf;
+import org.olat.repository.manager.RepositoryEntryDeletionException;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.model.SearchAuthorRepositoryEntryViewParams;
@@ -105,14 +106,14 @@ public interface RepositoryService {
 	 * @param entry
 	 * @param owners If the owners need to be removed
 	 */
-	public RepositoryEntry deleteSoftly(RepositoryEntry entry, Identity deletedBy, boolean owners, boolean sendNotifications);
+	public RepositoryEntry deleteSoftly(RepositoryEntry entry, Identity deletedBy, boolean owners, boolean sendNotifications) throws RepositoryEntryDeletionException;
 
 	/**
 	 * The access is set to B.
 	 * @param entry
 	 * @return
 	 */
-	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry);
+	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, Identity restoredBy);
 
 
 	/**
@@ -123,7 +124,7 @@ public interface RepositoryService {
 	 * @param locale
 	 * @return
 	 */
-	public ErrorList deletePermanently(RepositoryEntryRef entryRef, Identity identity, Roles roles, Locale locale);
+	public ErrorList deletePermanently(RepositoryEntryRef entryRef, Identity identity, Roles roles, Locale locale) throws RepositoryEntryDeletionException;
 
 	/**
 	 * Delete only the database object

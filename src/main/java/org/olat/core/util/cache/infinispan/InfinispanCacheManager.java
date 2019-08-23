@@ -25,6 +25,8 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 
 /**
  * The embbeded cache manager of infinispan
@@ -39,7 +41,9 @@ public class InfinispanCacheManager implements FactoryBean<EmbeddedCacheManager>
 	private String configuration;
 	private String jndiName;
 	private EmbeddedCacheManager cacheManager;
-	
+
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	/**
 	 * [used by Spring]
@@ -69,7 +73,8 @@ public class InfinispanCacheManager implements FactoryBean<EmbeddedCacheManager>
 				if(!StringHelper.containsNonWhitespace(configuration)) {
 					configuration = "infinispan-config.xml";
 				}
-				cacheManager = new DefaultCacheManager(configuration);
+				cacheManager = (EmbeddedCacheManager) applicationContext
+						.getBean(DefaultCacheManager.OBJECT_NAME, configuration);
 				cacheManager.start();
 			}
 		}

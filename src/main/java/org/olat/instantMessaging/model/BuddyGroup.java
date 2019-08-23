@@ -21,6 +21,7 @@ package org.olat.instantMessaging.model;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -80,6 +81,13 @@ public class BuddyGroup implements Serializable {
 	}
 	
 	public List<Buddy> getBuddy() {
-		return buddyList;
+		List<Buddy> orderedBuddyList = new ArrayList<Buddy>(buddyList.size());
+		for(Buddy buddy:buddyList) {
+			Buddy clone = buddy.clone();
+			orderedBuddyList.add(clone);
+		}
+		Collections.sort(orderedBuddyList);
+
+		return orderedBuddyList;
 	}
 }

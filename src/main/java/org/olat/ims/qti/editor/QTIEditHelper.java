@@ -188,6 +188,7 @@ public class QTIEditHelper {
 
 		ChoiceResponse newChoice = new ChoiceResponse();
 		newChoice.setCorrect(true);
+		newChoice.setPoints(1.0f);
 		newChoice.getContent().add(new Mattext(trans.translate("editor.newresponsetext")));
 		question.getResponses().add(newChoice);
 
@@ -227,7 +228,7 @@ public class QTIEditHelper {
 		ChoiceResponse newChoice = new ChoiceResponse();
 		newChoice.getContent().add(new Mattext(trans.translate("editor.newresponsetext")));
 		newChoice.setCorrect(true);
-		newChoice.setPoints(1);
+		newChoice.setPoints(1.0f);
 		question.getResponses().add(newChoice);
 		newItem.setQuestion(question);
 		
@@ -458,17 +459,44 @@ public class QTIEditHelper {
 				continue;
 			}
 			if (fPoints != 0) {
-				Element conditionvar = el_resp_condition.element("conditionvar");
-				Element and = conditionvar.element("and");
-				// in and are all choices that are true
+				// OLATNG-207: back-porting changes from OLAT 7.8.x for OLAT-6672
+				// (NB! code comes from non-tagged commit, it's not completely safe to assume it right and conflict-free)
+				// (The code below starting with next line and until the end of current if-block is taken as is from 7.8.4.1)
 
-				List<?> tmp_points = (and == null) ? conditionvar.selectNodes(".//varequal") : and.selectNodes(".//varequal");
-				for (Iterator<?> iter = tmp_points.iterator(); iter.hasNext();) {
-					Element el_varequal = (Element) iter.next();
-					if (type == Question.TYPE_SC || type == Question.TYPE_MC || type == Question.TYPE_KPRIM){
+				// this code has been reworked for http://bugs.olat.org/jira/browse/OLAT-6672
+				Element conditionvar = el_resp_condition.element("conditionvar");
+				if (type == Question.TYPE_SC) {
+					// see ChoiceQuestion#buildRespconditionSC_mastery
+					final Element el_varequal = (Element) conditionvar.selectNodes(".//varequal").get(0);
+					points.put(el_varequal.getTextTrim(), new Float(fPoints));
+				} else if (type == Question.TYPE_MC) {
+					// see ChoiceQuestion#buildRespconditionMCSingle_mastery
+					final Element el_and = conditionvar.element("and");
+					final Element el_not = conditionvar.element("not");
+					List<Element> tmp_points = new ArrayList<Element>();
+					if (el_and != null || el_not != null) {
+						// this is "singleCorrect" MCQ => select all nodes under <and> tag
+						if (el_and != null) {
+							tmp_points = el_and.selectNodes(".//varequal");
+						}
+					} else {
+						tmp_points = conditionvar.selectNodes(".//varequal");
+					}
+					for (Iterator iter = tmp_points.iterator(); iter.hasNext();) {
+						Element el_varequal = (Element) iter.next();
 						points.put(el_varequal.getTextTrim(), new Float(fPoints));
-					} else if (type == Question.TYPE_FIB) {
-						points.put(el_varequal.attributeValue("respident"), new Float(fPoints));
+					}
+				} else {
+					// left this part of the code (KPRIM and FIB) unchained in order to avoid collateral damage ...
+					Element and = conditionvar.element("and");
+					List tmp_points = (and == null) ? conditionvar.selectNodes(".//varequal") : and.selectNodes(".//varequal");
+					for (Iterator iter = tmp_points.iterator(); iter.hasNext();) {
+						Element el_varequal = (Element) iter.next();
+						if (type == Question.TYPE_KPRIM) {
+							points.put(el_varequal.getTextTrim(), new Float(fPoints));
+						} else if (type == Question.TYPE_FIB) {
+							points.put(el_varequal.attributeValue("respident"), new Float(fPoints));
+						}
 					}
 				}
 			}

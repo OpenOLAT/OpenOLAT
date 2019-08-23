@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
 
+import org.jetbrains.annotations.Nullable;
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
@@ -45,7 +46,9 @@ import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
+import org.olat.course.nodes.CourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.repository.RepositoryEntry;
@@ -219,22 +222,35 @@ public class CalendarNotificationHandler implements NotificationsHandler {
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
 		try {
 			Translator translator = Util.createPackageTranslator(CalendarManager.class, locale);
-			String title = null;
-			Long id = subscriber.getPublisher().getResId();
-			String type = subscriber.getPublisher().getSubidentifier();
-			if (type.equals(CalendarController.ACTION_CALENDAR_COURSE)) {
-				String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(id);
-				title = translator.translate("cal.notifications.header.course", new String[]{displayName});
-			} else if (type.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
-				BusinessGroup group = businessGroupDao.load(id);
-				title = translator.translate("cal.notifications.header.group", new String[]{group.getName()});
-			}
-			return title;
+			return getTitle(translator, subscriber.getPublisher());
 		} catch (Exception e) {
 			log.error("Error while creating calendar notifications for subscriber: " + subscriber.getKey(), e);
 			checkPublisher(subscriber.getPublisher());
 			return "-";
 		}
+	}
+
+	@Nullable
+	private String getTitle(Translator translator, Publisher publisher) {
+		String title = null;
+		Long id = publisher.getResId();
+		String type = publisher.getSubidentifier();
+		if (type.equals(CalendarController.ACTION_CALENDAR_COURSE)) {
+			String displayName = repositoryManager.lookupDisplayNameByOLATResourceableId(id);
+			CourseNode node = CourseFactory.loadCourse(publisher.getResId()).getRunStructure().getNode(getNodeId(publisher.getBusinessPath()));
+			String shortName = (node != null ? node.getShortName() : "");
+			title = translator.translate("cal.notifications.header.course", new String[]{displayName, shortName});
+		} else if (type.equals(CalendarController.ACTION_CALENDAR_GROUP)) {
+			BusinessGroup group = businessGroupDao.load(id);
+			title = translator.translate("cal.notifications.header.group", new String[]{group.getName()});
+		}
+		return title;
+	}
+
+	private String getNodeId(String businessPath) {
+		String[] parts = businessPath.split(":");
+		if (parts.length < 3) return "";
+		return parts[2].substring(0, parts[2].lastIndexOf("]"));
 	}
 
 	@Override

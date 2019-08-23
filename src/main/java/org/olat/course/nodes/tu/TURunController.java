@@ -115,6 +115,10 @@ public class TURunController extends BasicController {
 	}
 
 	private void doLaunch(UserRequest ureq) {
+		if (!TUConfigForm.isProtocolValid(config)) {
+			showError("TUConfigForm.invalidProtocol");
+			return;
+		}
 		boolean iniframe = config.getBooleanSafe(TUConfigForm.CONFIG_IFRAME);
 		// create the possibility to float
 		CloneableController controller;

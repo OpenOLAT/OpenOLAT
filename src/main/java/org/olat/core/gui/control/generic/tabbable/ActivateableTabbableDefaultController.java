@@ -32,6 +32,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 
@@ -47,6 +48,10 @@ public abstract class ActivateableTabbableDefaultController extends TabbableDefa
 
 	public ActivateableTabbableDefaultController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
+	}
+
+	public ActivateableTabbableDefaultController(UserRequest ureq, WindowControl wControl, Translator fallBackTranslator) {
+		super(ureq, wControl, fallBackTranslator);
 	}
 
 	/**

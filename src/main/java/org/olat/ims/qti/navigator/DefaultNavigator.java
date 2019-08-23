@@ -41,7 +41,7 @@ import org.olat.modules.iq.IQManager;
 
 /**
  */
-public class DefaultNavigator implements Serializable {
+public abstract class DefaultNavigator implements Navigator, Serializable {
 
 	private AssessmentInstance assessmentInstance;
 

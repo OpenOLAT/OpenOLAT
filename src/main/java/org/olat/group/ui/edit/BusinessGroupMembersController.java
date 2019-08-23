@@ -65,6 +65,8 @@ public class BusinessGroupMembersController extends BasicController {
 	private MemberListController membersController;
 	private final Link importMemberLink, addMemberLink;
 	private StepsMainRunController importMembersWizard;
+	private boolean membersManagementEnabled;
+	private boolean excludeGroupCoachesFromMembersManagementEnabled;
 	
 	private BusinessGroup businessGroup;
 	@Autowired
@@ -92,8 +94,10 @@ public class BusinessGroupMembersController extends BasicController {
 		dmsForm.setDisplayMembers(businessGroup);
 		mainVC.put("displayMembers", dmsForm.getInitialComponent());
 
-		boolean managed = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement);
-		configForm = new MembershipConfigurationForm(ureq, getWindowControl(), managed);
+		membersManagementEnabled = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.membersmanagement);
+		excludeGroupCoachesFromMembersManagementEnabled = BusinessGroupManagedFlag.isManaged(businessGroup, BusinessGroupManagedFlag.excludeGroupCoachesFromMembersmanagement);
+
+		configForm = new MembershipConfigurationForm(ureq, getWindowControl(), membersManagementEnabled);
 		listenTo(configForm);
 		configForm.setMembershipConfiguration(businessGroup);
 		mainVC.put("configMembers", configForm.getInitialComponent());
@@ -105,16 +109,16 @@ public class BusinessGroupMembersController extends BasicController {
 		membersController.reloadModel();
 
 		mainVC.put("members", membersController.getInitialComponent());
-		
-		addMemberLink = LinkFactory.createButton("add.member", mainVC, this);
+
+		addMemberLink = LinkFactory.createButton((membersManagementEnabled && excludeGroupCoachesFromMembersManagementEnabled ? "add.group.coach" : "add.member"), mainVC, this);
 		addMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_add_member");
 		addMemberLink.setElementCssClass("o_sel_group_add_member");
-		addMemberLink.setVisible(!managed);
+		addMemberLink.setVisible(!membersManagementEnabled || excludeGroupCoachesFromMembersManagementEnabled);
 		mainVC.put("addMembers", addMemberLink);
 		importMemberLink = LinkFactory.createButton("import.member", mainVC, this);
 		importMemberLink.setIconLeftCSS("o_icon o_icon-fw o_icon_import");
 		importMemberLink.setElementCssClass("o_sel_group_import_members");
-		importMemberLink.setVisible(!managed);
+		importMemberLink.setVisible(!membersManagementEnabled);
 		mainVC.put("importMembers", importMemberLink);
 	}
 	
@@ -207,7 +211,7 @@ public class BusinessGroupMembersController extends BasicController {
 		};
 		
 		importMembersWizard = new StepsMainRunController(ureq, getWindowControl(), start, finish, null,
-				translate("add.member"), "o_sel_group_import_1_wizard");
+				translate(membersManagementEnabled && excludeGroupCoachesFromMembersManagementEnabled ? "add.group.coach" : "add.member"), "o_sel_group_import_1_wizard");
 		listenTo(importMembersWizard);
 		getWindowControl().pushAsModalDialog(importMembersWizard.getInitialComponent());
 	}

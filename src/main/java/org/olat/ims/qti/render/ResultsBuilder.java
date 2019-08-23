@@ -55,6 +55,7 @@ import org.olat.ims.qti.container.DecimalVariable;
 import org.olat.ims.qti.container.ItemContext;
 import org.olat.ims.qti.container.ItemInput;
 import org.olat.ims.qti.container.SectionContext;
+import org.olat.ims.qti.editor.beecom.objects.FIBResponse;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti.process.QTIHelper;
 import org.olat.ims.qti.process.Resolver;
@@ -118,7 +119,7 @@ public class ResultsBuilder {
 		Element context = result.addElement("context");
 		User user = identity.getUser();
 		String name = user.getProperty(UserConstants.FIRSTNAME, locale) + " " + user.getProperty(UserConstants.LASTNAME, locale);
-		String instId = user.getProperty(UserConstants.INSTITUTIONALUSERIDENTIFIER, locale);
+		String instId = user.getProperty(UserConstants.INSTITUTIONAL_MATRICULATION_NUMBER, locale);
 		String instName = user.getProperty(UserConstants.INSTITUTIONALNAME, locale);
 
 		if (instId == null) instId = "N/A";
@@ -161,6 +162,8 @@ public class ResultsBuilder {
 		strVal = ac.getCutvalue() == -1.0f ? "N/A" : StringHelper.formatFloat(ac.getCutvalue(), 2);
 		a_score.addElement("score_cut").addText(strVal);
 
+		a_score.addElement("num_nan_score_items").addText(Integer.toString(ac.getNumberOfItemsWithNanValueScore()));
+
 		addElementText(ares, "duration", QTIHelper.getISODuration(ac.getDuration()));
 		addElementText(ares, "num_sections", "" + ac.getSectionContextCount());
 		addElementText(ares, "num_sections_presented", "0");
@@ -191,6 +194,7 @@ public class ResultsBuilder {
 			sec_score.addElement("score_max").addText(strVal);
 			strVal = secc.getCutValue() == -1 ? "N/A" : "" + secc.getCutValue();
 			sec_score.addElement("score_cut").addText(strVal);
+			sec_score.addElement("num_nan_score_items").addText(Integer.toString(secc.getNumberOfItemsWithNanValueScore()));
 
 			// iterate over all items in this section context
 			List<ItemContext> itemsc = secc.getSectionItemContexts();
@@ -206,7 +210,7 @@ public class ResultsBuilder {
 				DecimalVariable scoreVar = (DecimalVariable) (itemc.getVariables().getSCOREVariable());
 				Element it_score = itres.addElement("outcomes").addElement("score");
 				it_score.addAttribute("varname", "SCORE");
-				it_score.addElement("score_value").addText(StringHelper.formatFloat(scoreVar.getTruncatedValue(), 2));
+				it_score.addElement("score_value").addText(StringHelper.formatFloat(scoreVar.getTruncatedValue(false), 2));
 				strVal = scoreVar.hasMinValue() ? "" + scoreVar.getMinValue() : "0.0";
 				it_score.addElement("score_min").addText(strVal);
 				strVal = scoreVar.hasMaxValue() ? "" + scoreVar.getMaxValue() : "N/A";

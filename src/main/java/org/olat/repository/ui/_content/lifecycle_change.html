@@ -3,6 +3,23 @@
 		$r.contextHelpWithWrapper("Course settings#_delete")
 		$r.translate("details.lifecycle.change")
 	</legend>
+
+#parse("org/olat/repository/ui/_content/lifecycle_change_close_course.html")
+
+#if ($r.visible("unclose"))
+	<h4>$r.translate("details.unclose.resource.title")</h4>
+	<div class="o_info">
+		<p>$r.translate("details.unclose.resource.desc")</p>
+		<ul>
+			<li>$r.translate("details.unclose.resource.desc.1")</li>
+			<li>$r.translate("details.unclose.resource.desc.2")</li>
+		</ul>
+		<div class="o_button_group o_block_large_top">
+			$r.render("unclose")
+		</div>
+	</div>
+#end
+
 #if ($r.available("delete"))
 	<div class="o_error">
 		<p>$r.translate("details.delete.soft.desc")</p>

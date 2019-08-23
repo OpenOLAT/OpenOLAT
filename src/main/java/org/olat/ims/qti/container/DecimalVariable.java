@@ -83,8 +83,11 @@ public class DecimalVariable extends Variable {
 		return f;
 	}
 	
-	public float getTruncatedValue() {
+	public float getTruncatedValue(boolean nanAsZero) {
 		float tmp = floatValue;
+		if (nanAsZero && Float.isNaN(tmp)) {
+			tmp = 0.0f;
+		}
 		if (maxdeclared) {
 			if (tmp > maxValue)
 			tmp = maxValue;
@@ -102,6 +105,10 @@ public class DecimalVariable extends Variable {
 	
 	public void setValue(String value) {
 		floatValue= parseFloat(value);
+	}
+
+	public void setFloatValue(float floatValue) {
+		this.floatValue = floatValue;
 	}
 	/**
 	 * Returns the cutValue.
@@ -156,9 +163,12 @@ public class DecimalVariable extends Variable {
 		return mindeclared;
 	}
 	/**
-	 * @see org.olat.ims.qti.container.Variable#getValue()
+	 * @see org.olat.ims.qti.container.Variable#getValue(boolean)
 	 */
-	public float getValue() {
+	public float getValue(boolean nanAsZero) {
+		if (nanAsZero && Float.isNaN(floatValue)) {
+			return 0.0f;
+		}
 		return floatValue;
 	}
 	/**

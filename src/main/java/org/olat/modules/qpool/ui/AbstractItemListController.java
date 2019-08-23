@@ -192,7 +192,8 @@ public abstract class AbstractItemListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.stdevDifficulty.i18nKey(), Cols.stdevDifficulty.ordinal(), true, OrderBy.stdevDifficulty.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.differentiation.i18nKey(), Cols.differentiation.ordinal(), true, OrderBy.differentiation.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.numOfAnswerAlternatives.i18nKey(), Cols.numOfAnswerAlternatives.ordinal(), true, OrderBy.numOfAnswerAlternatives.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.usage.i18nKey(), Cols.usage.ordinal(), true, OrderBy.usage.name()));
+		// Disabled as a quick fix for LMSUZH-671
+		//columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.usage.i18nKey(), Cols.usage.ordinal(), true, OrderBy.usage.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.itemType.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format.i18nKey(), Cols.format.ordinal(), true, OrderBy.format.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.rating.i18nKey(), Cols.rating.ordinal(), true, OrderBy.rating.name()));

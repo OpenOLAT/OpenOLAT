@@ -24,6 +24,10 @@
 */
 package org.olat.upgrade;
 
+import org.olat.core.commons.persistence.DB;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.inject.Provider;
 
 /**
  * Description:<br>

@@ -23,7 +23,18 @@
 					$r.translate("actualPoints"): $qtistatus.score&nbsp;
 				#end
 			</div>
-			<div id="o_qti_run_scoreprogress" class="col-sm-3">$r.render("qtiscoreprogress", "nl")</div>
+			<div id="o_qti_run_scoreprogress" class="col-sm-3">
+				$r.render("qtiscoreprogress", "nl")
+			</div>
+			#if ($qtistatus.getNumberOfNotRatedAnswers() >= 1)
+				<div id="o_qti_number_of_not_rated_answers" class="col-sm-3">
+				#if ($qtistatus.getNumberOfNotRatedAnswers() == 1)
+					1 $r.translate("answer.not.rated")
+				#else
+					$qtistatus.getNumberOfNotRatedAnswers() $r.translate("answers.not.rated")
+				#end
+				</div>
+			#end
 		</div></div>
 		#end
 	</div>
@@ -63,5 +74,14 @@
 function mark (it) {
 	// do nothing
 }
+
+// LMSUZH-957 sanitize answers that are stored in QTI with double semicolons
+var results = jQuery('#o_qti_run_content #o_qti_results table tbody tr td font');
+for (var i = 0; i< results.length; i++) {
+    var elem = jQuery(results[i]);
+    var newValue = elem.html().replace(/;;/g, ';');
+    elem.html(newValue);
+}
+
 /* ]]> */
 </script>

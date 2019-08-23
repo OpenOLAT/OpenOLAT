@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.UUID;
 
 import org.junit.Test;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
@@ -57,7 +56,7 @@ public class UserNodeAuditManagerTest extends OlatTestCase  {
 		Long resourceableId = repositoryEntry.getOlatResource().getResourceableId();
 		log.info("Demo course imported - resourceableId: " + resourceableId);	
 		ICourse course = CourseFactory.loadCourse(resourceableId);
-		DBFactory.getInstance().commitAndCloseSession();
+		dbInstance.commitAndCloseSession();
 
 		
 		log.info("Start testCreateLimitedLogContent");

@@ -81,8 +81,8 @@ public class CatalogEntryImpl extends PersistentObject implements CatalogEntry {
 	 * @see org.olat.repository.CatalogEntry#setName(java.lang.String)
 	 */
 	public void setName(String name) {
-		if (name.length() > 100)
-			throw new AssertException("CatalogEntry: Name is limited to 100 characters.");
+		if (name.length() > 255)
+			throw new AssertException("CatalogEntry: Name is limited to 255 characters.");
 		this.name = name;
 	}
 

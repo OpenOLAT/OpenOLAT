@@ -25,6 +25,7 @@
 
 package org.olat.course.nodes.projectbroker;
 
+import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,6 +35,7 @@ import org.olat.admin.securitygroup.gui.IdentitiesRemoveEvent;
 import org.olat.admin.securitygroup.gui.WaitingGroupController;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.ui.GroupController;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -51,6 +53,7 @@ import org.olat.core.util.mail.MailHelper;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.projectbroker.datamodel.Project;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerMailer;
 import org.olat.course.nodes.projectbroker.service.ProjectBrokerManager;
@@ -74,6 +77,8 @@ public class ProjectGroupController extends BasicController {
 	private WaitingGroupController projectCandidatesController;
 
 	private Project project;
+	private UserCourseEnvironment userCourseEnv;
+	private CourseNode courseNode;
 
 	private ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration;
 	
@@ -89,17 +94,21 @@ public class ProjectGroupController extends BasicController {
 	private ProjectBrokerMailer projectBrokerMailer;
 
 	/**
+	 * @param hpc
 	 * @param ureq
 	 * @param wControl
-	 * @param hpc
+	 * @param courseNode
 	 */
 	public ProjectGroupController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, Project project, ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) {
+								  UserCourseEnvironment userCourseEnv, CourseNode courseNode, Project project,
+								  ProjectBrokerModuleConfiguration projectBrokerModuleConfiguration) {
 		super(ureq, wControl);
 		getUserActivityLogger().setStickyActionType(ActionType.admin);
 		this.project = project;
+		this.userCourseEnv = userCourseEnv;
+		this.courseNode = courseNode;
 		this.projectBrokerModuleConfiguration = projectBrokerModuleConfiguration;
-		
+
 		VelocityContainer myContent = createVelocityContainer("projectgroup_management");
 
 		// Project Leader Management
@@ -216,6 +225,7 @@ public class ProjectGroupController extends BasicController {
 			businessGroupService.removeParticipants(urequest.getIdentity(), ((IdentitiesRemoveEvent) event).getRemovedIdentities(), project.getProjectGroup(), null);
 			getLogger().info("Remove users as account-managers");
 			fireEvent(urequest, Event.CHANGED_EVENT );
+
 		}
 	}
 

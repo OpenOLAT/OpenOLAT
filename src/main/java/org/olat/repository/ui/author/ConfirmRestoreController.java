@@ -128,7 +128,7 @@ public class ConfirmRestoreController extends FormBasicController {
 		for(RepositoryEntry entry:rows) {
 			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
 			if(reloadedEntry != null) {
-				repositoryService.restoreRepositoryEntry(reloadedEntry);
+				repositoryService.restoreRepositoryEntry(reloadedEntry, ureq.getIdentity());
 				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
 				fireEvent(ureq, new EntryChangedEvent(reloadedEntry, getIdentity(), Change.restored, "restored"));

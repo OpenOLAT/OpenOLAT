@@ -39,6 +39,9 @@ $r.render("backLink")
 			#if ($matnr)
 				<li class="list-group-item"><span>$matnr</span></li>
 			#end
+			#if ($user.getProperty("institutionalMatriculationNumber", $locale) && $user.getProperty("institutionalMatriculationNumber", $locale) != "")
+			<li class="list-group-item"><span><i class="o_icon o_infomsg_icon"> </i> $user.getProperty("institutionalMatriculationNumber", $locale)</span></li>
+			#end
 			<li class="list-group-item">
 				<span><i class="o_icon o_icon_group"> </i> $r.translate("participantgroups.title")</span>
 			</li>

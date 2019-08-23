@@ -70,6 +70,14 @@ public class DownloadComponent extends AbstractComponent {
 				getCssIconClass(downloadItem.getName()));
 	}
 
+	public DownloadComponent(String name, File downloadItem, String linkText, String linkToolTip, String linkCssIconClass) {
+		super(name);
+		setDownloadItem(downloadItem);
+		setLinkText(linkText);
+		setLinkToolTip(linkToolTip);
+		setLinkCssIconClass(linkCssIconClass);
+	}
+
 	/**
 	 * Detailed constructor 
 	 * 

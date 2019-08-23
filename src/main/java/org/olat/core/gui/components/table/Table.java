@@ -55,8 +55,12 @@ import org.olat.core.util.filter.FilterFactory;
  * @author Felix Jost
  */
 public class Table extends AbstractComponent {
-	
-	private static final int NO_ROW_SELECTED = -1;
+
+	/**
+	 * TODO sev26
+	 * Verify if viability change is correct.
+	 */
+	public static final int NO_ROW_SELECTED = -1;
 	private static final int DEFAULT_RESULTS_PER_PAGE = 20;
 	private static final int INITIAL_COLUMNSIZE = 5;
 	private static final Logger log = Tracing.createLoggerFor(Table.class);
@@ -1007,7 +1011,12 @@ class ChoiceTableDataModel implements ChoiceModel {
 	public boolean isDisabled(int row) {
 		return false;
 	}
-	
+
+	@Override
+	public boolean isForExportOnly(int row) {
+		return false;
+	}
+
 	public ColumnDescriptor getObject(int row) {
 		return allCDs.get(isMultiSelect? (row + 1): row);
 	}

@@ -98,6 +98,7 @@ public class URLBuilder {
 	 * @param modURI
 	 * @param mode indicates what kind of link it is (0 normal, 1 into background-iframe, ...)
 	 */
+	@Deprecated // Use instead (whenever possible) the method right below.
 	public void buildURI(StringOutput buf, String[] keys, String[] values, String modURI, int mode) {
 		try(StringOutput result = new StringOutput(100)) {
 			result.append(uriPrefix);
@@ -135,6 +136,27 @@ public class URLBuilder {
 	}
 	
 
+	public StringOutput buildUriWithoutUrlEncoding(String[] keys, String[] values, String modURI, int mode) {
+		StringOutput result = new StringOutput(100);
+		result.append(uriPrefix);
+		encodeParams(result, mode);
+
+		if (keys != null) {
+			for (int i = 0; i < keys.length; i++) {
+				result.append(UserRequest.PARAM_DELIM);
+				result.append(keys[i]);
+				result.append(UserRequest.PARAM_DELIM);
+				result.append(values[i]);
+			}
+		}
+
+		result.append("/");
+		if (modURI != null) {
+			result.append(modURI);
+		}
+		return result;
+	}
+
 	/**
 	 * @param buf
 	 * @param keys
@@ -151,8 +173,13 @@ public class URLBuilder {
 	 * @param values
 	 * @param mode
 	 */
+	@Deprecated // Use instead (whenever possible) the method right below.
 	public void buildURI(StringOutput buf, String[] keys, String[] values, int mode) {
 		buildURI(buf, keys, values, null, mode);
+	}
+
+	public StringOutput buildUriWithoutUrlEncoding(String[] keys, String[] values, int mode) {
+		return buildUriWithoutUrlEncoding(keys, values, null, mode);
 	}
 	
 	public void buildURI(StringOutput buf, int mode, NameValuePair... pairs) {
@@ -179,12 +206,12 @@ public class URLBuilder {
 	public StringOutput buildHrefAndOnclick(StringOutput sb, String urlEnding, boolean ajaxEnabled, boolean dirtyCheck, boolean pushState, NameValuePair... commands) {
 		sb.append(" href=\"");
 		buildURI(sb, ajaxEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL, commands);
-		sb.append("\" onclick=\"");
+		sb.append("\" onclick=\"return ");
 		if(ajaxEnabled) {
 			String escapedUrlEnding = StringHelper.escapeJavaScript(urlEnding);
-			buildXHREvent(sb, escapedUrlEnding, dirtyCheck, pushState, commands).append(" return false;");
+			buildXHREvent(sb, escapedUrlEnding, dirtyCheck, pushState, commands);
 		} else if(dirtyCheck) {
-			sb.append("return o2cl();");
+			sb.append("o2cl();");
 		}
 		sb.append("\" ");
 		return sb;

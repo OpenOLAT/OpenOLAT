@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.admin.landingpages.ui.RulesDataModel;
 import org.olat.commons.memberlist.model.CurriculumElementInfos;
@@ -31,6 +32,7 @@ import org.olat.commons.memberlist.model.CurriculumMemberInfos;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
@@ -64,6 +66,11 @@ public class XlsMembersExport {
 			protected void generate(OutputStream out) {
 				try (OpenXMLWorkbook workbook = new OpenXMLWorkbook(out, 1)) {
 					OpenXMLWorksheet sheet = workbook.nextWorksheet();
+					// LMSUZH-566: Do not export email addresses even if email functionality is enabled in course element
+					List<UserPropertyHandler> allowedPropertyHandlers = userPropertyHandlers
+							.stream()
+							.filter(userPropertyHandler -> !UserConstants.EMAIL.equals(userPropertyHandler.getName()))
+							.collect(Collectors.toList());
 					createHeader(userPropertyHandlers, curriculum, translator, sheet, workbook);
 					createData(members, rows, userPropertyHandlers, curriculumInfos, sheet);
 				} catch (IOException e) {
@@ -117,5 +124,5 @@ public class XlsMembersExport {
 			dataRow.addCell(c++, members.get(rows.get(r)).toString());
 		}
 	}
-	
+
 }

@@ -25,9 +25,10 @@
 */
 package org.olat.core.util.vfs;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * 
@@ -45,30 +46,56 @@ public class VFSManagerTest {
 		/*
 		 * Make sure we always have a path that starts with a "/".
 		 */
-		String path1 = null;// -> "/"
+		String path1 = null;
 		String path1_expected = "/";
 		assertTrue(VFSManager.sanitizePath(path1).equals(path1_expected));
 		
-		String path2 = "";// -> "/"
+		String path2 = "";
 		String path2_expected = "/";
 		assertTrue(VFSManager.sanitizePath(path2).equals(path2_expected));
 		
-		String path3 = "/";// -> "/"
+		String path3 = "/";
 		String path3_expected = "/";
 		assertTrue(VFSManager.sanitizePath(path3).equals(path3_expected));
 		
-		String path4 = ".";// -> "/."
+		String path4 = ".";
 		String path4_expected = "/.";
 		assertTrue(VFSManager.sanitizePath(path4).equals(path4_expected));
 		
-		String path5 = "./";// -> "/."
-		String path5_expected = "/.";
+		String path5 = "./";
+		String path5_expected = "/."; // (cut trailing slash)
 		assertTrue(VFSManager.sanitizePath(path5).equals(path5_expected));
 		
-		String path6 = "cutTrailingSlash/";// -> "/cutTrailingSlash"
+		String path6 = "cutTrailingSlash/";
 		String path6_expected = "/cutTrailingSlash";
 		assertTrue(VFSManager.sanitizePath(path6).equals(path6_expected));
-	}
 
-	
+		String path7 = "../";
+		try {
+			VFSManager.sanitizePath(path7);
+			fail();
+		} catch (IllegalArgumentException e) {
+		}
+
+		String path8 = "/..";
+		try {
+			VFSManager.sanitizePath(path8);
+			fail();
+		} catch (IllegalArgumentException e) {
+		}
+
+		String path9 = "/../";
+		try {
+			VFSManager.sanitizePath(path9);
+			fail();
+		} catch (IllegalArgumentException e) {
+		}
+
+		String path10 = "/.../";
+		try {
+			VFSManager.sanitizePath(path10);
+		} catch (IllegalArgumentException e) {
+			fail();
+		}
+	}
 }

@@ -71,12 +71,13 @@ public class ImportMemberBySearchController extends StepFormBasicController {
 	@Override
 	protected void formNext(UserRequest ureq) {
 		List<Identity> identities = searchController.getSelectedIdentities();
-		if(identities.isEmpty()) {
-			searchController.doSearch();
-		} else {
+//TODO: LMSUZH-225 workaround to prevent a "doSearch()" over all existing olatuserser when no parameters are defined by the searchform
+//		if(identities.isEmpty()) {
+//			searchController.doSearch();
+//		} else {
 			addToRunContext("keyIdentities", identities);
 			fireEvent(ureq, StepsEvent.ACTIVATE_NEXT);
-		}
+//		}
 	}
 
 	@Override

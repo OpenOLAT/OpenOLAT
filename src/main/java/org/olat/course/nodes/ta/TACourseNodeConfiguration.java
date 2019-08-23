@@ -51,7 +51,7 @@ public class TACourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 
 	@Override
 	public boolean isDeprecated() {
-		return true;
+		return false;
 	}
 
 	@Override

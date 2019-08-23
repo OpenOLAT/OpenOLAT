@@ -40,10 +40,14 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.util.CSSHelper;
+import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
+import org.olat.core.util.vfs.filters.VFSItemFilter;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -63,6 +67,19 @@ public class BCPeekviewController extends BasicController implements Controller 
 	
 	private int count = 0;
 	private final String nodeId;
+	private final Identity identity;
+	
+	private VFSItemFilter getAttachmentExcludeFilter(boolean showHiddenFiles) {
+		ArrayList<String> prefixes = new ArrayList<>();
+		for (String prefix: FolderComponent.ATTACHMENT_EXCLUDE_PREFIXES) {
+			prefixes.add(prefix);
+		}
+		if (!showHiddenFiles) {
+			prefixes.add(".");
+		}
+
+		return new VFSItemExcludePrefixFilter(prefixes.stream().toArray(String[]::new));
+	}
 	private final boolean forceDownload;
 	
 	private final VelocityContainer mainVC;
@@ -83,6 +100,13 @@ public class BCPeekviewController extends BasicController implements Controller 
 	public BCPeekviewController(UserRequest ureq, WindowControl wControl, VFSContainer rootFolder, String nodeId, int itemsToDisplay) {		
 		super(ureq, wControl);
 		this.nodeId = nodeId;
+		this.identity = ureq.getIdentity();
+	
+		// add items, only as many as configured
+		List<VFSLeaf> allLeafs = new ArrayList<VFSLeaf>();
+		addItems(rootFolder, allLeafs);
+		// Sort messages by last modified date
+		Collections.sort(allLeafs, dateSortingComparator);
 		mainVC = createVelocityContainer("peekview");
 		forceDownload = folderModule.isForceDownload();
 		
@@ -166,7 +190,9 @@ public class BCPeekviewController extends BasicController implements Controller 
 	 * @param allLeafs
 	 */
 	private void addItems(VFSContainer container, List<VFSLeaf> allLeafs) {
-		for (VFSItem vfsItem : container.getItems(new VFSSystemItemFilter())) {
+		// exclude files which are also excluded in FolderComponent
+		boolean showHiddenFiles = UserManager.getInstance().getShowHiddenFiles(identity);
+		for (VFSItem vfsItem : container.getItems(getAttachmentExcludeFilter(showHiddenFiles))) {
 			if (vfsItem instanceof VFSLeaf) {
 				allLeafs.add((VFSLeaf)vfsItem);
 			} else if (vfsItem instanceof VFSContainer) {

@@ -272,8 +272,13 @@ public class BusinessGroupFormController extends FormBasicController {
 					flagList.append("</div>");
 					flagList.append("<ul>");
 					for (String flag : flags.split(",")) {
+						String translatedManagedFlag = managedTrans.translate("managed.flags.group." + flag);
+						if (translatedManagedFlag.trim().isEmpty()) {
+							// Empty translation for this managed flag -> do not display anything
+							continue;
+						}
 						flagList.append("<li>");
-						flagList.append(managedTrans.translate("managed.flags.group." + flag));
+						flagList.append(translatedManagedFlag);
 						flagList.append("</li>");
 					}
 					

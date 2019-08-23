@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
 import org.olat.core.configuration.AbstractConfigOnOff;
 
 
@@ -47,7 +48,7 @@ public abstract class AbstractCourseNodeConfiguration extends AbstractConfigOnOf
 		super();
 	}
 	
-	public void setOrder(int order) {
+	public void setOrder(@UnknownInitialization AbstractCourseNodeConfiguration this, int order) {
 		this.order = order;
 	}
 	

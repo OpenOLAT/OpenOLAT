@@ -311,8 +311,8 @@ public class Form {
 				String contentType = part.getContentType();
 				String fileName = getSubmittedFileName(part);
 				if(StringHelper.containsNonWhitespace(fileName)) {
-					File tmpFile = new File(WebappHelper.getTmpDir(), "upload-" + CodeHelper.getGlobalForeverUniqueID());
-					part.write(tmpFile.getAbsolutePath());
+					File tmpFile = new File("/tmp", "upload-" + CodeHelper.getGlobalForeverUniqueID());
+					part.write(tmpFile.getName());
 					
 					// Cleanup IE filenames that are absolute
 					int slashpos = fileName.lastIndexOf('/');
@@ -327,7 +327,11 @@ public class Form {
 					String value = IOUtils.toString(part.getInputStream(), "UTF-8");
 					addRequestParameter(name, value);
 				}
-				part.delete();
+				/*
+				 * The Jetty servlet container "delete()" method really
+				 * deletes the uploaded data.
+				 */
+				//part.delete();
 			}
 		} catch (IOException | ServletException e) {
 			log.error("", e);

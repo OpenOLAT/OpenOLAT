@@ -112,6 +112,7 @@ import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.COCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -153,6 +154,7 @@ public class CourseFactory {
 	private static CacheWrapper<Long,PersistingCourseImpl> loadedCourses;
 	private static ConcurrentMap<Long, ModifyCourseEvent> modifyCourseEvents = new ConcurrentHashMap<>();
 
+	public static final boolean USE_SYSTEM_UNZIP = false;
 	public static final String COURSE_EDITOR_LOCK = "courseEditLock";
   //this is the lock that must be aquired at course editing, copy course, export course, configure course.
 	private static Map<Long,PersistingCourseImpl> courseEditSessionMap = new ConcurrentHashMap<>();
@@ -282,6 +284,11 @@ public class CourseFactory {
 			// o_clusterOK by:ld - load and put in cache in doInSync block to ensure
 			// that no invalidate cache event was missed
 			OLATResource resource = OLATResourceManager.getInstance().findResourceable(resourceableId, "CourseModule");
+			// sometimes there's no CourseModule resourceable found. @TODO find out why
+			if (resource == null) {
+				log.error("No CourseModule found for resourceableId " + resourceableId);
+				throw new AssertException("No CourseModule found for resourceableId.");
+			}
 			PersistingCourseImpl theCourse = new PersistingCourseImpl(resource);
 			theCourse.load();
 
@@ -437,16 +444,21 @@ public class CourseFactory {
 		}
 	}
 
+	public static OLATResourceable copyCourse(OLATResourceable sourceRes, OLATResource targetRes) {
+		return copyCourse(sourceRes, targetRes, true);
+	}
+
 	/**
 	 * Copies a course. More specifically, the run and editor structures and the
 	 * course folder will be copied to create a new course.
 	 *
 	 *
-	 * @param sourceRes
-	 * @param ureq
+	 * @param sourceRes OLATResourceable
+	 * @param targetRes OLATResource
+	 * @param isResetEmailNodes Reset email nodes?
 	 * @return copy of the course.
 	 */
-	public static OLATResourceable copyCourse(OLATResourceable sourceRes, OLATResource targetRes) {
+	public static OLATResourceable copyCourse(OLATResourceable sourceRes, OLATResource targetRes, boolean isResetEmailNodes) {
 		PersistingCourseImpl sourceCourse = (PersistingCourseImpl)loadCourse(sourceRes);
 		PersistingCourseImpl targetCourse = new PersistingCourseImpl(targetRes);
 		LocalFolderImpl fTargetCourseBaseContainer = targetCourse.getCourseBaseContainer();
@@ -482,8 +494,9 @@ public class CourseFactory {
 			}
 
 			// copy task folder directories
-			File fSourceTaskfoldernodesFolder = new File(FolderConfig.getCanonicalRoot()
-					+ TACourseNode.getTaskFoldersPathRelToFolderRoot(sourceCourse.getCourseEnvironment()));
+			File fSourceTaskfoldernodesFolder = new File(
+					FolderConfig.getCanonicalRoot() + TACourseNode.getTaskFoldersPathRelToFolderRoot(sourceCourse.getCourseEnvironment())
+			);
 			if (fSourceTaskfoldernodesFolder.exists()) FileUtils.copyDirToDir(fSourceTaskfoldernodesFolder, fTargetCourseBasePath, false, "copy task folder directories");
 
 			// update references
@@ -506,8 +519,43 @@ public class CourseFactory {
 					qm.setCustomQuotaKB(targetQuota);
 				}
 			}
+
+			// Reset e-mail nodes
+			if (isResetEmailNodes) {
+				// Run structure
+				CourseNode runStructureRootNode = targetCourse.getRunStructure().getRootNode();
+				resetEmailNodesForRunStructure(runStructureRootNode);
+				targetCourse.saveRunStructure();
+
+				// Editor tree model
+				CourseEditorTreeNode editorTreeModelRootNode = (CourseEditorTreeNode) targetCourse.getEditorTreeModel().getRootNode();
+				resetEmailNodesForEditorTreeModel(editorTreeModelRootNode);
+				targetCourse.saveEditorTreeModel();
+			}
 		}
 		return targetRes;
+	}
+
+	private static void resetEmailNodesForRunStructure(CourseNode rootNode) {
+		for (int i = 0; i < rootNode.getChildCount(); i++) {
+			CourseNode currentNode = (CourseNode) rootNode.getChildAt(i);
+			if (currentNode.getChildCount() > 0) {
+				resetEmailNodesForRunStructure(currentNode);
+			} else if (currentNode instanceof COCourseNode) {
+				currentNode.updateModuleConfigDefaults(true);
+			}
+		}
+	}
+
+	private static void resetEmailNodesForEditorTreeModel(CourseEditorTreeNode rootNode) {
+		for (int i = 0; i < rootNode.getChildCount(); i++) {
+			CourseEditorTreeNode currentNode = (CourseEditorTreeNode) rootNode.getChildAt(i);
+			if (currentNode.getChildCount() > 0) {
+				resetEmailNodesForEditorTreeModel(currentNode);
+			} else if (currentNode.getCourseNode() instanceof COCourseNode) {
+				currentNode.getCourseNode().updateModuleConfigDefaults(true);
+			}
+		}
 	}
 
 	/**
@@ -524,15 +572,21 @@ public class CourseFactory {
 		File fExportDir = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
 		fExportDir.mkdirs();
 		log.info("Export folder: " + fExportDir);
-		synchronized (sourceCourse) { //o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
-			OLATResource courseResource = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-			sourceCourse.exportToFilesystem(courseResource, fExportDir, runtimeDatas);
-			Set<String> fileSet = new HashSet<>();
+		try {
+			synchronized (sourceCourse) { //o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
+				OLATResource courseResource = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+				sourceCourse.exportToFilesystem(courseResource, fExportDir, runtimeDatas, backwardsCompatible);
+			}
+			Set<String> fileSet = new HashSet<String>();
 			String[] files = fExportDir.list();
 			for (int i = 0; i < files.length; i++) {
 				fileSet.add(files[i]);
 			}
 			ZipUtil.zip(fileSet, fExportDir, fTargetZIP, false);
+		} catch (Exception e) {
+			log.warn("exportCourseToZIP failed: ", e);
+			throw e; // throw to let the GUI notify the user about the exception
+		} finally {
 			log.info("Delete export folder: " + fExportDir);
 			FileUtils.deleteDirsAndFiles(fExportDir, true, true);
 		}
@@ -578,9 +632,21 @@ public class CourseFactory {
 				log.error("rollback importCourseFromZip",ae);
 			}
 		}
-		// cleanup if not successfull
+		// cleanup if not successful
 		FileUtils.deleteDirsAndFiles(fCanonicalCourseBasePath, true, true);
 		return null;
+	}
+
+	private static boolean unzipCourse(File zipFile, File destFolder)
+	{
+		try {
+			Runtime r = Runtime.getRuntime();
+			Process p = r.exec("unzip " + zipFile.getPath() + " -d " + destFolder.getPath());
+			int result = p.waitFor();
+			return (result == 0 || ZipUtil.unzip(zipFile, destFolder)); // fallback to OLAT unzipping
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	/**

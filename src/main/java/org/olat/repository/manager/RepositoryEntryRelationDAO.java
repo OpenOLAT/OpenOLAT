@@ -198,10 +198,28 @@ public class RepositoryEntryRelationDAO {
 		List<Long> first = query.getResultList();
 		return first != null && !first.isEmpty() && first.get(0) != null && first.get(0).longValue() >= 0l;
 	}
-	
+
+	boolean hasRole(Identity identity, Group group, String role) {
+		@SuppressWarnings("JpaQlInspection")  // Required to suppress warnings in m.identity.key
+				TypedQuery<Long> query = dbInstance.getCurrentEntityManager().createQuery(
+				"select m.key from bgroupmember m where " +
+						"m.group.key = :groupKey " +
+						"and m.identity.key = :identityKey " +
+						"and m.role = :role", Long.class);
+
+		List<Long> memberIdsFound = query.setParameter("groupKey", group.getKey())
+				.setParameter("identityKey", identity.getKey())
+				.setParameter("role", role)
+				.getResultList();
+
+		return !memberIdsFound.isEmpty();
+	}
+
 	public void addRole(Identity identity, RepositoryEntryRef re, String role) {
 		Group group = getDefaultGroup(re);
-		groupDao.addMembershipOneWay(group, identity, role);
+		if (!hasRole(identity, group, role)) {
+			groupDao.addMembershipOneWay(group, identity, role);
+		}
 	}
 	
 	public int removeRole(IdentityRef identity, RepositoryEntryRef re, String role) {
@@ -545,17 +563,28 @@ public class RepositoryEntryRelationDAO {
 		}
 		return true;
 	}
-	
+
 	public RepositoryEntryToGroupRelation createRelation(Group group, RepositoryEntry re) {
+		// Check if the relation to be added already exists. If so, return existing one.
+		// (If we tried to add a second (identical) relation, we would get a constraint violation.)
+		EntityManager em = dbInstance.getCurrentEntityManager();
+		List<RepositoryEntryToGroupRelation> relationsFound = em.createNamedQuery("relationByRepositoryEntryAndGroup", RepositoryEntryToGroupRelation.class)
+				.setParameter("repoKey", re.getKey())
+				.setParameter("groupKey", group.getKey())
+				.getResultList();
+		if (!relationsFound.isEmpty()) {
+			return relationsFound.get(0);
+		}
+
 		RepositoryEntryToGroupRelation rel = new RepositoryEntryToGroupRelation();
 		rel.setCreationDate(new Date());
 		rel.setDefaultGroup(false);
 		rel.setGroup(group);
 		rel.setEntry(re);
-		dbInstance.getCurrentEntityManager().persist(rel);
+		em.persist(rel);
 		return rel;
 	}
-	
+
 	public int removeRelation(Group group, RepositoryEntryRef re) {
 		EntityManager em = dbInstance.getCurrentEntityManager();
 		List<RepositoryEntryToGroupRelation> rels = em.createNamedQuery("relationByRepositoryEntryAndGroup", RepositoryEntryToGroupRelation.class)

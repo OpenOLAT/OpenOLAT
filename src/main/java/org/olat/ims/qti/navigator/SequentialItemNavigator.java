@@ -42,15 +42,7 @@ import org.olat.ims.qti.process.AssessmentInstance;
  * 
  * @author Felix Jost
  */
-public class SequentialItemNavigator extends DefaultNavigator implements Navigator, Serializable {
-
-	/**
-	 * 
-	 *
-	 */
-	public void Navigator() {
-	//
-	}
+public class SequentialItemNavigator extends DefaultNavigator {
 
 	/**
 	 * @param assessmentInstance
@@ -85,11 +77,12 @@ public class SequentialItemNavigator extends DefaultNavigator implements Navigat
 	/**
 	 * @see org.olat.ims.qti.navigator.Navigator#submitItems(org.olat.ims.qti.container.ItemsInput)
 	 */
-	public void submitItems(ItemsInput curitsinp) {
+	public void submitItems(final ItemsInput curitsinp) {
 		clearInfo();
-		AssessmentContext ac = getAssessmentContext();
-		SectionContext sc = ac.getCurrentSectionContext();
-		int st = submitOneItem(curitsinp);
+		final AssessmentContext ac = getAssessmentContext();
+		final SectionContext sc = ac.getCurrentSectionContext();
+		final int st = submitOneItem(curitsinp);
+		boolean gotoNextItem = true;
 		if (st != QTIConstants.ITEM_SUBMITTED) {
 			// time expired or too many attempts-> display a message above the next
 			// item or assessment-finished-text
@@ -98,23 +91,46 @@ public class SequentialItemNavigator extends DefaultNavigator implements Navigat
 			} else if (st == QTIConstants.ERROR_ASSESSMENT_OUTOFTIME) {
 				getInfo().setError(st);
 				getInfo().setRenderItems(false);
+				gotoNextItem = false;
 			} else if (st == QTIConstants.ERROR_SUBMITTEDITEM_OUTOFTIME) {
 				getInfo().setError(st);
 				getInfo().setRenderItems(true); // still continue to next item
 			}
-		} else { // ok, display feedback
-			ItemContext itc = getAssessmentContext().getCurrentSectionContext().getCurrentItemContext();
-			Output outp = itc.getOutput();
+		} else { // submitting of item was successful
+			final ItemContext itc = sc.getCurrentItemContext();
+			final Output outp = itc.getOutput();
 			if (outp != null) getInfo().setCurrentOutput(outp);
-			// check on item feedback
-			if (itc.isFeedback()) { // feedback allowed
-				getInfo().setFeedback(itc.getOutput().hasItem_Responses());
-			}
 			getInfo().setMessage(QTIConstants.MESSAGE_ITEM_SUBMITTED);
 			getInfo().setRenderItems(true);
+			// display feedback for CURRENT item so don't proceed to next item
+			if (itc.isFeedback()) {
+				getInfo().setFeedback(itc.getOutput().hasItem_Responses());
+				gotoNextItem = false;
+			}
 		}
 
 		// find next item
+		if (gotoNextItem) {
+			goToNextItem();
+		}
+		getAssessmentInstance().persist();
+	}
+
+	public void goToNextItem() {
+		// see comment for method call in class IQDisplayController
+		if (!hasNextItem()) {
+			submitAssessment();
+			// we want to see feedback for last item as well!
+			getInfo().setRenderItems(true);
+			return;
+		}
+
+		clearInfo();
+		getInfo().setRenderItems(true);
+		getInfo().setMessage(QTIConstants.MESSAGE_NONE);
+
+		final AssessmentContext ac = getAssessmentContext();
+		final SectionContext sc = ac.getCurrentSectionContext();
 		int itpos = sc.getCurrentItemContextPos();
 		if (itpos < sc.getItemContextCount() - 1 && sc.isOpen()) {
 			//there are still further items in the current section
@@ -134,8 +150,9 @@ public class SequentialItemNavigator extends DefaultNavigator implements Navigat
 				getInfo().setError(QTIConstants.ERROR_ASSESSMENT_OUTOFTIME);
 				getInfo().setRenderItems(false);
 				submitAssessment();
-			} else if (secPos == secPosMax) submitAssessment();
-			else {
+			} else if (secPos == secPosMax) {
+				submitAssessment();
+			} else {
 				while (secPos < secPosMax) { // there are still further section(s)
 					secPos++;
 					if (ac.getSectionContext(secPos).getItemContextCount() != 0) break;
@@ -145,16 +162,43 @@ public class SequentialItemNavigator extends DefaultNavigator implements Navigat
 					// reached last section but section is empty -> finish assessment
 					submitAssessment();
 				} else {
+					// new section starts
 					ac.setCurrentSectionContextPos(secPos);
 					ac.getCurrentSectionContext().setCurrentItemContextPos(0);
 					ac.getCurrentSectionContext().start();
 					ac.getCurrentSectionContext().getCurrentItemContext().start();
-										
+
+					getInfo().setMessage(QTIConstants.MESSAGE_SECTION_INFODEMANDED);
 					getInfo().setRenderItems(false);//since new section starts, show next the section title and description
 				}
 			}
 		}
-		getAssessmentInstance().persist();
+	}
+
+	private boolean hasNextItem() {
+		final AssessmentContext ac = getAssessmentContext();
+		if (!ac.isOpen()) {
+			return false;
+		}
+
+		// another item in current section?
+		final SectionContext sc = ac.getCurrentSectionContext();
+		int itpos = sc.getCurrentItemContextPos();
+		if (itpos < sc.getItemContextCount() - 1 && sc.isOpen()) {
+			return true;
+		}
+
+		// another section with items?
+		int secPos = ac.getCurrentSectionContextPos();
+		int secPosMax = ac.getSectionContextCount() - 1;
+		while (secPos < secPosMax) { // there are still further section(s)
+			secPos++;
+			if (ac.getSectionContext(secPos).getItemContextCount() > 0 && ac.getSectionContext(secPos).isOpen()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

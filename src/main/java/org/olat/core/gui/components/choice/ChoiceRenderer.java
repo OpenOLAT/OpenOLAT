@@ -44,8 +44,7 @@ import org.olat.core.util.StringHelper;
 public class ChoiceRenderer extends DefaultComponentRenderer {
 
 	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
+	 * @see org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
 	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator,
 	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
 	 */
@@ -74,6 +73,9 @@ public class ChoiceRenderer extends DefaultComponentRenderer {
 		target.append("<table class=\"o_choice\">");
 		int rows = model.getRowCount();
 		for (int i = 0; i < rows; i++) {
+			if (model.isForExportOnly(i)) {
+				continue;
+			}
 			Boolean val = model.isEnabled(i);
 			boolean selected = val == null ? false : val.booleanValue();
 			boolean disabled = model.isDisabled(i);

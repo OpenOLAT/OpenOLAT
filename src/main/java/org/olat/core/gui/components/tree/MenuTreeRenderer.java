@@ -456,8 +456,7 @@ public class MenuTreeRenderer extends DefaultComponentRenderer {
 			}
 			if(drop) {
 				el.setDrop(true);
-				StringOutput endUrl = new StringOutput(64);
-				ubu.buildURI(endUrl, new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_DROP, node.getIdent() }, flags.isIframePostEnabled() ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
+				StringOutput endUrl = ubu.buildUriWithoutUrlEncoding(new String[] { COMMAND_ID, NODE_IDENT }, new String[] { COMMAND_TREENODE_DROP, node.getIdent() }, flags.isIframePostEnabled() ? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL);
 				el.setEndUrl(endUrl.toString());
 			}
 			target.add(el);

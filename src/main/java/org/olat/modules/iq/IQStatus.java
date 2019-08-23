@@ -51,6 +51,7 @@ public class IQStatus {
 	private long assessStart, assessMaxdur;
 	private long itemStart, itemMaxdur;
 	private int itemAttemptsLeft;
+	private int numberOfNotRatedAnswers;
 	private Info info;
 	private boolean isPreview;
 	private boolean isOpen;
@@ -84,6 +85,7 @@ public class IQStatus {
 		if (!isSurvey) {
 			score = ai.getAssessmentContext().getScore();
 			maxScore = ai.getAssessmentContext().getMaxScore();
+			numberOfNotRatedAnswers = ai.getAssessmentContext().getNumberOfItemsWithNanValueScore();
 		}
 
 		assessStart = ai.getAssessmentContext().getTimeOfStart();
@@ -123,6 +125,13 @@ public class IQStatus {
 	 */
 	public String getScore() {
 		return StringHelper.formatFloat(score, 2);
+	}
+
+	/**
+	 * @return The number of answers that could not be rated (e.g. questions of type essay)
+	 */
+	public int getNumberOfNotRatedAnswers() {
+		return numberOfNotRatedAnswers;
 	}
 
 	/**

@@ -43,6 +43,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.Identity;
@@ -59,6 +60,8 @@ public class UserAuthenticationsEditorController extends BasicController{
 	private AuthenticationsTableDataModel authTableModel;
 	private DialogBoxController confirmationDialog;
 	private Identity changeableIdentity;
+	private CloseableModalController cmc;
+	private UserAuthenticationsMoveController moveAuthenticationCtrl;
 	
 	@Autowired
 	private UserManager userManager;
@@ -82,9 +85,13 @@ public class UserAuthenticationsEditorController extends BasicController{
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.auth.login", 1, null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new DefaultColumnDescriptor("table.auth.credential", 2, null, ureq.getLocale()));
 		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("delete", "table.header.action", translate("delete")));
+		tableCtr.addColumnDescriptor(new StaticColumnDescriptor("move", "action.move", translate("action.move")));
 		authTableModel = new AuthenticationsTableDataModel(securityManager.getAuthentications(changeableIdentity));
 		tableCtr.setTableDataModel(authTableModel);
 		listenTo(tableCtr);
+
+		moveAuthenticationCtrl = new UserAuthenticationsMoveController(ureq, getWindowControl(), changeableIdentity);
+		listenTo(moveAuthenticationCtrl);
 
 		putInitialPanel(tableCtr.getInitialComponent());
 	}
@@ -119,8 +126,15 @@ public class UserAuthenticationsEditorController extends BasicController{
 				authTableModel.setObjects(securityManager.getAuthentications(changeableIdentity));
 				tableCtr.modelChanged();
 			}
-		}
-		 else if (source ==  tableCtr) {
+		} else if (source == moveAuthenticationCtrl) {
+			if (event == Event.DONE_EVENT) {
+				authTableModel.setObjects(securityManager.getAuthentications(changeableIdentity));
+				tableCtr.modelChanged();
+				cmc.deactivate();
+			} else if (event == Event.CANCELLED_EVENT) {
+				cmc.deactivate();
+			}
+		} else if (source == tableCtr) {
 			if (event.getCommand().equals(Table.COMMANDLINK_ROWACTION_CLICKED)) {
 				TableEvent te = (TableEvent) event;
 				String actionid = te.getActionId();
@@ -131,6 +145,13 @@ public class UserAuthenticationsEditorController extends BasicController{
 					String msg = translate("authedit.delete.confirm", new String[] { auth.getProvider(), fullname });
 					confirmationDialog = activateYesNoDialog(ureq, null, msg, confirmationDialog);
 					confirmationDialog.setUserObject(auth);
+				} else if (actionid.equals("move")) {
+					int rowid = te.getRowId();
+					Authentication auth = authTableModel.getObject(rowid);
+					moveAuthenticationCtrl.setAuth(auth);
+					cmc = new CloseableModalController(getWindowControl(), translate("close"), moveAuthenticationCtrl.getInitialComponent(), true, translate("authedit.move.title"), true);
+					listenTo(cmc);
+					cmc.activate();
 				}
 			}
 		}
@@ -139,7 +160,7 @@ public class UserAuthenticationsEditorController extends BasicController{
 
 	/**
 	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
+	 * @see org.olat.core.gui.control.DefaultController#doDispose()
 	 */
 	@Override
 	protected void doDispose() {

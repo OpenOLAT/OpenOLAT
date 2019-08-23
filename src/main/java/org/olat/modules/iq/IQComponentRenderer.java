@@ -82,14 +82,12 @@ public class IQComponentRenderer implements ComponentRenderer {
 		StringOutput sb = new StringOutput();
 		Info info = comp.getAssessmentInstance().getNavigator().getInfo();
 		AssessmentInstance ai = comp.getAssessmentInstance();
-		int status = info.getStatus();
-		int message = info.getMessage();
-		boolean renderItems = info.isRenderItems();
 		AssessmentContext act = ai.getAssessmentContext();
+		boolean displaySingleItemFeedback = false;
 
 		// first treat messages and errors
 		if (info.containsMessage()) {
-			switch (message) {
+			switch (info.getMessage()) {
 				case QTIConstants.MESSAGE_ITEM_SUBMITTED :					
 					//item hints?
 					if (info.isHint()) {
@@ -114,7 +112,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 						displayFeedback(sb, el_solution, ai, translator.getLocale());
 					}
 					// item fb?
-					renderFeedback(info, sb, ai, translator);
+					displaySingleItemFeedback = renderFeedback(comp, info, sb, ai, translator);
 					
 					if(!comp.getMenuDisplayConf().isEnabledMenu() && comp.getMenuDisplayConf().isItemPageSequence() && !info.isRenderItems()) {
 						//if item was submitted and sequence is pageSequence and menu not enabled and isRenderItems returns false show section info
@@ -132,7 +130,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 						if (el_feedback != null) {
 							displayFeedback(sb, el_feedback, ai, translator.getLocale());
 						} else {
-							renderFeedback(info, sb, ai, translator);
+							displaySingleItemFeedback = renderFeedback(comp, info, sb, ai, translator);
 						}
 					}
 					if(!comp.getMenuDisplayConf().isEnabledMenu() && !comp.getMenuDisplayConf().isItemPageSequence()) {
@@ -162,7 +160,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 			}
 		}
 
-		if (renderItems) {
+		if (info.isRenderItems()) {
 			boolean displayForm = true;
 			// First check wether we need to render a form.
 			// No form is needed if the current item has a matapplet object to be displayed.
@@ -182,8 +180,6 @@ public class IQComponentRenderer implements ComponentRenderer {
 				displayForm = sct.getItemsOpenCount() > 0;
 			}
 			
-			
-			
 			sb.append("<form action=\"");
 			ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "sitse" });
 			
@@ -195,7 +191,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 			
 			if (!ai.isSectionPage()) {
 				if (itc != null) {
-					displayItem(sb, renderer, ubu, itc, ai);
+					displayItem(sb, renderer, ubu, itc, ai, displaySingleItemFeedback);
 					if (memo) {
 						memoId = itc.getIdent();
 						memoTx = ai.getMemo(memoId);
@@ -203,7 +199,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 				}
 			} else {
 				if (sct != null && sct.getItemContextCount() != 0) {
-					displayItems(sb, renderer, ubu, sct, ai);
+					displayItems(sb, renderer, ubu, sct, ai, displaySingleItemFeedback);
 					if (memo) {
 						memoId = sct.getIdent();
 						memoTx = ai.getMemo(memoId);
@@ -222,15 +218,29 @@ public class IQComponentRenderer implements ComponentRenderer {
 			sb.append("<div class=\"row\">");
 			sb.append("<div class='o_button_group'>");
 			
-			sb.append("<input class=\"btn btn-primary\" type=\"submit\" name=\"olat_fosm\" value=\"");
-			if (ai.isSectionPage())
-				sb.appendHtmlEscaped(translator.translate("submitMultiAnswers"));
-			else
-				sb.appendHtmlEscaped(translator.translate("submitSingleAnswer"));
-			sb.append("\"");
-			if (!displayForm) sb.append(" style=\"display: none;\"");
-			sb.append(" />")
-			  .append("</div><div class='col-md-10'>");
+			if (!displaySingleItemFeedback) {
+				// render submit button
+				sb.append("<input class=\"btn btn-primary\" type=\"submit\" name=\"olat_fosm\" value=\"");
+				if (ai.isSectionPage()) {
+					sb.append(StringEscapeUtils.escapeHtml(translator.translate("submitMultiAnswers")));
+				} else {
+					sb.append(StringEscapeUtils.escapeHtml(translator.translate("submitSingleAnswer")));
+				}
+				sb.append("\"");
+				if (!displayForm) {
+					sb.append(" style=\"display: none;\"");
+				}
+				sb.append(" />").append("</div><div class='col-md-10'>");
+			} else {
+				// render "next" button to proceed with subsequent item
+				sb.append("<a class=\"btn btn-primary\" onclick=\"return o2cl()\" href=\"");
+				ubu.buildURI(sb, new String[] { VelocityContainer.COMMAND_ID }, new String[] { "gitnext" });
+				final String title = translator.translate("next");
+				sb.append("\" title=\"" + StringEscapeUtils.escapeHtml(title) + "\">");
+				sb.append("<span>").append(title).append("</title>");
+				sb.append("</a>");
+			}
+			sb.append("</div><div class='col-md-10'>");
 
 			if (memo && memoId != null) {
 				sb.append("<div class=\"o_qti_item_note_box\">");
@@ -252,14 +262,14 @@ public class IQComponentRenderer implements ComponentRenderer {
 			  .append("</form>");
 		}
 		
-		if (status == QTIConstants.ASSESSMENT_FINISHED) {
+		if (info.getStatus() == QTIConstants.ASSESSMENT_FINISHED) {
 			if (info.isFeedback()) {
 				Output outp = info.getCurrentOutput();
 				GenericQTIElement el_feedback = outp.getEl_response();
 				if (el_feedback != null) {
 					displayFeedback(sb, el_feedback, ai, null);
 				} else {
-					renderFeedback(info, sb, ai, translator);
+					displaySingleItemFeedback = renderFeedback(comp, info, sb, ai, translator);
 					
 					//add the next button
 					sb.append("<a class=\"btn btn-primary\" onclick=\"return o2cl()\" href=\"");
@@ -273,26 +283,40 @@ public class IQComponentRenderer implements ComponentRenderer {
 		}
 		return sb;
 	}
-	
-	protected void renderFeedback(Info info, StringOutput sb, AssessmentInstance ai, Translator translator) {
-		if (info.isFeedback()) {
-			if (info.getCurrentOutput().hasItem_Responses()) {
-				int fbcount = info.getCurrentOutput().getFeedbackCount();
-				int i=0;
-				while (i < fbcount) {
-					Element el_anschosen = info.getCurrentOutput().getItemAnswerChosen(i);
-					if (el_anschosen != null) {
-						sb.append("<br /><br /><i>");
-						displayFeedback(sb, new Material(el_anschosen), ai, translator.getLocale());
-						sb.append("</i>");
-					}
-					Element el_resp= info.getCurrentOutput().getItemFeedback(i);
-					displayFeedback(sb, new ItemFeedback(el_resp), ai, translator.getLocale());
-					i++;
+
+	/**
+	 *
+	 * @param comp
+	 * @param info
+	 * @param sb
+	 * @param ai
+     * @param translator
+	 * @return displaySingleItemFeedback
+     */
+	protected boolean renderFeedback(IQComponent comp, Info info, StringOutput sb, AssessmentInstance ai, Translator translator) {
+		if (info.isFeedback() && info.getCurrentOutput().hasItem_Responses()) {
+			final int fbcount = info.getCurrentOutput().getFeedbackCount();
+			int i=0;
+			while (i < fbcount) {
+				Element elemAnswerChosen = info.getCurrentOutput().getItemAnswerChosen(i);
+				if (elemAnswerChosen != null) {
+					sb.append("<br /><br /><i>");
+					displayFeedback(sb, new Material(elemAnswerChosen), ai, translator.getLocale());
+					sb.append("</i>");
 				}
+				Element elemFeedback = info.getCurrentOutput().getItemFeedback(i);
+				displayFeedback(sb, new ItemFeedback(elemFeedback), ai, translator.getLocale());
+				i++;
+			}
+
+			// if Menu not visible or if visible but not selectable and itemPage sequence (one question per page)
+			// display feedback for CURRENT item and render "next" button to proceed with subsequent item
+			final IQMenuDisplayConf menuDisplayConfig = comp.getMenuDisplayConf();
+			if (!menuDisplayConfig.isEnabledMenu() && menuDisplayConfig.isItemPageSequence()) {
+				return true;
 			}
 		}
-		
+		return false;
 	}
 
 	protected static String getFormattedLimit(long millis) {
@@ -517,12 +541,12 @@ public class IQComponentRenderer implements ComponentRenderer {
 		return sb;
 	}
 
-	private void displayItems(StringOutput sb, Renderer renderer, URLBuilder ubu, SectionContext sc, AssessmentInstance ai) {
+	private void displayItems(StringOutput sb, Renderer renderer, URLBuilder ubu, SectionContext sc, AssessmentInstance ai, boolean readOnly) {
 		// display the whole current section on one page
 		List<ItemContext> items = sc.getItemContextsToRender();
 		for (ItemContext itc:items) {
 			if (itc.isOpen()) {
-			  displayItem(sb, renderer, ubu, itc, ai);
+			  displayItem(sb, renderer, ubu, itc, ai, readOnly);
 			} else {
 				displayItemClosed(sb,renderer);
 			}
@@ -541,7 +565,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 		sb.append(buffer);
 	}
 	
-	private void displayItem(StringOutput sb, Renderer renderer, URLBuilder ubu, ItemContext itc, AssessmentInstance ai) {
+	private void displayItem(StringOutput sb, Renderer renderer, URLBuilder ubu, ItemContext itc, AssessmentInstance ai, boolean readOnly) {
 		StringBuilder buffer = new StringBuilder(1000);
 		Resolver resolver = ai.getResolver();
 		RenderInstructions ri = new RenderInstructions();
@@ -560,6 +584,7 @@ public class IQComponentRenderer implements ComponentRenderer {
 				ri.put(RenderInstructions.KEY_RENDER_AUTOENUM_LIST, k);
 			}
 		}
+		ri.put(RenderInstructions.KEY_RENDER_MODE, readOnly ? RenderInstructions.RENDER_MODE_STATIC : RenderInstructions.RENDER_MODE_FORM);
 		itc.getQtiItem().render(buffer, ri);
 		sb.append(buffer);
 	}

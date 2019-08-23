@@ -407,7 +407,7 @@ class ENEditGroupAreaFormController extends FormBasicController implements Gener
 		}else if (source == chooseGroupsLink) {
 			removeAsListenerAndDispose(groupChooseC);
 			groupChooseC = new GroupSelectionController(ureq, getWindowControl(), true,
-					cev.getCourseGroupManager(), getKeys(easyGroupList));
+					cev.getCourseGroupManager(), getKeys(easyGroupList), true);
 			listenTo(groupChooseC);
 
 			removeAsListenerAndDispose(cmc);

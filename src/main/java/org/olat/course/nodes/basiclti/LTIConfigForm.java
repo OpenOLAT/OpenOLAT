@@ -139,7 +139,7 @@ public class LTIConfigForm extends FormBasicController {
 	};
 	private String[] customTypeValues;
 	
-	private String[] heightKeys = new String[]{ BasicLTICourseNode.CONFIG_HEIGHT_AUTO, "460", "480", 
+	private String[] heightKeys = new String[]{ BasicLTICourseNode.CONFIG_HEIGHT_AUTO, "460", "480",
 			"500", "520", "540", "560", "580",
 			"600", "620", "640", "660", "680",
 			"700", "720", "730", "760", "780",
@@ -148,7 +148,7 @@ public class LTIConfigForm extends FormBasicController {
 			"1000", "1020", "1040", "1060", "1080",
 			"1100", "1120", "1140", "1160", "1180",
 			"1200", "1220", "1240", "1260", "1280",
-			"1300", "1320", "1340", "1360", "1380"
+			"1300", "1320", "1340", "1360", "1380", ""
 	};
 	private String[] heightValues;
 	private String[] userPropKeys;
@@ -187,7 +187,7 @@ public class LTIConfigForm extends FormBasicController {
 				translate("display.config.window.window")
 		};
 		
-		heightValues = new String[]{ translate("height.auto"), "460px", "480px", 
+		heightValues = new String[]{ translate("height.auto"), "460px", "480px",
 				"500px", "520px", "540px", "560px", "580px",
 				"600px", "620px", "640px", "660px", "680px",
 				"700px", "720px", "730px", "760px", "780px",
@@ -196,7 +196,7 @@ public class LTIConfigForm extends FormBasicController {
 				"1000px", "1020px", "1040px", "1060px", "1080px",
 				"1100px", "1120px", "1140px", "1160px", "1180px",
 				"1200px", "1220px", "1240px", "1260px", "1280px",
-				"1300px", "1320px", "1340px", "1360px", "1380px"
+				"1300px", "1320px", "1340px", "1360px", "1380px", translate("empty")
 		};
 		
 		customTypeValues = new String[]{

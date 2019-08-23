@@ -91,7 +91,7 @@ public class ProjectController extends BasicController {
 		projectFolderController = new ProjectFolderController( ureq, wControl, userCourseEnv, courseNode, false, project);
 		myTabbedPane.addTab(translate("tab.project.folder"), projectFolderController.getInitialComponent());
 		if ( projectGroupManager.isProjectManagerOrAdministrator(ureq, userCourseEnv.getCourseEnvironment(), project) ) {
-			projectGroupController = new ProjectGroupController(ureq, wControl, userCourseEnv, project, projectBrokerModuleConfiguration);
+			projectGroupController = new ProjectGroupController(ureq, wControl, userCourseEnv, courseNode, project, projectBrokerModuleConfiguration);
 			myTabbedPane.addTab(translate("tab.project.members"), projectGroupController.getInitialComponent());
 		}
 		contentVC.put("projectTabbedPane", myTabbedPane);

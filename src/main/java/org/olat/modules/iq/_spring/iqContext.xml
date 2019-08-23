@@ -4,10 +4,7 @@
 	xsi:schemaLocation="
   http://www.springframework.org/schema/beans 
   http://www.springframework.org/schema/beans/spring-beans.xsd">
-  
 
-	<bean id="iQManager" class="org.olat.modules.iq.IQManager">
-		<property name="dbInstance" ref="database" />
-		<property name="userManager" ref="userManager" />
-	</bean>
+	<bean id="iQManager" class="org.olat.modules.iq.IQManager"/>
+
 </beans>

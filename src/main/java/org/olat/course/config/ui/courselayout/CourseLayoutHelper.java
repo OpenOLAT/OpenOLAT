@@ -168,11 +168,13 @@ public class CourseLayoutHelper {
 
 		// 1. add the system-defaults
 		String staticAbsPath = WebappHelper.getContextRealPath("/static");
-		File themesFile = new File(staticAbsPath);
-		VFSContainer cThemeCont = new LocalFolderImpl(themesFile);
-		cThemeCont = (VFSContainer) cThemeCont.resolve("/coursethemes");
-		if (cThemeCont != null) {
-			courseThemes = cThemeCont.getItems(themeNamesFilter);
+		if (staticAbsPath != null) {
+			File themesFile = new File(staticAbsPath);
+			VFSContainer cThemeCont = new LocalFolderImpl(themesFile);
+			cThemeCont = (VFSContainer) cThemeCont.resolve("/coursethemes");
+			if (cThemeCont != null) {
+				courseThemes = cThemeCont.getItems(themeNamesFilter);
+			}
 		}
 
 		// 2. now add the additional Templates from the current Theme
@@ -204,8 +206,11 @@ public class CourseLayoutHelper {
 		}
 		// fallback is to use the standards themes directory in the web app
 		if (themeDir == null || !themeDir.exists() || !themeDir.isDirectory()) {
-			File themesDir = new File(WebappHelper.getContextRealPath("/static/themes/"));
-			themeDir = new File(themesDir, CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer());
+			String staticAbsPath = WebappHelper.getContextRealPath("/static/themes/");
+			if (staticAbsPath != null) {
+				File themesDir = new File(staticAbsPath);
+				themeDir = new File(themesDir, CoreSpringFactory.getImpl(GUISettings.class).getGuiThemeIdentifyer());
+			}
 		}
 		// resolve now
 		if (themeDir != null && themeDir.exists() && themeDir.isDirectory()) {

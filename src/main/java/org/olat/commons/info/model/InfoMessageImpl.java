@@ -20,6 +20,7 @@
 
 package org.olat.commons.info.model;
 
+import java.io.File;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -32,6 +33,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parameter;
@@ -96,7 +98,10 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	@ManyToOne(targetEntity=IdentityImpl.class, fetch=FetchType.LAZY, optional=true)
 	@JoinColumn(name="fk_modifier_id", nullable=true, insertable=true, updatable=true)
 	private Identity modifier;
-	
+
+	@Transient
+	private File[] attachments = null;
+
 	public InfoMessageImpl() {
 		//
 	}
@@ -154,6 +159,25 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	@Override
 	public void setAttachmentPath(String attachmentPath) {
 		this.attachmentPath = attachmentPath;
+	}
+/*
+	@Override
+	public File[] getAttachments() {
+		if (attachments == null) { // lazy loading
+			List<File> files = new ArrayList<>();
+			for (Object fileItem : getMediaFolder().getItems().toArray()) {
+				if (fileItem instanceof VFSItem) {
+					files.add(((OlatRootFileImpl) fileItem).getBasefile());
+				}
+			}
+			attachments = files.toArray(new File[0]);
+		}
+		return attachments;
+	}
+*/
+	@Override
+	public void setAttachments(File[] attachments) {
+		this.attachments = attachments;
 	}
 
 	@Override
@@ -248,4 +272,5 @@ public class InfoMessageImpl implements InfoMessage, CreateInfo, Persistable {
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);
 	}
+
 }

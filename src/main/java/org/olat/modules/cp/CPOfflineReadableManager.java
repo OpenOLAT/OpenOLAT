@@ -27,6 +27,7 @@ package org.olat.modules.cp;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -41,6 +42,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.runtime.RuntimeConstants;
+import org.olat.core.OlatServletResource;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.render.velocity.VelocityModule;
@@ -54,6 +56,7 @@ import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.fileresource.FileResourceManager;
+import org.springframework.core.io.Resource;
 
 /**
  * Description: <br>
@@ -118,8 +121,7 @@ public class CPOfflineReadableManager {
 	public void makeCPOfflineReadable(File unzippedDir, File targetZip) {
 		try {
 			writeOfflineCPStartHTMLFile(unzippedDir);
-			File cpOfflineMat = new File(WebappHelper.getContextRealPath("/static/" + DIRNAME_CPOFFLINEMENUMAT));
-			zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
+			zipOfflineReadableCP(unzippedDir, targetZip);
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -133,14 +135,9 @@ public class CPOfflineReadableManager {
 			IOUtils.write(startPage, exportStream, "UTF-8");
 			exportStream.closeEntry();
 			
-			File cpOfflineMat = new File(WebappHelper.getContextRealPath("/static/"), DIRNAME_CPOFFLINEMENUMAT);
-			for(File content:cpOfflineMat.listFiles()) {
-				exportStream.putNextEntry(new ZipEntry(DIRNAME_CPOFFLINEMENUMAT + "/" + content.getName()));
-				InputStream in = new FileInputStream(content);
-				FileUtils.cpio(in, exportStream, "");
-				exportStream.closeEntry();
-				in.close();
-			}
+			OlatServletResource.appendDirectory(exportStream,
+					"/static/" + DIRNAME_CPOFFLINEMENUMAT,
+					DIRNAME_CPOFFLINEMENUMAT);
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -166,10 +163,9 @@ public class CPOfflineReadableManager {
 
 			File unzippedDir = new File(repositoryHome + "/" + relPath);
 			File targetZip = new File(repositoryHome + "/" + resId + "/" + zipName);
-			File cpOfflineMat = new File(WebappHelper.getContextRealPath("/static/" + DIRNAME_CPOFFLINEMENUMAT));
 
 			writeOfflineCPStartHTMLFile(unzippedDir);
-			zipOfflineReadableCP(unzippedDir, targetZip, cpOfflineMat);
+			zipOfflineReadableCP(unzippedDir, targetZip);
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -310,9 +306,21 @@ public class CPOfflineReadableManager {
 	 * @param targetZip
 	 * @param cpOfflineMat
 	 */
-	private void zipOfflineReadableCP(File unzippedDir, File targetZip, File cpOfflineMat) {
+	private void zipOfflineReadableCP(File unzippedDir, File targetZip) throws IOException {
+		File directory = new File(unzippedDir.getPath() + "/" + DIRNAME_CPOFFLINEMENUMAT);
+		if (directory.exists() == false) {
+			directory.mkdir();
+		}
+
 		// copy the offlineMat to unzippedDir
-		FileUtils.copyDirToDir(cpOfflineMat, unzippedDir, "copy for offline readable cp");
+		Resource[] resources = OlatServletResource.getAll("/static/" + DIRNAME_CPOFFLINEMENUMAT + "/*");
+		for (Resource resource : resources) {
+			String fileName = unzippedDir.getPath() + OlatServletResource
+					.pathRelativeToSourcePath(resource.getURL(), "/static");
+			FileOutputStream outputStream = new FileOutputStream(fileName);
+			IOUtils.copy(resource.getInputStream(), outputStream);
+			outputStream.close();
+		}
 		
 		if (targetZip.exists()) {
 			FileUtils.deleteDirsAndFiles(targetZip, false, true);

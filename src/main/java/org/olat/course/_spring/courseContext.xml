@@ -26,9 +26,12 @@
 	<import resource="classpath:/org/olat/course/nodes/vitero/_spring/buildingblockContext.xml"/>
 	<import resource="classpath:/org/olat/course/statistic/_spring/statisticContext.xml"/>
 	<import resource="classpath:/org/olat/course/statistic/_spring/statisticsJobContext.xml"/>
-				
+	<import resource="classpath:/org/olat/course/cleanup/_spring/cleanupContext.xml"/>
+
+
 	<bean id="courseFactory" class="org.olat.course.CourseFactory"
-		depends-on="businessGroupService,resourceManager,baseSecurityManager,glossaryManager">
+		depends-on="businessGroupService,resourceManager,baseSecurityManager,glossaryManager, org.olat.core.util.event.FrameworkStartupEventChannel">
+		
 		<constructor-arg index="0" ref="coordinatorManager" />
 		<constructor-arg index="1" ref="referenceManager" />
 	</bean>

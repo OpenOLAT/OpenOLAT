@@ -118,7 +118,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void deleteCourseSoftly() {
+	public void deleteCourseSoftly() throws RepositoryEntryDeletionException {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("re-soft-");
 		Identity coachGroup = JunitTestHelper.createAndPersistIdentityAsRndUser("re-soft-");
 		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("re-soft-");
@@ -179,7 +179,7 @@ public class RepositoryServiceImplTest extends OlatTestCase {
 	}
 
 	@Test
-	public void deleteCoursePermanently() {
+	public void deleteCoursePermanently() throws RepositoryEntryDeletionException {
 		Identity initialAuthor = JunitTestHelper.createAndPersistIdentityAsRndUser("auth-del-1");
 		RepositoryEntry re = JunitTestHelper.deployDemoCourse(initialAuthor);
 		dbInstance.commitAndCloseSession();

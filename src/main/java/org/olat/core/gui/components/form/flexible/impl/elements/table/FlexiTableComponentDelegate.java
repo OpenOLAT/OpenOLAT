@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.olat.core.gui.components.Component;
 
 /**
@@ -28,7 +29,8 @@ import org.olat.core.gui.components.Component;
  *
  */
 public interface FlexiTableComponentDelegate {
-	
+
+	@Nullable
 	public Iterable<Component> getComponents(int row, Object rowObject);
 	
 

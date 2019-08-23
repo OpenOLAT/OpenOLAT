@@ -74,6 +74,7 @@ public class ChangePrefsController extends BasicController {
 	private VelocityContainer myContent;
 	private Controller generalPrefsCtr;
 	private Controller specialPrefsCtr;
+	private Controller filesPrefsCtr;
 	private Controller toolsPrefsCtr;
 	private Controller resetCtr;
 	
@@ -94,7 +95,10 @@ public class ChangePrefsController extends BasicController {
 		
 		specialPrefsCtr = new SpecialPrefsForm(ureq, wControl, changeableIdentity);
 		listenTo(specialPrefsCtr);
-		
+
+		filesPrefsCtr = new FilesPrefsForm(ureq, wControl, changeableIdentity);
+		listenTo(filesPrefsCtr);
+
 		resetCtr = new UserPrefsResetForm(ureq, wControl, changeableIdentity);
 		listenTo(resetCtr);
 		
@@ -103,6 +107,7 @@ public class ChangePrefsController extends BasicController {
 		
 		myContent.put("general", generalPrefsCtr.getInitialComponent());
 		myContent.put("special", specialPrefsCtr.getInitialComponent());
+		myContent.put("files", filesPrefsCtr.getInitialComponent());
 		myContent.put("tools", toolsPrefsCtr.getInitialComponent());
 		myContent.put("reset", resetCtr.getInitialComponent());
 		

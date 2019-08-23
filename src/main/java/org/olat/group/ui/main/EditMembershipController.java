@@ -242,9 +242,9 @@ public class EditMembershipController extends FormBasicController {
 		List<MemberGroupOption> options = new ArrayList<>();
 		for(StatisticsBusinessGroupRow group:groups) {
 			boolean managed = BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.membersmanagement) && !overrideManaged;
-			MemberGroupOption option = new MemberGroupOption(group);
+            boolean excludeGroupCoachesFromMembersManagementEnabled = BusinessGroupManagedFlag.isManaged(group.getManagedFlags(), BusinessGroupManagedFlag.excludeGroupCoachesFromMembersmanagement);
 			BGPermission bgPermission = PermissionHelper.getPermission(group.getKey(), memberToLoad, groupMemberships);
-			option.setTutor(createSelection(bgPermission.isTutor(), !managed, GroupRoles.coach.name()));
+			option.setTutor(createSelection(bgPermission.isTutor(), !managed || excludeGroupCoachesFromMembersManagementEnabled, GroupRoles.coach.name()));
 			option.setParticipant(createSelection(bgPermission.isParticipant() || defaultMembership, !managed, GroupRoles.participant.name()));
 			boolean waitingListEnable = !managed && group.isWaitingListEnabled();
 			option.setWaiting(createSelection(bgPermission.isWaitingList(), waitingListEnable, GroupRoles.waiting.name()));

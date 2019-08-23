@@ -49,6 +49,9 @@ import org.olat.repository.RepositoryManager;
  */
 public class RepositoryEntrySearchController extends FormBasicController implements ExtendedFlexiTableSearchController {
 
+	static final int MINIMAL_CHAR_LENGTH_SEARCH_FIELD = 3;
+	private static final int MINIMAL_CHAR_LENGTH_AUTHOR_SEARCH_FIELD = 2;
+
 	private static final String[] statusKeys = new String[]{ "all", "active", "closed" };
 	
 	private TextElement id; // only for admins
@@ -188,10 +191,18 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		if(!enabled) return true;
-		
-		if (text.isEmpty() && author.isEmpty() && (id != null && id.isEmpty()))	{
-			showWarning("cif.error.allempty");
+		if (!enabled) return true;
+
+		if (text.getValue().length() < MINIMAL_CHAR_LENGTH_SEARCH_FIELD &&
+				author.getValue().length() < MINIMAL_CHAR_LENGTH_AUTHOR_SEARCH_FIELD &&
+				(id != null && id.getValue().length() < MINIMAL_CHAR_LENGTH_SEARCH_FIELD))	{
+			if (text.getValue().isEmpty() && author.getValue().isEmpty() && (id != null && id.getValue().isEmpty())) {
+				showWarning("cif.error.allempty");
+			} else if (text.getValue().isEmpty() && !author.getValue().isEmpty() && (id != null && id.getValue().isEmpty())) {
+				showWarning("cif.error.not.enough.chars", new String[]{Integer.toString(MINIMAL_CHAR_LENGTH_AUTHOR_SEARCH_FIELD)});
+			} else {
+				showWarning("cif.error.not.enough.chars", new String[]{Integer.toString(MINIMAL_CHAR_LENGTH_SEARCH_FIELD)});
+			}
 			return false;
 		}
 		return true;
@@ -213,7 +224,9 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 	protected void formInnerEvent (UserRequest ureq, FormItem source, FormEvent event) {
 		if(enabled) {
 			if (source == searchButton) {
-				fireSearchEvent(ureq);
+				if (validateFormLogic(ureq)) {
+					fireSearchEvent(ureq);
+				}
 			}
 		}
 	}

@@ -90,6 +90,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.manager.RepositoryEntryDeletionException;
 import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -445,7 +446,15 @@ public class CourseWebService {
 		
 		UserRequest ureq = getUserRequest(request);
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		ErrorList errors = repositoryService.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+
+		ErrorList errors = new ErrorList();
+		try {
+			errors = rs.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		        errors = repositoryService.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		} catch (RepositoryEntryDeletionException e) {
+			errors.setError(e.getMessage());
+			log.audit(e.getMessage());
+		}
 		if(errors.hasErrors()) {
 			return Response.serverError().status(500).build();
 		}
@@ -492,11 +501,16 @@ public class CourseWebService {
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			repositoryService.deleteSoftly(re, identity, true, false);
+			try {
+				repositoryService.deleteSoftly(re, identity, true, false);
+			} catch (RepositoryEntryDeletionException e) {
+				log.audit(e.getMessage());
+			}
 			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
+			Identity identity = getIdentity(request);
 			repositoryService.restoreRepositoryEntry(re);
 			log.info(Tracing.M_AUDIT, "REST restoring course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),

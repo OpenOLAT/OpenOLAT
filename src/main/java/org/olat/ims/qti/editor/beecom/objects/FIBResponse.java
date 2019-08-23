@@ -39,7 +39,9 @@ public class FIBResponse extends Response {
 	public static String CASE_NO = "No";
 	public static int 	 SIZE_DEFAULT = 20;
 	public static int 	 MAXLENGTH_DEFAULT = 50;
-	
+	public static String SYNONYM_SPLIT_STRING = ";";
+	public static String SYNONYM_SPLIT_ESCAPED_STRING = ";;";
+
 	private String type = null;
 	private String correctBlank = null;
 	private String caseSensitive = null;
@@ -70,6 +72,24 @@ public class FIBResponse extends Response {
 	 */
 	public String getCorrectBlank() {
 		return correctBlank;
+	}
+
+	/**
+	 * Returns all correct synonyms.
+	 *
+	 * @return Array of strings
+	 */
+	public String[] getCorrectSynonyms() {
+		if (correctBlank != null) {
+			String tmp = correctBlank.replaceAll(SYNONYM_SPLIT_ESCAPED_STRING, "[ESCAPED]");
+			String[] splits = tmp.split(SYNONYM_SPLIT_STRING);
+			for (int i = 0; i < splits.length; i++) {
+				splits[i] = splits[i].replaceAll("\\[ESCAPED]", SYNONYM_SPLIT_ESCAPED_STRING);
+			}
+			return splits;
+		} else {
+			return null;
+		}
 	}
 
 	/**

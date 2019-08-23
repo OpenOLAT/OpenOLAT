@@ -93,6 +93,8 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<Reposi
 			} else {
 				searchParams.setFilters(null);
 			}
+		} else {
+			searchParams.setFilters(null);
 		}
 		
 		if(orderBy != null && orderBy.length > 0 && orderBy[0] != null) {

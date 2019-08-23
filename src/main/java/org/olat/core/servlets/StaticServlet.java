@@ -19,6 +19,7 @@
  */
 package org.olat.core.servlets;
 
+import org.olat.admin.layout.StaticDirectory;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +41,18 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WebappHelper;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 
 /**
  * 
@@ -55,6 +68,12 @@ public class StaticServlet extends HttpServlet {
 	private static final long CACHE_DURATION_IN_SECOND = 60l * 60l * 24l * 8l; // 8 days
 	private static final long CACHE_DURATION_IN_MS = CACHE_DURATION_IN_SECOND  * 1000;
 
+	@Autowired
+	private StaticDirectory[] staticDirectories;
+
+	public StaticServlet() {
+		CoreSpringFactory.autowireObject(this);
+	}
 	public static final String STATIC_DIR_NAME = "/static";
 	public static final String NOVERSION = "_noversion_";
 
@@ -77,7 +96,7 @@ public class StaticServlet extends HttpServlet {
 		if (pathInfo == null) {
 			// huh? What's this, send not found, don't know what to do here
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-		} else if (pathInfo.indexOf(NOVERSION) != -1) {
+		} else if (pathInfo.contains(NOVERSION)) {
 			// no version provided - only remove mapper
 			String staticRelPath = pathInfo.substring(NOVERSION.length() + 1, pathInfo.length());
 			String normalizedRelPath = ServletUtil.normalizePath(staticRelPath);
@@ -121,12 +140,30 @@ public class StaticServlet extends HttpServlet {
 			}
 		}	
 	}
+
+	public static URL getStaticResource(StaticDirectory[] staticDirectories,
+										String subPath) {
+		URL result = null;
+		try {
+			for (StaticDirectory staticDirectory : staticDirectories) {
+				String path = "/" + staticDirectory.getName() + subPath;
+				result = CoreSpringFactory.servletContext.getResource(path);
+				if (result != null) {
+					break;
+				}
+			}
+			if (result == null) {
+				result = CoreSpringFactory.servletContext.getResource(subPath);
+			}
+		} catch (MalformedURLException e) {
+			assert false : e;
+		}
+		return result;
+	}
 	
 	private void deliverStatic(HttpServletRequest request, HttpServletResponse response,
 		String pathInfo, String normalizedRelPath, boolean expiration)
 	throws IOException {
-
-		boolean notFound = false;
 		// create the file from the path
 		String staticAbsPath;
 		if(Settings.isDebuging() && WebappHelper.getWebappSourcePath() != null) {
@@ -140,71 +177,71 @@ public class StaticServlet extends HttpServlet {
 			expiration &= true;
 		}
 
-		File staticFile = new File(staticAbsPath, normalizedRelPath);
-		if (!staticFile.exists()) {
-			// try loading themes from custom themes folder if configured 
-			if(normalizedRelPath.contains("/themes/") && Settings.getGuiCustomThemePath() != null) {
+		URL url = getStaticResource(staticDirectories, normalizedRelPath);
+
+		if (url == null) {
+			// try loading themes from custom themes folder if configured
+			if (Settings.getGuiCustomThemePath() != null && normalizedRelPath.contains("/themes/")) {
 				File customThemesDir = Settings.getGuiCustomThemePath();
-				String path = staticFile.getAbsolutePath();
+				String path = new File(staticAbsPath, normalizedRelPath).getAbsolutePath();
 				path = path.substring(path.indexOf("/static/themes/") + 15);
-				staticFile = new File(customThemesDir, path);
-			} else if(normalizedRelPath.contains("/js/images/ui-")) {
+				url = new File(customThemesDir + path).toURI().toURL();
+				expiration &= false;//themes can be update any time
+			} else if (normalizedRelPath.contains("/js/images/ui-")) {
 				normalizedRelPath = normalizedRelPath.replace("/js/images/ui-", "/js/jquery/ui/images/ui-");
-				staticFile = new File(staticAbsPath, normalizedRelPath);
+				url = request.getServletContext().getResource(staticAbsPath + normalizedRelPath);
 			}
-			
+
 			// only serve if file exists
-			if (!staticFile.exists()) {
+			if (url == null) {
 				// try fallback without version ID
 				String fallbackPath = pathInfo.substring(1, pathInfo.length());
 				fallbackPath = ServletUtil.normalizePath(fallbackPath);
 				String fallbackAbsPath = WebappHelper.getContextRealPath(STATIC_DIR_NAME + fallbackPath);
-				if(fallbackAbsPath != null) {
-					staticFile = new File(fallbackAbsPath);
-					if (!staticFile.exists()) {
-						String realPath = request.getServletContext().getRealPath(STATIC_DIR_NAME + normalizedRelPath);
-						staticFile = new File(realPath);
-						if(!staticFile.exists()) {
-							notFound = true;
-						}
+				if (fallbackAbsPath == null) {
+					url = request.getServletContext().getResource(fallbackAbsPath);
+					if (url == null) {
+						String realPath = request.getServletContext().getRealPath("/static" + normalizedRelPath);
+						url = request.getServletContext().getResource(realPath);
 					}
 				}
 				// log as error, file exists but wrongly mapped
-				log.warn("File exists but not mapped using version - use StaticMediaDispatch methods to create URL of static files! invalid URI::" + request.getRequestURI());			
+				log.warn("File exists but not mapped using version - use StaticMediaDispatch methods to create URL of static files! invalid request URI " + request.getRequestURI() + " initiated by " + request.getHeader("referer"));
 			}
 		}
-		
-		if(notFound) {
+
+		if (url == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
-		} else if(staticFile.isDirectory()) {
+		} else if(url.getFile().endsWith("/")) {
 			//directory listing is forbidden
 			response.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} else {
-			deliverFile(request, response, staticFile, expiration);
+			deliverFile(request, response, url, expiration);
 		}
 	}
 	
-	private void deliverFile(HttpServletRequest request, HttpServletResponse response, File file, boolean expiration) {
-		long lastModified = file.lastModified();
+	private void deliverFile(HttpServletRequest request, HttpServletResponse response, URL url, boolean expiration) throws IOException {
+		URLConnection urlConnection = url.openConnection();
+		long lastModified = urlConnection.getLastModified();
 		long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 		if (ifModifiedSince >= (lastModified / 1000L) * 1000L) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 		} else {
 			response.setDateHeader("Last-Modified", lastModified);
-			if(expiration) {
+			if (expiration) {
 				long now = System.currentTimeMillis();
 				//res being the HttpServletResponse of the request
 				response.addHeader("Cache-Control", "max-age=" + CACHE_DURATION_IN_SECOND);
 				response.setDateHeader("Expires", now + CACHE_DURATION_IN_MS);
 			}
-			
-			String mimeType = WebappHelper.getMimeType(file.getName());
-			response.setContentType(mimeType);
-			response.setContentLengthLong(file.length());
 
-			try(InputStream in = new FileInputStream(file);
-					BufferedInputStream bis = new BufferedInputStream(in, FileUtils.BSIZE)) {
-				FileUtils.cpio(bis, response.getOutputStream(), "static");
+			String fileName = url.getFile();
+			String mimeType = WebappHelper.getMimeType(fileName);
+			response.setContentType(mimeType);
+			response.setContentLengthLong(urlConnection.getContentLengthLong());
+
+			try (InputStream in = urlConnection.getInputStream()) {
+				FileUtils.cpio(in, response.getOutputStream(), "static");
 			} catch(Exception ex) {
 				log.error("", ex);
 			}

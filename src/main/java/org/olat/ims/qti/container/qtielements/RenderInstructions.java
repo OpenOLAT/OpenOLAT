@@ -32,7 +32,8 @@ import java.util.HashMap;
  *
  * @author Mike Stock
  */
-public class RenderInstructions extends HashMap<String,Object> {
+@SuppressWarnings("serial")
+public class RenderInstructions extends HashMap<String, Object> {
 
 	private static final long serialVersionUID = -7899908178364768916L;
 	/**

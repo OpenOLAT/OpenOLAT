@@ -51,7 +51,7 @@ public abstract class GenericQTIElement extends GenericNode implements QTIElemen
 	}
 	
 	private void addAll(Element el_element) {
-		for (Iterator iter = el_element.elementIterator(); iter.hasNext();) {
+		for (final Iterator<?> iter = el_element.elementIterator(); iter.hasNext();) {
 			Element sub_element = (Element) iter.next();
 			String name = sub_element.getName();
 			

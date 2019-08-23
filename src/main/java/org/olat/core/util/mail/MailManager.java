@@ -205,4 +205,7 @@ public interface MailManager {
 	
 	public MailContent evaluateTemplate(MailTemplate template);
 
+	public MailContent createContentFromTemplate(Identity recipient, MailTemplate template, MailerResult result);
+
+	public void sendToRecipientsList(MailContext context, MailTemplate template, List<Identity> recipients);
 }

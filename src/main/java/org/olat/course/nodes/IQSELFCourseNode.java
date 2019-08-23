@@ -118,8 +118,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		TabbableController childTabCntrllr = new IQEditController(ureq, wControl, stackPanel, course, this, euce);
-		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, euce, childTabCntrllr);
 	}
 
 	/**
@@ -145,7 +144,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			IQSecurityCallback sec = new CourseIQSecurityCallback(this, am, ureq.getIdentity());
 			runController = new IQRunController(userCourseEnv, getModuleConfiguration(), sec, ureq, wControl, this);
 		}
-		
+
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runController, this, "o_iqself_icon");
 		return new NodeRunConstructionResult(ctrl);
 	}

@@ -39,6 +39,8 @@ import org.olat.core.id.RolesByOrganisation;
 import org.olat.core.id.User;
 import org.olat.core.util.Encoder;
 
+import javax.annotation.Nullable;
+
 /**
  * 
  * @author Felix Jost
@@ -248,7 +250,7 @@ public interface BaseSecurity {
 	 * @param password The password which will be used as credentials (not hashed it)
 	 * @return the new identity
 	 */
-	public Identity createAndPersistIdentityAndUser(String username, String externalId, User user, String provider, String authusername, String password);
+	public Identity createAndPersistIdentityAndUser(String username, @Nullable String externalId, User user, String provider, String authusername, String password);
 	
 	/**
 	 * Persists the given user, creates an identity for it and adds the user to

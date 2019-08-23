@@ -52,6 +52,7 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.manager.RepositoryEntryDeletionException;
 import org.olat.resource.references.ReferenceInfos;
 import org.olat.resource.references.ReferenceManager;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -286,15 +287,26 @@ public class ConfirmDeletePermanentlyController extends FormBasicController {
 		boolean allOk = true;
 		Roles roles = ureq.getUserSession().getRoles();
 		for(RepositoryEntry entry:entries) {
-			ErrorList errors = repositoryService.deletePermanently(entry, getIdentity(), roles, getLocale());
-			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DELETE, getClass(),
-					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
-			if (errors.hasErrors()) {
-				allOk = false;
-				errorList.add(errors);
-			} else {
-				EntryChangedEvent e = new EntryChangedEvent(entry, getIdentity(), Change.deleted, "delete");
-				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+			RepositoryEntry reloadedEntry = repositoryService.loadByKey(entry.getKey());
+			if(reloadedEntry != null) {
+				ErrorList errors = new ErrorList();
+				try {
+					errors = repositoryService.deletePermanently(reloadedEntry, getIdentity(), roles, getLocale());
+				} catch (RepositoryEntryDeletionException e) {
+					allOk = false;
+					errors.setError(e.getMessage());
+					errorList.add(errors);
+					continue;
+				}
+				ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_DELETE, getClass(),
+						LoggingResourceable.wrap(reloadedEntry, OlatResourceableType.genRepoEntry));
+				if (errors.hasErrors()) {
+					allOk = false;
+					errorList.add(errors);
+				} else {
+					EntryChangedEvent e = new EntryChangedEvent(reloadedEntry, getIdentity(), Change.deleted, "delete");
+					ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+				}
 			}
 		}
 		return allOk;

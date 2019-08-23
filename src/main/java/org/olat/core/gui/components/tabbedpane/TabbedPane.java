@@ -106,7 +106,7 @@ public class TabbedPane extends Container implements Activateable2 {
 	/**
 	 * Sets the selectedPane.
 	 * 
-	 * @param selectedPane The selectedPane to set
+	 * @param newSelectedPane The selectedPane to set
 	 */
 	public void setSelectedPane(UserRequest ureq, int newSelectedPane) {
 		// get old selected component and remove it from render tree
@@ -132,6 +132,10 @@ public class TabbedPane extends Container implements Activateable2 {
 	public void addToHistory(UserRequest ureq, WindowControl wControl) {
 		OLATResourceable ores = getTabResource();
 		BusinessControlFactory.getInstance().createBusinessWindowControl(ureq, ores, null, wControl, true);
+	}
+
+	public int addTab(Tab tab) {
+		return addTab(tab.getDisplayName(), tab.getComponent());
 	}
 
 	/**

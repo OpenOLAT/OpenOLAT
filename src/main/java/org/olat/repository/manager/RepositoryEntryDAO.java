@@ -87,6 +87,17 @@ public class RepositoryEntryDAO {
 		return entries == null || entries.isEmpty() ? null : entries.get(0);
 	}
 
+ 	public RepositoryEntry loadByResId(long resId) {
+ 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
+ 				.createNamedQuery("loadRepositoryEntryByResourceId", RepositoryEntry.class)
+ 				.setParameter("resId", resId)
+ 				.getResultList();
+ 		if (entries.isEmpty()) {
+ 			return null;
+ 		}
+ 		return entries.get(0);
+ 	}
+
 	public RepositoryEntry loadByResourceKey(Long resourceKey) {
 		List<RepositoryEntry> entries = dbInstance.getCurrentEntityManager()
 				.createNamedQuery("loadRepositoryEntryByResourceKey", RepositoryEntry.class)

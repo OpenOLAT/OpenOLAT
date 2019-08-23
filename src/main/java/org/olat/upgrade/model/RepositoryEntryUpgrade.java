@@ -363,8 +363,8 @@ public class RepositoryEntryUpgrade extends PersistentObject implements Modified
 	 * @param displayname The displayname to set.
 	 */
 	public void setDisplayname(String displayname) {
-		if (displayname.length() > 100)
-			throw new AssertException("DisplayName is limited to 100 characters.");
+		if (displayname.length() > 255)
+			throw new AssertException("DisplayName is limited to 255 characters.");
 		this.displayname = displayname;
 	}
 

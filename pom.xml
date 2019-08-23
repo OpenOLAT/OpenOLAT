@@ -2477,6 +2477,16 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<groupId>org.checkerframework</groupId>
+			<artifactId>checker</artifactId>
+			<version>2.1.9</version>
+		</dependency>
+		<dependency>
+    			<groupId>javax.inject</groupId>
+    			<artifactId>javax.inject</artifactId>
+    			<version>1</version>
+		</dependency>
 		<!-- end Spring dependencies -->
 		<!-- Start Apache CXF dependency and Active MQ Broker -->
 		<dependency>

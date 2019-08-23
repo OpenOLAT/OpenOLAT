@@ -106,7 +106,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		revisionCtrl = new GTARevisionAndCorrectionEditController(ureq, getWindowControl(), config);
 		listenTo(revisionCtrl);
 		//grading
-		manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config);
+		manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config, true);
 		listenTo(manualAssessmentCtrl);
 		//solutions
 		solutionsCtrl = new GTASampleSolutionsEditController(ureq, getWindowControl(), gtaNode, courseEnv, false);
@@ -217,7 +217,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(manualAssessmentCtrl);
-				manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config);
+				manualAssessmentCtrl = new MSEditFormController(ureq, getWindowControl(), config, true);
 				listenTo(manualAssessmentCtrl);
 				myTabbedPane.replaceTab(gradingPos, manualAssessmentCtrl.getInitialComponent());
 			}
