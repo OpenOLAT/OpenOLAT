@@ -89,31 +89,30 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	public static final Event NODECONFIG_CHANGED_EVENT = new Event("nodeconfigchanged");
 	private static final String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_GENERAL };
 
+	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course, CourseNode luNode, UserCourseEnvironment euce, TabbableController childTabCntrllr) {
+		this(ureq, wControl, course, euce, childTabCntrllr, null);
+	}
+
+	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course, UserCourseEnvironment euce, TabbableController childTabCntrllr) {
+		this(ureq, wControl, course, euce, childTabCntrllr, null);
+	}
+
+	public NodeEditController(UserRequest ureq, WindowControl wControl, ICourse course, CourseNode luNode,
+							  UserCourseEnvironment userCourseEnvironment, TabbableController childTabsController) {
+		this(ureq, wControl, course, userCourseEnvironment, childTabsController, null);
+	}
+
 	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course, CourseNode luNode,
-							  UserCourseEnvironment euce, TabbableController childTabsController) {
-		this(ureq, wControl, editorModel, course, euce, childTabsController, null);
-
+				UserCourseEnvironment userCourseEnvironment, TabbableController childTabsController, Translator translator) {
+		this(ureq, wControl, course, userCourseEnvironment, childTabsController, translator);
 	}
 
-	public NodeEditController(UserRequest ureq, WindowControl wControl,
-							  CourseEditorTreeModel editorModel,
-							  ICourse course, UserCourseEnvironment euce,
-							  TabbableController childTabsController) {
-		this(ureq, wControl, editorModel, course, euce, childTabsController,
-				null);
-	}
-
-	/**
-	 * @param ureq
-	 * @param editorModel
-	 * @param course
-	 * @param luNode
-	 * @param groupMgr
-	 */
-	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course,
-			UserCourseEnvironment userCourseEnvironment, TabbableController childTabsController, Translator translator) {
+	public NodeEditController(UserRequest ureq, WindowControl wControl, ICourse course,
+							  UserCourseEnvironment euce, TabbableController childTabsController, Translator translator) {
 		super(ureq, wControl, translator);
-		courseNode = course.getEditorTreeModel().getCourseNode(userCourseEnvironment.getCourseEditorEnv().getCurrentCourseNodeId());
+		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
+		CourseNode luNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
+		this.courseNode = luNode;
 		
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
@@ -151,7 +150,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 		// Visibility precondition
 		Condition visibCondition = courseNode.getPreConditionVisibility();
-		visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnvironment, visibCondition,
+		visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, visibCondition,
 				AssessmentHelper.getAssessableNodes(editorModel, courseNode));
 		//set this useractivity logger for the visibility condition controller
 		listenTo(visibilityCondContr);

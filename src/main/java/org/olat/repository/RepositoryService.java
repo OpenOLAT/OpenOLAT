@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -113,12 +114,12 @@ public interface RepositoryService {
 	 * @param entry
 	 * @return
 	 */
-	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, Identity restoredBy);
+	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, UserRequest ureq);
 
 
 	/**
 	 * Delete the learning resource with all its attached resources.
-	 * @param entry
+	 * @param entryRef
 	 * @param identity
 	 * @param roles
 	 * @param locale
@@ -136,9 +137,8 @@ public interface RepositoryService {
 	 * This will change the status of the repository entry to "closed" (statusCode=2).
 	 *
 	 * @param entry
-	 * @param identity
-	 * @param roles
-	 * @param locale
+	 * @param closedBy
+	 * @param sendNotifications
 	 * @return The closed repository entry
 	 */
 	public RepositoryEntry closeRepositoryEntry(RepositoryEntry entry, Identity closedBy, boolean sendNotifications);
@@ -213,7 +213,7 @@ public interface RepositoryService {
 	 * Return the smallest enrollment date.
 	 *
 	 * @param re
-	 * @param identity
+	 * @param roles
 	 * @return
 	 */
 	public Map<Long,Date> getEnrollmentDates(RepositoryEntryRef re, String... roles);

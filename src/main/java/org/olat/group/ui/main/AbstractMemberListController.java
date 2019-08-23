@@ -133,8 +133,10 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	protected FlexiTableElement membersTable;
 	protected MemberListTableModel memberListModel;
 	protected final TooledStackedPanel toolbarPanel;
-	private FormLink editButton, mailButton, removeButton;
-	
+	protected FormLink editButton;
+	private FormLink mailButton;
+	protected FormLink removeButton;
+
 	private ToolsController toolsCtrl;
 	protected CloseableModalController cmc;
 	private ContactFormController contactCtrl;
@@ -149,13 +151,13 @@ public abstract class AbstractMemberListController extends FormBasicController i
 
 	private final AtomicInteger counter = new AtomicInteger();
 	protected final RepositoryEntry repoEntry;
-	private final BusinessGroup businessGroup;
+	protected final BusinessGroup businessGroup;
 	private final boolean isLastVisitVisible;
 	private final boolean isAdministrativeUser;
 	private final boolean chatEnabled;
 	
 	private boolean overrideManaged = false;
-	private final boolean globallyManaged;
+	protected final boolean globallyManaged;
 	private final MemberListSecurityCallback secCallback;
 	
 	@Autowired
@@ -407,7 +409,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		super.formInnerEvent(ureq, source, event);
 	}
 	
-	private List<MemberRow> getMultiSelectedRows() {
+	protected List<MemberRow> getMultiSelectedRows() {
 		Set<Integer> selections = membersTable.getMultiSelectedIndex();
 		List<MemberRow> rows = new ArrayList<>(selections.size());
 		if(selections.isEmpty()) {
@@ -521,7 +523,39 @@ public abstract class AbstractMemberListController extends FormBasicController i
 			}
 		}
 	}
-	
+
+	protected void confirmDelete(UserRequest ureq, List<MemberRow> members) {
+		if(members.isEmpty()) {
+			showWarning("error.select.one.user");
+		} else {
+			int numOfOwners =
+					repoEntry == null ? businessGroupService.countMembers(businessGroup, GroupRoles.coach.name())
+							: repositoryService.countMembers(repoEntry, GroupRoles.owner.name());
+
+			int numOfRemovedOwner = 0;
+			List<Long> identityKeys = new ArrayList<Long>();
+			for(MemberRow member:members) {
+				identityKeys.add(member.getIdentityKey());
+				if ((repoEntry != null && member.getMembership().isOwner())
+						|| (repoEntry == null && member.getMembership().isBusinessGroupCoach())) {
+					numOfRemovedOwner++;
+				}
+			}
+			if(numOfRemovedOwner == 0 || numOfOwners - numOfRemovedOwner > 0) {
+				List<Identity> ids = securityManager.loadIdentityByKeys(identityKeys);
+				leaveDialogBox = new MemberLeaveConfirmationController(ureq, getWindowControl(), ids, repoEntry != null);
+				listenTo(leaveDialogBox);
+
+				cmc = new CloseableModalController(getWindowControl(), translate("close"), leaveDialogBox.getInitialComponent(),
+						true, translate("edit.member"));
+				cmc.activate();
+				listenTo(cmc);
+			} else {
+				showWarning("error.atleastone");
+			}
+		}
+	}
+
 	protected void openEdit(UserRequest ureq, MemberRow member) {
 		if(editSingleMemberCtrl != null) return;
 		

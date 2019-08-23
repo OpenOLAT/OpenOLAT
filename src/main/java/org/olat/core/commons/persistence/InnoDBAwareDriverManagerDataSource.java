@@ -24,7 +24,6 @@
 */
 package org.olat.core.commons.persistence;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -85,41 +84,12 @@ public class InnoDBAwareDriverManagerDataSource extends DriverManagerDataSource 
 			
 		} finally {
 			try {
-				log.audit("Try to connect the mysql database: " + getUrl());
-				Connection connection = getConnection();
-				log.audit("Checking whether mysql tables support transactions based on innoDB tab...");
-				statement = connection.createStatement();
-				statement.execute("show create table o_plock;");
-				ResultSet result = statement.getResultSet();
-				result.first();
-				String createTableCommand = result.getString("Create Table");
-				if (createTableCommand.contains("InnoDB")) {
-					log.audit("Your mysql tables look like they support transactions, fine!");
-					break;
-				} else {
-					throw new StartupException("Your tables do not support transactions based on innoDB tables. Check your database server and enable innoDB engine! Your table currently runs: " + createTableCommand);
+				if (statement != null) {
+					statement.close();
 				}
-			} catch (SQLException e) {
-				if (e.getMessage().contains("doesn't exist")) {
-					log.audit("o_plock table does not yet exist, will check transaction support on next startup");
-					break;
-				}
-				log.warn(e.getMessage(), e);
-			} finally {
-				try {
-					if (statement != null) {
-						statement.close();
-					}
-				} catch (SQLException e2) {
-					log.warn("Could not close sql statement", e2);
-					throw new StartupException("Could not close sql statements.", e2);
-				}
-			}
-
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				throw new StartupException("Waiting loop was interrupted", e);
+			} catch (SQLException e2){
+				log.warn("Could not close sql statement", e2);
+				throw new StartupException("Could not close sql statements.", e2);
 			}
 		}
 	}

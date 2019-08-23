@@ -647,8 +647,7 @@ public class I18nTest extends OlatTestCase {
 		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("Bitte f*llen Sie dieses Feld aus", testLocale, testLocale, "org.olat.core", false).size());
 		// escape reserved regexp keywords
 		assertEquals(0, i18nMgr.findI18nItemsByValueSearch("OpenOLAT", testLocale, testLocale, "org.olat.core", false).size());
-		assertEquals(0, i18nMgr.findI18nItemsByValueSearch("nOLAT", testLocale, testLocale, "org.olat.core", false).size());
-		assertEquals(0, i18nMgr.findI18nItemsByValueSearch("*learning", testLocale, testLocale, "org.olat.core", false).size());
+		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("lms.uzh.ch", testLocale, testLocale, "org.olat.core", false).size());
 		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("Eingaben</i> </br >*<b>bold</b>*<br>_<i>italic</i>_<br>* Listen", testLocale, testLocale, null, true).size());
 		assertEquals(1, i18nMgr.findI18nItemsByValueSearch("dargestellt werden. Bitte rufen Sie", testLocale, testLocale, null, true).size());
 		// multi line value search

@@ -32,6 +32,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.repository.RepositoryEntryMyView;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams;
 import org.olat.repository.model.SearchMyRepositoryEntryViewParams.Filter;
@@ -53,23 +54,25 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
 
-	private final RepositoryEntryRowsFactory repositoryEntryRowsFactory;
+	private final RepositoryEntryDataSourceUIFactory uifactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
 
 	private final ACService acService;
 	private final AccessControlModule acModule;
 	private final RepositoryService repositoryService;
+	private final RepositoryManager repositoryManager;
 	
 	private Integer count;
 	
 	public DefaultRepositoryEntryDataSource(SearchMyRepositoryEntryViewParams searchParams,
-											RepositoryEntryRowsFactory repositoryEntryRowsFactory) {
-		this.repositoryEntryRowsFactory = repositoryEntryRowsFactory;
+											RepositoryEntryDataSourceUIFactory uifactory) {
+		this.uifactory = uifactory;
 		this.searchParams = searchParams;
 
 		acService = CoreSpringFactory.getImpl(ACService.class);
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
 	}
 	
 	public void setFilters(List<Filter> filters) {
@@ -188,9 +191,7 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 							String type = (bundle.getMethod().getMethodCssClass() + "_icon").intern();
 							String price = bundle.getPrice() == null || bundle.getPrice().isEmpty() ? "" : PriceFormat.fullFormat(bundle.getPrice());
 							AccessMethodHandler amh = acModule.getAccessMethodHandler(bundle.getMethod().getType());
-							String displayName = amh.getMethodName(
-									repositoryEntryRowsFactory.getUiFactory()
-											.getTranslator().getLocale());
+							String displayName = amh.getMethodName(uifactory.getTranslator().getLocale());
 							types.add(new PriceMethod(price, type, displayName));
 						}
 					}

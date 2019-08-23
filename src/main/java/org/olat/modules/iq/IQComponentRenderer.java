@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.dom4j.Element;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;

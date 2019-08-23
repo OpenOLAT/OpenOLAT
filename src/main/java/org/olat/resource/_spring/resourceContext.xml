@@ -10,7 +10,9 @@
 
 	<context:component-scan base-package="org.olat.resource.references" />
 
-	<bean id="resourceManager" class="org.olat.resource.OLATResourceManager" />
+	<bean id="resourceManager" class="org.olat.resource.OLATResourceManager">
+		<property name="dbInstance" ref="database"/>
+	</bean>
 
 	<import resource="classpath:/org/olat/resource/accesscontrol/_spring/acContext.xml"/>
 	<import resource="classpath:/org/olat/resource/accesscontrol/provider/paypal/_spring/paypalContext.xml"/>

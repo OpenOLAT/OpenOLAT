@@ -38,12 +38,14 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestName;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.helpers.Settings;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.test.context.ContextConfiguration;
@@ -69,8 +71,11 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	private static boolean oracleConfigured = false;
 	private static boolean started = false;
 	private static SimpleSmtpServer dumbster;
+
+	@Autowired
+	protected DB dbInstance;
 	
-	 @Rule public TestName currentTestName = new TestName();
+	@Rule public TestName currentTestName = new TestName();
 	
 	/**
 	 * If you like to disable a test method for some time just add the

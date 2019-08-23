@@ -47,8 +47,9 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 	private Map<Long,CurriculumMemberInfos> curriculumInfos;
 	
 	public MemberListTableModel(FlexiTableColumnModel columnModel, boolean onlineStatusEnabled) {
-		//
+		this(columnModel, onlineStatusEnabled, null);
 	}
+
 	public MemberListTableModel(FlexiTableColumnModel columnModel, boolean onlineStatusEnabled, List<BusinessGroup> businessGroupColumnHeaders) {
 		super(columnModel);
 		this.onlineStatusEnabled = onlineStatusEnabled;
@@ -121,7 +122,7 @@ public class MemberListTableModel extends DefaultFlexiTableDataModel<MemberRow> 
 
 		if (col >= AbstractMemberListController.USER_PROPS_OFFSET && col < AbstractMemberListController.BUSINESS_COLUMNS_OFFSET) {
 			int propPos = col - AbstractMemberListController.USER_PROPS_OFFSET;
-			return row.getIdentityProp(propPos);
+			return row.getView().getIdentityProp(propPos);
 		}
 
 		// Group columns (for export only)

@@ -68,7 +68,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class PreferencesFormController extends FormBasicController {
 	private static final String[] cssFontsizeKeys = new String[] { "80", "90", "100", "110", "120", "140" };
 	private Identity tobeChangedIdentity;
-	private SingleSelection language, fontsize, notificationInterval, mailSystem;
+	private SingleSelection language, fontsize, charset, notificationInterval, mailSystem;
 	private static final String[] mailIntern = new String[]{"intern.only","send.copy"};
 	
 	@Autowired

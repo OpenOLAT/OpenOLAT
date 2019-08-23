@@ -1,0 +1,18 @@
+#if ($r.visible("close"))
+<h4>$r.translate("details.close.ressoure")</h4>
+<div class="o_warning">
+    <p>$r.translate("details.close.ressoure.desc")</p>
+    <ul>
+        <li>$r.translate("details.close.ressoure.desc.1")</li>
+        <li>$r.translate("details.close.ressoure.desc.2")</li>
+        <li>$r.translate("details.close.ressoure.desc.3")</li>
+        <li>$r.translate("details.close.ressoure.desc.4")</li>
+    </ul>
+    #if($r.isNotNull($autoCloseDate))
+    <p>$r.translate("details.close.ressoure.auto.desc", $autoCloseDate)</p>
+    #end
+    <div class="o_button_group o_block_large_top">
+        $r.render("close")
+    </div>
+</div>
+#end

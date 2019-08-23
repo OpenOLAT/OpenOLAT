@@ -549,7 +549,7 @@ public class CourseHandler implements RepositoryHandler {
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
 		String exportFileName = StringHelper.transformDisplayNameToFileSystemName(re.getDisplayname()) + ".zip";
 		File fExportZIP = new File(WebappHelper.getTmpDir(), exportFileName);
-		CourseFactory.exportCourseToZIP(res, fExportZIP, false);
+		CourseFactory.exportCourseToZIP(res, fExportZIP, false, false);
 		return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
 	}
 	

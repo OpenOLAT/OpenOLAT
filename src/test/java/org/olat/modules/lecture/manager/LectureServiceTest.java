@@ -48,6 +48,7 @@ import org.olat.modules.lecture.model.LectureBlockStatistics;
 import org.olat.modules.vitero.model.GroupRole;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.manager.RepositoryEntryDeletionException;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -270,7 +271,7 @@ public class LectureServiceTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void deleteLectureBlocksWithTeachers() {
+	public void deleteLectureBlocksWithTeachers() throws RepositoryEntryDeletionException {
 		Identity owner = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-owner-del");
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-del");
 		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(owner);

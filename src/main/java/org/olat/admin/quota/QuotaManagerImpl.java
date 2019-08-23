@@ -229,6 +229,46 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 	}
 
 	/**
+	 * Get a list of all objects which have an individual quota and have the same path prefix
+	 *
+	 * @return list of quotas.
+	 */
+	@Override
+	public List<Quota> listCustomQuotasKB(String pathPrefix) {
+		if (defaultQuotas == null) {
+			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
+		}
+		List<Quota> results = new ArrayList<Quota>();
+		PropertyManager pm = PropertyManager.getInstance();
+		List<Property> props = pm.listProperties(null, null, quotaResource, QUOTA_CATEGORY, null);
+		if (props == null || props.size() == 0) return results;
+		for (Property prop : props) {
+			Quota q = parseQuota(prop);
+			if (q.getPath().startsWith(pathPrefix)) {
+				results.add(parseQuota(prop));
+			}
+		}
+		return results;
+	}
+
+	@Override
+	public boolean hasCustomQuotas(String pathPrefix) {
+		if (defaultQuotas == null) {
+			throw new OLATRuntimeException(QuotaManagerImpl.class, "Quota manager has not been initialized properly! Must call init() first.", null);
+		}
+		PropertyManager pm = PropertyManager.getInstance();
+		List<Property> props = pm.listProperties(null, null, quotaResource, QUOTA_CATEGORY, null);
+		if (props == null || props.size() == 0) return false;
+		for (Property prop : props) {
+			Quota q = parseQuota(prop);
+			if (q.getPath().startsWith(pathPrefix)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * @param quota to be deleted
 	 * @return true if quota successfully deleted or no such quota, false if quota
 	 *         not deleted because it was a default quota that can not be deleted

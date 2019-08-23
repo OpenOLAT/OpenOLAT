@@ -172,6 +172,12 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION_COACH_GROUP = "grouptask.submission.mail.confirmation.coach.group";
 	public static final String GTASK_SUBMISSION_MAIL_CONFIRMATION_PARTICIPANT = "grouptask.submission.mail.confirmation.participant";
 
+	public static final String GTASK_ASSESSMENT_TEXT = "grouptask.assessment.text";
+	public static final String GTASK_ASSESSMENT_MAIL_CONFIRMATION_OWNER = "grouptask.assessment.mail.confirmation.owner";
+	public static final String GTASK_ASSESSMENT_MAIL_CONFIRMATION_COACH_COURSE = "grouptask.assessment.mail.confirmation.coach.course";
+	public static final String GTASK_ASSESSMENT_MAIL_CONFIRMATION_COACH_GROUP = "grouptask.assessment.mail.confirmation.coach.group";
+	public static final String GTASK_ASSESSMENT_MAIL_CONFIRMATION_PARTICIPANT = "grouptask.assessment.mail.confirmation.participant";
+
 	public static final String GTASK_SOLUTIONS = "grouptask.solutions";
 
 	public static final String TYPE_GROUP = "gta";

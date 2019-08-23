@@ -196,6 +196,10 @@ public abstract class UserManager {
 	 */
 	public abstract String getUserCharset(Identity identity);
 
+	public abstract void setShowHiddenFiles(Identity identity, boolean showHiddenFiles);
+
+	public abstract boolean getShowHiddenFiles(Identity identity);
+
 	public UserPropertiesConfig getUserPropertiesConfig() {
 		return userPropertiesConfig;
 	}

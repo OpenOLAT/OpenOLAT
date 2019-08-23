@@ -38,19 +38,25 @@ import javax.persistence.LockModeType;
 import javax.persistence.Query;
 
 import org.hibernate.LazyInitializationException;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.basesecurity.SearchIdentityParams;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
+import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.io.SystemFilenameFilter;
+import org.olat.core.util.mail.MailContext;
+import org.olat.core.util.mail.MailManager;
+import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
@@ -59,6 +65,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
+import org.olat.course.condition.Condition;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
 import org.olat.course.nodes.gta.AssignmentResponse.Status;
@@ -83,15 +90,18 @@ import org.olat.course.nodes.gta.model.TaskDueDateImpl;
 import org.olat.course.nodes.gta.model.TaskImpl;
 import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.course.nodes.gta.model.TaskRevisionDateImpl;
+import org.olat.course.nodes.gta.ui.GTAAssessmentMailTemplate;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupMembership;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
+import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
@@ -99,6 +109,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.edusharing.EdusharingService;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryRelationDAO;
@@ -147,6 +158,10 @@ public class GTAManagerImpl implements GTAManager {
 	private RepositoryEntryLifecycleDAO repositoryEntryLifecycleDao;
 	@Autowired
 	private UserCourseInformationsManager userCourseInformationsManager;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private MailManager mailManager;
 
 	/**
 	 * Get the task folder path relative to the folder root for a specific node.
@@ -848,6 +863,43 @@ public class GTAManagerImpl implements GTAManager {
 				.setParameter("entryKey", entry.getKey())
 				.setParameter("courseNodeIdent", gtaNode.getIdent())
 				.getResultList();
+	}
+
+	@Override
+	public List<Identity> getCourseOwners(RepositoryEntry repositoryEntry) {
+		return repositoryEntryRelationDao.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup,
+				GroupRoles.owner.name());
+	}
+
+	@Override
+	public List<Identity> getCourseCoaches(RepositoryEntry repositoryEntry) {
+		return repositoryEntryRelationDao.getMembers(repositoryEntry, RepositoryEntryRelationType.defaultGroup,
+				GroupRoles.coach.name());
+	}
+
+	@Override
+	public List<Identity> getGroupCoaches(GTACourseNode gtaNode) {
+		List<Long> coaches = new ArrayList<>();
+		Condition visibilityCondition = gtaNode.getPreConditionVisibility();
+		if (visibilityCondition != null) {
+			// get groups from visibility settings of course node
+			SearchBusinessGroupParams groupSearchParams = new SearchBusinessGroupParams(null, false, false);
+			groupSearchParams.setGroupKeys(visibilityCondition.getEasyModeGroupAccessIdList());
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(groupSearchParams, gtaNode.getReferencedRepositoryEntry(), 0, -1);
+			// get group memberships and related identity keys for coaches
+			List<BusinessGroupMembership> memberships = businessGroupService.getBusinessGroupsMembership(groups);
+			for (BusinessGroupMembership membership : memberships) {
+				if (membership.isOwner()) {
+					coaches.add(membership.getIdentityKey());
+				}
+			}
+		}
+		// return identities
+		SearchIdentityParams identitySearchParams = new SearchIdentityParams();
+		identitySearchParams.setIdentityKeys(coaches);
+		return (coaches.size() > 0)
+				? securityManager.getIdentitiesByPowerSearch(identitySearchParams, 0, -1)
+				: new ArrayList<>();
 	}
 
 	@Override
@@ -1771,5 +1823,45 @@ public class GTAManagerImpl implements GTAManager {
 		
 		public void sync();
 		
+	}
+
+	public void addUniqueIdentities(Map<Long, Identity> map, List<Identity> list) {
+		list.forEach(identity -> {
+			if (!map.containsKey(identity.getKey())) {
+				map.put(identity.getKey(), identity);
+			}
+		});
+	}
+
+	@Override
+	public List<Identity> addRecipients(RepositoryEntry courseEntry, GTACourseNode gtaNode, Identity assessedIdentity) {
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
+		Map<Long, Identity> recipients = new HashMap<>();
+
+		if (config.getBooleanSafe(GTACourseNode.GTASK_ASSESSMENT_MAIL_CONFIRMATION_OWNER)) {
+			addUniqueIdentities(recipients, getCourseOwners(courseEntry));
+		}
+		if (config.getBooleanSafe(GTACourseNode.GTASK_ASSESSMENT_MAIL_CONFIRMATION_COACH_COURSE)) {
+			addUniqueIdentities(recipients, getCourseCoaches(courseEntry));
+		}
+		if (config.getBooleanSafe(GTACourseNode.GTASK_ASSESSMENT_MAIL_CONFIRMATION_COACH_GROUP)) {
+			addUniqueIdentities(recipients, getGroupCoaches(gtaNode));
+		}
+		if (config.getBooleanSafe(GTACourseNode.GTASK_ASSESSMENT_MAIL_CONFIRMATION_PARTICIPANT)) {
+			addUniqueIdentities(recipients, Collections.singletonList(assessedIdentity));
+		}
+		return new ArrayList<>(recipients.values());
+	}
+
+	@Override
+	public void sendGradedEmail(GTACourseNode gtaNode, Identity assessedIdentity, List<Identity> recipients, String subject, String taskName, MailContext context, Translator translator) {
+		ModuleConfiguration config = gtaNode.getModuleConfiguration();
+		String body = config.getStringValue(GTACourseNode.GTASK_ASSESSMENT_TEXT);
+		if (StringHelper.containsNonWhitespace(body)) {
+			// Prepare mail template
+			MailTemplate template = new GTAAssessmentMailTemplate(subject, body, taskName, assessedIdentity, translator);
+			// send message to all found recipients
+			mailManager.sendToRecipientsList(context, template, recipients);
+		}
 	}
 }

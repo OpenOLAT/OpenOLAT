@@ -299,10 +299,15 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 			Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 
+
 			// OLATNG-198: Prepare callback for PeekViewController
 			final Roles userRoles = ureq.getUserSession().getRoles();
 			final SubscriptionContext forumSubContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), this);
-			ForumNodeForumCallback foCallback = new ForumNodeForumCallback(ne, userRoles.isOLATAdmin(), userRoles.isGuestOnly(),
+
+			//	TODO: LMSUZH Update. Do we need this? How can we implement it with isOLATAdmin gone?
+			boolean isOlatAdmin = false;
+
+			ForumNodeForumCallback foCallback = new ForumNodeForumCallback(ne, isOlatAdmin, userRoles.isGuestOnly(),
 					false, false, false, forumSubContext);
 
 			Controller peekViewController = new FOPeekviewController(ureq, wControl, courseEntry, theForum, getIdent(), 3, foCallback);

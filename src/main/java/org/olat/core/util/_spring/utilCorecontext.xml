@@ -107,11 +107,7 @@
 	<bean id="httpClientFactory" class="org.olat.core.util.httpclient.HttpClientFactory" destroy-method="destroy"/>
 
 	<bean id="org.olat.core.util.vfs.QuotaManager" class="org.olat.admin.quota.QuotaManagerImpl"/>
-	
-	<bean id="vfsLockManager" class="org.olat.core.util.vfs.lock.VFSLockManagerImpl" >
-		<property name="metaInfoFactory" ref="metaInfoFactory"/>
-	</bean>
-	
+
 	<!--  gui prefs via database -->
 	<bean id="core.preferences.PreferencesStorage"
 		class="org.olat.core.util.prefs.db.DbStorage"  />

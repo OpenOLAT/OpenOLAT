@@ -97,7 +97,6 @@ public class CPManagerImpl implements CPManager {
 	@Autowired
 	private CPManagerImpl(ServletContext servletContext) {
 		this.servletContext = servletContext;
-		INSTANCE = this;
 	}
 
 	@Override
@@ -362,13 +361,13 @@ public class CPManagerImpl implements CPManager {
 			assert url != null;
 			try {
 				InputStream inputStream = url.openConnection().getInputStream();
-				FileUtils.saveToDir(inputStream, root, "imscp.zip");
+				FileUtils.save(inputStream, new File(root, "imscp.zip"));
 				return true;
 			} catch (IOException e) {
-				logError("cp template was not copied. Source:  " + url + " Target: " + root.getAbsolutePath(), null);
+				log.error("cp template was not copied. Source:  " + url + " Target: " + root.getAbsolutePath());
 			}
 		} catch (MalformedURLException e) {
-			logError("Bad url syntax when copying cp template. url: " + path + " Ores:" + ores.getResourceableId(), null);
+			log.error("Bad url syntax when copying cp template. url: " + path + " Ores:" + ores.getResourceableId());
 		}
 
 		return false;

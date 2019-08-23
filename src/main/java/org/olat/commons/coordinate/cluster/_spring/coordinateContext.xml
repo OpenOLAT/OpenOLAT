@@ -21,31 +21,36 @@
 		<property name="coordinator" ref="org.olat.core.util.coordinate.ClusterCoordinator"/>
 	</bean>
 
-	<bean id="org.olat.core.util.coordinate.ClusterCoordinator"
+	<bean id="org.olat.core.util.coordinate.ClusterCoordinator" 
 		class="org.olat.commons.coordinate.cluster.ClusterCoordinator" lazy-init="true">
 		<property name="locker" ref="clusterLocker" />
 		<property name="clusterConfig" ref="org.olat.commons.coordinate.cluster.ClusterConfig" />
-		<property name="syncer" ref="clusterSyncer" />
-		<property name="eventBus" ref="clusterEventBus" />
+		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer" />
+		<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
 		<property name="cacher" ref="infinispanCacher"/>
 	</bean>
 
 	<bean id="clusterLocker" class="org.olat.commons.coordinate.cluster.lock.ClusterLocker" init-method="init">
 		<constructor-arg index="0" ref="clusterLockManager" />
 		<property name="persistentLockManager" ref="persistentLockManager"/>
-		<property name="syncer" ref="clusterSyncer" />
-		<property name="eventBus" ref="clusterEventBus" />
+		<property name="syncer" ref="org.olat.commons.coordinate.cluster.ClusterSyncer" />
+		<property name="eventBus" ref="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" />
 	</bean>
 	
-	<bean id="clusterSyncer" class="org.olat.commons.coordinate.cluster.ClusterSyncer">
+	<bean id="org.olat.commons.coordinate.cluster.ClusterSyncer" class="org.olat.commons.coordinate.cluster.ClusterSyncer" >
+		<constructor-arg index="0" ref="lockManager" />
 		<!-- if the ClusterSyncer is on debug level and if a sync takes longer than the given threshhold in miliseconds, then a warn message is written into the log -->
 		<property name="executionTimeThreshold" value="1000" />
+		<property name="dbInstance" ref="database"></property>
 	</bean>
 
-	<bean id="clusterEventBus" class="org.olat.commons.coordinate.cluster.jms.ClusterEventBus"
-		  init-method="springInit" destroy-method="stop" lazy-init="true">
-		<property name="sendInterval" value="15000" />
-		<property name="jmsMsgDelayLimit" value="5000" />
+	<bean id="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" class="org.olat.commons.coordinate.cluster.jms.ClusterEventBus" 
+		init-method="springInit" destroy-method="stop" lazy-init="true">
+		<property name="clusterConfig"     ref="org.olat.commons.coordinate.cluster.ClusterConfig" />
+		<property name="connectionFactory" ref="jmsConnectionFactory"/>
+		<property name="destination"       ref="sysbus.topic"/>
+		<property name="sendInterval"      value="15000" />
+		<property name="jmsMsgDelayLimit"  value="5000" />
 	</bean>
 
 	<import resource="classpath:/org/olat/commons/coordinate/cluster/_spring/coordinate_jms_${jms.provider}.xml"/>

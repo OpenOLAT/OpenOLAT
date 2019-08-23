@@ -51,17 +51,17 @@ public class GroupCellRenderer implements FlexiCellRenderer {
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row,
 			FlexiTableComponent source, URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof MemberRow) {
-			render(target, (MemberRow) cellValue, translator.getLocale());
+			render(target, (MemberRow) cellValue);
 		}
 	}
-
+/*
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		if (val instanceof MemberRow) {
 			render(sb, (MemberRow) val, locale);
 		}
 	}
-	
+
 	private void render(StringOutput sb, MemberRow member, Locale locale) {
 		assertNotNull(locale);
 
@@ -95,7 +95,7 @@ public class GroupCellRenderer implements FlexiCellRenderer {
 			render(target, (MemberRow) cellValue);
 		}
 	}
-	
+	*/
 	private void render(StringOutput sb, MemberRow member) {
 		boolean and = false;
 		List<BusinessGroupShort> groups = member.getGroups();
@@ -122,7 +122,7 @@ public class GroupCellRenderer implements FlexiCellRenderer {
 			}
 		}
 	}
-	
+
 	private final boolean and(StringOutput sb, boolean and) {
 		if(and) sb.append(", ");
 		return true;

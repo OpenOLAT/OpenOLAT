@@ -1012,7 +1012,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	private void doDownload(UserRequest ureq) {
 		Roles roles = ureq.getUserSession().getRoles();
-		boolean isAdmin = roles.isOLATAdmin();
+		//	TODO: LMSUZH Update. Do we need this? How can we implement it with isOLATAdmin gone?
+		boolean isAdmin = false;
 
 		if (handler == null) {
 			StringBuilder sb = new StringBuilder(translate("error.download"));
@@ -1039,7 +1040,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			lockResult = handler.acquireLock(ores, ureq.getIdentity());
 			if (lockResult == null
 					|| isSuccessfullyLocked(lockResult, isAlreadyLocked)) {
-				MediaResource mr = handler.getAsMediaResource(ores, false);
+				MediaResource mr = handler.getAsMediaResource(ores);
 				if (mr != null) {
 					repositoryService.incrementDownloadCounter(entry);
 					ureq.getDispatchResult().setResultingMediaResource(mr);

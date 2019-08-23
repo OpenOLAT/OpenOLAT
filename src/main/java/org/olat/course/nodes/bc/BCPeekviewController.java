@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderModule;
+import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.ui.media.VFSMetadataMediaResource;
@@ -64,7 +65,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class BCPeekviewController extends BasicController implements Controller {
-	
+	// comparator to sort the messages list by creation date
+	private static final Comparator<VFSLeaf> dateSortingComparator = new Comparator<VFSLeaf>(){
+		public int compare(final VFSLeaf leaf1, final VFSLeaf leaf2) {
+			return Long.valueOf(leaf2.getLastModified()).compareTo(leaf1.getLastModified()); //last first
+		}};
+
+
 	private int count = 0;
 	private final String nodeId;
 	private final Identity identity;
@@ -78,7 +85,7 @@ public class BCPeekviewController extends BasicController implements Controller 
 			prefixes.add(".");
 		}
 
-		return new VFSItemExcludePrefixFilter(prefixes.stream().toArray(String[]::new));
+		return new VFSItemExcludePrefixFilter(prefixes.stream().toArray(String[]::new), true);
 	}
 	private final boolean forceDownload;
 	

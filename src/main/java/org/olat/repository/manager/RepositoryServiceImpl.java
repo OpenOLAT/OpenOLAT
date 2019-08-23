@@ -40,6 +40,7 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.commons.services.taskexecutor.manager.PersistentTaskDAO;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
@@ -448,7 +449,8 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 			beforeRepositoryEntrySoftDeletionListener.onAction(reloadedRe);
 		}
 
-		reloadedRe.setAccess(RepositoryEntry.DELETED);
+		// TODO: LMSUZH important? not there in OpenOLAT 14.0.4
+		// reloadedRe.setAccess(RepositoryEntry.DELETED);
 		reloadedRe.setAllUsers(false);
 		reloadedRe.setGuests(false);
 		reloadedRe.setEntryStatus(RepositoryEntryStatusEnum.trash);
@@ -503,7 +505,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 	}
 
 	@Override
-	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, Identity restoredBy) {
+	public RepositoryEntry restoreRepositoryEntry(RepositoryEntry entry, UserRequest ureq) {
 		RepositoryEntry reloadedRe = repositoryEntryDAO.loadForUpdate(entry);
 		reloadedRe.setAllUsers(false);
 		reloadedRe.setGuests(false);
@@ -515,7 +517,7 @@ public class RepositoryServiceImpl implements RepositoryService, OrganisationDat
 		reloadedRe = dbInstance.getCurrentEntityManager().merge(reloadedRe);
 		dbInstance.commit();
 		for (AfterRepositoryEntryRestoreListener afterRepositoryEntryRestoreListener : afterRepositoryEntryRestoreListeners) {
-			afterRepositoryEntryRestoreListener.onAction(reloadedRe, restoredBy);
+			afterRepositoryEntryRestoreListener.onAction(reloadedRe, ureq.getIdentity());
 		}
 		return reloadedRe;
 	}

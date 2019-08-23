@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+  http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="courseCleanupTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="courseCleanupJobDetail" />
+        <property name="cronExpression" value="0 0 3 * * ?" />
+    </bean>
+
+    <!--version below is for test-->
+    <!--<bean id="courseCleanupTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">-->
+        <!--<property name="jobDetail" ref="courseCleanupJobDetail" />-->
+        <!--<property name="repeatCount" value="0"/>-->
+        <!--<property name="repeatInterval" value="1" />-->
+    <!--</bean>-->
+
+    <bean id="courseCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailFactoryBean" lazy-init="true">
+        <property name="jobClass" value="org.olat.course.cleanup.CourseCleanupJob"/>
+    </bean>
+
+</beans>

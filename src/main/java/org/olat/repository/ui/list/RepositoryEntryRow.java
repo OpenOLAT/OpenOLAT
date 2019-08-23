@@ -56,18 +56,14 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private String location;
 	private String expenditureOfWork;
 	private String thumbnailRelPath;
-	private int access;
-	private int statusCode;
-	
-	private boolean isMembersOnly = false;
 	private final String shortenedDescription;
 	private final RepositoryEntryStatusEnum status;
 	private final boolean allUsers;
 	private final boolean guests;
 	private final boolean bookable;
-	
-	private final String score;
-	private final Boolean passed;
+
+	private String score;
+	private Boolean passed;
 	
 	private boolean member;
 	
@@ -99,12 +95,17 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		setExternalId(entry.getExternalId());
 		setExternalRef(entry.getExternalRef());
 		setDisplayName(entry.getDisplayname());
-		setShortenedDescription(entry.getDescription());
+		if(entry.getDescription() != null) {
+			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(entry.getDescription());
+			if(shortDesc.length() > 255) {
+				shortenedDescription = shortDesc.substring(0, 255);
+			} else {
+				shortenedDescription = shortDesc;
+			}
+		} else {
+			shortenedDescription = "";
+		}
 		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
-
-		setIsMembersOnly(entry.isMembersOnly());
-		setAccess(entry.getAccess());
-		setStatusCode(entry.getStatusCode());
 
 		authors = entry.getAuthors();
 		location = entry.getLocation();
@@ -139,15 +140,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 			}
 		}
 	}
-	
-	private void setIsMembersOnly(boolean membersOnly) {
-		this.isMembersOnly = membersOnly;
-	}
 
-	public boolean isMembersOnly() {
-		return isMembersOnly;
-	}
-	
 	@Override
 	public Long getKey() {
 		return key;
@@ -173,14 +166,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		return status;
 	}
 
-	public void setAccess(int access) {
-		this.access = access;
-	}
-
-	public int getStatusCode() {
-		return statusCode;
-	}
-	
 	public boolean isAllUsers() {
 		return allUsers;
 	}
@@ -191,10 +176,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public boolean isBookable() {
 		return bookable;
-	}
-
-	public void setStatusCode(int statusCode) {
-		this.statusCode = statusCode;
 	}
 
 	public String getExternalId() {
@@ -219,30 +200,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public void setDisplayName(String name) {
 		this.name = name;
-	}
-
-	public String getShortenedDescription() {
-		if(shortenedDescription != null) {
-			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(shortenedDescription);
-			if(shortDesc.length() > 255) {
-				shortDesc = shortDesc.substring(0, 255);
-			}
-			return shortDesc;
-		}
-		return shortenedDescription;
-	}
-
-	public void setShortenedDescription(String description) {
-		if(description != null) {
-			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(description);
-			if(shortDesc.length() > 255) {
-				shortenedDescription = shortDesc.substring(0, 255);
-			} else {
-				shortenedDescription = shortDesc;
-			}
-		} else {
-			shortenedDescription = "";
-		}
 	}
 
 	/**
@@ -345,7 +302,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public String getSelectLinkName() {
 		return selectLink.getComponent().getComponentName();
 	}
-	
+
 	public FormLink getSelectLink() {
 		return selectLink;
 	}

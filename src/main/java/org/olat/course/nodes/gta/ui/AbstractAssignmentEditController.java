@@ -33,6 +33,7 @@ import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallbackBuilder;
 import org.olat.core.commons.services.doceditor.ui.DocEditorFullscreenController;
 import org.olat.core.commons.services.notifications.NotificationsManager;
+import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -104,6 +105,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 	protected final CourseEnvironment courseEnv;
 	protected final ModuleConfiguration config;
 	private final Long courseRepoKey;
+	protected final SubscriptionContext subscriptionContext;
 	
 	private int linkCounter = 0;
 	
@@ -122,6 +124,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 		tasksFolder = gtaManager.getTasksDirectory(courseEnv, gtaNode);
 		tasksContainer = gtaManager.getTasksContainer(courseEnv, gtaNode);
 		courseRepoKey = courseEnv.getCourseGroupManager().getCourseEntry().getKey();
+		subscriptionContext = gtaManager.getSubscriptionContext(courseEnv.getCourseGroupManager().getCourseResource(), gtaNode, false);
 		initForm(ureq);
 	}
 
@@ -217,7 +220,7 @@ abstract class AbstractAssignmentEditController extends FormBasicController impl
 					gtaManager.addTaskDefinition(newTask, courseEnv, gtaNode);
 				}
 				fireEvent(ureq, Event.DONE_EVENT);
-				updateModel();
+				updateModel(ureq);
 				notificationsManager.markPublisherNews(subscriptionContext, null, false);
 			}
 			cmc.deactivate();

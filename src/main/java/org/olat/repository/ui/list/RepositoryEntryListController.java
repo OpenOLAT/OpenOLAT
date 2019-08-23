@@ -25,12 +25,19 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
+import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
+import org.olat.core.dispatcher.mapper.MapperService;
+import org.olat.core.dispatcher.mapper.manager.MapperKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
-import org.olat.core.gui.components.form.flexible.elements.*;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSort;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
@@ -45,6 +52,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
+import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -91,7 +99,7 @@ import java.util.List;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class RepositoryEntryListController extends FormBasicController
-	implements Activateable2, FlexiTableComponentDelegate {
+	implements Activateable2, RepositoryEntryDataSourceUIFactory, FlexiTableComponentDelegate {
 
 	/**
 	 * In order the event listener array is never null, one listener must
@@ -122,11 +130,13 @@ public class RepositoryEntryListController extends FormBasicController
 	private RepositoryEntryDetailsController detailsCtrl;
 	private RepositoryEntrySearchController searchCtrl;
 
+	private final MapperKey mapperThumbnailKey;
 	@Autowired
 	private MarkManager markManager;
 	@Autowired
 	private UserRatingsDAO userRatingsDao;
-
+	@Autowired
+	private MapperService mapperService;
 	@Autowired
 	private RepositoryModule repositoryModule;
 	@Autowired
@@ -144,6 +154,7 @@ public class RepositoryEntryListController extends FormBasicController
 			boolean withSearch, String name, BreadcrumbPanel stackPanel) {
 		super(ureq, wControl, "repoentry_table");
 		setTranslator(Util.createPackageTranslator(RepositoryManager.class, getLocale(), getTranslator()));
+		mapperThumbnailKey = mapperService.register(null, "repositoryentryImage", new RepositoryEntryImageMapper());
 		this.name = name;
 		this.stackPanel = stackPanel;
 		this.withSearch = withSearch;
@@ -159,7 +170,7 @@ public class RepositoryEntryListController extends FormBasicController
 		 * SEV:
 		 * Why "this"? A inner class would be more readable!
 		 */
-		dataSource = new DefaultRepositoryEntryDataSource(searchParams, repositoryEntryRowsFactory);
+		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
 		initForm(ureq);
 
 		/**
@@ -316,6 +327,12 @@ public class RepositoryEntryListController extends FormBasicController
 		.putAndSave(RepositoryEntryListController.class, "rev-filters-".concat(name),
 				FilterPreferences.valueOf(filters));
 	}
+
+	@Override
+	public String getMapperThumbnailUrl() {
+		return mapperThumbnailKey.getUrl();
+	}
+
 
 	@Override
 	protected void doDispose() {
@@ -625,7 +642,7 @@ public class RepositoryEntryListController extends FormBasicController
 			row.setMarkLink(markLink);
 		}
 	}
-	
+
 	@Override
 	public void forgeSelectLink(RepositoryEntryRow row) {
 		String displayName = StringHelper.escapeHtml(row.getDisplayName());
@@ -653,14 +670,51 @@ public class RepositoryEntryListController extends FormBasicController
 		startLink.setCustomEnabledLinkCSS(iconCss);
 		startLink.setIconRightCSS("o_icon o_icon_start");
 		row.setStartLink(startLink);
-	}	
-	
+	}
+
 	@Override
 	public void forgeDetails(RepositoryEntryRow row) {
 		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, null, Link.LINK);
 		detailsLink.setCustomEnabledLinkCSS("o_details");
 		detailsLink.setUserObject(row);
 		row.setDetailsLink(detailsLink);
+	}
+
+	@Override
+	public void forgeRatings(RepositoryEntryRow row) {
+		if(repositoryModule.isRatingEnabled()) {
+			if(guestOnly) {
+				Double averageRating = row.getAverageRating();
+				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+				RatingFormItem ratingCmp = uifactory.addRatingItem("rat_" + row.getKey(), null,  averageRatingValue, 5, false, null);
+				row.setRatingFormItem(ratingCmp);
+				ratingCmp.setUserObject(row);
+			} else {
+				Integer myRating = row.getMyRating();
+				Double averageRating = row.getAverageRating();
+				long numOfRatings = row.getNumOfRatings();
+
+				float ratingValue = myRating == null ? 0f : myRating.floatValue();
+				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
+				RatingWithAverageFormItem ratingCmp
+						= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, numOfRatings);
+				row.setRatingFormItem(ratingCmp);
+				ratingCmp.setUserObject(row);
+			}
+		}
+	}
+	@Override
+	public void forgeComments(RepositoryEntryRow row) {
+		if(repositoryModule.isCommentEnabled()) {
+			long numOfComments = row.getNumOfComments();
+			String title = "(" + numOfComments + ")";
+			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
+			commentsLink.setUserObject(row);
+			String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
+			commentsLink.setCustomEnabledLinkCSS("o_comments");
+			commentsLink.setIconLeftCSS(css);
+			row.setCommentsLink(commentsLink);
+		}
 	}
 
 	@Override

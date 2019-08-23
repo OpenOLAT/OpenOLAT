@@ -112,7 +112,7 @@ public class UserChangePasswordMailUtil {
 
         // Validate if template corresponds to our expectations (should contain dummy key)
         if (!text.contains(getDummyKey(emailAdress))) {
-			log.warn("Can not replace temporary registration token in change pwd mail token dialog, user probably changed temporary token in mai template", null);
+			log.warn("Can not replace temporary registration token in change pwd mail token dialog, user probably changed temporary token in mai template");
             log.error("Dummy key not found in prepared email");
             throw new UserChangePasswordException(sessionTrans.translate("error.sendTokenByMail.no.dummy.key"));
         }

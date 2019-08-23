@@ -83,6 +83,9 @@ public class MSEditFormController extends FormBasicController {
 	/** Rich text input element for a notice to all tutors. */
 	private RichTextElement infotextCoach;
 
+	/** Switch for rendering email confirmation UI */
+	private boolean confirmationEmailConf = false;
+
 	/** The keys for true / false dropdowns. */
 	private String[] trueFalseKeys;
 
@@ -98,10 +101,17 @@ public class MSEditFormController extends FormBasicController {
 	 * @param modConfig
 	 */
 	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
-		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
+		this(ureq, wControl, modConfig, false);
+	}
+
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, boolean confirmationEmailConf) {
+		super(ureq, wControl, FormBasicController.LAYOUT_BAREBONE);
+		this.confirmationEmailConf = confirmationEmailConf;
+
 		this.modConfig = modConfig;
-		trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
-		passedTypeValues = new String[] { translate("form.passedtype.cutval"), translate("form.passedtype.manual") };
+		this.trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
+
+		this.passedTypeValues = new String[] { translate("form.passedtype.cutval"), translate("form.passedtype.manual") };
 		initForm(ureq);
 	}
 

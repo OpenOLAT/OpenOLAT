@@ -627,9 +627,10 @@ public class GroupController extends BasicController {
 		 * if a user isAuthor but only groupParticipant and not groupCoach in a certain group he attends as student
 		 * he does not have privileges to see userPropertyInstitutionalEmployeeNumber + userPropertyInstitutionalMatriculationNumber of all other users
 		 */
-		if (!groupDao.hasRole(group, ureq.getIdentity(), "coach") && !ureq.getUserSession().getRoles().isOLATAdmin()) {
+/*	TODO: LMSUZH Update. Do we need this? How can we implemet it with isOLATAdmin gone?
+	if (!groupDao.hasRole(group, ureq.getIdentity(), "coach") && !ureq.getUserSession().getRoles().isOLATAdmin()) {
 			isAdministrativeUser = false;
-		}
+		} */
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, isAdministrativeUser);
 		if (isAdministrativeUser) {
 			// first the login name, but only if administrative user

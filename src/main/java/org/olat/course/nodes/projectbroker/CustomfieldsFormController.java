@@ -177,7 +177,7 @@ public class CustomfieldsFormController extends FormBasicController {
 		if (i == 0) nameElement.setExampleKey("customfield.example.name", null);
 		customFieldNameElementList.add(nameElement);
 		
-		TextElement valueElement = uifactory.addTextAreaElement("customfield_value_" + i, "customfield.value.label", 2500, 5, 2, true, customField.getValue(), formLayout);
+		TextElement valueElement = uifactory.addTextAreaElement("customfield_value_" + i, "customfield.value.label", 2500, 5, 2, true, false, customField.getValue(), formLayout);
 		valueElement.setLabel("customfield.value.label", null);
 		if (i == 0)  valueElement.setExampleKey("customfield.example.value", null);
 		customFieldValueElementList.add(valueElement);

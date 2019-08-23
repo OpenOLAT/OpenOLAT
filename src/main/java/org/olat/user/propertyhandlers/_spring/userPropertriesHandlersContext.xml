@@ -141,21 +141,16 @@
 		<property name="name" value="institutionalUserIdentifier" />
 		<property name="group" value="institute" />
 	</bean>
-	
 
 	<bean id="userPropertyInstitutionalEmployeeNumber" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
 		<property name="name" value="institutionalEmployeeNumber" />
 		<property name="group" value="institute" />
-		<property name="deletable" value="true" />
 	</bean>
-	
+
 	<bean id="userPropertyInstitutionalMatriculationNumber" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
 		<property name="name" value="institutionalMatriculationNumber" />
 		<property name="group" value="institute" />
-		<property name="deletable" value="false" />
 	</bean>
-
-
 
 	<bean id="userPropertyInstitutionalEmail" class="org.olat.user.propertyhandlers.EmailProperty">
 		<property name="name" value="institutionalEmail" />
@@ -394,7 +389,6 @@
 	<bean id="usertrackingAttrMatriculationNumber" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">
 		<property name="name" value="matriculationNumber" />
 		<property name="group" value="shibbattr" />
-		<property name="deletable" value="false" />
 	</bean>
 
 	<bean id="usertrackingAttrSwissEduPersonStaffCategory" class="org.olat.user.propertyhandlers.Generic127CharTextPropertyHandler">

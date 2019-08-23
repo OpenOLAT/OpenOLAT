@@ -86,8 +86,9 @@ public class CopyRepositoryEntryController extends FormBasicController {
 	
 	@Override
 	protected void formOK(UserRequest ureq) {
-		Roles roles = ureq.getUserSession().getRoles();
-		if (!roles.isOLATAdmin() && sourceEntry.exceedsSizeLimit()) {
+		//	TODO: LMSUZH Update. Do we need this? How can we implement it with isOLATAdmin gone?
+		boolean isOlatAdmin = false;
+		if (!isOlatAdmin && sourceEntry.exceedsSizeLimit()) {
 			showError("copy.skipped.sizelimit.exceeded");
 		} else {
 			String displayName = displayNameElement.getValue();

@@ -58,10 +58,8 @@ public class MockServletContextWebContextLoader extends AbstractContextLoader {
 					+ StringUtils.arrayToCommaDelimitedString(locations) + "].");
 
 
-			XmlWebApplicationContext appContext = new XmlWebApplicationContext();
-			// ResourceBasePath has to be set since the Spring 3 implementation of MockServletContext is only
-			// compatible wit Servlet 2.5, but not with Servlet 3.0. Should be fixed for Spring 4.
-			MockServletContext servletContext = new MockServletContext("/META-INF/resources");
+			XmlWebApplicationContext appContext = new XmlWebApplicationContext(); 
+			MockServletContext servletContext = new MockServletContext(); 
 			servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appContext); 
 			MockPropertySource propertySource = new MockPropertySource();
 			propertySource.setProperty("jms.provider", "activemq");

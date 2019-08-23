@@ -37,7 +37,6 @@ import org.olat.core.util.CodeHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
-import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -52,7 +51,7 @@ public class OLATResourceManager {
 	
 	private static OLATResourceManager INSTANCE;
 
-	private final DB dbInstance;
+	private  DB dbInstance;
 	
 	/**
 	 * @return Singleton
@@ -61,12 +60,20 @@ public class OLATResourceManager {
 		return INSTANCE;
 	}
 
-	@Autowired
-	private OLATResourceManager(DB dbInstance) {
-		this.dbInstance = dbInstance;
+	/**
+	 * [used by spring]
+	 */
+	private OLATResourceManager() {
 		INSTANCE = this;
 	}
-	
+
+	/**
+	 * @param db
+     */
+	public void setDbInstance(DB db) {
+			this.dbInstance = db;
+	}
+
 	/**
 	 * Creates a new OLATResource instance (but does not persist the instance)
 	 * @param resource

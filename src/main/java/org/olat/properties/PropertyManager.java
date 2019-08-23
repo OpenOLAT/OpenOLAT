@@ -60,8 +60,12 @@ public class PropertyManager implements UserDataDeletable {
 	private static PropertyManager INSTANCE;
 
 	@Autowired
-	private PropertyManager(DB dbInstance) {
-		this.dbInstance = dbInstance;
+	private DB dbInstance;
+
+	/**
+	 * [used by spring]
+	 */
+	private PropertyManager() {
 		INSTANCE = this;
 	}
 

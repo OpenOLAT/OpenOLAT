@@ -41,14 +41,10 @@ public class RepositoryEditDescriptionControllerFactoryImpl implements Repositor
 													  WindowControl windowControl,
 													  RepositoryEntry repositoryEntry) {
 		return new RepositoryEditDescriptionController(
-				userManager,
-				repositoryService,
-				repositoryManager,
-				lifecycleDao,
-				repositoryHandlerFactory,
 				userRequest,
 				windowControl,
 				repositoryEntry
 		);
 	}
+
 }

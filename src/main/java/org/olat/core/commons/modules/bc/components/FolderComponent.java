@@ -59,7 +59,6 @@ import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.core.util.vfs.filters.VFSItemExcludePrefixFilter;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 
@@ -129,14 +128,6 @@ public class FolderComponent extends AbstractComponent {
 			VFSContainer rootContainer, VFSItemFilter filter,
 			CustomLinkTreeModel customLinkTreeModel) {
 		this(ureq, name, rootContainer, filter, customLinkTreeModel, null);
-	}
-
-	private VFSItemExcludePrefixFilter getExcludeFilter(boolean showHiddenFiles) {
-		VFSItemExcludePrefixFilter filter = new VFSItemExcludePrefixFilter(ATTACHMENT_EXCLUDE_PREFIXES);
-		if (!showHiddenFiles) {
-			filter.addExcludedPrefix(".");
-		}
-		return filter;
 	}
 
 	public FolderComponent(UserRequest ureq, String name,

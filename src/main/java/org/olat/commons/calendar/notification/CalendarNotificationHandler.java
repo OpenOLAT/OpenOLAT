@@ -23,7 +23,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
 
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nullable;
 import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;

@@ -217,8 +217,9 @@ public class CourseOverviewController extends FormBasicController  {
 			}
 		}
 
+		/* TODO: LMSUZH Do we need this? It is not there in OO 14.0.4
 		Map<Long, Date> lastLaunchDates = userInfosMgr.getRecentLaunchDates(editedIdentity);
-		for(CourseMemberView memberView:repoKeyToViewMap.values()) {
+		for(CourseMemberView memberView:resourceToViewMap.values()) {
 			RepositoryEntry entry = entryKeyToRepoEntryMap.get(memberView.getRepoKey());
 			if (entry != null) {
 				memberView.setEntry(entry);
@@ -231,8 +232,9 @@ public class CourseOverviewController extends FormBasicController  {
 				memberView.getMembership().setManagedMembersRepo(managedMembersRepo);
 			}
 		}
-		
-		List<CourseMemberView> views = new ArrayList<CourseMemberView>(repoKeyToViewMap.values());
+		 */
+
+		List<CourseMemberView> views = new ArrayList<CourseMemberView>(resourceToViewMap.values());
 		tableDataModel.setObjects(views);
 		tableEl.reset(true, true, true);
 	}

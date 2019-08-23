@@ -42,8 +42,8 @@ import javax.jms.ObjectMessage;
 import javax.jms.Session;
 import javax.jms.Topic;
 
-import org.olat.core.commons.persistence.DB;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.OLATRuntimeException;
@@ -55,9 +55,6 @@ import org.olat.core.util.event.MultiUserEvent;
 import org.olat.core.util.event.businfo.BusListenerInfo;
 import org.olat.core.util.event.businfo.BusListenerInfos;
 import org.olat.core.util.resource.OresHelper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 /**
  * This class realizes a clustered (multiple java vm) system event bus. it uses JMS 
@@ -70,15 +67,12 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	//ores helper is limited to 50 character, so truncate it
 	static final OLATResourceable CLUSTER_CHANNEL = OresHelper.createOLATResourceableType(ClusterEventBus.class.getName().substring(0, 50));
 
-	private final DB dbinstance;
-	private final ClusterConfig clusterConfig;
-	private final ConnectionFactory connectionFactory;
-	private final Topic destination;
+	ClusterConfig clusterConfig;
 
 	// settings
-	private long sendInterval = 1000; // 1000 miliseconds between each "ping/alive/info" message, can be set using spring
-	private long jmsMsgDelayLimit = 5000;  // max duration of ClusterInfoEvent send-receive time in ms
-
+	long sendInterval = 1000; // 1000 miliseconds between each "ping/alive/info" message, can be set using spring
+	long jmsMsgDelayLimit = 5000;  // max duration of ClusterInfoEvent send-receive time in ms
+	
 	// counters
 	private long latestSentMsgId = -1;
 	private long numOfSentMessages = 0;
@@ -97,6 +91,8 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	// for bookkeeping how many resources have how many listeners
 	private final BusListenerInfos busInfos = new BusListenerInfos();
 	protected boolean isClusterInfoEventThreadRunning = true;
+	private ConnectionFactory connectionFactory;
+	private Topic destination;
 	private Connection connection;
 	private Session sessionConsumer;
 	private MessageConsumer consumer;
@@ -114,16 +110,13 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	
 	private ExecutorService jmsExecutor;
 	
-	@Autowired
-	public ClusterEventBus(DB dbinstance,
-						   ClusterConfig clusterConfig,
-						   @Qualifier("jmsConnectionFactory") ConnectionFactory connectionFactory,
-						   Topic destination) {
+	/**
+	 * [used by spring]
+	 * 
+	 * @param jmsTemplate
+	 */
+	ClusterEventBus() {
 		super();
-		this.dbinstance = dbinstance;
-		this.clusterConfig = clusterConfig;
-		this.connectionFactory = connectionFactory;
-		this.destination = destination;
 	}
 
 	public void springInit() throws JMSException {
@@ -219,6 +212,11 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 		return busInfos.getListenerCountFor(ores);
 	}
 
+	/**
+	 * 
+	 * @see org.olat.core.util.event.AbstractOLATSystemBus#fireEventToListenersOf(org.olat.core.util.event.MultiUserEvent,
+	 *      org.olat.core.id.OLATResourceable)
+	 */
 	@Override
 	public void fireEventToListenersOf(final MultiUserEvent event, final OLATResourceable ores) {
 		// send the event wrapped over jms to all nodes 
@@ -270,7 +268,7 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			log.error("Error enountered by serve-thread:", er);
 		} finally {
 			try {
-				dbinstance.commitAndCloseSession();
+				DBFactory.getInstance().commitAndCloseSession();
 			} catch (Exception e) {
 				log.error("", e);
 			}
@@ -372,6 +370,32 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 			return f;
 		}
 	}
+
+	/**
+	 * [used by spring]
+	 */
+	public void setClusterConfig(ClusterConfig clusterConfig) {
+		this.clusterConfig = clusterConfig;
+	}
+
+	/**
+	 * [used by spring to auto export mbean data]
+	 * 
+	 * @return the number of sent cluster event bus message since startup of
+	 *         this java vm
+	 */
+	public long getNumOfSentMessages() {
+		return numOfSentMessages;
+	}
+
+	/**
+	 * [used by spring to auto export mbean data]
+	 * 
+	 * @return the id of the latest msg sent from this cluster
+	 */
+	public long getLatestSentMsgId() {
+		return latestSentMsgId;
+	}
 	
 	Map<Integer, NodeInfo> getNodeInfos() {
 		return nodeInfos;
@@ -465,4 +489,16 @@ public class ClusterEventBus extends AbstractEventBus implements MessageListener
 	public void setJmsMsgDelayLimit(long jmsMsgDelayLimit) {
 		this.jmsMsgDelayLimit = jmsMsgDelayLimit;
 	}
+
+	/**
+	 * [used by spring]
+	 */
+	public void setConnectionFactory(ConnectionFactory conFac) {
+		this.connectionFactory = conFac;
+	}
+
+	public void setDestination(Topic destination) {
+		this.destination = destination;
+	}
+
 }

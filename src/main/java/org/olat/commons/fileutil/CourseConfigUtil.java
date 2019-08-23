@@ -20,6 +20,7 @@
  */
 package org.olat.commons.fileutil;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.util.FileUtils;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.util.vfs.QuotaManager;
@@ -57,7 +58,7 @@ public class CourseConfigUtil {
     public static void checkAgainstCustomQuotas(File exportDirectory) throws CustomQuotaDetectedException {
         String path = exportDirectory.getPath();
         String pathPrefix = path.substring(path.indexOf("/course/"));
-        QuotaManager qm = QuotaManager.getInstance();
+        QuotaManager qm = CoreSpringFactory.getImpl(QuotaManager.class);
         if (qm.hasCustomQuotas(pathPrefix)) {
             throw new CustomQuotaDetectedException("Course has custom quotas for its nodes");
         }

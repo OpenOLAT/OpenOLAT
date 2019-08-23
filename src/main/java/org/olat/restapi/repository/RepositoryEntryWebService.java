@@ -94,6 +94,7 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
+import org.olat.repository.manager.RepositoryEntryDeletionException;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.manager.RepositoryEntryToTaxonomyLevelDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
@@ -732,7 +733,6 @@ public class RepositoryEntryWebService {
 	 * @response.representation.200.doc The metadatas of the deleted resource
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course not found
-	 * @param courseId The course resourceable's id
 	 * @param request The HTTP request
 	 * @return It returns the XML representation of the <code>Structure</code>
 	 *         object representing the course.
@@ -748,7 +748,12 @@ public class RepositoryEntryWebService {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		}
 		UserRequest ureq = getUserRequest(request);
-		ErrorList errors = repositoryService.deletePermanently(entry, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		ErrorList errors;
+		try {
+			errors = repositoryService.deletePermanently(entry, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+		} catch (RepositoryEntryDeletionException e) {
+			return Response.serverError().status(500).build();
+		}
 		if(errors.hasErrors()) {
 			return Response.serverError().status(500).build();
 		}
@@ -794,12 +799,17 @@ public class RepositoryEntryWebService {
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("deleted".equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			repositoryService.deleteSoftly(entry, identity, true, false);
+			try {
+				repositoryService.deleteSoftly(entry, identity, true, false);
+			} catch (RepositoryEntryDeletionException e) {
+				return Response.serverError().status(500).build();
+			}
 			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
-			repositoryService.restoreRepositoryEntry(entry);
+			final UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			repositoryService.restoreRepositoryEntry(entry, ureq);
 			log.info(Tracing.M_AUDIT, "REST restoring course: " + entry.getDisplayname() + " [" + entry.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(entry, OlatResourceableType.genRepoEntry));

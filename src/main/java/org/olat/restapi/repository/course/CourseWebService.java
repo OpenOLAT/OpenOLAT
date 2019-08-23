@@ -449,11 +449,11 @@ public class CourseWebService {
 
 		ErrorList errors = new ErrorList();
 		try {
-			errors = rs.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
+			errors = repositoryService.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
 		        errors = repositoryService.deletePermanently(re, ureq.getIdentity(), ureq.getUserSession().getRoles(), ureq.getLocale());
 		} catch (RepositoryEntryDeletionException e) {
 			errors.setError(e.getMessage());
-			log.audit(e.getMessage());
+			log.info(Tracing.M_AUDIT, e.getMessage());
 		}
 		if(errors.hasErrors()) {
 			return Response.serverError().status(500).build();
@@ -504,14 +504,15 @@ public class CourseWebService {
 			try {
 				repositoryService.deleteSoftly(re, identity, true, false);
 			} catch (RepositoryEntryDeletionException e) {
-				log.audit(e.getMessage());
+				log.info(Tracing.M_AUDIT, e.getMessage());
 			}
 			log.info(Tracing.M_AUDIT, "REST deleting (soft) course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_TRASH, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));
 		} else if("restored".equals(newStatus)) {
 			Identity identity = getIdentity(request);
-			repositoryService.restoreRepositoryEntry(re);
+			UserRequest ureq = RestSecurityHelper.getUserRequest(request);
+			repositoryService.restoreRepositoryEntry(re, ureq);
 			log.info(Tracing.M_AUDIT, "REST restoring course: " + re.getDisplayname() + " [" + re.getKey() + "]");
 			ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_RESTORE, getClass(),
 					LoggingResourceable.wrap(re, OlatResourceableType.genRepoEntry));

@@ -65,11 +65,11 @@ public class MemberListController extends AbstractMemberListController {
 			// Only group coaches can be removed from group
 			boolean membersWithParticipantRoleSelected = false;
 			boolean membersWithCoachAndParticipantRoleSelected = false;
-			for (MemberView member : members) {
+			for (MemberRow member : members) {
 				CourseMembership courseMembership = member.getMembership();
-				if (courseMembership.isGroupTutor() && courseMembership.isGroupParticipant()) {
+				if (courseMembership.isBusinessGroupCoach() && courseMembership.isBusinessGroupParticipant()) {
 					membersWithCoachAndParticipantRoleSelected = true;
-				} else if (courseMembership.isGroupParticipant()) {
+				} else if (courseMembership.isBusinessGroupParticipant()) {
 					membersWithParticipantRoleSelected = true;
 				}
 				if (membersWithCoachAndParticipantRoleSelected && membersWithParticipantRoleSelected) {

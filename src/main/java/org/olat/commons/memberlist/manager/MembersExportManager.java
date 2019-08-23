@@ -197,7 +197,8 @@ public class MembersExportManager {
 			// calculate rows and membersMap for the group
 			List<Identity> rows = new ArrayList<>();
 			Map<Identity, StringBuilder> membersMap = new HashMap<>();
-			prepareExportData(rows, membersMap, roleMembers, groupmemberships, repomemberships, translator);
+			Map<Long, MemberView> emptyMemberViewsMap = new HashMap<>();
+			prepareExportData(rows, membersMap, roleMembers, groupmemberships, repomemberships, emptyMemberViewsMap, translator);
 			// store to the map of prepared groups
 			preparedGroups.put(group.getName(), new GroupData(rows, membersMap));
 		}
@@ -221,8 +222,14 @@ public class MembersExportManager {
 			repomemberships = new HashMap<>();
 			memberViews = memberQueries.getRepositoryEntryMembers(repoEntry, params, userPropertyHandlers, translator.getLocale());
 		} else if(businessGroup != null) {
+			repomemberships = getRepoMembershipMap(repoEntry);
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, repoEntry, 0, -1);
+			groupmemberships = getGroupMembershipMap(groups);
 			memberViews = memberQueries.getBusinessGroupMembers(businessGroup, params, userPropertyHandlers, translator.getLocale());
 		} else {
+			repomemberships = getRepoMembershipMap(repoEntry);
+			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(null, repoEntry, 0, -1);
+			groupmemberships = getGroupMembershipMap(groups);
 			memberViews = Collections.emptyList();
 		}
 		Map<Long,MemberView> memberViewsMap = memberViews.stream()
@@ -241,23 +248,22 @@ public class MembersExportManager {
 		if (showWaiting) {
 			roleMembers.add(waiting);
 		}
-		Translator repoTranslator = Util.createPackageTranslator(Member.class, translator.getLocale());
-		Translator groupTranslator = Util.createPackageTranslator(GroupMembersRunController.class, translator.getLocale());
-		
+
 		Map<Identity, StringBuilder> membersMap = new HashMap<>();
 		List<Identity> rows = new ArrayList<>();
-		prepareExportData(rows, membersMap, roleMembers, groupmemberships, repomemberships, translator);
+		prepareExportData(rows, membersMap, roleMembers, groupmemberships, repomemberships, memberViewsMap, translator);
 		
 		Translator handlerTranslator = userManager.getPropertyHandlerTranslator(translator);
 		XlsMembersExport exporter = new XlsMembersExport();
 
-		return exporter.export(rows, membersMap, handlerTranslator, userPropertyHandlers);
+		return exporter.export(rows, membersMap, curriculumInfos, handlerTranslator, userPropertyHandlers);
 	}
 
 	private void prepareExportData(List<Identity> rows, Map<Identity, StringBuilder> membersMap,
 								   List<List<Identity>> roleMembers,
 								   Map<Long,BusinessGroupMembership> groupmemberships,
 								   Map<Long,RepositoryEntryMembership> repomemberships,
+								   Map<Long,MemberView> memberViewsMap,
 								   Translator translator) {
 		Translator repoTranslator = Util.createPackageTranslator(Member.class, translator.getLocale());
 		Translator groupTranslator = Util.createPackageTranslator(GroupMembersRunController.class, translator.getLocale());
@@ -266,6 +272,7 @@ public class MembersExportManager {
 				Long memberKey = member.getKey();
 				MemberView memberView = memberViewsMap.get(memberKey);
 				if(memberView != null) {
+					RepositoryEntryMembership repomembership = repomemberships.get(memberKey);
 					CourseMembership membership = memberView.getMemberShip();
 					// business groups
 					if (membership.isBusinessGroupCoach()) {
@@ -293,11 +300,6 @@ public class MembersExportManager {
 					if (membership.isCurriculumElementOwner()) {
 						putRoleToMember(rows, membersMap, member, "curriculum.owners", repoTranslator);
 					}
-					if (groupmembership.isParticipant()) {
-						putRoleToMember(rows, membersMap, member, "participants", groupTranslator);
-					}
-					if (groupmembership.isWaiting()) {
-						putRoleToMember(rows, membersMap, member, "waiting", groupTranslator);
 					if (membership.isCurriculumElementCoach()) {
 						putRoleToMember(rows, membersMap, member, "curriculum.coaches", repoTranslator);
 					} 
@@ -307,10 +309,5 @@ public class MembersExportManager {
 				}
 			}
 		}
-		
-		Translator handlerTranslator = userManager.getPropertyHandlerTranslator(translator);
-		XlsMembersExport exporter = new XlsMembersExport();
-		return exporter.export(rows, membersMap, curriculumInfos, handlerTranslator, userPropertyHandlers);		
 	}
-}
 }
