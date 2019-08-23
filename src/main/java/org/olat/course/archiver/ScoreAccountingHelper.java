@@ -271,7 +271,7 @@ public class ScoreAccountingHelper {
 				boolean commentOk = assessmentConfig.hasComment();
 
 				if (acnode.getType().equals("ita")) {
-					String log = courseAssessmentService.getUserLog(acnode, uce);
+					String log = courseAssessmentService.getAuditLog(acnode, uce);
 					String date = null;
 					Date lastUploaded = null;
 					try {

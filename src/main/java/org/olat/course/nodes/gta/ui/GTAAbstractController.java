@@ -488,11 +488,11 @@ public abstract class GTAAbstractController extends BasicController implements G
 			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseGroupManager().getCourseEntry());
 			for(Identity identity:identities) {
 				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				courseAssessmentService.incrementUserAttempts(gtaNode, uce, by);
+				courseAssessmentService.incrementAttempts(gtaNode, uce, by);
 			}
 		} else {
 			UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
-			courseAssessmentService.incrementUserAttempts(gtaNode, assessedUserCourseEnv, by);
+			courseAssessmentService.incrementAttempts(gtaNode, assessedUserCourseEnv, by);
 		}
 	}
 	

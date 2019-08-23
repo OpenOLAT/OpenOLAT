@@ -125,7 +125,7 @@ public class MSResetDataController extends FormBasicController {
 		for(Identity identity:identities) {
 			IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-			courseAssessmentService.updateUserScoreEvaluation(courseNode, scoreEval, uce, getIdentity(), false,
+			courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, uce, getIdentity(), false,
 					Role.coach);
 			AuditEnv auditEnv = AuditEnv.of(auditManager, courseNode, identity, getIdentity(), Role.coach);
 			msService.deleteSession(courseEntry, courseNode.getIdent(), identity, auditEnv);

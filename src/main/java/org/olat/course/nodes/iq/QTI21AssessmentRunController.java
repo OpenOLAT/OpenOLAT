@@ -862,7 +862,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					completion, AssessmentRunStatus.done, assessmentId);
 			
 			boolean increment = incrementAttempts.getAndSet(false);
-			courseAssessmentService.updateUserScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(),
+			courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(),
 					increment, Role.user);
 			if(increment) {
 				ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_CLOSE_IN_COURSE, getClass());

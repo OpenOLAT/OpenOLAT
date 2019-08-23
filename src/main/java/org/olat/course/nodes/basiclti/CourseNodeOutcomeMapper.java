@@ -106,7 +106,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 			
 			ScoreEvaluation eval = new ScoreEvaluation(scaledScore, passed);
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
-			courseAssessmentService.updateUserScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
+			courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
 		}
 		
 		return super.doUpdateResult(score);
@@ -121,7 +121,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 			Identity assessedId = getIdentity();
 			ScoreEvaluation eval = new ScoreEvaluation(0.0f, false);
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
-			courseAssessmentService.updateUserScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
+			courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, assessedId, false, Role.user);
 		}
 
 		return super.doDeleteResult();
@@ -135,7 +135,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 			BasicLTICourseNode ltiNode = (BasicLTICourseNode)node;
 			UserCourseEnvironment userCourseEnv = getUserCourseEnvironment(course);
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			ScoreEvaluation eval = courseAssessmentService.getUserScoreEvaluation(ltiNode, userCourseEnv);
+			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(ltiNode, userCourseEnv);
 			String score = "";
 			if(eval != null && eval.getScore() != null) {
 				float scaledScore = eval.getScore();

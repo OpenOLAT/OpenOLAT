@@ -344,7 +344,7 @@ public class TaskController extends BasicController {
 		Property p = cpm.createCourseNodePropertyInstance(node, identity, null, PROP_ASSIGNED, null, null, task, null);
 		cpm.saveProperty(p);
 		
-		AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(node, userCourseEnv);
+		AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
 		if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 			eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
 			node.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false, Role.user);

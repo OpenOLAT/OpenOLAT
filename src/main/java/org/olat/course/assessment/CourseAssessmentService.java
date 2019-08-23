@@ -113,9 +113,9 @@ public interface CourseAssessmentService {
 	 *         default values 0.0f / false for score/passed; currently only the
 	 *         STNode returns null, if there are no scoring rules defined.
 	 */
-	public AssessmentEvaluation getUserScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	public AssessmentEvaluation getAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 	
-	public void updateUserScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
+	public void updateScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by);
 	
 	/**
@@ -134,7 +134,7 @@ public interface CourseAssessmentService {
 	 * @return The completion of its current task before being committed and
 	 *         official.
 	 */
-	public Double getUserCurrentRunCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	public Double getCurrentRunCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 
 	public void updateCurrentCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Identity identity, Double currentCompletion, AssessmentRunStatus status, Role by);
@@ -144,7 +144,7 @@ public interface CourseAssessmentService {
 	 * @param userCourseEnvironment
 	 * @return the users attempts of the node
 	 */
-	public Integer getUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	public Integer getAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 
 	/**
 	 * Increments the users attempts for this node and this user.
@@ -153,7 +153,7 @@ public interface CourseAssessmentService {
 	 * @param userCourseEnvironment
 	 * @param doneBy
 	 */
-	public void incrementUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role doneBy);
+	public void incrementAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role doneBy);
 
 	/**
 	 * Updates the users attempts for this node and this user.
@@ -164,7 +164,7 @@ public interface CourseAssessmentService {
 	 * @param coachingIdentity
 	 * @param doneBy
 	 */
-	public void updateUserAttempts(CourseNode courseNode, Integer userAttempts,
+	public void updateAttempts(CourseNode courseNode, Integer userAttempts,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role doneBy);
 	
 	/**
@@ -251,7 +251,7 @@ public interface CourseAssessmentService {
 	 * @param userCourseEnvironment
 	 * @return the users log of this node
 	 */
-	public String getUserLog(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	public String getAuditLog(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 	
 	/**
 	 * Save the users achieved ScoreEvaluation for this node. If there is already a

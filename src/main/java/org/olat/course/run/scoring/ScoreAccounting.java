@@ -171,7 +171,7 @@ public class ScoreAccounting {
 							AssessmentEntry entry = identToEntries.get(cn.getIdent());
 							se = courseAssessmentService.toAssessmentEvaluation(entry, assessmentConfig);
 						} else {
-							se = courseAssessmentService.getUserScoreEvaluation(cn, userCourseEnvironment);
+							se = courseAssessmentService.getAssessmentEvaluation(cn, userCourseEnvironment);
 						}
 						cachedScoreEvals.put(cn, se);
 					}
@@ -364,7 +364,7 @@ public class ScoreAccounting {
 	 * @return The score evaluation
 	 */
 	public AssessmentEvaluation getScoreEvaluation(CourseNode courseNode) {
-		return courseAssessmentService.getUserScoreEvaluation(courseNode, userCourseEnvironment);
+		return courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnvironment);
 	}
 
 	/**

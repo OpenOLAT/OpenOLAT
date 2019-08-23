@@ -209,7 +209,7 @@ public class QTI21ResetDataController extends FormBasicController {
 				ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, null, Boolean.FALSE, 0.0d, AssessmentRunStatus.notStarted, null);
 				IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-				courseAssessmentService.updateUserScoreEvaluation(courseNode, scoreEval, uce, getIdentity(), false,
+				courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, uce, getIdentity(), false,
 						Role.coach);
 				courseAssessmentService.updateCurrentCompletion(courseNode, uce, getIdentity(), null,
 						AssessmentRunStatus.notStarted, Role.coach);

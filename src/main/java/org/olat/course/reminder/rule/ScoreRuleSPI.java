@@ -108,7 +108,7 @@ public class ScoreRuleSPI implements FilterRuleSPI {
 				if(assessmentConfig.hasScore()) {
 					for(Identity identity:identities) {
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-						ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, uce);
+						ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
 						Float score = scoreEval.getScore();
 						if(score != null) {
 							scores.put(identity.getKey(), score);

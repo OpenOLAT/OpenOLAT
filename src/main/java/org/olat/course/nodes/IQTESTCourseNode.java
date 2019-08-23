@@ -522,7 +522,7 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		ScoreEvaluation sceval = new ScoreEvaluation(session.getScore().floatValue(), session.getPassed(), assessmentStatus, visibility, Boolean.TRUE,
 				1.0d, AssessmentRunStatus.done, session.getKey());
-		courseAssessmentService.updateUserScoreEvaluation(this, sceval, assessedUserCourseenv, coachingIdentity, true, by);
+		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseenv, coachingIdentity, true, by);
 	}
 
 	/**

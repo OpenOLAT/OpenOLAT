@@ -86,11 +86,11 @@ public class ConfirmReopenController extends FormBasicController {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
 
-			ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
+			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 			ScoreEvaluation reopenedScoreEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 					AssessmentEntryStatus.inProgress, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running, testSession.getKey());
-			courseAssessmentService.updateUserScoreEvaluation(courseNode, reopenedScoreEval, assessedUserCourseEnv,
+			courseAssessmentService.updateScoreEvaluation(courseNode, reopenedScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 
 			ThreadLocalUserActivityLogger.log(QTI21LoggingAction.QTI_REOPEN_IN_COURSE, getClass());

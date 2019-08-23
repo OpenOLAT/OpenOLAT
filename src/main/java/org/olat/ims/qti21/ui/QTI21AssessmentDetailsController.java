@@ -432,7 +432,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 	private void doUpdateCourseNode(AssessmentTestSession session, AssessmentTest assessmentTest, AssessmentEntryStatus entryStatus) {
 		Double cutValue = QtiNodesExtractor.extractCutValue(assessmentTest);
 		
-		ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		BigDecimal finalScore = session.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
 		Boolean passed = scoreEval.getPassed();
@@ -444,7 +444,7 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
 				finalStatus, null, scoreEval.getFullyAssessed(), 
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
-		courseAssessmentService.updateUserScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
+		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}
 	

@@ -439,7 +439,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		for(AssessmentTestSession testSession:testSessionsToComplete) {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(testSession.getIdentity(), getCourseEnvironment());
-			ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
+			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 			
 			BigDecimal finalScore = testSession.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();
@@ -452,7 +452,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
 					finalStatus, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
-			courseAssessmentService.updateUserScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
+			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 		}
 	}

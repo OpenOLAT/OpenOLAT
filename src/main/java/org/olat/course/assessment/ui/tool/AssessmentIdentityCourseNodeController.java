@@ -138,7 +138,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			listenTo(assessmentForm);
 			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
 			
-			String nodeLog = courseAssessmentService.getUserLog(courseNode, assessedUserCourseEnvironment);
+			String nodeLog = courseAssessmentService.getAuditLog(courseNode, assessedUserCourseEnvironment);
 			if(StringHelper.containsNonWhitespace(nodeLog)) {
 				identityAssessmentVC.contextPut("log", nodeLog);
 			}

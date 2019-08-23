@@ -538,7 +538,7 @@ public class IQRunController extends BasicController implements GenericEventList
 			}
 			
 			ScoreEvaluation sceval = new ScoreEvaluation(ac.getScore(), ac.isPassed(), assessmentStatus, userVisibility, fullyAssed, null, null, ai.getAssessID());
-			courseAssessmentService.updateUserScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(), true, Role.user);
+			courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(), true, Role.user);
 				
 			// Mark publisher for notifications
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();

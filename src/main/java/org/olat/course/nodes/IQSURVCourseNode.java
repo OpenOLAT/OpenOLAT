@@ -367,7 +367,7 @@ public class IQSURVCourseNode extends AbstractAccessableCourseNode implements QT
 	}
 
 	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserAttempts(CourseNode, org.olat.course.run.userview.UserCourseEnvironment)
+	 * @see org.olat.course.nodes.AssessableCourseNode#getAttempts(CourseNode, org.olat.course.run.userview.UserCourseEnvironment)
 	 */
 	public Integer getUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();

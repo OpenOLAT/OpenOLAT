@@ -390,19 +390,19 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 					}
 					
 					// Update score,passed properties in db, and the user's efficiency statement
-					courseAssessmentService.updateUserScoreEvaluation(courseNode, se, uce, coachIdentity, false, Role.auto);
+					courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, false, Role.auto);
 					statusVisibilitySet = true;
 				}
 			}
 			
 			Boolean passed = row.getPassed();
 			if (hasPassed && passed != null && cut == null) { // Configuration of manual assessment --> Display passed/not passed: yes, Type of display: Manual by tutor
-				ScoreEvaluation seOld = courseAssessmentService.getUserScoreEvaluation(courseNode, uce);
+				ScoreEvaluation seOld = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
 				Float oldScore = seOld.getScore();
 				ScoreEvaluation se = new ScoreEvaluation(oldScore, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
-				courseAssessmentService.updateUserScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);
+				courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);
 				statusVisibilitySet = true;
 			}
 			
@@ -431,13 +431,13 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			}
 			
 			if(!statusVisibilitySet && (datas.getStatus() != null || datas.getVisibility() != null)) {
-				ScoreEvaluation seOld = courseAssessmentService.getUserScoreEvaluation(courseNode, uce);
+				ScoreEvaluation seOld = courseAssessmentService.getAssessmentEvaluation(courseNode, uce);
 				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), seOld.getPassed(),
 						datas.getStatus(), datas.getVisibility(), seOld.getFullyAssessed(),
 						seOld.getCurrentRunCompletion(), seOld.getCurrentRunStatus(), seOld.getAssessmentID());
 				// Update score,passed properties in db, and the user's efficiency statement
 				boolean incrementAttempts = false;
-				courseAssessmentService.updateUserScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);
+				courseAssessmentService.updateScoreEvaluation(courseNode, se, uce, coachIdentity, incrementAttempts, Role.auto);
 			}
 			
 			if(count++ % 5 == 0) {

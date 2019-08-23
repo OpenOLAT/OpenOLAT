@@ -242,7 +242,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 
 		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
-		ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		
 		BigDecimal finalScore = testSession.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();
@@ -255,7 +255,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
 				scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
-		courseAssessmentService.updateUserScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
+		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}
 }

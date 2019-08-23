@@ -832,12 +832,12 @@ class GTANotifications {
 			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
 			for(Identity identity:identities) {
 				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				courseAssessmentService.incrementUserAttempts(gtaNode, uce, Role.auto);
+				courseAssessmentService.incrementAttempts(gtaNode, uce, Role.auto);
 			}
 		} else {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(assessedIdentity, course);
-			courseAssessmentService.incrementUserAttempts(gtaNode, assessedUserCourseEnv, Role.auto);
+			courseAssessmentService.incrementAttempts(gtaNode, assessedUserCourseEnv, Role.auto);
 		}
 	}
 	

@@ -721,7 +721,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		boolean isVisible = false;
 		if(config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
 			if (assignedTask != null && (assignedTask.getTaskStatus() == TaskProcess.grading || assignedTask.getTaskStatus() == TaskProcess.graded)) {
-				AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(gtaNode, getAssessedUserCourseEnvironment());
+				AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(gtaNode, getAssessedUserCourseEnvironment());
 				isVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
 			}
 		} else {

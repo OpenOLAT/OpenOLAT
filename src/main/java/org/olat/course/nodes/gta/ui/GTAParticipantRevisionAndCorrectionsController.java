@@ -359,10 +359,10 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 
 			for(Identity identity:identities) {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				courseAssessmentService.incrementUserAttempts(gtaNode, userCourseEnv, Role.user);
+				courseAssessmentService.incrementAttempts(gtaNode, userCourseEnv, Role.user);
 			}
 		} else {
-			courseAssessmentService.incrementUserAttempts(gtaNode, assessedUserCourseEnv, Role.user);
+			courseAssessmentService.incrementAttempts(gtaNode, assessedUserCourseEnv, Role.user);
 		}
 		
 		//do send e-mail

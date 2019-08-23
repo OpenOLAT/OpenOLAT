@@ -117,7 +117,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 	}
 
 	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public AssessmentEvaluation getAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentConfig assessmentConfig = getAssessmentConfig(courseNode);
 		AssessmentHandler assessmentHandler = getAssessmentHandler(courseNode);
 		
@@ -132,7 +132,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 	}
 	
 	@Override
-	public void updateUserScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
+	public void updateScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -147,7 +147,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 	}
 
 	@Override
-	public Double getUserCurrentRunCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public Double getCurrentRunCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		return am.getNodeCurrentRunCompletion(courseNode, assessedIdentity);
@@ -163,21 +163,21 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 	}
 
 	@Override
-	public Integer getUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+	public Integer getAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		return am.getNodeAttempts(courseNode, assessedIdentity);
 	}
 
 	@Override
-	public void incrementUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
+	public void incrementAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.incrementNodeAttempts(courseNode, assessedIdentity, userCourseEnvironment, by);
 	}
 
 	@Override
-	public void updateUserAttempts(CourseNode courseNode, Integer userAttempts,
+	public void updateAttempts(CourseNode courseNode, Integer userAttempts,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, Role by) {
 		if (userAttempts != null) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
@@ -256,7 +256,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 	}
 
 	@Override
-	public String getUserLog(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public String getAuditLog(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		return am.getUserNodeLog(courseNode, assessedIdentity);

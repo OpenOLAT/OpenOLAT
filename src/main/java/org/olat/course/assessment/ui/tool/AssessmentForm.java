@@ -336,7 +336,7 @@ public class AssessmentForm extends FormBasicController {
 			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-			courseAssessmentService.updateUserScoreEvaluation(assessableCourseNode, reopenedEval, assessedUserCourseEnv,
+			courseAssessmentService.updateScoreEvaluation(assessableCourseNode, reopenedEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 			updateStatus(reopenedEval);
 		}
@@ -360,7 +360,7 @@ public class AssessmentForm extends FormBasicController {
 		Boolean updatedPassed = null;
 
 		if (isHasAttempts() && isAttemptsDirty()) {
-			courseAssessmentService.updateUserAttempts(assessableCourseNode, new Integer(getAttempts()),
+			courseAssessmentService.updateAttempts(assessableCourseNode, new Integer(getAttempts()),
 					assessedUserCourseEnv, getIdentity(), Role.coach);
 		}
 
@@ -392,7 +392,7 @@ public class AssessmentForm extends FormBasicController {
 		} else {
 			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, null, visibility, null, null, null, null);
 		}
-		courseAssessmentService.updateUserScoreEvaluation(assessableCourseNode, scoreEval, assessedUserCourseEnv,
+		courseAssessmentService.updateScoreEvaluation(assessableCourseNode, scoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 
 		if (isHasComment() && isUserCommentDirty()) {
@@ -417,7 +417,7 @@ public class AssessmentForm extends FormBasicController {
 		if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
 		
 		if (hasAttempts) {
-			attemptsValue = courseAssessmentService.getUserAttempts(assessableCourseNode, assessedUserCourseEnv);
+			attemptsValue = courseAssessmentService.getAttempts(assessableCourseNode, assessedUserCourseEnv);
 			attempts.setIntValue(attemptsValue == null ? 0 : attemptsValue.intValue());
 		}
 		
@@ -516,7 +516,7 @@ public class AssessmentForm extends FormBasicController {
 		}
 
 		if (hasAttempts) {
-			attemptsValue = courseAssessmentService.getUserAttempts(assessableCourseNode, assessedUserCourseEnv);
+			attemptsValue = courseAssessmentService.getAttempts(assessableCourseNode, assessedUserCourseEnv);
 			if(attemptsValue == null) {
 				attemptsValue = new Integer(0);
 			}

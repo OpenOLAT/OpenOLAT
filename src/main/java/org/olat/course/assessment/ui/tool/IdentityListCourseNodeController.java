@@ -844,11 +844,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 			UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
 			assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
-			ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
+			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 					scoreEval.getAssessmentStatus(), visibility, scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-			courseAssessmentService.updateUserScoreEvaluation(assessableCourseNode, doneEval, assessedUserCourseEnv,
+			courseAssessmentService.updateScoreEvaluation(assessableCourseNode, doneEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 		}
 		loadModel(ureq);
@@ -884,11 +884,11 @@ public class IdentityListCourseNodeController extends FormBasicController
 		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
-		ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
+		ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 				AssessmentEntryStatus.done, null, scoreEval.getFullyAssessed(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-		courseAssessmentService.updateUserScoreEvaluation(assessableCourseNode, doneEval, assessedUserCourseEnv,
+		courseAssessmentService.updateScoreEvaluation(assessableCourseNode, doneEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 		
 	}

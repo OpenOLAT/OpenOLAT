@@ -560,7 +560,7 @@ public class GroupAssessmentController extends FormBasicController {
 			} else {
 				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
 			}
-			courseAssessmentService.updateUserScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
+			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 			
 			if(withComment) {
 				String comment = row.getComment();
@@ -599,7 +599,7 @@ public class GroupAssessmentController extends FormBasicController {
 			} else {
 				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
 			}
-			courseAssessmentService.updateUserScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
+			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}
 
 		if(withComment) {

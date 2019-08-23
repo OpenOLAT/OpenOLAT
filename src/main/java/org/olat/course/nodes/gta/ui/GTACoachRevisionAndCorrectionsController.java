@@ -388,10 +388,10 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
 			for(Identity identity:identities) {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				courseAssessmentService.incrementUserAttempts(gtaNode, userCourseEnv, Role.coach);
+				courseAssessmentService.incrementAttempts(gtaNode, userCourseEnv, Role.coach);
 			}
 		} else {
-			courseAssessmentService.incrementUserAttempts(gtaNode, assessedUserCourseEnv, Role.coach);
+			courseAssessmentService.incrementAttempts(gtaNode, assessedUserCourseEnv, Role.coach);
 		}
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUBMIT_REVISION,

@@ -1414,7 +1414,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			if(courseNode instanceof PortfolioCourseNode) {
 				ScoreEvaluation scoreEval= new ScoreEvaluation(totalScore.floatValue(), totalPassed, binderStatus, true, true, null, null, binder.getKey());
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				courseAssessmentService.updateUserScoreEvaluation(courseNode, scoreEval, userCourseEnv,
+				courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv,
 						coachingIdentity, false, Role.coach);
 			}
 		} else {
@@ -1441,7 +1441,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			if(courseNode instanceof PortfolioCourseNode) {
 				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(pfNode, userCourseEnv);
+				AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(pfNode, userCourseEnv);
 				status = eval.getAssessmentStatus();
 			}
 		} else {
@@ -1468,10 +1468,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 			if(courseNode instanceof PortfolioCourseNode) {
 				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(pfNode, userCourseEnv);
+				AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(pfNode, userCourseEnv);
 				
 				ScoreEvaluation scoreEval= new ScoreEvaluation(eval.getScore(), eval.getPassed(), status, true, fullyAssessed, null, null, binder.getKey());
-				courseAssessmentService.updateUserScoreEvaluation(courseNode, scoreEval, userCourseEnv,
+				courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, userCourseEnv,
 						coachingIdentity, false, Role.coach);
 			}
 		} else {

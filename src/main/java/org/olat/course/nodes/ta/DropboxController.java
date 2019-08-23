@@ -363,7 +363,7 @@ public class DropboxController extends BasicController {
 		c.put("time", f.formatTime(now));
 		
 		// update attempts counter for this user: one file - one attempts
-		courseAssessmentService.incrementUserAttempts(node, userCourseEnv, Role.user);
+		courseAssessmentService.incrementAttempts(node, userCourseEnv, Role.user);
 				
 		// log entry for this file
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();

@@ -181,7 +181,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		int maxAttempts = config.getIntegerSafe(ScormEditController.CONFIG_MAXATTEMPTS, 0);
 		boolean maxAttemptsReached = false;
 		if (maxAttempts > 0) {
-			if (courseAssessmentService.getUserAttempts(scormNode, userCourseEnv) >= maxAttempts) {
+			if (courseAssessmentService.getAttempts(scormNode, userCourseEnv) >= maxAttempts) {
 				maxAttemptsReached = true;
 			}
 		}
@@ -238,7 +238,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		}
 
 		if (isAssessable) {
-			ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv);
+			ScoreEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
 			Float score = scoreEval.getScore();
 			if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
 				startPage.contextPut("score", score != null ? AssessmentHelper.getRoundedScore(score) : "0");
@@ -253,7 +253,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 						.stripTabsAndReturns(courseAssessmentService.getUserComment(scormNode, userCourseEnv));
 				startPage.contextPut("comment", StringHelper.xssScan(comment));
 			}
-			startPage.contextPut("attempts", courseAssessmentService.getUserAttempts(scormNode, userCourseEnv));
+			startPage.contextPut("attempts", courseAssessmentService.getAttempts(scormNode, userCourseEnv));
 			
 			if(ureq == null) {// High score need one
 				ureq = new SyntheticUserRequest(getIdentity(), getLocale(), userSession);
@@ -317,7 +317,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			//increment user attempts only once!
 			if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
 					|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
-				courseAssessmentService.incrementUserAttempts(scormNode, userCourseEnv, Role.user);
+				courseAssessmentService.incrementAttempts(scormNode, userCourseEnv, Role.user);
 				attemptsIncremented = true;
 			}
 			

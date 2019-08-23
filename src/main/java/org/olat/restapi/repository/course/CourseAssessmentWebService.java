@@ -335,7 +335,7 @@ public class CourseAssessmentWebService {
 		} else {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Boolean.TRUE, Long.valueOf(nodeKey));//not directly pass this key
-			courseAssessmentService.updateUserScoreEvaluation(node, scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
+			courseAssessmentService.updateScoreEvaluation(node, scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
 		}
 
 		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
@@ -427,7 +427,7 @@ public class CourseAssessmentWebService {
 				// assessment nodes are assessable
 				boolean incrementUserAttempts = true;
 				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-				courseAssessmentService.updateUserScoreEvaluation(acn, sceval, userCourseEnv, identity, incrementUserAttempts, Role.coach);
+				courseAssessmentService.updateScoreEvaluation(acn, sceval, userCourseEnv, identity, incrementUserAttempts, Role.coach);
 			} else {
 				log.error("Result set already saved");
 			}

@@ -339,10 +339,10 @@ public class LTIRunController extends BasicController {
 		if(assessable != null && assessable.booleanValue()) {
 			startPage.contextPut("isassessable", assessable);
 	    
-			Integer attempts = courseAssessmentService.getUserAttempts(courseNode, userCourseEnv);
+			Integer attempts = courseAssessmentService.getAttempts(courseNode, userCourseEnv);
 			startPage.contextPut("attempts", attempts);
 	    
-			ScoreEvaluation eval = courseAssessmentService.getUserScoreEvaluation(courseNode, userCourseEnv);
+			ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
 			Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 			if(cutValue != null) {
 				startPage.contextPut("hasPassedValue", Boolean.TRUE);
@@ -366,7 +366,7 @@ public class LTIRunController extends BasicController {
 			Boolean skipLaunchPage = config.getBooleanEntry(BasicLTICourseNode.CONFIG_SKIP_LAUNCH_PAGE);
 			if(!ltiModule.isForceLaunchPage() && skipLaunchPage != null && skipLaunchPage.booleanValue()) {
 				// start the content immediately
-				courseAssessmentService.incrementUserAttempts(courseNode, userCourseEnv, Role.user);
+				courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 				openBasicLTIContent(ureq);
 			} else {
 				// or show the start button
@@ -406,7 +406,7 @@ public class LTIRunController extends BasicController {
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == startButton) {
-			courseAssessmentService.incrementUserAttempts(courseNode, userCourseEnv, Role.user);
+			courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
 			openBasicLTIContent(ureq);
 		} else if (source == acceptLink) {
 			storeDataExchangeAcceptance();

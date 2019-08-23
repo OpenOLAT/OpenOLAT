@@ -99,7 +99,7 @@ public abstract class AbstractToolsController extends BasicController {
 
 		assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(assessedIdentity, coachCourseEnv.getCourseEnvironment());
-		scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
+		scoreEval = courseAssessmentService.getAssessmentEvaluation(courseNode, assessedUserCourseEnv);
 	}
 	
 	public boolean isCourseReadonly() {
@@ -241,7 +241,7 @@ public abstract class AbstractToolsController extends BasicController {
 				AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 				scoreEval.getCurrentRunCompletion(), AssessmentRunStatus.running,
 				scoreEval.getAssessmentID());
-		courseAssessmentService.updateUserScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
+		courseAssessmentService.updateScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}
 	
@@ -257,7 +257,7 @@ public abstract class AbstractToolsController extends BasicController {
 				AssessmentEntryStatus.done, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(),
 				scoreEval.getAssessmentID());
-		courseAssessmentService.updateUserScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
+		courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv, getIdentity(),
 				false, Role.coach);
 	}
 	
@@ -267,7 +267,7 @@ public abstract class AbstractToolsController extends BasicController {
 					AssessmentEntryStatus.done, visible, scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(),
 					scoreEval.getAssessmentID());
-			courseAssessmentService.updateUserScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
+			courseAssessmentService.updateScoreEvaluation(courseNode, doneEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 		}
 		fireEvent(ureq, Event.CHANGED_EVENT);

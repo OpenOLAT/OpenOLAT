@@ -162,7 +162,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		listenTo(msCtrl);
 		mainVC.put("msrun", msCtrl.getInitialComponent());
 		
-		AssessmentEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(gtaNode, assessedUserCourseEnv);
+		AssessmentEvaluation scoreEval = courseAssessmentService.getAssessmentEvaluation(gtaNode, assessedUserCourseEnv);
 		if(scoreEval.getAssessmentStatus() == AssessmentEntryStatus.done) {
 			if(assignedTask == null) {
 				RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

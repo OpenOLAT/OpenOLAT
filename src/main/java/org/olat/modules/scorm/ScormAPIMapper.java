@@ -118,10 +118,10 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
 			if(assessmentConfig.hasScore()) {
-				currentScore = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv).getScore();
+				currentScore = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv).getScore();
 			}
 			if(assessmentConfig.hasPassed()) {
-				currentPassed = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv).getPassed();
+				currentPassed = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv).getPassed();
 			}
 		}
 	}
@@ -206,15 +206,15 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				// </OLATEE-27>
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), Boolean.valueOf(passed));
-				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
+				courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
 						Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
 			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 				boolean increment = !attemptsIncremented && finish;
-				ScoreEvaluation sceval = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv);
-				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
+				ScoreEvaluation sceval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
+				courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
 						Role.user);
 				if(increment) {
 					attemptsIncremented = true;
@@ -223,7 +223,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 		} else {
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(0.0f), Boolean.valueOf(passed));
-			courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, false,
+			courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, false,
 					Role.user);
 			if(increment) {
 				attemptsIncremented = true;
@@ -271,15 +271,15 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				// </OLATEE-27>
 				boolean increment = !attemptsIncremented && finish;
 				ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), Boolean.valueOf(passed));
-				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
+				courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
 						Role.user);
 				if(increment) {
 					attemptsIncremented = true;
 				}
 			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 				boolean increment = !attemptsIncremented && finish;
-				ScoreEvaluation sceval = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv);
-				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
+				ScoreEvaluation sceval = courseAssessmentService.getAssessmentEvaluation(scormNode, userCourseEnv);
+				courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
 						Role.user);
 				if(increment) {
 					attemptsIncremented = true;
@@ -293,7 +293,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			// </OLATEE-27>
 			boolean increment = !attemptsIncremented && finish;
 			ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), Boolean.valueOf(passed));
-			courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, false, Role.user);
+			courseAssessmentService.updateScoreEvaluation(scormNode, sceval, userCourseEnv, identity, false, Role.user);
 			if(increment) {
 				attemptsIncremented = true;
 			}
