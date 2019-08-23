@@ -100,7 +100,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 	}
 
 	@Override
-	public AssessmentEvaluation getUserAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public AssessmentEvaluation getPersistedAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentEntry assessmentEntry = getAssessmentHandler(courseNode).getAssessmentEntry(courseNode, userCourseEnvironment);
 		return toAssessmentEvaluation(assessmentEntry, courseNode);
 	}
@@ -117,17 +117,18 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 	}
 
 	@Override
-	public ScoreEvaluation getUserScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public AssessmentEvaluation getUserScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentConfig assessmentConfig = getAssessmentConfig(courseNode);
 		AssessmentHandler assessmentHandler = getAssessmentHandler(courseNode);
 		
-		ScoreEvaluation scoreEvaluation = AssessmentEvaluation.EMPTY_EVAL;
+		AssessmentEvaluation assessmentEvaluation = AssessmentEvaluation.EMPTY_EVAL;
 		if (assessmentConfig.isScoreEvaluationCalculated()) {
-			scoreEvaluation = assessmentHandler.getCalculatedScoreEvaluation(courseNode, userCourseEnvironment);
+			assessmentEvaluation = assessmentHandler.getCalculatedScoreEvaluation(courseNode, userCourseEnvironment);
 		} else if (assessmentConfig.isScoreEvaluationPersisted()) {
-			scoreEvaluation = getUserAssessmentEvaluation(courseNode, userCourseEnvironment);
+			assessmentEvaluation = getPersistedAssessmentEvaluation(courseNode, userCourseEnvironment);
 		}
-		return scoreEvaluation;
+		// Other handlers should be able to have other implementations
+		return assessmentEvaluation;
 	}
 	
 	@Override

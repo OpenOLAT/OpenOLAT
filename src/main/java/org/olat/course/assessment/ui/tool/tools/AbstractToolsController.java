@@ -99,7 +99,7 @@ public abstract class AbstractToolsController extends BasicController {
 
 		assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(assessedIdentity, coachCourseEnv.getCourseEnvironment());
-		scoreEval = courseNode.getUserScoreEvaluation(assessedUserCourseEnv);
+		scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
 	}
 	
 	public boolean isCourseReadonly() {

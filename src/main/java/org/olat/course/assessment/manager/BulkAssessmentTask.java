@@ -397,7 +397,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			
 			Boolean passed = row.getPassed();
 			if (hasPassed && passed != null && cut == null) { // Configuration of manual assessment --> Display passed/not passed: yes, Type of display: Manual by tutor
-				ScoreEvaluation seOld = courseNode.getUserScoreEvaluation(uce);
+				ScoreEvaluation seOld = courseAssessmentService.getUserScoreEvaluation(courseNode, uce);
 				Float oldScore = seOld.getScore();
 				ScoreEvaluation se = new ScoreEvaluation(oldScore, passed, datas.getStatus(), datas.getVisibility(), null, null, null, null);
 				// Update score,passed properties in db, and the user's efficiency statement
@@ -431,7 +431,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 			}
 			
 			if(!statusVisibilitySet && (datas.getStatus() != null || datas.getVisibility() != null)) {
-				ScoreEvaluation seOld = courseNode.getUserScoreEvaluation(uce);
+				ScoreEvaluation seOld = courseAssessmentService.getUserScoreEvaluation(courseNode, uce);
 				ScoreEvaluation se = new ScoreEvaluation(seOld.getScore(), seOld.getPassed(),
 						datas.getStatus(), datas.getVisibility(), seOld.getFullyAssessed(),
 						seOld.getCurrentRunCompletion(), seOld.getCurrentRunStatus(), seOld.getAssessmentID());

@@ -308,7 +308,7 @@ public class DropboxScoringViewController extends BasicController {
 					
 					if(node instanceof AssessableCourseNode) {
 						AssessableCourseNode acn = (AssessableCourseNode)node;
-						AssessmentEvaluation eval = acn.getUserScoreEvaluation(userCourseEnv);
+						AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(node, userCourseEnv);
 						if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 							eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
 							courseAssessmentService.updateUserScoreEvaluation(acn, eval, userCourseEnv, coach, false, Role.coach);
@@ -344,7 +344,7 @@ public class DropboxScoringViewController extends BasicController {
 			} else if(FolderCommand.FOLDERCOMMAND_FINISHED == event) {
 				if(node instanceof AssessableCourseNode) {
 					AssessableCourseNode acn = (AssessableCourseNode)node;
-					AssessmentEvaluation eval = acn.getUserScoreEvaluation(userCourseEnv);
+					AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(node, userCourseEnv);
 					if (eval == null) {
 						eval = AssessmentEvaluation.EMPTY_EVAL;
 					}

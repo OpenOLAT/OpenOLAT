@@ -61,7 +61,6 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
@@ -78,13 +77,11 @@ import org.olat.course.nodes.gta.ui.GTACoachedGroupListController;
 import org.olat.course.nodes.gta.ui.GTAEditController;
 import org.olat.course.nodes.gta.ui.GTARunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
@@ -787,17 +784,6 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 		}
 		groups = CoreSpringFactory.getImpl(GTAManager.class).filterBusinessGroups(groups, this);
 		return new GTACoachedGroupListController(ureq, wControl, stackPanel, coachCourseEnv, this, groups);
-	}
-
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		return null; // moved;
-	}
-
-	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(this, assessedIdentity);
 	}
 
 }

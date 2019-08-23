@@ -118,10 +118,10 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(scormNode);
 			if(assessmentConfig.hasScore()) {
-				currentScore = scormNode.getUserScoreEvaluation(userCourseEnv).getScore();
+				currentScore = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv).getScore();
 			}
 			if(assessmentConfig.hasPassed()) {
-				currentPassed = scormNode.getUserScoreEvaluation(userCourseEnv).getPassed();
+				currentPassed = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv).getPassed();
 			}
 		}
 	}
@@ -213,7 +213,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				}
 			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 				boolean increment = !attemptsIncremented && finish;
-				ScoreEvaluation sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
+				ScoreEvaluation sceval = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv);
 				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
 						Role.user);
 				if(increment) {
@@ -278,7 +278,7 @@ public class ScormAPIMapper implements Mapper, ScormAPICallback, Serializable {
 				}
 			} else if (!config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
 				boolean increment = !attemptsIncremented && finish;
-				ScoreEvaluation sceval = scormNode.getUserScoreEvaluation(userCourseEnv);
+				ScoreEvaluation sceval = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv);
 				courseAssessmentService.updateUserScoreEvaluation(scormNode, sceval, userCourseEnv, identity, increment,
 						Role.user);
 				if(increment) {

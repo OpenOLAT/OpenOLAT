@@ -77,7 +77,6 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -99,14 +98,12 @@ import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.BusinessGroupReference;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -462,17 +459,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Persis
 		}
 		condition.setConditionId("projectbroker");
 		this.conditionProjectBroker = condition;
-	}
-
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		return null; // moved
-	}
-
-	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(this, mySelf);
 	}
 
 	@Override

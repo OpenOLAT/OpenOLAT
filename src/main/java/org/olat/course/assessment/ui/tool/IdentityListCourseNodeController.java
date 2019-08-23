@@ -844,7 +844,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
 			assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
-			ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);
+			ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
 			ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 					scoreEval.getAssessmentStatus(), visibility, scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
@@ -884,7 +884,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 		UserCourseEnvironment assessedUserCourseEnv = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment(), coachCourseEnv.isCourseReadOnly());
 		assessedUserCourseEnv.getScoreAccounting().evaluateAll();
 
-		ScoreEvaluation scoreEval = assessableCourseNode.getUserScoreEvaluation(assessedUserCourseEnv);
+		ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
 		ScoreEvaluation doneEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 				AssessmentEntryStatus.done, null, scoreEval.getFullyAssessed(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());

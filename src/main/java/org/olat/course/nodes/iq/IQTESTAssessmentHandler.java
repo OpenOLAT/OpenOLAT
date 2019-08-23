@@ -36,8 +36,8 @@ import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
@@ -89,7 +89,7 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
-	public ScoreEvaluation getCalculatedScoreEvaluation(CourseNode courseNode,
+	public AssessmentEvaluation getCalculatedScoreEvaluation(CourseNode courseNode,
 			UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}

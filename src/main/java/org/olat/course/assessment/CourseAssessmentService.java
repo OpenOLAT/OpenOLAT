@@ -74,7 +74,7 @@ public interface CourseAssessmentService {
 	 * @param userCourseEnvironment
 	 * @return
 	 */
-	public AssessmentEvaluation getUserAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	public AssessmentEvaluation getPersistedAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 	
 	/**
 	 * Converts the assessmentEntry to an AssessmentEvaluation in respect of the
@@ -113,7 +113,7 @@ public interface CourseAssessmentService {
 	 *         default values 0.0f / false for score/passed; currently only the
 	 *         STNode returns null, if there are no scoring rules defined.
 	 */
-	public ScoreEvaluation getUserScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	public AssessmentEvaluation getUserScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 	
 	public void updateUserScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by);

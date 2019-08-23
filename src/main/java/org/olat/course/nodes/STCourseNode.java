@@ -68,7 +68,6 @@ import org.olat.course.nodes.st.STCourseNodeEditController;
 import org.olat.course.nodes.st.STCourseNodeRunController;
 import org.olat.course.nodes.st.STPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -240,18 +239,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 			// use standard peekview without content
 			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
 		}
-	}
-
-	/**
-	 * the structure node does not have a score itself, but calculates the
-	 * score/passed info by evaluating the configured expression in the the
-	 * (condition)interpreter.
-	 * 
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		return null; // moved
 	}
 
 	@Override

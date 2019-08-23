@@ -342,7 +342,7 @@ public class LTIRunController extends BasicController {
 			Integer attempts = courseAssessmentService.getUserAttempts(courseNode, userCourseEnv);
 			startPage.contextPut("attempts", attempts);
 	    
-			ScoreEvaluation eval = courseNode.getUserScoreEvaluation(userCourseEnv);
+			ScoreEvaluation eval = courseAssessmentService.getUserScoreEvaluation(courseNode, userCourseEnv);
 			Float cutValue = config.getFloatEntry(BasicLTICourseNode.CONFIG_KEY_PASSED_CUT_VALUE);
 			if(cutValue != null) {
 				startPage.contextPut("hasPassedValue", Boolean.TRUE);

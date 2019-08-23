@@ -26,8 +26,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -63,7 +63,7 @@ public class NonAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
-	public ScoreEvaluation getCalculatedScoreEvaluation(CourseNode courseNode,
+	public AssessmentEvaluation getCalculatedScoreEvaluation(CourseNode courseNode,
 			UserCourseEnvironment userCourseEnvironment) {
 		return null;
 	}

@@ -238,7 +238,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		}
 
 		if (isAssessable) {
-			ScoreEvaluation scoreEval = scormNode.getUserScoreEvaluation(userCourseEnv);
+			ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(scormNode, userCourseEnv);
 			Float score = scoreEval.getScore();
 			if(ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE.equals(assessableType)) {
 				startPage.contextPut("score", score != null ? AssessmentHelper.getRoundedScore(score) : "0");

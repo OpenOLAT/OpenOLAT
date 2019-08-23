@@ -439,7 +439,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		for(AssessmentTestSession testSession:testSessionsToComplete) {
 			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 					.createAndInitUserCourseEnvironment(testSession.getIdentity(), getCourseEnvironment());
-			ScoreEvaluation scoreEval = ((IQTESTCourseNode)courseNode).getUserScoreEvaluation(assessedUserCourseEnv);
+			ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
 			
 			BigDecimal finalScore = testSession.getFinalScore();
 			Float score = finalScore == null ? null : finalScore.floatValue();

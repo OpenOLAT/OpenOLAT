@@ -35,6 +35,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.AssessmentIdentityCourseNodeController;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -73,6 +74,9 @@ public class GTACoachedParticipantGradingController extends BasicController {
 
 	@Autowired
 	private GTAManager gtaManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+
 	
 	public GTACoachedParticipantGradingController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable courseOres, GTACourseNode gtaNode, Task assignedTask, 
@@ -158,7 +162,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 		listenTo(msCtrl);
 		mainVC.put("msrun", msCtrl.getInitialComponent());
 		
-		AssessmentEvaluation scoreEval = gtaNode.getUserScoreEvaluation(assessedUserCourseEnv);
+		AssessmentEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(gtaNode, assessedUserCourseEnv);
 		if(scoreEval.getAssessmentStatus() == AssessmentEntryStatus.done) {
 			if(assignedTask == null) {
 				RepositoryEntry courseEntry = coachCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

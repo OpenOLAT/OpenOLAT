@@ -68,7 +68,6 @@ import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -372,14 +371,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		return null; // moved
 	}
 
 	@Override

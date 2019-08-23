@@ -242,7 +242,7 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 
 		UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
 				.createAndInitUserCourseEnvironment(testSession.getIdentity(), courseEnv);
-		ScoreEvaluation scoreEval = courseNode.getUserScoreEvaluation(assessedUserCourseEnv);
+		ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, assessedUserCourseEnv);
 		
 		BigDecimal finalScore = testSession.getFinalScore();
 		Float score = finalScore == null ? null : finalScore.floatValue();

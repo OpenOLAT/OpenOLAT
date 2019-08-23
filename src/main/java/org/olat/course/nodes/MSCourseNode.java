@@ -51,13 +51,11 @@ import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
-import org.olat.course.nodes.ms.MSAssessmentConfig;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
 import org.olat.course.nodes.ms.MSRunController;
@@ -66,7 +64,6 @@ import org.olat.course.nodes.ms.MinMax;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -270,22 +267,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	
 	public static void removeEvaluationFormReference(ModuleConfiguration moduleConfig) {
 		moduleConfig.remove(CONFIG_KEY_EVAL_FORM_SOFTKEY);
-	}
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		updateModuleConfigDefaults(false); //TODO uh remove
-		AssessmentConfig assessmentConfig =  new MSAssessmentConfig(getModuleConfiguration());
-		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore() || assessmentConfig.hasComment()) {
-			AssessmentEntry userAssessmentEntry = getUserAssessmentEntry(null, userCourseEnv);
-			return AssessmentEvaluation.toAssessmentEvaluation(userAssessmentEntry, assessmentConfig);
-		}
-		return AssessmentEvaluation.EMPTY_EVAL;
-	}
-
-	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(this, mySelf);
 	}
 
 	@Override

@@ -72,7 +72,6 @@ import org.olat.course.nodes.cl.ui.CheckListRunController;
 import org.olat.course.nodes.cl.ui.CheckListRunForCoachController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -150,24 +149,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
-	}
-
-	/**
-	 * the structure node does not have a score itself, but calculates the
-	 * score/passed info by evaluating the configured expression in the the
-	 * (condition)interpreter.
-	 * 
-	 * @see org.olat.course.nodes.AssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		return null; // moved
-	}
-
-	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(this, mySelf);
 	}
 
 	@Override
@@ -458,7 +439,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		}
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		ScoreEvaluation currentEval = courseAssessmentService.getUserAssessmentEvaluation(this, assessedUserCourseEnv);
+		ScoreEvaluation currentEval = courseAssessmentService.getPersistedAssessmentEvaluation(this, assessedUserCourseEnv);
 		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), currentEval.getPassed());
 		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
 	}

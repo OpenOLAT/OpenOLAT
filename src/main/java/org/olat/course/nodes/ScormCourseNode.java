@@ -51,7 +51,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -60,12 +59,10 @@ import org.olat.course.nodes.scorm.ScormEditController;
 import org.olat.course.nodes.scorm.ScormRunController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.scorm.ScormMainManager;
 import org.olat.modules.scorm.ScormPackageConfig;
 import org.olat.modules.scorm.archiver.ScormExportManager;
@@ -357,18 +354,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Per
 		}
 		return true;
 	}
-
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		return null; // moved
-	}
-
-	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		return am.getAssessmentEntry(this, mySelf);//we want t
-	}
-
+	
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);

@@ -103,13 +103,12 @@ public class ScoreRuleSPI implements FilterRuleSPI {
 			if(courseNode instanceof STCourseNode) {
 				scores = new HashMap<>();
 				
-				STCourseNode structureNode = (STCourseNode)courseNode;
 				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 				if(assessmentConfig.hasScore()) {
 					for(Identity identity:identities) {
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-						ScoreEvaluation scoreEval = structureNode.getUserScoreEvaluation(uce);
+						ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, uce);
 						Float score = scoreEval.getScore();
 						if(score != null) {
 							scores.put(identity.getKey(), score);

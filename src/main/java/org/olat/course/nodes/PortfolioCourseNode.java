@@ -43,7 +43,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ValidationStatus;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
@@ -55,11 +54,9 @@ import org.olat.course.nodes.portfolio.PortfolioCourseNodeConfiguration.Deadline
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeEditController;
 import org.olat.course.nodes.portfolio.PortfolioCourseNodeRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.portfolio.PortfolioService;
 import org.olat.portfolio.EPTemplateMapResource;
 import org.olat.portfolio.manager.EPFrontendManager;
@@ -288,32 +285,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		// evaluate the preconditions
 		boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));
 		nodeEval.putAccessStatus(EDIT_CONDITION_ID, editor);
-	}
-
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		return null; // moved
-	}
-
-	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		String referenceSoftkey = getReferencedRepositoryEntrySoftkey();
-		if(referenceSoftkey == null) {
-			Long mapKey = (Long)getModuleConfiguration().get(PortfolioCourseNodeConfiguration.MAP_KEY);
-			if(mapKey != null) {
-				RepositoryEntry re = CoreSpringFactory.getImpl(EPStructureManager.class)
-						.loadPortfolioRepositoryEntryByMapKey(mapKey);
-				if(re != null) {
-					referenceSoftkey = re.getSoftkey();
-				}
-			}
-		}
-		
-		if(referenceSoftkey != null) {
-			return am.getAssessmentEntry(this, mySelf);
-		}
-		return null;
 	}
 
 	@Override

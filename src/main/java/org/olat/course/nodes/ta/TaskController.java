@@ -61,6 +61,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.VFSMediaResource;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.properties.CoursePropertyManager;
@@ -71,6 +72,7 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Initial Date:  02.09.2004
@@ -130,6 +132,10 @@ public class TaskController extends BasicController {
 	private String assignedTask;
 	
 	private Panel panel;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+
 	/**
 	 * Implements a task component.
 	 * @param ureq
@@ -227,6 +233,7 @@ public class TaskController extends BasicController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		
 		log.debug("Test Component.event source" + source + "  , event=" + event);
@@ -337,7 +344,7 @@ public class TaskController extends BasicController {
 		Property p = cpm.createCourseNodePropertyInstance(node, identity, null, PROP_ASSIGNED, null, null, task, null);
 		cpm.saveProperty(p);
 		
-		AssessmentEvaluation eval = node.getUserScoreEvaluation(userCourseEnv);
+		AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(node, userCourseEnv);
 		if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 			eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
 			node.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false, Role.user);

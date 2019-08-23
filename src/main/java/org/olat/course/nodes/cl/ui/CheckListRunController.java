@@ -203,7 +203,7 @@ public class CheckListRunController extends FormBasicController implements Contr
 	}
 	
 	private void exposeUserDataToVC(UserRequest ureq, FormLayoutContainer layoutCont) {
-		AssessmentEntry scoreEval = courseNode.getUserAssessmentEntry(null, userCourseEnv);
+		AssessmentEntry scoreEval = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
 		if(scoreEval == null) {
 			layoutCont.contextPut("score", null);
 			layoutCont.contextPut("hasPassedValue", Boolean.FALSE);

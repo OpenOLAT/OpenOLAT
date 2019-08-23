@@ -101,13 +101,12 @@ public class PassedRuleSPI implements FilterRuleSPI {
 			if(courseNode instanceof STCourseNode) {
 				passeds = new HashMap<>();
 				
-				STCourseNode structureNode = (STCourseNode)courseNode;
 				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 				if(assessmentConfig.hasPassed()) {
 					for(Identity identity:identities) {
 						UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-						ScoreEvaluation scoreEval = structureNode.getUserScoreEvaluation(uce);
+						ScoreEvaluation scoreEval = courseAssessmentService.getUserScoreEvaluation(courseNode, uce);
 						Boolean passed = scoreEval.getPassed();
 						if(passed != null) {
 							passeds.put(identity.getKey(), passed);

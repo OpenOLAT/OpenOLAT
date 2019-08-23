@@ -54,6 +54,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.gta.AssignmentResponse;
@@ -107,6 +108,8 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	
 	@Autowired
 	private MailManager mailManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public GTAParticipantController(UserRequest ureq, WindowControl wControl,
 			GTACourseNode gtaNode, UserCourseEnvironment userCourseEnv) {
@@ -718,7 +721,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		boolean isVisible = false;
 		if(config.getBooleanSafe(GTACourseNode.GTASK_GRADING)) {
 			if (assignedTask != null && (assignedTask.getTaskStatus() == TaskProcess.grading || assignedTask.getTaskStatus() == TaskProcess.graded)) {
-				AssessmentEvaluation eval = gtaNode.getUserScoreEvaluation(getAssessedUserCourseEnvironment());
+				AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(gtaNode, getAssessedUserCourseEnvironment());
 				isVisible = eval.getUserVisible() == null || eval.getUserVisible().booleanValue();
 			}
 		} else {

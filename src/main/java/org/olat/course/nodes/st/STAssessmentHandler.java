@@ -35,7 +35,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
-import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -75,7 +74,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
-	public ScoreEvaluation getCalculatedScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public AssessmentEvaluation getCalculatedScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		ScoreCalculator scoreCalculator = getScoreCalculator(courseNode);
 		if (scoreCalculator == null) { 
 			// this is a not-computable course node at the moment (no scoring/passing rules defined)

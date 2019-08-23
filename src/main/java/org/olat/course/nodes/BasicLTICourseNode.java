@@ -47,7 +47,6 @@ import org.olat.course.nodes.basiclti.LTIConfigForm;
 import org.olat.course.nodes.basiclti.LTIEditController;
 import org.olat.course.nodes.basiclti.LTIRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
@@ -262,11 +261,6 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 			}
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
-	}
-
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		return null; // moved
 	}
 
 }

@@ -26,10 +26,6 @@
 
 package org.olat.course.nodes;
 
-import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.userview.UserCourseEnvironment;
-
-
 /**
  * Initial Date:  Jun 18, 2004
  * @author gnaegi
@@ -40,15 +36,5 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * tool.
  */
 public interface AssessableCourseNode extends CourseNode {
-
-	/**
-	 * this method implementation must not cache any results!
-	 * 
-	 * The user has no scoring results jet (e.g. made no test yet), then the
-	 * ScoreEvaluation.NA has to be returned!
-	 * @param userCourseEnv
-	 * @return null, if this node cannot deliver any useful scoring info (this is not the case for a test never tried or manual scoring: those have default values 0.0f / false for score/passed; currently only the STNode returns null if there are no scoring rules defined.)
-	 */
-	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv);
 
 }

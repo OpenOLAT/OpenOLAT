@@ -1441,7 +1441,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			if(courseNode instanceof PortfolioCourseNode) {
 				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				AssessmentEvaluation eval = pfNode.getUserScoreEvaluation(userCourseEnv);
+				AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(pfNode, userCourseEnv);
 				status = eval.getAssessmentStatus();
 			}
 		} else {
@@ -1468,7 +1468,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			if(courseNode instanceof PortfolioCourseNode) {
 				PortfolioCourseNode pfNode = (PortfolioCourseNode)courseNode;
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				AssessmentEvaluation eval = pfNode.getUserScoreEvaluation(userCourseEnv);
+				AssessmentEvaluation eval = courseAssessmentService.getUserScoreEvaluation(pfNode, userCourseEnv);
 				
 				ScoreEvaluation scoreEval= new ScoreEvaluation(eval.getScore(), eval.getPassed(), status, true, fullyAssessed, null, null, binder.getKey());
 				courseAssessmentService.updateUserScoreEvaluation(courseNode, scoreEval, userCourseEnv,
