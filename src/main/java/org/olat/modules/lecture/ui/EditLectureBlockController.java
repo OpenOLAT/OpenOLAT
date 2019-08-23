@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -85,7 +86,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditLectureBlockController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
-	private static final String[] plannedLecturesKeys = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
 	
 	private TextElement titleEl;
 	private TextElement descriptionEl;
@@ -161,12 +161,19 @@ public class EditLectureBlockController extends FormBasicController {
 		if(!StringHelper.containsNonWhitespace(title)) {
 			titleEl.setFocus(true);
 		}
-
+		
+		int plannedNumOfLectures = lectureBlock == null ? 4 : lectureBlock.getPlannedLecturesNumber();
+		int maxNumOfLectures = Math.max(12, plannedNumOfLectures);
+		KeyValues plannedLecturesKeys = new KeyValues();
+		for(int i=1; i<=maxNumOfLectures; i++) {
+			String num = String.valueOf(i);
+			plannedLecturesKeys.add(KeyValues.entry(num, num));
+		}
 		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
-				plannedLecturesKeys, plannedLecturesKeys, null);
+				plannedLecturesKeys.keys(), plannedLecturesKeys.values(), null);
 		plannedLecturesEl.setMandatory(true);
 		String plannedlectures = lectureBlock == null ? "4" : Integer.toString(lectureBlock.getPlannedLecturesNumber());
-		for(String plannedLecturesKey:plannedLecturesKeys) {
+		for(String plannedLecturesKey:plannedLecturesKeys.keys()) {
 			if(plannedlectures.equals(plannedLecturesKey)) {
 				plannedLecturesEl.select(plannedLecturesKey, true);
 				break;
