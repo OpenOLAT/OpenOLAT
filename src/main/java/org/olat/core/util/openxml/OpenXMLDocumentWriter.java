@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Collection;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -38,6 +39,7 @@ import org.olat.core.util.openxml.OpenXMLDocument.ListParagraph;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -67,8 +69,17 @@ public class OpenXMLDocumentWriter {
 	public static final String CT_STYLES = "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml";
 	public static final String CT_HEADER = "application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml";
 	public static final String CT_THEME = "application/vnd.openxmlformats-officedocument.theme+xml";
-
-
+	
+	private Locale locale;
+	
+	public OpenXMLDocumentWriter() {
+		this(null);
+	}
+	
+	public OpenXMLDocumentWriter(Locale locale) {
+		this.locale = locale;
+	}
+	
 	public void createDocument(ZipOutputStream out, OpenXMLDocument document)
 			throws IOException {
 		//flush header...
@@ -180,11 +191,7 @@ public class OpenXMLDocumentWriter {
 		try(InputStream in = OpenXMLDocumentWriter.class.getResourceAsStream("_resources/styles.xml")) {
 			if(styles != null) {
 				Document stylesDoc = OpenXMLUtils.createDocument(in);
-				NodeList stylesElList = stylesDoc.getElementsByTagName("w:styles");
-				if(stylesElList.getLength() == 1) {
-					//Node stylesEl = stylesElList.item(0);
-					//System.out.println("Append:" + stylesEl);
-				}
+				replaceLang(stylesDoc);
 				OpenXMLUtils.writeTo(stylesDoc, out, false);
 			} else {
 				IOUtils.copy(in, out);
@@ -193,7 +200,29 @@ public class OpenXMLDocumentWriter {
 			log.error("", e);
 		}
 	}
+
+	private void replaceLang(Document stylesDoc) {
+		NodeList langElList = stylesDoc.getElementsByTagName("w:lang");
+		if(langElList.getLength() == 1) {
+			Node langEl = langElList.item(0);
+			NamedNodeMap attributes = langEl.getAttributes();
+			attributes.getNamedItem("w:val").setNodeValue(getLang());
+		}
+	}
 	
+	private String getLang() {
+		String lang = locale != null && locale.getLanguage() != null
+				? locale.getLanguage().toLowerCase()
+				: "";
+		switch(lang) {
+		case "en": return "en-US";
+		case "de": return "de-DE";
+		case "fr": return "fr-FR";
+		case "it": return "it-IT";
+		default: return "en-US";
+		}
+	}
+
 	/*
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">

@@ -92,7 +92,7 @@ public class DocumentEditorDelegate implements WebDocumentCreateDelegate, WebDoc
 		File target = new File(fResourceFileroot, filename);
 		
 		VFSLeaf vfsLeaf = new LocalFileImpl(target);
-		VFSManager.copyContent(type.getContent(), vfsLeaf);
+		VFSManager.copyContent(type.getContent(locale), vfsLeaf);
 
 		RepositoryEntry re = CoreSpringFactory.getImpl(RepositoryService.class).create(initialAuthor, null, "", displayname,
 				description, resource, RepositoryEntryStatusEnum.preparation, organisation);
@@ -124,7 +124,7 @@ public class DocumentEditorDelegate implements WebDocumentCreateDelegate, WebDoc
 		
 		DocEditorSecurityCallback secCallback = DocEditorSecurityCallbackBuilder.builder()
 				.withMode(Mode.EDIT)
-				.canClose(false)
+				.withCanClose(false)
 				.build();
 		return new DocEditorController(ureq, wControl, document, secCallback, none(), "o_web_document_edit");
 	}

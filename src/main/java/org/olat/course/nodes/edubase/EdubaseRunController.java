@@ -38,8 +38,10 @@ import org.olat.course.nodes.EdubaseCourseNode;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edubase.BookSection;
 import org.olat.modules.edubase.EdubaseLoggingAction;
+import org.olat.modules.edubase.EdubaseManager;
 import org.olat.modules.edubase.model.PositionComparator;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  *
@@ -58,6 +60,9 @@ public class EdubaseRunController extends BasicController {
 	private Component overviewContainer;
 	private Controller viewerController;
 	private List<BookSection> bookSections;
+	
+	@Autowired
+	private EdubaseManager edubaseManager;
 
 	public EdubaseRunController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modulConfiguration) {
 		super(ureq, wControl);
@@ -79,6 +84,7 @@ public class EdubaseRunController extends BasicController {
 
 		bookSections =
 				modulConfiguration.getList(EdubaseCourseNode.CONFIG_BOOK_SECTIONS, BookSection.class).stream()
+				.map(bs -> edubaseManager.appendCoverUrl(bs))
 				.sorted(new PositionComparator())
 				.collect(Collectors.toList());
 		container.contextPut("bookSections", bookSections);

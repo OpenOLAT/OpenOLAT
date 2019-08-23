@@ -155,7 +155,7 @@ public class NewDocumentController extends FormBasicController {
 		}
 		DocTemplate docTemplate = getSelectedTemplate();
 		if (docTemplate != null) {
-			VFSManager.copyContent(docTemplate.getContentProvider().getContent(), vfsLeaf);
+			VFSManager.copyContent(docTemplate.getContentProvider().getContent(getLocale()), vfsLeaf);
 		}
 		if(vfsLeaf.canMeta() == VFSConstants.YES) {
 			VFSMetadata metaInfo = vfsLeaf.getMetaInfo();

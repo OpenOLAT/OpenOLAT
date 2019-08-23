@@ -215,21 +215,24 @@ public class CurriculumElementDAO {
 		return rootElement;
 	}	
 	
-	public CurriculumElement move(CurriculumElement elementToMove, CurriculumElement newParentElement, CurriculumElement siblingBefore) {
+	public CurriculumElement move(CurriculumElement elementToMove, CurriculumElement newParentElement,
+			CurriculumElement siblingBefore, Curriculum targetCurriculum) {
 		CurriculumElement parentElement = elementToMove.getParent();
 		CurriculumElementImpl element = (CurriculumElementImpl)elementToMove;
+		CurriculumImpl curriculum = loadCurriculumByKey(targetCurriculum.getKey());
+		
+		String keysPath = element.getMaterializedPathKeys();
+		List<CurriculumElement> descendants = getDescendants(element);
 		
 		if(parentElement == null && newParentElement == null) {
 			// reorder curriculum children
 			
-			CurriculumImpl curriculum = loadCurriculumByKey(element);
 			List<CurriculumElement> rootElements = curriculum.getRootElements();
 			reorderList(element, rootElements, siblingBefore);
 			dbInstance.getCurrentEntityManager().merge(curriculum);
 		} else if(parentElement == null) {
 			// move from curriculum as root to a curriculum element
 			
-			CurriculumImpl curriculum = loadCurriculumByKey(element);
 			List<CurriculumElement> rootElements = curriculum.getRootElements();
 			element.setCurriculumParent(null);
 			rootElements.remove(element);
@@ -249,7 +252,6 @@ public class CurriculumElementDAO {
 			element.setParent(null);
 			dbInstance.getCurrentEntityManager().merge(parentElement);	
 			
-			CurriculumImpl curriculum = loadCurriculumByKey(element);
 			element.setCurriculumParent(curriculum);
 			List<CurriculumElement> rootElements = curriculum.getRootElements();
 			reorderList(element, rootElements, siblingBefore);
@@ -276,12 +278,10 @@ public class CurriculumElementDAO {
 			dbInstance.getCurrentEntityManager().merge(newParentElement);
 		}
 
-		String keysPath = element.getMaterializedPathKeys();
-		List<CurriculumElement> descendants = getDescendants(element);
-
 		element.setLastModified(new Date());
 		String newKeysPath = getMaterializedPathKeys(newParentElement, element);
 		element.setMaterializedPathKeys(newKeysPath);
+		element.setCurriculum(curriculum);
 		element = dbInstance.getCurrentEntityManager().merge(element);
 
 		for(CurriculumElement descendant:descendants) {
@@ -291,6 +291,7 @@ public class CurriculumElementDAO {
 				String updatedPath = newKeysPath + end;
 				((CurriculumElementImpl)descendant).setMaterializedPathKeys(updatedPath);
 			}
+			((CurriculumElementImpl)descendant).setCurriculum(curriculum);
 			dbInstance.getCurrentEntityManager().merge(descendant);
 		}		
 		dbInstance.commit();
@@ -588,8 +589,8 @@ public class CurriculumElementDAO {
 			sb.and()
 			  .append("exists (select membership.key from bgroupmember as membership")
 			  .append("  where membership.identity.key=:managerKey")
-			  .append("  and (membership.group.key=baseGroup.key or organis.group.key=baseGroup.key)")
-			  .append("  and role in ('").append(CurriculumRoles.curriculummanager).append("','").append(OrganisationRoles.administrator).append("')")
+			  .append("  and membership.role").in(CurriculumRoles.curriculummanager, CurriculumRoles.owner, OrganisationRoles.administrator)
+			  .append("  and (membership.group.key=baseGroup.key or membership.group.key=organis.group.key)")
 			  .append(")");
 		}
 

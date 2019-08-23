@@ -65,6 +65,14 @@ public interface EdubaseManager {
 	public String getLtiLaunchUrl(BookSection bookSection);
 
 	/**
+	 * Appends the static cover url.
+	 *
+	 * @param bookSection
+	 * @return the modified bookSection
+	 */
+	public BookSection appendCoverUrl(BookSection bookSection);
+
+	/**
 	 * The application url is the target url of the edubase reader. The url is
 	 * depending on the module configuration unique per identity.
 	 * 
@@ -72,7 +80,7 @@ public interface EdubaseManager {
 	 * @return
 	 */
 	public String getApplicationUrl(Identity identity);
-
+	
 	/**
 	 * Request details of a book version from the Edubase InfoDocVers Service.
 	 *

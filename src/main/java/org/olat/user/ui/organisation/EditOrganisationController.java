@@ -152,7 +152,6 @@ public class EditOrganisationController extends FormBasicController {
 			organisationTypeEl.select(typeKeys[0], true);
 		}
 		
-		
 		String description = organisation == null ? "" : organisation.getDescription();
 		descriptionEl = uifactory.addRichTextElementForStringDataCompact("organisation.description", "organisation.description", description, 10, 60, null,
 				formLayout, ureq.getUserSession(), getWindowControl());
@@ -171,21 +170,25 @@ public class EditOrganisationController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		allOk &= validateTextfield(displayNameEl, 255, true);
+		allOk &= validateTextfield(identifierEl, 64, true);
+		return allOk;
+	}
+	
+	private boolean validateTextfield(TextElement textEl, int maxSize, boolean mandatory) {
 		boolean allOk = true;
 		
-		displayNameEl.clearError();
-		if(!StringHelper.containsNonWhitespace(displayNameEl.getValue())) {
-			displayNameEl.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
-		identifierEl.clearError();
-		if(!StringHelper.containsNonWhitespace(identifierEl.getValue())) {
+		textEl.clearError();
+		if(mandatory && !StringHelper.containsNonWhitespace(textEl.getValue())) {
 			identifierEl.setErrorKey("form.legende.mandatory", null);
 			allOk &= false;
+		} else if(textEl.getValue().length() >= maxSize) {
+			textEl.setErrorKey("form.error.toolong", new String[] { Integer.toString(maxSize) });
+			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -194,7 +197,7 @@ public class EditOrganisationController extends FormBasicController {
 		String selectedTypeKey = organisationTypeEl.getSelectedKey();
 		if(StringHelper.containsNonWhitespace(selectedTypeKey)) {
 			organisationType = organisationService
-					.getOrganisationType(new OrganisationTypeRefImpl(new Long(selectedTypeKey)));
+					.getOrganisationType(new OrganisationTypeRefImpl(Long.valueOf(selectedTypeKey)));
 		}
 
 		if(organisation == null) {

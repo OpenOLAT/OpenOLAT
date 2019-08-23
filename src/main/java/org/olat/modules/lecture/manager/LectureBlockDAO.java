@@ -210,6 +210,7 @@ public class LectureBlockDAO {
 		sb.append("select distinct block.key from lectureblock block")
 		  .append(" inner join block.teacherGroup tGroup")
 		  .append(" inner join tGroup.members membership")
+		  .append(" inner join block.entry entry")
 		  .append(" inner join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
 		  .append(" where membership.identity.key=:teacherKey");
 		addSearchParametersToQuery(sb, true, searchParams);

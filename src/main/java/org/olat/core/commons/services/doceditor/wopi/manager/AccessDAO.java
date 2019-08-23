@@ -96,7 +96,7 @@ class AccessDAO {
 		return accesses.isEmpty() ? null : accesses.get(0);
 	}
 
-	Access loadAccess(VFSMetadata metadata, Identity identity, String app) {
+	Access loadAccess(VFSMetadata metadata, Identity identity, String app, boolean canEdit) {
 		if (metadata == null || identity == null) return null;
 		
 		QueryBuilder sb = new QueryBuilder();
@@ -107,12 +107,14 @@ class AccessDAO {
 		sb.and().append("access.metadata.key = :metadataKey");
 		sb.and().append("access.identity.key = :identityKey");
 		sb.and().append("access.app = :app");
+		sb.and().append("access.canEdit = :canEdit");
 
 		List<Access> accesses = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Access.class)
 				.setParameter("metadataKey", metadata.getKey())
 				.setParameter("identityKey", identity.getKey())
 				.setParameter("app", app)
+				.setParameter("canEdit", canEdit)
 				.getResultList();
 		return accesses.isEmpty() ? null : accesses.get(0);
 	}

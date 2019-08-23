@@ -20,6 +20,7 @@
 package org.olat.repository.handlers;
 
 import java.io.InputStream;
+import java.util.Locale;
 
 import org.olat.core.commons.services.doceditor.ContentProviderFactory;
 import org.olat.core.id.OLATResourceable;
@@ -49,8 +50,8 @@ public class WordVFSEditorDelegateType implements DocumentEditorDelegateType {
 	}
 
 	@Override
-	public InputStream getContent() {
-		return ContentProviderFactory.emptyDocx().getContent();
+	public InputStream getContent(Locale locale) {
+		return ContentProviderFactory.emptyDocx().getContent(locale);
 	}
 
 }

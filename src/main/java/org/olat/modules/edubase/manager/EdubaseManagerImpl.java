@@ -142,6 +142,15 @@ public class EdubaseManagerImpl implements EdubaseManager {
 	}
 
 	@Override
+	public BookSection appendCoverUrl(BookSection bookSection) {
+		if (StringHelper.containsNonWhitespace(bookSection.getBookId())) {
+			String coverUrl = String.format(edubaseModule.getCoverUrl(), bookSection.getBookId());
+			bookSection.setCoverUrl(coverUrl);
+		}
+		return bookSection;
+	}
+
+	@Override
 	public String getApplicationUrl(Identity identity) {
 		String readerUrl = edubaseModule.getReaderUrl();
 		if (edubaseModule.isReaderUrlUnique()) {
