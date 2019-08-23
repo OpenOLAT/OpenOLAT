@@ -66,7 +66,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.assessment.Role;
@@ -344,10 +344,11 @@ public class TaskController extends BasicController {
 		Property p = cpm.createCourseNodePropertyInstance(node, identity, null, PROP_ASSIGNED, null, null, task, null);
 		cpm.saveProperty(p);
 		
-		AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
+		ScoreEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
 		if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
-			eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-			node.updateUserScoreEvaluation(eval, userCourseEnv, getIdentity(), false, Role.user);
+			eval = new ScoreEvaluation(eval.getScore(), eval.getPassed(), AssessmentEntryStatus.inProgress,
+					eval.getUserVisible(), null, null, null, null);
+			courseAssessmentService.saveScoreEvaluation(node, getIdentity(), eval, userCourseEnv, false, Role.user);
 		}
 	}
 	
