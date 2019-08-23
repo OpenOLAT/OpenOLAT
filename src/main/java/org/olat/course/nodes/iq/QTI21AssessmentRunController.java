@@ -273,7 +273,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			}
 		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
-			AssessmentEntry assessmentEntry = testCourseNode.getUserAssessmentEntry(userCourseEnv);
+			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(testCourseNode, userCourseEnv);
 			if(assessmentEntry == null) {
 				mainVC.contextPut("blockAfterSuccess", Boolean.FALSE);
 				mainVC.contextPut("score", null);
@@ -605,7 +605,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		MediaResource resource = null;
 		if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
-			AssessmentEntry assessmentEntry = testCourseNode.getUserAssessmentEntry(userCourseEnv);
+			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
 			AssessmentTestSession session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
 			File signature = qtiService.getAssessmentResultSignature(session);
 			if(signature.exists()) {

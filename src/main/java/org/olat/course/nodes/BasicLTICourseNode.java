@@ -36,12 +36,10 @@ import org.olat.core.gui.control.generic.iframe.DeliveryOptions;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -55,7 +53,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.lti.LTIDisplayOptions;
 import org.olat.ims.lti.LTIManager;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
@@ -266,24 +263,10 @@ public class BasicLTICourseNode extends AbstractAccessableCourseNode implements 
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
-	
-	@Override
-	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		return am.getAssessmentEntry(this, userCourseEnv.getIdentityEnvironment().getIdentity());
-	}
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf);
-		return getUserScoreEvaluation(entry) ;
-	}
-
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
+		return null; // moved
 	}
 
 }

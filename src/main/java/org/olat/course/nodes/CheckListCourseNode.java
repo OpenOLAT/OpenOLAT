@@ -55,6 +55,7 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
@@ -160,20 +161,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	 */
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		AssessmentConfig assessmentConfig = new CheckListAssessmentConfig(getModuleConfiguration());
-		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
-			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
-		}
-		return AssessmentEvaluation.EMPTY_EVAL;
-	}
-	
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
+		return null; // moved
 	}
 
-	@Override
-	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		return am.getAssessmentEntry(this, mySelf);
@@ -422,8 +413,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		}
 		ScoreEvaluation sceval = new ScoreEvaluation(Float.valueOf(score), passed);
 		
-		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
-		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false, by);
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
 	}
 	
 	private void doUpdateAssessmentBySum(Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by) {
@@ -452,8 +443,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 
 		ScoreEvaluation sceval = new ScoreEvaluation(score, new Boolean(passed));
 		
-		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
-		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false, by);
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
 	}
 	
 	private void doUpdateScoreOnly(Float maxScore, Identity identity, UserCourseEnvironment assessedUserCourseEnv, Identity assessedIdentity, Role by) {
@@ -466,10 +457,10 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 			score = maxScore.floatValue();
 		}
 
-		AssessmentManager am = assessedUserCourseEnv.getCourseEnvironment().getAssessmentManager();
-		ScoreEvaluation currentEval = getUserScoreEvaluation(am.getAssessmentEntry(this, assessedIdentity));
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		ScoreEvaluation currentEval = courseAssessmentService.getUserAssessmentEvaluation(this, assessedUserCourseEnv);
 		ScoreEvaluation sceval = new ScoreEvaluation(new Float(score), currentEval.getPassed());
-		am.saveScoreEvaluation(this, identity, assessedIdentity, sceval, assessedUserCourseEnv, false, by);
+		courseAssessmentService.saveScoreEvaluation(this, identity, sceval, assessedUserCourseEnv, false, by);
 	}
 	
 	@Override
@@ -615,7 +606,8 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 			ScoreEvaluation scoreEval = new ScoreEvaluation(updatedScore, updatedPassed);
 			IdentityEnvironment identityEnv = new IdentityEnvironment(assessedIdentity, null);
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment());
-			am.saveScoreEvaluation(this, coachIdentity, assessedIdentity, scoreEval, uce, false, Role.coach);
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			courseAssessmentService.saveScoreEvaluation(this, coachIdentity, scoreEval, uce, false, Role.coach);
 		}
 	}
 

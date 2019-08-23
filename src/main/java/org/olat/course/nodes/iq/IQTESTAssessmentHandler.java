@@ -29,6 +29,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentConfig;
@@ -36,12 +37,14 @@ import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.group.BusinessGroup;
 import org.olat.ims.qti.QTI12ResultDetailsController;
 import org.olat.ims.qti.process.AssessmentInstance;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -69,6 +72,26 @@ public class IQTESTAssessmentHandler implements AssessmentHandler {
 			return new IQTESTAssessmentConfig(iqtestNode);
 		}
 		return NonAssessmentConfig.create();
+	}
+
+	@Override
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		if(getRepositoryEntrySoftKey(courseNode) != null) {
+			return am.getAssessmentEntry(courseNode, assessedIdentity);
+		}
+		return null;
+	}
+	
+	private String getRepositoryEntrySoftKey(CourseNode courseNode) {
+		return (String)courseNode.getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
+	}
+
+	@Override
+	public ScoreEvaluation getCalculatedScoreEvaluation(CourseNode courseNode,
+			UserCourseEnvironment userCourseEnvironment) {
+		return null;
 	}
 
 	@Override

@@ -37,6 +37,11 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean isScoreEvaluationPersisted() {
+		return true;
+	}
+
+	@Override
 	public boolean isScoreEvaluationCalculated() {
 		return false;
 	}

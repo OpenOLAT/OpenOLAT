@@ -28,7 +28,6 @@ package org.olat.course.nodes;
 
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.AssessmentEntry;
 
 
 /**
@@ -41,8 +40,6 @@ import org.olat.modules.assessment.AssessmentEntry;
  * tool.
  */
 public interface AssessableCourseNode extends CourseNode {
-	
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry); 
 
 	/**
 	 * this method implementation must not cache any results!

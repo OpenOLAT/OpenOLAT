@@ -19,24 +19,29 @@
  */
 package org.olat.course.nodes.portfolio;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.portfolio.ui.PortfolioAssessmentDetailsController;
+import org.olat.portfolio.manager.EPStructureManager;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +62,38 @@ public class PortfolioAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return new PortfolioAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		String referenceSoftkey = getReferenceSoftkey(courseNode);
+		if(referenceSoftkey != null) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			return am.getAssessmentEntry(courseNode, assessedIdentity);
+		}
+		return null;
+	}
+
+	private String getReferenceSoftkey(CourseNode courseNode) {
+		String referenceSoftkey = (String)courseNode.getModuleConfiguration().get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY);
+		if(referenceSoftkey == null) {
+			Long mapKey = (Long)courseNode.getModuleConfiguration().get(PortfolioCourseNodeConfiguration.MAP_KEY);
+			if(mapKey != null) {
+				RepositoryEntry re = CoreSpringFactory.getImpl(EPStructureManager.class)
+						.loadPortfolioRepositoryEntryByMapKey(mapKey);
+				if(re != null) {
+					referenceSoftkey = re.getSoftkey();
+				}
+			}
+		}
+		return referenceSoftkey;
+	}
+
+	@Override
+	public ScoreEvaluation getCalculatedScoreEvaluation(CourseNode courseNode,
+			UserCourseEnvironment userCourseEnvironment) {
+		return null;
 	}
 
 	@Override

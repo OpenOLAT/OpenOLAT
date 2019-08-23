@@ -216,7 +216,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	}
 	
 	private void exposeUserDataToVC(UserRequest ureq) {
-		AssessmentEntry assessmentEntry = courseNode.getUserAssessmentEntry(userCourseEnv);
+		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
 		if(assessmentEntry == null) {
 			myContent.contextPut("hasPassedValue", Boolean.FALSE);
 			myContent.contextPut("passed", Boolean.FALSE);

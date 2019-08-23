@@ -21,10 +21,7 @@ package org.olat.course.run.scoring;
 
 import java.util.Date;
 
-import org.olat.core.CoreSpringFactory;
-import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
@@ -120,14 +117,10 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		return lastCoachModified;
 	}
 
-	//TODO uh config instead of node?
-	public static final AssessmentEvaluation toAssessmentEvalutation(AssessmentEntry entry, AssessableCourseNode node) {
+	public static final AssessmentEvaluation toAssessmentEvaluation(AssessmentEntry entry, AssessmentConfig assessmentConfig) {
 		if(entry == null) {
 			return AssessmentEvaluation.EMPTY_EVAL;
 		}
-		
-		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
 		
 		Integer attempts = null;
 		if(assessmentConfig.hasAttempts()) {

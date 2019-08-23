@@ -27,8 +27,10 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -47,7 +49,32 @@ public interface AssessmentHandler {
 	public String acceptCourseNodeType();
 	
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
+	
+	/**
+	 * This method has to be implemented if the AssessmentConfig.isScoreEvaluationPersisted() return true.
+	 *
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @return
+	 */
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 
+	/**
+	 * This method has to be implemented if the AssessmentConfig.isScoreEvaluationCalculated() return true.
+	 *
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @return
+	 */
+	public ScoreEvaluation getCalculatedScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * This method has to be implemented if the AssessmentConfig.isScoreEvaluationCalculated() return true.
+	 *
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @return
+	 */
 	public ScoreCalculator getScoreCalculator(CourseNode courseNode);
 	
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,

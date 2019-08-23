@@ -28,7 +28,12 @@ package org.olat.course.assessment.handler;
 public interface AssessmentConfig {
 	
 	/**
-	 * @return true if the score evaluation is calculated e.g as sum of other assessments
+	 * @return true if the score evaluation is persisted
+	 */
+	public boolean isScoreEvaluationPersisted();
+	
+	/**
+	 * @return true if the score evaluation is calculated e.g as sum of other assessments.
 	 */
 	public boolean isScoreEvaluationCalculated();
 	

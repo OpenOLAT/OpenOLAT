@@ -50,6 +50,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorEnv;
@@ -275,18 +276,13 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		updateModuleConfigDefaults(false); //TODO uh remove
 		AssessmentConfig assessmentConfig =  new MSAssessmentConfig(getModuleConfiguration());
 		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore() || assessmentConfig.hasComment()) {
-			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
+			AssessmentEntry userAssessmentEntry = getUserAssessmentEntry(null, userCourseEnv);
+			return AssessmentEvaluation.toAssessmentEvaluation(userAssessmentEntry, assessmentConfig);
 		}
 		return AssessmentEvaluation.EMPTY_EVAL;
 	}
 
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
-	}
-
-	@Override
-	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		return am.getAssessmentEntry(this, mySelf);
@@ -416,7 +412,9 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			score = msService.scaleScore(score, scale);
 		}
 		if (score == null) {
-			ScoreEvaluation currentEval = getUserScoreEvaluation(am.getAssessmentEntry(this, assessedIdentity));
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentEntry assessmentEntry = am.getAssessmentEntry(this, assessedIdentity);
+			ScoreEvaluation currentEval = courseAssessmentService.toAssessmentEvaluation(assessmentEntry, this);
 			score = currentEval.getScore();
 		}
 		
@@ -441,7 +439,9 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 			boolean aboveCutValue = score.floatValue() >= cutConfig.floatValue();
 			passed = Boolean.valueOf(aboveCutValue);
 		} else {
-			ScoreEvaluation currentEval = getUserScoreEvaluation(am.getAssessmentEntry(this, assessedIdentity));
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentEntry assessmentEntry = am.getAssessmentEntry(this, assessedIdentity);
+			ScoreEvaluation currentEval = courseAssessmentService.toAssessmentEvaluation(assessmentEntry, this);
 			passed = currentEval.getPassed();
 		}
 		return passed;

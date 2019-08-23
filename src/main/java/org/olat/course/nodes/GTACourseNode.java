@@ -62,14 +62,12 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.nodes.gta.GTAAssessmentConfig;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
 import org.olat.course.nodes.gta.Task;
@@ -793,20 +791,10 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Persi
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		AssessmentConfig assessmentConfig = new GTAAssessmentConfig(getModuleConfiguration());
-		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
-			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
-		}
-		return AssessmentEvaluation.EMPTY_EVAL;
+		return null; // moved;
 	}
 
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
-	}
-
-	@Override
-	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
 		return am.getAssessmentEntry(this, assessedIdentity);

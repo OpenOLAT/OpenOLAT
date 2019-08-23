@@ -70,7 +70,6 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
@@ -82,7 +81,6 @@ import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.nodes.ta.ConvertToGTACourseNode;
 import org.olat.course.nodes.ta.DropboxController;
 import org.olat.course.nodes.ta.ReturnboxController;
-import org.olat.course.nodes.ta.TAAssessmentConfig;
 import org.olat.course.nodes.ta.TACourseNodeEditController;
 import org.olat.course.nodes.ta.TACourseNodeRunController;
 import org.olat.course.nodes.ta.TaskController;
@@ -447,20 +445,10 @@ public class TACourseNode extends GenericCourseNode implements PersistentAssessa
 
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		AssessmentConfig assessmentConfig = new TAAssessmentConfig(getModuleConfiguration());
-		if(assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
-			return getUserScoreEvaluation(getUserAssessmentEntry(userCourseEnv));
-		}
-		return AssessmentEvaluation.EMPTY_EVAL;
-	}
-	
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
+		return null; // moved
 	}
 
-	@Override
-	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
+	public AssessmentEntry getUserAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
 		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
 		return am.getAssessmentEntry(this, mySelf);

@@ -639,7 +639,7 @@ public class IQRunController extends BasicController implements GenericEventList
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
     	if(courseNode instanceof PersistentAssessableCourseNode) {
     		PersistentAssessableCourseNode acn = (PersistentAssessableCourseNode)courseNode;
-    		AssessmentEntry assessmentEntry = acn.getUserAssessmentEntry(userCourseEnv);
+    		AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
     		if(assessmentEntry == null) {
     			myContent.contextPut("blockAfterSuccess", Boolean.FALSE);
 	    		myContent.contextPut("score", null);

@@ -40,10 +40,12 @@ import org.olat.course.assessment.handler.NonAssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -88,8 +90,44 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 	}
 
 	@Override
-	public AssessmentConfig getAssessmentConfig(CourseNode node) {
-		return getAssessmentHandler(node).getAssessmentConfig(node);
+	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
+		return getAssessmentHandler(courseNode).getAssessmentConfig(courseNode);
+	}
+
+	@Override
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		return getAssessmentHandler(courseNode).getAssessmentEntry(courseNode, userCourseEnvironment);
+	}
+
+	@Override
+	public AssessmentEvaluation getUserAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		AssessmentEntry assessmentEntry = getAssessmentHandler(courseNode).getAssessmentEntry(courseNode, userCourseEnvironment);
+		return toAssessmentEvaluation(assessmentEntry, courseNode);
+	}
+	
+	@Override
+	public AssessmentEvaluation toAssessmentEvaluation(AssessmentEntry assessmentEntry, AssessmentConfig assessmentConfig) {
+		return AssessmentEvaluation.toAssessmentEvaluation(assessmentEntry, assessmentConfig);
+	}
+	
+	@Override
+	public AssessmentEvaluation toAssessmentEvaluation(AssessmentEntry assessmentEntry, CourseNode courseNode) {
+		AssessmentConfig assessmentConfig = getAssessmentConfig(courseNode);
+		return toAssessmentEvaluation(assessmentEntry, assessmentConfig);
+	}
+
+	@Override
+	public ScoreEvaluation getUserScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		AssessmentConfig assessmentConfig = getAssessmentConfig(courseNode);
+		AssessmentHandler assessmentHandler = getAssessmentHandler(courseNode);
+		
+		ScoreEvaluation scoreEvaluation = AssessmentEvaluation.EMPTY_EVAL;
+		if (assessmentConfig.isScoreEvaluationCalculated()) {
+			scoreEvaluation = assessmentHandler.getCalculatedScoreEvaluation(courseNode, userCourseEnvironment);
+		} else if (assessmentConfig.isScoreEvaluationPersisted()) {
+			scoreEvaluation = getUserAssessmentEvaluation(courseNode, userCourseEnvironment);
+		}
+		return scoreEvaluation;
 	}
 	
 	@Override
@@ -103,7 +141,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 
 	@Override
 	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
-		return getAssessmentHandler(courseNode).getScoreCalculator(courseNode);
+		ScoreCalculator scoreCalculator = getAssessmentHandler(courseNode).getScoreCalculator(courseNode);
+		return scoreCalculator != null? scoreCalculator: new ScoreCalculator();
 	}
 
 	@Override
@@ -220,6 +259,15 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 		UserNodeAuditManager am = userCourseEnvironment.getCourseEnvironment().getAuditManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		return am.getUserNodeLog(courseNode, assessedIdentity);
+	}
+
+	@Override
+	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, ScoreEvaluation scoreEvaluation,
+			UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts, Role by) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.saveScoreEvaluation(courseNode, identity, assessedIdentity, scoreEvaluation, userCourseEnvironment,
+				incrementUserAttempts, by);
 	}
 
 	@Override

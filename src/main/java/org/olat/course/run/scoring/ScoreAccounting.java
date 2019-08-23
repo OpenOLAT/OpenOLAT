@@ -105,7 +105,8 @@ public class ScoreAccounting {
 			CourseNode courseNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getNode(nodeIdent);
 			if(courseNode instanceof AssessableCourseNode) {
 				AssessableCourseNode acn = (AssessableCourseNode)courseNode;
-				AssessmentEvaluation se = AssessmentEvaluation.toAssessmentEvalutation(entry, acn);
+				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				AssessmentEvaluation se = courseAssessmentService.toAssessmentEvaluation(entry, courseNode);
 				cachedScoreEvals.put(acn, se);
 			}
 		}
@@ -154,7 +155,6 @@ public class ScoreAccounting {
 			recursionLevel++;
 			AssessmentEvaluation se = null;
 			if (recursionLevel <= 15) {
-				
 				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cn);
 				if (update && assessmentConfig.isScoreEvaluationCalculated()) {
@@ -164,9 +164,9 @@ public class ScoreAccounting {
 				} else {
 					se = cachedScoreEvals.get(cn);
 					if (se == null) { // result of this node has not been cached yet, do it
-						AssessmentEntry entry = identToEntries.get(cn.getIdent());
-						if(cn instanceof AssessableCourseNode) { // check isScoreEvaluationPersited()
-							se = cn.getUserScoreEvaluation(entry);
+						if(assessmentConfig.isScoreEvaluationPersisted()) {
+							AssessmentEntry entry = identToEntries.get(cn.getIdent());
+							se = courseAssessmentService.toAssessmentEvaluation(entry, assessmentConfig);
 						} else {
 							se = cn.getUserScoreEvaluation(userCourseEnvironment);
 						}

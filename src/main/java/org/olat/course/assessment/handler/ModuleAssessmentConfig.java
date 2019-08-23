@@ -38,6 +38,11 @@ public abstract class ModuleAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean isScoreEvaluationPersisted() {
+		return true;
+	}
+
+	@Override
 	public boolean isScoreEvaluationCalculated() {
 		return false;
 	}

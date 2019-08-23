@@ -38,6 +38,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * Wrapper class that contains an identity and the associated score, attempts and oder 
  * variables that should be displayed in the user list table.
  */
+//TODO uh delete?
 public class AssessedIdentityWrapper {
 	private final Long identityKey;
     private final UserCourseEnvironment userCourseEnvironment;

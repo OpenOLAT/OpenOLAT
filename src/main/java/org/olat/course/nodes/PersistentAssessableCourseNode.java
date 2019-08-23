@@ -19,9 +19,6 @@
  */
 package org.olat.course.nodes;
 
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.AssessmentEntry;
-
 /**
  * Most of the course node saved their data on the database with the
  * assessment service.
@@ -32,6 +29,5 @@ import org.olat.modules.assessment.AssessmentEntry;
  */
 public interface PersistentAssessableCourseNode extends AssessableCourseNode {
 	
-	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv);
 
 }

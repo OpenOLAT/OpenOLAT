@@ -27,6 +27,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
@@ -34,8 +35,10 @@ import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.cl.ui.AssessedIdentityCheckListController;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -58,6 +61,19 @@ public class CheckListAssessmentHandler implements AssessmentHandler {
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return new CheckListAssessmentConfig(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		return am.getAssessmentEntry(courseNode, assessedIdentity);
+	}
+
+	@Override
+	public ScoreEvaluation getCalculatedScoreEvaluation(CourseNode courseNode,
+			UserCourseEnvironment userCourseEnvironment) {
+		return null;
 	}
 
 	@Override

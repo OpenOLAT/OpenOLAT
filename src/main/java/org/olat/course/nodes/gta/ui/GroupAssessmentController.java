@@ -27,6 +27,7 @@ import java.util.Map;
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -321,8 +322,9 @@ public class GroupAssessmentController extends FormBasicController {
 			AssessmentEntry entry = identityToEntryMap.get(identity);
 			
 			ScoreEvaluation scoreEval = null;
-			if(withScore || withPassed) {	
-				scoreEval = gtaNode.getUserScoreEvaluation(entry);
+			if(withScore || withPassed) {
+				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				scoreEval = courseAssessmentService.toAssessmentEvaluation(entry, gtaNode);
 				if (scoreEval == null) {
 					scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
 				}

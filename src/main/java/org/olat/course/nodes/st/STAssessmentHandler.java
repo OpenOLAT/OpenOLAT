@@ -24,15 +24,21 @@ import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.id.Identity;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
@@ -62,12 +68,43 @@ public class STAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		return am.getAssessmentEntry(courseNode, assessedIdentity);
+	}
+
+	@Override
+	public ScoreEvaluation getCalculatedScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		ScoreCalculator scoreCalculator = getScoreCalculator(courseNode);
+		if (scoreCalculator == null) { 
+			// this is a not-computable course node at the moment (no scoring/passing rules defined)
+			return null; 
+		}
+		
+		Float score = null;
+		Boolean passed = null;
+
+		String scoreExpressionStr = scoreCalculator.getScoreExpression();
+		String passedExpressionStr = scoreCalculator.getPassedExpression();
+
+		ConditionInterpreter ci = userCourseEnvironment.getConditionInterpreter();
+		if (scoreExpressionStr != null) {
+			score = new Float(ci.evaluateCalculation(scoreExpressionStr));
+		}
+		if (passedExpressionStr != null) {
+			passed = new Boolean(ci.evaluateCondition(passedExpressionStr));
+		}
+		return new AssessmentEvaluation(score, passed);
+	}
+
+	@Override
 	public ScoreCalculator getScoreCalculator(CourseNode courseNode) {
 		if (courseNode instanceof STCourseNode) {
 			STCourseNode stCourseNode = (STCourseNode) courseNode;
 			return stCourseNode.getScoreCalculator();
 		}
-		return new ScoreCalculator();
+		return null;
 	}
 
 	@Override

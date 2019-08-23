@@ -37,6 +37,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+//TODO uh delete?
 public class Certificates_1_SelectionStep extends BasicStep {
 	
 	private final boolean hasAssessableNodes;

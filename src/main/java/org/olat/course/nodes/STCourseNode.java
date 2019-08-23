@@ -56,7 +56,6 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.interpreter.ConditionExpression;
-import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -77,7 +76,6 @@ import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 
@@ -253,29 +251,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Assess
 	 */
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		Float score = null;
-		Boolean passed = null;
-
-		if (scoreCalculator == null) { 
-			// this is a not-computable course node at the moment (no scoring/passing rules defined)
-			return null; 
-		}
-		String scoreExpressionStr = scoreCalculator.getScoreExpression();
-		String passedExpressionStr = scoreCalculator.getPassedExpression();
-
-		ConditionInterpreter ci = userCourseEnv.getConditionInterpreter();
-		if (scoreExpressionStr != null) {
-			score = new Float(ci.evaluateCalculation(scoreExpressionStr));
-		}
-		if (passedExpressionStr != null) {
-			passed = new Boolean(ci.evaluateCondition(passedExpressionStr));
-		}
-		return new AssessmentEvaluation(score, passed);
-	}
-
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
+		return null; // moved
 	}
 
 	@Override

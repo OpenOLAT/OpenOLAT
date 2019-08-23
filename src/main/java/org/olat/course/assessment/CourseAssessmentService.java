@@ -31,10 +31,12 @@ import org.olat.core.id.Identity;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
@@ -50,14 +52,75 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface CourseAssessmentService {
 	
-	public AssessmentConfig getAssessmentConfig(CourseNode node);
-
+	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
+	
+	/**
+	 * Returns the persisted AssessmentEntry of the user. Check
+	 * AssessmentConfig.isScoreEvaluationPersisted() before invoking this method.
+	 *
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @return
+	 */
+	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * Returns the current, persisted AssessmentEvaluation of the user for a course
+	 * node. The loaded values are modified according to the AssessmentConfig of the
+	 * course node, e.g. if a user has a saved score but the the score is disabled
+	 * in the config, the AssessmentEvaluation has a score of null.
+	 *
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @return
+	 */
+	public AssessmentEvaluation getUserAssessmentEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * Converts the assessmentEntry to an AssessmentEvaluation in respect of the
+	 * AssessmentConfig. If the assessmentEntry is null, the method returns
+	 * AssessmentEvaluation.EMPTY_EVAL.
+	 * 
+	 * @param assessmentEntry
+	 * @param assessmentConfig
+	 * 
+	 * @return
+	 */
+	public AssessmentEvaluation toAssessmentEvaluation(AssessmentEntry assessmentEntry, AssessmentConfig assessmentConfig);
+	
+	/**
+	 * Converts the assessmentEntry to an AssessmentEvaluation in respect of the
+	 * AssessmentConfig of the courseNode. If the assessmentEntry is null, the
+	 * method returns AssessmentEvaluation.EMPTY_EVAL.
+	 * 
+	 * @param assessmentEntry
+	 * @param courseNode
+	 * 
+	 * @return
+	 */
+	public AssessmentEvaluation toAssessmentEvaluation(AssessmentEntry assessmentEntry, CourseNode courseNode);
+	
+	/**
+	 * This method implementation must not cache any results!
+	 * 
+	 * The user has no scoring results yet (e.g. made no test yet), then the
+	 * ScoreEvaluation.NA has to be returned!
+	 * 
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @return null, if this node cannot deliver any useful scoring info (this is
+	 *         not the case for a test never tried or manual scoring: those have
+	 *         default values 0.0f / false for score/passed; currently only the
+	 *         STNode returns null, if there are no scoring rules defined.
+	 */
+	public ScoreEvaluation getUserScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	
 	public void updateUserScoreEvaluation(CourseNode courseNode, ScoreEvaluation scoreEvaluation,
 			UserCourseEnvironment userCourseEnvironment, Identity coachingIdentity, boolean incrementAttempts, Role by);
 	
 	/**
 	 * Returns the ScoreCalculator if the course nod can calculate its score. Check
-	 * AssessmentConfig.isScoreCalculated() before invoking this method.
+	 * AssessmentConfig.isScoreEvaluationCalculated() before invoking this method.
 	 *
 	 * @param courseNode
 	 * @return
@@ -189,6 +252,19 @@ public interface CourseAssessmentService {
 	 * @return the users log of this node
 	 */
 	public String getUserLog(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * Save the users achieved ScoreEvaluation for this node. If there is already a
+	 * score property available, it will be overwritten with the new value.
+	 * 
+	 * @param courseNode            The course element
+	 * @param identity              The identity who make the changes
+	 * @param scoreEvaluation       The updated score evaluation
+	 * @param userCourseEnvironment The user course env. of the assessed identity
+	 * @param incrementUserAttempts
+	 */
+	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, ScoreEvaluation scoreEvaluation,
+			UserCourseEnvironment userCourseEnvironment, boolean incrementUserAttempts, Role by);
 	
 	/**
 	 * Returns a controller to edit the node specific details. Check

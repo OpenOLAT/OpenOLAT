@@ -104,7 +104,6 @@ import org.olat.ims.qti21.resultexport.QTI21ResultsExportMediaResource;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticResourceResult;
 import org.olat.ims.qti21.ui.statistics.QTI21StatisticsSecurityCallback;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
@@ -380,57 +379,21 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Pe
 	 */
 	@Override
 	public AssessmentEvaluation getUserScoreEvaluation(UserCourseEnvironment userCourseEnv) {
-		// read score from properties save score, passed and attempts information
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		AssessmentEntry entry = am.getAssessmentEntry(this, mySelf);
-		return getUserScoreEvaluation(entry);
+		return null; // moved
 	}
 
-	@Override
-	public AssessmentEvaluation getUserScoreEvaluation(AssessmentEntry entry) {
-		if(entry != null) {
-			return AssessmentEvaluation.toAssessmentEvalutation(entry, this);
-		}	
-		return AssessmentEvaluation.EMPTY_EVAL;
-	}
-
-	@Override
-	public AssessmentEntry getUserAssessmentEntry(UserCourseEnvironment userCourseEnv) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		if(getRepositoryEntrySoftKey() != null) {
-			return am.getAssessmentEntry(this, mySelf);
-		}
-		return null;
-	}
-
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		// ",false" because we do not want to be strict, but just indicate whether
 		// the reference still exists or not
 		return IQEditController.getIQReference(getModuleConfiguration(), false);
 	}
-	
-	private String getRepositoryEntrySoftKey() {
-		return (String)getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY);
-	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#informOnDelete(org.olat.core.gui.UserRequest,
-	 *      org.olat.course.ICourse)
-	 */
 	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		// Check if there are qtiresults for this test
