@@ -154,9 +154,10 @@ public class MSEvaluationFormExecutionController extends BasicController impleme
 
 	private void doSetAssessmentScore() {
 		session = msService.getSession(session);
-		Identity assessedIdentity = assessedUserCourseEnv.getIdentityEnvironment().getIdentity();
-		//TODO uh enable
-//		msCourseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach, session);
+		if (courseNode instanceof MSCourseNode) {
+			MSCourseNode msCourseNode = (MSCourseNode) courseNode;
+			msCourseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, Role.coach, session);
+		}
 		updateUIReopen();
 	}
 
