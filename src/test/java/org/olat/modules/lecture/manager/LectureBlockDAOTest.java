@@ -197,6 +197,8 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		searchParams.setSearchString("Hello");
 		searchParams.setStartDate(new Date());
 		searchParams.setTeacher(id);
+		searchParams.setMasterCoach(id);
+		searchParams.setManager(id);
 		
 		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
 		Assert.assertNotNull(blocks);

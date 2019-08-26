@@ -37,6 +37,7 @@ import org.olat.core.util.openxml.OpenXMLWorkbook;
 import org.olat.core.util.openxml.OpenXMLWorkbookResource;
 import org.olat.core.util.openxml.OpenXMLWorksheet;
 import org.olat.core.util.openxml.OpenXMLWorksheet.Row;
+import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.modules.lecture.LectureBlockRef;
@@ -157,6 +158,7 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 			LectureBlock auditBlock = null;
 			LectureBlockRollCall auditRollCall = null;
 			LectureParticipantSummary auditSummary = null;
+			AbsenceNotice absenceNotice = null;
 			if(logEntry.getRollCallKey() != null) {
 				auditRollCall = getAuditRollCall(logEntry.getAfter());
 			}
@@ -166,6 +168,9 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 				} else {
 					auditSummary = getAuditLectureParticipantSummary(logEntry.getAfter());
 				}
+			}
+			if(logEntry.getAbsenceNoticeKey() != null) {
+				absenceNotice = getAuditAbsenceNotice(logEntry.getAfter());
 			}
 			
 			if(auditBlock != null) {
@@ -181,7 +186,25 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 				pos += 4;
 			}
 			
-			if(auditRollCall != null) {
+			if(absenceNotice != null) {
+				Long assessedIdentityKey = logEntry.getIdentityKey();
+				String fullname = userManager.getUserDisplayName(assessedIdentityKey);
+				row.addCell(pos++, fullname);
+				pos += 2;// attendedNumber, absentNumber
+				if(authorizedAbsenceEnabled) {
+					if(absenceNotice.getAbsenceAuthorized() != null && absenceNotice.getAbsenceAuthorized().booleanValue()) {
+						row.addCell(pos++, "x");
+					} else {
+						pos++;
+					}
+					row.addCell(pos++, absenceNotice.getAbsenceReason(), null);
+				}
+				if(absenceNotice.getAbsenceCategory() != null) {
+					row.addCell(pos++, absenceNotice.getAbsenceCategory().getTitle(), null);
+				} else {
+					pos++;
+				}
+			} else if(auditRollCall != null) {
 				Long assessedIdentityKey = logEntry.getIdentityKey();
 				String fullname = userManager.getUserDisplayName(assessedIdentityKey);
 				row.addCell(pos++, fullname);
@@ -267,6 +290,10 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 		return lectureService.toAuditLectureParticipantSummary(xml);
 	}
 	
+	private AbsenceNotice getAuditAbsenceNotice(String xml) {
+		return lectureService.toAuditAbsenceNotice(xml);
+	}
+	
 	protected void cacheRepositoryEntry(RepositoryEntry entry) {
 		if(entry != null) {
 			displayNames.put(entry.getKey(), entry.getDisplayname());
@@ -274,6 +301,7 @@ public abstract class AbstractLectureBlockAuditLogExport extends OpenXMLWorkbook
 	}
 	
 	private String getRepositoryEntryDisplayName(Long entryKey) {
+		if(entryKey == null) return null;
 		
 		String displayName = displayNames.get(entryKey);
 		if(displayName == null) {

@@ -28,6 +28,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.coach.EditReasonController;
 
 /**
@@ -40,10 +41,11 @@ public class ReasonStepController extends StepFormBasicController {
 	
 	private final EditReasonController editReasonCtrl;
 	
-	public ReasonStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public ReasonStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
+			LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 		EditAbsenceNoticeWrapper noticeWrapper = (EditAbsenceNoticeWrapper)getFromRunContext("absence");
-		editReasonCtrl = new EditReasonController(ureq, wControl, rootForm, noticeWrapper, true);
+		editReasonCtrl = new EditReasonController(ureq, wControl, rootForm, noticeWrapper, secCallback, true);
 		listenTo(editReasonCtrl);
 		initForm(ureq);
 	}

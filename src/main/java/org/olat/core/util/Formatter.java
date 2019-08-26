@@ -386,7 +386,7 @@ public class Formatter {
 	 * @return human readable formatted bytes
 	 */
 	public static String formatBytes(long bytes) {
-	    int unit = BYTE_UNIT;
+	    long unit = BYTE_UNIT;
 	    if (bytes < unit) return bytes + " B";
 	    int exp = (int) (Math.log(bytes) / Math.log(unit));
 	    String pre = "kMGTPE".charAt(exp-1) + "";

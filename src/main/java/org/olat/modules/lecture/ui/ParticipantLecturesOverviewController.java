@@ -310,7 +310,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		return new ArrayList<>(results.values());
 	}
 	
-	private void loadModel() {
+	public void loadModel() {
 		List<LectureBlockStatistics> statistics = lectureService.getParticipantLecturesStatistics(assessedIdentity);
 		if(filterByEntries != null && !filterByEntries.isEmpty()) {
 			Set<Long> acceptedEntries = filterByEntries.stream()

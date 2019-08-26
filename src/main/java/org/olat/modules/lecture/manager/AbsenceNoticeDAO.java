@@ -62,7 +62,8 @@ public class AbsenceNoticeDAO {
 	private DB dbInstance;
 	
 	public AbsenceNotice createAbsenceNotice(Identity identity, AbsenceNoticeType type, AbsenceNoticeTarget target,
-			Date start, Date end, AbsenceCategory category, String absenceRason, Boolean authorized) {
+			Date start, Date end, AbsenceCategory category, String absenceRason, Boolean authorized,
+			Identity authorizer, Identity notifier) {
 		AbsenceNoticeImpl notice = new AbsenceNoticeImpl();
 		notice.setCreationDate(new Date());
 		notice.setLastModified(notice.getCreationDate());
@@ -74,6 +75,8 @@ public class AbsenceNoticeDAO {
 		notice.setNoticeTarget(target);
 		notice.setAbsenceAuthorized(authorized);
 		notice.setIdentity(identity);
+		notice.setNotifier(notifier);
+		notice.setAuthorizer(authorizer);
 		dbInstance.getCurrentEntityManager().persist(notice);
 		return notice;
 	}
@@ -87,6 +90,7 @@ public class AbsenceNoticeDAO {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rollCall from lectureblockrollcall rollCall")
 		  .append(" inner join fetch rollCall.absenceNotice as notice")
+		  .append(" left join fetch rollCall.lectureBlock as lectureBlock")
 		  .append(" where notice.key=:noticeKey");
 		
 		return dbInstance.getCurrentEntityManager()
@@ -117,16 +121,12 @@ public class AbsenceNoticeDAO {
 			  .append(" inner join bGroup.members participants on (participants.role='").append(GroupRoles.participant.name()).append("')")
 			  .append(" inner join absencenotice notice on (participants.identity.key=notice.identity.key)")
 			  .append(" where notice.key in (:noticeKeys)");
+		}
+		
+		if(target == AbsenceNoticeTarget.entries || target == AbsenceNoticeTarget.allentries) {
 			// date constraints
-			sb.append(" and (")
-			  .append("(notice.startDate<=block.startDate and notice.endDate>=block.endDate)")
-			  .append(" or ")
-			  .append("(notice.startDate>=block.startDate and notice.endDate<=block.startDate)")
-			  .append(" or ")
-			  .append("(notice.startDate>=block.endDate and notice.endDate<=block.endDate)")
-			  .append(" or ")
-			  .append("(notice.startDate is null and notice.endDate is null)")
-			  .append(")");
+			sb.append(" and ");
+			noticeBlockDates(sb);
 		}
 		
 		List<Long> noticeKeys = notices.stream()
@@ -145,6 +145,17 @@ public class AbsenceNoticeDAO {
 			blockWithNotices.add(new LectureBlockWithNotice(block, entry, noticeRef));
 		}
 		return blockWithNotices;
+	}
+	
+	protected static QueryBuilder noticeBlockDates(QueryBuilder sb) {
+		sb.append("(")
+		  .append(" (notice.startDate<=block.startDate and notice.endDate>=block.endDate)")
+		  .append(" or ")
+		  .append(" (notice.startDate>=block.startDate and notice.endDate<=block.startDate)")
+		  .append(" or ")
+		  .append(" (notice.startDate>=block.endDate and notice.endDate<=block.endDate)")
+		  .append(")");
+		return sb;
 	}
 	
 	public AbsenceNotice loadAbsenceNotice(Long noticeKey) {
@@ -214,9 +225,11 @@ public class AbsenceNoticeDAO {
 			  .append("(notice.startDate>=:startDate and notice.startDate<=:endDate)")
 			  .append(" or ")
 			  .append("(notice.endDate>=:startDate and notice.endDate<=:endDate)")
-			  .append(" or ")
-			  .append("(notice.startDate is null and notice.endDate is null)")
 			  .append(")");
+		} else if(searchParams.getStartDate() != null) {
+			sb.and().append(" notice.startDate>=:startDate");
+		} else if(searchParams.getEndDate() != null) {
+			sb.and().append(" notice.endDate<=:endDate");
 		}
 		
 		if(searchParams.getParticipant() != null) {
@@ -330,8 +343,17 @@ public class AbsenceNoticeDAO {
 			  .append("  ) or exists (select noticeToEntry.key from absencenoticetoentry noticeToEntry")
 			  .append("    where notice.target ").in(AbsenceNoticeTarget.entries)
 			  .append("    and noticeToEntry.absenceNotice.key=notice.key and noticeToEntry.entry.key=:entryKey")
+			  .append("    and (")
+			  .append("      (notice.startDate<=:startDate and notice.endDate>=:endDate)")
+			  .append("      or (notice.startDate>=:startDate and notice.startDate<:endDate)")
+			  .append("      or (notice.endDate>=:startDate and notice.endDate<:endDate)")
+			  .append("    )")
 			  .append("  ) or (notice.target ").in(AbsenceNoticeTarget.allentries)
-			  .append("    and notice.startDate<=:startDate and notice.endDate>=:endDate")
+			  .append("    and (")
+			  .append("      (notice.startDate<=:startDate and notice.endDate>=:endDate)")
+			  .append("      or (notice.startDate>=:startDate and notice.startDate<:endDate)")
+			  .append("      or (notice.endDate>=:startDate and notice.endDate<:endDate)")
+			  .append("    )")
 			  .append("  )")
 			  .append(")");
 		}

@@ -17,8 +17,8 @@ create table o_lecture_absence_notice (
    l_type varchar(32),
    l_absence_reason mediumtext,
    l_absence_authorized bit default null,
-   l_start_date datetime,
-   l_end_date datetime,
+   l_start_date datetime not null,
+   l_end_date datetime not null,
    l_target varchar(32) default 'allentries' not null,
    l_attachments_dir varchar(255),
    fk_identity bigint not null,
@@ -69,4 +69,10 @@ alter table o_lecture_block_roll_call add column l_absence_notice_lectures varch
 alter table o_lecture_block_roll_call add column fk_absence_notice bigint default null;
 alter table o_lecture_block_roll_call add constraint rollcall_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
 
+alter table o_lecture_block_audit_log add column fk_absence_notice bigint default null;
 
+-- curriculum
+update o_cur_curriculum set c_status='active' where c_status is null;
+
+-- portfolio
+alter table o_pf_media modify p_business_path varchar(255) default null;

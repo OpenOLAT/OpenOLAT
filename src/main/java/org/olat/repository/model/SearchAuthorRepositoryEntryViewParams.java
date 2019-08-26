@@ -132,6 +132,10 @@ public class SearchAuthorRepositoryEntryViewParams {
 		return resourceTypes;
 	}
 	
+	public boolean includeResourceType(String resourceType) {
+		return resourceTypes == null || resourceTypes.contains(resourceType);
+	}
+	
 	public void setResourceTypes(List<String> resourceTypes) {
 		this.resourceTypes = resourceTypes;
 	}

@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.ui.profile;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.admin.user.UserShortDescription;
@@ -28,20 +29,29 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.stack.BreadcrumbedStackedPanel;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
+import org.olat.core.gui.components.tabbedpane.TabbedPaneChangedEvent;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
+import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
+import org.olat.modules.lecture.AbsenceNoticeType;
+import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 import org.olat.modules.lecture.ui.AppealListRepositoryController;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.lecture.ui.coach.DispensationsController;
+import org.olat.modules.lecture.ui.wizard.AbsenceNotice3LecturesEntriesStep;
+import org.olat.modules.lecture.ui.wizard.AbsenceNoticeCancelStepCallback;
+import org.olat.modules.lecture.ui.wizard.AbsenceNoticeFinishStepCallback;
 import org.olat.user.DisplayPortraitController;
 
 /**
@@ -52,14 +62,23 @@ import org.olat.user.DisplayPortraitController;
  */
 public class IdentityProfileController extends BasicController implements Activateable2 {
 	
-	private Link addAbsence;
-	private Link addNoticeOfAbsence;
-	private Link addDispensation;
 	private Link backLink;
+	private Link addAbsence;
+	private Link addDispensation;
+	private Link addNoticeOfAbsence;
+	
+	private final int dailyTab;
+	private final int lecturesTab;
+	private final int appealsTab;
+	private final int dispensationsTab;
 	
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
 	
+	private final Identity profiledIdentity;
+	private final LecturesSecurityCallback secCallback;
+	
+	private StepsMainRunController addNoticeCtrl;
 	private DispensationsController dispensationsCtrl;
 	private AppealListRepositoryController appealsCtrl;
 	private DailyOverviewProfilController dailyOverviewCtrl;
@@ -68,6 +87,8 @@ public class IdentityProfileController extends BasicController implements Activa
 	public IdentityProfileController(UserRequest ureq, WindowControl wControl, Identity profiledIdentity,
 			LecturesSecurityCallback secCallback, boolean withBack) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
+		this.profiledIdentity = profiledIdentity;
+		this.secCallback = secCallback;
 		
 		mainVC = createVelocityContainer("profile");
 		if(withBack) {
@@ -103,10 +124,10 @@ public class IdentityProfileController extends BasicController implements Activa
 		// day overview
 		dailyOverviewCtrl = new DailyOverviewProfilController(ureq, getWindowControl(), profiledIdentity, secCallback);
 		listenTo(dailyOverviewCtrl);
-		tabPane.addTab(translate("cockpit.day.overview"), dailyOverviewCtrl);
+		dailyTab = tabPane.addTab(translate("cockpit.day.overview"), dailyOverviewCtrl);
 		
 		// list of lectures
-		tabPane.addTab(translate("user.overview.lectures"), uureq -> {
+		lecturesTab = tabPane.addTab(translate("user.overview.lectures"), uureq -> {
 			lecturesCtrl = new ParticipantLecturesOverviewController(uureq, getWindowControl(), profiledIdentity, null,
 					true, true, true, true, true, false);
 			listenTo(lecturesCtrl);
@@ -118,14 +139,14 @@ public class IdentityProfileController extends BasicController implements Activa
 		});
 
 		// dispensation
-		tabPane.addTab(translate("user.overview.dispensation"), uureq -> {
+		dispensationsTab = tabPane.addTab(translate("user.overview.dispensation"), uureq -> {
 			dispensationsCtrl = new DispensationsController(uureq, getWindowControl(), null, secCallback, false, false);
 			listenTo(dispensationsCtrl);
 			return dispensationsCtrl.getInitialComponent();
 		});
 
 		// appeals
-		tabPane.addTab(translate("user.overview.appeals"), uureq -> {
+		appealsTab = tabPane.addTab(translate("user.overview.appeals"), uureq -> {
 			appealsCtrl = new AppealListRepositoryController(uureq, getWindowControl(), profiledIdentity, secCallback);
 			listenTo(appealsCtrl);
 			return appealsCtrl.getInitialComponent();
@@ -148,6 +169,79 @@ public class IdentityProfileController extends BasicController implements Activa
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == backLink) {
 			fireEvent(ureq, Event.BACK_EVENT);
+		} else if(addAbsence == source) {
+			doAddNotice(ureq, AbsenceNoticeType.absence);
+		} else if(addNoticeOfAbsence == source) {
+			doAddNotice(ureq, AbsenceNoticeType.notified);
+		} else if(addDispensation == source) {
+			doAddNotice(ureq, AbsenceNoticeType.dispensation);
+		} else if(source == tabPane) {
+			if(event instanceof TabbedPaneChangedEvent) {
+				reload();
+			}
 		}
+	}
+	
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if(addNoticeCtrl == source) {
+			if(event == Event.CANCELLED_EVENT || event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+				getWindowControl().pop();
+				if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
+					updateModels();
+				}
+				cleanUp();
+			}
+		}
+		super.event(ureq, source, event);
+	}
+	
+	private void cleanUp() {
+		removeAsListenerAndDispose(addNoticeCtrl);
+		addNoticeCtrl = null;
+	}
+	
+	private void reload() {
+		int selectedPane = tabPane.getSelectedPane();
+		if(dispensationsCtrl != null && dispensationsTab == selectedPane) {
+			dispensationsCtrl.reloadModel();
+		} else if(dailyOverviewCtrl != null && dailyTab == selectedPane) {
+			dailyOverviewCtrl.reloadModel();
+		} else if(lecturesCtrl != null && lecturesTab == selectedPane) {
+			lecturesCtrl.loadModel();
+		} else if(appealsCtrl != null && appealsTab == selectedPane) {
+			appealsCtrl.reloadModel();
+		}
+	}
+	
+	private void updateModels() {
+		if(dispensationsCtrl != null) {
+			dispensationsCtrl.reloadModel();
+		}
+		if(dailyOverviewCtrl != null) {
+			dailyOverviewCtrl.reloadModel();
+		}
+	}
+	
+	private void doAddNotice(UserRequest ureq, AbsenceNoticeType type) {
+		final EditAbsenceNoticeWrapper noticeWrapper = new EditAbsenceNoticeWrapper(type);
+		noticeWrapper.setIdentity(profiledIdentity);
+		noticeWrapper.setCurrentDate(new Date());
+		
+		AbsenceNotice3LecturesEntriesStep step = new AbsenceNotice3LecturesEntriesStep(ureq, noticeWrapper, secCallback, true);
+		StepRunnerCallback stop = new AbsenceNoticeFinishStepCallback(noticeWrapper, getTranslator());
+		StepRunnerCallback cancel = new AbsenceNoticeCancelStepCallback(noticeWrapper);
+
+		String title = translate("add.dispensation.title");
+		if(type == AbsenceNoticeType.notified) {
+			title = translate("add.notice.absence.title");
+		} else if(type == AbsenceNoticeType.absence) {
+			title = translate("add.absence.title");
+		}
+		
+		removeAsListenerAndDispose(addNoticeCtrl);
+		addNoticeCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, cancel, title, "");
+		listenTo(addNoticeCtrl);
+		getWindowControl().pushAsModalDialog(addNoticeCtrl.getInitialComponent());
 	}
 }

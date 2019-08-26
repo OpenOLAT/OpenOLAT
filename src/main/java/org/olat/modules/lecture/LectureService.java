@@ -26,6 +26,8 @@ import java.util.List;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.modules.lecture.model.AbsenceNoticeInfos;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.IdentityRateWarning;
@@ -138,6 +140,10 @@ public interface LectureService {
 
 	public String toAuditXml(LectureParticipantSummary summary);
 	
+	public String toAuditXml(AbsenceNotice absenceNotice);
+	
+	public AbsenceNotice toAuditAbsenceNotice(String xml);
+	
 	public LectureParticipantSummary toAuditLectureParticipantSummary(String xml);
 
 	
@@ -150,6 +156,19 @@ public interface LectureService {
 	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
 			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
 			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author);
+	
+	/**
+	 * 
+	 * @param action
+	 * @param before
+	 * @param after
+	 * @param message
+	 * @param absenceNotice
+	 * @param assessedIdentity
+	 * @param author
+	 */
+	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
+			AbsenceNoticeRef absenceNotice, IdentityRef assessedIdentity, IdentityRef author);
 	
 	public List<LectureBlockAuditLog> getAuditLog(LectureBlockRef lectureBlock);
 	
@@ -286,16 +305,22 @@ public interface LectureService {
 	 */
 	public AbsenceNotice createAbsenceNotice(Identity absentIdentity, AbsenceNoticeType type, AbsenceNoticeTarget target,
 			Date startDate, Date endDate, AbsenceCategory category, String absenceRason, Boolean authorized,
-			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks);
+			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks, Identity actingIdentity);
 	
 	/**
 	 * 
 	 * @param absenceNotice The absence notice to update
+	 * @param authorizer The user which authorize the absence (or null)
 	 * @param entries A new list of repository entries
 	 * @param lectureBlocks Or a new list of lecture blocks
 	 * @return A refreshed absence notice
 	 */
-	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks);
+	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
+			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks, Identity actingIdentity);
+	
+	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete);
+	
+	public VFSContainer getAbsenceNoticeAttachmentsContainer(AbsenceNotice absenceNotice);
 	
 	/**
 	 * Reload the absence notice.

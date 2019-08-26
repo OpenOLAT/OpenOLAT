@@ -53,16 +53,18 @@ public class AbsenceNoticeToLectureBlockDAO {
 		return rel;
 	}
 	
-	public List<LectureBlockRollCall> getRollCallsByLectureBlock(AbsenceNotice notice) {
+	public List<LectureBlockRollCall> searchRollCallsByLectureBlock(AbsenceNotice notice) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rollCall from absencenoticetolectureblock noticeToBlock")
 		  .append(" inner join noticeToBlock.lectureBlock as block")
 		  .append(" inner join lectureblockrollcall as rollCall on (rollCall.lectureBlock.key=block.key)")
-		  .append(" where noticeToBlock.absenceNotice.key=:noticeKey");
+		  .append(" left join fetch rollCall.absenceNotice as currentNotice")
+		  .append(" where rollCall.identity.key=:identityKey and noticeToBlock.absenceNotice.key=:noticeKey");
 		
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), LectureBlockRollCall.class)
 				.setParameter("noticeKey", notice.getKey())
+				.setParameter("identityKey", notice.getIdentity().getKey())
 				.getResultList();
 	}
 	

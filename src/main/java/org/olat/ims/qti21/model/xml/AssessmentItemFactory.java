@@ -295,9 +295,9 @@ public class AssessmentItemFactory {
 		choice.setFixed(Boolean.FALSE);
 		choice.setShape(Shape.CIRCLE);
 		List<Integer> coords = new ArrayList<>();
-		coords.add(new Integer(55));
-		coords.add(new Integer(77));
-		coords.add(new Integer(8));
+		coords.add(Integer.valueOf(55));
+		coords.add(Integer.valueOf(77));
+		coords.add(Integer.valueOf(8));
 		choice.setCoords(coords);
 		hotspotInteraction.getHotspotChoices().add(choice);
 		
@@ -394,7 +394,7 @@ public class AssessmentItemFactory {
 			MapEntry mapEntry = new MapEntry(mapping);
 			mapEntry.setMapKey(new StringValue(response));
 			mapEntry.setMappedValue(score);
-			mapEntry.setCaseSensitive(new Boolean(caseSensitive));
+			mapEntry.setCaseSensitive(Boolean.valueOf(caseSensitive));
 			mapping.getMapEntries().add(mapEntry);
 		}
 		
@@ -405,7 +405,7 @@ public class AssessmentItemFactory {
 					MapEntry mapEntry = new MapEntry(mapping);
 					mapEntry.setMapKey(new StringValue(alternative.getAlternative()));
 					mapEntry.setMappedValue(score);
-					mapEntry.setCaseSensitive(new Boolean(caseSensitive));
+					mapEntry.setCaseSensitive(Boolean.valueOf(caseSensitive));
 					mapping.getMapEntries().add(mapEntry);
 				}
 			}
@@ -1154,15 +1154,7 @@ public class AssessmentItemFactory {
 		modalFeedback.setVisibilityMode(VisibilityMode.parseVisibilityMode("show"));
 		modalFeedback.getAttributes().getStringAttribute(ModalFeedback.ATTR_TITLE_NAME).setValue(title);
 		
-		new AssessmentHtmlBuilder().appendHtml(modalFeedback, text);
-		
-		/*List<Block> blocks = new AssessmentHTMLBuilder().parseHtml(text);
-		for(Block block:blocks) {
-			if(block instanceof FlowStatic) {
-				modalFeedback.getFlowStatics().add((FlowStatic)block);
-			}
-		}*/
-
+		new AssessmentHtmlBuilder().appendHtml(modalFeedback, text, true);
 		return modalFeedback;
 	}
 	

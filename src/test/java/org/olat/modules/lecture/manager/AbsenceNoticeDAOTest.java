@@ -19,6 +19,7 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -78,25 +79,43 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 	@Test
 	public void createAbsenceNotice() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity notifier = JunitTestHelper.createAndPersistIdentityAsRndUser("notifier-1");
+		Identity authorizer = JunitTestHelper.createAndPersistIdentityAsRndUser("authorizer-1");
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null);
+				start, end, null, "A very good reason", Boolean.TRUE, authorizer, notifier);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(notice);
 		Assert.assertNotNull(notice.getKey());
 		Assert.assertNotNull(notice.getCreationDate());
 		Assert.assertNotNull(notice.getLastModified());
+		Assert.assertNotNull(notice.getStartDate());
+		Assert.assertNotNull(notice.getEndDate());
 		Assert.assertEquals(identity, notice.getIdentity());
+		Assert.assertEquals(notifier, notice.getNotifier());
+		Assert.assertEquals(authorizer, notice.getAuthorizer());
+		Assert.assertEquals(Boolean.TRUE, notice.getAbsenceAuthorized());
+		Assert.assertEquals("A very good reason", notice.getAbsenceReason());
 		Assert.assertEquals(AbsenceNoticeType.absence, notice.getNoticeType());
 		Assert.assertEquals(AbsenceNoticeTarget.lectureblocks, notice.getNoticeTarget());
 	}
 	
 	@Test
 	public void createAbsenceNoticeToRollCall() {
-		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-2");
+		Identity notifier = JunitTestHelper.createAndPersistIdentityAsRndUser("notifier-2");
+		Identity authorizer = JunitTestHelper.createAndPersistIdentityAsRndUser("authorizer-2");
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+		
 		LectureBlock lectureBlock = createMinimalLectureBlock();
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null);
+				start, end, null, "Too sleepy", Boolean.FALSE, authorizer, notifier);
 		
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, notice, null, null);
 		dbInstance.commitAndCloseSession();
@@ -108,7 +127,13 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		Assert.assertEquals(rollCall, reloadedRollCall);
 		Assert.assertEquals(identity, reloadedRollCall.getIdentity());
 		Assert.assertEquals(identity, reloadedNotice.getIdentity());
+		Assert.assertEquals(notifier, reloadedNotice.getNotifier());
+		Assert.assertEquals(authorizer, reloadedNotice.getAuthorizer());
 		Assert.assertEquals(notice, reloadedNotice);
+		Assert.assertEquals(Boolean.FALSE, reloadedNotice.getAbsenceAuthorized());
+		Assert.assertEquals("Too sleepy", reloadedNotice.getAbsenceReason());
+		Assert.assertNotNull(reloadedNotice.getStartDate());
+		Assert.assertNotNull(reloadedNotice.getEndDate());
 		Assert.assertEquals(AbsenceNoticeType.absence, reloadedNotice.getNoticeType());
 		Assert.assertEquals(AbsenceNoticeTarget.lectureblocks, reloadedNotice.getNoticeTarget());
 	}
@@ -120,8 +145,10 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
-				null, null, null, null, null);
+				start, end, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		linkNoticeToRollCall(rollCall, notice);
 		
@@ -142,10 +169,56 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void detectCollision() {
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Date now = new Date();
+		Date start = CalendarUtils.startOfDay(now);
+		Date end = CalendarUtils.endOfDay(now);
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				start, end, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.set(Calendar.HOUR_OF_DAY, 13);
+		Date collisionStart = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 16);
+		Date collisionEnd = cal.getTime();
+		List<AbsenceNotice> collisions = absenceNoticeDao.detectCollision(identity, null, collisionStart, collisionEnd);
+		Assert.assertNotNull(collisions);
+		Assert.assertEquals(1, collisions.size());
+		Assert.assertTrue(collisions.contains(notice));
+	}
+	
+	@Test
+	public void detectCollision_inThePast() {
+		Identity identity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Date now = new Date();
+		Date start = CalendarUtils.startOfDay(now);
+		Date end = CalendarUtils.endOfDay(now);
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity1, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				start, end, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.add(Calendar.DATE, -3);
+		Date oldStart = CalendarUtils.startOfDay(cal.getTime());
+		Date oldEnd = CalendarUtils.endOfDay(cal.getTime());
+		List<AbsenceNotice> collisions = absenceNoticeDao.detectCollision(identity1, null, oldStart, oldEnd);
+		Assert.assertNotNull(collisions);
+		Assert.assertFalse(collisions.contains(notice));
+		Assert.assertTrue(collisions.isEmpty());
+	}
+	
+	@Test
 	public void searchAbsenceNotice() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3");
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
-				null, null, null, null, null);
+				start, end, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
@@ -167,8 +240,11 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3c");
 		AbsenceCategory absenceCategory = absenceCategoryDao
 				.createAbsenceCategory(UUID.randomUUID().toString(), "Test category");
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
-				null, null, null, null, null);
+				start, end, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(notice);
 		
@@ -195,8 +271,11 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		LectureBlock lectureBlock = createMinimalLectureBlock();
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
-				null, null, null, null, null);
+				start, end, null, null, null, null, null);
 		linkNoticeToRollCall(rollCall, notice);
 		
 		List<LectureBlockRollCall> noticedRollCalls = absenceNoticeDao.getRollCalls(notice);
@@ -211,8 +290,11 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		LectureBlock lectureBlock = createMinimalLectureBlock();
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
 		dbInstance.commit();
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null);
+				start, end, null, null, null, null, null);
 		linkNoticeToRollCall(rollCall, notice);
 		absenceNoticeToLectureBlockDao.createRelation(notice, lectureBlock);
 		dbInstance.commitAndCloseSession();
@@ -238,8 +320,11 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		LectureBlock lectureBlock = createMinimalLectureBlock();
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
 		dbInstance.commit();
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
-				null, null, null, null, null);
+				start, end, null, null, null, null, null);
 		linkNoticeToRollCall(rollCall, notice);
 		absenceNoticeToRepositoryEntryDao.createRelation(notice, lectureBlock.getEntry());
 		dbInstance.commitAndCloseSession();
@@ -270,7 +355,7 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
 		dbInstance.commit();
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
-				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()), null, null, null);
+				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()), null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(rollCall);
 		
@@ -293,7 +378,7 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 	public void loadAbsenceNotice() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-8");
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
-				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()), null, null, null);
+				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()), null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		
 		AbsenceNotice reloadedNotice = absenceNoticeDao.loadAbsenceNotice(notice.getKey());
@@ -307,8 +392,10 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		LectureBlock lectureBlock = createMinimalLectureBlock();
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
 		dbInstance.commit();
+		
+		Date now = new Date();
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
-				null, null, null, null, null);
+				now, now, null, null, null, null, null);
 		linkNoticeToRollCall(rollCall, notice);
 		absenceNoticeToLectureBlockDao.createRelation(notice, lectureBlock);
 		dbInstance.commitAndCloseSession();
@@ -322,12 +409,21 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 	
 	@Test
 	public void getAbsenceNotices_entries() {
+		Date now = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.set(Calendar.HOUR_OF_DAY, 12);
+		Date startLecture = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		Date endLecture = cal.getTime();
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-10");
-		LectureBlock lectureBlock = createMinimalLectureBlock();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry, startLecture, endLecture);
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
 		dbInstance.commit();
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
-				null, null, null, null, null);
+				CalendarUtils.startOfDay(now), CalendarUtils.endOfDay(now), null, null, null, null, null);
 		linkNoticeToRollCall(rollCall, notice);
 		absenceNoticeToRepositoryEntryDao.createRelation(notice, lectureBlock.getEntry());
 		dbInstance.commitAndCloseSession();
@@ -337,6 +433,73 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		Assert.assertNotNull(noticedBlocks);
 		Assert.assertEquals(1, noticedBlocks.size());
 		Assert.assertEquals(notice, noticedBlocks.get(0));
+	}
+	
+	/**
+	 * negative test
+	 */
+	@Test
+	public void getAbsenceNotices_entries_otherDay() {
+		Date now = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.add(Calendar.DATE, -2);
+		cal.set(Calendar.HOUR_OF_DAY, 12);
+		Date startLecture = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		Date endLecture = cal.getTime();
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-10");
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry, startLecture, endLecture);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
+		dbInstance.commit();
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				CalendarUtils.startOfDay(now), CalendarUtils.endOfDay(now), null, null, null, null, null);
+		linkNoticeToRollCall(rollCall, notice);
+		absenceNoticeToRepositoryEntryDao.createRelation(notice, lectureBlock.getEntry());
+		dbInstance.commitAndCloseSession();
+		
+		// load by entries
+		List<AbsenceNotice> noticedBlocks = absenceNoticeDao.getAbsenceNotices(identity, lectureBlock);
+		Assert.assertNotNull(noticedBlocks);
+		Assert.assertTrue(noticedBlocks.isEmpty());
+	}
+	
+	
+	/**
+	 * Overlap, not exact test
+	 */
+	@Test
+	public void getAbsenceNotices_entries_overlap() {
+		Date now = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.set(Calendar.HOUR_OF_DAY, 12);
+		Date startLecture = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		Date endLecture = cal.getTime();
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-10");
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry, startLecture, endLecture);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
+		dbInstance.commit();
+		
+		cal.set(Calendar.HOUR_OF_DAY, 13);
+		Date startNotice = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 15);
+		Date endNotice = cal.getTime();
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.entries,
+				startNotice, endNotice, null, null, null, null, null);
+		linkNoticeToRollCall(rollCall, notice);
+		absenceNoticeToRepositoryEntryDao.createRelation(notice, lectureBlock.getEntry());
+		dbInstance.commitAndCloseSession();
+		
+		// load by entries
+		List<AbsenceNotice> noticedBlocks = absenceNoticeDao.getAbsenceNotices(identity, lectureBlock);
+		Assert.assertNotNull(noticedBlocks);
+		Assert.assertEquals(1, noticedBlocks.size());
 	}
 	
 	@Test
@@ -350,7 +513,7 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, identity, null, null, null, null, null, null);
 		dbInstance.commit();
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
-				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()), null, null, null);
+				CalendarUtils.startOfDay(new Date()), CalendarUtils.endOfDay(new Date()), null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
 		Assert.assertNotNull(rollCall);
 		
@@ -370,9 +533,14 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 	
 	private LectureBlock createMinimalLectureBlock() {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Date now = new Date();
+		return createMinimalLectureBlock(entry, now, now);
+	}
+
+	private LectureBlock createMinimalLectureBlock(RepositoryEntry entry, Date start, Date end) {
 		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
-		lectureBlock.setStartDate(new Date());
-		lectureBlock.setEndDate(new Date());
+		lectureBlock.setStartDate(start);
+		lectureBlock.setEndDate(end);
 		lectureBlock.setTitle("Absence");
 		lectureBlock.setPlannedLecturesNumber(4);
 		lectureBlock.setEffectiveLecturesNumber(4);

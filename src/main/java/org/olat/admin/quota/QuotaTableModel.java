@@ -29,14 +29,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.table.BaseTableDataModelWithoutFilter;
-import org.olat.core.gui.components.table.TableDataModel;
 import org.olat.core.util.vfs.Quota;
 
 /**
  * Initial Date: Mar 30, 2004
  * @author Mike Stock 
  */
-public class QuotaTableModel extends BaseTableDataModelWithoutFilter<Quota> implements TableDataModel<Quota> {
+public class QuotaTableModel extends BaseTableDataModelWithoutFilter<Quota> {
 
 	private List<Quota> quotaList;
 

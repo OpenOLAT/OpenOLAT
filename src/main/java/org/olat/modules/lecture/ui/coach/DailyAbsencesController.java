@@ -83,6 +83,10 @@ public class DailyAbsencesController extends BasicController {
 		noticesListCtlr.setCurrentDate(date);
 		noticesListCtlr.loadModel(searchParams);
 	}
+	
+	public void reloadModel() {
+		noticesListCtlr.reloadModel();
+	}
 
 	@Override
 	protected void doDispose() {

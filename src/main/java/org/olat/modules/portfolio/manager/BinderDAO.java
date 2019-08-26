@@ -779,6 +779,21 @@ public class BinderDAO {
 		return binderKeys != null && !binderKeys.isEmpty() && binderKeys.get(0) != null && binderKeys.get(0).longValue() >= 0;
 	}
 	
+	public int getTemplateUsage(RepositoryEntryRef templateEntry) {
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("select count(binder.key) from pfbinder as binder")
+		  .append(" inner join binder.template as template")
+		  .append(" inner join template.olatResource as res")
+		  .append(" inner join repositoryentry as v on (res.key=v.olatResource.key)")
+		  .append(" where v.key=:entryKey");
+		
+		List<Long> counter = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), Long.class)
+			.setParameter("entryKey", templateEntry.getKey())
+			.getResultList();
+		return counter == null || counter.isEmpty() || counter.get(0) == null ? 0 : counter.get(0).intValue();
+	}
+	
 	public Binder getBinder(Identity owner, BinderRef template, RepositoryEntryRef entry, String subIdent) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select binder from pfbinder as binder")

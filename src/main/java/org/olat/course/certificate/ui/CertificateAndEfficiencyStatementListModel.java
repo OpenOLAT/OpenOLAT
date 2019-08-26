@@ -85,7 +85,8 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 				return null;
 			}
 			case efficiencyStatement: return statement.getEfficiencyStatementKey();
-			case deleteEfficiencyStatement: return statement.getEfficiencyStatementKey() != null;
+			case deleteEfficiencyStatement:
+			case artefact: return statement.getEfficiencyStatementKey() != null;
 		}
 		return null;
 	}
@@ -100,7 +101,8 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		efficiencyStatement("table.header.certificate", true),
 		certificate("table.header.certificate", true),
 		recertification("table.header.recertification", true),
-		deleteEfficiencyStatement("table.action.delete", false);
+		deleteEfficiencyStatement("table.action.delete", false),
+		artefact("table.header.artefact", false);
 		
 		private final String i18n;
 		private final boolean sortable;

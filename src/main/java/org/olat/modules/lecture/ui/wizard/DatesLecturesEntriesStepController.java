@@ -28,6 +28,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormBasicController;
 import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.coach.EditDatesLecturesEntriesController;
 
 /**
@@ -37,14 +38,15 @@ import org.olat.modules.lecture.ui.coach.EditDatesLecturesEntriesController;
  *
  */
 public class DatesLecturesEntriesStepController extends StepFormBasicController {
-	
+
 	private final EditDatesLecturesEntriesController editCtrl;
 	
-	public DatesLecturesEntriesStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext) {
+	public DatesLecturesEntriesStepController(UserRequest ureq, WindowControl wControl, Form rootForm, StepsRunContext runContext,
+			LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
-		
+	
 		EditAbsenceNoticeWrapper noticeWrapper = (EditAbsenceNoticeWrapper)getFromRunContext("absence");
-		editCtrl = new EditDatesLecturesEntriesController(ureq, wControl, rootForm, noticeWrapper, true);
+		editCtrl = new EditDatesLecturesEntriesController(ureq, wControl, rootForm, noticeWrapper, secCallback, true);
 		listenTo(editCtrl);
 		initForm(ureq);
 	}

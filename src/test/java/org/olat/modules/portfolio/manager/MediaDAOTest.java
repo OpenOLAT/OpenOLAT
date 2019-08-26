@@ -81,6 +81,27 @@ public class MediaDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void createMedia_withoutBusinessPath() {
+		Identity id = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-1null");
+		Media media = mediaDao.createMedia("Media", null, null, "Forum", null, null, 10, id);
+		dbInstance.commit();
+		
+		Assert.assertNotNull(media);
+		Assert.assertNotNull(media.getKey());
+		Assert.assertNotNull(media.getCreationDate());
+		Assert.assertNotNull(media.getCollectionDate());
+		Assert.assertEquals(id, media.getAuthor());
+		
+		Media reloadedMedia = mediaDao.loadByKey(media.getKey());
+		Assert.assertNotNull(reloadedMedia);
+		Assert.assertEquals(media, reloadedMedia);
+		Assert.assertEquals(id, reloadedMedia.getAuthor());
+		Assert.assertEquals("Media", reloadedMedia.getTitle());
+		Assert.assertNull(reloadedMedia.getBusinessPath());
+		Assert.assertEquals(id, reloadedMedia.getAuthor());
+	}
+	
+	@Test
 	public void searchByAuthor() {
 		Identity author = JunitTestHelper.createAndPersistIdentityAsRndUser("pf-media-2");
 		Media media1 = mediaDao.createMedia("Media 1", "The media theory", "Media theory is very important subject", "Forum", "[Media:0]", null, 10, author);

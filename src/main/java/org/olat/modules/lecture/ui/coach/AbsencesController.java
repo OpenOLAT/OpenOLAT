@@ -19,7 +19,6 @@
  */
 package org.olat.modules.lecture.ui.coach;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -35,18 +34,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.Util;
-import org.olat.core.util.mail.ContactList;
-import org.olat.core.util.mail.MailBundle;
-import org.olat.core.util.mail.MailContext;
-import org.olat.core.util.mail.MailContextImpl;
-import org.olat.core.util.mail.MailHelper;
-import org.olat.core.util.mail.MailLoggingAction;
-import org.olat.core.util.mail.MailManager;
-import org.olat.core.util.mail.MailerResult;
 import org.olat.modules.lecture.AbsenceNoticeSearchParameters;
 import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureService;
@@ -56,6 +45,8 @@ import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.event.SearchAbsenceNoticeEvent;
 import org.olat.modules.lecture.ui.wizard.AbsenceNotice1UserSearchStep;
+import org.olat.modules.lecture.ui.wizard.AbsenceNoticeCancelStepCallback;
+import org.olat.modules.lecture.ui.wizard.AbsenceNoticeFinishStepCallback;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -69,6 +60,7 @@ public class AbsencesController extends BasicController {
 	private Link addAbsenceButton;
 	private VelocityContainer mainVC;
 
+	private final Roles roles;
 	private final LecturesSecurityCallback secCallback;
 	private final AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
 	
@@ -77,14 +69,13 @@ public class AbsencesController extends BasicController {
 	private AbsenceNoticesListController noticesListCtlr;
 
 	@Autowired
-	private MailManager mailService;
-	@Autowired
 	private LectureService lectureService;
 	
 	public AbsencesController(UserRequest ureq, WindowControl wControl, Date currentDate, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		
 		this.secCallback = secCallback;
+		this.roles = ureq.getUserSession().getRoles();
 		searchParams.addTypes(AbsenceNoticeType.absence);
 		searchParams.setViewAs(getIdentity(), ureq.getUserSession().getRoles(), secCallback.viewAs());
 		searchParams.setLinkedToRollCall(true);
@@ -106,14 +97,13 @@ public class AbsencesController extends BasicController {
 		
 		putInitialPanel(mainVC);
 		noticesListCtlr.loadModel(searchParams);
-		loadUnauthorizedAbsences(ureq);
+		loadUnauthorizedAbsences();
 	}
 	
-	private void loadUnauthorizedAbsences(UserRequest ureq) {
+	private void loadUnauthorizedAbsences() {
 		AbsenceNoticeSearchParameters unauthorizedSearchParams = new AbsenceNoticeSearchParameters();
 		unauthorizedSearchParams.addTypes(AbsenceNoticeType.absence);
 		unauthorizedSearchParams.setLinkedToRollCall(true);
-		Roles roles = ureq.getUserSession().getRoles();
 		unauthorizedSearchParams.setViewAs(getIdentity(), roles, secCallback.viewAs());
 
 		List<AbsenceNoticeInfos> unauthorizedAbsences = lectureService.searchAbsenceNotices(unauthorizedSearchParams);
@@ -163,6 +153,11 @@ public class AbsencesController extends BasicController {
 		}
 	}
 	
+	protected void reloadModels() {
+		noticesListCtlr.reloadModel();
+		loadUnauthorizedAbsences();
+	}
+	
 	private void doSearch(SearchAbsenceNoticeEvent event) {
 		searchParams.setStartDate(event.getStartDate());
 		searchParams.setEndDate(event.getEndDate());
@@ -175,57 +170,15 @@ public class AbsencesController extends BasicController {
 	
 	private void doAddNotice(UserRequest ureq) {
 		final EditAbsenceNoticeWrapper noticeWrapper = new EditAbsenceNoticeWrapper(AbsenceNoticeType.absence);
-		AbsenceNotice1UserSearchStep step = new AbsenceNotice1UserSearchStep(ureq, noticeWrapper);
-		StepRunnerCallback stop = (uureq, swControl, runContext) -> {
-			if(noticeWrapper.getAbsenceNotice() == null) {
-				Identity absentIdentity = noticeWrapper.getIdentity();
-				lectureService.createAbsenceNotice(absentIdentity, noticeWrapper.getAbsenceNoticeType(), noticeWrapper.getAbsenceNoticeTarget(),
-						noticeWrapper.getStartDate(), noticeWrapper.getEndDate(),
-						noticeWrapper.getAbsenceCategory(), noticeWrapper.getAbsenceReason(), noticeWrapper.getAuthorized(),
-						noticeWrapper.getEntries(), noticeWrapper.getLectureBlocks());
-			}
-			
-			if(noticeWrapper.getIdentitiesToContact() != null && !noticeWrapper.getIdentitiesToContact().isEmpty()) {
-				inform(ureq, noticeWrapper);
-			}
-			return StepsMainRunController.DONE_MODIFIED;
-		};
-		
+		AbsenceNotice1UserSearchStep step = new AbsenceNotice1UserSearchStep(ureq, noticeWrapper, secCallback);
+		StepRunnerCallback stop = new AbsenceNoticeFinishStepCallback(noticeWrapper, getTranslator());
+		StepRunnerCallback cancel = new AbsenceNoticeCancelStepCallback(noticeWrapper);
+
 		removeAsListenerAndDispose(addNoticeCtrl);
 		String title = translate("add.absence.title");
-		addNoticeCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, null, title, "");
+		addNoticeCtrl = new StepsMainRunController(ureq, getWindowControl(), step, stop, cancel, title, "");
 		listenTo(addNoticeCtrl);
 		getWindowControl().pushAsModalDialog(addNoticeCtrl.getInitialComponent());
 	}
-	
-	private void inform(UserRequest ureq, EditAbsenceNoticeWrapper noticeWrapper) {
-		boolean success = false;
-		try {
-			List<ContactList> contactList = new ArrayList<>();
-			ContactList memberList = new ContactList(translate("contact.teachers.list.name"));
-			memberList.addAllIdentites(noticeWrapper.getIdentitiesToContact());
-			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
-			MailBundle bundle = new MailBundle();
-			bundle.setContext(context);
-			bundle.setFromId(getIdentity());						
-			bundle.setContactLists(contactList);
-			bundle.setContent(noticeWrapper.getContactSubject(), noticeWrapper.getContactSubject());
-			MailerResult result = mailService.sendMessage(bundle);
-			success = result.isSuccessful();
-			if (success) {
-				showInfo("msg.send.ok");
-				// do logging
-				ThreadLocalUserActivityLogger.log(MailLoggingAction.MAIL_SENT, getClass());
-				fireEvent(ureq, Event.DONE_EVENT);
-			} else {
-				Roles roles = ureq.getUserSession().getRoles();
-				boolean admin = roles.isAdministrator() || roles.isSystemAdmin();
-				MailHelper.printErrorsAndWarnings(result, getWindowControl(), admin, getLocale());
-				fireEvent(ureq, Event.FAILED_EVENT);
-			}
-		} catch (Exception e) {
-			logError("", e);
-			showWarning("error.msg.send.nok");
-		}
-	}
+
 }

@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.manager;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -60,6 +62,10 @@ import org.olat.core.util.mail.MailContextImpl;
 import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.vfs.LocalFolderImpl;
+import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
+import org.olat.core.util.vfs.VFSManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.DeletableGroupData;
 import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
@@ -87,7 +93,9 @@ import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
+import org.olat.modules.lecture.model.AbsenceNoticeImpl;
 import org.olat.modules.lecture.model.AbsenceNoticeInfos;
+import org.olat.modules.lecture.model.AbsenceNoticeRelationsAuditImpl;
 import org.olat.modules.lecture.model.AggregatedLectureBlocksStatistics;
 import org.olat.modules.lecture.model.IdentityRateWarning;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
@@ -315,10 +323,26 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	}
 
 	@Override
+	public String toAuditXml(AbsenceNotice absenceNotice) {
+		return auditLogDao.toXml(absenceNotice);
+	}
+
+	@Override
+	public AbsenceNotice toAuditAbsenceNotice(String xml) {
+		return auditLogDao.absenceNoticeFromXml(xml);
+	}
+
+	@Override
 	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
 			LectureBlockRef lectureBlock, LectureBlockRollCall rollCall,
 			RepositoryEntryRef entry, IdentityRef assessedIdentity, IdentityRef author) {
 		auditLogDao.auditLog(action, before, after, message, lectureBlock, rollCall, entry, assessedIdentity, author);
+	}
+	
+	@Override
+	public void auditLog(LectureBlockAuditLog.Action action, String before, String after, String message,
+			AbsenceNoticeRef absenceNotice, IdentityRef assessedIdentity, IdentityRef author) {
+		auditLogDao.auditLog(action, before, after, message, absenceNotice, assessedIdentity, author);
 	}
 
 	@Override
@@ -513,34 +537,62 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 	
 	@Override
 	public AbsenceNotice createAbsenceNotice(Identity absentIdentity, AbsenceNoticeType type, AbsenceNoticeTarget target, Date start, Date end,
-			AbsenceCategory category, String absenceRason, Boolean authorized, List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks) {
+			AbsenceCategory category, String absenceRason, Boolean authorized, List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks,
+			Identity actingIdentity) {
 		if(type == AbsenceNoticeType.dispensation) {
 			authorized = Boolean.TRUE;
 		}
-		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(absentIdentity, type, target, start, end, category, absenceRason, authorized);
+		Identity authorizer = null;
+		if(authorized != null && authorized.booleanValue()) {
+			authorizer = actingIdentity;
+		}
+
+		AbsenceNoticeRelationsAuditImpl after = new AbsenceNoticeRelationsAuditImpl();
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(absentIdentity, type, target, start, end,
+				category, absenceRason, authorized, authorizer, actingIdentity);
 		if(entries != null && !entries.isEmpty()) {
+			List<AbsenceNoticeToRepositoryEntry> relations = new ArrayList<>();
 			for(RepositoryEntry entry:entries) {
-				absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);
+				AbsenceNoticeToRepositoryEntry noticeToEntry = absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);
+				relations.add(noticeToEntry);
 			}
+			after.setNoticeToEntries(relations);
 		}
 		if(lectureBlocks != null && !lectureBlocks.isEmpty()) {
+			List<AbsenceNoticeToLectureBlock> relations = new ArrayList<>();
 			for(LectureBlock lectureBlock:lectureBlocks) {
-				absenceNoticeToLectureBlockDao.createRelation(notice, lectureBlock);
+				AbsenceNoticeToLectureBlock noticeToBlock = absenceNoticeToLectureBlockDao.createRelation(notice, lectureBlock);
+				relations.add(noticeToBlock);
 			}
+			after.setNoticeToBlocks(relations);
 		}
 		dbInstance.commit();
+		
 		// calculate roll calls
-		calculateAbsencesOfRollcall(notice);
+		calculateAbsencesOfRollcall(notice, null, after);
+		dbInstance.commit();
+
+		String afterXml = auditLogDao.toXml(after);
+		auditLog(Action.createAbsenceNoticeRelations, null, afterXml, null, notice, absentIdentity, actingIdentity);
 		return notice;
 	}
 	
 	@Override
-	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, List<RepositoryEntry> entries,
-			List<LectureBlock> lectureBlocks) {
-
+	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
+			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks, Identity actingIdentity) {
+		
+		if(authorizer != null && absenceNotice.getAuthorizer() == null) {
+			((AbsenceNoticeImpl)absenceNotice).setAuthorizer(authorizer);
+		}
 		AbsenceNotice notice = absenceNoticeDao.updateAbsenceNotice(absenceNotice);
 		List<AbsenceNoticeToLectureBlock> currentNoticeToBlocks = absenceNoticeToLectureBlockDao.getRelations(absenceNotice);
 		List<AbsenceNoticeToRepositoryEntry> currentNoticeToEntries = absenceNoticeToRepositoryEntryDao.getRelations(absenceNotice);
+		
+		AbsenceNoticeRelationsAuditImpl before = new AbsenceNoticeRelationsAuditImpl();
+		before.setNoticeToBlocks(currentNoticeToBlocks);
+		before.setNoticeToEntries(currentNoticeToEntries);
+		
+		AbsenceNoticeRelationsAuditImpl after = new AbsenceNoticeRelationsAuditImpl();
 		
 		if(notice.getNoticeTarget() == AbsenceNoticeTarget.allentries) {
 			absenceNoticeToLectureBlockDao.deleteRelations(currentNoticeToBlocks);
@@ -549,72 +601,158 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			absenceNoticeToLectureBlockDao.deleteRelations(currentNoticeToBlocks);
 			if(entries != null) {
 				List<RepositoryEntry> currentEntries = new ArrayList<>(currentNoticeToEntries.size());
+				List<AbsenceNoticeToRepositoryEntry> relations = new ArrayList<>(currentNoticeToEntries);
 				for(AbsenceNoticeToRepositoryEntry currentNoticeToEntry:currentNoticeToEntries) {
 					currentEntries.add(currentNoticeToEntry.getEntry());
-					if(!entries.contains(currentNoticeToEntry.getEntry())) {
+					if(entries.contains(currentNoticeToEntry.getEntry())) {
+						relations.add(currentNoticeToEntry);
+					} else {
 						absenceNoticeToRepositoryEntryDao.deleteRelation(currentNoticeToEntry);
 					}
 				}
 	
 				for(RepositoryEntry entry:entries) {
 					if(!currentEntries.contains(entry)) {
-						absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);
+						AbsenceNoticeToRepositoryEntry noticeToEntry = absenceNoticeToRepositoryEntryDao.createRelation(notice, entry);
+						relations.add(noticeToEntry);
 					}
 				}
+				after.setNoticeToEntries(relations);
 			}
 			
 		} else if(notice.getNoticeTarget() == AbsenceNoticeTarget.lectureblocks) {
 			absenceNoticeToRepositoryEntryDao.deleteRelations(currentNoticeToEntries);
 			if(lectureBlocks != null) {
 				List<LectureBlock> currentBlocks = new ArrayList<>();
+				List<AbsenceNoticeToLectureBlock> relations = new ArrayList<>();
 				for(AbsenceNoticeToLectureBlock currentNoticeToBlock:currentNoticeToBlocks) {
 					currentBlocks.add(currentNoticeToBlock.getLectureBlock());
-					if(!lectureBlocks.contains(currentNoticeToBlock.getLectureBlock())) {
+					if(lectureBlocks.contains(currentNoticeToBlock.getLectureBlock())) {
+						relations.add(currentNoticeToBlock);
+					} else {
 						absenceNoticeToLectureBlockDao.deleteRelation(currentNoticeToBlock);
 					}
 				}
 
 				for(LectureBlock lectureBlock:lectureBlocks) {
 					if(!currentBlocks.contains(lectureBlock)) {
-						absenceNoticeToLectureBlockDao.createRelation(notice, lectureBlock);
+						AbsenceNoticeToLectureBlock noticeToBlock = absenceNoticeToLectureBlockDao.createRelation(notice, lectureBlock);
+						relations.add(noticeToBlock);
 					}
 				}
+				after.setNoticeToBlocks(relations);
 			}
 		}
 
 		dbInstance.commit();
 		// calculate roll calls
-		calculateAbsencesOfRollcall(notice);
+		calculateAbsencesOfRollcall(notice, before, after);
+		dbInstance.commit();
+		
+		String beforeXml = auditLogDao.toXml(before);
+		String afterXml = auditLogDao.toXml(after);
+		auditLog(Action.updateAbsenceNoticeRelations, beforeXml, afterXml, null, absenceNotice, absenceNotice.getIdentity(), actingIdentity);
 		return notice;
 	}
 
-	private void calculateAbsencesOfRollcall(AbsenceNotice notice) {
+	private void calculateAbsencesOfRollcall(AbsenceNotice notice, AbsenceNoticeRelationsAuditImpl before, AbsenceNoticeRelationsAuditImpl after) {
 		List<LectureBlockRollCall> currentRollCalls = absenceNoticeDao.getRollCalls(notice);
+		if(before != null) {
+			before.setRollCalls(currentRollCalls);
+		}
 		Set<LectureBlockRollCall> currentRollCallSet = new HashSet<>(currentRollCalls);
+		
+		IdentityRef identity = notice.getIdentity();
+		Date start = notice.getStartDate();
+		Date end = notice.getEndDate();
 		
 		List<LectureBlockRollCall> rollCalls;
 		switch(notice.getNoticeTarget()) {
-			case lectureblocks: rollCalls = absenceNoticeToLectureBlockDao.getRollCallsByLectureBlock(notice); break;
-			case entries: rollCalls = absenceNoticeToRepositoryEntryDao.getRollCallsByRepositoryEntry(notice); break;
-			case allentries: rollCalls = absenceNoticeToRepositoryEntryDao.getRollCallsOfAllEntries(notice); break;
+			case lectureblocks: rollCalls = absenceNoticeToLectureBlockDao.searchRollCallsByLectureBlock(notice); break;
+			case entries: rollCalls = absenceNoticeToRepositoryEntryDao.searchRollCallsByRepositoryEntry(notice); break;
+			case allentries: rollCalls = absenceNoticeToRepositoryEntryDao.searchRollCallsOfAllEntries(identity, start, end); break;
 			default: rollCalls = Collections.emptyList();
 		}
 		
 		for(LectureBlockRollCall rollCall:rollCalls) {
+			if(!rollCall.getIdentity().equals(notice.getIdentity())) {
+				continue;// this is a paranoia check, the search methods already do this
+			}
 			if(currentRollCallSet.contains(rollCall)) {
 				currentRollCallSet.remove(rollCall);
 			} else {
-				rollCall.setAbsenceNotice(notice);//TODO absences log
+				rollCall.setAbsenceNotice(notice);
 				lectureBlockRollCallDao.update(rollCall);
 			}
 		}
 		
 		for(LectureBlockRollCall toUnlink: currentRollCallSet) {
-			toUnlink.setAbsenceNotice(null);//TODO absences log
+			toUnlink.setAbsenceNotice(null);
 			lectureBlockRollCallDao.update(toUnlink);
+		}
+		
+		if(after != null) {
+			after.setRollCalls(rollCalls);
 		}
 	}
 	
+	@Override
+	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete) {
+		if(!filesToDelete.isEmpty()) {
+			for(VFSItem file:filesToDelete) {
+				file.delete();
+			}
+		}
+	
+		if(!newFiles.isEmpty()) {
+			LocalFolderImpl rootContainer = getAbsenceNoticesAttachmentsPath();
+			File rootDir = rootContainer.getBasefile();
+			String noticeStorage = ((AbsenceNoticeImpl)absenceNotice).getAttachmentsDirectory();
+			if(noticeStorage == null) {	
+				File userDir = new File(rootDir, absenceNotice.getIdentity().getKey().toString());
+				File noticeDir = new File(userDir, absenceNotice.getKey().toString());
+				noticeDir.mkdirs();
+				
+				Path relativePath = rootDir.toPath().relativize(noticeDir.toPath());
+				noticeStorage = relativePath.toString();
+				((AbsenceNoticeImpl)absenceNotice).setAttachmentsDirectory(noticeStorage);
+				absenceNotice = absenceNoticeDao.updateAbsenceNotice(absenceNotice);
+				dbInstance.commit();
+			}
+			
+			VFSItem noticeItem = rootContainer.resolve(noticeStorage);
+			if(noticeItem instanceof VFSContainer) {
+				VFSContainer noticeContainer = (VFSContainer)noticeItem;
+				for(VFSItem file:newFiles) {
+					noticeContainer.copyFrom(file);
+				}
+			}
+		}
+		
+		return absenceNotice;
+	}
+
+	
+    @Override
+	public VFSContainer getAbsenceNoticeAttachmentsContainer(AbsenceNotice absenceNotice) {
+    	if(absenceNotice == null || absenceNotice.getKey() == null) return null;
+
+		LocalFolderImpl rootContainer = getAbsenceNoticesAttachmentsPath();
+		VFSItem userItem = rootContainer.resolve(absenceNotice.getIdentity().getKey().toString());
+    	if(userItem instanceof VFSContainer) {
+    		VFSContainer userContainer = (VFSContainer)userItem;
+    		VFSItem noticeItem = userContainer.resolve(absenceNotice.getKey().toString());
+    		if(noticeItem instanceof VFSContainer) {
+    			return (VFSContainer)noticeItem;
+    		}
+    	}
+		return null;
+	}
+
+	private LocalFolderImpl getAbsenceNoticesAttachmentsPath() {
+    	return VFSManager.olatRootContainer("/lectures/notices/", null);
+	}
+
 	@Override
 	public AbsenceNotice getAbsenceNotice(AbsenceNoticeRef notice) {
 		return absenceNoticeDao.loadAbsenceNotice(notice.getKey());

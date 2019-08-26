@@ -33,6 +33,8 @@ public interface LecturesSecurityCallback {
 	
 	public boolean canChangeRates();
 	
+	public boolean canSeeAppeals();
+	
 	public boolean canApproveAppeal();
 	
 	public boolean canEditConfiguration();

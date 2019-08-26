@@ -15,8 +15,8 @@ create table o_lecture_absence_notice (
    l_type varchar(32),
    l_absence_reason text,
    l_absence_authorized bool default null,
-   l_start_date timestamp,
-   l_end_date timestamp,
+   l_start_date timestamp not null,
+   l_end_date timestamp not null,
    l_target varchar(32) default 'allentries' not null,
    l_attachments_dir varchar(255),
    fk_identity int8 not null,
@@ -72,7 +72,11 @@ alter table o_lecture_block_roll_call add column fk_absence_notice bigint defaul
 alter table o_lecture_block_roll_call add constraint rollcall_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
 create index idx_rollcall_to_notice_idx on o_lecture_block_roll_call (fk_absence_notice);
 
+alter table o_lecture_block_audit_log add column fk_absence_notice int8 default null;
 
+-- curriculum
+update o_cur_curriculum set c_status='active' where c_status is null;
 
-
+-- portfolio
+alter table o_pf_media alter column p_business_path drop not null;
 

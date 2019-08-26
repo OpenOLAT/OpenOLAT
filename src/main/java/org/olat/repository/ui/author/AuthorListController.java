@@ -93,6 +93,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseModule;
 import org.olat.login.LoginModule;
+import org.olat.modules.portfolio.PortfolioService;
+import org.olat.modules.portfolio.handler.BinderTemplateResource;
 import org.olat.modules.quality.QualityDataCollectionLight;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
@@ -1204,6 +1206,8 @@ public class AuthorListController extends FormBasicController implements Activat
 	private class ReferencesController extends BasicController {
 
 		@Autowired
+		private PortfolioService portfolioService;
+		@Autowired
 		private ReferenceManager referenceManager;
 		
 		public ReferencesController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
@@ -1229,6 +1233,14 @@ public class AuthorListController extends FormBasicController implements Activat
 			if (!references.isEmpty()) {
 				mainVC.contextPut("qualityDataCollections", translate("details.referenceinfo.data.collections",
 						new String[] { String.valueOf(references.size()) }));
+			}
+			
+			if(BinderTemplateResource.TYPE_NAME.equals(entry.getOlatResource().getResourceableTypeName())) {
+				int usage = portfolioService.getTemplateUsage(entry);
+				if(usage > 0) {
+					mainVC.contextPut("binderTemplateUsage", translate("details.referenceinfo.binder.template",
+							new String[] { String.valueOf(usage) }));
+				}
 			}
 			
 			putInitialPanel(mainVC);

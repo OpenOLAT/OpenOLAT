@@ -137,6 +137,6 @@ public class LecturesPermissionsSettingsAdminController extends FormBasicControl
 		lectureModule.setMasterCoachCanSeeAppeal(appealEnabled && masterCoachCanSeeAppealEl.isAtLeastSelected(1));
 		lectureModule.setMasterCoachCanAuthorizedAppeal(appealEnabled && masterCoachCanAuthorizeAppealEl.isAtLeastSelected(1));
 
-		lectureModule.setMasterCoachCanAuthorizedAppeal(appealEnabled && participantCanNoticeEl.isAtLeastSelected(1));
+		lectureModule.setParticipantCanNotice(participantCanNoticeEl.isAtLeastSelected(1));
 	}
 }

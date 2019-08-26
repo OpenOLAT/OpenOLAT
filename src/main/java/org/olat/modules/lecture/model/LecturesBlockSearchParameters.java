@@ -44,6 +44,7 @@ public class LecturesBlockSearchParameters {
 	private IdentityRef teacher;
 	private IdentityRef manager;
 	private IdentityRef participant;
+	private IdentityRef masterCoach;
 	private RepositoryEntry entry;
 	private List<LectureRollCallStatus> rollCallStatus;
 	private List<LectureBlockStatus> lectureBlockStatus;
@@ -124,6 +125,14 @@ public class LecturesBlockSearchParameters {
 		this.manager = manager;
 	}
 
+	public IdentityRef getMasterCoach() {
+		return masterCoach;
+	}
+
+	public void setMasterCoach(IdentityRef masterCoach) {
+		this.masterCoach = masterCoach;
+	}
+
 	public IdentityRef getTeacher() {
 		return teacher;
 	}
@@ -142,8 +151,8 @@ public class LecturesBlockSearchParameters {
 	
 	public void setViewAs(IdentityRef identity, LectureRoles role) {
 		switch(role) {
-			case lecturemanager: 
-			case mastercoach: setManager(identity); break;
+			case lecturemanager: setManager(identity); break;
+			case mastercoach: setMasterCoach(identity); break;
 			case teacher: setTeacher(identity); break;
 			case participant:
 			default: setParticipant(identity);

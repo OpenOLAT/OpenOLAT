@@ -26,6 +26,7 @@ import org.olat.core.gui.control.generic.wizard.BasicStep;
 import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 
 /**
  * 
@@ -35,9 +36,9 @@ import org.olat.core.gui.control.generic.wizard.StepsRunContext;
  */
 public class AbsenceNotice2ConfirmUserStep extends BasicStep {
 	
-	public AbsenceNotice2ConfirmUserStep(UserRequest ureq) {
+	public AbsenceNotice2ConfirmUserStep(UserRequest ureq, LecturesSecurityCallback secCallback) {
 		super(ureq);
-		setNextStep(new AbsenceNotice3LecturesEntriesStep(ureq));
+		setNextStep(new AbsenceNotice3LecturesEntriesStep(ureq, secCallback));
 		setI18nTitleAndDescr("user.confirm.title", "user.confirm.title");
 	}
 

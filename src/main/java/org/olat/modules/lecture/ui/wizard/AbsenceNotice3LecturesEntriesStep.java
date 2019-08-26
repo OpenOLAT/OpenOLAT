@@ -27,6 +27,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 
 /**
  * 
@@ -37,16 +38,19 @@ import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 public class AbsenceNotice3LecturesEntriesStep extends BasicStep {
 	
 	private final boolean startPoint;
+	private final LecturesSecurityCallback secCallback;
 	private final EditAbsenceNoticeWrapper noticeWrapper;
 	
-	public AbsenceNotice3LecturesEntriesStep(UserRequest ureq) {
-		this(ureq, null, false);
+	public AbsenceNotice3LecturesEntriesStep(UserRequest ureq, LecturesSecurityCallback secCallback) {
+		this(ureq, null, secCallback, false);
 	}
 	
-	public AbsenceNotice3LecturesEntriesStep(UserRequest ureq, EditAbsenceNoticeWrapper noticeWrapper, boolean startPoint) {
+	public AbsenceNotice3LecturesEntriesStep(UserRequest ureq, EditAbsenceNoticeWrapper noticeWrapper,
+			LecturesSecurityCallback secCallback, boolean startPoint) {
 		super(ureq);
 		this.startPoint = startPoint;
-		setNextStep(new AbsenceNotice4ReasonStep(ureq));
+		this.secCallback = secCallback;
+		setNextStep(new AbsenceNotice4ReasonStep(ureq, secCallback));
 		if(startPoint) {
 			this.noticeWrapper = noticeWrapper;
 		} else {
@@ -65,6 +69,7 @@ public class AbsenceNotice3LecturesEntriesStep extends BasicStep {
 		if(noticeWrapper != null) {
 			runContext.put("absence", noticeWrapper);
 		}
-		return new DatesLecturesEntriesStepController(ureq, wControl, form, runContext);
+		form.setMultipartEnabled(true);
+		return new DatesLecturesEntriesStepController(ureq, wControl, form, runContext, secCallback);
 	}
 }

@@ -214,7 +214,7 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 		closeButton.setVisible(canClose);
 	}
 	
-	private void loadModel() {
+	protected void loadModel() {
 		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
 		searchParams.setStartDate(CalendarUtils.startOfDay(currentDate));
 		searchParams.setEndDate(CalendarUtils.endOfDay(currentDate));

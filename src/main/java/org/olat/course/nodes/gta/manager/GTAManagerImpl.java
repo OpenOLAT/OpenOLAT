@@ -43,6 +43,7 @@ import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.PublisherData;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -754,6 +755,31 @@ public class GTAManagerImpl implements GTAManager {
 		List<TaskList> tasks = dbInstance.getCurrentEntityManager().createQuery(q, TaskList.class)
 			.setParameter("entryKey", entry.getKey())
 			.setParameter("courseNodeIdent", cNode.getIdent())
+			.getResultList();
+
+		return tasks.isEmpty() ? null : tasks.get(0);
+	}
+	
+	/**
+	 * Load the task list with the underlying repository
+	 * entry (full).
+	 * 
+	 * @param task
+	 * @return
+	 */
+	public TaskList getTaskList(TaskRef task ) {
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select taskList from gtatask task")
+		  .append(" inner join task.taskList as taskList")
+		  .append(" inner join fetch taskList.entry as v")
+		  .append(" inner join fetch v.olatResource as ores")
+		  .append(" inner join fetch v.statistics as statistics")
+		  .append(" left join fetch v.lifecycle as lifecycle")
+		  .append(" where task.key=:taskKey");
+		
+		List<TaskList> tasks = dbInstance.getCurrentEntityManager()
+			.createQuery(sb.toString(), TaskList.class)
+			.setParameter("taskKey", task.getKey())
 			.getResultList();
 
 		return tasks.isEmpty() ? null : tasks.get(0);
@@ -1693,7 +1719,8 @@ public class GTAManagerImpl implements GTAManager {
 	private void syncAssessmentEntry(TaskImpl taskImpl, GTACourseNode cNode, Role by) {
 		if(taskImpl == null || taskImpl.getTaskStatus() == null || cNode == null) return;
 		
-		RepositoryEntry courseRepoEntry = taskImpl.getTaskList().getEntry();
+		TaskList taskList = getTaskList(taskImpl);
+		RepositoryEntry courseRepoEntry = taskList.getEntry();
 		AssessmentEntryStatus assessmentStatus = convertToAssessmentEntrystatus(taskImpl, cNode);
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			//update whole group
