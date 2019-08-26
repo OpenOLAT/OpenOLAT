@@ -44,7 +44,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.CheckListCourseNode;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.AssessmentBatch;
@@ -54,6 +53,7 @@ import org.olat.course.nodes.cl.model.DBCheck;
 import org.olat.course.nodes.cl.model.DBCheckbox;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,7 +70,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 	private final boolean withScore;
 	private final boolean saveAndClose;
 	private final ModuleConfiguration config;
-	private final CourseNode courseNode;
+	private final CheckListCourseNode courseNode;
 	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
 	private final OLATResourceable courseOres;
@@ -82,9 +82,10 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 	@Autowired
 	private CheckboxManager checkboxManager;
 	
-	public AssessedIdentityCheckListController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, OLATResourceable courseOres, UserCourseEnvironment coachCourseEnv,
-			UserCourseEnvironment assessedUserCourseEnv, CourseNode courseNode, boolean saveAndClose, boolean cancel) {
+	public AssessedIdentityCheckListController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity,
+			OLATResourceable courseOres, UserCourseEnvironment coachCourseEnv,
+			UserCourseEnvironment assessedUserCourseEnv, CheckListCourseNode courseNode, boolean saveAndClose,
+			boolean cancel) {
 		super(ureq, wControl);
 
 		this.cancel = cancel;
@@ -285,8 +286,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		}
 		checkboxManager.check(courseOres, courseNode.getIdent(), batchElements);
 		
-		//TODO uh enable
-//		courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach);
+		courseNode.updateScoreEvaluation(getIdentity(), assessedUserCourseEnv, assessedIdentity, Role.coach);
 	}
 	
 	private void doUpdateCheck(CheckboxWrapper wrapper, boolean check) {

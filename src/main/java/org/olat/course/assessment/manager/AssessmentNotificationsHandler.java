@@ -252,7 +252,6 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	 * <code>AssessableCourseNode</code>
 	 * </ul>
 	 */
-	//TODO uh CourseNodeSelector as well
 	private List<CourseNode> getCourseTestNodes(ICourse course) {
 		List<CourseNode> assessableNodes = new ArrayList<>();
 

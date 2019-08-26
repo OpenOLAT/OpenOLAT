@@ -65,10 +65,9 @@ public class AssessedIdentityOverviewController extends BasicController {
 	
 	private boolean changes = false;
 	
-	public AssessedIdentityOverviewController(UserRequest ureq, WindowControl wControl,
-			Identity assessedIdentity, OLATResourceable courseOres,
-			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv,
-			CheckListCourseNode courseNode) {
+	public AssessedIdentityOverviewController(UserRequest ureq, WindowControl wControl, Identity assessedIdentity,
+			OLATResourceable courseOres, UserCourseEnvironment coachCourseEnv,
+			UserCourseEnvironment assessedUserCourseEnv, CheckListCourseNode courseNode) {
 		super(ureq, wControl);
 		
 		this.courseNode = courseNode;

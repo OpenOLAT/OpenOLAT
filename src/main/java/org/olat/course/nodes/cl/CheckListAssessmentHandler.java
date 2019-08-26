@@ -85,12 +85,17 @@ public class CheckListAssessmentHandler implements AssessmentHandler {
 	public Controller getDetailsEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			CourseNode courseNode, UserCourseEnvironment coachCourseEnv,
 			UserCourseEnvironment assessedUserCourseEnvironment) {
-		Identity assessedIdentity = assessedUserCourseEnvironment.getIdentityEnvironment().getIdentity();
-		Long resId = assessedUserCourseEnvironment.getCourseEnvironment().getCourseResourceableId();
-		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resId);
-		
-		return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, coachCourseEnv,
-				assessedUserCourseEnvironment, courseNode, false, false);
+		if (courseNode instanceof CheckListCourseNode) {
+			CheckListCourseNode clCourseNode = (CheckListCourseNode)courseNode;
+			
+			Identity assessedIdentity = assessedUserCourseEnvironment.getIdentityEnvironment().getIdentity();
+			Long resId = assessedUserCourseEnvironment.getCourseEnvironment().getCourseResourceableId();
+			OLATResourceable courseOres = OresHelper.createOLATResourceableInstance("CourseModule", resId);
+			
+			return new AssessedIdentityCheckListController(ureq, wControl, assessedIdentity, courseOres, coachCourseEnv,
+					assessedUserCourseEnvironment, clCourseNode, false, false);
+		}
+		return null;
 	}
 
 	@Override
