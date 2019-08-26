@@ -1060,6 +1060,31 @@ create table o_ac_paypal_transaction (
    primary key (transaction_id)
 );
 
+-- paypal checkout
+create table o_ac_checkout_transaction (
+   id bigserial,
+   creationdate timestamp not null,
+   lastmodified timestamp not null,
+   p_success_uuid varchar(64) not null,
+   p_cancel_uuid varchar(64) not null,
+   p_order_nr varchar(64) not null,
+   p_order_id int8 not null,
+   p_order_part_id int8 not null,
+   p_method_id int8 not null,
+   p_amount_currency_code varchar(3) not null,
+   p_amount_amount decimal not null,
+   p_status varchar(32) not null,
+   p_paypal_order_id varchar(64),
+   p_paypal_order_status varchar(64),
+   p_paypal_order_status_reason text,
+   p_paypal_authorization_id varchar(64),
+   p_paypal_capture_id varchar(64),
+   p_capture_currency_code varchar(3),
+   p_capture_amount decimal,
+   p_paypal_invoice_id varchar(64),
+   primary key (id)
+);
+
 
 create table o_stat_lastupdated (
 

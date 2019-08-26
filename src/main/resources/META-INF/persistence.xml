@@ -154,6 +154,8 @@
 		<class>org.olat.resource.accesscontrol.model.ResourceReservationImpl</class>
 		<class>org.olat.resource.accesscontrol.provider.auto.model.AdvanceOrderImpl</class>
 		<class>org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod</class>
+		<class>org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod</class>
+		<class>org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutTransactionImpl</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
 		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>

@@ -1102,6 +1102,32 @@ create table o_ac_paypal_transaction (
    primary key (transaction_id)
 );
 
+-- paypal checkout
+create table o_ac_checkout_transaction (
+  id number(20) generated always as identity,
+   creationdate date not null,
+   lastmodified date not null,
+   p_success_uuid varchar(64) not null,
+   p_cancel_uuid varchar(64) not null,
+   p_order_nr varchar(64) not null,
+   p_order_id NUMBER(21,20) not null,
+   p_order_part_id number(20) not null,
+   p_method_id number(20) not null,
+   p_amount_currency_code varchar(3) not null,
+   p_amount_amount decimal(12,4) not null,
+   p_status varchar(32) not null,
+   p_paypal_order_id varchar(64),
+   p_paypal_order_status varchar(64),
+   p_paypal_order_status_reason CLOB,
+   p_paypal_authorization_id varchar(64),
+   p_paypal_capture_id varchar(64),
+   p_capture_currency_code varchar(3),
+   p_capture_amount NUMBER (21,20),
+   p_paypal_invoice_id varchar(64),
+   primary key (id)
+);
+
+
 create table o_ac_auto_advance_order (
   id number(20) generated always as identity,
   creationdate date not null,

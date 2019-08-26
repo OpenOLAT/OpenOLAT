@@ -37,23 +37,35 @@ import org.olat.resource.accesscontrol.OrderStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class OrderStatusRenderer implements FlexiCellRenderer {
+	
+	private final Translator translator;
+	
+	public OrderStatusRenderer(Translator translator) {
+		this.translator = translator;
+	}
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Object val, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
+			URLBuilder ubu, Translator trans) {
 		if(val instanceof OrderStatus) {
 			OrderStatus status = (OrderStatus)val;
 			String name = status.name().toLowerCase();
-			sb.append("<i class='o_icon o_icon-fw o_ac_order_status_");
-			sb.append(name);
-			sb.append("_icon'> </i>");
+			String title = translator.translate("order.status.".concat(name));
+			sb.append("<span title=\"").append(title).append("\"><i class='o_icon o_icon-fw o_ac_order_status_").append(name).append("_icon'> </i></span>");
 		} else if (val instanceof OrderTableItem) {
 			OrderTableItem item = (OrderTableItem)val;
 			switch(item.getStatus()) {
 				case ERROR: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_error_icon'> </i>"); break;
-				case WARNING: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_warning_icon'> </i>"); break;
-				case CANCELED: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_canceled_icon'> </i>"); break;
-				default: sb.append("<i class='o_icon o_icon-fw o_ac_order_status_payed_icon'> </i>");
+				case WARNING:
+					sb.append("<i class='o_icon o_icon-fw o_ac_order_status_warning_icon'> </i>");
+					break;
+				case CANCELED:
+					String canceledTitle = translator.translate("order.status.canceled");
+					sb.append("<span title=\"").append(canceledTitle).append("\"><i class='o_icon o_icon-fw o_ac_order_status_canceled_icon'> </i></span>");
+					break;
+				default:
+					String payedTitle = translator.translate("order.status.payed");
+					sb.append("<span title=\"").append(payedTitle).append("\"><i class='o_icon o_icon-fw o_ac_order_status_payed_icon'> </i></span>");
 			}
 		}
 	}

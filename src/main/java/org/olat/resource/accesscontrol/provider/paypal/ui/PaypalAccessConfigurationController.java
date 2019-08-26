@@ -182,7 +182,7 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		String priceStr = priceEl.getValue();
 		priceEl.clearError();
@@ -203,6 +203,6 @@ public class PaypalAccessConfigurationController extends AbstractConfigurationMe
 			allOk = false;
 		}
 
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 }

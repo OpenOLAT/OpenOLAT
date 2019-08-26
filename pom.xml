@@ -2517,6 +2517,11 @@
 			<artifactId>adaptivepaymentssdk</artifactId>
 			<version>2.9.117</version>
 		</dependency>
+		<dependency>
+			<groupId>com.paypal.sdk</groupId>
+			<artifactId>checkout-sdk</artifactId>
+			<version>1.0.1</version>
+		</dependency>
 		<!-- end Paypal -->
 
 		<!-- Start test dependencies -->

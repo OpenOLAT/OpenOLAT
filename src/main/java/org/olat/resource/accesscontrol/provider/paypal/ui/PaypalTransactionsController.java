@@ -122,7 +122,7 @@ public class PaypalTransactionsController extends FormBasicController implements
 		for(PaypalMergedState state:PaypalMergedState.values()) {
 			filters.add(new FlexiTableFilter(translate("filter.".concat(state.name())), state.name()));
 		}
-		tableEl.setFilters("", filters, false);;
+		tableEl.setFilters("", filters, false);
 		tableEl.setAndLoadPersistedPreferences(ureq, "FPaypalTransaction");
 	}
 	

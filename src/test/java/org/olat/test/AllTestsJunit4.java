@@ -441,6 +441,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
 	org.olat.resource.accesscontrol.ACReservationDAOTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAOTest.class,
+	org.olat.resource.accesscontrol.provider.paypalcheckout.manager.PaypalCheckoutTransactionDAOTest.class,
 	/**
 	 * Pure JUnit test without need of framework
 	 */

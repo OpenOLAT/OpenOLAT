@@ -45,7 +45,8 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 	
 	private Long refNo;
 	private Integer count;
-	private Date from, to;
+	private Date to;
+	private Date from;
 	private final OLATResource resource;
 	private final IdentityRef delivery;
 	private final List<UserPropertyHandler> userPropertyHandlers;
@@ -104,7 +105,7 @@ public class OrdersDataSource implements FlexiTableDataSourceDelegate<OrderTable
 			int firstResult, int maxResults, SortKey... orderBy) {
 		
 		OrderStatus[] states = null;
-		if(filters != null && filters.size() > 0) {
+		if(filters != null && !filters.isEmpty()) {
 			String filter = filters.get(0).getFilter();
 			states = new OrderStatus[] { OrderStatus.valueOf(filter) };
 		}
