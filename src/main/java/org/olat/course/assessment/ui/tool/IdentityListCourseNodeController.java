@@ -81,7 +81,6 @@ import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.Ident
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -363,7 +362,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 						new UserVisibilityCellRenderer(getTranslator())));
 			}
 			if(assessmentConfig.hasScore()) {
-				if(!(courseNode instanceof STCourseNode)) {
+				if(!assessmentConfig.isEvaluationCalculated()) {
 					if(assessmentConfig.getMinScore() != null) {
 						columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.min, new ScoreCellRenderer()));
 					}

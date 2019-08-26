@@ -168,8 +168,6 @@ public class AssessmentHelper {
 			if (assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
 				return true;
 			}
-		} else if (node instanceof ProjectBrokerCourseNode) {
-			return false;//no assessment-tool in V1.0 return always false
 		} else if (assessmentConfig.isAssessable()) {
 			return true;
 		}
@@ -456,7 +454,7 @@ public class AssessmentHelper {
 							assessmentNodeData.setScore(score);
 							hasDisplayableUserValues = true;
 						}
-						if(!(courseNode instanceof STCourseNode)) {
+						if(!assessmentConfig.isEvaluationCalculated()) {
 							assessmentNodeData.setMaxScore(assessmentConfig.getMaxScore());
 							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());
 						}

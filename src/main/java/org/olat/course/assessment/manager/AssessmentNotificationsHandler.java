@@ -68,7 +68,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -279,7 +278,7 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 			CourseNode courseNode = (CourseNode)node;
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if (assessmentConfig.isAssessable() && !(node instanceof STCourseNode)) {
+			if (assessmentConfig.isAssessable() && !assessmentConfig.isEvaluationCalculated()) {
 				result.add(courseNode);
 			}
 

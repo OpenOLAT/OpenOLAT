@@ -69,7 +69,6 @@ import org.olat.course.nodes.ArchiveOptions;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.MSCourseNode;
-import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -370,7 +369,7 @@ public class ScoreAccountingHelper {
 			String minVal;
 			String maxVal;
 			String cutVal;
-			if(acnode instanceof STCourseNode || !assessmentConfig.hasScore()) {
+			if(assessmentConfig.isEvaluationCalculated() || !assessmentConfig.hasScore()) {
 				minVal = maxVal = cutVal = "-";
 			} else {
 				Float minScoreConfig = assessmentConfig.getMinScore();
