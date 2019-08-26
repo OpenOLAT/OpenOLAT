@@ -20,6 +20,7 @@
 package org.olat.resource.accesscontrol.provider.paypalcheckout.ui;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -27,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
@@ -59,31 +61,6 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 	
 	private static final String[] vatKeys = new String[]{"on"};
 	private final String[] vatValues;
-	
-	private static final String[] currencies = new String[] {
-		"AUD",
-		"CAD",
-		"CZK",
-		"DKK",
-		"EUR",
-		"HKD",
-		"HUF",
-		"ILS",
-		"JPY",
-		"MXN",
-		"NOK",
-		"NZD",
-		"PHP",
-		"PLN",
-		"GBP",
-		"SGD",
-		"SEK",
-		"CHF",
-		"TWD",
-		"THB",
-		"TRY",
-		"USD"
-	};
 	
 	private OfferAccess link;
 	
@@ -123,12 +100,15 @@ public class PaypalCheckoutAccessConfigurationController extends AbstractConfigu
 			amount = PriceFormat.format(price.getAmount());
 		}
 		priceEl = uifactory.addTextElement("price", "price", 32, amount, formLayout);
-
-		currencyEl = uifactory.addDropdownSingleselect("currency", "currency", formLayout, currencies, currencies, null);
+		
+		KeyValues currencies = new KeyValues();
+		List<String> paypalCurrencies = paypalModule.getPaypalCurrencies();
+		paypalCurrencies.forEach(currency -> currencies.add(KeyValues.entry(currency, currency)));
+		currencyEl = uifactory.addDropdownSingleselect("currency", "currency", formLayout, currencies.keys(), currencies.values(), null);
 		
 		boolean selected = false;
 		if(price != null && price.getCurrencyCode() != null) {
-			for(String currency:currencies) {
+			for(String currency:paypalCurrencies) {
 				if(currency.equals(price.getCurrencyCode())) {
 					currencyEl.select(currency, true);
 					selected = true;

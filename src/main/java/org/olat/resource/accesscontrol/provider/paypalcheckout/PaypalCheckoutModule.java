@@ -19,6 +19,9 @@
  */
 package org.olat.resource.accesscontrol.provider.paypalcheckout;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +40,31 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 	private static final String PAYPAL_CLIENT_ID = "paypal.checkout.v2.client.id";
 	private static final String PAYPAL_CLIENT_SECRET = "paypal.checkout.v2.client.secret";
 	private static final String PAYPAL_CURRENCY = "paypal.checkout.v2.currency";
+	
+	private static final String[] currencies = new String[] {
+			"AUD",
+			"CAD",
+			"CZK",
+			"DKK",
+			"EUR",
+			"HKD",
+			"HUF",
+			"ILS",
+			"JPY",
+			"MXN",
+			"NOK",
+			"NZD",
+			"PHP",
+			"PLN",
+			"GBP",
+			"SGD",
+			"SEK",
+			"CHF",
+			"TWD",
+			"THB",
+			"TRY",
+			"USD"
+		};
 	
 	@Value("${paypal.checkout.v2.client.id}")
 	private String clientId;
@@ -80,6 +108,10 @@ public class PaypalCheckoutModule extends AbstractSpringModule {
 	public void setClientSecret(String secret) {
 		this.clientSecret = secret;
 		setSecretStringProperty(PAYPAL_CLIENT_SECRET, secret, true);
+	}
+	
+	public List<String> getPaypalCurrencies() {
+		return Arrays.asList(currencies);
 	}
 	
 	public String getPaypalCurrency() {

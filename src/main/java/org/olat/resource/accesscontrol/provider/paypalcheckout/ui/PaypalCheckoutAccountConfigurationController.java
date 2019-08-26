@@ -19,13 +19,18 @@
  */
 package org.olat.resource.accesscontrol.provider.paypalcheckout.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutModule;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +46,9 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 	
 	private TextElement clientIdEl;
 	private TextElement clientSecretEl;
+	private SingleSelection currencyEl;
+	
+	private final List<String> paypalCurrencies;
 
 	@Autowired
 	private AccessControlModule acModule;
@@ -49,7 +57,7 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 	
 	public PaypalCheckoutAccountConfigurationController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-
+		paypalCurrencies = paypalModule.getPaypalCurrencies();
 		initForm(ureq);
 	}
 	
@@ -65,6 +73,15 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 		if(acModule.isPaypalEnabled()) {
 			setFormDescription("checkout.config.description");
 			setFormContextHelp("PayPal Configuration");
+			
+			KeyValues currencies = new KeyValues();
+			paypalCurrencies.forEach(currency -> currencies.add(KeyValues.entry(currency, currency)));
+			currencyEl = uifactory.addDropdownSingleselect("currency", "currency", formLayout, currencies.keys(), currencies.values(), null);
+			if(StringHelper.containsNonWhitespace(paypalModule.getPaypalCurrency())) {
+				currencyEl.select(paypalModule.getPaypalCurrency(), true);
+			} else {
+				currencyEl.select("CHF", true);
+			}
 			
 			String clientId = paypalModule.getClientId();
 			clientIdEl = uifactory.addTextElement("checkout.client.id", 128, clientId, formLayout);
@@ -85,6 +102,9 @@ public class PaypalCheckoutAccountConfigurationController extends FormBasicContr
 	protected void formOK(UserRequest ureq) {
 		paypalModule.setClientId(clientIdEl.getValue());
 		paypalModule.setClientSecret(clientSecretEl.getValue());
+		if(currencyEl.isOneSelected() && paypalCurrencies.contains(currencyEl.getSelectedKey())) {
+			paypalModule.setPaypalCurrency(currencyEl.getSelectedKey());
+		}
 		showInfo("saved");
 	}
 }
