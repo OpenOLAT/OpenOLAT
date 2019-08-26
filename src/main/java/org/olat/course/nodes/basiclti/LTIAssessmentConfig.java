@@ -131,6 +131,11 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean isBulkEditable() {
+		return false;
+	}
+
+	@Override
 	public boolean hasEditableDetails() {
 		// having score defined means the node is assessable
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD);

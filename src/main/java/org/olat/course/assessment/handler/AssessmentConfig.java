@@ -107,6 +107,11 @@ public interface AssessmentConfig {
 	public boolean isEditable();
 	
 	/**
+	 * @return true if the data are editable in the bulk controller
+	 */
+	public boolean isBulkEditable();
+	
+	/**
 	 * @return True if this course node has additional details to be edited.
 	 */
 	public boolean hasEditableDetails();

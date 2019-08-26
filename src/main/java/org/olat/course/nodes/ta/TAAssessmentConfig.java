@@ -78,6 +78,11 @@ public class TAAssessmentConfig extends ModuleAssessmentConfig {
 	public boolean isEditable() {
 		return true;
 	}
+
+	@Override
+	public boolean isBulkEditable() {
+		return true;
+	}
 	
 	@Override
 	public boolean hasEditableDetails() {

@@ -81,8 +81,6 @@ import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
-import org.olat.course.nodes.MSCourseNode;
-import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskList;
@@ -283,17 +281,17 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 	
 	public static boolean isBulkAssessable(CourseNode courseNode) {
 		boolean bulkAssessability = false;
-		//TODO uh move to config
-		if (courseNode instanceof MSCourseNode
-				|| courseNode instanceof TACourseNode
-				|| courseNode instanceof GTACourseNode
-				|| courseNode instanceof ProjectBrokerCourseNode) {
-			// now a more fine granular check on bulk features. only show wizard for nodes that have at least one
+		
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (assessmentConfig.isBulkEditable()) {
+			// Now a more fine granular check on bulk features. Only show wizard for nodes that have at least one
 			BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
 			if (settings.isHasPassed() || settings.isHasScore() || settings.isHasUserComment() || settings.isHasReturnFiles()) {
 				bulkAssessability = true;
 			}
 		}
+		
 		return bulkAssessability;
 	}
 

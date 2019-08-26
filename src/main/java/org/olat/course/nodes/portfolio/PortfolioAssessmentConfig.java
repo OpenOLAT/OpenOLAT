@@ -50,6 +50,11 @@ public class PortfolioAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
+	public boolean isBulkEditable() {
+		return false;
+	}
+
+	@Override
 	public boolean hasEditableDetails() {
 		return true;
 	}

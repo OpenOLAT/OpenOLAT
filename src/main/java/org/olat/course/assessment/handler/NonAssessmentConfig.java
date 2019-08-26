@@ -98,17 +98,22 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isEditable() {
-		return false;
-	}
-
-	@Override
 	public boolean hasStatus() {
 		return false;
 	}
 
 	@Override
 	public boolean isAssessedBusinessGroups() {
+		return false;
+	}
+
+	@Override
+	public boolean isEditable() {
+		return false;
+	}
+
+	@Override
+	public boolean isBulkEditable() {
 		return false;
 	}
 

@@ -75,6 +75,11 @@ public class MSAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
+	public boolean isBulkEditable() {
+		return true;
+	}
+
+	@Override
 	public boolean hasEditableDetails() {
 		return config.getBooleanSafe(MSCourseNode.CONFIG_KEY_EVAL_FORM_ENABLED);
 	}

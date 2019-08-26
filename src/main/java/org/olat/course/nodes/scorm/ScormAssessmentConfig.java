@@ -121,6 +121,11 @@ public class ScormAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
+	public boolean isBulkEditable() {
+		return false;
+	}
+
+	@Override
 	public boolean hasEditableDetails() {
 		return config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 	}

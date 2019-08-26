@@ -76,6 +76,11 @@ public class ProjectBrokerAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
+	public boolean isBulkEditable() {
+		return false;
+	}
+
+	@Override
 	public boolean hasEditableDetails() {
 		return config.getBooleanSafe(ProjectBrokerCourseNode.CONF_DROPBOX_ENABLED);
 	}

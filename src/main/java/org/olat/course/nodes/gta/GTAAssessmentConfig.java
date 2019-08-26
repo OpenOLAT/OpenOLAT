@@ -87,6 +87,11 @@ public class GTAAssessmentConfig extends ModuleAssessmentConfig {
 	}
 
 	@Override
+	public boolean isBulkEditable() {
+		return true;
+	}
+
+	@Override
 	public boolean hasEditableDetails() {
 		return config.getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)
 				|| config.getBooleanSafe(GTACourseNode.GTASK_SUBMIT)
