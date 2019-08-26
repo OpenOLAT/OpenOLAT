@@ -25,7 +25,7 @@ import java.io.Serializable;
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.TACourseNode;
@@ -49,7 +49,7 @@ public class BulkAssessmentSettings implements Serializable {
 	private final Float max;
 	private final Float cut;
 
-	public BulkAssessmentSettings(AssessableCourseNode courseNode) {
+	public BulkAssessmentSettings(CourseNode courseNode) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		hasUserComment = assessmentConfig.hasComment();

@@ -66,7 +66,6 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.ArchiveOptions;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -92,7 +91,7 @@ public class ScoreAccountingHelper {
 	
 	private static final Logger log = Tracing.createLoggerFor(ScoreAccountingHelper.class);
 	
-	public static void createCourseResultsOverview(List<Identity> identities, List<AssessableCourseNode> nodes, ICourse course, Locale locale, ZipOutputStream zout) {
+	public static void createCourseResultsOverview(List<Identity> identities, List<CourseNode> nodes, ICourse course, Locale locale, ZipOutputStream zout) {
 		try(OutputStream out = new ShieldOutputStream(zout)) {
 			zout.putNextEntry(new ZipEntry("Course_results.xlsx"));
 			createCourseResultsOverviewXMLTable(identities, nodes, course, locale, out);
@@ -101,7 +100,7 @@ public class ScoreAccountingHelper {
 			log.error("", e);
 		}
 
-		for(AssessableCourseNode node:nodes) {
+		for(CourseNode node:nodes) {
 			String dir = "Assessment_documents/" + StringHelper.transformDisplayNameToFileSystemName(node.getShortName());
 			if(node instanceof IQTESTCourseNode
 					|| node.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_INDIVIDUAL_ASSESSMENT_DOCS, false)) {
@@ -134,7 +133,7 @@ public class ScoreAccountingHelper {
 	 * @param locale The locale.
 	 * @param bos The output stream (which will be closed at the end, if you use a zip stream don't forget to shield it).
 	 */
-	public static void createCourseResultsOverviewXMLTable(List<Identity> identities, List<AssessableCourseNode> myNodes, ICourse course, Locale locale, OutputStream bos) {
+	public static void createCourseResultsOverviewXMLTable(List<Identity> identities, List<CourseNode> myNodes, ICourse course, Locale locale, OutputStream bos) {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		OpenXMLWorkbook workbook = new OpenXMLWorkbook(bos, 1);
 		OpenXMLWorksheet sheet = workbook.nextWorksheet();
@@ -174,7 +173,7 @@ public class ScoreAccountingHelper {
 		}
 		
 		int header1ColCnt = headerColCnt;
-		for(AssessableCourseNode acNode:myNodes) {
+		for(CourseNode acNode:myNodes) {
 			headerRow1.addCell(header1ColCnt++, acNode.getShortTitle());
 			header1ColCnt += acNode.getType().equals("ita") ? 1 : 0;
 			
@@ -196,7 +195,7 @@ public class ScoreAccountingHelper {
 
 		int header2ColCnt = headerColCnt;
 		Row headerRow2 = sheet.newRow();
-		for(AssessableCourseNode acNode:myNodes) {
+		for(CourseNode acNode:myNodes) {
 			if (acNode.getType().equals("ita")) {
 				headerRow2.addCell(header2ColCnt++, submitted);
 			}
@@ -263,7 +262,7 @@ public class ScoreAccountingHelper {
 			scoreAccount.evaluateAll();
 			AssessmentManager am = course.getCourseEnvironment().getAssessmentManager();
 
-			for (AssessableCourseNode acnode:myNodes) {
+			for (CourseNode acnode:myNodes) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acnode);
 				boolean scoreOk = assessmentConfig.hasScore();
 				boolean passedOk = assessmentConfig.hasPassed();
@@ -353,7 +352,7 @@ public class ScoreAccountingHelper {
 
 		//min. max. informations
 		boolean first = true;
-		for (AssessableCourseNode acnode:myNodes) {
+		for (CourseNode acnode:myNodes) {
 			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(acnode);
 			if (!assessmentConfig.hasScore()) {
 				// only show min/max/cut legend when score configured
@@ -458,9 +457,9 @@ public class ScoreAccountingHelper {
 	 * @param courseEnv
 	 * @return The list of assessable nodes from this course
 	 */
-	public static List<AssessableCourseNode> loadAssessableNodes(CourseEnvironment courseEnv) {
+	public static List<CourseNode> loadAssessableNodes(CourseEnvironment courseEnv) {
 		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
-		List<AssessableCourseNode> nodeList = new ArrayList<>();
+		List<CourseNode> nodeList = new ArrayList<>();
 		collectAssessableCourseNodes(rootNode, nodeList);
 		return nodeList;
 	}
@@ -471,9 +470,10 @@ public class ScoreAccountingHelper {
 	 * @param node
 	 * @param nodeList
 	 */
-	private static void collectAssessableCourseNodes(CourseNode node, List<AssessableCourseNode> nodeList) {
-		if (node instanceof AssessableCourseNode) {
-			nodeList.add((AssessableCourseNode)node);
+	private static void collectAssessableCourseNodes(CourseNode node, List<CourseNode> nodeList) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		if (courseAssessmentService.getAssessmentConfig(node).isAssessable()) {
+			nodeList.add(node);
 		}
 		int count = node.getChildCount();
 		for (int i = 0; i < count; i++) {

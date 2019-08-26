@@ -28,6 +28,13 @@ package org.olat.course.assessment.handler;
 public interface AssessmentConfig {
 	
 	/**
+	 * Real assessments are in efficiency statements and are shown in the assessment tool.
+	 * 
+	 * @return true if it is a real assessment.
+	 */
+	public boolean isAssessable();
+	
+	/**
 	 * @return true if the score evaluation is persisted
 	 */
 	public boolean isScoreEvaluationPersisted();

@@ -54,7 +54,6 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -82,7 +81,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	
 	private AssessmentManager assessmentManager;	
 	private ICourse course;
-	private AssessableCourseNode assessableCourseNode;
+	private CourseNode assessableCourseNode;
 	private Identity tutor;
 	private Identity student;
 	private final Float score = new Float(10);
@@ -138,13 +137,11 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		boolean testNodeFound = false; 
 		while(nodesIterator.hasNext()) {
 			CourseNode currentNode = nodesIterator.next();			
-			if(currentNode instanceof AssessableCourseNode) {
-				if (currentNode.getType().equalsIgnoreCase("iqtest")) {
-					log.info("Yes, we found a test node! - currentNode.getType(): " + currentNode.getType());
-					assessableCourseNode = (AssessableCourseNode)currentNode;
-					testNodeFound = true;
-					break;
-				}
+			if (currentNode.getType().equalsIgnoreCase("iqtest")) {
+				log.info("Yes, we found a test node! - currentNode.getType(): " + currentNode.getType());
+				assessableCourseNode = currentNode;
+				testNodeFound = true;
+				break;
 			}
 		}
 		assertTrue("found no test-node of type 'iqtest' (hint: add one to DemoCourse) ",testNodeFound);

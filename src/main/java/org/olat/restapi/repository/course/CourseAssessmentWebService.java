@@ -58,7 +58,6 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -317,8 +316,6 @@ public class CourseAssessmentWebService {
 	
 	private void attachAssessableResults(ICourse course, String nodeKey, Identity requestIdentity, AssessableResultsVO resultsVO) {
 		CourseNode node = getParentNode(course, nodeKey);
-		if (!(node instanceof AssessableCourseNode)) { throw new IllegalArgumentException(
-				"The supplied node key does not refer to an AssessableCourseNode"); }
 		Identity userIdentity = securityManager.loadIdentityByKey(resultsVO.getIdentityKey());
 
 		// create an identenv with no roles, no attributes, no locale
@@ -423,11 +420,10 @@ public class CourseAssessmentWebService {
 				Float score = ac.getScore();
 				Boolean passed = ac.isPassed();
 				ScoreEvaluation sceval = new ScoreEvaluation(score, passed, passed, Long.valueOf(nodeKey));//perhaps don't pass this key directly
-				AssessableCourseNode acn = (AssessableCourseNode) courseNode;
 				// assessment nodes are assessable
 				boolean incrementUserAttempts = true;
 				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-				courseAssessmentService.updateScoreEvaluation(acn, sceval, userCourseEnv, identity, incrementUserAttempts, Role.coach);
+				courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, identity, incrementUserAttempts, Role.coach);
 			} else {
 				log.error("Result set already saved");
 			}
@@ -522,13 +518,10 @@ public class CourseAssessmentWebService {
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		scoreAccounting.evaluateAll();
 		
-		if(courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode assessableRootNode = (AssessableCourseNode)courseNode;
-			ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(assessableRootNode);
-			results.setScore(scoreEval.getScore());
-			results.setPassed(scoreEval.getPassed());
-			results.setLastModifiedDate(getLastModificationDate(identity, course, courseNode));
-		}
+		ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
+		results.setScore(scoreEval.getScore());
+		results.setPassed(scoreEval.getPassed());
+		results.setLastModifiedDate(getLastModificationDate(identity, course, courseNode));
 		
 		return results;
 	}

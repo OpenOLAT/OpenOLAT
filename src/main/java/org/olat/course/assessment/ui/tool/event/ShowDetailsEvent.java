@@ -21,7 +21,7 @@ package org.olat.course.assessment.ui.tool.event;
 
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
@@ -35,9 +35,9 @@ public class ShowDetailsEvent extends Event {
 	public static final String SHOW_DETAILS = "show-details";
 	
 	private final Identity assessedIdentity;
-	private final AssessableCourseNode courseNode;
+	private final CourseNode courseNode;
 	
-	public ShowDetailsEvent(AssessableCourseNode courseNode, Identity assessedIdentity) {
+	public ShowDetailsEvent(CourseNode courseNode, Identity assessedIdentity) {
 		super(SHOW_DETAILS);
 		this.assessedIdentity = assessedIdentity;
 		this.courseNode = courseNode;
@@ -47,7 +47,7 @@ public class ShowDetailsEvent extends Event {
 		return assessedIdentity;
 	}
 
-	public AssessableCourseNode getCourseNode() {
+	public CourseNode getCourseNode() {
 		return courseNode;
 	}
 }

@@ -91,7 +91,7 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
+public class GTACourseNode extends AbstractAccessableCourseNode implements CourseNode {
 	
 	private static final Logger log = Tracing.createLoggerFor(GTACourseNode.class);
 	private static final String PACKAGE_GTA = Util.getPackageName(GTAEditController.class);
@@ -535,7 +535,7 @@ public class GTACourseNode extends AbstractAccessableCourseNode implements Asses
 			
 			String courseTitle = course.getCourseTitle();
 			String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
-			List<AssessableCourseNode> nodes = Collections.singletonList(this);
+			List<CourseNode> nodes = Collections.singletonList(this);
 			try(OutputStream out = new ShieldOutputStream(exportStream)) {
 				exportStream.putNextEntry(new ZipEntry(dirName + "/" + fileName));
 				ScoreAccountingHelper.createCourseResultsOverviewXMLTable(users, nodes, course, locale, out);

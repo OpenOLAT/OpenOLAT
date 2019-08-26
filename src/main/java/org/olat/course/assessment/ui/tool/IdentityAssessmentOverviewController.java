@@ -56,7 +56,6 @@ import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewTableModel.NodeCols;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.ui.AssessedIdentityListState;
@@ -90,7 +89,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 
 	private boolean loadNodesFromCourse;
 	private final boolean followUserResultsVisibility;
-	private AssessableCourseNode selectedCourseNode;
+	private CourseNode selectedCourseNode;
 	private List<AssessmentNodeData> preloadedNodesList;
 	private UserCourseEnvironment userCourseEnvironment;
 
@@ -211,11 +210,11 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 	}
 	
 	/**
-	 * Returns the selected assessable course node. Call this method after getting the EVENT_NODE_SELECTED
+	 * Returns the selected course node. Call this method after getting the EVENT_NODE_SELECTED
 	 * to get the selected node
 	 * @return AssessableCourseNode
 	 */
-	public AssessableCourseNode getSelectedCourseNode() {
+	public CourseNode getSelectedCourseNode() {
 		if (selectedCourseNode == null) {
 			throw new AssertException("Selected course node was null. Maybe getSelectedCourseNode called prior to EVENT_NODE_SELECTED has been fired?");
 		}
@@ -313,8 +312,7 @@ public class IdentityAssessmentOverviewController extends FormBasicController im
 				String cmd = se.getCommand();
 				AssessmentNodeData nodeData = tableModel.getObject(se.getIndex());
 				if(CMD_SELECT_NODE.equals(cmd)) {
-					CourseNode node = runStructure.getNode(nodeData.getIdent());
-					selectedCourseNode = (AssessableCourseNode)node;
+					selectedCourseNode = runStructure.getNode(nodeData.getIdent());
 					fireEvent(ureq, EVENT_NODE_SELECTED);
 				}
 			}

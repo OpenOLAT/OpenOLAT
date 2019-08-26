@@ -75,7 +75,6 @@ import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.TACourseNode;
 import org.olat.course.properties.CoursePropertyManager;
@@ -306,12 +305,11 @@ public class DropboxScoringViewController extends BasicController {
 					Identity coach = ureq.getIdentity();
 					Identity student = userCourseEnv.getIdentityEnvironment().getIdentity();
 					
-					if(node instanceof AssessableCourseNode) {
-						AssessableCourseNode acn = (AssessableCourseNode)node;
+					if(courseAssessmentService.getAssessmentConfig(node).isAssessable()) {
 						AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
 						if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 							eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-							courseAssessmentService.updateScoreEvaluation(acn, eval, userCourseEnv, coach, false, Role.coach);
+							courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, coach, false, Role.coach);
 						}
 					}
 
@@ -342,15 +340,14 @@ public class DropboxScoringViewController extends BasicController {
 					}
 				}
 			} else if(FolderCommand.FOLDERCOMMAND_FINISHED == event) {
-				if(node instanceof AssessableCourseNode) {
-					AssessableCourseNode acn = (AssessableCourseNode)node;
+				if(courseAssessmentService.getAssessmentConfig(node).isAssessable()) {
 					AssessmentEvaluation eval = courseAssessmentService.getAssessmentEvaluation(node, userCourseEnv);
 					if (eval == null) {
 						eval = AssessmentEvaluation.EMPTY_EVAL;
 					}
 					if(eval.getAssessmentStatus() == null || eval.getAssessmentStatus() == AssessmentEntryStatus.notStarted) {
 						eval = new AssessmentEvaluation(eval, AssessmentEntryStatus.inProgress);
-						courseAssessmentService.updateScoreEvaluation(acn, eval, userCourseEnv, getIdentity(), false, Role.coach);
+						courseAssessmentService.updateScoreEvaluation(node, eval, userCourseEnv, getIdentity(), false, Role.coach);
 						fireEvent(ureq, Event.CHANGED_EVENT);
 					}
 				}

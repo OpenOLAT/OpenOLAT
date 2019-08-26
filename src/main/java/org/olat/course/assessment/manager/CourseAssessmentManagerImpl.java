@@ -51,6 +51,8 @@ import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.auditing.UserNodeAuditManager;
@@ -59,7 +61,6 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -95,12 +96,15 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private final AssessmentService assessmentService;
 	private final CertificatesManager certificatesManager;
 	private final EfficiencyStatementManager efficiencyStatementManager;
+	private final CourseAssessmentService courseAssessmentService;
+
 	
 	public CourseAssessmentManagerImpl(CourseGroupManager cgm) {
 		this.cgm = cgm;
 		assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
 		certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
 		efficiencyStatementManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
+		courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 	}
 
 	private AssessmentEntry getOrCreate(Identity assessedIdentity, CourseNode courseNode) {
@@ -337,8 +341,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		DBFactory.getInstance().commit();
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		DBFactory.getInstance().commit();
-		if(courseNode instanceof AssessableCourseNode) {
-			// Update users efficiency statement
+		
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.isAssessable()) {
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
 		}
 		
@@ -361,8 +366,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
 		nodeAssessment.setAttempts(attempts);
 		assessmentService.updateAssessmentEntry(nodeAssessment);
-		if(courseNode instanceof AssessableCourseNode) {
-			// Update users efficiency statement
+		
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.isAssessable()) {
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
 		}
 		
@@ -381,9 +387,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		DBFactory.getInstance().commit();
+		
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
-		if(courseNode instanceof AssessableCourseNode) {
-			// Update users efficiency statement
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.isAssessable()) {
 			efficiencyStatementManager.updateUserEfficiencyStatement(userCourseEnv);
 		}
 	}
@@ -514,7 +521,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 		if(course.getCourseConfig().isAutomaticCertificationEnabled()) {
 			CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
-			ScoreEvaluation rootEval = scoreAccounting.evalCourseNode((AssessableCourseNode)rootNode);
+			ScoreEvaluation rootEval = scoreAccounting.evalCourseNode(rootNode);
 			if(rootEval != null && rootEval.getPassed() != null && rootEval.getPassed().booleanValue()
 					&& certificatesManager.isCertificationAllowed(assessedIdentity, cgm.getCourseEntry())) {
 				CertificateTemplate template = null;

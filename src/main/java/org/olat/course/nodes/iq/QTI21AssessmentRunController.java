@@ -66,7 +66,6 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.IQSELFCourseNode;
 import org.olat.course.nodes.IQTESTCourseNode;
@@ -243,13 +242,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("timeLimit", Formatter.formatHourAndSeconds(timeLimit.longValue() * 1000l));
 		}
 
-		if (courseNode instanceof AssessableCourseNode) {
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (assessmentConfig.isAssessable()) {
 			if (assessmentConfig.hasScore() || userCourseEnv.isCoach()){
 				HighScoreRunController highScoreCtr = new HighScoreRunController(ureq, getWindowControl(), userCourseEnv, courseNode);
 				if (highScoreCtr.isViewHighscore()) {
 					Component highScoreComponent = highScoreCtr.getInitialComponent();
-					mainVC.put("highScore", highScoreComponent);							
+					mainVC.put("highScore", highScoreComponent);
 				}
 			}
 		}
@@ -298,7 +297,6 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("hasPassedValue", (passed == null ? Boolean.FALSE : Boolean.TRUE));
 				mainVC.contextPut("passed", passed);
 				if(resultsVisible) {
-					AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 					if(assessmentConfig.hasComment()) {
 						StringBuilder comment = Formatter.stripTabsAndReturns(
 								courseAssessmentService.getUserComment(testCourseNode, userCourseEnv));

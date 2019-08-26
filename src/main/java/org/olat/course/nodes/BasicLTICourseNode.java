@@ -59,7 +59,7 @@ import org.olat.resource.OLATResource;
  * @author guido
  * @author Charles Severance
  */
-public class BasicLTICourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
+public class BasicLTICourseNode extends AbstractAccessableCourseNode implements CourseNode {
 
 	private static final long serialVersionUID = 2210572148308757127L;
 	private static final String translatorPackage = Util.getPackageName(LTIEditController.class);

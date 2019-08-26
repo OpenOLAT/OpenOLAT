@@ -57,7 +57,6 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ExportFormat;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.ims.qti.export.QTIArchiver;
@@ -157,6 +156,7 @@ public class QTI21ArchiveFormat {
 	private final UserManager userManager;
 	private final AssessmentResponseDAO responseDao;
 	private final AssessmentTestSessionDAO testSessionDao;
+	private final CourseAssessmentService courseAssessmentService;
 	
 	public QTI21ArchiveFormat(Locale locale, QTI21StatisticSearchParams searchParams) {
 		this.searchParams = searchParams;
@@ -170,6 +170,7 @@ public class QTI21ArchiveFormat {
 		qtiService = CoreSpringFactory.getImpl(QTI21ServiceImpl.class);
 		responseDao = CoreSpringFactory.getImpl(AssessmentResponseDAO.class);
 		testSessionDao = CoreSpringFactory.getImpl(AssessmentTestSessionDAO.class);
+		courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(QTIArchiver.TEST_USER_PROPERTIES, true);
 		
@@ -324,18 +325,15 @@ public class QTI21ArchiveFormat {
 		}
 
 		// course node points and passed
-		if(courseNode instanceof AssessableCourseNode) {
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.hasScore()) {
+			header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
+		}
+		if(assessmentConfig.hasPassed()) {
 			if(assessmentConfig.hasScore()) {
+				col++;
+			} else {
 				header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
-			}
-			if(assessmentConfig.hasPassed()) {
-				if(assessmentConfig.hasScore()) {
-					col++;
-				} else {
-					header1Row.addCell(col++, translator.translate("archive.table.header.node"), headerStyle);
-				}
 			}
 		}
 
@@ -403,15 +401,12 @@ public class QTI21ArchiveFormat {
 		}
 
 		// course node points and passed
-		if(courseNode instanceof AssessableCourseNode) {
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if(assessmentConfig.hasScore()) {
-				header2Row.addCell(col++, translator.translate("archive.table.header.node.points"), headerStyle);
-			}
-			if(assessmentConfig.hasPassed()) {
-				header2Row.addCell(col++, translator.translate("archive.table.header.node.passed"), headerStyle);
-			}
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.hasScore()) {
+			header2Row.addCell(col++, translator.translate("archive.table.header.node.points"), headerStyle);
+		}
+		if(assessmentConfig.hasPassed()) {
+			header2Row.addCell(col++, translator.translate("archive.table.header.node.passed"), headerStyle);
 		}
 		
 		header2Row.addCell(col++, translator.translate("archive.table.header.points"), headerStyle);
@@ -537,22 +532,19 @@ public class QTI21ArchiveFormat {
 		}
 		
 		// course node points and passed
-		if(courseNode instanceof AssessableCourseNode) {
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if(assessmentConfig.hasScore()) {
-				if(entry.getScore() != null) {
-					dataRow.addCell(col++, entry.getScore(), null);
-				} else {
-					col++;
-				}
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.hasScore()) {
+			if(entry.getScore() != null) {
+				dataRow.addCell(col++, entry.getScore(), null);
+			} else {
+				col++;
 			}
-			if(assessmentConfig.hasPassed()) {
-				if(entry.getPassed() != null) {
-					dataRow.addCell(col++, entry.getPassed().toString(), null);
-				} else {
-					col++;
-				}
+		}
+		if(assessmentConfig.hasPassed()) {
+			if(entry.getPassed() != null) {
+				dataRow.addCell(col++, entry.getPassed().toString(), null);
+			} else {
+				col++;
 			}
 		}
 		

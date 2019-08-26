@@ -47,9 +47,10 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.FileUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
 import org.olat.course.config.CourseConfig;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
@@ -86,6 +87,8 @@ public class AssessmentIdentityCourseController extends BasicController
 	private final RepositoryEntry courseEntry;
 	private final UserCourseEnvironment coachCourseEnv;
 	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -314,7 +317,8 @@ public class AssessmentIdentityCourseController extends BasicController
 		if(index > 0 && index <= numOfNodes) {
 			for(int i=index; i-->0; ) {
 				CourseNode previousNode = treeOverviewCtrl.getNode(i);
-				if(previousNode instanceof AssessableCourseNode && !(previousNode instanceof STCourseNode)) {
+				AssessmentConfig previousConfig = courseAssessmentService.getAssessmentConfig(previousNode);
+				if(previousConfig.isAssessable() && !(previousNode instanceof STCourseNode)) {
 					return true;
 				}
 			}

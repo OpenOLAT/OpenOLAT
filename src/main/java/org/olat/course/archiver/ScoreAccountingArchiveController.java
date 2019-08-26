@@ -48,7 +48,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.ExportUtil;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * Description: Course-Results-Archiver using ScoreAccountingHelper.class
@@ -97,7 +97,7 @@ public class ScoreAccountingArchiveController extends BasicController {
 	private void doStartExport() {
 		ICourse course = CourseFactory.loadCourse(ores);
 		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
-		List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
+		List<CourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
 		
 		String courseTitle = course.getCourseTitle();
 		String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "zip");

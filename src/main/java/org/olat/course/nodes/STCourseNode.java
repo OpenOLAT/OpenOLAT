@@ -93,7 +93,7 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * @author Mike Stock
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class STCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
+public class STCourseNode extends AbstractAccessableCourseNode implements CourseNode {
 	
 	private static final Logger log = Tracing.createLoggerFor(STCourseNode.class);
 

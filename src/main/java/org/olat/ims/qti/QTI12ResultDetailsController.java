@@ -52,7 +52,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.OpenSubDetailsEvent;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.ims.qti.container.AssessmentContext;
@@ -248,7 +248,7 @@ public class QTI12ResultDetailsController extends BasicController {
 	 */
 	private void doRetrieveTest() {
 		ICourse course = CourseFactory.loadCourse(courseResourceableId);
-		AssessableCourseNode testNode = (AssessableCourseNode)course.getRunStructure().getNode(nodeIdent);
+		CourseNode testNode = course.getRunStructure().getNode(nodeIdent);
 		ModuleConfiguration modConfig = testNode.getModuleConfiguration();
 
 		String resourcePathInfo = courseResourceableId + File.separator + nodeIdent;

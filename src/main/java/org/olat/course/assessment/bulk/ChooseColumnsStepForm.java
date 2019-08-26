@@ -45,7 +45,7 @@ import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 
 /**
  *
@@ -91,7 +91,7 @@ public class ChooseColumnsStepForm extends StepFormBasicController {
 		setFormDescription("chooseColumns.description");
 		setFormContextHelp("Using Course Tools#bulkassessment_map");
 
-		AssessableCourseNode courseNode = (AssessableCourseNode)getFromRunContext("courseNode");
+		CourseNode courseNode = (CourseNode)getFromRunContext("courseNode");
 		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
 
 		String[] usernameKeys = new String[numOfColumns];

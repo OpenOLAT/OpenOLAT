@@ -55,6 +55,8 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeCoordinationService;
 import org.olat.course.assessment.AssessmentModeManager;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.mode.AssessmentModeHelper;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
 import org.olat.course.assessment.ui.mode.ModeStatusCellRenderer;
@@ -62,7 +64,6 @@ import org.olat.course.assessment.ui.mode.TimeCellRenderer;
 import org.olat.course.assessment.ui.tool.AssessmentModeOverviewListTableModel.ModeCols;
 import org.olat.course.assessment.ui.tool.event.AssessmentModeStatusEvent;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -103,6 +104,8 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 	private AssessmentModeManager asssessmentModeManager;
 	@Autowired
 	private AssessmentModeCoordinationService assessmentModeCoordinationService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public AssessmentModeOverviewListController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry courseEntry, AssessmentToolSecurityCallback assessmentCallback) {
@@ -215,7 +218,8 @@ public class AssessmentModeOverviewListController extends FormBasicController im
 			ICourse course = CourseFactory.loadCourse(courseEntry);
 			for(String element:elements.split("[,]")) {
 				CourseNode node = course.getRunStructure().getNode(element);
-				if(node instanceof AssessableCourseNode && !(node instanceof STCourseNode) && !(node instanceof PortfolioCourseNode)) {
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
+				if(assessmentConfig.isAssessable() && !(node instanceof STCourseNode) && !(node instanceof PortfolioCourseNode)) {
 					String id = "element_" + (++count);
 					FormLink elementButton = uifactory.addFormLink(id, "element", node.getShortTitle(), null, flc, Link.LINK | Link.NONTRANSLATED);
 					elementButton.setDomReplacementWrapperRequired(false);

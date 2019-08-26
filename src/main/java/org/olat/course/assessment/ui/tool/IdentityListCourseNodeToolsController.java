@@ -23,7 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -34,8 +34,8 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class IdentityListCourseNodeToolsController extends AbstractToolsController {
 	
-	public IdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl,
-			AssessableCourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
+	public IdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl, courseNode, assessedIdentity, coachCourseEnv);
 		
 		initTools();

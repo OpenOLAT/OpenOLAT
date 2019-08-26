@@ -45,7 +45,6 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.model.UserCourseInfosImpl;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.rule.AttemptsRuleSPI;
 import org.olat.course.reminder.rule.InitialAttemptsRuleSPI;
@@ -1080,13 +1079,11 @@ public class ReminderRuleEngineTest extends OlatTestCase {
 		//create user course infos
 		ICourse course = CourseFactory.loadCourse(re);
 		List<CourseNode> assessableNodeList = AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), null);
-		AssessableCourseNode testNode = null; 
+		CourseNode testNode = null; 
 		for(CourseNode currentNode: assessableNodeList) {	
-			if(currentNode instanceof AssessableCourseNode) {
-				if (currentNode.getType().equalsIgnoreCase("iqtest")) {
-					testNode = (AssessableCourseNode)currentNode;
-					break;
-				}
+			if (currentNode.getType().equalsIgnoreCase("iqtest")) {
+				testNode = currentNode;
+				break;
 			}
 		}
 		Assert.assertNotNull(testNode);

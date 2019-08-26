@@ -50,7 +50,6 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.highscore.ui.HighScoreRunController;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ObjectivesHelper;
@@ -74,7 +73,7 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	private boolean hasScore, hasPassed, hasComment;
 	private final UserCourseEnvironment userCourseEnv;
 	private final boolean overrideUserResultsVisiblity;
-	private final AssessableCourseNode courseNode;
+	private final CourseNode courseNode;
 	
 	@Autowired
 	private CourseModule courseModule;
@@ -87,12 +86,12 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	 * @param ureq The user request
 	 * @param wControl The window control
 	 * @param userCourseEnv The user course environment
-	 * @param msCourseNode An assessable course node
+	 * @param msCourseNode An course node
 	 * @param displayNodeInfo If true, the node title and learning objectives will be displayed
 	 * @param showLog If true, the change log will be displayed
 	 */
 	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			AssessableCourseNode courseNode, boolean displayNodeInfo, boolean showLog) {
+			CourseNode courseNode, boolean displayNodeInfo, boolean showLog) {
 		this(ureq, wControl, userCourseEnv, courseNode, displayNodeInfo, showLog, false);
 	}
 	
@@ -102,14 +101,13 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 	 * @param ureq The user request
 	 * @param wControl The window control
 	 * @param userCourseEnv The user course environment
-	 * @param courseNode An assessable course element
+	 * @param courseNode An course element
 	 * @param displayNodeInfo If true, the node title and learning objectives will be displayed
 	 * @param showLog If true, the change log will be displayed
 	 * @param overrideUserResultsVisiblity If the controller can override the user visiblity of the score evaluation
 	 */
-	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, AssessableCourseNode courseNode,
-			boolean displayNodeInfo, boolean showLog, boolean overrideUserResultsVisiblity) {
+	public MSCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			CourseNode courseNode, boolean displayNodeInfo, boolean showLog, boolean overrideUserResultsVisiblity) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		
 		this.showLog = showLog;

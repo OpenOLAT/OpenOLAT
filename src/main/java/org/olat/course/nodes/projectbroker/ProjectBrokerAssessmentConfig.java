@@ -34,6 +34,11 @@ public class ProjectBrokerAssessmentConfig extends ModuleAssessmentConfig {
 	public ProjectBrokerAssessmentConfig(ModuleConfiguration config) {
 		super(config);
 	}
+
+	@Override
+	public boolean isAssessable() {
+		return true;
+	}
 	
 	@Override
 	public boolean hasScore() {

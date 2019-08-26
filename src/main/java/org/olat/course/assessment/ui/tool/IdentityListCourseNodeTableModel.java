@@ -38,7 +38,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.certificate.CertificateLight;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.ui.AssessedIdentityElementRow;
@@ -59,11 +59,11 @@ public class IdentityListCourseNodeTableModel extends DefaultFlexiTableDataModel
 	private Float minScore;
 	private Float maxScore;
 	private Float cutValue;
-	private final AssessableCourseNode courseNode;
+	private final CourseNode courseNode;
 	private List<AssessedIdentityElementRow> backups;
 	private ConcurrentMap<Long, CertificateLight> certificateMap;
 	
-	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, AssessableCourseNode courseNode, Locale locale) {
+	public IdentityListCourseNodeTableModel(FlexiTableColumnModel columnModel, CourseNode courseNode, Locale locale) {
 		super(columnModel);
 		this.locale = locale;
 		this.courseNode = courseNode;

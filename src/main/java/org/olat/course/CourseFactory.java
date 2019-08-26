@@ -109,7 +109,6 @@ import org.olat.course.editor.PublishSetInformations;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -684,7 +683,7 @@ public class CourseFactory {
 	public static void archiveCourse(Identity archiveOnBehalfOf, ICourse course, String charset, Locale locale, File exportDirectory, boolean isAdministrator, boolean... oresRights) {
 		// archive course results overview
 		List<Identity> users = ScoreAccountingHelper.loadUsers(course.getCourseEnvironment());
-		List<AssessableCourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
+		List<CourseNode> nodes = ScoreAccountingHelper.loadAssessableNodes(course.getCourseEnvironment());
 		
 		String fileName = ExportUtil.createFileNameWithTimeStamp(course.getCourseTitle(), "zip");
 		try(OutputStream out = new FileOutputStream(new File(exportDirectory, fileName));
@@ -807,6 +806,7 @@ public class CourseFactory {
 		if(theCourse!=null) {
 			//o_clusterOK by: ld (although the course is locked for editing, we still have to insure that load course is synchronized)
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(theCourse, new SyncerExecutor(){
+				@Override
 				public void execute() {
 					final PersistingCourseImpl course = getCourseEditSession(resourceableId);
 					if(course!=null && course.isReadAndWrite()) {
@@ -918,6 +918,7 @@ public class CourseFactory {
 		if(theCourse!=null) {
 			//o_clusterOK by: ld (although the course is locked for editing, we still have to insure that load course is synchronized)
 			CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(theCourse, new SyncerExecutor(){
+				@Override
 				public void execute() {
 					PersistingCourseImpl course = getCourseEditSession(resourceableId);
 					if(course!=null) {
@@ -1050,6 +1051,7 @@ public class CourseFactory {
 		 *
 		 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
 		 */
+		@Override
 		public void visit(INode node) {
 			CourseNode cNode = (CourseNode) node;
 			cNode.cleanupOnDelete(course);

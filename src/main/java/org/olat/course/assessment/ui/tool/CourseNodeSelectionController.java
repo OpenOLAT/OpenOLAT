@@ -33,11 +33,12 @@ import org.olat.core.util.tree.TreeHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.STCourseNode;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -48,6 +49,9 @@ import org.olat.repository.RepositoryEntry;
 public class CourseNodeSelectionController extends BasicController {
 	
 	private final MenuTree menuTree;
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	public CourseNodeSelectionController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry) {
 		super(ureq, wControl);
@@ -88,18 +92,24 @@ public class CourseNodeSelectionController extends BasicController {
 					Object uo = menuTree.getSelectedNode().getUserObject();
 					if(menuTree.getSelectedNode() == menuTree.getTreeModel().getRootNode()) {
 						//do nothing
-					} else if(uo instanceof AssessableCourseNode && !(uo instanceof STCourseNode)) {
-						AssessableCourseNode selectedNode = (AssessableCourseNode)uo;
-						fireEvent(ureq, new CourseNodeEvent(CourseNodeEvent.SELECT_COURSE_NODE, selectedNode.getIdent()));
+					} else {
+						CourseNode selectedNode = (CourseNode)uo;
+						AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(selectedNode);
+						if (assessmentConfig.isAssessable() && assessmentConfig.isEditable()) {
+							fireEvent(ureq, new CourseNodeEvent(CourseNodeEvent.SELECT_COURSE_NODE, selectedNode.getIdent()));
+						}
 					}
 				} else if (event.getCommand().equals(MenuTree.COMMAND_TREENODE_CLICKED)) {
 					Object uo = menuTree.getSelectedNode().getUserObject();
 					if(menuTree.getSelectedNode() == menuTree.getTreeModel().getRootNode()) {
 						CourseNode rootNode = (CourseNode)uo;
 						fireEvent(ureq, new CourseNodeEvent(CourseNodeEvent.SELECT_COURSE_NODE, rootNode.getIdent()));
-					} else if(uo instanceof AssessableCourseNode && !(uo instanceof STCourseNode)) {
-						AssessableCourseNode selectedNode = (AssessableCourseNode)uo;
-						fireEvent(ureq, new CourseNodeEvent(CourseNodeEvent.SELECT_COURSE_NODE, selectedNode.getIdent()));
+					} else {
+						CourseNode selectedNode = (CourseNode)uo;
+						AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(selectedNode);
+						if (assessmentConfig.isAssessable() && assessmentConfig.isEditable()) {
+							fireEvent(ureq, new CourseNodeEvent(CourseNodeEvent.SELECT_COURSE_NODE, selectedNode.getIdent()));
+						}
 					}
 				}
 			}

@@ -57,7 +57,6 @@ import org.olat.course.assessment.model.AssessedBusinessGroup;
 import org.olat.course.assessment.model.SearchAssessedIdentityParams;
 import org.olat.course.assessment.ui.tool.AssessedBusinessGroupTableModel.ABGCols;
 import org.olat.course.assessment.ui.tool.event.CourseNodeEvent;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -119,17 +118,14 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, ABGCols.key, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.name, "select"));
 		
-		if(courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode aNode = (AssessableCourseNode)courseNode;
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if(assessmentConfig.hasPassed()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.countPassed,
-						new ProgressRenderer(false, getTranslator())));
-			}
-			if(assessmentConfig.hasScore()) {
-				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.averageScore,
-						new ScoreCellRenderer()));
-			}
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.hasPassed()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.countPassed,
+					new ProgressRenderer(false, getTranslator())));
+		}
+		if(assessmentConfig.hasScore()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(ABGCols.averageScore,
+					new ScoreCellRenderer()));
 		}
 		
 		tableModel = new AssessedBusinessGroupTableModel(columnsModel, getLocale()); 

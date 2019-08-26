@@ -46,7 +46,7 @@ import org.olat.core.id.UserConstants;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.user.UserManager;
 
 /**
@@ -78,7 +78,7 @@ public class ValidationStepForm extends StepFormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		AssessableCourseNode courseNode = (AssessableCourseNode)getFromRunContext("courseNode");
+		CourseNode courseNode = (CourseNode)getFromRunContext("courseNode");
 		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
 		FlexiTableColumnModel tableColumnModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.identifier", Cols.identifier.ordinal()));

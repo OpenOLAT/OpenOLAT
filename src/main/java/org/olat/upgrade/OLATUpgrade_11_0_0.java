@@ -47,6 +47,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.imp.TransientIdentity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
@@ -70,8 +71,9 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.UserEfficiencyStatementLight;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
@@ -408,11 +410,12 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			
 			//check the transient qti ser
 			CourseNode rootNode = course.getRunStructure().getRootNode();
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 			new TreeVisitor(new Visitor() {
 				@Override
 				public void visit(INode node) {
-					if(node instanceof AssessableCourseNode) {
-						processNonPropertiesStates(assessableIdentities, (AssessableCourseNode)node, course, courseEntry,
+					if(node instanceof CourseNode) {
+						processNonPropertiesStates(assessableIdentities, (CourseNode)node, course, courseEntry,
 								nodeAssessmentMap, curentNodeAssessmentMap);
 					}
 				}
@@ -452,7 +455,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		return allOk;
 	}
 	
-	private void processNonPropertiesStates(List<Identity> assessableIdentities, AssessableCourseNode cNode,
+	private void processNonPropertiesStates(List<Identity> assessableIdentities, CourseNode cNode,
 			ICourse course, RepositoryEntry courseEntry, Map<AssessmentDataKey,AssessmentEntryImpl> nodeAssessmentMap,
 			Map<AssessmentDataKey,AssessmentEntryImpl> curentNodeAssessmentMap) {
 		
@@ -683,7 +686,10 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 		}
 		
 		boolean allOk = true;
-		if(node instanceof AssessableCourseNode && !(node instanceof STCourseNode)) {
+		
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
+		if(assessmentConfig.isAssessable() && !(node instanceof STCourseNode)) {
 			Identity assessedIdentity = entry.getIdentity();
 			
 			Integer attempts = assessmentManager.getNodeAttempts(node, assessedIdentity);
@@ -822,7 +828,7 @@ public class OLATUpgrade_11_0_0 extends OLATUpgrade {
 			} else if(courseNode instanceof ScormCourseNode) {
 				String username = assessedIdentity.getName();
 				Map<Date, List<CmiData>> rawDatas = ScormAssessmentManager.getInstance()
-						.visitScoDatasMultiResults(username, course.getCourseEnvironment(), (ScormCourseNode)courseNode);
+						.visitScoDatasMultiResults(username, course.getCourseEnvironment(), courseNode);
 				if(rawDatas != null && rawDatas.size() > 0) {
 					entry.setAssessmentStatus(AssessmentEntryStatus.inProgress);
 				} else {

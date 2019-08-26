@@ -28,7 +28,7 @@ import org.olat.core.gui.control.generic.wizard.PrevNextFinishConfig;
 import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
@@ -40,14 +40,14 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	
 	private final Task task;
 	private final BulkAssessmentDatas savedDatas;
-	private final AssessableCourseNode courseNode;
+	private final CourseNode courseNode;
 	private boolean hasPreviousStep = true;
 
 	public BulkAssessment_2_DatasStep(UserRequest ureq) {
 		this(ureq, null, null, null);
 	}
 	
-	public BulkAssessment_2_DatasStep(UserRequest ureq, AssessableCourseNode courseNode) {
+	public BulkAssessment_2_DatasStep(UserRequest ureq, CourseNode courseNode) {
 		this(ureq, courseNode, null, null);
 	}
 	
@@ -57,7 +57,7 @@ public class BulkAssessment_2_DatasStep extends BasicStep {
 	 * @param courseNode
 	 * @param datas
 	 */
-	public BulkAssessment_2_DatasStep(UserRequest ureq, AssessableCourseNode courseNode,
+	public BulkAssessment_2_DatasStep(UserRequest ureq, CourseNode courseNode,
 			BulkAssessmentDatas savedDatas, Task task) {
 		super(ureq);
 		this.task = task;

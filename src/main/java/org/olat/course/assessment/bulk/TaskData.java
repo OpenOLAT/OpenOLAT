@@ -21,7 +21,7 @@ package org.olat.course.assessment.bulk;
 
 import org.olat.core.commons.services.taskexecutor.Task;
 import org.olat.course.assessment.manager.BulkAssessmentTask;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
@@ -33,7 +33,7 @@ public class TaskData {
 	
 	private final Task task;
 	private final String ownerFullName;
-	private final AssessableCourseNode courseNode;
+	private final CourseNode courseNode;
 	
 	private boolean hasScore;
 	private boolean hasPassed;
@@ -41,7 +41,7 @@ public class TaskData {
 	private boolean hasReturnFiles;
 	private int numOfAssessedIds;
 	
-	public TaskData(Task task, BulkAssessmentTask runnable, AssessableCourseNode courseNode, String ownerFullName) {
+	public TaskData(Task task, BulkAssessmentTask runnable, CourseNode courseNode, String ownerFullName) {
 		this.task = task;
 		this.courseNode = courseNode;
 		this.ownerFullName = ownerFullName;
@@ -77,7 +77,7 @@ public class TaskData {
 		return numOfAssessedIds;
 	}
 
-	public AssessableCourseNode getCourseNode() {
+	public CourseNode getCourseNode() {
 		return courseNode;
 	}
 	

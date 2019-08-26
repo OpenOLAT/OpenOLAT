@@ -28,7 +28,7 @@ import org.olat.core.gui.control.generic.wizard.StepFormController;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 import org.olat.course.assessment.model.BulkAssessmentColumnSettings;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
@@ -71,14 +71,11 @@ public class BulkAssessment_2b_ChooseColumnsStep extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl wControl, StepsRunContext context, Form form) {
 		// Skip this step if it has only return files
-		AssessableCourseNode courseNode = (AssessableCourseNode)context.get("courseNode");
+		CourseNode courseNode = (CourseNode)context.get("courseNode");
 		BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
 		boolean onlyReturnFiles = (!settings.isHasScore() && !settings.isHasPassed() && !settings.isHasUserComment());
-		if (onlyReturnFiles) {
-			return new ChooseColumnsStepSkipForm(ureq, wControl, context, form);						
-		} else {
-			return new ChooseColumnsStepForm(ureq, wControl, savedColumnsSettings, context, form);			
-		}
-
+		return onlyReturnFiles
+				? new ChooseColumnsStepSkipForm(ureq, wControl, context, form)
+				: new ChooseColumnsStepForm(ureq, wControl, savedColumnsSettings, context, form);
 	}
 }

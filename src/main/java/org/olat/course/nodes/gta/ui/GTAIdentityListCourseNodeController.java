@@ -44,7 +44,6 @@ import org.olat.course.assessment.bulk.BulkAssessmentToolController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.nodes.ArchiveOptions;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
@@ -140,8 +139,8 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	private void initBulkAsssessmentTool(UserRequest ureq, FormLayoutContainer formLayout) {
 		removeAsListenerAndDispose(bulkAssessmentToolCtrl);
 		
-		bulkAssessmentToolCtrl = new BulkAssessmentToolController(ureq, getWindowControl(),
-				getCourseEnvironment(), (AssessableCourseNode)courseNode);
+		bulkAssessmentToolCtrl = new BulkAssessmentToolController(ureq, getWindowControl(), getCourseEnvironment(),
+				courseNode);
 		listenTo(bulkAssessmentToolCtrl);
 		formLayout.put("bulk.assessment", bulkAssessmentToolCtrl.getInitialComponent());	
 	}
@@ -216,12 +215,12 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 	
 	@Override
 	protected Controller createCalloutController(UserRequest ureq, Identity assessedIdentity) {
-		return new GTAIdentityListCourseNodeToolsController(ureq, getWindowControl(),
-				(AssessableCourseNode)courseNode, assessedIdentity, coachCourseEnv);
+		return new GTAIdentityListCourseNodeToolsController(ureq, getWindowControl(), courseNode, assessedIdentity,
+				coachCourseEnv);
 	}
 
 	@Override
-	protected void doSetDone(Identity assessedIdentity, AssessableCourseNode assessableCourseNode, ICourse course) {
+	protected void doSetDone(Identity assessedIdentity, CourseNode assessableCourseNode, ICourse course) {
 		super.doSetDone(assessedIdentity, assessableCourseNode, course);
 		
 		TaskList taskList = gtaManager.getTaskList(getCourseRepositoryEntry(), (GTACourseNode)assessableCourseNode);

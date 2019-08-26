@@ -79,7 +79,6 @@ import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentFeedback;
 import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.MSCourseNode;
@@ -121,8 +120,8 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 	private transient Task task;
 	private transient File unzipped;
 
-	public BulkAssessmentTask(OLATResourceable courseRes, AssessableCourseNode courseNode,
-			BulkAssessmentDatas datas, Long coachedIdentity) {
+	public BulkAssessmentTask(OLATResourceable courseRes, CourseNode courseNode, BulkAssessmentDatas datas,
+			Long coachedIdentity) {
 		this.courseRes = OresHelper.clone(courseRes);
 		this.courseNodeIdent = courseNode.getIdent();
 		this.settings = new BulkAssessmentSettings(courseNode);
@@ -199,7 +198,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		}
 		return feedbacks;
 	}
-
+	
 	private void cleanup() {
 		if(StringHelper.containsNonWhitespace(datas.getDataBackupFile())) {
 			File backupFile = VFSManager.olatRootFile(datas.getDataBackupFile());
@@ -284,26 +283,23 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 	
 	public static boolean isBulkAssessable(CourseNode courseNode) {
 		boolean bulkAssessability = false;
+		//TODO uh move to config
 		if (courseNode instanceof MSCourseNode
 				|| courseNode instanceof TACourseNode
 				|| courseNode instanceof GTACourseNode
 				|| courseNode instanceof ProjectBrokerCourseNode) {
 			// now a more fine granular check on bulk features. only show wizard for nodes that have at least one
-			BulkAssessmentSettings settings = new BulkAssessmentSettings((AssessableCourseNode)courseNode);
+			BulkAssessmentSettings settings = new BulkAssessmentSettings(courseNode);
 			if (settings.isHasPassed() || settings.isHasScore() || settings.isHasUserComment() || settings.isHasReturnFiles()) {
-				bulkAssessability = true;				
+				bulkAssessability = true;
 			}
 		}
 		return bulkAssessability;
 	}
 
-	private AssessableCourseNode getCourseNode() {
+	private CourseNode getCourseNode() {
 		ICourse course = CourseFactory.loadCourse(courseRes);
-		CourseNode node = course.getRunStructure().getNode(courseNodeIdent);
-		if(node instanceof AssessableCourseNode) {
-			return (AssessableCourseNode)node;
-		}
-		return null;
+		return course.getRunStructure().getNode(courseNodeIdent);
 	}
 	
 	private void doProcess(List<BulkAssessmentFeedback> feedbacks) {
@@ -312,7 +308,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		final CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		final Identity coachIdentity = securityManager.loadIdentityByKey(coachedIdentity);
 		final ICourse course = CourseFactory.loadCourse(courseRes);
-		final AssessableCourseNode courseNode = getCourseNode();
+		final CourseNode courseNode = getCourseNode();
 		final AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
 		final boolean hasUserComment = assessmentConfig.hasComment();
@@ -481,7 +477,7 @@ public class BulkAssessmentTask implements LongRunnable, TaskAwareRunnable, Sequ
 		}
 	}
 	
-	private void processReturnFile(AssessableCourseNode courseNode, BulkAssessmentRow row, UserCourseEnvironment uce, File assessedFolder) {
+	private void processReturnFile(CourseNode courseNode, BulkAssessmentRow row, UserCourseEnvironment uce, File assessedFolder) {
 		String assessedId = row.getAssessedId();
 		Identity identity = uce.getIdentityEnvironment().getIdentity();
 		VFSContainer returnBox = getReturnBox(uce, courseNode, identity);

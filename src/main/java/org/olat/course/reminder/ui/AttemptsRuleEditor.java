@@ -37,7 +37,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.QTICourseNode;
 import org.olat.course.reminder.rule.AttemptsRuleSPI;
@@ -146,12 +145,10 @@ public class AttemptsRuleEditor extends RuleEditorFragment {
 	}
 	
 	private void searchAttemptableNodes(CourseNode courseNode, List<CourseNode> nodes) {
-		if (courseNode instanceof AssessableCourseNode) {
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if (assessmentConfig.hasAttempts()) {
-				nodes.add(courseNode);
-			}
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (assessmentConfig.hasAttempts()) {
+			nodes.add(courseNode);
 		} else if (courseNode instanceof QTICourseNode) {
 			QTICourseNode assessableCourseNode = (QTICourseNode) courseNode;
 			if (assessableCourseNode.hasAttemptsConfigured()) {

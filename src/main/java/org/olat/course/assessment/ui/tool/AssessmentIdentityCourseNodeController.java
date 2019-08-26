@@ -48,7 +48,6 @@ import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.OpenSubDetailsEvent;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.MSCourseNode;
@@ -118,9 +117,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			alreadyLockedDialogController = DialogBoxUIFactory.createResourceLockedMessage(ureq, wControl, lockEntry, "assessmentLock", getTranslator());
 			listenTo(alreadyLockedDialogController);
 			alreadyLockedDialogController.activate();
-		} else if(courseNode instanceof AssessableCourseNode) {
-			AssessableCourseNode aCourseNode = (AssessableCourseNode)courseNode;
-			
+		} else {
 			identityInfosCtrl = new AssessedIdentityLargeInfosController(ureq, wControl, assessedIdentity, course);
 			listenTo(identityInfosCtrl);
 			identityAssessmentVC.put("identityInfos", identityInfosCtrl.getInitialComponent());
@@ -134,7 +131,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 				identityAssessmentVC.put("details", detailsEditController.getInitialComponent());
 			}
 			
-			assessmentForm = new AssessmentForm(ureq, wControl, aCourseNode, coachCourseEnv, assessedUserCourseEnvironment);
+			assessmentForm = new AssessmentForm(ureq, wControl, courseNode, coachCourseEnv, assessedUserCourseEnvironment);
 			listenTo(assessmentForm);
 			identityAssessmentVC.put("assessmentForm", assessmentForm.getInitialComponent());
 			

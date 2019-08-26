@@ -45,7 +45,7 @@ import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.TaskList;
@@ -130,7 +130,7 @@ public class GroupBulkDownloadResource implements MediaResource {
 						.getMembers(groups, GroupRoles.participant.name());
 				String courseTitle = course.getCourseTitle();
 				String fileName = ExportUtil.createFileNameWithTimeStamp(courseTitle, "xlsx");
-				List<AssessableCourseNode> nodes = Collections.singletonList(courseNode);
+				List<CourseNode> nodes = Collections.singletonList(courseNode);
 				try(OutputStream out = new ShieldOutputStream(zout)) {
 					zout.putNextEntry(new ZipEntry(fileName));
 					ScoreAccountingHelper.createCourseResultsOverviewXMLTable(assessableIdentities, nodes, course, locale, out);

@@ -51,7 +51,6 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.assessment.model.AssessmentNodesLastModified;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -159,25 +158,20 @@ public class AssessmentHelper {
 	 * @return
 	 */
 	public static boolean checkIfNodeIsAssessable(CourseNode node) {
-		//TODO uh refactoring
-		if (node instanceof AssessableCourseNode) {
-			if (node instanceof STCourseNode) {
-				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
-				if (assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
-					return true;
-				}
-			} else if (node instanceof ScormCourseNode) {
-				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
-				if (assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
-					return true;
-				}
-			} else if (node instanceof ProjectBrokerCourseNode) {
-				return false;//no assessment-tool in V1.0 return always false
-			} else {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(node);
+		if (node instanceof STCourseNode) {
+			if (assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
 				return true;
 			}
+		} else if (node instanceof ScormCourseNode) {
+			if (assessmentConfig.hasPassed() || assessmentConfig.hasScore()) {
+				return true;
+			}
+		} else if (node instanceof ProjectBrokerCourseNode) {
+			return false;//no assessment-tool in V1.0 return always false
+		} else if (assessmentConfig.isAssessable()) {
+			return true;
 		}
 		return false;
 	}
@@ -334,20 +328,14 @@ public class AssessmentHelper {
 	}
 	
 	private static boolean isAssessable(CourseNode courseNode) {
-		boolean assessable = false;
-		if (courseNode instanceof AssessableCourseNode && !(courseNode instanceof ProjectBrokerCourseNode)) {
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if (assessmentConfig.hasEditableDetails()
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		return assessmentConfig.isAssessable() &&
+				(  assessmentConfig.hasEditableDetails()
 				|| assessmentConfig.hasAttempts()
 				|| assessmentConfig.hasScore()
 				|| assessmentConfig.hasPassed()
-				|| assessmentConfig.hasComment()) {
-
-				assessable = true;
-			}
-		}
-		return assessable;
+				|| assessmentConfig.hasComment());
 	}
 	
 
@@ -426,15 +414,14 @@ public class AssessmentHelper {
 		// - it is of an assessable course node type
 		boolean hasDisplayableValuesConfigured = false;
 		boolean hasDisplayableUserValues = false;
-		if (numOfChildren > 0 || courseNode instanceof AssessableCourseNode) {
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (numOfChildren > 0 || assessmentConfig.isAssessable()) {
 			if(courseNode instanceof ProjectBrokerCourseNode) {
 				//ProjectBroker : no assessment-tool in V1.0 , remove project broker completely form assessment-tool gui
 				assessmentNodeData.setSelectable(false);
-			} else if (courseNode instanceof AssessableCourseNode) {
-				AssessableCourseNode assessableCourseNode = (AssessableCourseNode) courseNode;
-				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(assessableCourseNode);
+			} else if (assessmentConfig.isAssessable()) {
+				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(courseNode);
 				assessmentNodeData.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
 				assessmentNodeData.setNumOfAssessmentDocs(scoreEvaluation.getNumOfAssessmentDocs());
 				assessmentNodeData.setUserVisibility(scoreEvaluation.getUserVisible());
@@ -469,7 +456,7 @@ public class AssessmentHelper {
 							assessmentNodeData.setScore(score);
 							hasDisplayableUserValues = true;
 						}
-						if(!(assessableCourseNode instanceof STCourseNode)) {
+						if(!(courseNode instanceof STCourseNode)) {
 							assessmentNodeData.setMaxScore(assessmentConfig.getMaxScore());
 							assessmentNodeData.setMinScore(assessmentConfig.getMinScore());
 						}
@@ -498,7 +485,7 @@ public class AssessmentHelper {
 				  // comments are invisible in the table but if configured the node must be in the list
 					// for the efficiency statement this can be ignored, this is the case when discardComments is true
 					hasDisplayableValuesConfigured = true;
-					if (courseAssessmentService.getUserComment(assessableCourseNode, userCourseEnv) != null) {
+					if (courseAssessmentService.getUserComment(courseNode, userCourseEnv) != null) {
 						hasDisplayableUserValues = true;
 					}
 				}

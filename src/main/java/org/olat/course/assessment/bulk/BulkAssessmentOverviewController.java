@@ -60,7 +60,6 @@ import org.olat.course.assessment.bulk.TaskDataModel.Cols;
 import org.olat.course.assessment.manager.BulkAssessmentTask;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentFeedback;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -138,7 +137,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 				fullName = userManager.getUserDisplayName(task.getCreator());
 			}
 			BulkAssessmentTask runnable = taskManager.getPersistedRunnableTask(task, BulkAssessmentTask.class);
-			AssessableCourseNode courseNode = (AssessableCourseNode)structure.getNode(runnable.getCourseNodeIdent());
+			CourseNode courseNode = structure.getNode(runnable.getCourseNodeIdent());
 			taskDatas.add(new TaskData(task, runnable, courseNode, fullName));
 		}
 		taskModel.setObjects(taskDatas);
@@ -247,9 +246,9 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	private void doNewBulkAssessment(UserRequest ureq) {
 		removeAsListenerAndDispose(bulkAssessmentCtrl);
 		
-		List<AssessableCourseNode> nodes = new ArrayList<>();
+		List<CourseNode> nodes = new ArrayList<>();
 		ICourse course = CourseFactory.loadCourse(courseEntry);
-		collectBulkAssessableCourseNode(course.getRunStructure().getRootNode(), nodes);
+		collectBulkCourseNode(course.getRunStructure().getRootNode(), nodes);
 
 		Step start;
 		if(nodes.size() > 1) {
@@ -265,7 +264,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			@Override
 			public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 				Date scheduledDate = (Date)runContext.get("scheduledDate");
-				AssessableCourseNode courseNode = (AssessableCourseNode)runContext.get("courseNode");
+				CourseNode courseNode = (CourseNode)runContext.get("courseNode");
 				BulkAssessmentDatas datas = (BulkAssessmentDatas)runContext.get("datas");
 				Feedback feedback = doBulkAssessment(courseNode, scheduledDate, datas);
 				runContext.put("feedback", feedback);
@@ -285,7 +284,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 			taskManager.returnTaskAfterEdition(editedTask, null);
 		}
 
-		AssessableCourseNode courseNode = data.getCourseNode();
+		CourseNode courseNode = data.getCourseNode();
 		final Task editableTask = taskManager.pickTaskForEdition(data.getTask());
 		editedTask = editableTask;
 		if(editableTask == null) {
@@ -300,7 +299,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 				public Step execute(UserRequest uureq, WindowControl wControl, StepsRunContext runContext) {
 					Task task = (Task)runContext.get("task");
 					Date scheduledDate = (Date)runContext.get("scheduledDate");
-					AssessableCourseNode assessableCourseNode = (AssessableCourseNode)runContext.get("courseNode");
+					CourseNode assessableCourseNode = (CourseNode)runContext.get("courseNode");
 					BulkAssessmentDatas bulkDatas = (BulkAssessmentDatas)runContext.get("datas");
 					Feedback feedback = doUpdateBulkAssessment(task, assessableCourseNode, scheduledDate, bulkDatas);
 					runContext.put("feedback", feedback);
@@ -325,17 +324,17 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		}
 	}
 	
-	private void collectBulkAssessableCourseNode(CourseNode courseNode, List<AssessableCourseNode> nodes) {
+	private void collectBulkCourseNode(CourseNode courseNode, List<CourseNode> nodes) {
 		for (int i=courseNode.getChildCount(); i-->0; ) {
-			collectBulkAssessableCourseNode((CourseNode)courseNode.getChildAt(i), nodes);
+			collectBulkCourseNode((CourseNode)courseNode.getChildAt(i), nodes);
 		}
 		
 		if(BulkAssessmentTask.isBulkAssessable(courseNode)) {
-			nodes.add((AssessableCourseNode)courseNode);
+			nodes.add(courseNode);
 		}
 	}
 	
-	private Feedback doUpdateBulkAssessment(Task task, AssessableCourseNode node, Date scheduledDate, BulkAssessmentDatas datas) {
+	private Feedback doUpdateBulkAssessment(Task task, CourseNode node, Date scheduledDate, BulkAssessmentDatas datas) {
 		BulkAssessmentTask runnable = new BulkAssessmentTask(courseEntry.getOlatResource(), node, datas, getIdentity().getKey());
 		Feedback feedback;
 		if(scheduledDate == null) {
@@ -351,7 +350,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 		return feedback;
 	}
 	
-	private Feedback doBulkAssessment(AssessableCourseNode node, Date scheduledDate, BulkAssessmentDatas datas) {
+	private Feedback doBulkAssessment(CourseNode node, Date scheduledDate, BulkAssessmentDatas datas) {
 		BulkAssessmentTask task = new BulkAssessmentTask(courseEntry.getOlatResource(), node, datas, getIdentity().getKey());
 		Feedback feedback;
 		if(scheduledDate == null) {

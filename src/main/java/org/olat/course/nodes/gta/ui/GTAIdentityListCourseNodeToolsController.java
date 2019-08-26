@@ -23,7 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.ui.tool.tools.AbstractToolsController;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.Task;
@@ -45,7 +45,7 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 	private GTAManager gtaManager;
 	
 	public GTAIdentityListCourseNodeToolsController(UserRequest ureq, WindowControl wControl,
-			AssessableCourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
+			CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl, courseNode, assessedIdentity, coachCourseEnv);
 		
 		initTools();

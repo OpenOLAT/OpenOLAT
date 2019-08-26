@@ -37,6 +37,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationHelper;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -61,9 +62,10 @@ import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
@@ -250,8 +252,9 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	 * <code>AssessableCourseNode</code>
 	 * </ul>
 	 */
-	private List<AssessableCourseNode> getCourseTestNodes(ICourse course) {
-		List<AssessableCourseNode> assessableNodes = new ArrayList<>();
+	//TODO uh CourseNodeSelector as well
+	private List<CourseNode> getCourseTestNodes(ICourse course) {
+		List<CourseNode> assessableNodes = new ArrayList<>();
 
 		Structure courseStruct = course.getRunStructure();
 		CourseNode rootNode = courseStruct.getRootNode();
@@ -272,10 +275,13 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	 * 
 	 * @see #getCourseTestNodes(ICourse)
 	 */
-	private void getCourseTestNodes(INode node, List<AssessableCourseNode> result) {
+	private void getCourseTestNodes(INode node, List<CourseNode> result) {
 		if (node != null) {
-			if (node instanceof AssessableCourseNode && !(node instanceof STCourseNode)) {
-				result.add((AssessableCourseNode) node);
+			CourseNode courseNode = (CourseNode)node;
+			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+			if (assessmentConfig.isAssessable() && !(node instanceof STCourseNode)) {
+				result.add(courseNode);
 			}
 
 			for (int i = 0; i < node.getChildCount(); i++) {
@@ -322,9 +328,9 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 						coachedUsers.addAll(coachedIdentites);
 					}
 
-					List<AssessableCourseNode> testNodes = getCourseTestNodes(course);
+					List<CourseNode> testNodes = getCourseTestNodes(course);
 					Translator translator = Util.createPackageTranslator(AssessmentManager.class, locale);
-					for (AssessableCourseNode test:testNodes) {
+					for (CourseNode test:testNodes) {
 						List<AssessmentEntry> assessments = courseNodeAssessmentDao.loadAssessmentEntryBySubIdent(cgm.getCourseEntry(), test.getIdent());
 						for(AssessmentEntry assessment:assessments) {
 							Date modDate = assessment.getLastModified();

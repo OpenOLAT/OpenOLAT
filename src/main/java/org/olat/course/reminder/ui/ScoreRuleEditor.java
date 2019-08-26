@@ -37,7 +37,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.reminder.rule.ScoreRuleSPI;
 import org.olat.modules.reminder.ReminderRule;
@@ -144,12 +143,10 @@ public class ScoreRuleEditor extends RuleEditorFragment {
 	}
 	
 	private void searchScoreableNodes(CourseNode courseNode, List<CourseNode> nodes) {
-		if (courseNode instanceof AssessableCourseNode) {
-			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-			if (assessmentConfig.hasScore()) {
-				nodes.add(courseNode);
-			}
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if (assessmentConfig.hasScore()) {
+			nodes.add(courseNode);
 		}
 		
 		for(int i=0; i<courseNode.getChildCount(); i++) {

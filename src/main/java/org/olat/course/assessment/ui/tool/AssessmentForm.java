@@ -61,7 +61,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -102,7 +102,7 @@ public class AssessmentForm extends FormBasicController {
 
 	private final UserCourseEnvironment coachCourseEnv;
 	private final UserCourseEnvironment assessedUserCourseEnv;
-	private final AssessableCourseNode assessableCourseNode;
+	private final CourseNode courseNode;
 	
 	private int counter = 0;
 
@@ -118,16 +118,16 @@ public class AssessmentForm extends FormBasicController {
 	 * Constructor for an assessment detail form. The form will be configured according
 	 * to the assessable course node parameters
 	 * @param name The form name
-	 * @param assessableCourseNode The course node
+	 * @param courseNode The course node
 	 * @param assessedIdentityWrapper The wrapped identity
 	 * @param trans The package translator
 	 */
-	public AssessmentForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode assessableCourseNode,
+	public AssessmentForm(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment coachCourseEnv, UserCourseEnvironment assessedUserCourseEnv) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(AssessmentModule.class, getLocale(), getTranslator()));
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(assessableCourseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		hasAttempts = assessmentConfig.hasAttempts();
 		hasScore = assessmentConfig.hasScore();
 		hasPassed = assessmentConfig.hasPassed();
@@ -136,7 +136,7 @@ public class AssessmentForm extends FormBasicController {
 		
 		this.coachCourseEnv = coachCourseEnv;
 		this.assessedUserCourseEnv = assessedUserCourseEnv;
-		this.assessableCourseNode = assessableCourseNode;
+		this.courseNode = courseNode;
 
 		initForm(ureq);
 	}
@@ -245,7 +245,7 @@ public class AssessmentForm extends FormBasicController {
 			fireEvent(ureq, new AssessmentFormEvent(AssessmentFormEvent.ASSESSMENT_REOPEN, false));
 		} else if(uploadDocsEl == source) {
 			if(uploadDocsEl.getUploadFile() != null && StringHelper.containsNonWhitespace(uploadDocsEl.getUploadFileName())) {
-				courseAssessmentService.addIndividualAssessmentDocument(assessableCourseNode,
+				courseAssessmentService.addIndividualAssessmentDocument(courseNode,
 						uploadDocsEl.getUploadFile(), uploadDocsEl.getUploadFileName(), assessedUserCourseEnv,
 						getIdentity());
 				reloadAssessmentDocs();
@@ -331,12 +331,12 @@ public class AssessmentForm extends FormBasicController {
 	}
 	
 	private void doReopen() {
-		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
+		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		if (scoreEval != null) {
 			ScoreEvaluation reopenedEval = new ScoreEvaluation(scoreEval.getScore(), scoreEval.getPassed(),
 					AssessmentEntryStatus.inReview, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
 					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
-			courseAssessmentService.updateScoreEvaluation(assessableCourseNode, reopenedEval, assessedUserCourseEnv,
+			courseAssessmentService.updateScoreEvaluation(courseNode, reopenedEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 			updateStatus(reopenedEval);
 		}
@@ -351,7 +351,7 @@ public class AssessmentForm extends FormBasicController {
 	}
 	
 	private void doDeleteAssessmentDocument(File document) {
-		courseAssessmentService.removeIndividualAssessmentDocument(assessableCourseNode, document,
+		courseAssessmentService.removeIndividualAssessmentDocument(courseNode, document,
 				assessedUserCourseEnv, getIdentity());
 	}
 	
@@ -360,7 +360,7 @@ public class AssessmentForm extends FormBasicController {
 		Boolean updatedPassed = null;
 
 		if (isHasAttempts() && isAttemptsDirty()) {
-			courseAssessmentService.updateAttempts(assessableCourseNode, new Integer(getAttempts()),
+			courseAssessmentService.updateAttempts(courseNode, new Integer(getAttempts()),
 					assessedUserCourseEnv, getIdentity(), Role.coach);
 		}
 
@@ -392,17 +392,17 @@ public class AssessmentForm extends FormBasicController {
 		} else {
 			scoreEval = new ScoreEvaluation(updatedScore, updatedPassed, null, visibility, null, null, null, null);
 		}
-		courseAssessmentService.updateScoreEvaluation(assessableCourseNode, scoreEval, assessedUserCourseEnv,
+		courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 
 		if (isHasComment() && isUserCommentDirty()) {
 			String newComment = getUserComment().getValue();
-			courseAssessmentService.updatedUserComment(assessableCourseNode, newComment, assessedUserCourseEnv, getIdentity());
+			courseAssessmentService.updatedUserComment(courseNode, newComment, assessedUserCourseEnv, getIdentity());
 		}
 
 		if (isCoachCommentDirty()) {
 			String newCoachComment = getCoachComment().getValue();
-			courseAssessmentService.updateCoachComment(assessableCourseNode, newCoachComment, assessedUserCourseEnv);
+			courseAssessmentService.updateCoachComment(courseNode, newCoachComment, assessedUserCourseEnv);
 		}
 	}
 	
@@ -413,11 +413,11 @@ public class AssessmentForm extends FormBasicController {
 	public void reloadData() {
 		ScoreAccounting scoreAccounting = assessedUserCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
-		ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(assessableCourseNode);
+		ScoreEvaluation scoreEval = scoreAccounting.evalCourseNode(courseNode);
 		if (scoreEval == null) scoreEval = new ScoreEvaluation(null, null);
 		
 		if (hasAttempts) {
-			attemptsValue = courseAssessmentService.getAttempts(assessableCourseNode, assessedUserCourseEnv);
+			attemptsValue = courseAssessmentService.getAttempts(courseNode, assessedUserCourseEnv);
 			attempts.setIntValue(attemptsValue == null ? 0 : attemptsValue.intValue());
 		}
 		
@@ -436,7 +436,7 @@ public class AssessmentForm extends FormBasicController {
 		}
 		
 		if(hasComment) {
-			userCommentValue = courseAssessmentService.getUserComment(assessableCourseNode, assessedUserCourseEnv);
+			userCommentValue = courseAssessmentService.getUserComment(courseNode, assessedUserCourseEnv);
 			userComment.setValue(userCommentValue);
 		}
 		
@@ -447,7 +447,7 @@ public class AssessmentForm extends FormBasicController {
 	private void reloadAssessmentDocs() {
 		if(docsLayoutCont == null) return;
 		
-		List<File> documents = courseAssessmentService.getIndividualAssessmentDocuments(assessableCourseNode,
+		List<File> documents = courseAssessmentService.getIndividualAssessmentDocuments(courseNode,
 				assessedUserCourseEnv);
 		List<DocumentWrapper> wrappers = new ArrayList<>(documents.size());
 		for (File document : documents) {
@@ -508,15 +508,15 @@ public class AssessmentForm extends FormBasicController {
 		setFormTitle("form.title", null);
 		formLayout.setElementCssClass("o_sel_assessment_form");
 		
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(assessableCourseNode);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		
-		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(assessableCourseNode);
+		ScoreEvaluation scoreEval = assessedUserCourseEnv.getScoreAccounting().evalCourseNode(courseNode);
 		if (scoreEval == null) {
 			scoreEval = ScoreEvaluation.EMPTY_EVALUATION;
 		}
 
 		if (hasAttempts) {
-			attemptsValue = courseAssessmentService.getAttempts(assessableCourseNode, assessedUserCourseEnv);
+			attemptsValue = courseAssessmentService.getAttempts(courseNode, assessedUserCourseEnv);
 			if(attemptsValue == null) {
 				attemptsValue = new Integer(0);
 			}
@@ -578,7 +578,7 @@ public class AssessmentForm extends FormBasicController {
 		}
 
 		if (hasComment) {
-			userCommentValue = courseAssessmentService.getUserComment(assessableCourseNode, assessedUserCourseEnv);
+			userCommentValue = courseAssessmentService.getUserComment(courseNode, assessedUserCourseEnv);
 			userComment = uifactory.addTextAreaElement("usercomment", "form.usercomment", 2500, 5, 40, true, false, userCommentValue, formLayout);
 			userComment.setNotLongerThanCheck(2500, "input.toolong");
 		}
@@ -595,7 +595,7 @@ public class AssessmentForm extends FormBasicController {
 			uploadDocsEl.addActionListener(FormEvent.ONCHANGE);
 		}
 		
-		coachCommentValue = courseAssessmentService.getCoachComment(assessableCourseNode, assessedUserCourseEnv);
+		coachCommentValue = courseAssessmentService.getCoachComment(courseNode, assessedUserCourseEnv);
 		coachComment = uifactory.addTextAreaElement("coachcomment", "form.coachcomment", 2500, 5, 40, true, false, coachCommentValue, formLayout);
 		coachComment.setNotLongerThanCheck(2500, "input.toolong");
 		

@@ -39,7 +39,7 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.event.ShowDetailsEvent;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -76,14 +76,14 @@ public abstract class AbstractToolsController extends BasicController {
 	protected final Identity assessedIdentity;
 	private final RepositoryEntry courseEntry;
 	private final AssessmentEvaluation scoreEval;
-	protected final AssessableCourseNode courseNode;
+	protected final CourseNode courseNode;
 	protected final UserCourseEnvironment assessedUserCourseEnv;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
-	public AbstractToolsController(UserRequest ureq, WindowControl wControl,
-			AssessableCourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
+	public AbstractToolsController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			Identity assessedIdentity, UserCourseEnvironment coachCourseEnv) {
 		super(ureq, wControl);
 		
 		setTranslator(Util.createPackageTranslator(IdentityListCourseNodeController.class, getLocale(), getTranslator()));

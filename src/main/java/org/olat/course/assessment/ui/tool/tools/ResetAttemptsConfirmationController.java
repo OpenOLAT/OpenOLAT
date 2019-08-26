@@ -30,7 +30,7 @@ import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
@@ -46,13 +46,13 @@ public class ResetAttemptsConfirmationController extends FormBasicController {
 	
 	private final Identity assessedIdentity;
 	private final CourseEnvironment courseEnv;
-	private final AssessableCourseNode courseNode;
+	private final CourseNode courseNode;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
 	
 	public ResetAttemptsConfirmationController(UserRequest ureq, WindowControl wControl,
-			CourseEnvironment courseEnv, AssessableCourseNode courseNode, Identity assessedIdentity) {
+			CourseEnvironment courseEnv, CourseNode courseNode, Identity assessedIdentity) {
 		super(ureq, wControl, "reset_attempts", Util.createPackageTranslator(IdentityListCourseNodeController.class, ureq.getLocale()));
 		this.courseEnv = courseEnv;
 		this.courseNode = courseNode;

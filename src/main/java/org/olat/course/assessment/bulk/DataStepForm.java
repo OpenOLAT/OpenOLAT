@@ -61,7 +61,7 @@ import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentRow;
 import org.olat.course.assessment.model.BulkAssessmentSettings;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
@@ -87,18 +87,18 @@ public class DataStepForm extends StepFormBasicController {
 
 	private VFSLeaf targetArchive;
 	private BulkAssessmentDatas savedDatas;
-	private final AssessableCourseNode courseNode;
+	private final CourseNode courseNode;
 	private VFSContainer bulkAssessmentTmpDir;
 
 	public DataStepForm(UserRequest ureq, WindowControl wControl, StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 
-		courseNode = (AssessableCourseNode)getFromRunContext("courseNode");
+		courseNode = (CourseNode)getFromRunContext("courseNode");
 
 		initForm(ureq);
 	}
 
-	public DataStepForm(UserRequest ureq, WindowControl wControl, AssessableCourseNode courseNode, BulkAssessmentDatas savedDatas,
+	public DataStepForm(UserRequest ureq, WindowControl wControl, CourseNode courseNode, BulkAssessmentDatas savedDatas,
 			StepsRunContext runContext, Form rootForm) {
 		super(ureq, wControl, rootForm, runContext, LAYOUT_VERTICAL, null);
 

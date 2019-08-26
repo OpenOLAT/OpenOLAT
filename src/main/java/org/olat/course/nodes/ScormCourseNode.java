@@ -76,7 +76,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
  * @author Felix Jost
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class ScormCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode {
+public class ScormCourseNode extends AbstractAccessableCourseNode implements CourseNode {
 	
 	private static final Logger log = Tracing.createLoggerFor(ScormCourseNode.class);
 	private static final long serialVersionUID = 2970594874787761801L;

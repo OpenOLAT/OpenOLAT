@@ -45,6 +45,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.FileUtils;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.assessment.ui.tool.AssessmentIdentiesPrintController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
@@ -103,7 +104,7 @@ public class STIdentityListCourseNodeController extends IdentityListCourseNodeCo
 	}
 
 	@Override
-	protected void initCalloutColumns(FlexiTableColumnModel columnsModel) {
+	protected void initCalloutColumns(FlexiTableColumnModel columnsModel, AssessmentConfig assessmentConfig) {
 		ICourse course = CourseFactory.loadCourse(getCourseRepositoryEntry());
 		if(course.getCourseConfig().isCertificateEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.certificate, new DownloadCertificateCellRenderer(getLocale())));

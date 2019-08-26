@@ -44,7 +44,6 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.groupsandrights.CourseGroupManager;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -69,7 +68,7 @@ public class ScoreAccounting {
 
 	private boolean error;
 	private final UserCourseEnvironment userCourseEnvironment;
-	private final Map<AssessableCourseNode, AssessmentEvaluation> cachedScoreEvals = new HashMap<>();
+	private final Map<CourseNode, AssessmentEvaluation> cachedScoreEvals = new HashMap<>();
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -108,11 +107,8 @@ public class ScoreAccounting {
 		for(AssessmentEntry entry:entries) {
 			String nodeIdent = entry.getSubIdent();
 			CourseNode courseNode = userCourseEnvironment.getCourseEnvironment().getRunStructure().getNode(nodeIdent);
-			if(courseNode instanceof AssessableCourseNode) {
-				AssessableCourseNode acn = (AssessableCourseNode)courseNode;
-				AssessmentEvaluation se = courseAssessmentService.toAssessmentEvaluation(entry, courseNode);
-				cachedScoreEvals.put(acn, se);
-			}
+			AssessmentEvaluation se = courseAssessmentService.toAssessmentEvaluation(entry, courseNode);
+			cachedScoreEvals.put(courseNode, se);
 		}
 		
 		TreeVisitor tv = new TreeVisitor(visitor, root, true); // true=depth first
@@ -148,13 +144,10 @@ public class ScoreAccounting {
 
 		@Override
 		public void visit(INode node) {
-			CourseNode cn = (CourseNode) node;
-			if (cn instanceof AssessableCourseNode) {
-				evalCourseNode((AssessableCourseNode)cn);
-			}
+			evalCourseNode((CourseNode)node);
 		}
 		
-		public AssessmentEvaluation evalCourseNode(AssessableCourseNode cn) {
+		public AssessmentEvaluation evalCourseNode(CourseNode cn) {
 			// make sure we have no circular calculations
 			recursionLevel++;
 			AssessmentEvaluation se = null;
@@ -372,7 +365,7 @@ public class ScoreAccounting {
 	 * @param cn
 	 * @return ScoreEvaluation
 	 */
-	public AssessmentEvaluation evalCourseNode(AssessableCourseNode cn) {
+	public AssessmentEvaluation evalCourseNode(CourseNode cn) {
 		AssessmentEvaluation se = cachedScoreEvals.get(cn);
 		if (se == null) { // result of this node has not been calculated yet, do it
 			se = getScoreEvaluation(cn);
@@ -393,9 +386,8 @@ public class ScoreAccounting {
 		CourseNode foundNode = findChildByID(childId);
 		
 		Float score = null;
-		if (foundNode instanceof AssessableCourseNode) {
-			AssessableCourseNode acn = (AssessableCourseNode) foundNode;
-			ScoreEvaluation se = evalCourseNode(acn);
+		if (foundNode != null) {
+			ScoreEvaluation se = evalCourseNode(foundNode);
 			if(se != null) {
 				// the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
 				if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
@@ -429,9 +421,8 @@ public class ScoreAccounting {
 		for (String childId : childIds) {
 			CourseNode foundNode = findChildByID(childId);
 			Float score = null;
-			if (foundNode instanceof AssessableCourseNode) {
-				AssessableCourseNode acn = (AssessableCourseNode) foundNode;
-				ScoreEvaluation se = evalCourseNode(acn);
+			if (foundNode != null) {
+				ScoreEvaluation se = evalCourseNode(foundNode);
 				if(se != null) {
 					// the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
 					if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
@@ -463,14 +454,9 @@ public class ScoreAccounting {
 			error = true;
 			return Boolean.FALSE;
 		}
-		if (!(foundNode instanceof AssessableCourseNode)) {
-			error = true;
-			return Boolean.FALSE;
-		}
-		AssessableCourseNode acn = (AssessableCourseNode) foundNode;
-		ScoreEvaluation se = evalCourseNode(acn);
+		ScoreEvaluation se = evalCourseNode(foundNode);
 		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-			log.error("could not evaluate node '{}' ({},{})", acn.getShortTitle(), acn.getClass().getName(), childId);
+			log.error("could not evaluate node '{}' ({},{})", foundNode.getShortTitle(), foundNode.getClass().getName(), childId);
 			return Boolean.FALSE;
 		}
 		// check if the results are visible
@@ -490,14 +476,9 @@ public class ScoreAccounting {
 			error = true;
 			return Boolean.FALSE;
 		}
-		if (!(foundNode instanceof AssessableCourseNode)) {
-			error = true;
-			return Boolean.FALSE;
-		}
-		AssessableCourseNode acn = (AssessableCourseNode) foundNode;
-		ScoreEvaluation se = evalCourseNode(acn);
+		ScoreEvaluation se = evalCourseNode(foundNode);
 		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-			log.error("could not evaluate node '{}' ({},{})", acn.getShortTitle(), acn.getClass().getName(), childId);
+			log.error("could not evaluate node '{}' ({},{})", foundNode.getShortTitle(), foundNode.getClass().getName(), childId);
 			return Boolean.FALSE;
 		}
 		// check if the results are visible

@@ -40,7 +40,7 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.course.assessment.manager.BulkAssessmentTask;
 import org.olat.course.assessment.model.BulkAssessmentDatas;
 import org.olat.course.assessment.model.BulkAssessmentFeedback;
-import org.olat.course.nodes.AssessableCourseNode;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.resource.OLATResource;
 
@@ -52,14 +52,14 @@ import org.olat.resource.OLATResource;
 public class BulkAssessmentToolController extends BasicController {
 	
 	private final Link startButton;
-	private final AssessableCourseNode courseNode;
+	private final CourseNode courseNode;
 
 	private DialogBoxController errorCtrl;
 	private StepsMainRunController bulkAssessmentCtrl;
 	private final TaskExecutorManager taskManager;
 	private final OLATResource courseOres;
 	
-	public BulkAssessmentToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, AssessableCourseNode courseNode) {
+	public BulkAssessmentToolController(UserRequest ureq, WindowControl wControl, CourseEnvironment courseEnv, CourseNode courseNode) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		taskManager = CoreSpringFactory.getImpl(TaskExecutorManager.class);

@@ -122,7 +122,7 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
  * @author Mike Stock Comment:
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class IQTESTCourseNode extends AbstractAccessableCourseNode implements AssessableCourseNode, QTICourseNode {
+public class IQTESTCourseNode extends AbstractAccessableCourseNode implements CourseNode, QTICourseNode {
 	private static final long serialVersionUID = 5806292895738005387L;
 	private static final Logger log = Tracing.createLoggerFor(IQTESTCourseNode.class);
 	private static final String translatorStr = Util.getPackageName(IQEditController.class);

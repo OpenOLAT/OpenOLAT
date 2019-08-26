@@ -37,7 +37,6 @@ import org.olat.course.condition.operators.LowerThanEqualsOperator;
 import org.olat.course.condition.operators.LowerThanOperator;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.AdobeConnectCourseNode;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.BlogCourseNode;
@@ -109,7 +108,7 @@ public class CourseXStreamAliases {
 		readXstream.alias("CourseEditorTreeModel", CourseEditorTreeModel.class);
 		readXstream.alias("CourseEditorTreeNode", CourseEditorTreeNode.class);
 		readXstream.alias("Structure", Structure.class);
-		readXstream.alias("AssessableCourseNode", AssessableCourseNode.class);
+		readXstream.alias("AssessableCourseNode", CourseNode.class);
 		readXstream.alias("BasicLTICourseNode", BasicLTICourseNode.class);
 		readXstream.alias("BCCourseNode", BCCourseNode.class);
 		readXstream.alias("BlogCourseNode", BlogCourseNode.class);

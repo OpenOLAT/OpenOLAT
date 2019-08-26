@@ -36,12 +36,12 @@ import java.util.Map;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -57,13 +57,14 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentLoggingAction;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
-import org.olat.course.nodes.AssessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -583,10 +584,11 @@ public class NewCachePersistingAssessmentManager {
 			@Override
 			public Long execute() {
 				long attempts = incrementNodeAttemptsProperty(courseNode, identity, cpm);
-				if(courseNode instanceof AssessableCourseNode) {
-          // Update users efficiency statement
-				  EfficiencyStatementManager esm =	CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
-				  esm.updateUserEfficiencyStatement(userCourseEnv);
+				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+				if(assessmentConfig.isAssessable()) {
+					EfficiencyStatementManager esm =	CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
+					esm.updateUserEfficiencyStatement(userCourseEnv);
 				}
 				return attempts;
 			}
@@ -878,11 +880,13 @@ public class NewCachePersistingAssessmentManager {
 				if(incrementUserAttempts) {
 					attempts = incrementNodeAttemptsProperty(courseNode, assessedIdentity, cpm);
 				}
-				if(courseNode instanceof AssessableCourseNode) {
-				  userCourseEnv.getScoreAccounting().evaluateAll();
-				  // Update users efficiency statement
-				  EfficiencyStatementManager esm =	CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
-				  esm.updateUserEfficiencyStatement(userCourseEnv);
+				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+				if(assessmentConfig.isAssessable()) {
+					userCourseEnv.getScoreAccounting().evaluateAll();
+					// Update users efficiency statement
+					EfficiencyStatementManager esm = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
+					esm.updateUserEfficiencyStatement(userCourseEnv);
 				}
 				
 				if(passed != null && passed.booleanValue() && course.getCourseConfig().isAutomaticCertificationEnabled()) {
@@ -978,7 +982,10 @@ public class NewCachePersistingAssessmentManager {
 		saveNodeFullyAssessed(courseNode, identity, assessedIdentity, scoreEvaluation.getFullyAssessed(), cpm);
 		log.debug("successfully saved node fullyAssessed : " + scoreEvaluation.getFullyAssessed());
 		DBFactory.getInstance().commitAndCloseSession();
-		if (courseNode instanceof AssessableCourseNode) {
+
+		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
+		if(assessmentConfig.isAssessable()) {
 			userCourseEnv.getScoreAccounting().evaluateAll();
 			EfficiencyStatementManager esm = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
 			esm.updateUserEfficiencyStatement(userCourseEnv);
