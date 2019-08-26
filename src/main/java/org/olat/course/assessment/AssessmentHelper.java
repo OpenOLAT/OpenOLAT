@@ -54,7 +54,6 @@ import org.olat.course.assessment.model.AssessmentNodesLastModified;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.nodes.ProjectBrokerCourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.iq.IQEditController;
@@ -415,10 +414,7 @@ public class AssessmentHelper {
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
 		if (numOfChildren > 0 || assessmentConfig.isAssessable()) {
-			if(courseNode instanceof ProjectBrokerCourseNode) {
-				//ProjectBroker : no assessment-tool in V1.0 , remove project broker completely form assessment-tool gui
-				assessmentNodeData.setSelectable(false);
-			} else if (assessmentConfig.isAssessable()) {
+			 if (assessmentConfig.isAssessable()) {
 				AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(courseNode);
 				assessmentNodeData.setAssessmentStatus(scoreEvaluation.getAssessmentStatus());
 				assessmentNodeData.setNumOfAssessmentDocs(scoreEvaluation.getNumOfAssessmentDocs());
