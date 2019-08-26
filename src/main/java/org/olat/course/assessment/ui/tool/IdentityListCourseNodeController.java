@@ -358,7 +358,7 @@ public class IdentityListCourseNodeController extends FormBasicController
 			if(assessmentConfig.hasAttempts()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.attempts));
 			}
-			if(!assessmentConfig.isScoreEvaluationCalculated()) {
+			if(!assessmentConfig.isEvaluationCalculated()) {
 				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.userVisibility,
 						new UserVisibilityCellRenderer(getTranslator())));
 			}

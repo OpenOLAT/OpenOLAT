@@ -44,12 +44,12 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isScoreEvaluationPersisted() {
+	public boolean isEvaluationPersisted() {
 		return true;
 	}
 
 	@Override
-	public boolean isScoreEvaluationCalculated() {
+	public boolean isEvaluationCalculated() {
 		return true;
 	}
 

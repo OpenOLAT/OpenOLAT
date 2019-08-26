@@ -153,14 +153,14 @@ public class ScoreAccounting {
 			AssessmentEvaluation se = null;
 			if (recursionLevel <= 15) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(cn);
-				if (update && assessmentConfig.isScoreEvaluationCalculated()) {
+				if (update && assessmentConfig.isEvaluationCalculated()) {
 					AssessmentEntry entry = identToEntries.get(cn.getIdent());
 					se = calculateScoreEvaluation(entry, cn, assessmentConfig);
 					cachedScoreEvals.put(cn, se);
 				} else {
 					se = cachedScoreEvals.get(cn);
 					if (se == null) { // result of this node has not been cached yet, do it
-						if(assessmentConfig.isScoreEvaluationPersisted()) {
+						if(assessmentConfig.isEvaluationPersisted()) {
 							AssessmentEntry entry = identToEntries.get(cn.getIdent());
 							se = courseAssessmentService.toAssessmentEvaluation(entry, assessmentConfig);
 						} else {

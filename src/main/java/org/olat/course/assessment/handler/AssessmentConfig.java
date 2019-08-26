@@ -35,14 +35,14 @@ public interface AssessmentConfig {
 	public boolean isAssessable();
 	
 	/**
-	 * @return true if the score evaluation is persisted
+	 * @return true if the assessment evaluation is persisted
 	 */
-	public boolean isScoreEvaluationPersisted();
+	public boolean isEvaluationPersisted();
 	
 	/**
 	 * @return true if the score evaluation is calculated e.g as sum of other assessments.
 	 */
-	public boolean isScoreEvaluationCalculated();
+	public boolean isEvaluationCalculated();
 	
 	/**
 	 * @return True if this course node produces a score variable for the learner

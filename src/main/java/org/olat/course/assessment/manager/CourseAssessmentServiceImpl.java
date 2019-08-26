@@ -122,9 +122,9 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 		AssessmentHandler assessmentHandler = getAssessmentHandler(courseNode);
 		
 		AssessmentEvaluation assessmentEvaluation = AssessmentEvaluation.EMPTY_EVAL;
-		if (assessmentConfig.isScoreEvaluationCalculated()) {
+		if (assessmentConfig.isEvaluationCalculated()) {
 			assessmentEvaluation = assessmentHandler.getCalculatedScoreEvaluation(courseNode, userCourseEnvironment);
-		} else if (assessmentConfig.isScoreEvaluationPersisted()) {
+		} else if (assessmentConfig.isEvaluationPersisted()) {
 			assessmentEvaluation = getPersistedAssessmentEvaluation(courseNode, userCourseEnvironment);
 		}
 		// Other handlers should be able to have other implementations

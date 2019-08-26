@@ -39,12 +39,12 @@ public class NonAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean isScoreEvaluationPersisted() {
+	public boolean isEvaluationPersisted() {
 		return false;
 	}
 
 	@Override
-	public boolean isScoreEvaluationCalculated() {
+	public boolean isEvaluationCalculated() {
 		return false;
 	}
 	

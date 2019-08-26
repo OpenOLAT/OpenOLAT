@@ -56,7 +56,7 @@ public interface CourseAssessmentService {
 	
 	/**
 	 * Returns the persisted AssessmentEntry of the user. Check
-	 * AssessmentConfig.isScoreEvaluationPersisted() before invoking this method.
+	 * AssessmentConfig.isEvaluationPersisted() before invoking this method.
 	 *
 	 * @param courseNode
 	 * @param userCourseEnvironment
@@ -120,7 +120,7 @@ public interface CourseAssessmentService {
 	
 	/**
 	 * Returns the ScoreCalculator if the course nod can calculate its score. Check
-	 * AssessmentConfig.isScoreEvaluationCalculated() before invoking this method.
+	 * AssessmentConfig.isEvaluationCalculated() before invoking this method.
 	 *
 	 * @param courseNode
 	 * @return

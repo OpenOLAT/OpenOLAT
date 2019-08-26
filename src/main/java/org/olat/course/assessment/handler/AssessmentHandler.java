@@ -51,7 +51,7 @@ public interface AssessmentHandler {
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
 	
 	/**
-	 * This method has to be implemented if the AssessmentConfig.isScoreEvaluationPersisted() return true.
+	 * This method has to be implemented if the AssessmentConfig.isEvaluationPersisted() return true.
 	 *
 	 * @param courseNode
 	 * @param userCourseEnvironment
@@ -60,7 +60,7 @@ public interface AssessmentHandler {
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 
 	/**
-	 * This method has to be implemented if the AssessmentConfig.isScoreEvaluationCalculated() return true.
+	 * This method has to be implemented if the AssessmentConfig.isEvaluationCalculated() return true.
 	 *
 	 * @param courseNode
 	 * @param userCourseEnvironment
@@ -69,7 +69,7 @@ public interface AssessmentHandler {
 	public AssessmentEvaluation getCalculatedScoreEvaluation(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 	
 	/**
-	 * This method has to be implemented if the AssessmentConfig.isScoreEvaluationCalculated() return true.
+	 * This method has to be implemented if the AssessmentConfig.isEvaluationCalculated() return true.
 	 *
 	 * @param courseNode
 	 * @param userCourseEnvironment
