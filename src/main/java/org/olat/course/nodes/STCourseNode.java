@@ -107,9 +107,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Course
 	transient private Condition passedExpression;
 	transient private Condition failedExpression;
 
-	/**
-	 * Constructor for a course building block of the type structure
-	 */
 	public STCourseNode() {
 		super(TYPE);
 		updateModuleConfigDefaults(true);
@@ -125,7 +122,6 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Course
 		// special case: listen to st edit controller, must be informed when the short title is being modified
 		nodeEditController.addControllerListener(childTabCntrllr); 
 		return nodeEditController;
-
 	}
 
 	@Override

@@ -155,10 +155,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		return new NodeRunConstructionResult(ctrl);
 	}
 	
-	/**
-	 * Default set the write privileges to coaches and admin only
-	 * @return
-	 */
 	public Condition getPreConditionEdit() {
 		if (preConditionEdit == null) {
 			preConditionEdit = new Condition();
@@ -170,10 +166,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 		return preConditionEdit;
 	}
 
-	/**
-	 * 
-	 * @param preConditionEdit
-	 */
 	public void setPreConditionEdit(Condition preConditionEdit) {
 		if (preConditionEdit == null) {
 			preConditionEdit = getPreConditionEdit();
@@ -199,10 +191,6 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode implements
 			return re;
 		}
 		return null;
-	}
-	
-	private String getReferencedRepositoryEntrySoftkey() {
-		return (String)getModuleConfiguration().get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY);
 	}
 	
 	@Override

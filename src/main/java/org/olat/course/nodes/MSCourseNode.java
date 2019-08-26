@@ -127,9 +127,6 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Course
 	public static final String CONFIG_KEY_EVAL_FORM_SCALE = "evaluation.form.scale";
 	public static final String CONFIG_DEFAULT_EVAL_FORM_SCALE = "1.0";
 
-	/**
-	 * Constructor for a course building block of type manual score
-	 */
 	public MSCourseNode() {
 		super(TYPE);
 		updateModuleConfigDefaults(true);

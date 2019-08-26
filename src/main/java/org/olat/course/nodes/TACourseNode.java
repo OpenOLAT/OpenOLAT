@@ -170,9 +170,6 @@ public class TACourseNode extends GenericCourseNode implements CourseNode {
 
 	private static final Logger log = Tracing.createLoggerFor(TACourseNode.class);
 
-	/**
-	 * Default constructor.
-	 */
 	public TACourseNode() {
 		super(TYPE);
 		updateModuleConfigDefaults(true);
@@ -222,9 +219,6 @@ public class TACourseNode extends GenericCourseNode implements CourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		/*
-		 * first check the one click cache
-		 */
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
 		boolean isValid = true;

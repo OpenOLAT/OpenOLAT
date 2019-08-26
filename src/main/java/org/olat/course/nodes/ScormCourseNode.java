@@ -88,20 +88,12 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Cou
 	private static final String CONFIG_HEIGHT = "height";	
 	private final static String CONFIG_HEIGHT_AUTO = "auto";
 	
-
-	/**
-	 * Constructor for a course building block of the type IMS CP learning content
-	 */
 	public ScormCourseNode() {
 		super(TYPE);
 		// init default values
 		updateModuleConfigDefaults(true);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
@@ -110,12 +102,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Cou
 		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
@@ -135,9 +121,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Cou
 
 	@Override
 	public StatusDescription isConfigValid() {
-		/*
-		 * first check the one click cache
-		 */
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
 		StatusDescription sd = StatusDescription.NOERROR;
@@ -155,9 +138,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode implements Cou
 		return sd;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;

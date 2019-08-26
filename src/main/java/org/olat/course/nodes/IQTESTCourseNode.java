@@ -245,10 +245,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Co
 		return timeLimit;
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
 	public AssessmentTest loadAssessmentTest(RepositoryEntry testEntry) {
 		if(testEntry == null) return null;
 		
@@ -261,12 +257,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Co
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createPreviewController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		Controller controller;
@@ -324,14 +314,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Co
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
-		/*
-		 * first check the one click cache
-		 */
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
 		boolean isValid = getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY) != null;
@@ -360,9 +344,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Co
 		return sd;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
@@ -397,9 +378,6 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements Co
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
-	 */
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);

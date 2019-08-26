@@ -167,18 +167,11 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 	private Condition  conditionDrop, conditionScoring, conditionReturnbox;
 	private Condition  conditionProjectBroker;
 
-	/**
-	 * Default constructor.
-	 */
 	public ProjectBrokerCourseNode() {
 		super(TYPE);
 		updateModuleConfigDefaults(true);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
@@ -189,12 +182,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 		return editController;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
@@ -226,23 +213,11 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 		return new NodeRunConstructionResult(wrapperCtrl);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPreviewController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
 		return ProjectBrokerControllerFactory.createPreviewController(ureq, wControl,userCourseEnv, this);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPeekViewRunController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			NodeEvaluation ne) {
@@ -255,30 +230,18 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 		}
 	}	
 	
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
-		/*
-		 * first check the one click cache
-		 */
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
 		boolean isValid = true;
@@ -299,9 +262,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 		return sd;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
@@ -327,10 +287,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 		nodeEval.setVisible(visible);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#informOnDelete(org.olat.core.gui.UserRequest,
-	 *      org.olat.course.ICourse)
-	 */
 	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		Translator trans = new PackageTranslator(PACKAGE_PROJECTBROKER, locale);
@@ -345,10 +301,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 		return null; // no data yet.
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(
-	 *      org.olat.course.ICourse)
-	 */
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
@@ -688,9 +640,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 		return dataFound;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpressions()
-	 */
 	@Override
 	public List<ConditionExpression> getConditionExpressions() {
 		List<ConditionExpression> retVal;
@@ -711,10 +660,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 		return retVal;
 	}
 
-
-	/**
-	 * Init config parameter with default values for a new course node.
-	 */
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
@@ -827,9 +772,6 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 	    }
 	}
 	
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createInstanceForCopy()
-	 */
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		// create the instance for the copy
