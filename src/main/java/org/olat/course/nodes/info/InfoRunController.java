@@ -45,6 +45,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
@@ -55,6 +56,7 @@ import org.olat.course.nodes.InfoCourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -68,11 +70,11 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class InfoRunController extends BasicController {
 	
-	private final VelocityContainer runVc;
-	private final InfoDisplayController infoDisplayController;
+	private VelocityContainer runVc;
+	private InfoDisplayController infoDisplayController;
 	private ContextualSubscriptionController subscriptionController;
 	
-	private final String businessPath;
+	private String businessPath;
 	
 	@Autowired
 	private InfoSubscriptionManager subscriptionManager;
@@ -81,29 +83,8 @@ public class InfoRunController extends BasicController {
 			NodeEvaluation ne, InfoCourseNode courseNode) {
 		super(ureq, wControl);
 		ModuleConfiguration config = courseNode.getModuleConfiguration();
-		
-		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		
 		String resSubPath = courseNode.getIdent();
-		OLATResourceable infoResourceable = new InfoOLATResourceable(resId);
-		businessPath = normalizeBusinessPath(wControl.getBusinessControl().getAsString());
-		ICourse course = CourseFactory.loadCourse(resId);
-		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		
-		//manage opt-out subscription
-		UserSession usess = ureq.getUserSession();
-		if(!usess.getRoles().isGuestOnly()) {
-			SubscriptionContext subContext = subscriptionManager.getInfoSubscriptionContext(infoResourceable, resSubPath);
-			PublisherData pdata = subscriptionManager.getInfoPublisherData(infoResourceable, businessPath);
-			if(InfoCourseNodeEditController.getAutoSubscribe(config)) {
-				InfoSubscription infoSubscription = subscriptionManager.getInfoSubscription(usess.getGuiPreferences());
-				if(infoSubscription.subscribed(businessPath, false)) {
-					subscriptionManager.subscribe(infoResourceable, resSubPath, businessPath, getIdentity());
-				}
-			}
-			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata);
-			listenTo(subscriptionController);
-		}
+
 		boolean canAdd;
 		boolean canAdmin;
 		if(userCourseEnv.isCourseReadOnly()) {
@@ -115,15 +96,55 @@ public class InfoRunController extends BasicController {
 			canAdmin = isAdmin || ne.isCapabilityAccessible(InfoCourseNode.ADMIN_CONDITION_ID);
 		}
 
+		boolean autoSubscribe = InfoCourseNodeEditController.getAutoSubscribe(config);
+		int maxResults = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_LENGTH, 10);
+		int duration = getConfigValue(config, InfoCourseNodeConfiguration.CONFIG_DURATION, 90);
+
+		initVC(ureq, userCourseEnv, resSubPath, canAdd, canAdmin, autoSubscribe, maxResults, duration);
+	}
+	
+	public InfoRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
+			String resSubPath, boolean canAdd, boolean canAdmin, boolean autoSubscribe) {
+		super(ureq, wControl);
+		initVC(ureq, userCourseEnv, resSubPath, canAdd, canAdmin, autoSubscribe, -1, -1);
+	}
+
+	private void initVC(UserRequest ureq, UserCourseEnvironment userCourseEnv,
+			String resSubPath, boolean canAdd, boolean canAdmin, boolean autoSubscribe, int maxResults, int duration) {
+		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+		OLATResourceable infoResourceable = new InfoOLATResourceable(resId);
+		businessPath = normalizeBusinessPath(getWindowControl().getBusinessControl().getAsString());
+		ICourse course = CourseFactory.loadCourse(resId);
+		
+		CourseGroupManager cgm = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
+		RepositoryEntry courseEntry = cgm.getCourseEntry();
+		String infoMailTitle = course.getCourseTitle();
+		
+		//manage opt-out subscription
+		UserSession usess = ureq.getUserSession();
+		if(!usess.getRoles().isGuestOnly()) {
+			SubscriptionContext subContext = subscriptionManager.getInfoSubscriptionContext(infoResourceable, resSubPath);
+			PublisherData pdata = subscriptionManager.getInfoPublisherData(infoResourceable, businessPath);
+			if(autoSubscribe) {
+				InfoSubscription infoSubscription = subscriptionManager.getInfoSubscription(usess.getGuiPreferences());
+				if(infoSubscription.subscribed(businessPath, false)) {
+					subscriptionManager.subscribe(infoResourceable, resSubPath, businessPath, getIdentity());
+				}
+			}
+			subscriptionController = new ContextualSubscriptionController(ureq, getWindowControl(), subContext, pdata);
+			listenTo(subscriptionController);
+		}
+
 		InfoSecurityCallback secCallback = new InfoCourseSecurityCallback(getIdentity(), canAdd, canAdmin);
 		
-		infoDisplayController = new InfoDisplayController(ureq, wControl, config, secCallback, infoResourceable, resSubPath, businessPath);
+		
+		infoDisplayController = new InfoDisplayController(ureq, getWindowControl(), maxResults, duration, secCallback, infoResourceable, resSubPath, businessPath);
 		infoDisplayController.addSendMailOptions(new SendSubscriberMailOption(infoResourceable, resSubPath, getLocale()));
-		infoDisplayController.addSendMailOptions(new SendMembersMailOption(cgm.getCourseEntry(), GroupRoles.owner, translate("wizard.step1.send_option.owner")));
-		infoDisplayController.addSendMailOptions(new SendMembersMailOption(cgm.getCourseEntry(), GroupRoles.coach, translate("wizard.step1.send_option.coach")));
-		infoDisplayController.addSendMailOptions(new SendMembersMailOption(cgm.getCourseEntry(), GroupRoles.participant, translate("wizard.step1.send_option.participant")));
+		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.owner, translate("wizard.step1.send_option.owner")));
+		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.coach, translate("wizard.step1.send_option.coach")));
+		infoDisplayController.addSendMailOptions(new SendMembersMailOption(courseEntry, GroupRoles.participant, translate("wizard.step1.send_option.participant")));
 
-		MailFormatter mailFormatter = new SendInfoMailFormatter(course.getCourseTitle(), businessPath, getTranslator());
+		MailFormatter mailFormatter = new SendInfoMailFormatter(infoMailTitle, businessPath, getTranslator());
 		infoDisplayController.setSendMailFormatter(mailFormatter);
 		listenTo(infoDisplayController);
 
@@ -134,6 +155,18 @@ public class InfoRunController extends BasicController {
 		runVc.put("displayInfos", infoDisplayController.getInitialComponent());
 		
 		putInitialPanel(runVc);
+	}
+	
+	private int getConfigValue(ModuleConfiguration config, String key, int def) {
+		String durationStr = (String)config.get(key);
+		if("\u221E".equals(durationStr)) {
+			return -1;
+		} else if(StringHelper.containsNonWhitespace(durationStr)) {
+			try {
+				return Integer.parseInt(durationStr);
+			} catch(NumberFormatException e) { /* fallback to default */ }
+		}
+		return def;
 	}
 	
 	/**

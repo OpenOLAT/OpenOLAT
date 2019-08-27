@@ -100,7 +100,7 @@ public class ContactForm extends FormBasicController {
 	private FileElement attachmentEl;
 	private List<FormLink> attachmentLinks = new ArrayList<>();
 	private FormLayoutContainer uploadCont;
-	private boolean recipientsAreEditable = false;
+	private final boolean recipientsAreEditable;
 	private static final int emailCols = 60;
 	private boolean readOnly=false;
 	private boolean hasMsgCancel=false;
@@ -146,6 +146,15 @@ public class ContactForm extends FormBasicController {
 		tsubject.setMandatory(tsubject.isEnabled());
 	}
 
+	public void setRecipientsLists(List<ContactList> recipientsLists) {
+		contactLists.clear();
+		tto.setValue("");
+		ttoBig.setValue("");
+		for (ContactList contactList : recipientsLists) {
+			addEmailTo(contactList);
+		}
+	}
+
 	/**
 	 * add a ContactList as EmailTo:
 	 * 
@@ -171,9 +180,6 @@ public class ContactForm extends FormBasicController {
 		defaultEmailTo += tto.getValue();
 		tto.setValue(defaultEmailTo);
 		ttoBig.setValue(defaultEmailTo);
-		
-		tto.setVisible(!recipientsAreEditable);
-		ttoBig.setVisible(recipientsAreEditable);
 	}
 
 	public void setBody(String defaultBody) {
@@ -371,18 +377,17 @@ public class ContactForm extends FormBasicController {
 			fullName = "[" + fullName + "]";
 		}
 		tfrom = uifactory.addTextElement("ttfrom", NLS_CONTACT_FROM, 255, fullName, formLayout);
-		tfrom.setElementCssClass("o_sel_contact_to");
+		tfrom.setElementCssClass("o_sel_contact_from");
 		// When no identity is set, let user enter a valid email address
 		tfrom.setEnabled((this.emailFrom == null));
 		
 		tto = uifactory.addTextElement("tto", NLS_CONTACT_TO, 255, "", formLayout);
 		tto.setElementCssClass("o_sel_contact_to");
 		tto.setEnabled(false);
-		tto.setVisible(false);
+		tto.setVisible(!recipientsAreEditable);
 	
 		ttoBig = uifactory.addTextAreaElement("ttoBig", NLS_CONTACT_TO, -1, 2, emailCols, true, false, "", formLayout);
-		ttoBig.setEnabled(false);
-		ttoBig.setVisible(false);
+		ttoBig.setVisible(recipientsAreEditable);
 		
 		tsubject = uifactory.addTextElement("tsubject", NLS_CONTACT_SUBJECT, 255, "", formLayout);
 		tsubject.setElementCssClass("o_sel_contact_subject");
@@ -422,5 +427,5 @@ public class ContactForm extends FormBasicController {
 	protected void doDispose() {
 		cleanUpAttachments();
 	}
- 	
+
 }

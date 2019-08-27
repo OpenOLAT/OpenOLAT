@@ -148,7 +148,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected RepositoryEntrySecurity reSecurity;
 	protected final Roles roles;
 
-	protected final boolean showInfos;
+	protected final boolean showDetails;
 	protected final boolean allowBookmark;
 	
 	protected boolean corrupted;
@@ -190,7 +190,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 
 	public RepositoryEntryRuntimeController(UserRequest ureq, WindowControl wControl, RepositoryEntry re,
-			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator, boolean allowBookmark, boolean showInfos) {
+			RepositoryEntrySecurity reSecurity, RuntimeControllerCreator runtimeControllerCreator, boolean allowBookmark, boolean showDetails) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(RepositoryService.class, getLocale(), getTranslator()));
 		
@@ -208,7 +208,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		}
 		
 		this.re = re;
-		this.showInfos = showInfos;
+		this.showDetails = showDetails;
 		this.allowBookmark = allowBookmark;
 		this.runtimeControllerCreator = runtimeControllerCreator;
 		organisations = repositoryService.getOrganisationReferences(re);
@@ -372,7 +372,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		detailsLink = LinkFactory.createToolLink("details", translate("details.header"), this, "o_sel_repo_details");
 		detailsLink.setIconLeftCSS("o_icon o_icon-fw o_icon_details");
 		detailsLink.setElementCssClass("o_sel_author_details");
-		detailsLink.setVisible(showInfos);
+		detailsLink.setVisible(showDetails);
 		toolbarPanel.addTool(detailsLink);
 		
 		boolean marked = markManager.isMarked(re, getIdentity(), null);

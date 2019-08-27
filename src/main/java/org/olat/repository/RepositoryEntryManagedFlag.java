@@ -21,8 +21,8 @@ package org.olat.repository;
 
 import java.util.Arrays;
 
-import org.olat.core.CoreSpringFactory;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -47,6 +47,9 @@ public enum RepositoryEntryManagedFlag {
     settings(all),//max num of participants...
       access(settings,all),
       search(settings, all),
+      participantList(settings, all),
+      participantInfo(settings, all),
+      email(settings, all),
       chat(settings,all),
       layout(settings,all),
       resourcefolder(settings,all),

@@ -72,26 +72,12 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 14;
-	/**
-	 * Log levels
-	 */
+	private static final transient int CURRENTVERSION = 15;
+	
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
-	/**
-	 * Log levels
-	 */
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
-	/**
-	 * Log levels
-	 */
 	public static final transient String KEY_LOGLEVEL_STATISTIC = "LOGLEVELSTAT";
-	/**
-	 * Chat enabled boolean
-	 */
-	public static final transient String KEY_CHAT_ENABLED = "COURSE_CHAT_ENABLED";
-	/**
-	 * efficency statement
-	 */
+
 	public static final transient String KEY_EFFICENCY_ENABLED = "KEY_EFFICENCY_ENABLED";
 	public static final transient String CERTIFICATE_AUTO_ENABLED = "CERTIFICATE_AUTO";
 	public static final transient String CERTIFICATE_MANUAL_ENABLED = "CERTIFICATE_MANUAL";
@@ -103,47 +89,24 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String RECERTIFICATION_TIMELAPSE = "RECERTIFICATION_TIMELAPSE";
 	public static final transient String RECERTIFICATION_TIMELAPSE_UNIT = "RECERTIFICATION_TIMELAPSE_UNIT";
 	
-	/**
-	 * The menu is enabled by default
-	 */
 	public static final transient String MENU_ENABLED = "MENU_ENABLED";
-	/**
-	 * The toolbar is enabled by default
-	 */
 	public static final transient String TOOLBAR_ENABLED = "TOOLBAR_ENABLED";
-	/**
-	 * The bread crumb is enabled by default
-	 */
 	public static final transient String BREADCRUMB_ENABLED = "BREADCRUMB_ENABLED";
-	/**
-	 * The course search is enabled by default
-	 */
+	
 	public static final transient String COURSESEARCH_ENABLED = "COURSESEARCH_ENABLED";
-	/**
-	 * course calendar
-	 */
+	public static final transient String KEY_CHAT_ENABLED = "COURSE_CHAT_ENABLED";
+	public static final transient String PARTICIPANT_LIST_ENABLED = "PARTICIPANT_LIST_ENABLED";
+	public static final transient String PARTICIPANT_INFO_ENABLED = "PARTICIPANT_INFO_ENABLED";
+	public static final transient String EMAIL_ENABLED = "EMAIL_ENABLED";
 	public static final transient String KEY_CALENDAR_ENABLED = "KEY_CALENDAR_ENABLED";
 	
-	/**
-	 * course glossary in toolbar enabled
-	 */
 	public static final transient String KEY_GLOSSARY_ENABLED = "KEY_GLOSSARY_ENABLED";
-	/**
-	 * course glossary
-	 */
 	public static final transient String KEY_GLOSSARY_SOFTKEY = "KEY_GLOSSARY_SOFTKEY";
-	/**
-	 * 
-	 */
 	public static final transient String KEY_CSS_FILEREF = "CSS_FILEREF";
-	/**
-	 * 
-	 */
+
 	public static final transient String KEY_SHAREDFOLDER_SOFTKEY = "SHAREDFOLDER_SOFTKEY";
-	/**
-	 * 
-	 */
 	public static final transient String KEY_SHAREDFOLDER_READONLY = "SHAREDFOLDER_RO";
+
 	/**
 	 * current key set
 	 */
@@ -156,18 +119,22 @@ public class CourseConfig implements Serializable, Cloneable {
 	 * holds the configuration
 	 */
 	private Map<String,Object> configuration = new Hashtable<>();
-
+	
 	public CourseConfig() {
-	// empty, for XSTream
+		// empty, for XSTream
 	}
-
+	
 	/**
 	 * @return version of this loaded/created instance
 	 */
 	public int getVersion() {
 		return version;
 	}
-
+	
+	public void setVersion(int version) {
+		this.version = version;
+	}
+	
 	/**
 	 * initialize with default values
 	 */
@@ -190,11 +157,13 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.remove(KEY_LOGLEVEL_USER);
 		configuration.remove(KEY_LOGLEVEL_STATISTIC);
 		
-
 		configuration.put(MENU_ENABLED, Boolean.TRUE);
 		configuration.put(TOOLBAR_ENABLED, Boolean.TRUE);
 		
 		configuration.put(COURSESEARCH_ENABLED, Boolean.TRUE);
+		configuration.put(PARTICIPANT_LIST_ENABLED, Boolean.FALSE);
+		configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.FALSE);
+		configuration.put(EMAIL_ENABLED, Boolean.FALSE);
 
 		this.version = CURRENTVERSION;
 	}
@@ -213,47 +182,41 @@ public class CourseConfig implements Serializable, Cloneable {
 	public boolean resolveVersionIssues() {
 		boolean versionChanged = false;
 		if (version < CURRENTVERSION) {
-			// from version 1 -> 2
 			if (version == 1) {
 				this.version = 2;
 			}
-			// from version 2 -> 3
+			
 			if (version == 2) {
-				// add the new key
 				if (!configuration.containsKey(KEY_CHAT_ENABLED)) configuration.put(KEY_CHAT_ENABLED, Boolean.TRUE);
 				this.version = 3;
 			}
-			// from version 3 -> 4
+			
 			if (version == 3) {
-				// add the new key
 				if (!configuration.containsKey(KEY_CSS_FILEREF)) configuration.put(KEY_CSS_FILEREF, VALUE_EMPTY_CSS_FILEREF);
 				this.version = 4;
 			}
-			// from version 4 -> 5
+			
 			if (version == 4) {
-				// add the new key
 				if (!configuration.containsKey(KEY_SHAREDFOLDER_SOFTKEY)) configuration.put(KEY_SHAREDFOLDER_SOFTKEY,
 						VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
 				this.version = 5;
 			}
-			// from version 5 -> 6
+			
 			if (version == 5) {
-				// add the new key
 				if (!configuration.containsKey(KEY_EFFICENCY_ENABLED)) configuration.put(KEY_EFFICENCY_ENABLED, Boolean.FALSE);
 				this.version = 6;
 			}
-			// from version 6 -> 7
+			
 			if (version == 6) {
-				// add the new key
 				if (!configuration.containsKey(KEY_CALENDAR_ENABLED)) configuration.put(KEY_CALENDAR_ENABLED, Boolean.TRUE);
 				this.version = 7;
 			}
-			// from version 7 -> 8
+			
 			if (version == 7) {
 				// glossary configuration has been added. no default values needed
 				this.version = 8;
 			}
-			// from version 8 -> 9
+
 			if (version == 8) {
 				if (configuration.containsKey(KEY_LOGLEVEL_ADMIN)) configuration.remove(KEY_LOGLEVEL_ADMIN);
 				if (configuration.containsKey(KEY_LOGLEVEL_USER)) configuration.remove(KEY_LOGLEVEL_USER);
@@ -280,7 +243,7 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(COURSESEARCH_ENABLED)) configuration.put(COURSESEARCH_ENABLED, Boolean.FALSE);
 				this.version = 12;
 			}
-
+			
 			if (version == 12) {
 				if (!configuration.containsKey(BREADCRUMB_ENABLED)) configuration.put(BREADCRUMB_ENABLED, Boolean.TRUE);
 				this.version = 13;
@@ -292,6 +255,14 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(CERTIFICATE_CUSTOM3)) configuration.put(CERTIFICATE_CUSTOM3, "");
 				
 				this.version = 14;
+			}
+			
+			if (version == 14) {
+				if (!configuration.containsKey(PARTICIPANT_LIST_ENABLED)) configuration.put(PARTICIPANT_LIST_ENABLED, Boolean.FALSE);
+				if (!configuration.containsKey(PARTICIPANT_INFO_ENABLED)) configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.FALSE);
+				if (!configuration.containsKey(EMAIL_ENABLED)) configuration.put(EMAIL_ENABLED, Boolean.FALSE);
+				
+				this.version = 15;
 			}
 
 			
@@ -324,37 +295,24 @@ public class CourseConfig implements Serializable, Cloneable {
 		return versionChanged;
 	}
 
-	/**
-	 * @return if chat is enabled
-	 */
 	public boolean isChatEnabled() {
 		Boolean bool = (Boolean) configuration.get(KEY_CHAT_ENABLED);
 		return bool != null && bool.booleanValue();
 	}
 
-	/**
-	 * @param b
-	 */
 	public void setChatIsEnabled(boolean b) {
 		configuration.put(KEY_CHAT_ENABLED, Boolean.valueOf(b));
 	}
 	
-	/**
-	 * @return if chat is enabled
-	 */
 	public boolean isGlossaryEnabled() {
 		Boolean bool = (Boolean) configuration.get(KEY_GLOSSARY_ENABLED);
 		return bool != null && bool.booleanValue();
 	}
 
-	/**
-	 * @param b
-	 */
 	public void setGlossaryIsEnabled(boolean b) {
 		configuration.put(KEY_GLOSSARY_ENABLED, Boolean.valueOf(b));
 	}
 	
-
 	/**
 	 * set the course layout by adding a reference to a css file, or disabling
 	 * custom layout by adding the empty css fileref
@@ -396,23 +354,14 @@ public class CourseConfig implements Serializable, Cloneable {
 		return (String) configuration.get(KEY_GLOSSARY_SOFTKEY);
 	}
 
-	/**
-	 * @return boolean
-	 */
 	public boolean hasGlossary() {
 		return (getGlossarySoftKey() != null);
 	}
 
-	/**
-	 * @return boolean
-	 */
 	public boolean hasCustomCourseCSS() {
 		return !(VALUE_EMPTY_CSS_FILEREF.equals(getCssLayoutRef()));
 	}
 
-	/**
-	 * @param softkey
-	 */
 	public void setSharedFolderSoftkey(String softkey) {
 		if(softkey == null) {
 			configuration.put(KEY_SHAREDFOLDER_SOFTKEY, VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
@@ -421,16 +370,10 @@ public class CourseConfig implements Serializable, Cloneable {
 		}
 	}
 
-	/**
-	 * @return softkey
-	 */
 	public String getSharedFolderSoftkey() {
 		return (String) configuration.get(KEY_SHAREDFOLDER_SOFTKEY);
 	}
 
-	/**
-	 * @return boolean
-	 */
 	public boolean hasCustomSharedFolder() {
 		return !(VALUE_EMPTY_SHAREDFOLDER_SOFTKEY.equals(getSharedFolderSoftkey()));
 	}
@@ -444,25 +387,15 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(KEY_SHAREDFOLDER_READONLY, Boolean.valueOf(mount));
 	}
 
-	/**
-	 * @param b
-	 */
 	public void setEfficencyStatementIsEnabled(boolean b) {
 		configuration.put(KEY_EFFICENCY_ENABLED, Boolean.valueOf(b));
 	}
 
-	/**
-	 * @return true if the efficency statement is enabled
-	 */
 	public boolean isEfficencyStatementEnabled() {
 		Boolean bool = (Boolean) configuration.get(KEY_EFFICENCY_ENABLED);
 		return bool.booleanValue();
 	}
 	
-	
-	/**
-	 * @return true if the efficency statement is enabled
-	 */
 	public Long getCertificateTemplate() {
 		Object templateIdObj = configuration.get(CERTIFICATE_TEMPLATE);
 		Long templateId = null;
@@ -508,9 +441,6 @@ public class CourseConfig implements Serializable, Cloneable {
 		}
 	}
 	
-	/**
-	 * @param b
-	 */
 	public void setCertificateTemplate(Long templateId ) {
 		if(templateId != null) {
 			configuration.put(CERTIFICATE_TEMPLATE, templateId);
@@ -541,17 +471,11 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(CERTIFICATE_MANUAL_ENABLED, Boolean.valueOf(enabled));
 	}
 
-	/**
-	 * @return true if the efficency statement is enabled
-	 */
 	public boolean isRecertificationEnabled() {
 		Boolean bool = (Boolean) configuration.get(RECERTIFICATION_ENABLED);
 		return bool != null && bool.booleanValue();
 	}
 	
-	/**
-	 * @param b
-	 */
 	public void setRecertificationEnabled(boolean b) {
 		configuration.put(RECERTIFICATION_ENABLED, Boolean.valueOf(b));
 	}
@@ -585,17 +509,11 @@ public class CourseConfig implements Serializable, Cloneable {
 		}
 	}
 
-	/**
-	 * @return true if calendar is enabled
-	 */
 	public boolean isCalendarEnabled() {
 		Boolean bool = (Boolean) configuration.get(KEY_CALENDAR_ENABLED);
 		return bool != null && bool.booleanValue();
 	}
 
-	/**
-	 * @param b
-	 */
 	public void setCalendarEnabled(boolean b) {
 		configuration.put(KEY_CALENDAR_ENABLED, Boolean.valueOf(b));
 	}
@@ -617,6 +535,33 @@ public class CourseConfig implements Serializable, Cloneable {
 	public void setCourseSearchEnabled(boolean b) {
 		configuration.put(COURSESEARCH_ENABLED, Boolean.valueOf(b));
 	}
+
+	public boolean isParticipantListEnabled() {
+		Boolean bool = (Boolean) configuration.get(PARTICIPANT_LIST_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setParticipantListEnabled(boolean b) {
+		configuration.put(PARTICIPANT_LIST_ENABLED, Boolean.valueOf(b));
+	}
+	
+	public boolean isParticipantInfoEnabled() {
+		Boolean bool = (Boolean) configuration.get(PARTICIPANT_INFO_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setParticipantInfoEnabled(boolean b) {
+		configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.valueOf(b));
+	}
+	
+	public boolean isEmailEnabled() {
+		Boolean bool = (Boolean) configuration.get(EMAIL_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setEmailEnabled(boolean b) {
+		configuration.put(EMAIL_ENABLED, Boolean.valueOf(b));
+	}
 	
 	public boolean isToolbarEnabled() {
 		Boolean bool = (Boolean) configuration.get(TOOLBAR_ENABLED);
@@ -636,11 +581,6 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(BREADCRUMB_ENABLED, Boolean.valueOf(b));
 	}
 
-	/**
-	 * Creates a deep clone for the current object.
-	 * 
-	 * @see java.lang.Object#clone()
-	 */
 	@Override
 	public CourseConfig clone() {
 		CourseConfig clone = new CourseConfig();
@@ -665,13 +605,12 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setToolbarEnabled(isToolbarEnabled());
 		clone.setBreadCrumbEnabled(isBreadCrumbEnabled());
 		clone.setCourseSearchEnabled(isCourseSearchEnabled());
+		clone.setParticipantListEnabled(isParticipantListEnabled());
+		clone.setParticipantInfoEnabled(isParticipantInfoEnabled());
+		clone.setEmailEnabled(isEmailEnabled());
 		return clone;
 	}
 
-	/**
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
 	@Override
 	public boolean equals(Object obj) {
 		if(obj == this) {
@@ -702,13 +641,6 @@ public class CourseConfig implements Serializable, Cloneable {
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * @param version The version to set.
-	 */
-	public void setVersion(int version) {
-		this.version = version;
 	}
 
 }

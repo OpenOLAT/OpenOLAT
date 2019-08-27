@@ -72,6 +72,7 @@ public enum ActionObject {
 	node,
 	owner,
 	participant,
+	participantList,
 	portfolioartefact,
 	portfoliomap,
 	portfoliomedia,
