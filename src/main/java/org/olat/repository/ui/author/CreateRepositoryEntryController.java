@@ -175,6 +175,8 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		}
 		organisationEl.setVisible(organisationKeys.size() > 1 && organisationModule.isEnabled());
 		
+		initAdditionalFormElements(formLayout, listener, ureq);
+		
 		FormLayoutContainer buttonContainer = FormLayoutContainer.createButtonLayout("buttonContainer", getTranslator());
 		formLayout.add("buttonContainer", buttonContainer);
 		buttonContainer.setElementCssClass("o_sel_repo_save_details");
@@ -187,6 +189,11 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		}
 
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
+	}
+	
+	@SuppressWarnings("unused")
+	protected void initAdditionalFormElements(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		// 
 	}
 	
 	@Override
@@ -259,10 +266,16 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 				licenseService.createDefaultLicense(addedEntry.getOlatResource(), licenseHandler, getIdentity());
 			}
 		}
+		
+		afterEntryCreated();
 
 		repositoryManager.triggerIndexer(addedEntry);
 
 		ThreadLocalUserActivityLogger.log(LearningResourceLoggingAction.LEARNING_RESOURCE_CREATE, getClass(),
 				LoggingResourceable.wrap(addedEntry, OlatResourceableType.genRepoEntry));
+	}
+
+	protected void afterEntryCreated() {
+		// May be overridden.
 	}
 }

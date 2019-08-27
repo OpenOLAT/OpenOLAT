@@ -110,6 +110,8 @@ import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.ui.author.CreateCourseRepositoryEntryController;
+import org.olat.repository.ui.author.CreateEntryController;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.ReferenceManager;
@@ -139,6 +141,11 @@ public class CourseHandler implements RepositoryHandler {
 		return true;
 	}
 	
+	@Override
+	public CreateEntryController createCreateRepositoryEntryController(UserRequest ureq, WindowControl wControl) {
+		return new CreateCourseRepositoryEntryController(ureq, wControl, this);
+	}
+
 	@Override
 	public RepositoryEntry createResource(Identity initialAuthor, String displayname, String description,
 			Object createObject, Organisation organisation, Locale locale) {

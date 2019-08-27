@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.RecertificationTimeUnit;
+import org.olat.course.condition.ConditionNodeAccessProvider;
 
 /**
  * Description: <br>
@@ -72,11 +73,14 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 15;
+	private static final transient int CURRENTVERSION = 16;
 	
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
 	public static final transient String KEY_LOGLEVEL_STATISTIC = "LOGLEVELSTAT";
+	
+	public static final transient String NODE_ACCESS_TYPE = "NODE_ACCESS_TYPE";
+	public static final transient String NODE_ACCESS_TYPE_DEFAULT = ConditionNodeAccessProvider.TYPE;
 
 	public static final transient String KEY_EFFICENCY_ENABLED = "KEY_EFFICENCY_ENABLED";
 	public static final transient String CERTIFICATE_AUTO_ENABLED = "CERTIFICATE_AUTO";
@@ -164,6 +168,8 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(PARTICIPANT_LIST_ENABLED, Boolean.FALSE);
 		configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.FALSE);
 		configuration.put(EMAIL_ENABLED, Boolean.FALSE);
+		
+		configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
 
 		this.version = CURRENTVERSION;
 	}
@@ -264,6 +270,12 @@ public class CourseConfig implements Serializable, Cloneable {
 				
 				this.version = 15;
 			}
+			
+			if (version == 15) {
+				if (!configuration.containsKey(NODE_ACCESS_TYPE)) configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
+				
+				this.version = 16;
+			}
 
 			
 			/*
@@ -293,6 +305,14 @@ public class CourseConfig implements Serializable, Cloneable {
 			}
 		}
 		return versionChanged;
+	}
+	
+	public void setNodeAccessType(String nodeAccessType) {
+		configuration.put(NODE_ACCESS_TYPE, nodeAccessType);
+	}
+
+	public String getNodeAccessType() {
+		return (String) configuration.get(NODE_ACCESS_TYPE);
 	}
 
 	public boolean isChatEnabled() {
