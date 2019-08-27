@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.nodeaccess.ui.NodeAccessSettingsController;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureRepositorySettingsController;
 import org.olat.repository.RepositoryEntry;
@@ -42,6 +43,7 @@ public class CourseExecutionSettingsController extends BasicController {
 	
 	private RepositoryEntryLifecycleController lifecycleCtrl;
 	private LectureRepositorySettingsController lectureSettingsCtrl;
+	private NodeAccessSettingsController nodeAccessSettingsCtrl;
 	
 	@Autowired
 	private LectureModule lectureModule;
@@ -60,6 +62,10 @@ public class CourseExecutionSettingsController extends BasicController {
 			listenTo(lectureSettingsCtrl);
 			mainVC.put("lectures", lectureSettingsCtrl.getInitialComponent());
 		}
+		
+		nodeAccessSettingsCtrl = new NodeAccessSettingsController(ureq, wControl, entry);
+		listenTo(nodeAccessSettingsCtrl);
+		mainVC.put("nodeAccess", nodeAccessSettingsCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
 	}
