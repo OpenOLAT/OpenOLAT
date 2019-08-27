@@ -62,9 +62,12 @@ public class ScormPage {
 	}
 	
 	public ScormPage passVerySimpleScorm() {
+		By frameBy = By.cssSelector("iframe.o_iframe_rel");
+		OOGraphene.waitElement(frameBy, browser);
 		browser.switchTo().frame("scormContentFrame");
 		
 		By val0By = By.cssSelector("input[value='0']");
+		OOGraphene.waitElement(val0By, browser);
 		browser.findElement(val0By).click();
 		By val3By = By.cssSelector("input[value='3']");
 		browser.findElement(val3By).click();

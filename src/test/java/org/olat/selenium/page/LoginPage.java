@@ -148,7 +148,7 @@ public class LoginPage {
 	public LoginPage loginAs(String username, String password) {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
-		OOGraphene.waitElement(usernameId, 5, browser);//wait the login page
+		OOGraphene.waitElement(usernameId, browser);//wait the login page
 		WebElement usernameInput = browser.findElement(usernameId);
 		usernameInput.sendKeys(username);
 		By passwordId = By.id("o_fiooolat_login_pass");
@@ -184,6 +184,7 @@ public class LoginPage {
 	public LoginPage loginDenied(String username, String password) {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
+		OOGraphene.waitElement(usernameId, browser);//wait the login page
 		WebElement usernameInput = browser.findElement(usernameId);
 		usernameInput.sendKeys(username);
 		By passwordId = By.id("o_fiooolat_login_pass");
