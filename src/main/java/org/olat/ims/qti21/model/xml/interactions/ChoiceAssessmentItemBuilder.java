@@ -78,6 +78,8 @@ public abstract class ChoiceAssessmentItemBuilder extends AssessmentItemBuilder 
 		scoreMapping.put(identifier, score);
 	}
 	
+	public abstract boolean scoreOfCorrectAnswerWarning();
+	
 	public abstract int getMaxPossibleCorrectAnswers();
 	
 	public abstract int getMaxChoices();

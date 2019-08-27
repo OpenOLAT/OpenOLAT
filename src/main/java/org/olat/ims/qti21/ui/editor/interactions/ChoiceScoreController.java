@@ -71,7 +71,8 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
 	private SingleSelection assessmentModeEl;
-	private SingleSelection maxChoicesEl, minChoicesEl;
+	private SingleSelection minChoicesEl;
+	private SingleSelection maxChoicesEl;
 	private FormLayoutContainer scoreCont;
 	private final List<ChoiceWrapper> wrappers = new ArrayList<>();
 	
@@ -97,6 +98,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 				new ResourcesMapper(assessmentObjectUri));
 		
 		initForm(ureq);
+		validateScoreOfCorrectAnswer();
 	}
 
 	@Override
@@ -229,6 +231,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			
 			updateMinMaxChoices();
 		}
+		validateScoreOfCorrectAnswer();
 	}
 	
 	private ChoiceWrapper createChoiceWrapper(Choice choice) {
@@ -264,8 +267,22 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 				allOk &= validateDouble(wrapper.getPointsEl());
 			}
 		}
-		
+
+		validateScoreOfCorrectAnswer();// only a warning
 		return allOk;
+	}
+	
+	private void validateScoreOfCorrectAnswer() {
+		try {
+			Boolean warning = (Boolean)scoreCont.contextGet("scoreWarning");
+			Boolean newWarning = Boolean.valueOf(itemBuilder.scoreOfCorrectAnswerWarning());
+			if(warning == null || !warning.equals(newWarning)) {
+				scoreCont.contextPut("scoreWarning", newWarning);
+			}
+		} catch (Exception e) {
+			// not a critical feature, don't produce red screen
+			logError("", e);
+		}
 	}
 
 	@Override
@@ -310,6 +327,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		}
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), null));
+		validateScoreOfCorrectAnswer();
 	}
 
 	@Override

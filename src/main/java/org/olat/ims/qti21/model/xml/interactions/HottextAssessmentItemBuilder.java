@@ -231,6 +231,11 @@ public class HottextAssessmentItemBuilder extends ChoiceAssessmentItemBuilder im
 	}
 	
 	@Override
+	public boolean scoreOfCorrectAnswerWarning() {
+		return false;
+	}
+
+	@Override
 	public int getMaxPossibleCorrectAnswers() {
 		return getChoices().size();
 	}

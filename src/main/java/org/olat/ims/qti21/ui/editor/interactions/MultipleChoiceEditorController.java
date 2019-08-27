@@ -47,7 +47,6 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemBuilder;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.interactions.MultipleChoiceAssessmentItemBuilder;
-import org.olat.ims.qti21.model.xml.interactions.SimpleChoiceAssessmentItemBuilder.ScoreEvaluation;
 import org.olat.ims.qti21.ui.ResourcesMapper;
 import org.olat.ims.qti21.ui.components.FlowFormItem;
 import org.olat.ims.qti21.ui.editor.AssessmentTestEditorController;
@@ -244,7 +243,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	}
 
 	@Override
-	public void sync(UserRequest ureq, AssessmentItemBuilder itemBuilder) {
+	public void sync(UserRequest ureq, AssessmentItemBuilder builder) {
 		validateScoreOfCorrectAnswer();
 	}
 
@@ -273,23 +272,7 @@ public class MultipleChoiceEditorController extends FormBasicController implemen
 	private void validateScoreOfCorrectAnswer() {
 		try {
 			Boolean warning = (Boolean)answersCont.contextGet("scoreWarning");
-			Boolean newWarning;
-			if(itemBuilder.getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
-				boolean wrongAnswerHasPoint = false;
-				boolean correctAnswerHasNotPoint = true;
-				for(SimpleChoiceWrapper choiceWrapper:choiceWrappers) {
-					Double score = itemBuilder.getMapping(choiceWrapper.getIdentifier());
-					if(choiceWrapper.isCorrect()) {
-						correctAnswerHasNotPoint &= (score == null || score.doubleValue() < 0.000001);
-					} else {
-						wrongAnswerHasPoint |= (score != null && score.doubleValue() > 0.6);
-					}	
-				}
-				newWarning = Boolean.valueOf(wrongAnswerHasPoint && correctAnswerHasNotPoint);
-			} else {
-				newWarning = Boolean.FALSE;
-			}
-			
+			Boolean newWarning = Boolean.valueOf(itemBuilder.scoreOfCorrectAnswerWarning());
 			if(warning == null || !warning.equals(newWarning)) {
 				answersCont.contextPut("scoreWarning", newWarning);
 			}
