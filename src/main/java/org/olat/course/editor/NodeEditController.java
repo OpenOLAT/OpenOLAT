@@ -44,6 +44,7 @@ import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -132,20 +133,22 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		// Visibility and no-access explanation component
 		visibilityVc = createVelocityContainer("visibilityedit");
 
-		String nodeAccessType = course.getCourseConfig().getNodeAccessType();
-		if (!ConditionNodeAccessProvider.TYPE.equals(nodeAccessType)) {
-			TabbableController nodeAccessCtrl = nodeAccessService.createEditController(ureq, getWindowControl(),
-					nodeAccessType, courseNode);
-			this.nodeAccessCtrl = nodeAccessCtrl;
-			listenTo(nodeAccessCtrl);
-		} else {
-			// Visibility precondition
-			Condition visibCondition = luNode.getPreConditionVisibility();
-			visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, visibCondition, 
-					AssessmentHelper.getAssessableNodes(editorModel, luNode));
-			//set this useractivity logger for the visibility condition controller
-			listenTo(visibilityCondContr);
-			visibilityVc.put("visibilityCondition", visibilityCondContr.getInitialComponent());
+		NodeAccessType nodeAccessType = course.getCourseConfig().getNodeAccessType();
+		if (nodeAccessService.isSupported(nodeAccessType, courseNode)) {
+			if (!ConditionNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
+				TabbableController nodeAccessCtrl = nodeAccessService.createEditController(ureq, getWindowControl(),
+						nodeAccessType, courseNode);
+				this.nodeAccessCtrl = nodeAccessCtrl;
+				listenTo(nodeAccessCtrl);
+			} else {
+				// Visibility precondition
+				Condition visibCondition = luNode.getPreConditionVisibility();
+				visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, visibCondition, 
+						AssessmentHelper.getAssessableNodes(editorModel, luNode));
+				//set this useractivity logger for the visibility condition controller
+				listenTo(visibilityCondContr);
+				visibilityVc.put("visibilityCondition", visibilityCondContr.getInitialComponent());
+			}
 		}
 
 		// No-Access-Explanation
@@ -235,7 +238,7 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_GENERAL), descriptionVc);
-		if (nodeAccessCtrl!= null) {
+		if (nodeAccessCtrl != null) {
 			nodeAccessCtrl.addTabs(tabbedPane);
 		}
 		if (visibilityCondContr !=null) {

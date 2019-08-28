@@ -28,8 +28,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.learningpath.ui.LeaningPathNodeConfigController.LearningPathControllerConfig;
-import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -43,18 +41,17 @@ public class TabbableLeaningPathNodeConfigController extends ActivateableTabbabl
 	private final static String[] paneKeys = { PANE_TAB_LEARNIN_PATH };
 	
 	private final VelocityContainer configVC;
-	private final LeaningPathNodeConfigController configController; 
+	private final Controller configCtrl;
 	private TabbedPane tabPane;
 	
-	public TabbableLeaningPathNodeConfigController(UserRequest ureq, WindowControl wControl, 
-			ModuleConfiguration configs, LearningPathControllerConfig ctrlConfig) {
+	public TabbableLeaningPathNodeConfigController(UserRequest ureq, WindowControl wControl, Controller configCtrl) {
 		super(ureq, wControl);
+		this.configCtrl = configCtrl;
 
-		configController = new LeaningPathNodeConfigController(ureq, wControl, configs, ctrlConfig);
-		listenTo(configController);
+		listenTo(configCtrl);
 
 		configVC = createVelocityContainer("config");
-		configVC.put("config", configController.getInitialComponent());
+		configVC.put("config", configCtrl.getInitialComponent());
 	}
 
 	@Override
@@ -75,8 +72,7 @@ public class TabbableLeaningPathNodeConfigController extends ActivateableTabbabl
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == configController && event.equals(Event.DONE_EVENT)) {
-			configController.getUpdatedConfig();
+		if (source == configCtrl && event.equals(Event.DONE_EVENT)) {
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 	}

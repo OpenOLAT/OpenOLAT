@@ -32,6 +32,8 @@ import org.olat.course.nodes.CourseNode;
  */
 public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 
+	public boolean isSupported(String courseNodeType);
+
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode);
 
 }

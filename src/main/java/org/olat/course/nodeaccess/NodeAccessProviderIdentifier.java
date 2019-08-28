@@ -27,9 +27,7 @@ import java.util.Locale;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeAccessProviderIdentifier {
-	
-	public String getType();
+public interface NodeAccessProviderIdentifier extends NodeAccessType {
 	
 	public String getDisplayName(Locale locale);
 

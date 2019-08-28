@@ -2,14 +2,16 @@
 	<div class="o_info">$r.translate("header.insertnodes.desc")</div>
 	#foreach($name in $groupNames)
 		#set($group = $linkNames.get("$name"))
-		<div class="o_block">
-			<h4>$r.translate($group.name)</h4>
-	
-			<div class="row">
-			#foreach($nodeType in $group.nodeTypes)
-				<div class="col-sm-6">$r.render($nodeType)</div>
-			#end
+		#if($r.isNotNull($group))
+			<div class="o_block">
+				<h4>$r.translate($group.name)</h4>
+		
+				<div class="row">
+				#foreach($nodeType in $group.nodeTypes)
+					<div class="col-sm-6">$r.render($nodeType)</div>
+				#end
+				</div>
 			</div>
-		</div>
+		#end
 	#end
 </div>

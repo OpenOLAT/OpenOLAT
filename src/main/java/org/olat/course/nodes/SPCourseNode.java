@@ -61,7 +61,7 @@ import org.olat.repository.RepositoryEntry;
 public class SPCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = -4565145351110778757L;
-	private static final String TYPE = "sp";
+	public static final String TYPE = "sp";
 
 	/**
 	 * Default constructor for course node of type single page

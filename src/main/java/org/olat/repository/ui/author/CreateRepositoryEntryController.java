@@ -71,7 +71,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	
 	public static final Event CREATION_WIZARD = new Event("start_wizard");
 	
-	private FormLink wizardButton;
+	protected FormLink wizardButton;
 	private TextElement displaynameEl;
 	private SingleSelection organisationEl;
 	private FormLayoutContainer exampleHelpEl;

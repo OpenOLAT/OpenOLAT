@@ -58,7 +58,7 @@ import org.olat.repository.handlers.RepositoryHandlerFactory;
 public class VideoCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = -3808867902051897291L;
-	private static final String TYPE = "video";
+	public static final String TYPE = "video";
 
 	public VideoCourseNode() {
 		super(TYPE);

@@ -29,6 +29,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -47,13 +48,13 @@ public class NodeAccessServiceImpl implements NodeAccessService {
 	@Autowired
 	private List<NodeAccessProvider> nodeAccessProviders;
 	
-	private NodeAccessProvider getNodeAccessProvider(String nodeAccessType) {
+	private NodeAccessProvider getNodeAccessProvider(NodeAccessType type) {
 		for (NodeAccessProvider provider : nodeAccessProviders) {
-			if (provider.getType().equals(nodeAccessType)) {
+			if (provider.getType().equals(type.getType())) {
 				return provider;
 			}
 		}
-		log.error("No node access provider found for type '{}'!", nodeAccessType);
+		log.error("No node access provider found for type '{}'!", type.getType());
 		return null;
 	}
 	
@@ -63,9 +64,19 @@ public class NodeAccessServiceImpl implements NodeAccessService {
 	}
 
 	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, String nodeAccessType,
+	public boolean isSupported(NodeAccessType type, String courseNodeType) {
+		return getNodeAccessProvider(type).isSupported(courseNodeType);
+	}
+
+	@Override
+	public boolean isSupported(NodeAccessType type, CourseNode courseNode) {
+		return isSupported(type, courseNode.getType());
+	}
+
+	@Override
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, NodeAccessType type,
 			CourseNode courseNode) {
-		return getNodeAccessProvider(nodeAccessType).createEditController(ureq, wControl, courseNode);
+		return getNodeAccessProvider(type).createEditController(ureq, wControl, courseNode);
 	}
 
 }

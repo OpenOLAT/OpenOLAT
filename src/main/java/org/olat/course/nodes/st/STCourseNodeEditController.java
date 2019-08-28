@@ -136,6 +136,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private UserCourseEnvironment euce;
 	
 	private TabbedPane myTabbedPane;
+	private int highScoreTabPos;
 	private CourseEditorTreeModel editorModel;
 	private final Long repoKey;
 	
@@ -436,18 +437,16 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	
 	private void updateHighscoreTab() {
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(stNode);
-		myTabbedPane.setEnabled(5, assessmentConfig.hasScore());
+		myTabbedPane.setEnabled(highScoreTabPos, assessmentConfig.hasScore());
 	}
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
+	
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_ST_CONFIG), configvc);
 		tabbedPane.addTab(translate(PANE_TAB_ST_SCORECALCULATION), score);
-		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
+		highScoreTabPos = tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
 
 		if(editorEnabled) {
@@ -455,9 +454,6 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
     //child controllers registered with listenTo() get disposed in BasicController

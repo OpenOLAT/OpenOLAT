@@ -17,49 +17,44 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.condition;
-
-import java.util.Locale;
+package org.olat.course.nodes.video;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
-import org.olat.course.nodeaccess.NodeAccessProvider;
+import org.olat.course.assessment.AssessmentAction;
+import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.ui.LeaningPathNodeConfigController;
+import org.olat.course.learningpath.ui.LeaningPathNodeConfigController.LearningPathControllerConfig;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.VideoCourseNode;
 import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 28 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class ConditionNodeAccessProvider implements NodeAccessProvider {
-	
-	public static String TYPE = "condition";
+public class VideoLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
-	public String getType() {
-		return TYPE;
+	public String acceptCourseNodeType() {
+		return VideoCourseNode.TYPE;
 	}
 
 	@Override
-	public String getDisplayName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(ConditionNodeAccessProvider.class, locale);
-		return translator.translate("access.provider.name");
-	}
-
-	@Override
-	public boolean isSupported(String courseNodeType) {
+	public boolean isSupported() {
 		return true;
 	}
 
 	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
-		return null;
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+		LearningPathControllerConfig ctrlConfig = LeaningPathNodeConfigController.builder()
+				.addAssessmentAction(AssessmentAction.nodeClicked)
+				.build();
+		return new LeaningPathNodeConfigController(ureq, wControl, courseNode.getModuleConfiguration(), ctrlConfig);
 	}
 
 }

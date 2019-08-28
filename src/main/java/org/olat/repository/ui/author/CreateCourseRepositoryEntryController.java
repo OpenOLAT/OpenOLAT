@@ -21,8 +21,10 @@ package org.olat.repository.ui.author;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
+import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -64,6 +66,20 @@ public class CreateCourseRepositoryEntryController extends CreateRepositoryEntry
 		nodeAccessEl = uifactory.addDropdownSingleselect("cif.node.access", "cif.node.access", formLayout,
 				nodeAccessKV.keys(), nodeAccessKV.values());
 		nodeAccessEl.select(CourseConfig.NODE_ACCESS_TYPE_DEFAULT, true);
+		nodeAccessEl.addActionListener(FormEvent.ONCHANGE);
+	}
+
+	private void updateUI() {
+		boolean hasWizard = nodeAccessEl.isOneSelected() && CourseConfig.NODE_ACCESS_TYPE_DEFAULT.equals(nodeAccessEl.getSelectedKey());
+		wizardButton.setVisible(hasWizard);
+	}
+
+	@Override
+	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
+		if (source == nodeAccessEl) {
+			updateUI();
+		}
+		super.formInnerEvent(ureq, source, event);
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import java.util.Map;
 import org.olat.core.util.StringHelper;
 import org.olat.course.certificate.RecertificationTimeUnit;
 import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 
 /**
  * Description: <br>
@@ -311,8 +312,8 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(NODE_ACCESS_TYPE, nodeAccessType);
 	}
 
-	public String getNodeAccessType() {
-		return (String) configuration.get(NODE_ACCESS_TYPE);
+	public NodeAccessType getNodeAccessType() {
+		return NodeAccessType.of((String) configuration.get(NODE_ACCESS_TYPE));
 	}
 
 	public boolean isChatEnabled() {

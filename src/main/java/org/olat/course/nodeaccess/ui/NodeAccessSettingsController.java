@@ -19,6 +19,8 @@
  */
 package org.olat.course.nodeaccess.ui;
 
+import static org.olat.course.nodeaccess.NodeAccessType.of;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -27,9 +29,9 @@ import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -43,15 +45,14 @@ public class NodeAccessSettingsController extends FormBasicController {
 	
 	private SingleSelection nodeAccessEl;
 	
-	private final String nodeAccessType;
+	private final NodeAccessType nodeAccessType;
 	
 	@Autowired
 	private NodeAccessService nodeAccessService;
 	
 	public NodeAccessSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry) {
 		super(ureq, wControl);
-		ICourse course = CourseFactory.loadCourse(entry);
-		this.nodeAccessType = course.getCourseConfig().getNodeAccessType();
+		this.nodeAccessType = of(CourseFactory.loadCourse(entry));
 		initForm(ureq);
 	}
 
@@ -66,7 +67,7 @@ public class NodeAccessSettingsController extends FormBasicController {
 		nodeAccessEl = uifactory.addDropdownSingleselect("settings.type", "settings.type", formLayout,
 				nodeAccessKV.keys(), nodeAccessKV.values());
 		nodeAccessEl.setEnabled(false);
-		nodeAccessEl.select(nodeAccessType, true);
+		nodeAccessEl.select(nodeAccessType.getType(), true);
 	}
 
 	@Override

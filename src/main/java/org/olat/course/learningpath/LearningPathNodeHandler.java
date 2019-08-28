@@ -17,49 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.condition;
-
-import java.util.Locale;
+package org.olat.course.learningpath;
 
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.core.gui.translator.Translator;
-import org.olat.core.util.Util;
-import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
-import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 28 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Service
-public class ConditionNodeAccessProvider implements NodeAccessProvider {
+public interface LearningPathNodeHandler {
 	
-	public static String TYPE = "condition";
-
-	@Override
-	public String getType() {
-		return TYPE;
-	}
-
-	@Override
-	public String getDisplayName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(ConditionNodeAccessProvider.class, locale);
-		return translator.translate("access.provider.name");
-	}
-
-	@Override
-	public boolean isSupported(String courseNodeType) {
-		return true;
-	}
-
-	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
-		return null;
-	}
+	public String acceptCourseNodeType();
+	
+	public boolean isSupported();
+	
+	public Controller createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode);
 
 }

@@ -17,39 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodeaccess;
+package org.olat.course.nodeaccess.model;
 
-import java.util.List;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodeaccess.NodeAccessType;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 28 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeAccessService {
-	
-	public List<? extends NodeAccessProviderIdentifier> getNodeAccessProviderIdentifer();
-	
-	public boolean isSupported(NodeAccessType type, String courseNodeType);
+public class NodeAccessTypeImpl implements NodeAccessType {
 
-	public boolean isSupported(NodeAccessType type, CourseNode courseNode);
+	private final String type;
 
-	/**
-	 * Creates the controller to edit the configurations of the node.
-	 * 
-	 * @param ureq
-	 * @param windowControl
-	 * @param type
-	 * @param courseNode
-	 * @return
-	 */
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, NodeAccessType type,
-			CourseNode courseNode);
+	public NodeAccessTypeImpl(String type) {
+		this.type = type;
+	}
+
+	@Override
+	public String getType() {
+		return type;
+	}
 
 }

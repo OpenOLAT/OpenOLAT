@@ -35,12 +35,15 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,6 +58,9 @@ public class ChooseNodeController extends BasicController {
 	private final CourseEditorTreeNode currentNode;
 	
 	private Link multiSpsLink, multiCheckListLink;
+	
+	@Autowired
+	private NodeAccessService nodeAccessService;
 
 	public ChooseNodeController(UserRequest ureq, WindowControl wControl,
 			OLATResourceable courseOres, CourseEditorTreeNode currentNode) {
@@ -71,10 +77,12 @@ public class ChooseNodeController extends BasicController {
 		VelocityContainer mainVC = createVelocityContainer("create_node");
 		
 		Map<String, CourseNodeTypesGroup> linkNames = new HashMap<>();
+		ICourse course = CourseFactory.loadCourse(courseOres);
 		CourseNodeFactory cnf = CourseNodeFactory.getInstance();
 		for (String courseNodeAlias : cnf.getRegisteredCourseNodeAliases()) {
 			CourseNodeConfiguration cnConfig = cnf.getCourseNodeConfiguration(courseNodeAlias);
-			if(cnConfig.isDeprecated()) {
+			boolean supportedNodeAccessType = nodeAccessService.isSupported(NodeAccessType.of(course), courseNodeAlias);
+			if(cnConfig.isDeprecated() || !supportedNodeAccessType) {
 				continue;
 			}
 			
