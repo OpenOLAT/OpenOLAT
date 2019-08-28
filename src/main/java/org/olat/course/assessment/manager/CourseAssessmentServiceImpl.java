@@ -82,7 +82,10 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 	}
 
 	private  AssessmentHandler getAssessmentHandler(CourseNode courseNode) {
-		AssessmentHandler handler = assessmentHandlers.get(courseNode.getType());
+		AssessmentHandler handler = null;
+		if (courseNode != null) {
+			handler = assessmentHandlers.get(courseNode.getType());
+		}
 		if (handler == null) {
 			handler = nonAssessmentHandler;
 		}
