@@ -21,10 +21,17 @@ package org.olat.course.learningpath;
 
 import java.util.Locale;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentAction;
 import org.olat.course.learningpath.ui.LeaningPathNodeConfigController;
+import org.olat.course.learningpath.ui.LeaningPathNodeConfigController.LearningPathControllerConfig;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessProvider;
+import org.olat.course.nodes.CourseNode;
 import org.springframework.stereotype.Service;
 
 /**
@@ -45,6 +52,14 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	public String getDisplayName(Locale locale) {
 		Translator translator = Util.createPackageTranslator(LeaningPathNodeConfigController.class, locale);
 		return translator.translate("access.provider.name");
+	}
+
+	@Override
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+		LearningPathControllerConfig ctrlConfig = LeaningPathNodeConfigController.builder()
+				.addAssessmentAction(AssessmentAction.nodeClicked)
+				.build();
+		return new TabbableLeaningPathNodeConfigController(ureq, wControl, courseNode.getModuleConfiguration(), ctrlConfig);
 	}
 
 }

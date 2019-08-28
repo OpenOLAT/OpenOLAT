@@ -42,15 +42,16 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.condition.ConditionNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Description:<br>
- * is the controller for
  * 
  * @author Felix Jost
  */
@@ -82,11 +83,15 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	private ConditionEditController visibilityCondContr;
 	private NoAccessExplEditController noAccessContr;
 	private TabbedPane myTabbedPane;
+	private TabbableController nodeAccessCtrl;
 	private TabbableController childTabsCntrllr;
 
 	/** Event that signals that the node configuration has been changed * */
 	public static final Event NODECONFIG_CHANGED_EVENT = new Event("nodeconfigchanged");
 	private static final String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_GENERAL };
+	
+	@Autowired
+	private NodeAccessService nodeAccessService;
 
 	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course, CourseNode luNode,
 			UserCourseEnvironment euce, TabbableController childTabsController) {
@@ -127,13 +132,21 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		// Visibility and no-access explanation component
 		visibilityVc = createVelocityContainer("visibilityedit");
 
-		// Visibility precondition
-		Condition visibCondition = luNode.getPreConditionVisibility();
-		visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, visibCondition, 
-				AssessmentHelper.getAssessableNodes(editorModel, luNode));
-		//set this useractivity logger for the visibility condition controller
-		listenTo(visibilityCondContr);
-		visibilityVc.put("visibilityCondition", visibilityCondContr.getInitialComponent());
+		String nodeAccessType = course.getCourseConfig().getNodeAccessType();
+		if (!ConditionNodeAccessProvider.TYPE.equals(nodeAccessType)) {
+			TabbableController nodeAccessCtrl = nodeAccessService.createEditController(ureq, getWindowControl(),
+					nodeAccessType, courseNode);
+			this.nodeAccessCtrl = nodeAccessCtrl;
+			listenTo(nodeAccessCtrl);
+		} else {
+			// Visibility precondition
+			Condition visibCondition = luNode.getPreConditionVisibility();
+			visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, visibCondition, 
+					AssessmentHelper.getAssessableNodes(editorModel, luNode));
+			//set this useractivity logger for the visibility condition controller
+			listenTo(visibilityCondContr);
+			visibilityVc.put("visibilityCondition", visibilityCondContr.getInitialComponent());
+		}
 
 		// No-Access-Explanation
 		String noAccessExplanation = luNode.getNoAccessExplanation();
@@ -149,7 +162,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		
 		if (source == visibilityCondContr) {
 			if (event == Event.CHANGED_EVENT) {
 				Condition cond = visibilityCondContr.getCondition();
@@ -160,6 +172,10 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			if (event == Event.CHANGED_EVENT) {
 				String noAccessExplanation = noAccessContr.getNoAccessExplanation();
 				courseNode.setNoAccessExplanation(noAccessExplanation);
+				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} else if (source == nodeAccessCtrl) {
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == childTabsCntrllr) {
@@ -217,9 +233,14 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
-		myTabbedPane = tabbedPane;		
+		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_GENERAL), descriptionVc);
-		tabbedPane.addTab(translate(PANE_TAB_VISIBILITY), visibilityVc);
+		if (nodeAccessCtrl!= null) {
+			nodeAccessCtrl.addTabs(tabbedPane);
+		}
+		if (visibilityCondContr !=null) {
+			tabbedPane.addTab(translate(PANE_TAB_VISIBILITY), visibilityVc);
+		}
 		if (childTabsCntrllr != null) {
 			childTabsCntrllr.addTabs(tabbedPane);
 		}

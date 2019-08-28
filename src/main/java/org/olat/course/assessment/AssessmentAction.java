@@ -17,14 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodeaccess;
-
-import java.util.List;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.course.nodes.CourseNode;
+package org.olat.course.assessment;
 
 /**
  * 
@@ -32,20 +25,9 @@ import org.olat.course.nodes.CourseNode;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeAccessService {
+public enum AssessmentAction {
+
+	nodeClicked,
+	confirmed
 	
-	public List<? extends NodeAccessProviderIdentifier> getNodeAccessProviderIdentifer();
-
-	/**
-	 * Creates the controller to edit the configurations of the node.
-	 * 
-	 * @param ureq 
-	 * @param windowControl 
-	 * @param nodeAccessType
-	 * @param courseNode
-	 * @return
-	 */
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, String nodeAccessType,
-			CourseNode courseNode);
-
 }

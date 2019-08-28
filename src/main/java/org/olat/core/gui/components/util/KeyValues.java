@@ -50,6 +50,14 @@ public class KeyValues {
 		remove(keyValue.getKey());
 		keyValues.add(keyValue);
 	}
+
+	public void addAll(KeyValues additionalKeyValues) {
+		if (additionalKeyValues == null) return;
+		
+		for (KeyValue additionalKeyValue : additionalKeyValues.keyValues) {
+			add(additionalKeyValue);
+		}
+	}
 	
 	/**
 	 * If a key / value pair with the key exists, the existing pair is replaced. If

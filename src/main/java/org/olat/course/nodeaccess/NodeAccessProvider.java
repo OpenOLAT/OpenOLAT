@@ -19,6 +19,11 @@
  */
 package org.olat.course.nodeaccess;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.course.nodes.CourseNode;
+
 /**
  * 
  * Initial date: 27 Aug 2019<br>
@@ -26,5 +31,7 @@ package org.olat.course.nodeaccess;
  *
  */
 public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
+
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode);
 
 }
