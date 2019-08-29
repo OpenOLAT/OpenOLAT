@@ -458,6 +458,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		
 		//set all dirty
 		TreeVisitor tv = new TreeVisitor( new Visitor() {
+			@Override
 			public void visit(INode node) {
 				((CourseEditorTreeNode)node).setDirty(true);
 			}
@@ -529,6 +530,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		boolean deprecated = cnConfig.isDeprecated();
 		main.contextPut("courseNodeDisabled", disabled);
 		main.contextPut("courseNodeDeprecated", deprecated);
+		main.contextPut("courseNodeDeprecatedHasAlternative", !cnConfig.getAlternativeCourseNodes().isEmpty());
 		alternativeLink.setVisible((disabled || deprecated) && !cnConfig.getAlternativeCourseNodes().isEmpty());
 		alternativeLink.setUserObject(chosenNode);
 		String nodeCssClass = null;
@@ -998,6 +1000,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		moveFrom.setDirty(true);
 		//mark subtree as dirty
 		TreeVisitor tv = new TreeVisitor( new Visitor() {
+			@Override
 			public void visit(INode node) {
 				CourseEditorTreeNode cetn = (CourseEditorTreeNode)node;
 				cetn.setDirty(true);
@@ -1182,6 +1185,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 		return publishTreeModel.hasPublishableChanges();
 	}
 
+	@Override
 	protected void doDispose() {
 		ICourse course = CourseFactory.loadCourse(ores.getResourceableId());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, course);
