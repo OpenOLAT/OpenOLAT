@@ -83,6 +83,10 @@
 		width: 11em;
 	}
 	
+	.has-feedback .o_date_picker .form-control {
+		padding-right: 0;
+	}
+	
 	/* file chooser */
 	.o_filepreview {
 		img {

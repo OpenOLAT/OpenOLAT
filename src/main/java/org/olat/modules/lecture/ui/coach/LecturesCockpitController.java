@@ -22,7 +22,6 @@ package org.olat.modules.lecture.ui.coach;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -58,6 +57,7 @@ import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallController;
+import org.olat.modules.lecture.ui.component.LectureBlockComparator;
 import org.olat.modules.lecture.ui.event.ChangeDayEvent;
 import org.olat.modules.lecture.ui.event.OpenRepositoryEntryEvent;
 import org.olat.modules.lecture.ui.event.RollCallEvent;
@@ -281,18 +281,5 @@ public class LecturesCockpitController extends BasicController implements Activa
 		}
 		absencesListCtrl.setCurrentDate(date);
 		updateCurrentDate();
-	}
-	
-	private static class LectureBlockComparator implements Comparator<LectureBlock> {
-
-		@Override
-		public int compare(LectureBlock o1, LectureBlock o2) {
-			Date s1 = o1.getStartDate();
-			Date s2 = o2.getStartDate();
-			if(s1 == null && s2 == null) return 0;
-			if(s1 == null) return 1;
-			if(s2 == null) return -1;
-			return s1.compareTo(s2);
-		}
 	}
 }
