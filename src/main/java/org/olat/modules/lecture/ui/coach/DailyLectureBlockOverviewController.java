@@ -146,6 +146,11 @@ public class DailyLectureBlockOverviewController extends FormBasicController {
 	
 	public void setCurrentDate(Date date) {
 		this.currentDate = date;
+		if(closeButton != null) {
+			String title = translate("close.lecture.blocks.day", new String[] { formatter.formatDate(date) });
+			closeButton.setI18nKey(title);
+		}
+		
 		loadModel();
 		updateCanClose();
 	}

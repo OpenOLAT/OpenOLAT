@@ -21,6 +21,8 @@ package org.olat.modules.lecture.ui.coach;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -156,10 +158,9 @@ public class LecturesCockpitController extends BasicController implements Activa
 				fireEvent(ureq, event);
 			}
 		} else if(source == rollCallCtrl) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.BACK_EVENT || event == Event.CANCELLED_EVENT) {
 				backToDaily();
 			}
-			
 		} else if(event == Event.BACK_EVENT) {
 			backToDaily();
 		}
@@ -243,6 +244,8 @@ public class LecturesCockpitController extends BasicController implements Activa
 
 		Formatter formatter = Formatter.getInstance(getLocale());
 		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams);
+		Collections.sort(lectureBlocks, new LectureBlockComparator());
+		
 		List<Link> pendingLinks = new ArrayList<>();
 		Set<String> deduplicate = new HashSet<>();
 		for(LectureBlock lectureBlock:lectureBlocks) {
@@ -272,10 +275,24 @@ public class LecturesCockpitController extends BasicController implements Activa
 	}
 	
 	private void doChangeCurrentDate(Date date) {
+		dayChooserCtrl.setDate(date);
 		if(lectureBlocksCtrl != null) {
 			lectureBlocksCtrl.setCurrentDate(date);
 		}
 		absencesListCtrl.setCurrentDate(date);
 		updateCurrentDate();
+	}
+	
+	private static class LectureBlockComparator implements Comparator<LectureBlock> {
+
+		@Override
+		public int compare(LectureBlock o1, LectureBlock o2) {
+			Date s1 = o1.getStartDate();
+			Date s2 = o2.getStartDate();
+			if(s1 == null && s2 == null) return 0;
+			if(s1 == null) return 1;
+			if(s2 == null) return -1;
+			return s1.compareTo(s2);
+		}
 	}
 }
