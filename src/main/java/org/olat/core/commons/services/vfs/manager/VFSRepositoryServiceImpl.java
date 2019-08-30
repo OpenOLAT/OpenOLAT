@@ -47,6 +47,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.modules.bc.FolderLicenseHandler;
@@ -74,7 +75,6 @@ import org.olat.core.commons.services.vfs.model.VFSRevisionImpl;
 import org.olat.core.gui.control.Event;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -1075,6 +1075,27 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			dbInstance.commit();
 		}
 	}
+	
+	private VFSMetadata checkParentLine(VFSMetadata metadata, VFSMetadata parent) {
+		if(metadata == null || parent == null) {
+			return metadata;
+		}
+
+		VFSMetadata persistedParent = ((VFSMetadataImpl)metadata).getParent();
+		String materializedPath = metadataDao.getMaterializedPathKeys((VFSMetadataImpl)parent, (VFSMetadataImpl)metadata);
+		if(!persistedParent.equals(parent)) {
+			((VFSMetadataImpl)metadata).setMaterializedPathKeys(materializedPath);
+			((VFSMetadataImpl)metadata).setParent(parent);
+			return metadataDao.updateMetadata(metadata);
+		}
+
+		String pathKeys = ((VFSMetadataImpl)metadata).getMaterializedPathKeys();
+		if(!pathKeys.equals(materializedPath)) {
+			((VFSMetadataImpl)metadata).setMaterializedPathKeys(materializedPath);
+			return metadataDao.updateMetadata(metadata);
+		}
+		return metadata;
+	}
 
 	public void migrateDirectories(File folder) throws IOException {
 		Deque<VFSMetadata> parentLine = new LinkedList<>();
@@ -1094,10 +1115,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				
 				VFSMetadata parent = parentLine.peekLast();
 				VFSMetadata metadata = migrateMetadata(dir.toFile(), parent);
-				if(metadata != null && "migrated".equals(metadata.getMigrated())) {
-					dbInstance.commitAndCloseSession();
-					return FileVisitResult.SKIP_SUBTREE;
-				}
+				metadata = checkParentLine(metadata, parent);
 				parentLine.add(metadata);
 				dbInstance.commit();
 				return FileVisitResult.CONTINUE;
@@ -1107,7 +1125,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				File f = file.toFile();
 				if(!f.isHidden() && VFSRepositoryModule.canMeta(f) == VFSConstants.YES) {
-					migrateMetadata(file.toFile(), parentLine.getLast());
+					VFSMetadata metadata = migrateMetadata(file.toFile(), parentLine.getLast());
+					checkParentLine(metadata, parentLine.getLast());
 					
 					migrationCounter.incrementAndGet();
 					if(migrationCounter.get() % 25 == 0) {

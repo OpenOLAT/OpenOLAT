@@ -95,7 +95,7 @@ public class VFSMetadataDAO {
 	 * @param element The curriculum element
 	 * @return The materialized path of the specified element
 	 */
-	private String getMaterializedPathKeys(VFSMetadataImpl parent, VFSMetadataImpl element) {
+	protected String getMaterializedPathKeys(VFSMetadataImpl parent, VFSMetadataImpl element) {
 		if(parent != null) {
 			String parentPathOfKeys = parent.getMaterializedPathKeys();
 			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
