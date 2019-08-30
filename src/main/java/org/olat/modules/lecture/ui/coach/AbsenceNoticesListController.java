@@ -123,6 +123,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 	private CloseableCalloutWindowController toolsCalloutCtrl;
 	private AbsenceNoticeDetailsCalloutController detailsCtrl;
 	private RepositoryEntriesCalloutController entriesCalloutCtrl;
+	private ConfirmDeleteAbsenceNoticeController deleteNoticeCtrl;
 
 	@Autowired
 	private UserManager userManager;
@@ -361,6 +362,12 @@ public class AbsenceNoticesListController extends FormBasicController {
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			}
+		} else if(this.deleteNoticeCtrl == source) {
+			if(event == Event.DONE_EVENT) {
+				loadModel(lastSearchParams);
+			}
+			cmc.deactivate();
+			cleanUp();
 		} else if(contactTeachersCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
@@ -376,6 +383,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		removeAsListenerAndDispose(contactTeachersCtrl);
 		removeAsListenerAndDispose(entriesCalloutCtrl);
 		removeAsListenerAndDispose(toolsCalloutCtrl);
+		removeAsListenerAndDispose(deleteNoticeCtrl);
 		removeAsListenerAndDispose(editNoticeCtrl);
 		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
@@ -383,6 +391,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		contactTeachersCtrl = null;
 		entriesCalloutCtrl = null;
 		toolsCalloutCtrl = null;
+		deleteNoticeCtrl = null;
 		editNoticeCtrl = null;
 		detailsCtrl = null;
 		toolsCtrl = null;
@@ -556,7 +565,14 @@ public class AbsenceNoticesListController extends FormBasicController {
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, AbsenceNoticeRow row) {
-		getWindowControl().setWarning("Feature not implemented");
+		AbsenceNotice notice = lectureService.getAbsenceNotice(row);
+		deleteNoticeCtrl = new ConfirmDeleteAbsenceNoticeController(ureq, getWindowControl(), notice);
+		listenTo(deleteNoticeCtrl);
+		
+		String title = translate("delete");
+		cmc = new CloseableModalController(getWindowControl(), "close", deleteNoticeCtrl.getInitialComponent(), true, title, true);
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private class ToolsController extends BasicController {
@@ -571,9 +587,6 @@ public class AbsenceNoticesListController extends FormBasicController {
 			// edit absence, notice of absence, dispensation
 			String editI18nKey = AbsenceNoticeHelper.getEditKey(row.getAbsenceNotice());
 			addLink(editI18nKey, "edit", "o_icon o_icon_edit", mainVC);
-			if(secCallback.canDeleteAbsenceNotices()) {
-				addLink("delete", "delete", "o_icon o_icon_delete_item", mainVC);
-			}
 			// open profile
 			addLink("profile", "profile", "o_icon o_icon_user", mainVC);
 			// contact teacher
@@ -592,6 +605,10 @@ public class AbsenceNoticesListController extends FormBasicController {
 				entryLinkIds.add(linkId);
 			}
 			mainVC.contextPut("entryLinkIds", entryLinkIds);
+			
+			if(secCallback.canDeleteAbsenceNotices()) {
+				addLink("delete", "delete", "o_icon o_icon_delete_item", mainVC);
+			}
 	
 			putInitialPanel(mainVC);
 		}

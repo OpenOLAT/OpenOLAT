@@ -86,6 +86,10 @@ public class AbsenceNoticeDAO {
 		return dbInstance.getCurrentEntityManager().merge(notice);
 	}
 	
+	public void deleteAbsenceNotice(AbsenceNotice notice) {
+		dbInstance.getCurrentEntityManager().remove(notice);
+	}
+	
 	public List<LectureBlockRollCall> getRollCalls(AbsenceNotice notice) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select rollCall from lectureblockrollcall rollCall")

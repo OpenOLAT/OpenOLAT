@@ -318,6 +318,13 @@ public interface LectureService {
 	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
 			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks, Identity actingIdentity);
 	
+	/**
+	 * Delete the absence notice and remove the absences from the roll calls.
+	 * 
+	 * @param absenceNotice Absence nnotice to delete
+	 */
+	public void deleteAbsenceNotice(AbsenceNotice absenceNotice, Identity actingIdentity);
+	
 	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete);
 	
 	public VFSContainer getAbsenceNoticeAttachmentsContainer(AbsenceNotice absenceNotice);

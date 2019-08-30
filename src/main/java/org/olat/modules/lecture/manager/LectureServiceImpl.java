@@ -576,7 +576,63 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		auditLog(Action.createAbsenceNoticeRelations, null, afterXml, null, notice, absentIdentity, actingIdentity);
 		return notice;
 	}
-	
+
+	@Override
+	public void deleteAbsenceNotice(AbsenceNotice absenceNotice, Identity actingIdentity) {
+		AbsenceNotice notice = absenceNoticeDao.loadAbsenceNotice(absenceNotice.getKey());
+		if(notice == null) return; // nothing to do
+		
+		String beforeNotice = toAuditXml(absenceNotice);
+		Identity assessedIdentity = notice.getIdentity();
+		AbsenceNoticeRelationsAuditImpl beforeRelations = new AbsenceNoticeRelationsAuditImpl();
+		
+
+		List<AbsenceNoticeToLectureBlock> noticeToBlocks = absenceNoticeToLectureBlockDao.getRelations(absenceNotice);
+		if(noticeToBlocks != null && !noticeToBlocks.isEmpty()) {
+			beforeRelations.setNoticeToBlocks(noticeToBlocks);
+			absenceNoticeToLectureBlockDao.deleteRelations(noticeToBlocks);
+		}
+		List<AbsenceNoticeToRepositoryEntry> noticeToEntries = absenceNoticeToRepositoryEntryDao.getRelations(absenceNotice);
+		if(noticeToEntries != null && !noticeToEntries.isEmpty()) {
+			beforeRelations.setNoticeToEntries(noticeToEntries);
+			absenceNoticeToRepositoryEntryDao.deleteRelations(noticeToEntries);
+		}
+		
+		List<LectureBlockRollCall> rollCalls = absenceNoticeDao.getRollCalls(notice);
+		if(rollCalls != null && !rollCalls.isEmpty()) {
+			for(LectureBlockRollCall rollCall:rollCalls) {
+				String beforeRollCall = auditLogDao.toXml(rollCall);
+				
+				rollCall.setAbsenceAuthorized(null);
+				rollCall.setAbsenceNotice(null);
+				rollCall.setAbsenceNoticeLectures(null);
+
+				LectureBlock lectureBlock = rollCall.getLectureBlock();
+				List<Integer> absenceToRemove = new ArrayList<>();
+				for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
+					absenceToRemove.add(Integer.valueOf(i));
+				}
+				lectureBlockRollCallDao.removeLecture(rollCall.getLectureBlock(), rollCall, absenceToRemove);
+				rollCall = lectureBlockRollCallDao.update(rollCall);
+
+				String afterRollCall = auditLogDao.toXml(rollCall);
+
+				RepositoryEntry entry = lectureBlock.getEntry();
+				auditLog(Action.deleteAbsenceNotice, beforeRollCall, afterRollCall, null, lectureBlock, rollCall, entry, assessedIdentity, actingIdentity);
+			}
+		}
+		// delete
+		absenceNoticeDao.deleteAbsenceNotice(notice);
+		dbInstance.commit();
+
+		auditLog(Action.deleteAbsenceNotice, beforeNotice, null, null, absenceNotice, assessedIdentity, actingIdentity);
+		if((noticeToBlocks != null && !noticeToBlocks.isEmpty()) || (noticeToEntries != null && !noticeToEntries.isEmpty())) {
+			String beforeXml = auditLogDao.toXml(beforeRelations);
+			auditLog(Action.deleteAbsenceNotice, beforeXml, null, null, absenceNotice, assessedIdentity, actingIdentity);
+		}
+		dbInstance.commit();
+	}
+
 	@Override
 	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
 			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks, Identity actingIdentity) {
