@@ -108,15 +108,14 @@ public class AbsenceNoticeFinishStepCallback implements StepRunnerCallback {
 	private void inform(UserRequest ureq, WindowControl wControl) {
 		boolean success = false;
 		try {
-			List<ContactList> contactList = new ArrayList<>();
 			ContactList memberList = new ContactList(translator.translate("contact.teachers.list.name"));
 			memberList.addAllIdentites(noticeWrapper.getIdentitiesToContact());
 			MailContext context = new MailContextImpl(wControl.getBusinessControl().getAsString());
 			MailBundle bundle = new MailBundle();
 			bundle.setContext(context);
 			bundle.setFromId(ureq.getIdentity());						
-			bundle.setContactLists(contactList);
-			bundle.setContent(noticeWrapper.getContactSubject(), noticeWrapper.getContactSubject());
+			bundle.setContactList(memberList);
+			bundle.setContent(noticeWrapper.getContactSubject(), noticeWrapper.getContactBody());
 			MailerResult result = mailService.sendMessage(bundle);
 			success = result.isSuccessful();
 			if (success) {
