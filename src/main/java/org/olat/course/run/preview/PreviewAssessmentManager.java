@@ -122,24 +122,15 @@ final class PreviewAssessmentManager implements AssessmentManager {
 		//
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#saveNodeCoachComment(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, java.lang.String)
-	 */
 	@Override
 	public void saveNodeCoachComment(CourseNode courseNode, Identity assessedIdentity, String comment) {
 		throw new AssertException("Not implemented for preview.");
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#saveNodePassed(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, org.olat.core.id.Identity, java.lang.Boolean)
-	 */
 	private void saveNodePassed(CourseNode courseNode, Boolean passed) {
 		nodePassed.put(courseNode.getIdent(), passed);
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#incrementNodeAttempts(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
-	 */
 	@Override
 	public void incrementNodeAttempts(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment, Role by) {
 		Integer attempts = nodeAttempts.get(courseNode.getIdent());
@@ -149,10 +140,6 @@ final class PreviewAssessmentManager implements AssessmentManager {
 		nodeAttempts.put(courseNode.getIdent(), Integer.valueOf(iAttempts));
 	}
 	
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#incrementNodeAttemptsInBackground(org.olat.course.nodes.CourseNode,
-	 *      org.olat.core.id.Identity, org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public void incrementNodeAttemptsInBackground(CourseNode courseNode, Identity identity, UserCourseEnvironment userCourseEnvironment) {
 		incrementNodeAttempts(courseNode, identity, userCourseEnvironment, Role.auto);
@@ -161,6 +148,12 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	@Override
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
+		//
+	}
+
+	@Override
+	public void updateAssessmentStatus(CourseNode courseNode, Identity assessedIdentity, AssessmentEntryStatus status,
+			Role by) {
 		//
 	}
 
@@ -174,17 +167,11 @@ final class PreviewAssessmentManager implements AssessmentManager {
 		//
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#getNodeScore(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
-	 */
 	@Override
 	public Float getNodeScore(CourseNode courseNode, Identity identity) {
 		return nodeScores.get(courseNode.getIdent());
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#getNodeComment(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
-	 */
 	@Override
 	public String getNodeComment(CourseNode courseNode, Identity identity) {
 		return "This is a preview"; //default comment for preview
@@ -195,17 +182,11 @@ final class PreviewAssessmentManager implements AssessmentManager {
 		return Collections.emptyList();
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#getNodeCoachComment(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
-	 */
 	@Override
 	public String getNodeCoachComment(CourseNode courseNode, Identity identity) {
 		return "This is a preview"; //default comment for preview
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#getNodePassed(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
-	 */
 	@Override
 	public Boolean getNodePassed(CourseNode courseNode, Identity identity) {
 		return nodePassed.get(courseNode.getIdent());
@@ -216,9 +197,6 @@ final class PreviewAssessmentManager implements AssessmentManager {
 		return nodePassed.get(courseNode.getIdent());
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#getNodeAttempts(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
-	 */
 	@Override
 	public Integer getNodeAttempts(CourseNode courseNode, Identity identity) {
 		Integer attempts = nodeAttempts.get(courseNode.getIdent());
@@ -235,36 +213,20 @@ final class PreviewAssessmentManager implements AssessmentManager {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#registerForAssessmentChangeEvents(org.olat.core.util.event.GenericEventListener, org.olat.core.id.Identity)
-	 */
 	@Override
 	public void registerForAssessmentChangeEvents(GenericEventListener gel, Identity identity) {
 		throw new AssertException("Not implemented for preview.");
 	}
 
-	/**
-	 * @see org.olat.course.assessment.AssessmentManager#deregisterFromAssessmentChangeEvents(org.olat.core.util.event.GenericEventListener)
-	 */
 	@Override
 	public void deregisterFromAssessmentChangeEvents(GenericEventListener gel) {
 		throw new AssertException("Not implemented for preview.");
 	}
 
-	/**
-	 * 
-	 * @see org.olat.course.assessment.AssessmentManager#saveAssessmentID(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity, java.lang.String)
-	 */
 	private void saveAssessmentID(CourseNode courseNode, Long assessmentID) {
 		nodeAssessmentID.put(courseNode.getIdent(), assessmentID);
 	}
 	
-	/**
-	 * 
-	 * @param courseNode
-	 * @param identity
-	 * @return
-	 */
 	@Override
 	public Long getAssessmentID(CourseNode courseNode, Identity identity) {
 		return nodeAssessmentID.get(courseNode.getIdent());
@@ -288,7 +250,7 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	}
 
 	@Override
-	public OLATResourceable createOLATResourceableForLocking(Identity assessedIdentity) {				
+	public OLATResourceable createOLATResourceableForLocking(Identity assessedIdentity) {
 		throw new AssertException("Not implemented for preview.");
 	}
 }

@@ -21,6 +21,7 @@ package org.olat.course.nodeaccess;
 
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.model.NodeAccessTypeImpl;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -38,6 +39,10 @@ public interface NodeAccessType {
 	
 	public static NodeAccessType of(ICourse course) {
 		return course.getCourseConfig().getNodeAccessType();
+	}
+	
+	public static NodeAccessType of(UserCourseEnvironment userCourseEnvironment) {
+		return userCourseEnvironment.getCourseEnvironment().getCourseConfig().getNodeAccessType();
 	}
 
 }

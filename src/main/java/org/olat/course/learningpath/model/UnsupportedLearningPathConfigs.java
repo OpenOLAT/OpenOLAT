@@ -17,17 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment;
+package org.olat.course.learningpath.model;
+
+import org.olat.course.learningpath.LearningPathConfigs;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 30 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum AssessmentAction {
+public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 
-	nodeVisited,
-	confirmed
-	
+	@Override
+	public boolean isDoneOnNodeVisited() {
+		return false;
+	}
+
 }

@@ -418,6 +418,20 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
+	public void updateAssessmentStatus(CourseNode courseNode, Identity assessedIdentity, AssessmentEntryStatus status,
+			Role by) {
+		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		if(by == Role.coach) {
+			nodeAssessment.setLastCoachModified(new Date());
+		} else if(by == Role.user) {
+			nodeAssessment.setLastUserModified(new Date());
+		}
+		nodeAssessment.setAssessmentStatus(status);
+		assessmentService.updateAssessmentEntry(nodeAssessment);
+		DBFactory.getInstance().commit();
+	}
+
+	@Override
 	public void saveScoreEvaluation(CourseNode courseNode, Identity identity, Identity assessedIdentity,
 			ScoreEvaluation scoreEvaluation, UserCourseEnvironment userCourseEnv,
 			boolean incrementUserAttempts, Role by) {

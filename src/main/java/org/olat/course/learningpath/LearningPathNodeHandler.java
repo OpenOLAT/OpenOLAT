@@ -36,6 +36,8 @@ public interface LearningPathNodeHandler {
 	
 	public boolean isSupported();
 	
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode);
+	public LearningPathConfigs getConfigs(CourseNode courseNode);
+	
+	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode);
 
 }

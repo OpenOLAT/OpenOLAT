@@ -25,7 +25,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -51,7 +53,12 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public LearningPathConfigs getConfigs(CourseNode courseNode) {
+		return new ModuleLearningPathConfigs(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
 		Translator translator = Util.createPackageTranslator(TabbableLeaningPathNodeConfigController.class, ureq.getLocale());
 		return MessageUIFactory.createInfoMessage(ureq, wControl, null, translator.translate("no.configurations"));
 	}

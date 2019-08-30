@@ -45,7 +45,7 @@ import org.olat.modules.ModuleConfiguration;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LeaningPathNodeConfigController extends FormBasicController {
+public class LearningPathNodeConfigController extends FormBasicController {
 	
 	public static final String CONFIG_KEY_ESTIMATED_DURATION = "learning.path.estimated.duration";
 	public static final String CONFIG_KEY_OBLIGATION = "learning.path.obligation";
@@ -63,7 +63,7 @@ public class LeaningPathNodeConfigController extends FormBasicController {
 	private final ModuleConfiguration configs;
 	private final LearningPathControllerConfig ctrlConfig;
 
-	public LeaningPathNodeConfigController(UserRequest ureq, WindowControl wControl,
+	public LearningPathNodeConfigController(UserRequest ureq, WindowControl wControl,
 			ModuleConfiguration configs, LearningPathControllerConfig ctrlConfig) {
 		super(ureq, wControl);
 		this.configs = configs;
@@ -99,8 +99,9 @@ public class LeaningPathNodeConfigController extends FormBasicController {
 	
 	private KeyValues getDoneTriggerKV() {
 		KeyValues doneTriggerKV = new KeyValues();
-		if (ctrlConfig.getAssessmentActions().contains(AssessmentAction.nodeClicked)) {
-			doneTriggerKV.add(entry(AssessmentAction.nodeClicked.name(), translate("config.done.trigger.started")));
+		doneTriggerKV.add(entry(CONFIG_VALUE_DONE_TRIGGER_NONE, translate("config.done.trigger.none")));
+		if (ctrlConfig.getAssessmentActions().contains(AssessmentAction.nodeVisited)) {
+			doneTriggerKV.add(entry(AssessmentAction.nodeVisited.name(), translate("config.done.trigger.visited")));
 		}
 		if (ctrlConfig.getAssessmentActions().contains(AssessmentAction.confirmed)) {
 			doneTriggerKV.add(entry(AssessmentAction.confirmed.name(), translate("config.done.trigger.confirmed")));
@@ -144,10 +145,6 @@ public class LeaningPathNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		fireEvent(ureq, Event.DONE_EVENT);
-	}
-	
-	protected ModuleConfiguration getUpdatedConfig() {
 		String estimatedTime = estimatedDurationEl.getValue();
 		configs.setStringValue(CONFIG_KEY_ESTIMATED_DURATION, estimatedTime);
 		
@@ -161,7 +158,7 @@ public class LeaningPathNodeConfigController extends FormBasicController {
 				: CONFIG_DEFAULT_DONE_TRIGGER;
 		configs.setStringValue(CONFIG_KEY_DONE_TRIGGER, doneTrigger);
 		
-		return configs;
+		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
 	@Override

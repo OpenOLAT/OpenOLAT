@@ -22,7 +22,9 @@ package org.olat.course.learningpath.manager;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.model.UnsupportedLearningPathConfigs;
 import org.olat.course.nodes.CourseNode;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +39,8 @@ public class UnsupportedLearningPathNodeHandler implements LearningPathNodeHandl
 
 	public static final String NODE_TYPE = "unsupported.learning.path.nodes";
 
+	private static final UnsupportedLearningPathConfigs UNSUPPORTED_LEARNING_PATH_CONFIGS = new UnsupportedLearningPathConfigs();
+
 	@Override
 	public String acceptCourseNodeType() {
 		return NODE_TYPE;
@@ -48,7 +52,12 @@ public class UnsupportedLearningPathNodeHandler implements LearningPathNodeHandl
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public LearningPathConfigs getConfigs(CourseNode courseNode) {
+		return UNSUPPORTED_LEARNING_PATH_CONFIGS;
+	}
+
+	@Override
+	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
 		return null;
 	}
 

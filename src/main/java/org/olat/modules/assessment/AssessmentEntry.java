@@ -68,6 +68,8 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public AssessmentEntryStatus getAssessmentStatus();
 	
 	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus);
+	
+	public Date getAssessmentDone();
 
 	/**
 	 * Used by Onyx

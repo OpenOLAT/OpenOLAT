@@ -89,6 +89,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private Boolean passed;
 	@Column(name="a_status", nullable=true, insertable=true, updatable=true)
 	private String status;
+	@Column(name="a_date_done", nullable=true, insertable=true, updatable=true)
+	private Date assessmentDone;
 	@Column(name="a_details", nullable=true, insertable=true, updatable=true)
 	private String details;
 	@Column(name="a_user_visibility", nullable=true, insertable=true, updatable=true)
@@ -240,11 +242,23 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 
 	@Override
 	public void setAssessmentStatus(AssessmentEntryStatus assessmentStatus) {
+		AssessmentEntryStatus previousStatus = getAssessmentStatus();
+		if (AssessmentEntryStatus.done.equals(assessmentStatus) && !AssessmentEntryStatus.done.equals(previousStatus)) {
+			assessmentDone = new Date();
+		} else {
+			assessmentDone = null;
+		}
+		
 		if(assessmentStatus == null) {
 			this.status = null;
 		} else {
 			this.status = assessmentStatus.name();
 		}
+	}
+
+	@Override
+	public Date getAssessmentDone() {
+		return assessmentDone;
 	}
 
 	@Override

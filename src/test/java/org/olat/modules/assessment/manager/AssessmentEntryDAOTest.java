@@ -33,6 +33,7 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -228,6 +229,43 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertEquals(nodeAssessment.getFirstVisit(), firstDate);
 		Assert.assertEquals(nodeAssessment.getLastVisit(), secondDate);
 		Assert.assertEquals(nodeAssessment.getNumberOfVisits().intValue(), 2);
+	}
+	
+	@Test
+	public void setAssessmentDone() {
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		AssessmentEntry nodeAssessment = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, refEntry, 2.0f, Boolean.TRUE, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNull(nodeAssessment.getAssessmentDone());
+		
+		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.done);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(nodeAssessment.getAssessmentDone());
+		
+		nodeAssessment.setAssessmentStatus(null);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNull(nodeAssessment.getAssessmentDone());
+		
+		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.inProgress);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNull(nodeAssessment.getAssessmentDone());
+		
+		nodeAssessment.setAssessmentStatus(AssessmentEntryStatus.done);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(nodeAssessment.getAssessmentDone());
 	}
 	
 	@Test

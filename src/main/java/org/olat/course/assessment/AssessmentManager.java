@@ -98,6 +98,8 @@ public interface AssessmentManager {
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentRunStatus status, Role by);
 
+	public void updateAssessmentStatus(CourseNode courseNode, Identity assessedIdentity, AssessmentEntryStatus status, Role by);
+	
 	/**
 	 * Save an assessment comment for this node for a user. If there is already a comment property available, 
 	 * it will be overwritten with the new value
@@ -275,7 +277,7 @@ public interface AssessmentManager {
 	 */
 	public Boolean getNodeFullyAssessed(CourseNode courseNode, Identity identity);
 	
-
+	
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity);
 	
 	public AssessmentEntry createAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, ScoreEvaluation scoreEvaluation);

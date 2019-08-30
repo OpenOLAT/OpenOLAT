@@ -23,9 +23,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.AssessmentAction;
+import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
-import org.olat.course.learningpath.ui.LeaningPathNodeConfigController;
-import org.olat.course.learningpath.ui.LeaningPathNodeConfigController.LearningPathControllerConfig;
+import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
+import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
+import org.olat.course.learningpath.ui.LearningPathNodeConfigController.LearningPathControllerConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.springframework.stereotype.Service;
@@ -50,11 +52,16 @@ public class SPLearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	@Override
-	public Controller createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
-		LearningPathControllerConfig ctrlConfig = LeaningPathNodeConfigController.builder()
-				.addAssessmentAction(AssessmentAction.nodeClicked)
+	public LearningPathConfigs getConfigs(CourseNode courseNode) {
+		return new ModuleLearningPathConfigs(courseNode.getModuleConfiguration());
+	}
+
+	@Override
+	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
+				.addAssessmentAction(AssessmentAction.nodeVisited)
 				.build();
-		return new LeaningPathNodeConfigController(ureq, wControl, courseNode.getModuleConfiguration(), ctrlConfig);
+		return new LearningPathNodeConfigController(ureq, wControl, courseNode.getModuleConfiguration(), ctrlConfig);
 	}
 
 }

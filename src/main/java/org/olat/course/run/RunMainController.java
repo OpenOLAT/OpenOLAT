@@ -798,6 +798,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		// remove as listener from this course events:
 		// - group modification events

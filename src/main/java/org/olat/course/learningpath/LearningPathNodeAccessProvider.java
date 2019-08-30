@@ -31,12 +31,18 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.learningpath.manager.UnsupportedLearningPathNodeHandler;
-import org.olat.course.learningpath.ui.LeaningPathNodeConfigController;
+import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.navigation.NodeVisitedListener;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +53,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class LearningPathNodeAccessProvider implements NodeAccessProvider {
+public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeVisitedListener {
 
 	private static final String UNSUPPORTED_LEARNING_PATH_TYPE = UnsupportedLearningPathNodeHandler.NODE_TYPE;
 	
@@ -67,7 +73,7 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 		}
 	}
 	
-	private  LearningPathNodeHandler getLearningPathNodeHandler(String courseNodeType) {
+	private LearningPathNodeHandler getLearningPathNodeHandler(String courseNodeType) {
 		LearningPathNodeHandler handler = learningPathNodeHandlers.get(courseNodeType);
 		if (handler == null) {
 			handler = nonLearningPathNodeHandler;
@@ -75,8 +81,12 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 		return handler;
 	}
 
-	private  LearningPathNodeHandler getLearningPathNodeHandler(CourseNode courseNode) {
+	private LearningPathNodeHandler getLearningPathNodeHandler(CourseNode courseNode) {
 		return getLearningPathNodeHandler(courseNode.getType());
+	}
+	
+	private LearningPathConfigs getConfigs(CourseNode courseNode) {
+		return getLearningPathNodeHandler(courseNode).getConfigs(courseNode);
 	}
 	
 	@Override
@@ -86,7 +96,7 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 
 	@Override
 	public String getDisplayName(Locale locale) {
-		Translator translator = Util.createPackageTranslator(LeaningPathNodeConfigController.class, locale);
+		Translator translator = Util.createPackageTranslator(LearningPathNodeConfigController.class, locale);
 		return translator.translate("access.provider.name");
 	}
 
@@ -97,8 +107,19 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
-		Controller configCtrl = getLearningPathNodeHandler(courseNode).createEditController(ureq, wControl, courseNode);
+		Controller configCtrl = getLearningPathNodeHandler(courseNode).createConfigEditController(ureq, wControl, courseNode);
 		return new TabbableLeaningPathNodeConfigController(ureq, wControl, configCtrl);
+	}
+
+	@Override
+	public void onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		boolean doneOnNodeStarted = getConfigs(courseNode).isDoneOnNodeVisited();
+		boolean participant = userCourseEnvironment.isParticipant();
+		if (doneOnNodeStarted && participant) {
+			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+			Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+			am.updateAssessmentStatus(courseNode, identity, AssessmentEntryStatus.done, Role.user);
+		}
 	}
 
 }
