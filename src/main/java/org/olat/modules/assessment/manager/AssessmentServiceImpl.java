@@ -108,6 +108,11 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	}
 
 	@Override
+	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit) {
+		assessmentEntryDao.setLastVisit(nodeAssessment, lastVisit);
+	}
+
+	@Override
 	public AssessmentEntry updateAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
 			RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
 		AssessmentEntry assessmentEntry = getOrCreateAssessmentEntry(assessedIdentity, null, entry, subIdent, referenceEntry);

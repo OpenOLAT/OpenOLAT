@@ -169,6 +169,11 @@ final class PreviewAssessmentManager implements AssessmentManager {
 		//
 	}
 
+	@Override
+	public void updateLastVisited(CourseNode courseNode, Identity assessedIdentity, Date lastVisit) {
+		//
+	}
+
 	/**
 	 * @see org.olat.course.assessment.AssessmentManager#getNodeScore(org.olat.course.nodes.CourseNode, org.olat.core.id.Identity)
 	 */

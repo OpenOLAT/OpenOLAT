@@ -396,6 +396,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
+	public void updateLastVisited(CourseNode courseNode, Identity assessedIdentity, Date lastVisit) {
+		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		assessmentService.setLastVisit(nodeAssessment, lastVisit);
+		DBFactory.getInstance().commit();
+	}
+
+	@Override
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);

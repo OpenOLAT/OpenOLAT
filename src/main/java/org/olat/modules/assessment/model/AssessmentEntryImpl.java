@@ -108,6 +108,13 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Column(name="a_coach_comment", nullable=true, insertable=true, updatable=true)
 	private String coachComment;
 	
+	@Column(name="a_first_visit", nullable=true, insertable=true, updatable=true)
+	private Date firstVisit;
+	@Column(name="a_last_visit", nullable=true, insertable=true, updatable=true)
+	private Date lastVisit;
+	@Column(name="a_num_visits", nullable=true, insertable=true, updatable=true)
+	private Integer numberOfVisits;
+	
 	// fully passed and assessment id are only for onyx
 	@Column(name="a_fully_assessed", nullable=true, insertable=true, updatable=true)
 	private Boolean fullyAssessed;
@@ -165,6 +172,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		return lastCoachModified;
 	}
 
+	@Override
 	public void setLastCoachModified(Date lastCoachModified) {
 		this.lastCoachModified = lastCoachModified;
 	}
@@ -174,6 +182,7 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		return lastUserModified;
 	}
 
+	@Override
 	public void setLastUserModified(Date lastUserModified) {
 		this.lastUserModified = lastUserModified;
 	}
@@ -342,6 +351,33 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	}
 
 	@Override
+	public Date getFirstVisit() {
+		return firstVisit;
+	}
+
+	public void setFirstVisit(Date firstVisit) {
+		this.firstVisit = firstVisit;
+	}
+
+	@Override
+	public Date getLastVisit() {
+		return lastVisit;
+	}
+
+	public void setLastVisit(Date lastVisit) {
+		this.lastVisit = lastVisit;
+	}
+
+	@Override
+	public Integer getNumberOfVisits() {
+		return numberOfVisits;
+	}
+
+	public void setNumberOfVisits(Integer numberOfVisits) {
+		this.numberOfVisits = numberOfVisits;
+	}
+
+	@Override
 	public RepositoryEntry getRepositoryEntry() {
 		return repositoryEntry;
 	}
@@ -364,10 +400,12 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 		return referenceEntry;
 	}
 
+	@Override
 	public void setReferenceEntry(RepositoryEntry referenceEntry) {
 		this.referenceEntry = referenceEntry;
 	}
 
+	@Override
 	public String getAnonymousIdentifier() {
 		return anonymousIdentifier;
 	}

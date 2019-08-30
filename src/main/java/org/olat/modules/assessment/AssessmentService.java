@@ -91,6 +91,8 @@ public interface AssessmentService {
 	
 	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent);
 	
+	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
+
 	/**
 	 * Update the status for a user, create the assessment entries if it doesn't exist.
 	 * exist.

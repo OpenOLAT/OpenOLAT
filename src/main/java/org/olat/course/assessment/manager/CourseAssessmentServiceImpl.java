@@ -20,6 +20,7 @@
 package org.olat.course.assessment.manager;
 
 import java.io.File;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,7 @@ import org.olat.course.assessment.handler.NonAssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -61,7 +63,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class CourseAssessmentServiceImpl implements CourseAssessmentService {
+public class CourseAssessmentServiceImpl implements CourseAssessmentService, NodeVisitedListener {
 	
 	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;
 	
@@ -294,6 +296,13 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService {
 			AssessmentToolSecurityCallback assessmentCallback) {
 		return getAssessmentHandler(courseNode).getIdentityListController(ureq, wControl, stackPanel, courseNode,
 				courseEntry, group, coachCourseEnv, toolContainer, assessmentCallback);
+	}
+
+	@Override
+	public void onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateLastVisited(courseNode, assessedIdentity, new Date());
 	}
 
 }

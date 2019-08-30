@@ -199,6 +199,22 @@ public class AssessmentEntryDAO {
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);
 	}
 	
+	public AssessmentEntry setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit) {
+		if (nodeAssessment instanceof AssessmentEntryImpl) {
+			AssessmentEntryImpl impl = (AssessmentEntryImpl)nodeAssessment;
+			impl.setLastVisit(lastVisit);
+			if (nodeAssessment.getFirstVisit() == null) {
+				impl.setFirstVisit(lastVisit);
+			}
+			int numVisits = nodeAssessment.getNumberOfVisits() != null? nodeAssessment.getNumberOfVisits().intValue(): 0;
+			numVisits++;
+			impl.setNumberOfVisits(Integer.valueOf(numVisits));
+			impl.setLastModified(new Date());
+			return dbInstance.getCurrentEntityManager().merge(impl);
+		}
+		return nodeAssessment;
+	}
+	
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry nodeAssessment) {
 		((AssessmentEntryImpl)nodeAssessment).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(nodeAssessment);

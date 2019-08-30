@@ -19,6 +19,8 @@
  */
 package org.olat.modules.assessment.manager;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -198,6 +200,34 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		Assert.assertNull(reloadedAssessmentRef.getPassed());
 		Assert.assertEquals(new Integer(0), reloadedAssessmentRef.getAttempts());
 		Assert.assertNull(reloadedAssessmentRef.getCompletion());
+	}
+	
+	@Test
+	public void setLastVisit() {
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		AssessmentEntry nodeAssessment = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, refEntry, 2.0f, Boolean.TRUE, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Date firstDate = new GregorianCalendar(2013,1,28,13,24,56).getTime();
+		Date secondDate = new GregorianCalendar(2014,1,1,1,1,1).getTime();
+		
+		nodeAssessment = assessmentEntryDao.setLastVisit(nodeAssessment, firstDate);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertEquals(nodeAssessment.getFirstVisit(), firstDate);
+		Assert.assertEquals(nodeAssessment.getLastVisit(), firstDate);
+		Assert.assertEquals(nodeAssessment.getNumberOfVisits().intValue(), 1);
+		
+		nodeAssessment = assessmentEntryDao.setLastVisit(nodeAssessment, secondDate);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertEquals(nodeAssessment.getFirstVisit(), firstDate);
+		Assert.assertEquals(nodeAssessment.getLastVisit(), secondDate);
+		Assert.assertEquals(nodeAssessment.getNumberOfVisits().intValue(), 2);
 	}
 	
 	@Test

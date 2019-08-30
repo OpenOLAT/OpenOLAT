@@ -103,7 +103,13 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public String getCoachComment();
 
 	public void setCoachComment(String coachComment);
-
+	
+	public Date getFirstVisit();
+	
+	public Date getLastVisit();
+	
+	public Integer getNumberOfVisits();
+	
 	/**
 	 * @return The course or learn resource where the user is assessed.
 	 */

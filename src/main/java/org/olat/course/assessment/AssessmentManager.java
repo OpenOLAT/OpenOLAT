@@ -78,6 +78,15 @@ public interface AssessmentManager {
 	public void updateLastModifications(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment, Role by);
 
 	/**
+	 * Update the last visited dated and increments the number of visits.
+	 *
+	 * @param courseNode
+	 * @param assessedIdentity
+	 * @param lastVisit
+	 */
+	public void updateLastVisited(CourseNode courseNode, Identity assessedIdentity, Date lastVisit);
+
+	/**
 	 * Change the current completion.
 	 * 
 	 * @param courseNode The course node

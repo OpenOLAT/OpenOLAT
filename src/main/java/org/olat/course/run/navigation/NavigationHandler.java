@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.GenericTreeNode;
@@ -52,7 +54,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -73,6 +74,7 @@ import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 
 /**
@@ -90,6 +92,9 @@ public class NavigationHandler implements Disposable {
 	private Set<String> openCourseNodeIds = new HashSet<>();
 	private List<String> openTreeNodeIds = new ArrayList<>();
 	private Map<String,SubTree> externalTreeModels = new HashMap<>();
+	
+	@Autowired
+	private List<NodeVisitedListener> nodeVisitedListeners;
 
 	/**
 	 * @param userCourseEnv
@@ -99,6 +104,7 @@ public class NavigationHandler implements Disposable {
 		this.userCourseEnv = userCourseEnv;
 		this.previewMode = previewMode;
 		this.filter = filter;
+		CoreSpringFactory.autowireObject(this);
 	}
 
 	/**
@@ -507,9 +513,10 @@ public class NavigationHandler implements Disposable {
 						nclr.getRunController().addControllerListener(listeningController);
 					}
 				}
-				// write log information
-				ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_NAVIGATION_NODE_ACCESS, getClass(),
-						LoggingResourceable.wrap(courseNode));
+				
+				for (NodeVisitedListener nodeVisitedListener : nodeVisitedListeners) {
+					nodeVisitedListener.onNodeVisited(courseNode, userCourseEnv);
+				}
 			}
 		}
 		return nclr;
