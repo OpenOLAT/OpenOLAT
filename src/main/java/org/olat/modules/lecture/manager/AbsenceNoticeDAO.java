@@ -208,6 +208,7 @@ public class AbsenceNoticeDAO {
 	public List<AbsenceNoticeInfos> search(AbsenceNoticeSearchParameters searchParams, boolean absenceDefaultAuthorized) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select notice from absencenotice as notice")
+		  .append(" inner join fetch notice.absenceCategory as category")
 		  .append(" inner join fetch notice.identity as aIdent")
 		  .append(" inner join fetch aIdent.user as aUser");
 		if(!searchParams.getTypes().isEmpty()) {

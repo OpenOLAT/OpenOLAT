@@ -36,6 +36,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.Util;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -46,6 +47,7 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.modules.co.ContactFormController;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlockAuditLog.Action;
 import org.olat.modules.lecture.LectureService;
@@ -72,7 +74,7 @@ public class AbsenceNoticeFinishStepCallback implements StepRunnerCallback {
 	
 	public AbsenceNoticeFinishStepCallback(EditAbsenceNoticeWrapper noticeWrapper, Translator translator) {
 		CoreSpringFactory.autowireObject(this);
-		this.translator = translator;
+		this.translator = Util.createPackageTranslator(ContactFormController.class, translator.getLocale(), translator);
 		this.noticeWrapper = noticeWrapper;
 	}
 
