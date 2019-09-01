@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.manager;
+package org.olat.course.learningpath.evaluation;
 
 import java.util.List;
 
@@ -25,7 +25,6 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.learningpath.LearningPathStatus;
-import org.olat.course.learningpath.LearningPathStatusEvaluator;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
@@ -35,7 +34,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class DefaultLinearStatusEvaluator implements LearningPathStatusEvaluator {
+public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 
 	private static final Logger log = Tracing.createLoggerFor(DefaultLinearStatusEvaluator.class);
 

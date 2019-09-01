@@ -23,8 +23,9 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
-import org.olat.course.learningpath.LearningPathStatusEvaluatorProvider;
-import org.olat.course.learningpath.LearningPathStatusRefresher;
+import org.olat.course.learningpath.evaluation.LearningPathEvaluator;
+import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
+import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -39,7 +40,7 @@ public class LearningPathTreeModelBuilder {
 		
 	private final CourseNode rootNode;
 	private ScoreAccounting scoreAccounting;
-	private LearningPathStatusEvaluatorProvider evaluatorProvider;
+	private StatusEvaluatorProvider statusEvaluatorProvider;
 	
 	private LearningPathService learningPathService;
 	
@@ -61,9 +62,9 @@ public class LearningPathTreeModelBuilder {
 		this.rootNode = rootNode;
 	}
 	
-	public LearningPathTreeModelBuilder withEvaluatedStatus(LearningPathStatusEvaluatorProvider evaluatorProvider,
+	public LearningPathTreeModelBuilder withEvaluatedStatus(StatusEvaluatorProvider statusEvaluatorProvider,
 			ScoreAccounting scoreAccounting) {
-		this.evaluatorProvider = evaluatorProvider;
+		this.statusEvaluatorProvider = statusEvaluatorProvider;
 		this.scoreAccounting = scoreAccounting;
 		return this;
 	}
@@ -73,13 +74,17 @@ public class LearningPathTreeModelBuilder {
 		
 		GenericTreeModel treeModel = createTreeModel();
 		
-		if (scoreAccounting != null && evaluatorProvider == null) {
-			evaluatorProvider = learningPathService.getStatusEvaluatorProvider();
+		if (scoreAccounting != null && statusEvaluatorProvider == null) {
+			statusEvaluatorProvider = learningPathService.getStatusEvaluatorProvider();
 		}
+		ObligationEvaluatorProvider obligationEvaluatorProvider = learningPathService.getObligationEvaluatorProvider();
 		
-		if (evaluatorProvider != null && scoreAccounting != null) {
-			LearningPathStatusRefresher statusRefresher = new LearningPathStatusRefresher();
-			statusRefresher.refresh(treeModel, evaluatorProvider, scoreAccounting);
+		if (statusEvaluatorProvider != null && scoreAccounting != null) {
+			LearningPathEvaluator.builder()
+					.refreshStatus(statusEvaluatorProvider, scoreAccounting)
+					.refreshObligation(obligationEvaluatorProvider)
+					.build()
+					.refresh(treeModel);
 		}
 		
 		return treeModel;
@@ -110,7 +115,6 @@ public class LearningPathTreeModelBuilder {
 		
 		LearningPathConfigs configs = learningPathService.getConfigs(courseNode);
 		learningPathTreeNode.setDuration(configs.getDuration());
-		learningPathTreeNode.setObligation(configs.getObligation());
 		
 		return learningPathTreeNode;
 	}

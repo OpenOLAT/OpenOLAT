@@ -17,25 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.ui;
+package org.olat.course.learningpath.evaluation;
 
-import org.olat.core.gui.components.tree.GenericTreeModel;
-import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.course.learningpath.evaluation.StatusEvaluator;
+import java.util.List;
+
+import org.olat.course.learningpath.LearningPathStatus;
+import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
- * Initial date: 26 Aug 2019<br>
+ * Initial date: 27 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathTreeModel extends GenericTreeModel {
-		
-	private static final long serialVersionUID = 5244618634539592908L;
+public interface StatusEvaluator {
 	
-	public void refreshStatus(StatusEvaluator evaluator) {
-		TreeNode root = getRootNode();
-		
-	}
+	boolean isStatusDependingOnPreviousNode();
+	
+	LearningPathStatus getStatus(LearningPathTreeNode previousNode, AssessmentEntryStatus statusCurrentNode);
+	
+	boolean isStatusDependingOnChildNodes();
+	
+	LearningPathStatus getStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode>children);
 
 }

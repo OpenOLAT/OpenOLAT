@@ -453,7 +453,7 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.components.form.flexible.impl.elements.richText.TextModeTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.SelectboxSelectionImplTest.class,
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,
-	org.olat.course.learningpath.manager.DefaultLinearStatusEvaluatorTest.class,
+	org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluatorTest.class,
 	org.olat.course.nodes.st.STLinearStatusEvaluatorTest.class,
 	org.olat.login.validation.PasswordSyntaxValidatorTest.class,
 	org.olat.login.validation.PasswordValidationRuleFactoryTest.class,

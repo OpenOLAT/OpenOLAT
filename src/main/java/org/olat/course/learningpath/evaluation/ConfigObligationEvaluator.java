@@ -17,24 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.evaluation;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.course.learningpath.LearningPathObligation;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.nodes.CourseNode;
 
 /**
- * Interface to provide an individual LearningPathStatusEvaluator for a course
- * node to use it in a linear learning path. If a node does not implement this
- * interface, the
- * {@link org.olat.course.learningpath.manager.DefaultLinearStatusEvaluator} is
- * used.
  * 
  * Initial date: 1 Sep 2019<br>
- * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LinearNodeStatusEvaluatorProvider {
-	
-	public String acceptCourseNodeType();
-	
-	public LearningPathStatusEvaluator getStatusEvaluator();
+public class ConfigObligationEvaluator implements ObligationEvaluator {
+
+	@Override
+	public LearningPathObligation getObligation(CourseNode courseNode) {
+		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		return learningPathService.getConfigs(courseNode).getObligation();
+	}
 
 }

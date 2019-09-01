@@ -17,18 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
-
-import org.olat.course.nodes.CourseNode;
+package org.olat.course.learningpath.evaluation;
 
 /**
+ * Interface to provide an individual
+ * {@link org.olat.course.learningpath.evaluation.StatusEvaluator} for a course
+ * node to use it in a linear learning path. If a node does not implement this
+ * interface, the
+ * {@link org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluator}
+ * is used.
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 1 Sep 2019<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathStatusEvaluatorProvider {
+public interface NodeLinearStatusEvaluatorProvider {
 	
-	LearningPathStatusEvaluator getEvaluator(CourseNode node);
+	public String acceptCourseNodeType();
+	
+	public StatusEvaluator getStatusEvaluator();
 
 }

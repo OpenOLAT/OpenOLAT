@@ -38,7 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.learningpath.LearningPathService;
-import org.olat.course.learningpath.LearningPathStatusEvaluatorProvider;
+import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ public class LearningPathListController extends FormBasicController {
 	private LearningPathDataModel dataModel;
 	
 	private final UserCourseEnvironment userCourseEnv;
-	private final LearningPathStatusEvaluatorProvider statusEvaluatorProvider;
+	private final StatusEvaluatorProvider statusEvaluatorProvider;
 	
 	@Autowired
 	private LearningPathService learningPathService;

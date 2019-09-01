@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.evaluation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +25,8 @@ import java.util.List;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.learningpath.LearningPathObligation;
+import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
@@ -36,16 +38,20 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathStatusRefresher {
+public class LearningPathEvaluator {
 	
-	private LearningPathStatusEvaluatorProvider evaluatorProvider;
+	private ObligationEvaluatorProvider obligationEvaluatorProvider;
+	private StatusEvaluatorProvider statusEvaluatorProvider;
 	private ScoreAccounting scoreAccounting;
 	private LearningPathTreeNode previousNode;
-
-	public void refresh(GenericTreeModel treeModel, LearningPathStatusEvaluatorProvider evaluatorProvider,
-			ScoreAccounting scoreAccounting) {
-		this.evaluatorProvider = evaluatorProvider;
-		this.scoreAccounting = scoreAccounting;
+	
+	private LearningPathEvaluator(LearningPathEvaluatorBuilder builder) {
+		this.obligationEvaluatorProvider = builder.obligationEvaluatorProvider;
+		this.statusEvaluatorProvider = builder.statusEvaluatorProvider;
+		this.scoreAccounting = builder.scoreAccounting;
+	}
+	
+	public void refresh(GenericTreeModel treeModel) {
 		this.scoreAccounting.evaluateAll();
 		this.previousNode = null;
 		
@@ -57,8 +63,8 @@ public class LearningPathStatusRefresher {
 	}
 
 	private void refreshNodeAndChildren(LearningPathTreeNode currentNode) {
-		LearningPathStatusEvaluator evaluator = evaluatorProvider.getEvaluator(currentNode.getCourseNode());
-		refreshDependingOnPreviousNode(evaluator, currentNode, previousNode);
+		refreshObligation(currentNode);
+		refreshStatusDependingOnPreviousNode(currentNode, previousNode);
 		previousNode = currentNode;
 		
 		int childCount = currentNode.getChildCount();
@@ -72,11 +78,18 @@ public class LearningPathStatusRefresher {
 			}
 		}
 		
-		refreshDependingOnChildren(evaluator, currentNode, children);
+		refreshStatusDependingOnChildren(currentNode, children);
 	}
 
-	private void refreshDependingOnPreviousNode(LearningPathStatusEvaluator evaluator, LearningPathTreeNode currentNode,
+	private void refreshObligation(LearningPathTreeNode currentNode) {
+		ObligationEvaluator evaluator = obligationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
+		LearningPathObligation obligation = evaluator.getObligation(currentNode.getCourseNode());
+		currentNode.setObligation(obligation);
+	}
+
+	private void refreshStatusDependingOnPreviousNode(LearningPathTreeNode currentNode,
 			LearningPathTreeNode previousNode) {
+		StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
 		if (evaluator.isStatusDependingOnPreviousNode()) {
 			AssessmentEntryStatus assessmentStatus = getAssessmentStatus(currentNode);
 			LearningPathStatus status = evaluator.getStatus(previousNode, assessmentStatus);
@@ -92,11 +105,42 @@ public class LearningPathStatusRefresher {
 		return assessmentStatus;
 	}
 
-	private void refreshDependingOnChildren(LearningPathStatusEvaluator evaluator, LearningPathTreeNode currentNode,
+	private void refreshStatusDependingOnChildren(LearningPathTreeNode currentNode,
 			List<LearningPathTreeNode> children) {
+		StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
 		if (evaluator.isStatusDependingOnChildNodes()) {
 			LearningPathStatus status = evaluator.getStatus(currentNode, children);
 			currentNode.setStatus(status);
+		}
+	}
+	
+	public static LearningPathEvaluatorBuilder builder() {
+		return new LearningPathEvaluatorBuilder();
+	}
+	
+	public static class LearningPathEvaluatorBuilder {
+
+		private ObligationEvaluatorProvider obligationEvaluatorProvider;
+		private StatusEvaluatorProvider statusEvaluatorProvider;
+		private ScoreAccounting scoreAccounting;
+		
+		private LearningPathEvaluatorBuilder() {
+			//
+		}
+		
+		public LearningPathEvaluator build() {
+			return new LearningPathEvaluator(this);
+		}
+		
+		public LearningPathEvaluatorBuilder refreshObligation(ObligationEvaluatorProvider obligationStatusProvider) {
+			this.obligationEvaluatorProvider = obligationStatusProvider;
+			return this;
+		}
+		
+		public LearningPathEvaluatorBuilder refreshStatus(StatusEvaluatorProvider statusEvaluatorProvider, ScoreAccounting scoreAccounting) {
+			this.statusEvaluatorProvider = statusEvaluatorProvider;
+			this.scoreAccounting = scoreAccounting;
+			return this;
 		}
 	}
 }

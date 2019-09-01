@@ -17,31 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.manager;
-
-import org.olat.course.learningpath.LearningPathStatusEvaluator;
-import org.olat.course.learningpath.LinearNodeStatusEvaluatorProvider;
-import org.springframework.stereotype.Component;
+package org.olat.course.learningpath.evaluation;
 
 /**
+ * * Interface to provide an individual
+ * {@link org.olat.course.learningpath.evaluation.ObligationEvaluator} for a
+ * course node to use it in a learning path. If a node does not implement this
+ * interface, the
+ * {@link org.olat.course.learningpath.evaluation.ConfigObligationEvaluator} is
+ * used.
  * 
  * Initial date: 1 Sep 2019<br>
+ * 
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Component
-public class DefaultLinearNodeStatusEvaluatorProvider implements LinearNodeStatusEvaluatorProvider {
-
-	public static final String NODE_TYPE = "defaultLinearNodeStatusEvaluatorProvider";
-
-	@Override
-	public String acceptCourseNodeType() {
-		return NODE_TYPE;
-	}
-
-	@Override
-	public LearningPathStatusEvaluator getStatusEvaluator() {
-		return new DefaultLinearStatusEvaluator();
-	}
-
+public interface NodeObligationEvaluatorProvider {
+	
+	public String acceptCourseNodeType();
+	
+	public ObligationEvaluator getObligationEvaluator();
 }

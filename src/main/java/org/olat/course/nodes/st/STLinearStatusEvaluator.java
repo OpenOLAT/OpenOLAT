@@ -22,8 +22,8 @@ package org.olat.course.nodes.st;
 import java.util.List;
 
 import org.olat.course.learningpath.LearningPathStatus;
-import org.olat.course.learningpath.LearningPathStatusEvaluator;
-import org.olat.course.learningpath.manager.DefaultLinearStatusEvaluator;
+import org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluator;
+import org.olat.course.learningpath.evaluation.StatusEvaluator;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
@@ -33,9 +33,9 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STLinearStatusEvaluator implements LearningPathStatusEvaluator {
+public class STLinearStatusEvaluator implements StatusEvaluator {
 
-	private final LearningPathStatusEvaluator previousEvaluator = new DefaultLinearStatusEvaluator();
+	private final StatusEvaluator previousEvaluator = new DefaultLinearStatusEvaluator();
 	
 	@Override
 	public boolean isStatusDependingOnPreviousNode() {

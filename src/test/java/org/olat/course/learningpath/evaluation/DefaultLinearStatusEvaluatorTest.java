@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.manager;
+package org.olat.course.learningpath.evaluation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.course.learningpath.LearningPathObligation.mandatory;
@@ -26,6 +26,7 @@ import static org.olat.course.learningpath.LearningPathObligation.optional;
 import org.junit.Test;
 import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.learningpath.LearningPathStatus;
+import org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluator;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 

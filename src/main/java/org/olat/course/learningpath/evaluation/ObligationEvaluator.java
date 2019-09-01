@@ -17,15 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.manager;
+package org.olat.course.learningpath.evaluation;
 
-import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathService;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
+import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.nodes.CourseNode;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * 
@@ -33,25 +28,8 @@ import org.springframework.stereotype.Service;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Service
-public class LearningPathServiceImpl implements LearningPathService {
+public interface ObligationEvaluator {
 	
-	@Autowired
-	private LearningPathRegistry registry;
-
-	@Override
-	public LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return registry.getLearningPathNodeHandler(courseNode).getConfigs(courseNode);
-	}
-
-	@Override
-	public ObligationEvaluatorProvider getObligationEvaluatorProvider() {
-		return registry.getObligationEvaluatorProvider();
-	}
-
-	@Override
-	public StatusEvaluatorProvider getStatusEvaluatorProvider() {
-		return registry.getLinearStatusEvaluatorProvider();
-	}
+	public LearningPathObligation getObligation(CourseNode courseNode);
 
 }

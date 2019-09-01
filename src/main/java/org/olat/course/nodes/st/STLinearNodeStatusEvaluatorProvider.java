@@ -19,8 +19,8 @@
  */
 package org.olat.course.nodes.st;
 
-import org.olat.course.learningpath.LearningPathStatusEvaluator;
-import org.olat.course.learningpath.LinearNodeStatusEvaluatorProvider;
+import org.olat.course.learningpath.evaluation.StatusEvaluator;
+import org.olat.course.learningpath.evaluation.NodeLinearStatusEvaluatorProvider;
 import org.olat.course.nodes.STCourseNode;
 import org.springframework.stereotype.Component;
 
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
  *
  */
 @Component
-public class STLinearNodeStatusEvaluatorProvider implements LinearNodeStatusEvaluatorProvider {
+public class STLinearNodeStatusEvaluatorProvider implements NodeLinearStatusEvaluatorProvider {
 
 	@Override
 	public String acceptCourseNodeType() {
@@ -39,7 +39,7 @@ public class STLinearNodeStatusEvaluatorProvider implements LinearNodeStatusEval
 	}
 
 	@Override
-	public LearningPathStatusEvaluator getStatusEvaluator() {
+	public StatusEvaluator getStatusEvaluator() {
 		return new STLinearStatusEvaluator();
 	}
 
