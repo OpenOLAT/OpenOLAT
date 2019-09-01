@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st;
+package org.olat.course.nodes.st.learningpath;
 
 import java.util.List;
 
@@ -33,7 +33,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STLinearStatusEvaluator implements StatusEvaluator {
+class STLinearStatusEvaluator implements StatusEvaluator {
 
 	private final StatusEvaluator previousEvaluator = new DefaultLinearStatusEvaluator();
 	

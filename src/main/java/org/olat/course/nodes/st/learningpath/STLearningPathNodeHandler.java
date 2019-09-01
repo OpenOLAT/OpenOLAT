@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st;
+package org.olat.course.nodes.st.learningpath;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;

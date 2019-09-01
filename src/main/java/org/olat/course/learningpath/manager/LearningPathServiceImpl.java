@@ -21,6 +21,7 @@ package org.olat.course.learningpath.manager;
 
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
 import org.olat.course.nodes.CourseNode;
@@ -52,6 +53,11 @@ public class LearningPathServiceImpl implements LearningPathService {
 	@Override
 	public StatusEvaluatorProvider getStatusEvaluatorProvider() {
 		return registry.getLinearStatusEvaluatorProvider();
+	}
+
+	@Override
+	public DurationEvaluatorProvider getDurationEvaluatorProvider() {
+		return registry.getDurationEvaluatorProvider();
 	}
 
 }

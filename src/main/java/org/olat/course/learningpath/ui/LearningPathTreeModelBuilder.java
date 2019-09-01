@@ -23,6 +23,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.LearningPathEvaluator;
 import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
@@ -78,14 +79,14 @@ public class LearningPathTreeModelBuilder {
 			statusEvaluatorProvider = learningPathService.getStatusEvaluatorProvider();
 		}
 		ObligationEvaluatorProvider obligationEvaluatorProvider = learningPathService.getObligationEvaluatorProvider();
-		
-		if (statusEvaluatorProvider != null && scoreAccounting != null) {
-			LearningPathEvaluator.builder()
-					.refreshStatus(statusEvaluatorProvider, scoreAccounting)
-					.refreshObligation(obligationEvaluatorProvider)
-					.build()
-					.refresh(treeModel);
-		}
+		DurationEvaluatorProvider durationEvaluatorProvider = learningPathService.getDurationEvaluatorProvider();
+
+		LearningPathEvaluator.builder()
+				.refreshObligation(obligationEvaluatorProvider)
+				.refreshStatus(statusEvaluatorProvider, scoreAccounting)
+				.refreshDuration(durationEvaluatorProvider)
+				.build()
+				.refresh(treeModel);
 		
 		return treeModel;
 	}

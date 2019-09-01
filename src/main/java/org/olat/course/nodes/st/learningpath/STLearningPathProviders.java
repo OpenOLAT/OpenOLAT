@@ -17,12 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.nodes.st.learningpath;
 
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.learningpath.evaluation.DurationEvaluator;
+import org.olat.course.learningpath.evaluation.NodeDurationEvaluatorProvider;
+import org.olat.course.learningpath.evaluation.NodeLinearStatusEvaluatorProvider;
+import org.olat.course.learningpath.evaluation.StatusEvaluator;
+import org.olat.course.nodes.STCourseNode;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -30,14 +32,22 @@ import org.olat.course.nodes.CourseNode;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
+@Component
+public class STLearningPathProviders implements NodeLinearStatusEvaluatorProvider, NodeDurationEvaluatorProvider {
 
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
+	@Override
+	public String acceptCourseNodeType() {
+		return STCourseNode.TYPE;
+	}
 
-	public ObligationEvaluatorProvider getObligationEvaluatorProvider();
+	@Override
+	public StatusEvaluator getStatusEvaluator() {
+		return new STLinearStatusEvaluator();
+	}
 
-	public StatusEvaluatorProvider getStatusEvaluatorProvider();
-
-	public DurationEvaluatorProvider getDurationEvaluatorProvider();
+	@Override
+	public DurationEvaluator getDurationEvaluator() {
+		return new STDurationEvaluator();
+	}
 
 }

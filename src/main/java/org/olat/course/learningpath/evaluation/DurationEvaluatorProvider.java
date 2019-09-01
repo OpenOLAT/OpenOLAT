@@ -17,27 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.evaluation;
 
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
 import org.olat.course.nodes.CourseNode;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 1 Sept 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
-
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
-
-	public ObligationEvaluatorProvider getObligationEvaluatorProvider();
-
-	public StatusEvaluatorProvider getStatusEvaluatorProvider();
-
-	public DurationEvaluatorProvider getDurationEvaluatorProvider();
+public interface DurationEvaluatorProvider {
+	
+	DurationEvaluator getEvaluator(CourseNode node);
 
 }

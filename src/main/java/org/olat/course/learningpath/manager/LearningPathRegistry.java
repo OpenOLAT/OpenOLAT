@@ -26,8 +26,12 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.evaluation.ConfigNodeDurationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.ConfigNodeObligationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.DefaultNodeLinearStatusEvaluatorProvider;
+import org.olat.course.learningpath.evaluation.DurationEvaluator;
+import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
+import org.olat.course.learningpath.evaluation.NodeDurationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.NodeLinearStatusEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.NodeObligationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.ObligationEvaluator;
@@ -50,6 +54,7 @@ class LearningPathRegistry {
 	private static final String UNSUPPORTED_LEARNING_PATH_TYPE = UnsupportedLearningPathNodeHandler.NODE_TYPE;
 	private static final String DEFAULT_OBLIGATION_EVALUATOR_NODE_TYPE = ConfigNodeObligationEvaluatorProvider.NODE_TYPE;
 	private static final String DEFAULT_LINEAR_STATUS_EVALUATOR_NODE_TYPE = DefaultNodeLinearStatusEvaluatorProvider.NODE_TYPE;
+	private static final String DEFAULT_DURATION_EVALUATOR_NODE_TYPE = ConfigNodeDurationEvaluatorProvider.NODE_TYPE;
 
 	@Autowired
 	private List<LearningPathNodeHandler> learningPathNodeHandlers;
@@ -64,11 +69,16 @@ class LearningPathRegistry {
 	private List<NodeLinearStatusEvaluatorProvider> nodeLinearStatusEvaluatorProviders;
 	private Map<String, StatusEvaluator> nodeTypeToLinearStatusEvaluator;
 	
+	@Autowired
+	private List<NodeDurationEvaluatorProvider> nodeDurationEvaluatorProviders;
+	private Map<String, DurationEvaluator> nodeTypeToDurationEvaluator;
+	
 	@PostConstruct
 	void initProviders() {
 		initLearningPathHandlers();
 		initObligationEvaluator();
 		initLinearStatusEvaluator();
+		initDurationEvaluator();
 	}
 
 	private void initLearningPathHandlers() {
@@ -96,6 +106,13 @@ class LearningPathRegistry {
 		}
 	}
 	
+	private void initDurationEvaluator() {
+		nodeTypeToDurationEvaluator = new HashMap<>();
+		for (NodeDurationEvaluatorProvider provider : nodeDurationEvaluatorProviders) {
+			nodeTypeToDurationEvaluator.put(provider.acceptCourseNodeType(), provider.getDurationEvaluator());
+		}
+	}
+
 	LearningPathNodeHandler getLearningPathNodeHandler(String courseNodeType) {
 		LearningPathNodeHandler handler = nodeTypeToLearningPathNodeHandlers.get(courseNodeType);
 		if (handler == null) {
@@ -123,6 +140,16 @@ class LearningPathRegistry {
 			StatusEvaluator evaluator = nodeTypeToLinearStatusEvaluator.get(node.getType());
 			if (evaluator == null) {
 				evaluator = nodeTypeToLinearStatusEvaluator.get(DEFAULT_LINEAR_STATUS_EVALUATOR_NODE_TYPE);
+			}
+			return evaluator;
+		};
+	}
+
+	DurationEvaluatorProvider getDurationEvaluatorProvider() {
+		return (node) -> {
+			DurationEvaluator evaluator = nodeTypeToDurationEvaluator.get(node.getType());
+			if (evaluator == null) {
+				evaluator = nodeTypeToDurationEvaluator.get(DEFAULT_DURATION_EVALUATOR_NODE_TYPE);
 			}
 			return evaluator;
 		};

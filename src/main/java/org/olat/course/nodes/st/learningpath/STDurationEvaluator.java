@@ -17,11 +17,12 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.nodes.st.learningpath;
 
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
+import java.util.List;
+
+import org.olat.course.learningpath.evaluation.DurationEvaluator;
+import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.nodes.CourseNode;
 
 /**
@@ -30,14 +31,34 @@ import org.olat.course.nodes.CourseNode;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
+public class STDurationEvaluator implements DurationEvaluator {
 
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
+	@Override
+	public boolean isDependingOnCurrentNode() {
+		return false;
+	}
 
-	public ObligationEvaluatorProvider getObligationEvaluatorProvider();
+	@Override
+	public Integer getDuration(CourseNode courseNode) {
+		return null;
+	}
 
-	public StatusEvaluatorProvider getStatusEvaluatorProvider();
+	@Override
+	public boolean isdependingOnChildNodes() {
+		return true;
+	}
 
-	public DurationEvaluatorProvider getDurationEvaluatorProvider();
+	@Override
+	public Integer getDuration(List<LearningPathTreeNode> children) {
+		boolean hasDurations = false;
+		int sum = 0;
+		for (LearningPathTreeNode child : children) {
+			if (child.getDuration() != null) {
+				sum += child.getDuration().intValue();
+				hasDurations = true;
+			}
+		}
+		return hasDurations? Integer.valueOf(sum): null;
+	}
 
 }

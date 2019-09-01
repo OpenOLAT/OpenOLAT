@@ -17,12 +17,14 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st;
+package org.olat.course.learningpath.evaluation;
 
-import org.olat.course.learningpath.evaluation.StatusEvaluator;
-import org.olat.course.learningpath.evaluation.NodeLinearStatusEvaluatorProvider;
-import org.olat.course.nodes.STCourseNode;
-import org.springframework.stereotype.Component;
+import java.util.List;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
@@ -30,17 +32,27 @@ import org.springframework.stereotype.Component;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Component
-public class STLinearNodeStatusEvaluatorProvider implements NodeLinearStatusEvaluatorProvider {
+public class ConfigDurationEvaluator implements DurationEvaluator {
 
 	@Override
-	public String acceptCourseNodeType() {
-		return STCourseNode.TYPE;
+	public boolean isDependingOnCurrentNode() {
+		return true;
 	}
 
 	@Override
-	public StatusEvaluator getStatusEvaluator() {
-		return new STLinearStatusEvaluator();
+	public Integer getDuration(CourseNode courseNode) {
+		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		return learningPathService.getConfigs(courseNode).getDuration();
+	}
+
+	@Override
+	public boolean isdependingOnChildNodes() {
+		return false;
+	}
+
+	@Override
+	public Integer getDuration(List<LearningPathTreeNode> children) {
+		return null;
 	}
 
 }

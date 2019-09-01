@@ -17,12 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.evaluation;
 
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
-import org.olat.course.nodes.CourseNode;
+import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -30,14 +27,19 @@ import org.olat.course.nodes.CourseNode;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
+@Component
+public class ConfigNodeDurationEvaluatorProvider implements NodeDurationEvaluatorProvider {
+	
+	public static final String NODE_TYPE = "ConfigNodeDurationEvaluatorProvider";
 
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
+	@Override
+	public String acceptCourseNodeType() {
+		return NODE_TYPE;
+	}
 
-	public ObligationEvaluatorProvider getObligationEvaluatorProvider();
-
-	public StatusEvaluatorProvider getStatusEvaluatorProvider();
-
-	public DurationEvaluatorProvider getDurationEvaluatorProvider();
+	@Override
+	public DurationEvaluator getDurationEvaluator() {
+		return new ConfigDurationEvaluator();
+	}
 
 }

@@ -43,12 +43,14 @@ public class LearningPathEvaluator {
 	private ObligationEvaluatorProvider obligationEvaluatorProvider;
 	private StatusEvaluatorProvider statusEvaluatorProvider;
 	private ScoreAccounting scoreAccounting;
+	private DurationEvaluatorProvider durationEvaluatorProvider;
 	private LearningPathTreeNode previousNode;
 	
 	private LearningPathEvaluator(LearningPathEvaluatorBuilder builder) {
 		this.obligationEvaluatorProvider = builder.obligationEvaluatorProvider;
 		this.statusEvaluatorProvider = builder.statusEvaluatorProvider;
 		this.scoreAccounting = builder.scoreAccounting;
+		this.durationEvaluatorProvider = builder.durationEvaluatorProvider;
 	}
 	
 	public void refresh(GenericTreeModel treeModel) {
@@ -64,7 +66,8 @@ public class LearningPathEvaluator {
 
 	private void refreshNodeAndChildren(LearningPathTreeNode currentNode) {
 		refreshObligation(currentNode);
-		refreshStatusDependingOnPreviousNode(currentNode, previousNode);
+		refreshStatus(currentNode, previousNode);
+		refreshDuration(currentNode);
 		previousNode = currentNode;
 		
 		int childCount = currentNode.getChildCount();
@@ -78,7 +81,8 @@ public class LearningPathEvaluator {
 			}
 		}
 		
-		refreshStatusDependingOnChildren(currentNode, children);
+		refreshStatus(currentNode, children);
+		refreshDuration(currentNode, children);
 	}
 
 	private void refreshObligation(LearningPathTreeNode currentNode) {
@@ -87,8 +91,7 @@ public class LearningPathEvaluator {
 		currentNode.setObligation(obligation);
 	}
 
-	private void refreshStatusDependingOnPreviousNode(LearningPathTreeNode currentNode,
-			LearningPathTreeNode previousNode) {
+	private void refreshStatus(LearningPathTreeNode currentNode, LearningPathTreeNode previousNode) {
 		StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
 		if (evaluator.isStatusDependingOnPreviousNode()) {
 			AssessmentEntryStatus assessmentStatus = getAssessmentStatus(currentNode);
@@ -105,12 +108,28 @@ public class LearningPathEvaluator {
 		return assessmentStatus;
 	}
 
-	private void refreshStatusDependingOnChildren(LearningPathTreeNode currentNode,
+	private void refreshDuration(LearningPathTreeNode currentNode) {
+		DurationEvaluator evaluator = durationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
+		if (evaluator.isDependingOnCurrentNode()) {
+			Integer duration = evaluator.getDuration(currentNode.getCourseNode());
+			currentNode.setDuration(duration);
+		}
+	}
+
+	private void refreshStatus(LearningPathTreeNode currentNode,
 			List<LearningPathTreeNode> children) {
 		StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
 		if (evaluator.isStatusDependingOnChildNodes()) {
 			LearningPathStatus status = evaluator.getStatus(currentNode, children);
 			currentNode.setStatus(status);
+		}
+	}
+
+	private void refreshDuration(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
+		DurationEvaluator evaluator = durationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
+		if (evaluator.isdependingOnChildNodes()) {
+			Integer duration = evaluator.getDuration(children);
+			currentNode.setDuration(duration);
 		}
 	}
 	
@@ -123,6 +142,7 @@ public class LearningPathEvaluator {
 		private ObligationEvaluatorProvider obligationEvaluatorProvider;
 		private StatusEvaluatorProvider statusEvaluatorProvider;
 		private ScoreAccounting scoreAccounting;
+		private DurationEvaluatorProvider durationEvaluatorProvider;
 		
 		private LearningPathEvaluatorBuilder() {
 			//
@@ -132,14 +152,19 @@ public class LearningPathEvaluator {
 			return new LearningPathEvaluator(this);
 		}
 		
-		public LearningPathEvaluatorBuilder refreshObligation(ObligationEvaluatorProvider obligationStatusProvider) {
-			this.obligationEvaluatorProvider = obligationStatusProvider;
+		public LearningPathEvaluatorBuilder refreshObligation(ObligationEvaluatorProvider obligationEvaluatorProvider) {
+			this.obligationEvaluatorProvider = obligationEvaluatorProvider;
 			return this;
 		}
 		
 		public LearningPathEvaluatorBuilder refreshStatus(StatusEvaluatorProvider statusEvaluatorProvider, ScoreAccounting scoreAccounting) {
 			this.statusEvaluatorProvider = statusEvaluatorProvider;
 			this.scoreAccounting = scoreAccounting;
+			return this;
+		}
+		
+		public LearningPathEvaluatorBuilder refreshDuration(DurationEvaluatorProvider durationEvaluatorProvider) {
+			this.durationEvaluatorProvider = durationEvaluatorProvider;
 			return this;
 		}
 	}
