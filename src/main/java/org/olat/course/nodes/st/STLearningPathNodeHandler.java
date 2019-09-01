@@ -27,7 +27,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
-import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
@@ -42,6 +41,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 
+	private static final STLearningPathConfigs LEARNING_PATH_CONFIGS = new STLearningPathConfigs();
+
 	@Override
 	public String acceptCourseNodeType() {
 		return STCourseNode.TYPE;
@@ -54,7 +55,7 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
 	public LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return new ModuleLearningPathConfigs(courseNode.getModuleConfiguration());
+		return LEARNING_PATH_CONFIGS;
 	}
 
 	@Override

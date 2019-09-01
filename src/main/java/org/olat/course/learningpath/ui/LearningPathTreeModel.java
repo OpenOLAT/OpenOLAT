@@ -17,32 +17,25 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.model;
+package org.olat.course.learningpath.ui;
 
-import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathObligation;
+import org.olat.core.gui.components.tree.GenericTreeModel;
+import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.course.learningpath.LearningPathStatusEvaluator;
 
 /**
  * 
- * Initial date: 30 Aug 2019<br>
+ * Initial date: 26 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
-
-	@Override
-	public Integer getDuration() {
-		return null;
-	}
-
-	@Override
-	public LearningPathObligation getObligation() {
-		return LearningPathObligation.optional;
-	}
+public class LearningPathTreeModel extends GenericTreeModel {
+		
+	private static final long serialVersionUID = 5244618634539592908L;
 	
-	@Override
-	public boolean isDoneOnNodeVisited() {
-		return false;
+	public void refreshStatus(LearningPathStatusEvaluator evaluator) {
+		TreeNode root = getRootNode();
+		
 	}
 
 }

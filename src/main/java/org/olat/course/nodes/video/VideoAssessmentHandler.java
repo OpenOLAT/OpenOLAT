@@ -17,32 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.model;
+package org.olat.course.nodes.video;
 
-import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathObligation;
+import org.olat.course.learningpath.LearningPathOnlyAssessmentHandler;
+import org.olat.course.nodes.VideoCourseNode;
+import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 30 Aug 2019<br>
+ * Initial date: 1 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
+@Service
+public class VideoAssessmentHandler extends LearningPathOnlyAssessmentHandler {
 
 	@Override
-	public Integer getDuration() {
-		return null;
-	}
-
-	@Override
-	public LearningPathObligation getObligation() {
-		return LearningPathObligation.optional;
-	}
-	
-	@Override
-	public boolean isDoneOnNodeVisited() {
-		return false;
+	public String acceptCourseNodeType() {
+		return VideoCourseNode.TYPE;
 	}
 
 }

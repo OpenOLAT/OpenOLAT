@@ -26,7 +26,11 @@ package org.olat.course.learningpath;
  *
  */
 public interface LearningPathConfigs {
-
-	boolean isDoneOnNodeVisited();
-
+	
+	public Integer getDuration();
+	
+	public LearningPathObligation getObligation();
+	
+	public boolean isDoneOnNodeVisited();
+	
 }

@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentAction;
+import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -49,9 +50,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	
 	public static final String CONFIG_KEY_ESTIMATED_DURATION = "learning.path.estimated.duration";
 	public static final String CONFIG_KEY_OBLIGATION = "learning.path.obligation";
-	public static final String CONFIG_VALUE_OBLIGATION_MANDATORY = "obligation.mandatory";
-	public static final String CONFIG_VALUE_OBLIGATION_OPTIONAL = "obligation.optional";
-	public static final String CONFIG_DEFAULT_OBLIGATION = CONFIG_VALUE_OBLIGATION_MANDATORY;
+	public static final String CONFIG_DEFAULT_OBLIGATION = LearningPathObligation.mandatory.name();
 	public static final String CONFIG_KEY_DONE_TRIGGER = "learning.path.done.trigger";
 	private static final String CONFIG_VALUE_DONE_TRIGGER_NONE = "done.trigger.none";
 	public static final String CONFIG_DEFAULT_DONE_TRIGGER = CONFIG_VALUE_DONE_TRIGGER_NONE;
@@ -77,8 +76,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		estimatedDurationEl = uifactory.addTextElement("config.estimated.duration", 128, estimatedTime , formLayout);
 		
 		KeyValues obligationKV = new KeyValues();
-		obligationKV.add(entry(CONFIG_VALUE_OBLIGATION_MANDATORY, translate("config.obligation.mandatory")));
-		obligationKV.add(entry(CONFIG_VALUE_OBLIGATION_OPTIONAL, translate("config.obligation.optional")));
+		obligationKV.add(entry(LearningPathObligation.mandatory.name(), translate("config.obligation.mandatory")));
+		obligationKV.add(entry(LearningPathObligation.optional.name(), translate("config.obligation.optional")));
 		obligationEl = uifactory.addRadiosHorizontal("config.obligation", formLayout, obligationKV.keys(), obligationKV.values());
 		String obligationKey = configs.getStringValue(CONFIG_KEY_OBLIGATION, CONFIG_DEFAULT_OBLIGATION);
 		if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {

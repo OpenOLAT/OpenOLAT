@@ -41,6 +41,7 @@ import java.util.Map;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
@@ -50,7 +51,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentNodeData {
+public class AssessmentNodeData implements IndentedCourseNode {
 	
 	private int recursionLevel;
 	
@@ -110,6 +111,7 @@ public class AssessmentNodeData {
 		this.ident = ident;
 	}
 
+	@Override
 	public int getRecursionLevel() {
 		return recursionLevel;
 	}
@@ -118,6 +120,7 @@ public class AssessmentNodeData {
 		this.recursionLevel = recursionLevel;
 	}
 
+	@Override
 	public String getType() {
 		return type;
 	}
@@ -126,6 +129,7 @@ public class AssessmentNodeData {
 		this.type = type;
 	}
 
+	@Override
 	public String getShortTitle() {
 		return shortTitle;
 	}
@@ -134,6 +138,7 @@ public class AssessmentNodeData {
 		this.shortTitle = shortTitle;
 	}
 
+	@Override
 	public String getLongTitle() {
 		return longTitle;
 	}

@@ -17,18 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.model;
+package org.olat.course.nodes.st;
 
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathObligation;
 
 /**
  * 
- * Initial date: 30 Aug 2019<br>
+ * Initial date: 1 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
+public class STLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public Integer getDuration() {
@@ -37,9 +37,9 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public LearningPathObligation getObligation() {
-		return LearningPathObligation.optional;
+		return null;
 	}
-	
+
 	@Override
 	public boolean isDoneOnNodeVisited() {
 		return false;

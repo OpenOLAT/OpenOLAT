@@ -17,32 +17,27 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.model;
+package org.olat.course.learningpath;
 
-import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathObligation;
+import java.util.List;
+
+import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
- * Initial date: 30 Aug 2019<br>
+ * Initial date: 27 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
-
-	@Override
-	public Integer getDuration() {
-		return null;
-	}
-
-	@Override
-	public LearningPathObligation getObligation() {
-		return LearningPathObligation.optional;
-	}
+public interface LearningPathStatusEvaluator {
 	
-	@Override
-	public boolean isDoneOnNodeVisited() {
-		return false;
-	}
+	boolean isStatusDependingOnPreviousNode();
+	
+	LearningPathStatus getStatus(LearningPathTreeNode previousNode, AssessmentEntryStatus statusCurrentNode);
+	
+	boolean isStatusDependingOnChildNodes();
+	
+	LearningPathStatus getStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode>children);
 
 }

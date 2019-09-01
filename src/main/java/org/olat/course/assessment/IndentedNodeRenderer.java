@@ -35,13 +35,11 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
-import org.olat.course.assessment.model.AssessmentNodeData;
 import org.olat.course.nodes.CourseNodeFactory;
 
 /**
  * Description:<BR/>
- * Renders a node in a table using the node icon and indent. Required object is a map
- * that contains the values using the keys defined in AssessmentHelper
+ * Renders a node in a table using the node icon and indent.
  * 
  * <P/>
  * Initial Date:  Nov 23, 2004
@@ -64,22 +62,19 @@ public class IndentedNodeRenderer implements CustomCellRenderer, FlexiCellRender
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
-		if(cellValue instanceof AssessmentNodeData) {
-			render(target, (AssessmentNodeData)cellValue);
+		if(cellValue instanceof IndentedCourseNode) {
+			render(target, (IndentedCourseNode)cellValue);
 		}
 	}
 
-	/** 
-	 * @see org.olat.core.gui.components.table.CustomCellRenderer#render(org.olat.core.gui.render.StringOutput, org.olat.core.gui.render.Renderer, java.lang.Object, java.util.Locale, int, java.lang.String)
-	 */
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
-		if(val instanceof AssessmentNodeData) {
-			render(sb, (AssessmentNodeData)val);
+		if(val instanceof IndentedCourseNode) {
+			render(sb, (IndentedCourseNode)val);
 		}
 	}
 	
-	private void render(StringOutput sb, AssessmentNodeData row) {
+	private void render(StringOutput sb, IndentedCourseNode row) {
 		String type = row.getType();
 		String title = row.getShortTitle();
 		String altText = row.getLongTitle();
@@ -99,5 +94,52 @@ public class IndentedNodeRenderer implements CustomCellRenderer, FlexiCellRender
 		for (int i = 0; i < indent; i++) {
 			sb.append(INDENT);
 		}
+	}
+	
+	public static interface IndentedCourseNode {
+
+		String getType();
+
+		String getShortTitle();
+
+		String getLongTitle();
+
+		int getRecursionLevel();
+	}
+	
+	public static class IndentedCourseNodeData implements IndentedCourseNode {
+		
+		private final String type;
+		private final String shortTitle;
+		private final String longTitle;
+		private final int recursionLevel;
+		
+		private IndentedCourseNodeData(String type, String shortTitle, String longTitle, int recursionLevel) {
+			this.type = type;
+			this.shortTitle = shortTitle;
+			this.longTitle = longTitle;
+			this.recursionLevel = recursionLevel;
+		}
+
+		@Override
+		public String getType() {
+			return type;
+		}
+
+		@Override
+		public String getShortTitle() {
+			return shortTitle;
+		}
+
+		@Override
+		public String getLongTitle() {
+			return longTitle;
+		}
+
+		@Override
+		public int getRecursionLevel() {
+			return recursionLevel;
+		}
+		
 	}
 }

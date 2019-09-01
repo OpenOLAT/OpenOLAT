@@ -17,32 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.model;
+package org.olat.course.learningpath.manager;
 
-import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathObligation;
+import org.olat.course.learningpath.LearningPathStatusEvaluator;
+import org.olat.course.learningpath.LinearNodeStatusEvaluatorProvider;
+import org.springframework.stereotype.Component;
 
 /**
  * 
- * Initial date: 30 Aug 2019<br>
+ * Initial date: 1 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
+@Component
+public class DefaultLinearNodeStatusEvaluatorProvider implements LinearNodeStatusEvaluatorProvider {
+
+	public static final String NODE_TYPE = "defaultLinearNodeStatusEvaluatorProvider";
 
 	@Override
-	public Integer getDuration() {
-		return null;
+	public String acceptCourseNodeType() {
+		return NODE_TYPE;
 	}
 
 	@Override
-	public LearningPathObligation getObligation() {
-		return LearningPathObligation.optional;
-	}
-	
-	@Override
-	public boolean isDoneOnNodeVisited() {
-		return false;
+	public LearningPathStatusEvaluator getStatusEvaluator() {
+		return new DefaultLinearStatusEvaluator();
 	}
 
 }

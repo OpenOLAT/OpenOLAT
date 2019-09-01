@@ -17,14 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.manager;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
@@ -34,7 +29,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentManager;
-import org.olat.course.learningpath.manager.UnsupportedLearningPathNodeHandler;
+import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessProvider;
@@ -55,43 +50,18 @@ import org.springframework.stereotype.Service;
 @Service
 public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeVisitedListener {
 
-	private static final String UNSUPPORTED_LEARNING_PATH_TYPE = UnsupportedLearningPathNodeHandler.NODE_TYPE;
+	public static final String TYPE = "learningpath";
 	
 	@Autowired
-	private List<LearningPathNodeHandler> loadedLearningPathNodeHandlers;
-	private Map<String, LearningPathNodeHandler> learningPathNodeHandlers = new HashMap<>();
-	private LearningPathNodeHandler nonLearningPathNodeHandler;
-	
-	@PostConstruct
-	void initProviders() {
-		for (LearningPathNodeHandler handler: loadedLearningPathNodeHandlers) {
-			if (UNSUPPORTED_LEARNING_PATH_TYPE.equals(handler.acceptCourseNodeType())) {
-				nonLearningPathNodeHandler = handler;
-			} else {
-				learningPathNodeHandlers.put(handler.acceptCourseNodeType(), handler);
-			}
-		}
-	}
-	
-	private LearningPathNodeHandler getLearningPathNodeHandler(String courseNodeType) {
-		LearningPathNodeHandler handler = learningPathNodeHandlers.get(courseNodeType);
-		if (handler == null) {
-			handler = nonLearningPathNodeHandler;
-		}
-		return handler;
-	}
-
-	private LearningPathNodeHandler getLearningPathNodeHandler(CourseNode courseNode) {
-		return getLearningPathNodeHandler(courseNode.getType());
-	}
+	private LearningPathRegistry registry;
 	
 	private LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return getLearningPathNodeHandler(courseNode).getConfigs(courseNode);
+		return registry.getLearningPathNodeHandler(courseNode).getConfigs(courseNode);
 	}
 	
 	@Override
 	public String getType() {
-		return "learningpath";
+		return TYPE;
 	}
 
 	@Override
@@ -102,12 +72,12 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeV
 
 	@Override
 	public boolean isSupported(String courseNodeType) {
-		return getLearningPathNodeHandler(courseNodeType).isSupported();
+		return registry.getLearningPathNodeHandler(courseNodeType).isSupported();
 	}
 	
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
-		Controller configCtrl = getLearningPathNodeHandler(courseNode).createConfigEditController(ureq, wControl, courseNode);
+		Controller configCtrl = registry.getLearningPathNodeHandler(courseNode).createConfigEditController(ureq, wControl, courseNode);
 		return new TabbableLeaningPathNodeConfigController(ureq, wControl, configCtrl);
 	}
 

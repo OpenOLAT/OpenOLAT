@@ -20,10 +20,15 @@
 package org.olat.course.learningpath.model;
 
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_DONE_TRIGGER;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_OBLIGATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DONE_TRIGGER;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_ESTIMATED_DURATION;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_OBLIGATION;
 
+import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.AssessmentAction;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -38,6 +43,29 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	public ModuleLearningPathConfigs(ModuleConfiguration moduleConfiguration) {
 		this.moduleConfiguration = moduleConfiguration;
+	}
+
+	@Override
+	public Integer getDuration() {
+		String duration = moduleConfiguration.getStringValue(CONFIG_KEY_ESTIMATED_DURATION);
+		return integerOrNull(duration);
+	}
+
+	private Integer integerOrNull(String value) {
+		if (StringHelper.containsNonWhitespace(value)) {
+			try {
+				return Integer.valueOf(value);
+			} catch (Exception e) {
+				// fall through
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public LearningPathObligation getObligation() {
+		String value = moduleConfiguration.getStringValue(CONFIG_KEY_OBLIGATION, CONFIG_DEFAULT_OBLIGATION);
+		return LearningPathObligation.valueOf(value);
 	}
 
 	@Override

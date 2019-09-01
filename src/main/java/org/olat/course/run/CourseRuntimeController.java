@@ -100,6 +100,8 @@ import org.olat.course.db.CustomDBMainController;
 import org.olat.course.editor.EditorMainController;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.CourseRights;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.learningpath.ui.IdentityOverviewController;
 import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
@@ -174,8 +176,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		lecturesAdminLink, reminderLink,
 		assessmentModeLink, lifeCycleChangeLink,
 		//my course
-		efficiencyStatementsLink, calendarLink, noteLink, chatLink, leaveLink, searchLink,
-		participantListLink, participantInfoLink, emailLink,
+		efficiencyStatementsLink, noteLink, leaveLink,
+		//course tools
+		learninPathLink, calendarLink, chatLink, participantListLink, participantInfoLink, emailLink, searchLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
@@ -790,6 +793,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			toolbarPanel.addTool(detailsLink);
 		}
 		
+		if(!assessmentLock && !isGuestOnly && LearningPathNodeAccessProvider.TYPE.equals(cc.getNodeAccessType().getType())) {
+			learninPathLink = LinkFactory.createToolLink("learningPath", translate("command.learning.path"), this, "o_icon_learning_path");
+			toolbarPanel.addTool(learninPathLink);
+		}
+		
 		boolean calendarIsEnabled =  !assessmentLock && !isGuestOnly && calendarModule.isEnabled()
 				&& calendarModule.isEnableCourseToolCalendar() && reSecurity.canLaunch();
 		if (calendarIsEnabled && userCourseEnv != null) {
@@ -954,6 +962,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doParticipantInfo(ureq);
 		} else if(emailLink == source) {
 			doEmail(ureq);
+		} else if(learninPathLink == source) {
+			doLearningPath(ureq);
 		} else if(calendarLink == source) {
 			launchCalendar(ureq);
 		} else if(chatLink == source) {
@@ -1042,6 +1052,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case assessmentTestStatistics: doAssessmentTestStatistics(ureq); break;
 						case assessmentTool: doAssessmentTool(ureq); break;
 						case reminders: doReminders(ureq); break;
+						case learningPath: doLearningPath(ureq); break;
 						case lecturesAdmin: doLecturesAdmin(ureq); break;
 						case lectures: doLectures(ureq); break;
 						case courseAreas: doCourseAreas(ureq); break;
@@ -1120,7 +1131,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					doEdit(ureq);
 				}
 			} else if("Infos".equalsIgnoreCase(type)) {
-				doDetails(ureq);	
+				doDetails(ureq);
+			} else if("LearningPath".equalsIgnoreCase(type)) {
+				if (learninPathLink != null && learninPathLink.isVisible()) {
+					doLearningPath(ureq);
+				}
 			} else if("Settings".equalsIgnoreCase(type) || "EditDescription".equalsIgnoreCase(type)) {
 				List<ContextEntry> subEntries = entries.subList(1, entries.size());
 				doSettings(ureq, subEntries);
@@ -1644,7 +1659,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			getRunMainController().initToolbar();
 		}
 	}
-
+	
+	private void doLearningPath(UserRequest ureq) {
+		if(delayedClose == Delayed.learningPath || requestForClose(ureq)) {
+			OLATResourceable ores = OresHelper.createOLATResourceableType("LearningPath");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			IdentityOverviewController identityOverviewCtrl = new IdentityOverviewController(ureq, swControl, getUserCourseEnvironment());
+			
+			listenTo(identityOverviewCtrl);
+			pushController(ureq, translate("command.learning.path"), identityOverviewCtrl);
+			currentToolCtr = identityOverviewCtrl;
+			setActiveTool(efficiencyStatementsLink);
+		} else {
+			delayedClose = Delayed.learningPath;
+		}
+	}
+	
 	private void launchChat(UserRequest ureq) {
 		boolean vip = reSecurity.isCoach() || reSecurity.isEntryAdmin();
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -2013,6 +2043,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		databases,
 		details,
 		settings,
+		learningPath,
 		efficiencyStatements,
 		members,
 		orders,

@@ -17,32 +17,22 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.model;
-
-import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathObligation;
+package org.olat.course.assessment;
 
 /**
  * 
- * Initial date: 30 Aug 2019<br>
+ * Initial date: 18 Aug 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
+public interface IndentedCourseNode {
 
-	@Override
-	public Integer getDuration() {
-		return null;
-	}
+	String getType();
 
-	@Override
-	public LearningPathObligation getObligation() {
-		return LearningPathObligation.optional;
-	}
-	
-	@Override
-	public boolean isDoneOnNodeVisited() {
-		return false;
-	}
+	String getShortTitle();
+
+	String getLongTitle();
+
+	int getRecursionLevel();
 
 }
