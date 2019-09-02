@@ -61,7 +61,7 @@ public class SelectPointInteractionArchive extends DefaultInteractionArchive {
 	@Override
 	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
 		List<AreaMapEntry> areaMapEntries = getAreaMapEntries(item, interaction);
-		if(areaMapEntries.size() == 0) {
+		if(areaMapEntries.isEmpty()) {
 			col++;
 		} else {
 			for(AreaMapEntry areaMapEntry:areaMapEntries) {
@@ -74,7 +74,7 @@ public class SelectPointInteractionArchive extends DefaultInteractionArchive {
 	@Override
 	public int writeInteractionData(AssessmentItem item, AssessmentResponse response, Interaction interaction, int itemNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
 		List<AreaMapEntry> areaMapEntries = getAreaMapEntries(item, interaction);
-		if(areaMapEntries.size() == 0) {
+		if(areaMapEntries.isEmpty()) {
 			col++;
 		} else {
 			String stringuifiedResponse = response == null ? null : response.getStringuifiedResponse();
