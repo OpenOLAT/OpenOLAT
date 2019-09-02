@@ -568,6 +568,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_lectures_rollcall_danger:before { content: $fa-var-circle-o; color: $brand-danger; }
 .o_lectures_rollcall_free:before { content: $fa-var-circle; color: #969696; }
 .o_lectures_rollcall_notice:before { content: $fa-var-circle; color: #969696; }
+.o_lectures_rollcall_pending:before { content: $fa-var-clock-o; color: #b8b8b8; }
 .o_lectures_attended:before { content: $fa-var-circle; color: $brand-success; }
 .o_lectures_authorized:before { content: $fa-var-circle; color: $brand-warning; }
 .o_lectures_absent:before { content: $fa-var-circle; color: $brand-danger; }
