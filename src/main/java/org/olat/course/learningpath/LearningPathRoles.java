@@ -19,28 +19,31 @@
  */
 package org.olat.course.learningpath;
 
-import org.olat.course.learningpath.evaluation.AccessEvaluator;
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.learningpath.model.LearningPathRolesImpl;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
+ * Data object as a holder of the course roles.
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 2 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
-
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
-
-	public ObligationEvaluatorProvider getObligationEvaluatorProvider();
-
-	public StatusEvaluatorProvider getStatusEvaluatorProvider();
-
-	public DurationEvaluatorProvider getDurationEvaluatorProvider();
-
-	public AccessEvaluator getAccessEvaluator();
+public interface LearningPathRoles {
+	
+	public boolean isParticipant();
+	
+	public boolean isCoach();
+	
+	public boolean isAdmin();
+	
+	public static LearningPathRoles of(boolean participant, boolean coach, boolean admin) {
+		return new LearningPathRolesImpl(participant, coach, admin);
+	}
+	
+	public static LearningPathRoles of(UserCourseEnvironment userCourseEnvironment) {
+		return of(userCourseEnvironment.isParticipant(), userCourseEnvironment.isCoach(),
+				userCourseEnvironment.isAdmin());
+	}
 
 }

@@ -37,11 +37,8 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.IndentedNodeRenderer;
-import org.olat.course.learningpath.LearningPathService;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,15 +52,10 @@ public class LearningPathListController extends FormBasicController {
 	private LearningPathDataModel dataModel;
 	
 	private final UserCourseEnvironment userCourseEnv;
-	private final StatusEvaluatorProvider statusEvaluatorProvider;
-	
-	@Autowired
-	private LearningPathService learningPathService;
 	
 	public LearningPathListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnvironment) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
 		this.userCourseEnv = userCourseEnvironment;
-		this.statusEvaluatorProvider = learningPathService.getStatusEvaluatorProvider();
 		initForm(ureq);
 	}
 
@@ -92,7 +84,6 @@ public class LearningPathListController extends FormBasicController {
 
 	private void loadModel() {
 		GenericTreeModel learningPathTreeModel = LearningPathTreeModelBuilder.builder(userCourseEnv)
-				.withEvaluatedStatus(statusEvaluatorProvider, userCourseEnv.getScoreAccounting())
 				.create();
 		List<LearningPathRow> rows = forgeRows(learningPathTreeModel);
 		dataModel.setObjects(rows);

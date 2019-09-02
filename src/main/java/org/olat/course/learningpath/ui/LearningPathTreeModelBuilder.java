@@ -22,7 +22,9 @@ package org.olat.course.learningpath.ui;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathRoles;
 import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.evaluation.AccessEvaluator;
 import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.LearningPathEvaluator;
 import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
@@ -40,34 +42,25 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class LearningPathTreeModelBuilder {
 		
 	private final CourseNode rootNode;
-	private ScoreAccounting scoreAccounting;
-	private StatusEvaluatorProvider statusEvaluatorProvider;
+	private final ScoreAccounting scoreAccounting;
+	private final LearningPathRoles roles;
 	
 	private LearningPathService learningPathService;
 	
-	public static LearningPathTreeModelBuilder builder(CourseNode rootNode) {
-		return new LearningPathTreeModelBuilder(rootNode);
-	}
-	
 	public static LearningPathTreeModelBuilder builder(UserCourseEnvironment userCourseEnv) {
 		CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-		LearningPathTreeModelBuilder builder = new LearningPathTreeModelBuilder(rootNode);
-		
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
-		builder.withEvaluatedStatus(null, scoreAccounting);
+		LearningPathRoles roles = LearningPathRoles.of(userCourseEnv);
 		
+		LearningPathTreeModelBuilder builder = new LearningPathTreeModelBuilder(rootNode, scoreAccounting, roles);
+
 		return builder;
 	}
 
-	private LearningPathTreeModelBuilder(CourseNode rootNode) {
+	private LearningPathTreeModelBuilder(CourseNode rootNode, ScoreAccounting scoreAccounting, LearningPathRoles roles) {
 		this.rootNode = rootNode;
-	}
-	
-	public LearningPathTreeModelBuilder withEvaluatedStatus(StatusEvaluatorProvider statusEvaluatorProvider,
-			ScoreAccounting scoreAccounting) {
-		this.statusEvaluatorProvider = statusEvaluatorProvider;
 		this.scoreAccounting = scoreAccounting;
-		return this;
+		this.roles = roles;
 	}
 	
 	public GenericTreeModel create() {
@@ -75,16 +68,16 @@ public class LearningPathTreeModelBuilder {
 		
 		GenericTreeModel treeModel = createTreeModel();
 		
-		if (scoreAccounting != null && statusEvaluatorProvider == null) {
-			statusEvaluatorProvider = learningPathService.getStatusEvaluatorProvider();
-		}
+		StatusEvaluatorProvider statusEvaluatorProvider = learningPathService.getStatusEvaluatorProvider();
 		ObligationEvaluatorProvider obligationEvaluatorProvider = learningPathService.getObligationEvaluatorProvider();
 		DurationEvaluatorProvider durationEvaluatorProvider = learningPathService.getDurationEvaluatorProvider();
+		AccessEvaluator accessEvaluator = learningPathService.getAccessEvaluator();
 
 		LearningPathEvaluator.builder()
 				.refreshObligation(obligationEvaluatorProvider)
 				.refreshStatus(statusEvaluatorProvider, scoreAccounting)
 				.refreshDuration(durationEvaluatorProvider)
+				.refreshAccess(accessEvaluator, roles)
 				.build()
 				.refresh(treeModel);
 		

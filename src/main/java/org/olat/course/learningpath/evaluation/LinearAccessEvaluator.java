@@ -17,30 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.evaluation;
 
-import org.olat.course.learningpath.evaluation.AccessEvaluator;
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.learningpath.LearningPathRoles;
+import org.olat.course.learningpath.LearningPathStatus;
+import org.olat.course.learningpath.ui.LearningPathTreeNode;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 2 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
+public class LinearAccessEvaluator implements AccessEvaluator {
+	
+	private static final LearningPathStatus[] accessibleStati = {
+			LearningPathStatus.done,
+			LearningPathStatus.inProgress,
+			LearningPathStatus.ready
+	};
+			
 
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
-
-	public ObligationEvaluatorProvider getObligationEvaluatorProvider();
-
-	public StatusEvaluatorProvider getStatusEvaluatorProvider();
-
-	public DurationEvaluatorProvider getDurationEvaluatorProvider();
-
-	public AccessEvaluator getAccessEvaluator();
+	@Override
+	public boolean isAccessible(LearningPathTreeNode currentNode, LearningPathRoles roles) {
+		if (roles.isAdmin() || roles.isCoach()) return true;
+		
+		LearningPathStatus status = currentNode.getStatus();
+		for (LearningPathStatus accessibleStatus : accessibleStati) {
+			if (accessibleStatus.equals(status)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

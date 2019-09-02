@@ -26,6 +26,7 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.learningpath.LearningPathObligation;
+import org.olat.course.learningpath.LearningPathRoles;
 import org.olat.course.learningpath.evaluation.StatusEvaluator.Result;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -43,6 +44,9 @@ public class LearningPathEvaluator {
 	private StatusEvaluatorProvider statusEvaluatorProvider;
 	private ScoreAccounting scoreAccounting;
 	private DurationEvaluatorProvider durationEvaluatorProvider;
+	private AccessEvaluator accessEvaluator;
+	private LearningPathRoles roles;
+	
 	private LearningPathTreeNode previousNode;
 	
 	private LearningPathEvaluator(LearningPathEvaluatorBuilder builder) {
@@ -50,6 +54,8 @@ public class LearningPathEvaluator {
 		this.statusEvaluatorProvider = builder.statusEvaluatorProvider;
 		this.scoreAccounting = builder.scoreAccounting;
 		this.durationEvaluatorProvider = builder.durationEvaluatorProvider;
+		this.accessEvaluator = builder.assessEvaluator;
+		this.roles = builder.roles;
 	}
 	
 	public void refresh(GenericTreeModel treeModel) {
@@ -82,47 +88,65 @@ public class LearningPathEvaluator {
 		
 		refreshStatus(currentNode, children);
 		refreshDuration(currentNode, children);
+		
+		refreshAccess(currentNode);
 	}
 
 	private void refreshObligation(LearningPathTreeNode currentNode) {
-		ObligationEvaluator evaluator = obligationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-		LearningPathObligation obligation = evaluator.getObligation(currentNode.getCourseNode());
-		currentNode.setObligation(obligation);
+		if (obligationEvaluatorProvider != null) {
+			ObligationEvaluator evaluator = obligationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
+			LearningPathObligation obligation = evaluator.getObligation(currentNode.getCourseNode());
+			currentNode.setObligation(obligation);
+		}
 	}
 
 	private void refreshStatus(LearningPathTreeNode currentNode, LearningPathTreeNode previousNode) {
-		StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-		if (evaluator.isStatusDependingOnPreviousNode()) {
-			AssessmentEvaluation assessmentEvaluation = scoreAccounting.getScoreEvaluation(currentNode.getCourseNode());
-			Result result = evaluator.getStatus(previousNode, assessmentEvaluation);
-			currentNode.setStatus(result.getStatus());
-			currentNode.setDateDone(result.getDoneDate());
+		if (statusEvaluatorProvider != null) {
+			StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
+			if (evaluator.isStatusDependingOnPreviousNode()) {
+				AssessmentEvaluation assessmentEvaluation = scoreAccounting.getScoreEvaluation(currentNode.getCourseNode());
+				Result result = evaluator.getStatus(previousNode, assessmentEvaluation);
+				currentNode.setStatus(result.getStatus());
+				currentNode.setDateDone(result.getDoneDate());
+			}
 		}
 	}
 
 	private void refreshDuration(LearningPathTreeNode currentNode) {
-		DurationEvaluator evaluator = durationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-		if (evaluator.isDependingOnCurrentNode()) {
-			Integer duration = evaluator.getDuration(currentNode.getCourseNode());
-			currentNode.setDuration(duration);
+		if (durationEvaluatorProvider != null) {
+			DurationEvaluator evaluator = durationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
+			if (evaluator.isDependingOnCurrentNode()) {
+				Integer duration = evaluator.getDuration(currentNode.getCourseNode());
+				currentNode.setDuration(duration);
+			}
 		}
 	}
 
-	private void refreshStatus(LearningPathTreeNode currentNode,
-			List<LearningPathTreeNode> children) {
-		StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-		if (evaluator.isStatusDependingOnChildNodes()) {
-			Result result = evaluator.getStatus(currentNode, children);
-			currentNode.setStatus(result.getStatus());
-			currentNode.setDateDone(result.getDoneDate());
+	private void refreshStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
+		if (statusEvaluatorProvider != null) {
+			StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
+			if (evaluator.isStatusDependingOnChildNodes()) {
+				Result result = evaluator.getStatus(currentNode, children);
+				currentNode.setStatus(result.getStatus());
+				currentNode.setDateDone(result.getDoneDate());
+			}
 		}
 	}
 
 	private void refreshDuration(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
-		DurationEvaluator evaluator = durationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-		if (evaluator.isdependingOnChildNodes()) {
-			Integer duration = evaluator.getDuration(children);
-			currentNode.setDuration(duration);
+		if (durationEvaluatorProvider != null) {
+			DurationEvaluator evaluator = durationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
+			if (evaluator.isdependingOnChildNodes()) {
+				Integer duration = evaluator.getDuration(children);
+				currentNode.setDuration(duration);
+			}
+		}
+	}
+	
+	private void refreshAccess(LearningPathTreeNode currentNode) {
+		if (accessEvaluator != null) {
+			boolean accessible = accessEvaluator.isAccessible(currentNode, roles);
+			currentNode.setAccessible(accessible);
 		}
 	}
 	
@@ -136,6 +160,8 @@ public class LearningPathEvaluator {
 		private StatusEvaluatorProvider statusEvaluatorProvider;
 		private ScoreAccounting scoreAccounting;
 		private DurationEvaluatorProvider durationEvaluatorProvider;
+		private AccessEvaluator assessEvaluator;
+		private LearningPathRoles roles;
 		
 		private LearningPathEvaluatorBuilder() {
 			//
@@ -158,6 +184,12 @@ public class LearningPathEvaluator {
 		
 		public LearningPathEvaluatorBuilder refreshDuration(DurationEvaluatorProvider durationEvaluatorProvider) {
 			this.durationEvaluatorProvider = durationEvaluatorProvider;
+			return this;
+		}
+		
+		public LearningPathEvaluatorBuilder refreshAccess(AccessEvaluator accessEvaluator, LearningPathRoles roles) {
+			this.assessEvaluator = accessEvaluator;
+			this.roles = roles;
 			return this;
 		}
 	}

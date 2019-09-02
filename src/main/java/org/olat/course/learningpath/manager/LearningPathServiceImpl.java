@@ -21,7 +21,9 @@ package org.olat.course.learningpath.manager;
 
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.learningpath.evaluation.AccessEvaluator;
 import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
+import org.olat.course.learningpath.evaluation.LinearAccessEvaluator;
 import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
 import org.olat.course.nodes.CourseNode;
@@ -36,6 +38,8 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class LearningPathServiceImpl implements LearningPathService {
+	
+	private final static AccessEvaluator ACCESS_EVALUATOR = new LinearAccessEvaluator();
 	
 	@Autowired
 	private LearningPathRegistry registry;
@@ -58,6 +62,11 @@ public class LearningPathServiceImpl implements LearningPathService {
 	@Override
 	public DurationEvaluatorProvider getDurationEvaluatorProvider() {
 		return registry.getDurationEvaluatorProvider();
+	}
+
+	@Override
+	public AccessEvaluator getAccessEvaluator() {
+		return ACCESS_EVALUATOR;
 	}
 
 }

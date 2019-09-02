@@ -17,30 +17,41 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.model;
 
-import org.olat.course.learningpath.evaluation.AccessEvaluator;
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.learningpath.LearningPathRoles;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 2 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
+public class LearningPathRolesImpl implements LearningPathRoles {
 
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
+	private final boolean participant;
+	private final boolean coach;
+	private final boolean admin;
+	
+	public LearningPathRolesImpl(boolean participant, boolean coach, boolean admin) {
+		this.participant = participant;
+		this.coach = coach;
+		this.admin = admin;
+	}
 
-	public ObligationEvaluatorProvider getObligationEvaluatorProvider();
+	@Override
+	public boolean isParticipant() {
+		return participant;
+	}
 
-	public StatusEvaluatorProvider getStatusEvaluatorProvider();
+	@Override
+	public boolean isCoach() {
+		return coach;
+	}
 
-	public DurationEvaluatorProvider getDurationEvaluatorProvider();
-
-	public AccessEvaluator getAccessEvaluator();
+	@Override
+	public boolean isAdmin() {
+		return admin;
+	}
 
 }
