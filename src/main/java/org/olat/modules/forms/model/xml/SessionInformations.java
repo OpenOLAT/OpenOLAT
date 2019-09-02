@@ -34,6 +34,12 @@ public class SessionInformations extends AbstractElement {
 	
 	public static final String TYPE = "formsessioninformations";
 	
+	public enum Obligation {
+		optional,
+		mandatory,
+		autofill
+	}
+
 	public enum InformationType {
 		USER_FIRSTNAME(1),
 		USER_LASTNAME(2),
@@ -54,6 +60,7 @@ public class SessionInformations extends AbstractElement {
 		}
 	}
 	
+	private Obligation obligation = Obligation.optional;
 	private List<InformationType> informationTypes = new ArrayList<>();
 
 	@Override
@@ -61,6 +68,14 @@ public class SessionInformations extends AbstractElement {
 		return TYPE;
 	}
 	
+	public Obligation getObligation() {
+		return obligation;
+	}
+
+	public void setObligation(Obligation obligation) {
+		this.obligation = obligation;
+	}
+
 	public List<InformationType> getInformationTypes() {
 		return informationTypes;
 	}
