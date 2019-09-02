@@ -82,7 +82,7 @@ public class LearningPathListController extends FormBasicController {
 		loadModel();
 	}
 
-	private void loadModel() {
+	void loadModel() {
 		GenericTreeModel learningPathTreeModel = LearningPathTreeModelBuilder.builder(userCourseEnv)
 				.create();
 		List<LearningPathRow> rows = forgeRows(learningPathTreeModel);

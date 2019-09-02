@@ -1664,7 +1664,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(delayedClose == Delayed.learningPath || requestForClose(ureq)) {
 			OLATResourceable ores = OresHelper.createOLATResourceableType("LearningPath");
 			WindowControl swControl = addToHistory(ureq, ores, null);
-			IdentityOverviewController identityOverviewCtrl = new IdentityOverviewController(ureq, swControl, getUserCourseEnvironment());
+			IdentityOverviewController identityOverviewCtrl = new IdentityOverviewController(ureq, swControl,
+					toolbarPanel, getUserCourseEnvironment());
 			
 			listenTo(identityOverviewCtrl);
 			pushController(ureq, translate("command.learning.path"), identityOverviewCtrl);
