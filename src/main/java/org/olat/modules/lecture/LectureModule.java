@@ -179,13 +179,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		// Add controller factory extension point to launch groups
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("Lectures",
 				new LecturesManagementContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("LecturesManagementSite",
+				new LecturesManagementContextEntryControllerCreator());
 		
 		updateProperties();
 	}
 	
 	@Override
 	protected void initFromChangedProperties() {
-		init();
+		updateProperties();
 	}
 	
 	private void updateProperties() {

@@ -124,6 +124,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 	private AbsenceNoticeDetailsCalloutController detailsCtrl;
 	private RepositoryEntriesCalloutController entriesCalloutCtrl;
 	private ConfirmDeleteAbsenceNoticeController deleteNoticeCtrl;
+	private ConfirmAuthorizeAbsenceNoticeController authorizeCtrl;
 
 	@Autowired
 	private UserManager userManager;
@@ -362,7 +363,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 				toolsCalloutCtrl.deactivate();
 				cleanUp();
 			}
-		} else if(this.deleteNoticeCtrl == source) {
+		} else if(deleteNoticeCtrl == source || authorizeCtrl == source) {
 			if(event == Event.DONE_EVENT) {
 				loadModel(lastSearchParams);
 			}
@@ -371,9 +372,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		} else if(contactTeachersCtrl == source) {
 			cmc.deactivate();
 			cleanUp();
-		} else if(toolsCalloutCtrl == source) {
-			cleanUp();
-		} else if(cmc == source) {
+		} else if(toolsCalloutCtrl == source || cmc == source) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -385,6 +384,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		removeAsListenerAndDispose(toolsCalloutCtrl);
 		removeAsListenerAndDispose(deleteNoticeCtrl);
 		removeAsListenerAndDispose(editNoticeCtrl);
+		removeAsListenerAndDispose(authorizeCtrl);
 		removeAsListenerAndDispose(detailsCtrl);
 		removeAsListenerAndDispose(toolsCtrl);
 		removeAsListenerAndDispose(cmc);
@@ -393,6 +393,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 		toolsCalloutCtrl = null;
 		deleteNoticeCtrl = null;
 		editNoticeCtrl = null;
+		authorizeCtrl = null;
 		detailsCtrl = null;
 		toolsCtrl = null;
 		cmc = null;
@@ -400,7 +401,18 @@ public class AbsenceNoticesListController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(source instanceof FormLink) {
+		if(authorizeButton == source) {
+			doAuthorize(ureq);
+		} else if(unauthorizedFilterEl == source) {
+			doFilterUnauthorized();
+		} else if(tableEl == source) {
+			if(event instanceof SelectionEvent) {
+				SelectionEvent se = (SelectionEvent)event;
+				if("select-user".equals(se.getCommand())) {
+					doSelectUser(ureq, tableModel.getObject(se.getIndex()));
+				}
+			}
+		} else if(source instanceof FormLink) {
 			FormLink link = (FormLink)source;
 			if("details".equals(link.getCmd())) {
 				doOpenDetails(ureq, (AbsenceNoticeRow)link.getUserObject(), link);
@@ -411,16 +423,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			} else if("entries".equals(link.getCmd())) {
 				doOpenEntries(ureq, (AbsenceNoticeRow)link.getUserObject(), link);
 			}
-		} else if(unauthorizedFilterEl == source) {
-			doFilterUnauthorized();
-		} else if(tableEl == source) {
-			if(event instanceof SelectionEvent) {
-				SelectionEvent se = (SelectionEvent)event;
-				if("select-user".equals(se.getCommand())) {
-					doSelectUser(ureq, tableModel.getObject(se.getIndex()));
-				}
-			}
-		}
+		} 
 		super.formInnerEvent(ureq, source, event);
 	}
 
@@ -439,6 +442,26 @@ public class AbsenceNoticesListController extends FormBasicController {
 			lastSearchParams.setAuthorized(authorized);
 		}
 		loadModel(lastSearchParams);
+	}
+	
+	private void doAuthorize(UserRequest ureq) {
+		Set<Integer> selectedIndex = tableEl.getMultiSelectedIndex();
+		List<AbsenceNotice> notices = selectedIndex.stream()
+			.map(index -> tableModel.getObject(index.intValue()))
+			.map(AbsenceNoticeRow::getAbsenceNotice)
+			.collect(Collectors.toList());
+		
+		if(notices.isEmpty()) {
+			showWarning("warning.choose.at.least.one.notice");
+		} else {
+			authorizeCtrl = new ConfirmAuthorizeAbsenceNoticeController(ureq, getWindowControl(), notices);
+			listenTo(authorizeCtrl);
+	
+			String title = translate("absences.batch.authorize");
+			cmc = new CloseableModalController(getWindowControl(), "close", authorizeCtrl.getInitialComponent(), true, title, true);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 	
 	protected void doSearch(AbsenceNoticeSearchParameters searchParams) {
@@ -532,6 +555,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 			toolsCalloutCtrl.activate();
 		}
 	}
+	
 	private void doOpenEntry(UserRequest ureq, RepositoryEntry entry) {
 		String businessPath = "[RepositoryEntry:" + entry.getKey() + "]";
 		NewControllerFactory.getInstance().launch(businessPath, ureq, getWindowControl());

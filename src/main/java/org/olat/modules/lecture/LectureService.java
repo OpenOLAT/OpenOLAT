@@ -318,6 +318,9 @@ public interface LectureService {
 	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
 			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks, Identity actingIdentity);
 	
+	public AbsenceNotice updateAbsenceNoticeAuthorization(AbsenceNotice absenceNotice, Identity authorizer,
+			Boolean authorize, Identity actingIdentity);
+	
 	/**
 	 * Delete the absence notice and remove the absences from the roll calls.
 	 * 
