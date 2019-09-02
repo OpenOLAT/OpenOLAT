@@ -238,9 +238,11 @@ public class ScoreAccounting {
 				
 				LastModifications lastModifications = new LastModifications();
 				updateLastModified(cNode, lastModifications);
+				Date assessmentDone = aetAssessmentDone(entry, assessmentStatus);
 				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, userVisibility, null,
-						currentRunCompletion, runStatus, assessmendId, null, null, numOfAssessmentDocs,
-						lastModified, lastModifications.getLastUserModified(), lastModifications.getLastCoachModified());
+						currentRunCompletion, runStatus, assessmendId, null, null, numOfAssessmentDocs, lastModified,
+						lastModifications.getLastUserModified(), lastModifications.getLastCoachModified(),
+						assessmentDone);
 				
 				if(entry == null) {
 					Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
@@ -302,6 +304,18 @@ public class ScoreAccounting {
 			return se;
 		}
 		
+		private Date aetAssessmentDone(AssessmentEntry entry, AssessmentEntryStatus assessmentStatus) {
+			Date assessmentDone = null;
+			if (AssessmentEntryStatus.done.equals(assessmentStatus)) {
+				if (entry != null && entry.getAssessmentDone() != null) {
+					assessmentDone = entry.getAssessmentDone();
+				} else {
+					assessmentDone = new Date();
+				}
+			}
+			return assessmentDone;
+		}
+
 		private RepositoryEntryLifecycle getRepositoryEntryLifecycle() {
 			CourseGroupManager cgm = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager();
 			try {

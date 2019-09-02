@@ -26,11 +26,10 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.learningpath.LearningPathObligation;
-import org.olat.course.learningpath.LearningPathStatus;
+import org.olat.course.learningpath.evaluation.StatusEvaluator.Result;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -94,18 +93,11 @@ public class LearningPathEvaluator {
 	private void refreshStatus(LearningPathTreeNode currentNode, LearningPathTreeNode previousNode) {
 		StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
 		if (evaluator.isStatusDependingOnPreviousNode()) {
-			AssessmentEntryStatus assessmentStatus = getAssessmentStatus(currentNode);
-			LearningPathStatus status = evaluator.getStatus(previousNode, assessmentStatus);
-			currentNode.setStatus(status);
+			AssessmentEvaluation assessmentEvaluation = scoreAccounting.getScoreEvaluation(currentNode.getCourseNode());
+			Result result = evaluator.getStatus(previousNode, assessmentEvaluation);
+			currentNode.setStatus(result.getStatus());
+			currentNode.setDateDone(result.getDoneDate());
 		}
-	}
-
-	private AssessmentEntryStatus getAssessmentStatus(LearningPathTreeNode currentNode) {
-		AssessmentEvaluation scoreEvaluation = scoreAccounting.getScoreEvaluation(currentNode.getCourseNode());
-		AssessmentEntryStatus assessmentStatus = scoreEvaluation != null
-				? scoreEvaluation.getAssessmentStatus()
-				: AssessmentEntryStatus.notStarted;
-		return assessmentStatus;
 	}
 
 	private void refreshDuration(LearningPathTreeNode currentNode) {
@@ -120,8 +112,9 @@ public class LearningPathEvaluator {
 			List<LearningPathTreeNode> children) {
 		StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
 		if (evaluator.isStatusDependingOnChildNodes()) {
-			LearningPathStatus status = evaluator.getStatus(currentNode, children);
-			currentNode.setStatus(status);
+			Result result = evaluator.getStatus(currentNode, children);
+			currentNode.setStatus(result.getStatus());
+			currentNode.setDateDone(result.getDoneDate());
 		}
 	}
 

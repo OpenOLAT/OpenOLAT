@@ -23,11 +23,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.olat.course.learningpath.LearningPathObligation.mandatory;
 import static org.olat.course.learningpath.LearningPathObligation.optional;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 import org.junit.Test;
 import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.learningpath.LearningPathStatus;
-import org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluator;
+import org.olat.course.learningpath.evaluation.StatusEvaluator.Result;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -52,16 +56,20 @@ public class DefaultLinearStatusEvaluatorTest {
 
 	@Test
 	public void shouldReturnDoneIfAssessmentStatusIsDone() {
-		LearningPathStatus status = sut.getStatus(null, AssessmentEntryStatus.done);
+		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(AssessmentEntryStatus.done, null);
 		
-		assertThat(status).isEqualTo(LearningPathStatus.done);
+		Result result = sut.getStatus(null, assessmentEvaluation);
+		
+		assertThat(result.getStatus()).isEqualTo(LearningPathStatus.done);
 	}
 	
 	@Test
 	public void shouldReturnReadyIfIsRootNodeAndNotAlreadyDone() {
-		LearningPathStatus status = sut.getStatus(null, AssessmentEntryStatus.notStarted);
+		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(AssessmentEntryStatus.notStarted, null);;
 		
-		assertThat(status).isEqualTo(LearningPathStatus.ready);
+		Result result = sut.getStatus(null, assessmentEvaluation);
+		
+		assertThat(result.getStatus()).isEqualTo(LearningPathStatus.ready);
 	}
 
 	@Test
@@ -109,10 +117,37 @@ public class DefaultLinearStatusEvaluatorTest {
 		LearningPathTreeNode previousNode = new LearningPathTreeNode(null, 0);
 		previousNode.setStatus(previousStatus);
 		previousNode.setObligation(previousObligation);
+		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(currentStatus, null);
 		
-		LearningPathStatus status = sut.getStatus(previousNode, currentStatus);
+		Result result = sut.getStatus(previousNode, assessmentEvaluation);
 		
-		assertThat(status).isEqualTo(expected);
+		assertThat(result.getStatus()).isEqualTo(expected);
+	}
+	
+	@Test
+	public void shouldReturnDateDone() {
+		LearningPathTreeNode previousNode = new LearningPathTreeNode(null, 0);
+		Date dateDone = new GregorianCalendar(2019, 3, 1).getTime();
+		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(AssessmentEntryStatus.done, dateDone);
+		
+		Result result = sut.getStatus(previousNode, assessmentEvaluation);
+		
+		assertThat(result.getDoneDate()).isEqualTo(dateDone);
+	}
+	
+	@Test
+	public void shouldReturnDateDoneOnlyIfStatusIsDone() {
+		LearningPathTreeNode previousNode = new LearningPathTreeNode(null, 0);
+		Date dateDone = new GregorianCalendar(2019, 3, 1).getTime();
+		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(AssessmentEntryStatus.inProgress, dateDone);
+		
+		Result result = sut.getStatus(previousNode, assessmentEvaluation);
+		
+		assertThat(result.getDoneDate()).isEqualTo(null);
+	}
+
+	private AssessmentEvaluation getAssessmentEvaluation(AssessmentEntryStatus assessmentStatus, Date assessmentDone) {
+		return new AssessmentEvaluation(null, null, null, assessmentStatus, null, null, null, null, null, null, null, 0, null, null, null, assessmentDone);
 	}
 
 }

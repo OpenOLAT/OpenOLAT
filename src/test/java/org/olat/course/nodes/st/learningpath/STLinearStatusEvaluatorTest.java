@@ -22,11 +22,14 @@ package org.olat.course.nodes.st.learningpath;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.junit.Test;
 import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.learningpath.LearningPathStatus;
+import org.olat.course.learningpath.evaluation.StatusEvaluator.Result;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
 
 /**
@@ -68,9 +71,9 @@ public class STLinearStatusEvaluatorTest {
 		child3.setObligation(LearningPathObligation.optional);
 		children.add(child3);
 		
-		LearningPathStatus status = sut.getStatus(currentNode, children);
+		Result result = sut.getStatus(currentNode, children);
 		
-		assertThat(status).isEqualTo(LearningPathStatus.done);
+		assertThat(result.getStatus()).isEqualTo(LearningPathStatus.done);
 	}
 	
 	@Test
@@ -88,9 +91,9 @@ public class STLinearStatusEvaluatorTest {
 		child3.setStatus(LearningPathStatus.notAccessible);
 		children.add(child3);
 		
-		LearningPathStatus status = sut.getStatus(currentNode, children);
+		Result result = sut.getStatus(currentNode, children);
 		
-		assertThat(status).isEqualTo(LearningPathStatus.inProgress);
+		assertThat(result.getStatus()).isEqualTo(LearningPathStatus.inProgress);
 	}
 	
 	@Test
@@ -108,9 +111,9 @@ public class STLinearStatusEvaluatorTest {
 		child3.setStatus(LearningPathStatus.notAccessible);
 		children.add(child3);
 		
-		LearningPathStatus status = sut.getStatus(currentNode, children);
+		Result result = sut.getStatus(currentNode, children);
 		
-		assertThat(status).isEqualTo(LearningPathStatus.inProgress);
+		assertThat(result.getStatus()).isEqualTo(LearningPathStatus.inProgress);
 	}
 
 	@Test
@@ -126,8 +129,38 @@ public class STLinearStatusEvaluatorTest {
 		child2.setStatus(LearningPathStatus.notAccessible);
 		children.add(child2);
 		
-		LearningPathStatus status = sut.getStatus(currentNode, children);
+		Result result = sut.getStatus(currentNode, children);
 		
-		assertThat(status).isEqualTo(statusBeforeChildrenEvaluation);
+		assertThat(result.getStatus()).isEqualTo(statusBeforeChildrenEvaluation);
 	}
+	
+	@Test
+	public void shouldReturnLatestDoneDate() {
+		LearningPathTreeNode currentNode = new LearningPathTreeNode(null, 0);
+		currentNode.setStatus(LearningPathStatus.ready);
+		List<LearningPathTreeNode> children = new ArrayList<>();
+		LearningPathTreeNode child1 = new LearningPathTreeNode(null, 1);
+		child1.setStatus(LearningPathStatus.done);
+		child1.setDateDone(new GregorianCalendar(2013,1,1).getTime());
+		children.add(child1);
+		LearningPathTreeNode child2 = new LearningPathTreeNode(null, 1);
+		child2.setStatus(LearningPathStatus.done);
+		Date latest = new GregorianCalendar(2013,2,1).getTime();
+		child2.setDateDone(latest);
+		children.add(child2);
+		// test status / date mismatch
+		LearningPathTreeNode child3 = new LearningPathTreeNode(null, 1);
+		child3.setStatus(LearningPathStatus.notAccessible);
+		child3.setDateDone(new GregorianCalendar(2013,9,1).getTime());
+		children.add(child3);
+		// no date
+		LearningPathTreeNode child4 = new LearningPathTreeNode(null, 1);
+		child4.setStatus(LearningPathStatus.done);
+		children.add(child4);
+		
+		Result result = sut.getStatus(currentNode, children);
+		
+		assertThat(result.getDoneDate()).isEqualTo(latest);
+	}
+
 }

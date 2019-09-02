@@ -20,38 +20,34 @@
 package org.olat.course.learningpath.evaluation;
 
 import java.util.Date;
-import java.util.List;
 
 import org.olat.course.learningpath.LearningPathStatus;
-import org.olat.course.learningpath.ui.LearningPathTreeNode;
-import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.learningpath.evaluation.StatusEvaluator.Result;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 2 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface StatusEvaluator {
+class StatusEvaluatorResult implements Result {
 	
-	public boolean isStatusDependingOnPreviousNode();
+	private final LearningPathStatus status;
+	private final Date doneDate;
 	
-	public Result getStatus(LearningPathTreeNode previousNode, AssessmentEvaluation assessmentEvaluation);
-	
-	public boolean isStatusDependingOnChildNodes();
-	
-	public Result getStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode>children);
-	
-	public static Result result(LearningPathStatus status, Date doneDate) {
-		return new StatusEvaluatorResult(status, doneDate);
+	StatusEvaluatorResult(LearningPathStatus status, Date doneDate) {
+		this.status = status;
+		this.doneDate = doneDate;
 	}
-	
-	public interface Result {
-		
-		public LearningPathStatus getStatus();
-		
-		public Date getDoneDate();
-		
+
+	@Override
+	public LearningPathStatus getStatus() {
+		return status;
+	}
+
+	@Override
+	public Date getDoneDate() {
+		return doneDate;
 	}
 
 }

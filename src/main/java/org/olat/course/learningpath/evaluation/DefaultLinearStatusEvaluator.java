@@ -19,6 +19,7 @@
  */
 package org.olat.course.learningpath.evaluation;
 
+import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
@@ -26,6 +27,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -44,26 +46,29 @@ public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 	}
 	
 	@Override
-	public LearningPathStatus getStatus(LearningPathTreeNode previousNode, AssessmentEntryStatus statusCurrentNode) {
+	public Result getStatus(LearningPathTreeNode previousNode, AssessmentEvaluation assessmentEvaluation) {
 		LearningPathStatus status = LearningPathStatus.notAccessible;
-		if (AssessmentEntryStatus.done.equals(statusCurrentNode)) {
+		AssessmentEntryStatus assessmentStatus = assessmentEvaluation.getAssessmentStatus();
+		if (AssessmentEntryStatus.done.equals(assessmentStatus)) {
 			status = LearningPathStatus.done;
-		} else if (AssessmentEntryStatus.inProgress.equals(statusCurrentNode) || AssessmentEntryStatus.inReview.equals(statusCurrentNode)) {
+		} else if (AssessmentEntryStatus.inProgress.equals(assessmentStatus) || AssessmentEntryStatus.inReview.equals(assessmentStatus)) {
 			status = LearningPathStatus.inProgress;
 		} else if (previousNode == null) {
 			status = LearningPathStatus.ready;
 		} else if (LearningPathStatus.done.equals(previousNode.getStatus())) {
 			status = LearningPathStatus.ready;
-		} else if (!LearningPathObligation.mandatory.equals(previousNode.getObligation()) && LearningPathStatus.isAccessible(previousNode.getStatus())) {
+		} else if (LearningPathObligation.optional.equals(previousNode.getObligation()) && LearningPathStatus.isAccessible(previousNode.getStatus())) {
 			status = LearningPathStatus.ready;
 		}
 		log.debug("previous node type: {}, previous learning path status: {}, previous obligation: {}, current assessment status: {}, current learning path status: {}"
-				, previousNode != null? previousNode.getCourseNode().getType(): null
+				, previousNode != null && previousNode.getCourseNode() != null? previousNode.getCourseNode().getType(): null
 				, previousNode != null? previousNode.getStatus(): null
 				, previousNode != null? previousNode.getObligation(): null
-				, statusCurrentNode
+				, assessmentEvaluation
 				, status);
-		return status;
+
+		Date dateDone = LearningPathStatus.done.equals(status)? assessmentEvaluation.getAssessmentDone(): null;
+		return StatusEvaluator.result(status, dateDone);
 	}
 
 	@Override
@@ -72,7 +77,7 @@ public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 	}
 
 	@Override
-	public LearningPathStatus getStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
+	public Result getStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
 		return null;
 	}
 

@@ -19,6 +19,7 @@
  */
 package org.olat.course.nodes.st.learningpath;
 
+import java.util.Date;
 import java.util.List;
 
 import org.olat.course.learningpath.LearningPathObligation;
@@ -26,7 +27,7 @@ import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluator;
 import org.olat.course.learningpath.evaluation.StatusEvaluator;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 
 /**
  * 
@@ -44,8 +45,8 @@ class STLinearStatusEvaluator implements StatusEvaluator {
 	}
 
 	@Override
-	public LearningPathStatus getStatus(LearningPathTreeNode previousNode, AssessmentEntryStatus statusCurrentNode) {
-		return previousEvaluator.getStatus(previousNode, statusCurrentNode);
+	public Result getStatus(LearningPathTreeNode previousNode, AssessmentEvaluation assessmentEvaluation) {
+		return previousEvaluator.getStatus(previousNode, assessmentEvaluation);
 	}
 
 	@Override
@@ -54,9 +55,10 @@ class STLinearStatusEvaluator implements StatusEvaluator {
 	}
 
 	@Override
-	public LearningPathStatus getStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
+	public Result getStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
 		boolean allDone = true;
 		boolean inProgress = false;
+		Date latestDoneDate = currentNode.getDateDone();
 		for (LearningPathTreeNode child : children) {
 			if (allDone && isNotOptional(child) && isNotDone(child)) {
 				allDone = false;
@@ -64,11 +66,24 @@ class STLinearStatusEvaluator implements StatusEvaluator {
 			if (isInProgess(child)) {
 				inProgress = true;
 			}
+			if (isDone(child) && isDoneLater(child, latestDoneDate)) {
+				latestDoneDate = child.getDateDone();
+			}
 		}
 		
-		if (allDone)     return LearningPathStatus.done;
-		if (inProgress)  return LearningPathStatus.inProgress;
-		                 return currentNode.getStatus();
+		LearningPathStatus status = currentNode.getStatus();
+		if (allDone) {
+			status = LearningPathStatus.done;
+		} else if (inProgress) {
+			status =  LearningPathStatus.inProgress;
+		}
+		return StatusEvaluator.result(status, latestDoneDate);
+	}
+
+	private boolean isDoneLater(LearningPathTreeNode child, Date latestDoneDate) {
+		if (latestDoneDate == null) return true;
+		
+		return child.getDateDone() != null && child.getDateDone().after(latestDoneDate);
 	}
 
 	private boolean isNotOptional(LearningPathTreeNode node) {
@@ -80,8 +95,12 @@ class STLinearStatusEvaluator implements StatusEvaluator {
 				|| LearningPathStatus.done.equals(node.getStatus());
 	}
 
+	private boolean isDone(LearningPathTreeNode node) {
+		return LearningPathStatus.done.equals(node.getStatus());
+	}
+
 	private boolean isNotDone(LearningPathTreeNode node) {
-		return !LearningPathStatus.done.equals(node.getStatus());
+		return !isDone(node);
 	}
 
 }
