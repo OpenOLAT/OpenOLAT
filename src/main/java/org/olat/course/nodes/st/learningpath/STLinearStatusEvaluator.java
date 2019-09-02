@@ -21,6 +21,7 @@ package org.olat.course.nodes.st.learningpath;
 
 import java.util.List;
 
+import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluator;
 import org.olat.course.learningpath.evaluation.StatusEvaluator;
@@ -57,10 +58,10 @@ class STLinearStatusEvaluator implements StatusEvaluator {
 		boolean allDone = true;
 		boolean inProgress = false;
 		for (LearningPathTreeNode child : children) {
-			if (allDone && isChildNotDone(child)) {
+			if (allDone && isNotOptional(child) && isNotDone(child)) {
 				allDone = false;
 			}
-			if (isChildInProgess(child)) {
+			if (isInProgess(child)) {
 				inProgress = true;
 			}
 		}
@@ -70,13 +71,17 @@ class STLinearStatusEvaluator implements StatusEvaluator {
 		                 return currentNode.getStatus();
 	}
 
-	private boolean isChildInProgess(LearningPathTreeNode child) {
-		return LearningPathStatus.inProgress.equals(child.getStatus())
-				|| LearningPathStatus.done.equals(child.getStatus());
+	private boolean isNotOptional(LearningPathTreeNode node) {
+		return !LearningPathObligation.optional.equals(node.getObligation());
 	}
 
-	private boolean isChildNotDone(LearningPathTreeNode child) {
-		return !LearningPathStatus.done.equals(child.getStatus());
+	private boolean isInProgess(LearningPathTreeNode node) {
+		return LearningPathStatus.inProgress.equals(node.getStatus())
+				|| LearningPathStatus.done.equals(node.getStatus());
+	}
+
+	private boolean isNotDone(LearningPathTreeNode node) {
+		return !LearningPathStatus.done.equals(node.getStatus());
 	}
 
 }

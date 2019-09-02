@@ -25,9 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
+import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
-import org.olat.course.nodes.st.learningpath.STLinearStatusEvaluator;
 
 /**
  * 
@@ -56,10 +56,17 @@ public class STLinearStatusEvaluatorTest {
 		List<LearningPathTreeNode> children = new ArrayList<>();
 		LearningPathTreeNode child1 = new LearningPathTreeNode(null, 1);
 		child1.setStatus(LearningPathStatus.done);
+		child1.setObligation(LearningPathObligation.mandatory);
 		children.add(child1);
 		LearningPathTreeNode child2 = new LearningPathTreeNode(null, 1);
 		child2.setStatus(LearningPathStatus.done);
+		child2.setObligation(LearningPathObligation.mandatory);
 		children.add(child2);
+		// Optional nodes should not be treated
+		LearningPathTreeNode child3 = new LearningPathTreeNode(null, 1);
+		child3.setStatus(LearningPathStatus.ready);
+		child3.setObligation(LearningPathObligation.optional);
+		children.add(child3);
 		
 		LearningPathStatus status = sut.getStatus(currentNode, children);
 		
