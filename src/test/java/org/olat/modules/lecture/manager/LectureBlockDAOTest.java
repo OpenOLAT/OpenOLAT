@@ -24,20 +24,30 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.Group;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Organisation;
 import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.curriculum.Curriculum;
+import org.olat.modules.curriculum.CurriculumCalendars;
+import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.modules.curriculum.CurriculumElementStatus;
+import org.olat.modules.curriculum.CurriculumLectures;
+import org.olat.modules.curriculum.CurriculumRoles;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 import org.olat.modules.lecture.LectureBlockStatus;
@@ -48,6 +58,8 @@ import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.model.LectureBlockImpl;
 import org.olat.modules.lecture.model.LectureBlockToGroupImpl;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LectureCurriculumElementInfos;
+import org.olat.modules.lecture.model.LectureCurriculumElementSearchParameters;
 import org.olat.modules.lecture.model.LectureReportRow;
 import org.olat.modules.lecture.model.LectureRepositoryEntryInfos;
 import org.olat.modules.lecture.model.LectureRepositoryEntrySearchParameters;
@@ -77,6 +89,10 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	private LectureBlockDAO lectureBlockDao;
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationService organisationService;
 	@Autowired
 	private AssessmentModeManager assessmentModeManager;
 	@Autowired
@@ -463,6 +479,128 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		Assert.assertNotNull(infos);
 		Assert.assertEquals(1, infos.size());
 		Assert.assertEquals(entry, infos.get(0).getEntry());
+	}
+	
+	@Test
+	public void searchCurriculumElements_byTeacher() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("teacher-23");
+		Identity participant = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-23a");
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		lectureService.addTeacher(lectureBlock, teacher);
+		
+		String elementId = UUID.randomUUID().toString();
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		curriculumService.addMember(element, participant, CurriculumRoles.participant);
+		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
+		dbInstance.commitAndCloseSession();
+
+		LectureCurriculumElementSearchParameters searchParams = new LectureCurriculumElementSearchParameters();
+		searchParams.setSearchString(elementId);
+		searchParams.setViewAs(teacher, LectureRoles.teacher);
+		
+		List<LectureCurriculumElementInfos> infos = lectureBlockDao.searchCurriculumElements(searchParams);	
+		Assert.assertNotNull(infos);
+		Assert.assertEquals(1, infos.size());
+		Assert.assertEquals(curriculum, infos.get(0).getCurriculum());
+		Assert.assertEquals(element, infos.get(0).getElement());
+		Assert.assertEquals(1, infos.get(0).getNumOfParticipants());
+	}
+	
+	@Test
+	public void searchCurriculumElements_byTeacher_negativeTest() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("not-teacher-23");
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		repositoryEntryRelationDao.addRole(teacher, entry, GroupRoles.owner.name());
+		Assert.assertNotNull(lectureBlock);
+		
+		String elementId = UUID.randomUUID().toString();
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-2", "Curriculum with lectures 2", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commitAndCloseSession();
+
+		LectureCurriculumElementSearchParameters searchParams = new LectureCurriculumElementSearchParameters();
+		searchParams.setSearchString(elementId);
+		searchParams.setViewAs(teacher, LectureRoles.teacher);
+		
+		List<LectureCurriculumElementInfos> infos = lectureBlockDao.searchCurriculumElements(searchParams);	
+		Assert.assertNotNull(infos);
+		Assert.assertTrue(infos.isEmpty());
+	}
+	
+	@Test
+	public void searchCurriculumElements_byMasterCoach() {
+		Identity masterCoach = JunitTestHelper.createAndPersistIdentityAsRndUser("masterCoach-23");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-23a");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-23b");
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		
+		String elementId = UUID.randomUUID().toString();
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", null);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commit();
+		curriculumService.addMember(element, masterCoach, CurriculumRoles.mastercoach);
+		curriculumService.addMember(element, participant1, CurriculumRoles.participant);
+		curriculumService.addMember(element, participant2, CurriculumRoles.participant);
+		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
+		dbInstance.commitAndCloseSession();
+
+		LectureCurriculumElementSearchParameters searchParams = new LectureCurriculumElementSearchParameters();
+		searchParams.setSearchString(elementId);
+		searchParams.setViewAs(masterCoach, LectureRoles.mastercoach);
+		
+		List<LectureCurriculumElementInfos> infos = lectureBlockDao.searchCurriculumElements(searchParams);	
+		Assert.assertNotNull(infos);
+		Assert.assertEquals(1, infos.size());
+		Assert.assertEquals(curriculum, infos.get(0).getCurriculum());
+		Assert.assertEquals(element, infos.get(0).getElement());
+		Assert.assertEquals(2, infos.get(0).getNumOfParticipants());
+	}
+	
+	@Test
+	public void searchCurriculumElements_byManager() {
+		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lectureMgr-23");
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-23a");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-participant-23b");
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry);
+		dbInstance.commit();
+		
+		String elementId = UUID.randomUUID().toString();
+		Organisation curOrganisation = organisationService.createOrganisation("cur-lecture", "cur-lecture", null, null, null);
+		Curriculum curriculum = curriculumService.createCurriculum("Lectures-cur-1", "Curriculum with lectures 2", "Curriculum", curOrganisation);
+		CurriculumElement element = curriculumService.createCurriculumElement(elementId, "Element for relation", CurriculumElementStatus.active,
+				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.enabled, curriculum);
+		curriculumService.addRepositoryEntry(element, entry, false);
+		dbInstance.commit();
+		organisationService.addMember(curOrganisation, lectureManager, OrganisationRoles.lecturemanager);
+		curriculumService.addMember(element, participant1, CurriculumRoles.participant);
+		curriculumService.addMember(element, participant2, CurriculumRoles.participant);
+		lectureService.save(lectureBlock, Collections.singletonList(element.getGroup()));
+		dbInstance.commitAndCloseSession();
+
+		LectureCurriculumElementSearchParameters searchParams = new LectureCurriculumElementSearchParameters();
+		searchParams.setSearchString(elementId);
+		searchParams.setViewAs(lectureManager, LectureRoles.lecturemanager);
+		
+		List<LectureCurriculumElementInfos> infos = lectureBlockDao.searchCurriculumElements(searchParams);	
+		Assert.assertNotNull(infos);
+		Assert.assertEquals(1, infos.size());
+		Assert.assertEquals(curriculum, infos.get(0).getCurriculum());
+		Assert.assertEquals(element, infos.get(0).getElement());
+		Assert.assertEquals(2, infos.get(0).getNumOfParticipants());
 	}
 	
 	@Test

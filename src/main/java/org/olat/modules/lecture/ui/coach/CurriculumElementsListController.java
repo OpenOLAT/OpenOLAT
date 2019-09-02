@@ -41,6 +41,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.model.LectureCurriculumElementInfos;
 import org.olat.modules.lecture.model.LectureCurriculumElementSearchParameters;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.coach.CurriculumElementsTableModel.LectureCurriculumCols;
 import org.olat.modules.lecture.ui.event.SelectLectureCurriculumElementEvent;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class CurriculumElementsListController extends FormBasicController {
+
+	private final LecturesSecurityCallback secCallback;
 	
 	private FlexiTableElement tableEl;
 	private CurriculumElementsTableModel tableModel;
@@ -59,10 +62,10 @@ public class CurriculumElementsListController extends FormBasicController {
 	@Autowired
 	private LectureService lectureService;
 	
-	public CurriculumElementsListController(UserRequest ureq, WindowControl wControl) {
+	public CurriculumElementsListController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "curriculums", Util.createPackageTranslator(CurriculumSearchManagerController.class, ureq.getLocale()));
 		setTranslator(Util.createPackageTranslator(LectureRepositoryAdminController.class, getLocale(), getTranslator()));
-		
+		this.secCallback = secCallback;
 		initForm(ureq);
 	}
 
@@ -112,6 +115,7 @@ public class CurriculumElementsListController extends FormBasicController {
 	private void loadModel(String searchString) {
 		LectureCurriculumElementSearchParameters searchParams = new LectureCurriculumElementSearchParameters();
 		searchParams.setSearchString(searchString);
+		searchParams.setViewAs(getIdentity(), secCallback.viewAs());
 		List<LectureCurriculumElementInfos> infos = lectureService.searchCurriculumElements(searchParams);
 		tableModel.setObjects(infos);
 		tableEl.reset(true, true, true);
