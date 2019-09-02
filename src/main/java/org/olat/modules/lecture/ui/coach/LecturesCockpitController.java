@@ -160,6 +160,7 @@ public class LecturesCockpitController extends BasicController implements Activa
 		} else if(source == rollCallCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.BACK_EVENT || event == Event.CANCELLED_EVENT) {
 				backToDaily();
+				reloadModels();
 			}
 		} else if(event == Event.BACK_EVENT) {
 			backToDaily();
