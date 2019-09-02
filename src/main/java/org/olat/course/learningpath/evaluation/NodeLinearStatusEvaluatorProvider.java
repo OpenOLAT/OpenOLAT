@@ -19,6 +19,8 @@
  */
 package org.olat.course.learningpath.evaluation;
 
+import org.olat.course.nodes.CourseNodeProvider;
+
 /**
  * Interface to provide an individual
  * {@link org.olat.course.learningpath.evaluation.StatusEvaluator} for a course
@@ -32,9 +34,7 @@ package org.olat.course.learningpath.evaluation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeLinearStatusEvaluatorProvider {
-	
-	public String acceptCourseNodeType();
+public interface NodeLinearStatusEvaluatorProvider extends CourseNodeProvider {
 	
 	public StatusEvaluator getStatusEvaluator();
 

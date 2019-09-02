@@ -23,6 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeProvider;
 
 /**
  * 
@@ -30,9 +31,7 @@ import org.olat.course.nodes.CourseNode;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathNodeHandler {
-	
-	public String acceptCourseNodeType();
+public interface LearningPathNodeHandler extends CourseNodeProvider {
 	
 	public boolean isSupported();
 	

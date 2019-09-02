@@ -19,6 +19,8 @@
  */
 package org.olat.course.learningpath.evaluation;
 
+import org.olat.course.nodes.CourseNodeProvider;
+
 /**
  * * Interface to provide an individual
  * {@link org.olat.course.learningpath.evaluation.ObligationEvaluator} for a
@@ -32,9 +34,7 @@ package org.olat.course.learningpath.evaluation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeObligationEvaluatorProvider {
-	
-	public String acceptCourseNodeType();
+public interface NodeObligationEvaluatorProvider extends CourseNodeProvider {
 	
 	public ObligationEvaluator getObligationEvaluator();
 }

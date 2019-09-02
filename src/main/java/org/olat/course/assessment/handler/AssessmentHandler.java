@@ -26,6 +26,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.CourseNodeProvider;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -44,9 +45,7 @@ import org.olat.repository.RepositoryEntry;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AssessmentHandler {
-	
-	public String acceptCourseNodeType();
+public interface AssessmentHandler extends CourseNodeProvider {
 	
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
 	
