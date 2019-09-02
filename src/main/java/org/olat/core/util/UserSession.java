@@ -87,7 +87,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 * things to put into that should not be clear when signing on (e.g. remember url for a direct jump)
 	 */
 	private transient Map<String,Object> nonClearedStore = new HashMap<>();
-	private String lockStores = new String();
+	private String lockStores = "";
 	private boolean authenticated = false;
 	private boolean savedSession = false;
 	private transient Preferences guiPreferences;
@@ -258,7 +258,7 @@ public class UserSession implements HttpSessionBindingListener, GenericEventList
 	 */
 	public void setIdentity(Identity identity) {
 		identityEnvironment.setIdentity(identity);
-		//fxdiff FXOLAT-231: event on GUI Preferences extern changes
+		//event on GUI Preferences external changes
 		if(identity.getKey() != null) {
 			OLATResourceable ores = OresHelper.createOLATResourceableInstance(Preferences.class, identity.getKey());
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(this, ores);

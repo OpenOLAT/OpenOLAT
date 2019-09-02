@@ -69,7 +69,7 @@ public class ExportOptionsController extends FormBasicController {
 
 	@Override
 	protected void doDispose() {
-		
+		//
 	}
 
 	@Override
@@ -106,12 +106,12 @@ public class ExportOptionsController extends FormBasicController {
 	
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
-		allOk &= downloadOptionsEl.isAtLeastSelected(1);
-		if(!allOk) {
-			downloadOptionsEl.setErrorKey("nodechoose.config.error", null);			
+		boolean allOk = super.validateFormLogic(ureq);
+		if(!downloadOptionsEl.isAtLeastSelected(1)) {
+			downloadOptionsEl.setErrorKey("nodechoose.config.error", null);
+			allOk &= false;
 		}
-		return allOk &= super.validateFormLogic(ureq);
+		return allOk;
 	}
 	
 	

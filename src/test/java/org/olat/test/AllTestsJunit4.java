@@ -168,6 +168,7 @@ import org.junit.runners.Suite;
 	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,
 	org.olat.instantMessaging.RosterDAOTest.class,
 	org.olat.instantMessaging.InstantMessageServiceTest.class,
+	org.olat.course.archiver.FormatConfigHelperTest.class,
 	org.olat.course.condition.ConditionTest.class,
 	org.olat.course.condition.KeyAndNameConverterTest.class,
 	org.olat.course.highscore.HighScoreManagerTest.class,

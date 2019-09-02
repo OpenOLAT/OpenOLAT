@@ -79,7 +79,7 @@ public class GenericArchiveController extends FormBasicController {
 	private ChooseGroupController chooseGroupCtrl;
 	private ExportOptionsController exportOptionsCtrl; 
 	
-	private ArchiveOptions options;
+	private final ArchiveOptions options;
 	private final boolean withOptions;
 	private final OLATResourceable ores;
 	private final CourseNode[] nodeTypes;
@@ -175,9 +175,6 @@ public class GenericArchiveController extends FormBasicController {
 				archiveNode(ureq, courseNodes, group);
 			}
 		} else if (source == exportOptionsCtrl) {
-			if (event == Event.DONE_EVENT) {
-				setOptions(FormatConfigHelper.getArchiveOptions(ureq));
-			}
 			cmc.deactivate();
 			cleanUpPopups();
 		} else if (source == cmc) {
@@ -304,6 +301,8 @@ public class GenericArchiveController extends FormBasicController {
 
 	private void archiveNode(UserRequest ureq, List<CourseNode> nodes, BusinessGroup group) {
 		options.setGroup(group);
+		options.setExportFormat(FormatConfigHelper.loadExportFormat(ureq));
+		
 		ArchiveResource aResource = new ArchiveResource(nodes, ores, options, getLocale());
 		ureq.getDispatchResult().setResultingMediaResource(aResource);
 	}
@@ -315,9 +314,5 @@ public class GenericArchiveController extends FormBasicController {
 				true, translate("download.options"));
 		cmc.activate();
 		listenTo(cmc);
-	}
-
-	public void setOptions(ArchiveOptions options) {
-		this.options = options;
 	}
 }
