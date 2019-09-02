@@ -208,7 +208,8 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		List<LectureBlockAndRollCallRow> rows = new ArrayList<>(rollCalls.size());
 		for(LectureBlockAndRollCall rollCall:rollCalls) {
 			LectureBlockAndRollCallRow row = new LectureBlockAndRollCallRow(rollCall);
-			if(appealEnabled && !LectureBlockStatus.cancelled.equals(row.getRow().getStatus()) && rollCall.isCompulsory()) {
+			if(appealEnabled && !LectureBlockStatus.cancelled.equals(row.getRow().getStatus())
+					&& rollCall.isCompulsory()) {
 				
 				int lectures = row.getRow().getEffectiveLecturesNumber();
 				if(lectures <= 0) {
@@ -397,6 +398,10 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 		
 		LectureBlock lectureBlock = lectureService.getLectureBlock(row.getLectureBlockRef());
 		LectureBlockRollCall rollCall = lectureService.getRollCall(row.getRollCallRef());
+		if(rollCall == null) {
+			rollCall = lectureService.getOrCreateRollCall(assessedIdentity, lectureBlock, null, null, null);
+		}
+		
 		String before = lectureService.toAuditXml(rollCall);
 		rollCall.setAppealDate(new Date());
 		rollCall.setAppealStatus(LectureBlockAppealStatus.pending);
