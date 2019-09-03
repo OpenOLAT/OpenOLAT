@@ -39,6 +39,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.navigation.NavigationHandler;
@@ -70,6 +71,8 @@ public class CourseTemplateSearchController extends FormBasicController {
 
 	@Autowired
 	private PortfolioService portfolioService;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	
 	public CourseTemplateSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, "course_templates");
@@ -130,7 +133,8 @@ public class CourseTemplateSearchController extends FormBasicController {
 			List<CourseTemplateRow> rows, Set<CurrentBinder> currentSet) {
 		if(courseNode instanceof PortfolioCourseNode) {
 			PortfolioCourseNode pNode = (PortfolioCourseNode)courseNode;
-			NodeEvaluation ne = pNode.eval(uce.getConditionInterpreter(), new TreeEvaluation(), new VisibleTreeFilter());
+			NodeEvaluation ne = nodeAccessService.getNodeEvaluationBuilder(uce)
+					.build(pNode, new TreeEvaluation(), new VisibleTreeFilter());
 			if(NavigationHandler.mayAccessWholeTreeUp(ne)) {
 				RepositoryEntry refEntry = pNode.getReferencedRepositoryEntry();
 				if("BinderTemplate".equals(refEntry.getOlatResource().getResourceableTypeName())) {

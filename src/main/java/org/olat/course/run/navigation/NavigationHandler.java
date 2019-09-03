@@ -64,6 +64,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.xml.XStreamHelper;
 import org.olat.course.condition.additionalconditions.AdditionalConditionManager;
 import org.olat.course.editor.EditorMainController;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -93,6 +94,8 @@ public class NavigationHandler implements Disposable {
 	private List<String> openTreeNodeIds = new ArrayList<>();
 	private Map<String,SubTree> externalTreeModels = new HashMap<>();
 	
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	@Autowired
 	private List<NodeVisitedListener> nodeVisitedListeners;
 
@@ -291,11 +294,8 @@ public class NavigationHandler implements Disposable {
 	public NodeClickedRef reloadTreeAfterChanges(CourseNode courseNode) {
 		
 		TreeEvaluation treeEval = new TreeEvaluation();
-		GenericTreeModel treeModel = new GenericTreeModel();
 		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, filter);
-		TreeNode treeRoot = rootNodeEval.getTreeNode();
-		treeModel.setRootNode(treeRoot);
+		GenericTreeModel treeModel = createTreeModel(rootCn, treeEval);
 		
 		TreeNode treeNode = treeEval.getCorrespondingTreeNode(courseNode.getIdent());
 		NodeClickedRef nclr;
@@ -335,13 +335,9 @@ public class NavigationHandler implements Disposable {
 			log.debug("evaluateJumpTo courseNode = " + courseNode.getIdent() + ", " + courseNode.getShortName());
 		}
 
-		// build the new treemodel by evaluating the preconditions
-		TreeEvaluation treeEval = new TreeEvaluation();
-		GenericTreeModel treeModel = new GenericTreeModel();
 		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, filter);
-		TreeNode treeRoot = rootNodeEval.getTreeNode();
-		treeModel.setRootNode(treeRoot);
+		TreeEvaluation treeEval = new TreeEvaluation();
+		GenericTreeModel treeModel = createTreeModel(rootCn, treeEval);
 
 		// find the treenode that corresponds to the node (!= selectedTreeNode since
 		// we built the TreeModel anew in the meantime
@@ -420,7 +416,7 @@ public class NavigationHandler implements Disposable {
 						child = courseNode.getChildAt(i);
 						if (child instanceof CourseNode) {
 							CourseNode cn = (CourseNode) child;
-							NodeEvaluation cnEval = cn.eval(userCourseEnv.getConditionInterpreter(), treeEval, filter);
+							NodeEvaluation cnEval = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv).build(cn, treeEval, filter);
 							if (cnEval.isVisible()) {
 								return doEvaluateJumpTo(ureq, wControl, cn, listeningController, nodecmd, nodeSubCmd,
 									currentNodeController);
@@ -500,7 +496,18 @@ public class NavigationHandler implements Disposable {
 				openTreeNodeIds = convertToTreeNodeIds(treeEval, openCourseNodeIds);
 				reattachExternalTreeModels(treeEval);
 				
-
+				boolean evaluateTree = false;
+				for (NodeVisitedListener nodeVisitedListener : nodeVisitedListeners) {
+					boolean needsTreeEvaluation = nodeVisitedListener.onNodeVisited(courseNode, userCourseEnv);
+					if (needsTreeEvaluation) {
+						evaluateTree = true;
+					}
+				}
+				if (evaluateTree) {
+					rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+					treeModel = createTreeModel(rootCn, treeEval);;
+				}
+				
 				if((TreeEvent.COMMAND_TREENODE_OPEN.equals(nodeSubCmd) || TreeEvent.COMMAND_TREENODE_CLOSE.equals(nodeSubCmd)) &&
 						currentNodeController != null && !currentNodeController.isDisposed()) {
 					nclr = new NodeClickedRef(treeModel, true, null, openTreeNodeIds, null, null, false);
@@ -513,13 +520,17 @@ public class NavigationHandler implements Disposable {
 						nclr.getRunController().addControllerListener(listeningController);
 					}
 				}
-				
-				for (NodeVisitedListener nodeVisitedListener : nodeVisitedListeners) {
-					nodeVisitedListener.onNodeVisited(courseNode, userCourseEnv);
-				}
 			}
 		}
 		return nclr;
+	}
+
+	private GenericTreeModel createTreeModel(CourseNode courseNode, TreeEvaluation treeEval) {
+		NodeEvaluation rootNodeEval = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv).build(courseNode, treeEval, filter);
+		TreeNode treeRoot = rootNodeEval.getTreeNode();
+		GenericTreeModel treeModel = new GenericTreeModel();
+		treeModel.setRootNode(treeRoot);
+		return treeModel;
 	}
 	
 	private void reattachExternalTreeModels(TreeEvaluation treeEval) {

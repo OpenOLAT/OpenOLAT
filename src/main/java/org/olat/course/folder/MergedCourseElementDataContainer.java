@@ -22,13 +22,13 @@ package org.olat.course.folder;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.commons.services.webdav.servlets.RequestUtil;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.IdentityEnvironment;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.tree.TreeVisitor;
@@ -47,6 +47,7 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.PersistingCourseImpl;
 import org.olat.course.config.CourseConfig;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PFCourseNode;
@@ -100,7 +101,9 @@ public class MergedCourseElementDataContainer extends MergeSource {
 			PersistingCourseImpl persistingCourse = (PersistingCourseImpl)course;
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
 			CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-			NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
+			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+			NodeEvaluation rootNodeEval = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+					.build(rootCn, treeEval, new VisibleTreeFilter());
 	
 			new TreeVisitor(node -> {
 				if(node instanceof TreeNode && ((TreeNode)node).getUserObject() instanceof NodeEvaluation) {
@@ -151,7 +154,9 @@ public class MergedCourseElementDataContainer extends MergeSource {
 			TreeEvaluation treeEval = new TreeEvaluation();
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
 			CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-			NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
+			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+			NodeEvaluation rootNodeEval = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+					.build(rootCn, treeEval, new VisibleTreeFilter());
 			TreeNode treeRoot = rootNodeEval.getTreeNode();
 			addFolders(persistingCourse, this, treeRoot);
 		}

@@ -36,9 +36,10 @@ import org.springframework.stereotype.Component;
 public class LogVisitedHandler implements NodeVisitedListener {
 
 	@Override
-	public void onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_NAVIGATION_NODE_ACCESS, getClass(),
 				LoggingResourceable.wrap(courseNode));
+		return false;
 	}
 
 }

@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -43,6 +44,7 @@ import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.userview.NodeEvaluation;
@@ -192,7 +194,9 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		if (log.isDebugEnabled()) log.debug("courseNode=" + courseNode );
 		
 		TreeEvaluation treeEval = new TreeEvaluation();
-		NodeEvaluation rootNodeEval = rootCn.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
+		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+		NodeEvaluation rootNodeEval = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+				.build(rootCn, treeEval, new VisibleTreeFilter());
 		if (log.isDebugEnabled()) log.debug("rootNodeEval=" + rootNodeEval );
 
 		TreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);

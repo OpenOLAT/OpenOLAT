@@ -231,7 +231,7 @@ public class InfoCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
+	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		//nodeEval.setVisible(true);
 		super.calcAccessAndVisibility(ci, nodeEval);
 		

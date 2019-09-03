@@ -47,6 +47,9 @@ public class LearningPathTreeNode extends GenericTreeNode {
 	public LearningPathTreeNode(CourseNode courseNode, int recursionLevel) {
 		this.courseNode = courseNode;
 		this.recursionLevel = recursionLevel;
+		if (courseNode != null) {
+			setIdent(courseNode.getIdent());
+		}
 	}
 
 	public LearningPathStatus getStatus() {

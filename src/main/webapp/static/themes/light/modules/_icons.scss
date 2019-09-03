@@ -626,6 +626,10 @@ $fa-css-prefix: "o_icon" !default;
 .o_midlock:before { content: $fa-var-lock;}
 .o_miderr:before { content: $fa-var-exclamation-circle;}
 .o_middel:before { content: $fa-var-eraser;}
+.o_lp_not_accessible:before { content: $fa-var-times-circle;}
+.o_lp_ready:before { content: $fa-var-unlock;}
+.o_lp_in_progress:before { content: $fa-var-play;}
+.o_lp_done:before { content: $fa-var-check-circle;}
 
 
 /* File type icons */

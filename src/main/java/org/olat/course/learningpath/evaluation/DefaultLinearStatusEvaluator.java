@@ -57,7 +57,7 @@ public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 			status = LearningPathStatus.ready;
 		} else if (LearningPathStatus.done.equals(previousNode.getStatus())) {
 			status = LearningPathStatus.ready;
-		} else if (LearningPathObligation.optional.equals(previousNode.getObligation()) && LearningPathStatus.isAccessible(previousNode.getStatus())) {
+		} else if (!LearningPathObligation.mandatory.equals(previousNode.getObligation()) && LearningPathStatus.isAccessible(previousNode.getStatus())) {
 			status = LearningPathStatus.ready;
 		}
 		log.debug("previous node type: {}, previous learning path status: {}, previous obligation: {}, current assessment status: {}, current learning path status: {}"

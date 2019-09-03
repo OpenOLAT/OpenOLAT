@@ -58,6 +58,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
@@ -400,7 +401,9 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		RepositoryEntrySecurity reSecurity = CoreSpringFactory.getImpl(RepositoryManager.class).isAllowed(ienv.getIdentity(), ienv.getRoles(), entry);
 		
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		NodeEvaluation ne = node.eval(uce.getConditionInterpreter(), new TreeEvaluation(), new VisibleTreeFilter());
+		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+		NodeEvaluation ne = nodeAccessService.getNodeEvaluationBuilder(uce)
+				.build(node, new TreeEvaluation(), new VisibleTreeFilter());
 
 		VFSContainer container = BCCourseNode.getNodeFolderContainer(node, courseEnv);
 		VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), ne, reSecurity.isEntryAdmin(), ienv.getRoles().isGuestOnly(), null);

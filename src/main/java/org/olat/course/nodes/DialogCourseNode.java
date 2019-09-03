@@ -252,7 +252,7 @@ public class DialogCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
+	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		// evaluate the preconditions
 		boolean reader = (getPreConditionReader().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionReader()));
 		nodeEval.putAccessStatus("reader", reader);

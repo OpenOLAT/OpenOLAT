@@ -299,10 +299,11 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public void onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.updateLastVisited(courseNode, assessedIdentity, new Date());
+		return false;
 	}
 
 }

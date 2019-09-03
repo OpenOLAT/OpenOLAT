@@ -109,12 +109,8 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		postExportCondition(preConditionAccess, envMapper, backwardsCompatible);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#calcAccessAndVisibility(org.olat.course.condition.interpreter.ConditionInterpreter,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
 	@Override
-	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
+	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		// </OLATCE-91>
 		// for this node: only one role: accessing the node
 		boolean accessible = getPreConditionAccess().getConditionExpression() == null || ci.evaluateCondition(getPreConditionAccess());
@@ -144,9 +140,6 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 		}
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#getConditionExpression()
-	 */
 	@Override
 	public List<ConditionExpression> getConditionExpressions() {
 		ArrayList<ConditionExpression> retVal;

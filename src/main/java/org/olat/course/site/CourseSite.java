@@ -34,6 +34,7 @@ import org.olat.core.id.context.StateSite;
 import org.olat.core.util.UserSession;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
@@ -109,7 +110,9 @@ public class CourseSite extends AbstractSiteInstance {
 				CourseNode rootNode = course.getRunStructure().getRootNode();
 				UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course
 						.getCourseEnvironment());
-				NodeEvaluation nodeEval = rootNode.eval(uce.getConditionInterpreter(), new TreeEvaluation(), new VisibleTreeFilter());
+				NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+				NodeEvaluation nodeEval = nodeAccessService.getNodeEvaluationBuilder(uce)
+						.build(rootNode, new TreeEvaluation(), new VisibleTreeFilter());
 				boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(nodeEval);
 				hasAccess = mayAccessWholeTreeUp && nodeEval.isVisible();
 			}

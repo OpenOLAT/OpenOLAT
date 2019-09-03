@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -44,7 +45,6 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -283,7 +283,7 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 	 * @see org.olat.course.nodes.GenericCourseNode#calcAccessAndVisibility(org.olat.course.condition.interpreter.ConditionInterpreter, org.olat.course.run.userview.NodeEvaluation)
 	 */
 	@Override
-	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
+	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 	  super.calcAccessAndVisibility(ci, nodeEval);
 		
 	  boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));

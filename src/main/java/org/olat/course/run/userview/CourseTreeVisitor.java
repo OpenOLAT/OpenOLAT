@@ -19,9 +19,11 @@
 **/
 package org.olat.course.run.userview;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NavigationHandler;
@@ -41,20 +43,24 @@ public class CourseTreeVisitor {
 	
 	private final CourseEnvironment courseEnv;
 	private final IdentityEnvironment ienv;
+	private final NodeAccessService nodeAccessService;
 
 	public CourseTreeVisitor(ICourse course, IdentityEnvironment ienv) {
 		this.courseEnv = course.getCourseEnvironment();
 		this.ienv = ienv;
+		this.nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 	}
 	
 	public CourseTreeVisitor(CourseEnvironment courseEnv, IdentityEnvironment ienv) {
 		this.courseEnv = courseEnv;
 		this.ienv = ienv;
+		this.nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 	}
 	
 	public boolean isAccessible(CourseNode node, TreeFilter filter) {
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		NodeEvaluation ne = node.eval(uce.getConditionInterpreter(), new TreeEvaluation(), filter);
+		NodeEvaluation ne = nodeAccessService.getNodeEvaluationBuilder(uce)
+				.build(node, new TreeEvaluation(), filter);
 
 		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
 		if(mayAccessWholeTreeUp) {
@@ -71,7 +77,8 @@ public class CourseTreeVisitor {
 	}
 	
 	private void visit(Visitor visitor, CourseNode node, UserCourseEnvironment userCourseEnv, TreeEvaluation treeEval, TreeFilter filter) {
-		NodeEvaluation ne = node.eval(userCourseEnv.getConditionInterpreter(), treeEval, filter);
+		NodeEvaluation ne = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+				.build(node, treeEval, filter);
 		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
 		if(mayAccessWholeTreeUp) {
 			visitor.visit(node);

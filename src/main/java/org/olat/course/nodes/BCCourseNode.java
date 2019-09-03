@@ -236,7 +236,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
+	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 
 		boolean uploadability = (getPreConditionUploaders().getConditionExpression() == null ? true : ci
 				.evaluateCondition(getPreConditionUploaders()));

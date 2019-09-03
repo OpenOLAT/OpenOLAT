@@ -121,6 +121,7 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);
@@ -165,6 +166,7 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	/**
 	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
 	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
@@ -224,7 +226,7 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
 	@Override
-	protected void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
+	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
 		super.calcAccessAndVisibility(ci, nodeEval);
 		// evaluate the preconditions
 		boolean editor = (getPreConditionEdit().getConditionExpression() == null ? true : ci.evaluateCondition(getPreConditionEdit()));

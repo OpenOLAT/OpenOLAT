@@ -88,8 +88,10 @@ public class DefaultLinearStatusEvaluatorTest {
 	}
 
 	@Test
-	public void shouldReturnNotAccessibleIfPreviousNodeIsNotDoneAndHasNoObligation() {
-		assertStatus(LearningPathStatus.inProgress, null, AssessmentEntryStatus.notStarted, LearningPathStatus.notAccessible);
+	public void shouldReturnReadyIfPreviousNodeIsStartedAndHasNoObligation() {
+		// No obligation means optional. E.g. the STCourseNode has no obligation and is
+		// always the first node in a course tree
+		assertStatus(LearningPathStatus.inProgress, null, AssessmentEntryStatus.notStarted, LearningPathStatus.ready);
 	}
 
 	@Test
@@ -110,6 +112,10 @@ public class DefaultLinearStatusEvaluatorTest {
 	@Test
 	public void shouldReturnNotAccessibleIfPreviousNodeIsNotAccessibleAndIsOptional() {
 		assertStatus(LearningPathStatus.notAccessible, optional, AssessmentEntryStatus.notStarted, LearningPathStatus.notAccessible);
+	}
+	@Test
+	public void shouldReturnNotAccessibleIfPreviousNodeNotAccessibleAndHasNoObligation() {
+		assertStatus(LearningPathStatus.notAccessible, null, AssessmentEntryStatus.notStarted, LearningPathStatus.notAccessible);
 	}
 
 	private void assertStatus(LearningPathStatus previousStatus, LearningPathObligation previousObligation,

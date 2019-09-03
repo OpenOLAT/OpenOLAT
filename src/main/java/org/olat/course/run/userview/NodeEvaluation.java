@@ -31,6 +31,7 @@ import java.util.Map;
 
 import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.core.gui.components.tree.TreeNode;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.GenericNode;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
@@ -57,23 +58,27 @@ public class NodeEvaluation extends GenericNode {
 	private GenericTreeNode gtn;
 
 	private final Map<String, Boolean> accesses = new HashMap<>(4);
+	private final String iconDecorator1CssClass;
 
 	private boolean visible = false;
 	private boolean atLeastOneAccessible = false;
 
 	public NodeEvaluation(CourseNode courseNode) {
+		this(courseNode, null);
+	}
+	
+	public NodeEvaluation(CourseNode courseNode, String iconDecorator1CssClass) {
 		this.courseNode = courseNode;
+		this.iconDecorator1CssClass = iconDecorator1CssClass;
 	}
 
 	public void putAccessStatus(String capabilityName, boolean mayAccess) {
 		accesses.put(capabilityName, new Boolean(mayAccess));
 	}
-	// <OLATCE-91>
 	
 	public boolean oldStyleConditionsOk(){
 			return accesses.containsKey(AbstractAccessableCourseNode.BLOCKED_BY_ORIGINAL_ACCESS_RULES);
 	}
-	// </OLATCE-91>
 
 	public boolean isCapabilityAccessible(String capabilityName) {
 		if(accesses.get(capabilityName)!=null) {
@@ -92,28 +97,16 @@ public class NodeEvaluation extends GenericNode {
 		return (NodeEvaluation) getChildAt(pos);
 	}
 
-	/**
-	 * @return boolean
-	 */
 	public boolean isVisible() {
 		return visible;
 	}
 
-	/**
-	 * Sets the visible.
-	 * 
-	 * @param visible The visible to set
-	 */
 	public void setVisible(boolean visible) {
 		this.visible = visible;
 	}
-
-	/**
-	 * 1. Calculate if the node should be accessible at all. <br/>
-	 * 2. If the coursenode is visible, build a treenode.
-	 */
+	
 	public void build() {
-		// if at least one access	capability is true 
+		// if at least one access capability is true 
 		for (Iterator<Boolean> iter = accesses.values().iterator(); iter.hasNext();) {
 			Boolean entry = iter.next();
 			atLeastOneAccessible = atLeastOneAccessible || entry.booleanValue();
@@ -132,7 +125,7 @@ public class NodeEvaluation extends GenericNode {
 					// Spacial case for root node
 					nodeCssClass = "o_CourseModule_icon";
 				} else {
-					nodeCssClass = cnConfig.getIconCSSClass();					
+					nodeCssClass = cnConfig.getIconCSSClass();
 				}
 				gtn.setIconCssClass(nodeCssClass);
 			}
@@ -141,6 +134,9 @@ public class NodeEvaluation extends GenericNode {
 			// all treenodes added here are set to be visible/accessible, since the
 			// invisible are not pushed by convention
 			gtn.setAccessible(true);
+			if (StringHelper.containsNonWhitespace(iconDecorator1CssClass)) {
+				gtn.setIconDecorator1CssClass(iconDecorator1CssClass);
+			}
 		}
 		// else treenode is null
 	}
@@ -155,28 +151,12 @@ public class NodeEvaluation extends GenericNode {
 		return atLeastOneAccessible;
 	}
 
-	/**
-	 * @return CourseNode
-	 */
 	public CourseNode getCourseNode() {
 		return courseNode;
 	}
 
-	/**
-	 * @return GenericTreeNode
-	 */
 	public TreeNode getTreeNode() {
 		return gtn;
-	}
-
-	/**
-	 * Only for special cases!!! like overriding coursenodes-children
-	 * accessibility!! Sets the atLeastOneAccessible.
-	 * 
-	 * @param atLeastOneAccessible The atLeastOneAccessible to set
-	 */
-	public void setAtLeastOneAccessible(boolean atLeastOneAccessible) {
-		this.atLeastOneAccessible = atLeastOneAccessible;
 	}
 
 }

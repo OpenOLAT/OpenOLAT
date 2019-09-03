@@ -35,6 +35,7 @@ import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.navigation.NodeVisitedListener;
+import org.olat.course.run.userview.NodeEvaluationBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -82,14 +83,21 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeV
 	}
 
 	@Override
-	public void onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		boolean doneOnNodeStarted = getConfigs(courseNode).isDoneOnNodeVisited();
 		boolean participant = userCourseEnvironment.isParticipant();
 		if (doneOnNodeStarted && participant) {
 			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 			Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 			am.updateAssessmentStatus(courseNode, identity, AssessmentEntryStatus.done, Role.user);
+			return true;
 		}
+		return false;
+	}
+
+	@Override
+	public NodeEvaluationBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
+		return new LearningPathNodeEvaluationBuilder(userCourseEnvironment);
 	}
 
 }

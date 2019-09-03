@@ -25,6 +25,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.NodeEvaluationBuilder;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -51,5 +53,7 @@ public interface NodeAccessService {
 	 */
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, NodeAccessType type,
 			CourseNode courseNode);
+
+	public NodeEvaluationBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment);
 
 }

@@ -28,6 +28,8 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.NodeEvaluationBuilder;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.springframework.stereotype.Service;
 
 /**
@@ -60,6 +62,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
 		return null;
+	}
+
+	@Override
+	public NodeEvaluationBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
+		return new ConditionNodeEvaluationBuilder(userCourseEnvironment);
 	}
 
 }

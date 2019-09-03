@@ -52,7 +52,6 @@ import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.additionalconditions.AdditionalCondition;
 import org.olat.course.condition.interpreter.ConditionErrorMessage;
 import org.olat.course.condition.interpreter.ConditionExpression;
-import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeConfigFormController;
 import org.olat.course.editor.PublishEvents;
@@ -60,8 +59,6 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
-import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
@@ -283,39 +280,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	public void setModuleConfiguration(ModuleConfiguration moduleConfiguration) {
 		this.moduleConfiguration = moduleConfiguration;
 	}
-
-	@Override
-	public NodeEvaluation eval(ConditionInterpreter ci, TreeEvaluation treeEval, TreeFilter filter) {
-		// each CourseNodeImplementation has the full control over all children eval.
-		// default behaviour is to eval all visible children
-		NodeEvaluation nodeEval = new NodeEvaluation(this);
-		calcAccessAndVisibility(ci, nodeEval);
-		if(filter != null && !filter.isVisible(this)) {
-			nodeEval.setVisible(false);
-		}
-		
-		nodeEval.build();
-		treeEval.cacheCourseToTreeNode(this, nodeEval.getTreeNode());
-		// only add children (coursenodes/nodeeval) when I am visible and
-		// atleastOneAccessible myself
-		if (nodeEval.isVisible() && nodeEval.isAtLeastOneAccessible()) {
-			int childcnt = getChildCount();
-			for (int i = 0; i < childcnt; i++) {
-				CourseNode cn = (CourseNode)getChildAt(i);
-				NodeEvaluation chdEval = cn.eval(ci, treeEval, filter);
-				if (chdEval.isVisible()) { // child is visible
-					nodeEval.addNodeEvaluationChild(chdEval);
-				}
-			}
-		}
-		return nodeEval;
-	}
-
-	/**
-	 * @param ci the ConditionInterpreter as the calculating machine
-	 * @param nodeEval the object to write the results into
-	 */
-	protected abstract void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval);
 
 	/**
 	 * @return String

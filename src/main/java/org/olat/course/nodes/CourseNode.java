@@ -49,8 +49,6 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
-import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
@@ -267,17 +265,6 @@ public interface CourseNode extends INode, ShortName {
 			UserCourseEnvironment userCourseEnv, StatisticResourceOption options, StatisticType type);
 	
 	public boolean isStatisticNodeResultAvailable(UserCourseEnvironment userCourseEnv, StatisticType type);
-	
-	/**
-	 * this method must generate a nodeevaluation and take care of (if any) child
-	 * nodeevaluations. A nodeevaluation is done in the context of ci (an
-	 * interpreter per user is needed at the moment) and a treeeval
-	 * 
-	 * @param ci
-	 * @param treeEval
-	 * @return NodeEvaluation
-	 */
-	public NodeEvaluation eval(ConditionInterpreter ci, TreeEvaluation treeEval, TreeFilter filter);
 
 	/**
 	 * @return true if the course node configuration is correct without the course
@@ -442,6 +429,14 @@ public interface CourseNode extends INode, ShortName {
 	 *  
 	 */
 	public void updateModuleConfigDefaults(boolean isNewNode);
+	
+	/**
+	 * Calculate the access and the visibility in the conventional node access type.
+	 *
+	 * @param ci
+	 * @param nodeEval
+	 */
+	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval);
 	
 	public enum Processing {
 		runstructure,

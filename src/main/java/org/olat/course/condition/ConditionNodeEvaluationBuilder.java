@@ -17,27 +17,33 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodeaccess;
+package org.olat.course.condition;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.NodeEvaluationBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 2 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
+public class ConditionNodeEvaluationBuilder extends NodeEvaluationBuilder {
 
-	public boolean isSupported(String courseNodeType);
+	private final ConditionInterpreter conditionInterpreter;
 
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode);
-
-	public NodeEvaluationBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment);
+	ConditionNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
+		conditionInterpreter = userCourseEnvironment.getConditionInterpreter();
+	}
 	
+	@Override
+	protected NodeEvaluation createNodeEvaluation(CourseNode courseNode) {
+		NodeEvaluation nodeEval = new NodeEvaluation(courseNode);
+		courseNode.calcAccessAndVisibility(conditionInterpreter, nodeEval);
+		return nodeEval;
+	}
+
 }

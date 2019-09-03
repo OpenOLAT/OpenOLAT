@@ -1,10 +1,14 @@
 .badge {
 	/* badge color */
-	&.o_midpub { background-color: $o-course-node-published; }
-	&.o_midwarn { background-color: $o-course-node-warning; }
-	&.o_midlock { background-color: $o-course-node-locked;}
-	&.o_miderr { background-color: $o-course-node-error;}
-	&.o_middel { background-color: $o-course-node-deleted;}
+	&.o_midpub            { background-color: $o-course-node-published; }
+	&.o_midwarn           { background-color: $o-course-node-warning; }
+	&.o_midlock           { background-color: $o-course-node-locked;}
+	&.o_miderr            { background-color: $o-course-node-error;}
+	&.o_middel            { background-color: $o-course-node-deleted;}
+	&.o_lp_not_accessible { background-color: $o-lp-not-accessible; }
+	&.o_lp_ready          { background-color: $o-lp-ready; }
+	&.o_lp_in_progress    { background-color: $o-lp-in-progress; }
+	&.o_lp_done           { background-color: $o-lp-done; }
 }
 .o_course_editor_legend .badge {
 	font-size: 80%;
@@ -340,3 +344,4 @@ div.o_correction_navigation {
 		font-weight: bold;
 	}
 }
+

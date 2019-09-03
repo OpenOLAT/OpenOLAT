@@ -30,6 +30,13 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public interface NodeVisitedListener {
 	
-	public void onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	/**
+	 * Make an action after a CourseNode was started by a user.
+	 *
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @return whether the course tree has to be refreshed after the this action
+	 */
+	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 
 }

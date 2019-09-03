@@ -25,6 +25,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
@@ -41,7 +42,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.WebappHelper;
@@ -52,6 +52,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.TreeEvaluation;
@@ -396,8 +397,9 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 					reSecurity.isCourseCoach() || reSecurity.isGroupCoach(), reSecurity.isEntryAdmin(), reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant(),
 					false);
 			// Build an evaluation tree
-			TreeEvaluation treeEval = new TreeEvaluation();
-			NodeEvaluation nodeEval = node.eval(userCourseEnv.getConditionInterpreter(), treeEval, new VisibleTreeFilter());
+			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+			NodeEvaluation nodeEval = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+					.build(node, new TreeEvaluation(), new VisibleTreeFilter());
 			if (nodeEval.isVisible()) {
 				hasAccess = true;
 			}

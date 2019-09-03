@@ -361,6 +361,10 @@ $o-course-node-warning			: $state-warning-text !default;
 $o-course-node-locked			: $state-info-text !default;
 $o-course-node-error			: $state-danger-text !default;
 $o-course-node-deleted			: $badge-bg !default;
+$o-lp-not-accessible			: $state-danger-text !default;
+$o-lp-ready						: #FCCA46 !default; /* yellow */
+$o-lp-in-progress				: $o-lp-ready !default;
+$o-lp-done						: $state-success-text !default;
 
 /* Curriculum */
 /* Basic rendering configuration */
