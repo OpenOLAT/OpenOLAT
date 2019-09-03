@@ -352,7 +352,8 @@ public class LectureBlockRollCallDAO {
 		sb.append("select rollcall from lectureblockrollcall rollcall")
 		  .append(" inner join fetch rollcall.identity ident")
 		  .append(" inner join fetch ident.user user")
-		  .append(" inner join fetch rollcall.lectureBlock block");
+		  .append(" inner join fetch rollcall.lectureBlock block")
+		  .append(" left join fetch rollcall.absenceNotice notice");
 
 		if(searchParams.getHasAbsence() != null) {
 			sb.and();
