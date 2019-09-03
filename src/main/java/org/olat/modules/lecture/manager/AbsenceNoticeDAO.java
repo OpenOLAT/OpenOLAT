@@ -268,11 +268,10 @@ public class AbsenceNoticeDAO {
 		}
 		
 		if(searchParams.getMasterCoach() != null) {
-			sb.and().append(" exists (select block.key from lectureblock as block")
-			  .append("  inner join block.groups as blockToGroup")
-			  .append("  inner join blockToGroup.group as bGroup")
-			  .append("  inner join bGroup.members participants")
-			  .append("  inner join bGroup.members masterCoaches")
+			sb.and().append(" exists (select curEl.key from curriculumelement as curEl")
+			  .append("  inner join curEl.group as curElGroup")
+			  .append("  inner join curElGroup.members participants")
+			  .append("  inner join curElGroup.members masterCoaches")
 			  .append("  where masterCoaches.identity.key=:masterCoachKey and masterCoaches.role ").in(CurriculumRoles.mastercoach.name())
 			  .append("  and aIdent.key=participants.identity.key and participants.role ").in(GroupRoles.participant.name())
 			  .append(")");
