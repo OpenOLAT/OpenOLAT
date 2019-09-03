@@ -21,7 +21,6 @@ package org.olat.course.learningpath.ui;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.components.tree.GenericTreeModel;
-import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathRoles;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.evaluation.AccessEvaluator;
@@ -105,12 +104,7 @@ public class LearningPathTreeModelBuilder {
 	}
 
 	private LearningPathTreeNode createLearningPathTreeNode(CourseNode courseNode, int recursionLevel) {
-		LearningPathTreeNode learningPathTreeNode = new LearningPathTreeNode(courseNode, recursionLevel);
-		
-		LearningPathConfigs configs = learningPathService.getConfigs(courseNode);
-		learningPathTreeNode.setDuration(configs.getDuration());
-		
-		return learningPathTreeNode;
+		return new LearningPathTreeNode(courseNode, recursionLevel);
 	}
 
 }
