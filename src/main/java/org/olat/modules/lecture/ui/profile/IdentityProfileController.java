@@ -41,11 +41,14 @@ import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.olat.modules.coach.CoachingService;
 import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 import org.olat.modules.lecture.ui.AppealListRepositoryController;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
+import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.ParticipantLecturesOverviewController;
 import org.olat.modules.lecture.ui.coach.DispensationsController;
@@ -53,6 +56,7 @@ import org.olat.modules.lecture.ui.wizard.AbsenceNotice3LecturesEntriesStep;
 import org.olat.modules.lecture.ui.wizard.AbsenceNoticeCancelStepCallback;
 import org.olat.modules.lecture.ui.wizard.AbsenceNoticeFinishStepCallback;
 import org.olat.user.DisplayPortraitController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -84,6 +88,9 @@ public class IdentityProfileController extends BasicController implements Activa
 	private DailyOverviewProfilController dailyOverviewCtrl;
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	
+	@Autowired
+	private CoachingService coachingService;
+	
 	public IdentityProfileController(UserRequest ureq, WindowControl wControl, Identity profiledIdentity,
 			LecturesSecurityCallback secCallback, boolean withBack) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
@@ -102,6 +109,14 @@ public class IdentityProfileController extends BasicController implements Activa
 		UserShortDescription userDescr = new UserShortDescription(ureq, getWindowControl(), profiledIdentity);
 		listenTo(userDescr);
 		mainVC.put("userDescr", userDescr.getInitialComponent());
+		
+		//TODO absences remove in a few weeks
+		if(secCallback.viewAs() == LectureRoles.participant) {
+			String msg = translate("warning.teacher.user.tool");
+			if(StringHelper.containsNonWhitespace(msg) && coachingService.isTeacher(getIdentity())) {
+				mainVC.contextPut("teacherMessage", msg);
+			}
+		}
 		
 		//new absence, new notice of absence, new dispensation
 		addAbsence = LinkFactory.createButton("add.absence", mainVC, this);
