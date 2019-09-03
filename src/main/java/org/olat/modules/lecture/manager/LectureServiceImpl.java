@@ -1185,7 +1185,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, teacher);
 	}
 
-	private AbsenceNotice getAbsenceNotice(Identity identity, LectureBlock lectureBlock) {
+	@Override
+	public AbsenceNotice getAbsenceNotice(IdentityRef identity, LectureBlock lectureBlock) {
 		List<AbsenceNotice> notices = absenceNoticeDao.getAbsenceNotices(identity, lectureBlock);
 		AbsenceNotice preferedNotice;
 		if(notices.isEmpty()) {

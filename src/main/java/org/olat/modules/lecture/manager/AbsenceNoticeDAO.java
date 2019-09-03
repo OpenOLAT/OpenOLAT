@@ -28,6 +28,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -331,7 +332,7 @@ public class AbsenceNoticeDAO {
 	 * @param lectureBlock The lecture block (mandatory)
 	 * @return
 	 */
-	public List<AbsenceNotice> getAbsenceNotices(Identity calleeIdentity, LectureBlock lectureBlock) {
+	public List<AbsenceNotice> getAbsenceNotices(IdentityRef calleeIdentity, LectureBlock lectureBlock) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select notice from absencenotice as notice")
 		  .append(" inner join fetch notice.identity as aIdent")

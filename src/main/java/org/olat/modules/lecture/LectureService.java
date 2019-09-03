@@ -340,6 +340,8 @@ public interface LectureService {
 	 */
 	public AbsenceNotice getAbsenceNotice(AbsenceNoticeRef notice);
 	
+	public AbsenceNotice getAbsenceNotice(IdentityRef identity, LectureBlock lectureBlock);
+	
 	public List<AbsenceNotice> getAbsenceNoticeRelatedTo(LectureBlock block);
 
 	public List<AbsenceNoticeInfos> searchAbsenceNotices(AbsenceNoticeSearchParameters searchParams);

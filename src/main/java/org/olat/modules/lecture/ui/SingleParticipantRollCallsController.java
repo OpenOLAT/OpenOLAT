@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.olat.admin.user.UserShortDescription;
 import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.EscapeMode;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -40,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.TextFlexiCellRenderer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -57,11 +59,15 @@ import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RollCallSecurityCallback;
+import org.olat.modules.lecture.model.LectureBlockWithTeachers;
+import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.model.RollCallSecurityCallbackImpl;
 import org.olat.modules.lecture.ui.SingleParticipantRollCallsDataModel.RollCallsCols;
+import org.olat.modules.lecture.ui.coach.AbsenceNoticeDetailsCalloutController;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
 import org.olat.modules.lecture.ui.component.LectureBlockTimesCellRenderer;
 import org.olat.user.DisplayPortraitController;
+import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -91,8 +97,12 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 	private final Map<LectureBlock,RollCallSecurityCallback> secCallbacks;
 	
 	private ReasonController reasonCtrl;
-	private CloseableCalloutWindowController reasonCalloutCtrl; 
+	private CloseableCalloutWindowController noticeCalloutCtrl;
+	private CloseableCalloutWindowController reasonCalloutCtrl;
+	private AbsenceNoticeDetailsCalloutController noticeDetailsCtrl;
 	
+	@Autowired
+	private UserManager userManager;
 	@Autowired
 	private LectureModule lectureModule;
 	@Autowired
@@ -162,8 +172,9 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.entry));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.externalRef));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.lecturesBlock));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.times, new LectureBlockTimesCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.teacher));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.teacher, new TextFlexiCellRenderer(EscapeMode.antisamy)));
 		
 		boolean canViewAuthorizedAbsences = secCallbacks.values()
 				.stream().anyMatch(RollCallSecurityCallback::canViewAuthorizedAbsences);
@@ -192,7 +203,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(RollCallsCols.comment));
 		
-		tableModel = new SingleParticipantRollCallsDataModel(columnsModel);
+		tableModel = new SingleParticipantRollCallsDataModel(columnsModel, userManager);
 		
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 24, false, getTranslator(), formLayout);
 		
@@ -201,6 +212,11 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 	}
 	
 	private void loadModel() {
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setLectureBlocks(lectureBlocks);
+		List<LectureBlockWithTeachers> lectureBlocksWithTeachers = lectureService.getLectureBlocksWithTeachers(searchParams);
+		
+		
 		List<SingleParticipantRollCallRow> rows = new ArrayList<>(lectureBlocks.size());
 		for(LectureBlock lectureBlock:lectureBlocks) {
 			LectureBlockRollCall lectureCall = null;
@@ -209,18 +225,32 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 					lectureCall = call;
 				}
 			}
-			AbsenceNotice notice = null;//TODO absences notice
+			
+			List<Identity> teachers = null;
+			for(LectureBlockWithTeachers lectureBlockWithTeachers:lectureBlocksWithTeachers) {
+				if(lectureBlockWithTeachers.getLectureBlock().equals(lectureBlock)) {
+					teachers = lectureBlockWithTeachers.getTeachers();
+				}
+			}
+
+			AbsenceNotice notice = null;
+			if(lectureCall != null) {
+				notice = lectureCall.getAbsenceNotice();
+			} else {
+				notice = lectureService.getAbsenceNotice(calledIdentity, lectureBlock);
+			}
 			RollCallSecurityCallback secCallback = secCallbacks.get(lectureBlock);
-			rows.add(forgeRow(lectureBlock, lectureCall, notice, secCallback));
+			rows.add(forgeRow(lectureBlock, lectureCall, notice, teachers, secCallback));
 		}
 		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
-	private SingleParticipantRollCallRow forgeRow(LectureBlock lectureBlock, LectureBlockRollCall rollCall, AbsenceNotice notice, RollCallSecurityCallback secCallback) {
+	private SingleParticipantRollCallRow forgeRow(LectureBlock lectureBlock, LectureBlockRollCall rollCall,
+			AbsenceNotice notice, List<Identity> teachers, RollCallSecurityCallback secCallback) {
 		int numOfLectures = numOfLectures(lectureBlock);
-		SingleParticipantRollCallRow row = new SingleParticipantRollCallRow(lectureBlock, notice, numOfLectures);
+		SingleParticipantRollCallRow row = new SingleParticipantRollCallRow(lectureBlock, notice, numOfLectures, teachers);
 		
 		int numOfChecks = lectureBlock.isCompulsory() ? numOfLectures : 0;
 		MultipleSelectionElement[] checks = new MultipleSelectionElement[numOfChecks];
@@ -231,17 +261,16 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			MultipleSelectionElement check = uifactory.addCheckboxesHorizontal(checkId, null, flc, onKeys, onValues);
 			check.setDomReplacementWrapperRequired(false);
 			check.addActionListener(FormEvent.ONCHANGE);
-			check.setEnabled(secCallback.canEditAbsences());
+			check.setEnabled(secCallback.canEditAbsences() && notice == null);
 			check.setUserObject(row);
 			check.setAjaxOnly(true);
-			if(absences.contains(i)) {
+			if(absences.contains(i) || notice != null) {
 				check.select(onKeys[0], true);
 			}
 			checks[i] = check;
 			flc.add(check);
 		}
 		row.setChecks(checks);
-		
 
 		LectureBlockRollCallStatusItem statusEl = new LectureBlockRollCallStatusItem("status_".concat(Integer.toString(++counter)),
 				row, authorizedAbsenceEnabled, absenceDefaultAuthorized, getTranslator());
@@ -259,7 +288,7 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			authorizedAbsencedEl.addActionListener(FormEvent.ONCHANGE);
 			authorizedAbsencedEl.setUserObject(row);
 			authorizedAbsencedEl.setAjaxOnly(true);
-			authorizedAbsencedEl.setEnabled(secCallback.canEdit() && secCallback.canEditAuthorizedAbsences());
+			authorizedAbsencedEl.setEnabled(secCallback.canEdit() && secCallback.canEditAuthorizedAbsences() && notice == null);
 			
 			boolean hasAuthorization = rollCall != null && rollCall.getAbsenceAuthorized() != null
 					&& rollCall.getAbsenceAuthorized().booleanValue();
@@ -268,21 +297,31 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 			}
 			row.setAuthorizedAbsence(authorizedAbsencedEl);
 			flc.add(authorizedAbsencedEl);
-
-			String reasonId = "abs_reason_".concat(Integer.toString(++counter));
-			FormLink reasonLink = uifactory.addFormLink(reasonId, "", null, absenceCont, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
-			reasonLink.setTitle(translate("reason"));
-			reasonLink.setDomReplacementWrapperRequired(false);
-			reasonLink.setIconLeftCSS("o_icon o_icon_notes");
-			reasonLink.setVisible(hasAuthorization);
-			reasonLink.setUserObject(row);
-			row.setReasonLink(reasonLink);
+			
+			if(notice != null) {
+				String noticeId = "notice_".concat(Integer.toString(++counter));
+				FormLink noticeLink = uifactory.addFormLink(noticeId, "", null, absenceCont, Link.LINK | Link.NONTRANSLATED);
+				noticeLink.setTitle(translate("reason"));
+				noticeLink.setDomReplacementWrapperRequired(false);
+				noticeLink.setIconLeftCSS("o_icon o_icon_info");
+				noticeLink.setUserObject(row);
+				row.setNoticeLink(noticeLink);
+			} else {
+				String reasonId = "abs_reason_".concat(Integer.toString(++counter));
+				FormLink reasonLink = uifactory.addFormLink(reasonId, "", null, absenceCont, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
+				reasonLink.setTitle(translate("reason"));
+				reasonLink.setDomReplacementWrapperRequired(false);
+				reasonLink.setIconLeftCSS("o_icon o_icon_notes");
+				reasonLink.setVisible(hasAuthorization);
+				reasonLink.setUserObject(row);
+				row.setReasonLink(reasonLink);
+			}
 			
 			row.setAuthorizedAbsenceCont(absenceCont);
 			absenceCont.contextPut("row", row);
 		}
 		
-		if(secCallback.canEditAbsences()) {
+		if(secCallback.canEditAbsences() && notice == null) {
 			FormLink allLink = uifactory.addFormLink("all_".concat(Integer.toString(++counter)), "all", null, flc, Link.LINK);
 			allLink.setTitle("all.desc");
 			allLink.setDomReplacementWrapperRequired(false);
@@ -327,7 +366,8 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 				//??? stop?
 			} else if(!absenceDefaultAuthorized) {
 				String reason = row.getRollCall().getAbsenceReason();
-				if(row.getAuthorizedAbsence() != null && row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
+				if(row.getAbsenceNotice() == null && row.getAuthorizedAbsence() != null
+						&& row.getAuthorizedAbsence().isAtLeastSelected(1) && !StringHelper.containsNonWhitespace(reason)) {
 					row.getAuthorizedAbsence().setErrorKey("error.reason.mandatory", null);
 					allOk &= false;
 				}
@@ -380,6 +420,8 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 					doCalloutReasonAbsence(ureq, link.getFormDispatchId(), row);
 				} else if(cmd.startsWith("all_")) {
 					doCheckAllRow((SingleParticipantRollCallRow)link.getUserObject());
+				}else if(cmd.startsWith("notice_")) {
+					doCalloutAbsenceNotice(ureq, link.getFormDispatchId(), (SingleParticipantRollCallRow)link.getUserObject());
 				}
 			}
 		}
@@ -395,6 +437,16 @@ public class SingleParticipantRollCallsController extends FormBasicController {
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doCalloutAbsenceNotice(UserRequest ureq, String elementId, SingleParticipantRollCallRow row) {
+		noticeDetailsCtrl = new AbsenceNoticeDetailsCalloutController(ureq, getWindowControl(), row.getAbsenceNotice());
+		listenTo(noticeDetailsCtrl);
+
+		noticeCalloutCtrl = new CloseableCalloutWindowController(ureq, getWindowControl(),
+				noticeDetailsCtrl.getInitialComponent(), elementId, "", true, "");
+		listenTo(noticeCalloutCtrl);
+		noticeCalloutCtrl.activate();
 	}
 	
 	private void doReason(SingleParticipantRollCallRow row, String reason, AbsenceCategory category) {
