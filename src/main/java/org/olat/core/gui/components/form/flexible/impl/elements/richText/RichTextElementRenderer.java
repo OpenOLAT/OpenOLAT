@@ -165,7 +165,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		sb.append("<textarea id=\"").append(domID).append("\" name=\"").append(domID).append("\" ");
 		StringBuilder rawData = FormJSHelper.getRawJSFor(te.getRootForm(), domID, te.getAction());
 		sb.append(rawData.toString());
-		sb.append(" class='form-control' style=\"width:");
+		sb.append(" class='form-control BGlossarIgnore' style=\"width:");
 		if (cols == -1) {
 			sb.append("100%;");
 		} else {
@@ -177,7 +177,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		} else {
 			sb.append(rows).append("em;");
 		}
-		sb.append("\" class=\"BGlossarIgnore\">")
+		sb.append("\">")
 		  .append(value)
 		  .append("</textarea>")
 		  .append(FormJSHelper.getJSStartWithVarDeclaration(domID))
@@ -198,8 +198,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 			config.getAdditionalConfiguration().appendConfigToTinyJSArray_4(configurations, translator);
 		}
 		
-		StringOutput baseUrl = new StringOutput();
-		StaticMediaDispatcher.renderStaticURI(baseUrl, "js/tinymce4/tinymce/tinymce.min.js", true);
+		String baseUrl = StaticMediaDispatcher.getStaticURI("js/tinymce4/tinymce/tinymce.min.js");
 		
 		// Read write view
 		renderTinyMCETextarea(sb, domID, teC);
@@ -222,7 +221,7 @@ class RichTextElementRenderer extends DefaultComponentRenderer {
 		sb.append("');\n");
 		sb.append(" setTimeout(function() { jQuery('#").append(domID).append("').tinymce({\n")//delay for firefox + tinymce 4.5 + jQuery 3.3.1
 		  .append("    selector: '#").append(domID).append("',\n")
-		  .append("    script_url: '").append(baseUrl.toString()).append("',\n");
+		  .append("    script_url: '").append(baseUrl).append("',\n");
 		if(currentHeight != null && currentHeight.intValue() > 20) {
 			sb.append("    height: ").append(currentHeight).append(",\n");
 		}
