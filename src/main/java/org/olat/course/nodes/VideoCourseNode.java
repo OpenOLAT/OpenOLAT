@@ -74,6 +74,11 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
+	public boolean hasCustomAccessConditionController() {
+		return !super.hasCustomAccessConditionController();
+	}
+
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return VideoEditController.getVideoReference(getModuleConfiguration(), false);
 	}

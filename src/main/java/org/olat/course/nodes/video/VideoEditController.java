@@ -47,9 +47,6 @@ import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSContainerMapper;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.VideoCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -75,7 +72,7 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 
 	public static final String PANE_TAB_VIDEOCONFIG = "pane.tab.videoconfig";
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
-	private final static String[] paneKeys = { PANE_TAB_VIDEOCONFIG, PANE_TAB_ACCESSIBILITY };
+	private final static String[] paneKeys = { PANE_TAB_VIDEOCONFIG};
 
 	public static final String NLS_ERROR_VIDEOREPOENTRYMISSING = "error.videorepoentrymissing";
 	private static final String NLS_CONDITION_ACCESSIBILITY_TITLE = "condition.accessibility.title";
@@ -108,7 +105,6 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 	private CloseableModalController cmc;
 	private VideoDisplayController previewCtrl;
 	private VideoOptionsForm videoOptionsCtrl;
-	private ConditionEditController accessibilityCondContr;
 	private ReferencableEntriesSearchController searchController;
 
 	public VideoEditController(VideoCourseNode videoNode, UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce) {
@@ -154,20 +150,12 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 			videoConfigurationVc.contextPut(VC_CHOSENVIDEO, translate(NLS_NO_VIDEO_CHOSEN));
 		}
 
-		// Accessibility precondition
-		Condition accessCondition = videoNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
-		accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), videoNode));
-		listenTo(accessibilityCondContr);
-
 		main.setContent(videoConfigurationVc);
 	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
 		tabbedPane.addTab(translate(PANE_TAB_VIDEOCONFIG), main);
 	}
 
@@ -198,12 +186,6 @@ public class VideoEditController extends ActivateableTabbableDefaultController i
 				doSelectResource(urequest, searchController.getSelectedEntry());
 				cmc.deactivate();
 				cleanUp();
-			}
-		} else if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				videoNode.setPreConditionAccess(cond);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if(cmc == source) {
 			cleanUp();
