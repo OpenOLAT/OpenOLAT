@@ -37,6 +37,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.userview.NodeEvaluationBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,7 +78,8 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeV
 	}
 	
 	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel) {
 		Controller configCtrl = registry.getLearningPathNodeHandler(courseNode).createConfigEditController(ureq, wControl, courseNode);
 		return new TabbableLeaningPathNodeConfigController(ureq, wControl, configCtrl);
 	}

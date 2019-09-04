@@ -30,6 +30,7 @@ import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.NodeEvaluationBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.tree.CourseEditorTreeModel;
 import org.springframework.stereotype.Service;
 
 /**
@@ -42,7 +43,7 @@ import org.springframework.stereotype.Service;
 public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	
 	public static String TYPE = "condition";
-
+	
 	@Override
 	public String getType() {
 		return TYPE;
@@ -60,7 +61,10 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel) {
+		if (!courseNode.hasCustomAccessConditionController()) {
+			return new TabbableConditionNodeConfigController(ureq, wControl, courseNode, userCourseEnvironment, editorModel);
+		}
 		return null;
 	}
 

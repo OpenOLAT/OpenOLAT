@@ -33,6 +33,7 @@ import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.NodeEvaluationBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.tree.CourseEditorTreeModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -77,8 +78,8 @@ public class NodeAccessServiceImpl implements NodeAccessService {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, NodeAccessType type,
-			CourseNode courseNode) {
-		return getNodeAccessProvider(type).createEditController(ureq, wControl, courseNode);
+			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel) {
+		return getNodeAccessProvider(type).createEditController(ureq, wControl, courseNode, userCourseEnvironment, editorModel);
 	}
 
 	@Override

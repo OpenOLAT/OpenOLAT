@@ -39,9 +39,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.condition.ConditionNodeAccessProvider;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
@@ -76,13 +73,12 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	public final static String CONFIG_JS_ENCODING_AUTO = "auto";
 	
 	private CourseNode courseNode;
-	private VelocityContainer descriptionVc, visibilityVc;
+	private VelocityContainer descriptionVc;
 
 	private NodeConfigFormController nodeConfigController;
 
-	private ConditionEditController visibilityCondContr;
-	private NoAccessExplEditController noAccessContr;
 	private TabbedPane myTabbedPane;
+	private VisibilityEditController visibilityEditCtrl;
 	private TabbableController nodeAccessCtrl;
 	private TabbableController childTabsCntrllr;
 
@@ -126,31 +122,20 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		listenTo(nodeConfigController);
 		descriptionVc.put("nodeConfigForm", nodeConfigController.getInitialComponent());
 		
-		// Visibility and no-access explanation component
-		visibilityVc = createVelocityContainer("visibilityedit");
-
 		NodeAccessType nodeAccessType = course.getCourseConfig().getNodeAccessType();
 		if (nodeAccessService.isSupported(nodeAccessType, courseNode)) {
-			if (!ConditionNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
-				TabbableController nodeAccessCtrl = nodeAccessService.createEditController(ureq, getWindowControl(),
-						nodeAccessType, courseNode);
+			TabbableController nodeAccessCtrl = nodeAccessService.createEditController(ureq, getWindowControl(),
+					nodeAccessType, courseNode, userCourseEnvironment, course.getEditorTreeModel());
+			if (nodeAccessCtrl != null) {
 				this.nodeAccessCtrl = nodeAccessCtrl;
 				listenTo(nodeAccessCtrl);
-			} else {
-				// Visibility precondition
-				Condition visibCondition = courseNode.getPreConditionVisibility();
-				visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnvironment, visibCondition, 
-						AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
-				listenTo(visibilityCondContr);
-				visibilityVc.put("visibilityCondition", visibilityCondContr.getInitialComponent());
-			}
+			} else if (ConditionNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
+				// fallback for legacy access edit controller
+				visibilityEditCtrl = new VisibilityEditController(ureq, getWindowControl(), courseNode,
+						userCourseEnvironment, course.getEditorTreeModel());
+				listenTo(visibilityEditCtrl);
+			}	
 		}
-
-		// No-Access-Explanation
-		String noAccessExplanation = courseNode.getNoAccessExplanation();
-		noAccessContr = new NoAccessExplEditController(ureq, getWindowControl(), noAccessExplanation);
-		listenTo(noAccessContr);
-		visibilityVc.put("noAccessExplanationComp", noAccessContr.getInitialComponent());
 	}
 
 	@Override
@@ -160,16 +145,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if (source == visibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = visibilityCondContr.getCondition();
-				courseNode.setPreConditionVisibility(cond);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == noAccessContr) {
-			if (event == Event.CHANGED_EVENT) {
-				String noAccessExplanation = noAccessContr.getNoAccessExplanation();
-				courseNode.setNoAccessExplanation(noAccessExplanation);
+		if (source == visibilityEditCtrl) {
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == nodeAccessCtrl) {
@@ -215,8 +192,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 		if (nodeAccessCtrl != null) {
 			nodeAccessCtrl.addTabs(tabbedPane);
 		}
-		if (visibilityCondContr !=null) {
-			tabbedPane.addTab(translate(PANE_TAB_VISIBILITY), visibilityVc);
+		if (visibilityEditCtrl !=null) {
+			tabbedPane.addTab(translate(PANE_TAB_VISIBILITY), visibilityEditCtrl.getInitialComponent());
 		}
 		if (childTabsCntrllr != null) {
 			childTabsCntrllr.addTabs(tabbedPane);

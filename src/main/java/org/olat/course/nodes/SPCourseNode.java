@@ -83,6 +83,11 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
+	public boolean hasCustomAccessConditionController() {
+		return !super.hasCustomAccessConditionController();
+	}
+
+	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
 		updateModuleConfigDefaults(false);

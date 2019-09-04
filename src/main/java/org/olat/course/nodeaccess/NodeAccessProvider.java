@@ -25,6 +25,7 @@ import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.NodeEvaluationBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.tree.CourseEditorTreeModel;
 
 /**
  * 
@@ -36,7 +37,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 
 	public boolean isSupported(String courseNodeType);
 
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode);
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel);
 
 	public NodeEvaluationBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment);
 	

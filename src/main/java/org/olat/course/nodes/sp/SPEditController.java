@@ -41,16 +41,12 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.edusharing.VFSEdusharingProvider;
@@ -68,7 +64,6 @@ import org.olat.repository.ui.settings.LazyRepositoryEdusharingProvider;
 public class SPEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_SPCONFIG = "pane.tab.spconfig";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final  String PANE_TAB_DELIVERYOPTIONS = "pane.tab.layout";
 	/** configuration key for the filename */
 	public static final String CONFIG_KEY_FILE = "file";
@@ -78,11 +73,7 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	/** configuration key: should the students be allowed to edit the page? */
 	public static final String CONFIG_KEY_ALLOW_COACH_EDIT = "allowCoachEdit";
 
-	private static final String[] paneKeys = {PANE_TAB_SPCONFIG, PANE_TAB_ACCESSIBILITY};
-	
-	// NLS support:
-	
-	private static final String NLS_CONDITION_ACCESSIBILITY_TITLE = "condition.accessibility.title";
+	private static final String[] paneKeys = {PANE_TAB_SPCONFIG};
 	
 	private ModuleConfiguration moduleConfiguration;
 	private VelocityContainer myContent;
@@ -90,7 +81,6 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	private SPCourseNode courseNode;
 	private final CourseEnvironment courseEnv;
 	private final VFSContainer courseFolderBaseContainer;
-	private ConditionEditController accessibilityCondContr;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	private TabbedPane myTabbedPane;
 	private LinkFileCombiCalloutController combiLinkCtr;
@@ -145,13 +135,6 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		securitySettingForm = new SecuritySettingsForm(ureq, wControl, allowRelativeLinks, allowCoachEdit);
 		listenTo(securitySettingForm);
 		myContent.put("allowRelativeLinksForm", securitySettingForm.getInitialComponent());
-		
-		// Access conditions
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, spCourseNode));		
-		listenTo(accessibilityCondContr);
 
 		// Delivery options form
 		DeliveryOptions deliveryOptions = (DeliveryOptions)moduleConfiguration.get(CONFIG_KEY_DELIVERYOPTIONS);
@@ -169,12 +152,6 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 		if (source instanceof NodeEditController) {
 			if(combiLinkCtr != null && combiLinkCtr.isDoProposal()){
 				combiLinkCtr.setRelFilePath(CourseEditorHelper.createUniqueRelFilePathFromShortTitle(courseNode, courseFolderBaseContainer));
-			}
-		} else if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if(source == deliveryOptionsCtrl) {
 			if(event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
@@ -218,7 +195,6 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
 		tabbedPane.addTab(translate(PANE_TAB_SPCONFIG), myContent);
 		if(combiLinkCtr != null && combiLinkCtr.isEditorEnabled()) {
 			tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());

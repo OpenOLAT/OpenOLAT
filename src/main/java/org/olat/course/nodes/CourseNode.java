@@ -227,7 +227,19 @@ public interface CourseNode extends INode, ShortName {
 	 * @return A tabbable node edit controller
 	 */
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce);
-
+	
+	/**
+	 * Defines whether the course node has still a custom access condition
+	 * controller or if the standard controller is used.
+	 * 
+	 * As of today is the goal to eliminate all custom condition controllers. If
+	 * this goal is achieved, this method should be deleted and the code from
+	 * {@link org.olat.course.editor.NodeEditController}.
+	 * 
+	 * @return
+	 */
+	public boolean hasCustomAccessConditionController();
+	
 	/**
 	 * @param ureq
 	 * @param wControl
