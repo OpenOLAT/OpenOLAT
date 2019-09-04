@@ -55,6 +55,7 @@ import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.ui.UserListController;
 import org.olat.modules.lecture.AbsenceNoticeType;
@@ -240,7 +241,7 @@ public class IdentitiesLecturesRollCallController extends FormBasicController {
 			sb.append(format.formatTimeShort(lectureBlock.getEndDate()));
 		}
 		if(sb.length() > 0) sb.append("<br>");
-		sb.append(lectureBlock.getTitle());
+		sb.append(StringHelper.escapeHtml(lectureBlock.getTitle()));
 		return sb.toString();
 	}
 	

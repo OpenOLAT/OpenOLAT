@@ -43,9 +43,9 @@
 		<tr class="o_qti_coursename">
 			<th>$r.translate("results.contextinfo.context")</th>
 			<td>
-				<strong>$contextTitle</strong>
+				<strong>$r.escapeHtml($contextTitle)</strong>
 				<small class="hidden-xs text-muted small"> 
-					#if($contextExternalRef) ${contextExternalRef} #end
+					#if($r.isNotEmpty($contextExternalRef)) $r.escapeHtml(${contextExternalRef}) #end
 				</small>
 				<div class="hidden-xs text-muted small">
 					ID: ${contextId}#if($contextSubId) / ${contextSubId}#end
