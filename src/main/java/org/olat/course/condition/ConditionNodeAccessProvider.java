@@ -26,7 +26,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.nodeaccess.NodeAccessProvider;
+import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.NodeEvaluationBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -62,8 +64,12 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel) {
-		if (!courseNode.hasCustomAccessConditionController()) {
-			return new TabbableConditionNodeConfigController(ureq, wControl, courseNode, userCourseEnvironment, editorModel);
+		if (courseNode instanceof AbstractAccessableCourseNode) {
+			AbstractAccessableCourseNode acccessableCourseNode = (AbstractAccessableCourseNode) courseNode;
+			ConditionAccessEditConfig accessEditConfig = acccessableCourseNode.getAccessEditConfig();
+			if (!accessEditConfig.isCustomAccessConditionController()) {
+				return new TabbableConditionNodeConfigController(ureq, wControl, courseNode, userCourseEnvironment, editorModel, accessEditConfig);
+			}
 		}
 		return null;
 	}

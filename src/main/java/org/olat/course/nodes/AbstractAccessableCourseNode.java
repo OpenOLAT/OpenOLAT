@@ -35,6 +35,7 @@ import org.olat.course.condition.additionalconditions.AdditionalCondition;
 import org.olat.course.condition.additionalconditions.AdditionalConditionManager;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.userview.NodeEvaluation;
 
@@ -166,4 +167,19 @@ public abstract class AbstractAccessableCourseNode extends GenericCourseNode {
 			additionalConditions = new ArrayList<>();
 		return additionalConditions;
 	}
+	
+	/**
+	 * Defines whether the course node has still a custom access condition
+	 * controller or if the standard controller is used.
+	 * 
+	 * As of today is the goal to eliminate all custom condition controllers. If
+	 * this goal is achieved, this method should be deleted and the code from
+	 * {@link org.olat.course.editor.NodeEditController}.
+	 * 
+	 * @return
+	 */
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.custom();
+	}
+	
 }

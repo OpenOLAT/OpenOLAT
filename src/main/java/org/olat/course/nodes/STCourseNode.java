@@ -56,6 +56,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.KeyAndNameConverter;
 import org.olat.course.condition.interpreter.ConditionExpression;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -115,13 +116,17 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Course
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		// only the precondition "access" can be configured till now
 		STCourseNodeEditController childTabCntrllr = new STCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 		// special case: listen to st edit controller, must be informed when the short title is being modified
 		nodeEditController.addControllerListener(childTabCntrllr); 
 		return nodeEditController;
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(true);
 	}
 
 	@Override

@@ -28,6 +28,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.VisibilityEditController;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
@@ -53,7 +54,7 @@ public class TabbableConditionNodeConfigController extends ActivateableTabbableD
 	private TabbedPane tabPane;
 	
 	public TabbableConditionNodeConfigController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
-			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel) {
+			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel, ConditionAccessEditConfig accessEditConfig) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		setTranslator(Util.createPackageTranslator(NodeEditController.class, getLocale(), getTranslator()));
@@ -64,8 +65,9 @@ public class TabbableConditionNodeConfigController extends ActivateableTabbableD
 		
 		if (courseNode instanceof AbstractAccessableCourseNode) {
 			Condition accessCondition = courseNode.getPreConditionAccess();
-			accessCtrl = new ConditionEditController(ureq, wControl, userCourseEnvironment, accessCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, courseNode));
+			accessCtrl = new ConditionEditController(ureq, wControl, accessCondition,
+					AssessmentHelper.getAssessableNodes(editorModel, courseNode), userCourseEnvironment,
+					accessEditConfig.isShowPassword());
 			listenTo(accessCtrl);
 		}
 	}

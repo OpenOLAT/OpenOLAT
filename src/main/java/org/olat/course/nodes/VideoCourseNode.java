@@ -34,6 +34,7 @@ import org.olat.core.id.Organisation;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -74,8 +75,8 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public boolean hasCustomAccessConditionController() {
-		return !super.hasCustomAccessConditionController();
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override

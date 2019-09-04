@@ -39,6 +39,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -83,8 +84,8 @@ public class SPCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public boolean hasCustomAccessConditionController() {
-		return !super.hasCustomAccessConditionController();
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override

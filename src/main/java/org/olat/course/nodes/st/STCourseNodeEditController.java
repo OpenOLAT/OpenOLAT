@@ -51,7 +51,6 @@ import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.CourseEditorHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
@@ -76,11 +75,9 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class STCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
-	public static final String ACCESSABILITY_CONDITION_FORM = "accessabilityConditionForm";
 	private static final String PANE_TAB_ST_SCORECALCULATION = "pane.tab.st_scorecalculation";
 	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	public static final String PANE_TAB_ST_CONFIG = "pane.tab.st_config";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	
 	/** configuration key for the filename */
@@ -108,7 +105,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	// key to store the number of columns
 	public static final String CONFIG_KEY_COLUMNS = "columns";	
 	
-	private static final String[] paneKeys = { PANE_TAB_ST_SCORECALCULATION, PANE_TAB_ST_CONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_ST_SCORECALCULATION, PANE_TAB_ST_CONFIG };
 
 	private STCourseNode stNode;
 	private EditScoreCalculationExpertForm scoreExpertForm;
@@ -130,7 +127,6 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private LinkFileCombiCalloutController combiLinkCtr;
 	private SecuritySettingsForm securitySettingForm;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
-	private ConditionEditController accessibilityCondContr;
 
 	private boolean editorEnabled = false;
 	private UserCourseEnvironment euce;
@@ -183,12 +179,6 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 		// Find assessable children nodes
 		assessableChildren = AssessmentHelper.getAssessableNodes(editorModel, stNode);
-
-		// Accessibility precondition
-		Condition accessCondition = stNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), accessCondition,
-				assessableChildren, euce, true);		
-		listenTo(accessibilityCondContr);
 		
 		// HighScore Controller
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, stNode.getModuleConfiguration());
@@ -280,12 +270,6 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 		if (source instanceof NodeEditController) {
 			if(combiLinkCtr != null && combiLinkCtr.isDoProposal()){
 				combiLinkCtr.setRelFilePath(CourseEditorHelper.createUniqueRelFilePathFromShortTitle(stNode, courseFolderContainer));
-			}
-		} else if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				stNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == deliveryOptionsCtrl) {
 			deliveryOptions = deliveryOptionsCtrl.getDeliveryOptions();
@@ -443,7 +427,6 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_ST_CONFIG), configvc);
 		tabbedPane.addTab(translate(PANE_TAB_ST_SCORECALCULATION), score);
 		highScoreTabPos = tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
@@ -456,7 +439,7 @@ public class STCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	@Override
 	protected void doDispose() {
-    //child controllers registered with listenTo() get disposed in BasicController
+		//
 	}
 
 	/**

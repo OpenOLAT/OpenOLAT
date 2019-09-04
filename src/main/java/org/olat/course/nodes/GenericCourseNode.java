@@ -106,11 +106,6 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	public abstract TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			UserCourseEnvironment euce);
 
-	@Override
-	public boolean hasCustomAccessConditionController() {
-		return true;
-	}
-
 	/**
 	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(UserRequest,
 	 *      WindowControl, UserCourseEnvironment, NodeEvaluation, String)
