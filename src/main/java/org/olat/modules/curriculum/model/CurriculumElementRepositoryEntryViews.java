@@ -98,7 +98,7 @@ public class CurriculumElementRepositoryEntryViews implements CurriculumElementW
 
 	@Override
 	public int hashCode() {
-		return curriculumElement.hashCode();
+		return curriculumElement.getKey().hashCode();
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class CurriculumElementRepositoryEntryViews implements CurriculumElementW
 		}
 		if(obj instanceof CurriculumElementRepositoryEntryViews) {
 			CurriculumElementRepositoryEntryViews el = (CurriculumElementRepositoryEntryViews)obj;
-			return curriculumElement.equals(el.curriculumElement);
+			return curriculumElement.getKey().equals(el.curriculumElement.getKey());
 		}
 		return super.equals(obj);
 	}
