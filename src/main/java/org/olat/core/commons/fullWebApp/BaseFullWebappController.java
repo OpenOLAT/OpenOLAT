@@ -496,7 +496,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 					String linkName = "t" + CodeHelper.getRAMUniqueID();
 					siteLinks.add(linkName);
 					Link link = LinkFactory.createCustomLink(linkName, "t", "", Link.NONTRANSLATED, navSitesVc, this);
-					link.setCustomDisplayText(StringHelper.escapeHtml(StringHelper.xssScan(navEl.getTitle())));
+					link.setCustomDisplayText(StringHelper.xssScan(navEl.getTitle()));
 					link.setTitle(navEl.getDescription());
 					link.setUserObject(si);
 					Character accessKey = navEl.getAccessKey();
@@ -1239,7 +1239,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 			dtabsLinkNames.add(dtabCreateCounter);
 			String linkId = "a" + dtabCreateCounter;
 			Link link = LinkFactory.createCustomLink(linkId, linkId, "", Link.NONTRANSLATED, navTabsVc, this);
-			link.setCustomDisplayText(StringHelper.escapeHtml(StringHelper.xssScan(dt.getNavElement().getTitle())));
+			link.setCustomDisplayText(StringHelper.xssScan(dt.getNavElement().getTitle()));
 			link.setIconLeftCSS("o_icon o_icon-fw ".concat(dt.getNavElement().getIconCSSClass()));
 			link.setTitle(dt.getTitle());
 			link.setUserObject(dt);
@@ -1274,7 +1274,7 @@ public class BaseFullWebappController extends BasicController implements DTabs, 
 				Link link = (Link)navTabsVc.getComponent("a" + i);
 				if (link != null && dTab.equals(link.getUserObject())) {
 					// correct link found - updte titel and we are done
-					link.setCustomDisplayText(StringHelper.escapeHtml(StringHelper.xssScan(newTitle)));
+					link.setCustomDisplayText(StringHelper.xssScan(newTitle));
 					return;
 				}				
 			}			
