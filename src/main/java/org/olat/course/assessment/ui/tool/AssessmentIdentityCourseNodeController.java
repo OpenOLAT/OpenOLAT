@@ -134,7 +134,7 @@ public class AssessmentIdentityCourseNodeController extends BasicController impl
 			
 			String nodeLog = aCourseNode.getUserLog(assessedUserCourseEnvironment);
 			if(StringHelper.containsNonWhitespace(nodeLog)) {
-				identityAssessmentVC.contextPut("log", nodeLog);
+				identityAssessmentVC.contextPut("log", StringHelper.escapeHtml(nodeLog));
 			}
 		}
 		putInitialPanel(identityAssessmentVC);
