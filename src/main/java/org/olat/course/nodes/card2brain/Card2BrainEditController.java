@@ -22,19 +22,13 @@ package org.olat.course.nodes.card2brain;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.nodes.Card2BrainCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -44,40 +38,23 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class Card2BrainEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	public static final String PANE_TAB_VCCONFIG = "pane.tab.vcconfig";
-	final static String[] paneKeys = { PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
+	final static String[] paneKeys = { PANE_TAB_VCCONFIG };
 	
-	private VelocityContainer editVc;
 	private Card2BrainConfigController card2BrainConfigController; 
-	private ConditionEditController accessibilityCondContr;
 	private TabbedPane tabPane;
 	
-	private final Card2BrainCourseNode courseNode;
-	
-	public Card2BrainEditController(UserRequest ureq, WindowControl wControl, 
-			Card2BrainCourseNode card2BrainCourseNode, ICourse course, UserCourseEnvironment userCourseEnv) {
+	public Card2BrainEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modulConfig) {
 		super(ureq, wControl);
-		this.courseNode = card2BrainCourseNode;
 
-		card2BrainConfigController = new Card2BrainConfigController(ureq, wControl, card2BrainCourseNode.getModuleConfiguration());
+		card2BrainConfigController = new Card2BrainConfigController(ureq, wControl, modulConfig);
 		listenTo(card2BrainConfigController);
-
-		Condition accessCondition = card2BrainCourseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv, accessCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), card2BrainCourseNode));
-		listenTo(accessibilityCondContr);
-
-		editVc = createVelocityContainer("edit");
-		editVc.put("configForm", card2BrainConfigController.getInitialComponent());
 	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),
-				accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
-		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), editVc);
+		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), card2BrainConfigController.getInitialComponent());
 	}
 
 	@Override
@@ -92,13 +69,7 @@ public class Card2BrainEditController extends ActivateableTabbableDefaultControl
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == card2BrainConfigController && event.equals(Event.DONE_EVENT)) {
+		if (source == card2BrainConfigController && event.equals(Event.DONE_EVENT)) {
 			card2BrainConfigController.getUpdatedConfig();
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
