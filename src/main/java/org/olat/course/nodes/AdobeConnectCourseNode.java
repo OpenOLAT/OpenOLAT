@@ -35,6 +35,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -112,7 +113,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 		
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// create edit controller
-		AdobeConnectEditController childTabCtrl = new AdobeConnectEditController(ureq, wControl, this, course, userCourseEnv);
+		AdobeConnectEditController childTabCtrl = new AdobeConnectEditController(ureq, wControl, this);
 		
 		NodeEditController nodeEditCtr = new NodeEditController(ureq, wControl, course, chosenNode, userCourseEnv,
 				childTabCtrl);
@@ -166,6 +167,11 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 		}
 		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_vc_icon");
 		return new NodeRunConstructionResult(ctrl);
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
