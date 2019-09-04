@@ -88,7 +88,7 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(false);
 		CPEditController childTabCntrllr = new CPEditController(this, ureq, wControl, stackPanel, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override

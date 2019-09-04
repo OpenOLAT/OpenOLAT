@@ -47,7 +47,6 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.repository.RepositoryManager;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,39 +93,36 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	@Autowired
 	private NodeAccessService nodeAccessService;
 
-	public NodeEditController(UserRequest ureq, WindowControl wControl, CourseEditorTreeModel editorModel, ICourse course, CourseNode luNode,
-			UserCourseEnvironment euce, TabbableController childTabsController) {
-		super(ureq,wControl);
-		this.courseNode = luNode;
+	public NodeEditController(UserRequest ureq, WindowControl wControl, ICourse course,
+			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, TabbableController childTabsController) {
+		super(ureq, wControl);
+		this.courseNode = courseNode;
 		
 		addLoggingResourceable(LoggingResourceable.wrap(course));
 		addLoggingResourceable(LoggingResourceable.wrap(courseNode));
 		
-		/*
-		 * the direct child tabs.
-		 */
 		this.childTabsCntrllr = childTabsController;
 		listenTo(childTabsCntrllr);
 		
 		// description and metadata component
 		descriptionVc = createVelocityContainer("nodeedit");
-		descriptionVc.setDomReplacementWrapperRequired(false); // we provide our own DOM replacement ID
+		descriptionVc.setDomReplacementWrapperRequired(false);
 		Long repoKey = RepositoryManager.getInstance().lookupRepositoryEntryKey(course, true);
 		
 		StringBuilder extLink = new StringBuilder();
 		extLink.append(Settings.getServerContextPathURI())
 			.append("/url/RepositoryEntry/").append(repoKey)
-			.append("/CourseNode/").append(luNode.getIdent());
+			.append("/CourseNode/").append(courseNode.getIdent());
 		StringBuilder intLink = new StringBuilder();
-		intLink.append("javascript:parent.gotonode(").append(luNode.getIdent()).append(")");
+		intLink.append("javascript:parent.gotonode(").append(courseNode.getIdent()).append(")");
 		
 		descriptionVc.contextPut("extLink", extLink.toString());
 		descriptionVc.contextPut("intLink", intLink.toString());
-		descriptionVc.contextPut("nodeId", luNode.getIdent());
+		descriptionVc.contextPut("nodeId", courseNode.getIdent());
 		
 		putInitialPanel(descriptionVc);
 
-		nodeConfigController = new NodeConfigFormController(ureq, wControl, luNode, repoKey);
+		nodeConfigController = new NodeConfigFormController(ureq, wControl, courseNode, repoKey);
 		listenTo(nodeConfigController);
 		descriptionVc.put("nodeConfigForm", nodeConfigController.getInitialComponent());
 		
@@ -142,17 +138,16 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 				listenTo(nodeAccessCtrl);
 			} else {
 				// Visibility precondition
-				Condition visibCondition = luNode.getPreConditionVisibility();
-				visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, visibCondition, 
-						AssessmentHelper.getAssessableNodes(editorModel, luNode));
-				//set this useractivity logger for the visibility condition controller
+				Condition visibCondition = courseNode.getPreConditionVisibility();
+				visibilityCondContr = new ConditionEditController(ureq, getWindowControl(), userCourseEnvironment, visibCondition, 
+						AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
 				listenTo(visibilityCondContr);
 				visibilityVc.put("visibilityCondition", visibilityCondContr.getInitialComponent());
 			}
 		}
 
 		// No-Access-Explanation
-		String noAccessExplanation = luNode.getNoAccessExplanation();
+		String noAccessExplanation = courseNode.getNoAccessExplanation();
 		noAccessContr = new NoAccessExplEditController(ureq, getWindowControl(), noAccessExplanation);
 		listenTo(noAccessContr);
 		visibilityVc.put("noAccessExplanationComp", noAccessContr.getInitialComponent());
@@ -183,7 +178,6 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			}
 		} else if (source == childTabsCntrllr) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
-				//fire child controller request further
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == nodeConfigController) {
@@ -196,32 +190,12 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 			fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
 		
-		// do logging
 		ThreadLocalUserActivityLogger.log(CourseLoggingAction.COURSE_EDITOR_NODE_EDITED, getClass());
-	}
-
-	/**
-	 * Package private. Used by EditorMainController.
-	 * 
-	 * @return CourseNode
-	 */
-	CourseNode getCourseNode() {
-		return courseNode;
-	}
-
-	/**
-	 * Returns the component that is used to configurate the nodes description and
-	 * metadata
-	 * 
-	 * @return The description and metadata edit component
-	 */
-	public Component getDescriptionEditComponent() {
-		return descriptionVc;
 	}
 
 	@Override
 	protected void doDispose() {
-		//child controllers registered with listenTo() get disposed in BasicController	
+		//
 	}
 
 	@Override
@@ -253,9 +227,8 @@ public class NodeEditController extends ActivateableTabbableDefaultController im
 	protected ActivateableTabbableDefaultController[] getChildren() {
 		if (childTabsCntrllr != null && childTabsCntrllr instanceof ActivateableTabbableDefaultController) {
 			return new ActivateableTabbableDefaultController[] { (ActivateableTabbableDefaultController) childTabsCntrllr };
-		} else {
-			return new ActivateableTabbableDefaultController[] {};
 		}
+		return new ActivateableTabbableDefaultController[] {};
 	}
 
 }

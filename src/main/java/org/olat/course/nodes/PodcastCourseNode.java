@@ -88,7 +88,7 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		TabbableController podcastChildController = new PodcastNodeEditController(this, course, euce, ureq, wControl);
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, podcastChildController);
+		return new NodeEditController(ureq, wControl, course, chosenNode, euce, podcastChildController);
 	}
 
 	@Override

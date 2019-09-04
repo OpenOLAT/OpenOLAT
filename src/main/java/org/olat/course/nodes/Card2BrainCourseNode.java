@@ -71,7 +71,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(false);
 		Card2BrainEditController childTabCntrllr = new Card2BrainEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override

@@ -70,7 +70,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(false);
 		VideoEditController childTabCntrllr = new VideoEditController(this, ureq, wControl, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override

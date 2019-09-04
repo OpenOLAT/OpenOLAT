@@ -120,7 +120,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 		// only the precondition "access" can be configured till now
 		CheckListEditController childTabCntrllr = new CheckListEditController(this, ureq, wControl, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}
 
 	@Override

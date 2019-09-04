@@ -215,7 +215,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 			ICourse course, UserCourseEnvironment euce) {
 		PFEditController ordnerCtr = new PFEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, ordnerCtr); 
+		return new NodeEditController(ureq, wControl, course, chosenNode, euce, ordnerCtr); 
 	}
 
 	@Override

@@ -77,7 +77,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(false);
 		LiveStreamEditController editCtrl = new LiveStreamEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, editCtrl);
+		return new NodeEditController(ureq, wControl, course, chosenNode, euce, editCtrl);
 	}
 
 	@Override

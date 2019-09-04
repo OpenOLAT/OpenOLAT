@@ -177,7 +177,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 		updateModuleConfigDefaults(false);
 		ProjectBrokerCourseEditorController childTabCntrllr = ProjectBrokerControllerFactory.createCourseEditController(ureq, wControl, course, euce, this );
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		NodeEditController editController = new NodeEditController(ureq, wControl, course.getEditorTreeModel(), course, chosenNode, euce, childTabCntrllr);
+		NodeEditController editController = new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 		editController.addControllerListener(childTabCntrllr);
 		return editController;
 	}
