@@ -42,6 +42,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -71,32 +72,24 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 
     private static final String TYPE = "co";
 
-    /**
-     * Default constructor for course node of type single page
-     */
     public COCourseNode() {
         super(TYPE);
         updateModuleConfigDefaults(true);
     }
 
-    /**
-     * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-     *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-     */
     @Override
     public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
         updateModuleConfigDefaults(false);
-        COEditController childTabCntrllr = new COEditController(getModuleConfiguration(), ureq, wControl, this, course, euce);
+        COEditController childTabCntrllr = new COEditController(getModuleConfiguration(), ureq, wControl, euce);
         CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
         return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
     }
 
-    /**
-     * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-     *      org.olat.core.gui.control.WindowControl,
-     *      org.olat.course.run.userview.UserCourseEnvironment,
-     *      org.olat.course.run.userview.NodeEvaluation)
-     */
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
+	}
+
     @Override
     public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
             UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
@@ -225,15 +218,9 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         }
     }
 
-    /**
-     * @see org.olat.course.nodes.CourseNode#isConfigValid()
-     */
     @Override
     public StatusDescription isConfigValid() {
     	updateModuleConfigDefaults(false);
-        /*
-         * first check the one click cache
-         */
         if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
         /**
@@ -274,10 +261,8 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         return sd;
     }
 
-    /**
-     * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-     */
-    public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
+    @Override
+	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
         oneClickStatusCache = null;
         // only here we know which translator to take for translating condition
         // error messages
@@ -364,17 +349,13 @@ public class COCourseNode extends AbstractAccessableCourseNode {
         return oneClickStatusCache;
     }
 
-    /**
-     * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-     */
-    public RepositoryEntry getReferencedRepositoryEntry() {
+    @Override
+	public RepositoryEntry getReferencedRepositoryEntry() {
         return null;
     }
 
-    /**
-     * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-     */
-    public boolean needsReferenceToARepositoryEntry() {
+    @Override
+	public boolean needsReferenceToARepositoryEntry() {
         return false;
     }
 

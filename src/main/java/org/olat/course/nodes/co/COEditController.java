@@ -28,18 +28,12 @@ package org.olat.course.nodes.co;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.nodes.COCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
@@ -53,8 +47,7 @@ import org.olat.modules.ModuleConfiguration;
 public class COEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_COCONFIG = "pane.tab.coconfig";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
-	private static final String[] paneKeys = {PANE_TAB_COCONFIG,PANE_TAB_ACCESSIBILITY};
+	private static final String[] paneKeys = {PANE_TAB_COCONFIG};
 	/** deprecated */
 	public static final String CONFIG_KEY_EMAILTOAREAS = "emailToAreas";
 	public static final String CONFIG_KEY_EMAILTOAREA_IDS = "emailToAreaIds";
@@ -96,36 +89,14 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	/** config key: default body text */
 	public static final String CONFIG_KEY_MBODY_DEFAULT = "mBodyDefault";
 	
-	private final VelocityContainer myContent;
-	private COConfigForm configForm;	
-	private COCourseNode courseNode;
-	private ConditionEditController accessibilityCondContr;
+	private COConfigForm configForm;
 	private TabbedPane myTabbedPane;
 
-	/**
-	 * Constructor for a contact form edit controller
-	 * 
-	 * @param config
-	 * @param ureq
-	 * @param coCourseNode
-	 * @param course
-	 */
-	public COEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, COCourseNode coCourseNode, ICourse course, UserCourseEnvironment euce) {
+	public COEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, UserCourseEnvironment euce) {
 		super(ureq,wControl);
-		this.courseNode = coCourseNode;
 		
-		myContent = createVelocityContainer("edit");
-
 		configForm = new COConfigForm(ureq, wControl, config, euce);
-		configForm.addControllerListener(this);
-		myContent.put("configForm", configForm.getInitialComponent());
-
-		// not needed: setInitialComponent(myContent);
-		// Accessibility precondition
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), coCourseNode));		
-		listenTo(accessibilityCondContr);
+		listenTo(configForm);
 	}
 
 	@Override
@@ -135,14 +106,7 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		}
-		else if (source == configForm) { // those must be links
+		if (source == configForm) {
 			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -152,9 +116,7 @@ public class COEditController extends ActivateableTabbableDefaultController impl
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
-		tabbedPane.addTab(translate(PANE_TAB_COCONFIG), myContent);
+		tabbedPane.addTab(translate(PANE_TAB_COCONFIG), configForm.getInitialComponent());
 	}
 
 	@Override
