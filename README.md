@@ -223,17 +223,7 @@ To read the OpenOlat REST API documentation:
 1. start OpenOlat
 2. go to Administration -> Core configuration -> REST API
 3. Make sure the REST API ist enabled
-4. Click the documentation link in the admin panel or open YOURSERVERURL/restapi/api/doc in your browser
-
-For developer: if you modified the documentation in the source files, you need to compile 
-the REST API documentation. Do the following:
-
-```bash
-mvn clean package
-mvn compile -Pdocumentation,tomcat
-```
-
-The process need a lot of memory, give it 4 Gig.
+4. Click the documentation link in the admin panel
 
 ### Automated tests
 
@@ -348,10 +338,10 @@ mvn clean test -Dwith-postgresql -Dtest.env.db.postgresql.pass=serial -Dtest=org
 #### Execute selenium functional tests
 
 The selenium integration tests start the whole web application in Tomcat 8.0. They run with
-Google Chrome and its WebDriver will be automatically downloaded (internet connection
-needed). It need to be installed the standard way on Mac or Linux.
+Google Chrome or Firefox and their WebDrivers will be automatically downloaded (internet connection
+needed). The browsers need to be installed the standard way on Mac or Linux.
 
-Execution time ca. 65m
+Execution time ca. 60 - 90m
 
 **For MySQL:**
 
