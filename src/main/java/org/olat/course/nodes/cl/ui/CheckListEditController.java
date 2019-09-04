@@ -29,15 +29,11 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.CheckListCourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.cl.CheckboxManager;
-import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -48,12 +44,9 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class CheckListEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_CLCONFIG = "pane.tab.clconfig";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_CHECKBOX = "pane.tab.checkbox";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
-
 	
-	private ConditionEditController accessibilityCondCtrl;
 	private CheckListBoxListEditController checkboxListEditCtrl;
 	private CheckListConfigurationController configurationCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
@@ -63,24 +56,11 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 
 	private static final String[] paneKeys = { PANE_TAB_CLCONFIG, PANE_TAB_CHECKBOX };
 
-	/**
-	 * @param cpNode
-	 * @param ureq
-	 * @param wControl
-	 * @param course
-	 */
 	public CheckListEditController(CheckListCourseNode courseNode, UserRequest ureq, WindowControl wControl,
-			ICourse course, UserCourseEnvironment euce) {
+			ICourse course) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
 		
-		// Accessibility precondition
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondCtrl = new ConditionEditController(ureq, getWindowControl(), euce,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));		
-		listenTo(accessibilityCondCtrl);
-		
-
 		CheckboxManager checkboxManager = CoreSpringFactory.getImpl(CheckboxManager.class);
 		int numOfChecks = checkboxManager.countChecks(course, courseNode.getIdent());
 		
@@ -110,15 +90,12 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 	
 	private void updateHighscoreTab() {
 		Boolean sf = courseNode.getModuleConfiguration().getBooleanSafe(MSCourseNode.CONFIG_KEY_HAS_SCORE_FIELD,false);
-		myTabbedPane.setEnabled(5, sf);
+		myTabbedPane.setEnabled(4, sf);
 	}
 	
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),
-				accessibilityCondCtrl.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_CLCONFIG), configurationCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_CHECKBOX), checkboxListEditCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
@@ -132,13 +109,7 @@ public class CheckListEditController extends ActivateableTabbableDefaultControll
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondCtrl) {
-			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondCtrl.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if(source == configurationCtrl) {
+		if(source == configurationCtrl) {
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				checkboxListEditCtrl.dispatchEvent(ureq, configurationCtrl, event);

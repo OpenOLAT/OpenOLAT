@@ -57,6 +57,7 @@ import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
@@ -106,9 +107,6 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	
 	public static final String FOLDER_NAME = "checklistfiles";
 
-	/**
-	 * Constructor for a course building block of the type structure
-	 */
 	public CheckListCourseNode() {
 		super(TYPE);
 		updateModuleConfigDefaults(true);
@@ -117,10 +115,14 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode implements
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		// only the precondition "access" can be configured till now
-		CheckListEditController childTabCntrllr = new CheckListEditController(this, ureq, wControl, course, euce);
+		CheckListEditController childTabCntrllr = new CheckListEditController(this, ureq, wControl, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
