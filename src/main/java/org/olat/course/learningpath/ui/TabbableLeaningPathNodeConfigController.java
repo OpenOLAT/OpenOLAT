@@ -22,7 +22,6 @@ package org.olat.course.learningpath.ui;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -40,24 +39,19 @@ public class TabbableLeaningPathNodeConfigController extends ActivateableTabbabl
 	private static final String PANE_TAB_LEARNIN_PATH = "pane.tab.learning.path";
 	private final static String[] paneKeys = { PANE_TAB_LEARNIN_PATH };
 	
-	private final VelocityContainer configVC;
 	private final Controller configCtrl;
 	private TabbedPane tabPane;
 	
 	public TabbableLeaningPathNodeConfigController(UserRequest ureq, WindowControl wControl, Controller configCtrl) {
 		super(ureq, wControl);
 		this.configCtrl = configCtrl;
-
 		listenTo(configCtrl);
-
-		configVC = createVelocityContainer("config");
-		configVC.put("config", configCtrl.getInitialComponent());
 	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_LEARNIN_PATH), configVC);
+		tabbedPane.addTab(translate(PANE_TAB_LEARNIN_PATH), configCtrl.getInitialComponent());
 	}
 
 	@Override
