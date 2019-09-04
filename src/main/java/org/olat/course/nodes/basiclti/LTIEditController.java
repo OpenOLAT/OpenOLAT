@@ -38,16 +38,12 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.BasicLTICourseNode;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -62,10 +58,9 @@ import org.olat.modules.ModuleConfiguration;
 public class LTIEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_LTCONFIG = "pane.tab.ltconfig";
-	public static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	
-	private static final String[] paneKeys = {PANE_TAB_LTCONFIG, PANE_TAB_ACCESSIBILITY};
+	private static final String[] paneKeys = {PANE_TAB_LTCONFIG};
 
 	private ModuleConfiguration config;
 	private final VelocityContainer myContent;
@@ -75,7 +70,6 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 
 	private LTIConfigForm ltConfigForm;	
 	private BasicLTICourseNode courseNode;
-	private ConditionEditController accessibilityCondContr;
 	private TabbedPane myTabbedPane;
 	private Link previewButton;
 	private LayoutMain3ColsPreviewController previewLayoutCtr;
@@ -109,13 +103,6 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 		
 		myContent.put("ltConfigForm", ltConfigForm.getInitialComponent());
 
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		//Accessibility precondition
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, ltCourseNode));		
-		this.listenTo(accessibilityCondContr);
-
 		// Enable preview button only if node configuration is valid
 		if (!(ltCourseNode.isConfigValid().isError())) myContent.contextPut("showPreviewButton", Boolean.TRUE);
 		else myContent.contextPut("showPreviewButton", Boolean.FALSE);
@@ -135,13 +122,7 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == ltConfigForm) {
+		if (source == ltConfigForm) {
 			if (event == Event.CANCELLED_EVENT) {
 				// do nothing
 			} else if (event == Event.DONE_EVENT) {
@@ -168,7 +149,6 @@ public class LTIEditController extends ActivateableTabbableDefaultController imp
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_LTCONFIG), myContent);
 		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
