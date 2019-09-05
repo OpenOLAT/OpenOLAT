@@ -25,6 +25,7 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
+import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureRollCallStatus;
 import org.olat.modules.lecture.model.LectureBlockAndRollCall;
@@ -108,6 +109,20 @@ public class LectureBlockRollCallStatusCellRenderer implements FlexiCellRenderer
 		} else if(!rollCall.isCompulsory()) {
 			String title = translator.translate("rollcall.tooltip.free");
 			target.append("<span title='").append(title).append("'><i class='o_icon o_icon-lg o_lectures_rollcall_free'> </i></span>");
+		}
+		
+		AbsenceNoticeType absenceNoticeType = rollCall.getAbsenceNoticeType();
+		if(absenceNoticeType  != null) {
+			String noticeTitleI18n;
+			switch(absenceNoticeType) {
+				case dispensation: noticeTitleI18n = "noticed.dispensation"; break;
+				case notified: noticeTitleI18n = "noticed.notice.absence"; break;
+				case absence:
+				default: noticeTitleI18n = "noticed.type.absence"; break;
+			}
+			
+			String title = translator.translate(noticeTitleI18n);
+			target.append(" <span title='").append(title).append("'><i class='o_icon o_icon-fw o_icon-lg o_filetype_html'> </i></span>");
 		}
 	}
 	

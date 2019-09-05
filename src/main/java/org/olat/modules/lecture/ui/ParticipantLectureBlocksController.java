@@ -215,8 +215,10 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 				if(lectures <= 0) {
 					lectures = row.getRow().getPlannedLecturesNumber();
 				}
+				
+				boolean absenceNotice = rollCall.hasAbsenceNotice();
 				int attended = row.getRow().getLecturesAttendedNumber();
-				if(attended < lectures) {
+				if(!absenceNotice && attended < lectures) {
 					Date date = row.getRow().getDate();
 					Calendar cal = Calendar.getInstance();
 					cal.setTime(date);

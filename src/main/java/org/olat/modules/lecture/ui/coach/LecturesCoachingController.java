@@ -283,7 +283,7 @@ public class LecturesCoachingController extends BasicController implements Activ
 	private void doOpenReport(UserRequest ureq) {
 		if(reportController == null) {
 			WindowControl swControl = addToHistory(ureq, OresHelper.createOLATResourceableType("Report"), null);
-			reportController = new LecturesSearchController(ureq, swControl, stackPanel);
+			reportController = new LecturesSearchController(ureq, swControl);
 			listenTo(reportController);
 		}
 		addToHistory(ureq, reportController);
