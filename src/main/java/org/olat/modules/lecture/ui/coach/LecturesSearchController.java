@@ -58,13 +58,17 @@ public class LecturesSearchController extends BasicController implements Activat
 	@Autowired
 	private LectureService lectureService;
 	
-	public LecturesSearchController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel) {
+	public LecturesSearchController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
-		this.stackPanel = stackPanel;
 
 		searchForm = new LecturesSearchFormController(ureq, getWindowControl());
 		listenTo(searchForm);
-		putInitialPanel(searchForm.getInitialComponent());
+		
+		stackPanel = new TooledStackedPanel("ca-lectures-search", getTranslator(), this);
+		stackPanel.setNeverDisposeRootController(true);
+		stackPanel.setToolbarAutoEnabled(true);
+		stackPanel.pushController(translate("search.curriculums"), searchForm);
+		putInitialPanel(stackPanel);
 	}
 
 	@Override
@@ -123,7 +127,7 @@ public class LecturesSearchController extends BasicController implements Activat
 			ctrl = multipleUsersCtrl;
 		}
 
-		stackPanel.popUpToRootController(ureq);
+		//stackPanel.popUpToRootController(ureq);
 		stackPanel.pushController(translate("results"), ctrl);
 	}
 }

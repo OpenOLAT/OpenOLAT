@@ -107,7 +107,7 @@ implements SortableFlexiTableDataModel<LectureBlockAndRollCallRow>, FilterableFl
 					return null;
 				}
 				if(row.getRow().isCompulsory()) {
-					return row.getRow().getLecturesAttendedNumber() < 0 ? 0 : row.getRow().getLecturesAttendedNumber();
+					return positive(row.getRow().getLecturesAttendedNumber());
 				}
 				return null;
 			}

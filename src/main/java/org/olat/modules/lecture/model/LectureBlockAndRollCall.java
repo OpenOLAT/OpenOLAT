@@ -21,6 +21,8 @@ package org.olat.modules.lecture.model;
 
 import java.util.Date;
 
+import org.olat.modules.lecture.AbsenceNotice;
+import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockRef;
@@ -52,15 +54,19 @@ public class LectureBlockAndRollCall {
 	private final int lecturesAbsentNumber;
 	private final int lecturesAttendedNumber;
 	private final Boolean lecturesAuthorizedAbsent;
+	private final boolean withAbsenceNotice;
+	private final AbsenceNoticeType absenceNoticeType;
 	
 	private final Date appealDate;
 	private final LectureBlockAppealStatus appealStatus;
 	
 	private String coach;
 	
-	public LectureBlockAndRollCall(String entryDisplayname, LectureBlock lectureBlock, LectureBlockRollCall rollCall) {
+	public LectureBlockAndRollCall(String entryDisplayname, LectureBlock lectureBlock, LectureBlockRollCall rollCall, AbsenceNotice absenceNotice) {
 		this.entryDisplayname = entryDisplayname;
-		
+		this.withAbsenceNotice = absenceNotice != null;
+		this.absenceNoticeType = absenceNotice == null ? null : absenceNotice.getNoticeType();
+
 		startDate = lectureBlock.getStartDate();
 		lectureBlockKey = lectureBlock.getKey();
 		lectureBlockTitle = lectureBlock.getTitle();
@@ -79,9 +85,20 @@ public class LectureBlockAndRollCall {
 			appealStatus = null;
 		} else {
 			rollCallKey = rollCall.getKey();
-			lecturesAttendedNumber = rollCall.getLecturesAttendedNumber();
-			lecturesAbsentNumber = rollCall.getLecturesAbsentNumber();
-			lecturesAuthorizedAbsent = rollCall.getAbsenceAuthorized();	
+			
+			if(absenceNotice != null) {
+				lecturesAttendedNumber = 0;
+				int numOfLectures = lectureBlock.getEffectiveLecturesNumber();
+				if(numOfLectures <= 0) {
+					numOfLectures = lectureBlock.getPlannedLecturesNumber();
+				}
+				lecturesAbsentNumber = numOfLectures;
+				lecturesAuthorizedAbsent = absenceNotice.getAbsenceAuthorized();
+			} else {
+				lecturesAttendedNumber = rollCall.getLecturesAttendedNumber();
+				lecturesAbsentNumber = rollCall.getLecturesAbsentNumber();
+				lecturesAuthorizedAbsent = rollCall.getAbsenceAuthorized();
+			}
 			appealDate = rollCall.getAppealDate();
 			appealStatus = rollCall.getAppealStatus();
 		}
@@ -143,6 +160,14 @@ public class LectureBlockAndRollCall {
 		return effectiveLectures;
 	}
 	
+	public boolean hasAbsenceNotice() {
+		return withAbsenceNotice;
+	}
+	
+	public AbsenceNoticeType getAbsenceNoticeType() {
+		return absenceNoticeType;
+	}
+
 	public String getCoach() {
 		return coach;
 	}
@@ -158,6 +183,4 @@ public class LectureBlockAndRollCall {
 	public LectureBlockAppealStatus getAppealStatus() {
 		return appealStatus;
 	}
-	
-	
 }

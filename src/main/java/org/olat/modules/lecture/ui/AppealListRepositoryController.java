@@ -221,8 +221,7 @@ public class AppealListRepositoryController extends FormBasicController {
 			status.add(LectureBlockAppealStatus.rejected);
 			searchParams.setAppealStatus(status);
 		}
-		
-		
+
 		List<LectureBlockRollCallAndCoach> rollCallsWithCoach = lectureService.getLectureBlockAndRollCalls(searchParams);
 		List<AppealRollCallRow> rows = new ArrayList<>(rollCallsWithCoach.size());
 		for(LectureBlockRollCallAndCoach rollCallWithCoach:rollCallsWithCoach) {

@@ -6,17 +6,13 @@
 #end
 <div id="collapse_${r.getCId()}" class="collapse #if($opened) in #end">$r.render("table")</div>
 <script>
-/* <![CDATA[ */
 jQuery(function() {
 	jQuery('#collapse_${r.getCId()}').on('hide.bs.collapse', function () {
-		console.log('hide');
 		jQuery('#collapse_${r.getCId()}_toggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
 	})
 	jQuery('#collapse_${r.getCId()}').on('show.bs.collapse', function () {
-		console.log('show');
 		jQuery('#collapse_${r.getCId()}_toggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
 	})
 });
-/* ]]> */
 </script>
 #end

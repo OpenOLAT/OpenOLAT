@@ -45,6 +45,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.lecture.AbsenceNoticeType;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.model.EditAbsenceNoticeWrapper;
 import org.olat.modules.lecture.ui.AppealListRepositoryController;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
@@ -73,8 +74,8 @@ public class IdentityProfileController extends BasicController implements Activa
 	
 	private final int dailyTab;
 	private final int lecturesTab;
-	private final int appealsTab;
-	private final int dispensationsTab;
+	private int appealsTab;
+	private int dispensationsTab;
 	
 	private TabbedPane tabPane;
 	private final VelocityContainer mainVC;
@@ -88,6 +89,8 @@ public class IdentityProfileController extends BasicController implements Activa
 	private DailyOverviewProfilController dailyOverviewCtrl;
 	private ParticipantLecturesOverviewController lecturesCtrl;
 	
+	@Autowired
+	private LectureModule lectureModule;
 	@Autowired
 	private CoachingService coachingService;
 	
@@ -154,18 +157,22 @@ public class IdentityProfileController extends BasicController implements Activa
 		});
 
 		// dispensation
-		dispensationsTab = tabPane.addTab(translate("user.overview.dispensation"), uureq -> {
-			dispensationsCtrl = new DispensationsController(uureq, getWindowControl(), null, secCallback, false, false);
-			listenTo(dispensationsCtrl);
-			return dispensationsCtrl.getInitialComponent();
-		});
+		if(lectureModule.isAbsenceNoticeEnabled()) {
+			dispensationsTab = tabPane.addTab(translate("user.overview.dispensation"), uureq -> {
+				dispensationsCtrl = new DispensationsController(uureq, getWindowControl(), null, secCallback, false, false);
+				listenTo(dispensationsCtrl);
+				return dispensationsCtrl.getInitialComponent();
+			});
+		}
 
 		// appeals
-		appealsTab = tabPane.addTab(translate("user.overview.appeals"), uureq -> {
-			appealsCtrl = new AppealListRepositoryController(uureq, getWindowControl(), profiledIdentity, secCallback);
-			listenTo(appealsCtrl);
-			return appealsCtrl.getInitialComponent();
-		});
+		if(lectureModule.isAbsenceAppealEnabled()) {
+			appealsTab = tabPane.addTab(translate("user.overview.appeals"), uureq -> {
+				appealsCtrl = new AppealListRepositoryController(uureq, getWindowControl(), profiledIdentity, secCallback);
+				listenTo(appealsCtrl);
+				return appealsCtrl.getInitialComponent();
+			});
+		}
 		
 		putInitialPanel(mainVC);
 	}

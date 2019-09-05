@@ -600,24 +600,7 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		List<LectureBlockRollCall> rollCalls = absenceNoticeDao.getRollCalls(notice);
 		if(rollCalls != null && !rollCalls.isEmpty()) {
 			for(LectureBlockRollCall rollCall:rollCalls) {
-				String beforeRollCall = auditLogDao.toXml(rollCall);
-				
-				rollCall.setAbsenceAuthorized(null);
 				rollCall.setAbsenceNotice(null);
-				rollCall.setAbsenceNoticeLectures(null);
-
-				LectureBlock lectureBlock = rollCall.getLectureBlock();
-				List<Integer> absenceToRemove = new ArrayList<>();
-				for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
-					absenceToRemove.add(Integer.valueOf(i));
-				}
-				lectureBlockRollCallDao.removeLecture(rollCall.getLectureBlock(), rollCall, absenceToRemove);
-				rollCall = lectureBlockRollCallDao.update(rollCall);
-
-				String afterRollCall = auditLogDao.toXml(rollCall);
-
-				RepositoryEntry entry = lectureBlock.getEntry();
-				auditLog(Action.deleteAbsenceNotice, beforeRollCall, afterRollCall, null, lectureBlock, rollCall, entry, assessedIdentity, actingIdentity);
 			}
 		}
 		// delete
@@ -736,28 +719,13 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			if(currentRollCallSet.contains(rollCall)) {
 				currentRollCallSet.remove(rollCall);
 			} else {
-				List<Integer> absences = new ArrayList<>();
-				LectureBlock lectureBlock = rollCall.getLectureBlock();
-				for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
-					absences.add(Integer.valueOf(i));
-				}
 				rollCall.setAbsenceNotice(notice);
-				rollCall.setAbsenceAuthorized(notice.getAbsenceAuthorized());
-				lectureBlockRollCallDao.addLecture(lectureBlock, rollCall, absences);
 				lectureBlockRollCallDao.update(rollCall);
 			}
 		}
 		
 		for(LectureBlockRollCall toUnlink: currentRollCallSet) {
 			toUnlink.setAbsenceNotice(null);
-			
-			LectureBlock lectureBlock = toUnlink.getLectureBlock();
-			List<Integer> absenceToRemove = new ArrayList<>();
-			for(int i=0; i<lectureBlock.getPlannedLecturesNumber(); i++) {
-				absenceToRemove.add(Integer.valueOf(i));
-			}
-			lectureBlockRollCallDao.removeLecture(lectureBlock, toUnlink, absenceToRemove);
-			toUnlink.setAbsenceAuthorized(null);
 			lectureBlockRollCallDao.update(toUnlink);
 		}
 		
@@ -776,22 +744,6 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			absenceNotice.setAbsenceAuthorized(authorize);
 			((AbsenceNoticeImpl)absenceNotice).setAuthorizer(authorizer);
 			absenceNotice = absenceNoticeDao.updateAbsenceNotice(absenceNotice);
-			dbInstance.commit();
-			
-			List<LectureBlockRollCall> rollCalls = absenceNoticeDao.getRollCalls(absenceNotice);
-			for(LectureBlockRollCall rollCall:rollCalls) {
-				if((authorize == null && rollCall.getAbsenceAuthorized() != null)
-						|| (authorize != null && !authorize.equals(rollCall.getAbsenceAuthorized()))) {
-					String before = toAuditXml(rollCall);
-					rollCall.setAbsenceAuthorized(authorize);
-					rollCall = lectureBlockRollCallDao.update(rollCall);
-					String after = toAuditXml(rollCall);
-
-					LectureBlock lectureBlock = rollCall.getLectureBlock();
-					auditLogDao.auditLog(Action.updateRollCall, before, after, null,
-							lectureBlock, rollCall, lectureBlock.getEntry(), rollCall.getIdentity(), actingIdentity);
-				}
-			}
 			dbInstance.commit();
 
 			String afterNotice = toAuditXml(absenceNotice);

@@ -29,10 +29,12 @@
 		#end
 	</div>
 	#end
+	#if($r.visible("absences"))
 	<div class="clearfix">
 		<h4>$r.translate("cockpit.absences")</h4>
 		$r.render("absences")
 	</div>
+	#end
 </fieldset>
 
 #end
