@@ -25,7 +25,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -44,11 +43,9 @@ import org.olat.core.id.Persistable;
  */
 @Entity(name="qeducontext")
 @Table(name="o_qp_edu_context")
-@NamedQueries({
-	@NamedQuery(name="loadQEduContexts", query="select educontext from qeducontext educontext"),
-	@NamedQuery(name="loadQEduContextById", query="select educontext from qeducontext educontext where educontext.key=:contextKey"),
-	@NamedQuery(name="loadQEduContextByLevel", query="select educontext from qeducontext educontext where educontext.level=:level")
-})
+@NamedQuery(name="loadQEduContexts", query="select educontext from qeducontext educontext")
+@NamedQuery(name="loadQEduContextById", query="select educontext from qeducontext educontext where educontext.key=:contextKey")
+@NamedQuery(name="loadQEduContextByLevel", query="select educontext from qeducontext educontext where educontext.level=:level")
 public class QEducationalContext implements CreateInfo, Persistable {
 
 	private static final long serialVersionUID = 7688819263188243303L;
