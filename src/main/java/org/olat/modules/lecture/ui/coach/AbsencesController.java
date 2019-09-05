@@ -94,6 +94,7 @@ public class AbsencesController extends BasicController {
 		
 		addAbsenceButton = LinkFactory.createButton("add.absence", mainVC, this);
 		addAbsenceButton.setIconLeftCSS("o_icon o_icon_add");
+		addAbsenceButton.setVisible(secCallback.canAddAbsences());
 		
 		putInitialPanel(mainVC);
 		noticesListCtlr.loadModel(searchParams);

@@ -67,6 +67,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private TextElement assessmentFollowupTimeEl;
 	private TextElement assessmentSafeExamBrowserEl;
 	private MultipleSelectionElement enableEl;
+	private MultipleSelectionElement enableAbsenceNoticeEl;
 	private MultipleSelectionElement enableAssessmentModeEl;
 	private MultipleSelectionElement calculateAttendanceRateEnableEl;
 	private MultipleSelectionElement appealAbsenceEnableEl;
@@ -107,7 +108,9 @@ public class LectureSettingsAdminController extends FormBasicController {
 		String[] onValues = new String[] { translate("on") };
 		enableEl = uifactory.addCheckboxesHorizontal("lecture.admin.enabled", courseCont, onKeys, onValues);
 		enableEl.addActionListener(FormEvent.ONCHANGE);
-
+		
+		enableAbsenceNoticeEl = uifactory.addCheckboxesHorizontal("lecture.absence.notice.enabled", courseCont, onKeys, onValues);
+		
 		String[] yesNoValues = new String[]{ translate("yes"), translate("no") };
 		canOverrideStandardConfigEl = uifactory.addRadiosHorizontal("lecture.can.override.standard.configuration", courseCont, yesNoKeys, yesNoValues);
 
@@ -196,6 +199,9 @@ public class LectureSettingsAdminController extends FormBasicController {
 	private void initializeValues() {
 		if(lectureModule.isEnabled()) {
 			enableEl.select(onKeys[0], true);
+		}
+		if(lectureModule.isAbsenceNoticeEnabled()) {
+			enableAbsenceNoticeEl.select(onKeys[0], true);
 		}
 		
 		if(lectureModule.isCanOverrideStandardConfiguration()) {
@@ -324,6 +330,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 	
 	private void updateUI() {
 		boolean enabled = enableEl.isAtLeastSelected(1);
+		enableAbsenceNoticeEl.setVisible(enabled);
 		canOverrideStandardConfigEl.setVisible(enabled);
 		authorizedAbsenceEnableEl.setVisible(enabled);
 		attendanceRateEl.setVisible(enabled);
@@ -444,6 +451,7 @@ public class LectureSettingsAdminController extends FormBasicController {
 		
 		if(enabled) {
 			lectureModule.setCanOverrideStandardConfiguration(canOverrideStandardConfigEl.isSelected(0));
+			lectureModule.setAbsenceNoticeEnabled(enableAbsenceNoticeEl.isSelected(0));
 
 			//enabled user tool
 			Set<String> availableTools = userToolsModule.getAvailableUserToolSet();

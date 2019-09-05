@@ -124,6 +124,10 @@ public class LecturesSecurityCallbackFactory {
 		
 		@Override
 		public boolean canAddAbsences() {
+			if(!lectureModule.isAbsenceNoticeEnabled()) {
+				return false;
+			}
+			
 			// same permissions as dispensations
 			if(viewAs == LectureRoles.participant) {
 				return false;
@@ -142,6 +146,10 @@ public class LecturesSecurityCallbackFactory {
 
 		@Override
 		public boolean canAddNoticeOfAbsences() {
+			if(!lectureModule.isAbsenceNoticeEnabled()) {
+				return false;
+			}
+			
 			if(viewAs == LectureRoles.participant) {
 				return lectureModule.isParticipantCanNotice();
 			}

@@ -41,6 +41,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
@@ -48,6 +49,7 @@ import org.olat.modules.lecture.ui.TeacherToolOverviewController;
 import org.olat.modules.lecture.ui.event.OpenRepositoryEntryEvent;
 import org.olat.modules.lecture.ui.event.SelectLectureIdentityEvent;
 import org.olat.repository.RepositoryEntry;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -59,10 +61,10 @@ public class LecturesCoachingController extends BasicController implements Activ
 	
 	private Link reportLink;
 	private Link appealsLink;
+	private Link absenceLink;
+	private Link dispensationLink;
 	private final Link cockpitLink;
 	private final Link lecturesLink;
-	private final Link absenceLink;
-	private final Link dispensationLink;
 	private final Link lecturesSearchLink;
 	private final VelocityContainer mainVC;
 	private final TooledStackedPanel stackPanel;
@@ -78,6 +80,9 @@ public class LecturesCoachingController extends BasicController implements Activ
 	private DispensationsController dispensationsController;
 	private TeacherToolOverviewController teacherToolOverviewController;
 	
+	@Autowired
+	private LectureModule lectureModule;
+	
 	public LecturesCoachingController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
@@ -91,12 +96,14 @@ public class LecturesCoachingController extends BasicController implements Activ
 		lecturesLink = LinkFactory.createLink("coach.lectures", mainVC, this);
 		segmentView.addSegment(lecturesLink, false);
 		
-		absenceLink = LinkFactory.createLink("coach.absence", mainVC, this);
-		segmentView.addSegment(absenceLink, false);
-		dispensationLink = LinkFactory.createLink("coach.dispensation", mainVC, this);
-		segmentView.addSegment(dispensationLink, false);
+		if(lectureModule.isAbsenceNoticeEnabled()) {
+			absenceLink = LinkFactory.createLink("coach.absence", mainVC, this);
+			segmentView.addSegment(absenceLink, false);
+			dispensationLink = LinkFactory.createLink("coach.dispensation", mainVC, this);
+			segmentView.addSegment(dispensationLink, false);
+		}
 		
-		if(secCallback.canSeeAppeals()) {
+		if(lectureModule.isAbsenceAppealEnabled() && secCallback.canSeeAppeals()) {
 			appealsLink = LinkFactory.createLink("coach.appeals", mainVC, this);
 			segmentView.addSegment(appealsLink, false);
 		}
@@ -134,10 +141,10 @@ public class LecturesCoachingController extends BasicController implements Activ
 			} else if("Teacher".equalsIgnoreCase(type)) {
 				doOpenLectures(ureq);
 				segmentView.select(lecturesLink);
-			} else if("Absences".equalsIgnoreCase(type)) {
+			} else if("Absences".equalsIgnoreCase(type) && absenceLink != null) {
 				doAbsences(ureq);
 				segmentView.select(absenceLink);
-			} else if("Dispenses".equalsIgnoreCase(type)) {
+			} else if("Dispenses".equalsIgnoreCase(type) && dispensationLink != null) {
 				doDispenses(ureq);
 				segmentView.select(dispensationLink);
 			} else if("Appeals".equalsIgnoreCase(type)) {
