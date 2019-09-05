@@ -53,6 +53,7 @@ import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -87,6 +88,8 @@ public class RegistrationForm2 extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
+	@Autowired
+	private RegistrationManager registrationManager;
 
 	public RegistrationForm2(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername,
 			String email, boolean userInUse, boolean usernameReadonly) {
@@ -237,8 +240,11 @@ public class RegistrationForm2 extends FormBasicController {
 		// validate each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
-			if (!userPropertyHandler.isValid(null, fi, null)) {
-				allOk &= false;
+			if (fi.isEnabled() && !userPropertyHandler.isValid(null, fi, null)) {
+				if (userPropertyHandler instanceof EmailProperty)
+					allOk &= registrationManager.isEmailReserved(getEmail());
+				else
+					allOk &= false;
 			}
 		}
 		
