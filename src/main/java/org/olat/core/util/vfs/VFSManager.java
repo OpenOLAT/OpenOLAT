@@ -873,6 +873,9 @@ public class VFSManager {
 				//no write container, but the virtual container exist
 				return true;
 			}
+			if (item instanceof NamedContainerImpl)  {
+				item = ((NamedContainerImpl)item).getDelegate();
+			}
 		}
 		if(item instanceof LocalImpl) {
 			LocalImpl localFile = (LocalImpl)item;
