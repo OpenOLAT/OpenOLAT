@@ -55,7 +55,10 @@ public class EmailSendingForm extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_registration_email_form");
+
 		mail = uifactory.addTextElement("mail", "email.address", 255, "", formLayout);
+		mail.setElementCssClass("o_sel_registration_email");
 		mail.setMandatory(true);
 		
 		// Button layout
