@@ -37,7 +37,7 @@ import org.olat.modules.assessment.Role;
  * Initial Date:  11.04.2008 <br>
  * @author Lavinia Dumitrescu
  */
-public interface SelfAssessableCourseNode extends CourseNode {
+public interface SelfAssessableCourseNode {
 
 	/**
 	 * Provides the ScoreEvaluation for this course node.

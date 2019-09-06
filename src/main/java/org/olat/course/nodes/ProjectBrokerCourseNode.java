@@ -116,7 +116,7 @@ import com.thoughtworks.xstream.XStream;
  *   @author Christian Guretzki
  */
 
-public class ProjectBrokerCourseNode extends GenericCourseNode implements CourseNode {
+public class ProjectBrokerCourseNode extends GenericCourseNode {
 
 	private static final long serialVersionUID = -8177448874150049173L;
 	private static final Logger log = Tracing.createLoggerFor(ProjectBrokerCourseNode.class);

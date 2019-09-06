@@ -102,7 +102,7 @@ import org.olat.resource.OLATResource;
  * 	 @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
 
-public class TACourseNode extends GenericCourseNode implements CourseNode {
+public class TACourseNode extends GenericCourseNode {
 	
 	private static final long serialVersionUID = -7266553843441305310L;
 

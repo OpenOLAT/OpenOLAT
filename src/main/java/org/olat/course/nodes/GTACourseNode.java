@@ -91,7 +91,7 @@ import org.olat.user.UserManager;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class GTACourseNode extends AbstractAccessableCourseNode implements CourseNode {
+public class GTACourseNode extends AbstractAccessableCourseNode {
 	
 	private static final Logger log = Tracing.createLoggerFor(GTACourseNode.class);
 	private static final String PACKAGE_GTA = Util.getPackageName(GTAEditController.class);

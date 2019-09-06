@@ -85,7 +85,7 @@ import org.olat.resource.OLATResource;
  * @author gnaegi
  * @author BPS (<a href="http://www.bps-system.de/">BPS Bildungsportal Sachsen GmbH</a>)
  */
-public class MSCourseNode extends AbstractAccessableCourseNode implements CourseNode {
+public class MSCourseNode extends AbstractAccessableCourseNode {
 	
 	private static final long serialVersionUID = -7741172700015384397L;
 	
