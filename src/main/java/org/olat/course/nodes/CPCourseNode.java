@@ -45,6 +45,7 @@ import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -75,9 +76,6 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = -4317662219173515498L;
 	private static final String TYPE = "cp";
 
-	/**
-	 * Constructor for a course building block of the type IMS CP learning content
-	 */
 	public CPCourseNode() {
 		super(TYPE);
 		updateModuleConfigDefaults(true);
@@ -86,9 +84,14 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		CPEditController childTabCntrllr = new CPEditController(this, ureq, wControl, stackPanel, course, euce);
+		CPEditController childTabCntrllr = new CPEditController(ureq, wControl, stackPanel, this);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
@@ -113,10 +116,10 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public StatusDescription isConfigValid() {/*
-																						 * first check the one click cache
-																						 */
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
+	public StatusDescription isConfigValid() {
+		if (oneClickStatusCache != null) {
+			return oneClickStatusCache[0];
+		}
 
 		StatusDescription sd = StatusDescription.NOERROR;
 		boolean isValid = CPEditController.isModuleConfigValid(getModuleConfiguration());
@@ -134,9 +137,6 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		return sd;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		// only here we know which translator to take for translating condition
@@ -153,9 +153,6 @@ public class CPCourseNode extends AbstractAccessableCourseNode {
 		return CPEditController.getCPReference(getModuleConfiguration(), false);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;

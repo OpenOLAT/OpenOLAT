@@ -51,14 +51,9 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.core.logging.AssertException;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFolderImpl;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.CPCourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ImsCPFileResource;
 import org.olat.ims.cp.CPManager;
@@ -81,7 +76,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class CPEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_CPCONFIG = "pane.tab.cpconfig";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_DELIVERYOPTIONS = "pane.tab.deliveryOptions";
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
 	private static final String VC_CHOSENCP = "chosencp";
@@ -90,7 +84,6 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	// NLS support:	
 	public static final String NLS_ERROR_CPREPOENTRYMISSING = "error.cprepoentrymissing";
 	private static final String NLS_NO_CP_CHOSEN = "no.cp.chosen";
-	private static final String NLS_CONDITION_ACCESSIBILITY_TITLE = "condition.accessibility.title";
 	private static final String NLS_COMMAND_CHOOSECP = "command.choosecp";
 	private static final String NLS_COMMAND_CREATECP = "command.createcp";
 	private static final String NLS_COMMAND_CHANGECP = "command.changecp";
@@ -102,13 +95,12 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	private ReferencableEntriesSearchController searchController;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	
-	private ConditionEditController accessibilityCondContr;
 	private CPCourseNode cpNode;
 	private CompMenuForm cpMenuForm;
 
 	private TabbedPane myTabbedPane;
 
-	private static final String[] paneKeys = { PANE_TAB_CPCONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_CPCONFIG };
 
 	private Link previewLink;
 	private Link editLink;
@@ -124,19 +116,13 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	@Autowired
 	private RepositoryService repositoryService;
 
-	/**
-	 * @param cpNode
-	 * @param ureq
-	 * @param wControl
-	 * @param course
-	 */
-	public CPEditController(CPCourseNode cpNode, UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
+	public CPEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, CPCourseNode cpNode) {
 		super(ureq, wControl);
 		this.cpNode = cpNode;
 		this.config = cpNode.getModuleConfiguration();
 		this.stackPanel = stackPanel;
 
-		main = new Panel("cpmain");		
+		main = new Panel("cpmain");
 		
 		cpConfigurationVc = createVelocityContainer("edit");
 		chooseCPButton = LinkFactory.createButtonSmall(NLS_COMMAND_CREATECP, cpConfigurationVc, this);
@@ -178,12 +164,6 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		
 		cpConfigurationVc.put("cpMenuForm", cpMenuForm.getInitialComponent());
 
-		// Accessibility precondition
-		Condition accessCondition = cpNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), cpNode));		
-		listenTo(accessibilityCondContr);
-
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CPEditController.CONFIG_DELIVERYOPTIONS);
 		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, "Knowledge Transfer#_cp_layout", parentConfig);
 		listenTo(deliveryOptionsCtrl);
@@ -191,10 +171,7 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		main.setContent(cpConfigurationVc);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == chooseCPButton || source == changeCPButton) {
 			removeAsListenerAndDispose(searchController);
@@ -264,12 +241,6 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 				}
 			}
 			// else cancelled repo search
-		} else if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				cpNode.setPreConditionAccess(cond);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
 		} else if (source == cpMenuForm) {
 			if (event == Event.DONE_EVENT) {
 				config.setBooleanEntry(NodeEditController.CONFIG_COMPONENT_MENU, cpMenuForm.isCpMenu());
@@ -283,11 +254,6 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		}
 	}
 
-	/**
-	 * @param identity
-	 * @param repository entry
-	 * @return
-	 */
 	private boolean canManage(RepositoryEntry re) {
 		return repositoryService.hasRoleExpanded(getIdentity(), re,
 				OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(),
@@ -297,8 +263,6 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
 		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), main);
 		tabbedPane.addTab(translate(PANE_TAB_DELIVERYOPTIONS), deliveryOptionsCtrl.getInitialComponent());
 	}
