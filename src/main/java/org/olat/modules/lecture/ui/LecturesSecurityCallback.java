@@ -46,6 +46,8 @@ public interface LecturesSecurityCallback {
 	public boolean canAddNoticeOfAbsences();
 	
 	public boolean canAddDispensations();
+
+	public boolean canEditAbsenceNotices();
 	
 	public boolean canDeleteAbsenceNotices();
 	

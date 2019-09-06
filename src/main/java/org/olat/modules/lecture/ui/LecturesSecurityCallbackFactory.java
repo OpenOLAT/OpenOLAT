@@ -163,6 +163,11 @@ public class LecturesSecurityCallbackFactory {
 		}
 
 		@Override
+		public boolean canEditAbsenceNotices() {
+			return viewAs == LectureRoles.teacher || viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
+		}
+
+		@Override
 		public boolean canDeleteAbsenceNotices() {
 			return viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
 		}
