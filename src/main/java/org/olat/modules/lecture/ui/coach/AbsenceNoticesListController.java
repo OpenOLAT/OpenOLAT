@@ -610,7 +610,10 @@ public class AbsenceNoticesListController extends FormBasicController {
 			VelocityContainer mainVC = createVelocityContainer("tools_notices");
 			// edit absence, notice of absence, dispensation
 			String editI18nKey = AbsenceNoticeHelper.getEditKey(row.getAbsenceNotice());
-			addLink(editI18nKey, "edit", "o_icon o_icon_edit", mainVC);
+			if(secCallback.canEditAbsenceNotices()) {
+				addLink(editI18nKey, "edit", "o_icon o_icon_edit", mainVC);
+			}
+			
 			// open profile
 			addLink("profile", "profile", "o_icon o_icon_user", mainVC);
 			// contact teacher
