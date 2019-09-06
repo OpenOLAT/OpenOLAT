@@ -99,7 +99,7 @@ public class TabbableConditionNodeConfigController extends ActivateableTabbableD
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == visibilityCtrl && event.equals(Event.CHANGED_EVENT)) {
+		} else if (source == accessCtrl && event.equals(Event.CHANGED_EVENT)) {
 			Condition cond = accessCtrl.getCondition();
 			((AbstractAccessableCourseNode)courseNode).setPreConditionAccess(cond);
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
