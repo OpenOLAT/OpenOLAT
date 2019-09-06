@@ -72,7 +72,7 @@ import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseInternalLinkTreeModel;
 import org.olat.modules.ModuleConfiguration;
@@ -131,7 +131,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Course
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			final UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			final UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		Controller cont;
 		
@@ -194,7 +194,7 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Course
 			// evaluate the score accounting for this node. this uses the score accountings local
 			// cache hash map to reduce unnecessary calculations
 			ScoreEvaluation se = userCourseEnv.getScoreAccounting().evalCourseNode(this);
-			cont = TitledWrapperHelper.getWrapper(ureq, wControl, new STCourseNodeRunController(ureq, wControl, userCourseEnv, this, se, ne), this, ICON_CSS_CLASS);
+			cont = TitledWrapperHelper.getWrapper(ureq, wControl, new STCourseNodeRunController(ureq, wControl, userCourseEnv, this, se), this, ICON_CSS_CLASS);
 		}
 
 		// access the current calculated score, if there is one, so that it can be
@@ -219,14 +219,14 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Course
 	}
 	
 	@Override
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null).getRunController();
 	}
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
-		if (ne.isAtLeastOneAccessible()) {
+			CourseNodeSecurityCallback nodeSecCallback) {
+		if (nodeSecCallback.isAccessible()) {
 			ModuleConfiguration config = getModuleConfiguration();
 			if (STCourseNodeEditController.CONFIG_VALUE_DISPLAY_FILE.equals(config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE))) {
 				// use single page preview if a file is configured
@@ -234,11 +234,11 @@ public class STCourseNode extends AbstractAccessableCourseNode implements Course
 				return new SPPeekviewController(ureq, wControl, userCourseEnv, config, ores);				
 			} else {
 				// a peekview controller that displays the listing of the next ST level
-				return new STPeekViewController(ureq, wControl, ne);				
+				return new STPeekViewController(ureq, wControl, this, userCourseEnv);
 			}
 		} else {
 			// use standard peekview without content
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 		}
 	}
 

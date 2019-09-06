@@ -65,6 +65,7 @@ import org.olat.course.nodes.bc.BCPeekviewController;
 import org.olat.course.nodes.bc.BCPreviewController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -117,9 +118,9 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		BCCourseNodeRunController bcCtrl = new BCCourseNodeRunController(ureq, wControl, userCourseEnv, this, ne);
+		BCCourseNodeRunController bcCtrl = new BCCourseNodeRunController(ureq, wControl, userCourseEnv, this, nodeSecCallback.getNodeEvaluation());
 		if (StringHelper.containsNonWhitespace(nodecmd)) {
 			bcCtrl.activatePath(ureq, nodecmd);
 		}
@@ -129,8 +130,8 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
-		if (ne.isAtLeastOneAccessible()) {
+			CourseNodeSecurityCallback nodeSecCallback) {
+		if (nodeSecCallback.isAccessible()) {
 			updateModuleConfigDefaults(false);
 			
 			// Create a folder peekview controller that shows the latest two entries
@@ -146,19 +147,19 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			}
 			
 			if(rootFolder == null) {
-				return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+				return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 			}
 			rootFolder.setDefaultItemFilter(new VFSSystemItemFilter());
 			return new BCPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
 		} else {
 			// use standard peekview
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 		}
 	}
 
 	@Override
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new BCPreviewController(ureq, wControl, this, userCourseEnv.getCourseEnvironment(), ne);
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		return new BCPreviewController(ureq, wControl, this, userCourseEnv.getCourseEnvironment(), nodeSecCallback.getNodeEvaluation());
 	}
 
 	/**
@@ -248,6 +249,14 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
 				.evaluateCondition(getPreConditionVisibility()));
 		nodeEval.setVisible(visible);
+	}
+	
+	public static boolean canDownload(NodeEvaluation ne) {
+		return ne != null? ne.isCapabilityAccessible("download"): false;
+	}
+	
+	public static boolean canUpload(NodeEvaluation ne) {
+		return ne != null? ne.isCapabilityAccessible("upload"): false;
 	}
 
 	/**

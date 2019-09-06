@@ -44,7 +44,7 @@ import org.olat.course.nodes.adobeconnect.AdobeConnectCourseNodeConfiguration;
 import org.olat.course.nodes.adobeconnect.AdobeConnectEditController;
 import org.olat.course.nodes.adobeconnect.compatibility.AdobeConnectCompatibilityConfiguration;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.adobeconnect.AdobeConnectManager;
@@ -123,7 +123,7 @@ public class AdobeConnectCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment()
 				.getCourseGroupManager().getCourseEntry();
 		updateModuleConfigDefaults(courseEntry, false);

@@ -32,9 +32,15 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.nodes.INode;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseTreeNode;
+import org.olat.course.run.userview.TreeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibleTreeFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * <h3>Description:</h3> The structure node peek view controller displays the
@@ -50,36 +56,39 @@ import org.olat.course.run.userview.NodeEvaluation;
  * @author gnaegi, gnaegi@frentix.com, www.frentix.com
  */
 public class STPeekViewController extends BasicController {
+	
 	private VelocityContainer genericPeekViewVC;
-	/**
-	 * Constructor
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param userCourseEnv
-	 * @param ne
-	 */
-	public STPeekViewController(UserRequest ureq, WindowControl wControl, NodeEvaluation ne) {
+	
+	@Autowired
+	private NodeAccessService nodeAccessService;
+	
+	public STPeekViewController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 
 		genericPeekViewVC = createVelocityContainer("stPeekView");
+		
+		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+				.build(courseNode, new TreeEvaluation(), new VisibleTreeFilter());
 		List<CourseNode> childNodes = new ArrayList<>();
 		// Loop over node evaluations of visible nodes
-		int chdCnt = ne.getChildCount();
+		int chdCnt = courseTreeNode.getChildCount();
 		for (int i = 0; i < chdCnt; i++) {
-			NodeEvaluation neChd = ne.getNodeEvaluationChildAt(i);
-			if (neChd.isVisible()) {
-				// Build and add child generic or specific peek view
-				CourseNode child = neChd.getCourseNode();
-				childNodes.add(child);
-				// Add link to jump to course node
-				Link nodeLink = LinkFactory.createLink("nodeLink_" + child.getIdent(), genericPeekViewVC, this);
-				nodeLink.setCustomDisplayText(StringHelper.escapeHtml(child.getShortTitle()));
-				// Add css class for course node type
-				String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(child.getType()).getIconCSSClass();
-				nodeLink.setIconLeftCSS("o_icon o_icon-fw " + iconCSSClass);
-				nodeLink.setUserObject(child.getIdent());
-				nodeLink.setElementCssClass("o_gotoNode");
+			INode childNode = courseTreeNode.getChildAt(i);
+			if (childNode instanceof CourseTreeNode) {
+				CourseTreeNode childTreeNode = (CourseTreeNode) childNode;
+				if (childTreeNode.isVisible() && childTreeNode.isAccessible()) {
+					// Build and add child generic or specific peek view
+					CourseNode child = childTreeNode.getCourseNode();
+					childNodes.add(child);
+					// Add link to jump to course node
+					Link nodeLink = LinkFactory.createLink("nodeLink_" + child.getIdent(), genericPeekViewVC, this);
+					nodeLink.setCustomDisplayText(StringHelper.escapeHtml(child.getShortTitle()));
+					// Add css class for course node type
+					String iconCSSClass = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(child.getType()).getIconCSSClass();
+					nodeLink.setIconLeftCSS("o_icon o_icon-fw " + iconCSSClass);
+					nodeLink.setUserObject(child.getIdent());
+					nodeLink.setElementCssClass("o_gotoNode");
+				}
 			}
 		}
 		// Add course node to get title etc
@@ -91,26 +100,18 @@ public class STPeekViewController extends BasicController {
 		putInitialPanel(genericPeekViewVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-	// nothing to dispose
+		// nothing to dispose
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source instanceof Link) {
 			Link nodeLink = (Link) source;
 			// get node ID and fire activation event
 			String nodeId = (String) nodeLink.getUserObject();
-			fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, nodeId));			
+			fireEvent(ureq, new OlatCmdEvent(OlatCmdEvent.GOTONODE_CMD, nodeId));
 		}
 	}
 

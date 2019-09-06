@@ -102,8 +102,10 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 		VFSSecurityCallback scallback;
 		if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)) {
 			VFSContainer directory = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
+			boolean canDownload = BCCourseNode.canDownload(ne);
+			boolean canUpload = BCCourseNode.canUpload(ne);
 			boolean isAdministrator = userCourseEnv.isAdmin();
-			scallback = new FolderNodeCallback(directory.getRelPath(), ne, isAdministrator, isGuestOnly, nodefolderSubContext);
+			scallback = new FolderNodeCallback(directory.getRelPath(), canDownload, canUpload, isAdministrator, isGuestOnly, nodefolderSubContext);
 			target = directory;
 		} else if(courseNode.isSharedFolder()) {
 			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
@@ -121,11 +123,14 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 			} else {
 				String relPath = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv).getRelPath();
 				
+				boolean canDownload = BCCourseNode.canDownload(ne);
+				boolean canUpload = BCCourseNode.canUpload(ne);
+				
 				String sfSoftkey = courseEnv.getCourseConfig().getSharedFolderSoftkey();
 				RepositoryEntry sharedResource = repositoryManager.lookupRepositoryEntryBySoftkey(sfSoftkey, false);
 				boolean isAdministrator = repositoryService.hasRoleExpanded(getIdentity(), sharedResource,
 						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name(), GroupRoles.owner.name());
-				scallback = new FolderNodeCallback(relPath, ne, isAdministrator, isGuestOnly, nodefolderSubContext);
+				scallback = new FolderNodeCallback(relPath, canDownload, canUpload, isAdministrator, isGuestOnly, nodefolderSubContext);
 			}
 		} else{
 			//create folder automatically if not found
@@ -139,19 +144,20 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 				BCCourseNodeNoFolderForm noFolderForm = new BCCourseNodeNoFolderForm(ureq, getWindowControl());
 				putInitialPanel(noFolderForm.getInitialComponent());
 				return;
+			} 
+			target = new NamedContainerImpl(courseNode.getShortTitle(), item);
+			
+			VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(target);
+			if (inheritingContainer != null && inheritingContainer.getLocalSecurityCallback() != null
+					&& inheritingContainer.getLocalSecurityCallback() .getQuota() != null) {
+				relPath = inheritingContainer.getLocalSecurityCallback().getQuota().getPath();
 			} else {
-				target = new NamedContainerImpl(courseNode.getShortTitle(), item);
-				
-				VFSContainer inheritingContainer = VFSManager.findInheritingSecurityCallbackContainer(target);
-				if (inheritingContainer != null && inheritingContainer.getLocalSecurityCallback() != null
-						&& inheritingContainer.getLocalSecurityCallback() .getQuota() != null) {
-					relPath = inheritingContainer.getLocalSecurityCallback().getQuota().getPath();
-				} else {
-					relPath = VFSManager.getRelativeItemPath(target, courseContainer, null);
-				}
-				boolean isAdministrator = userCourseEnv.isAdmin();
-				scallback = new FolderNodeCallback(relPath, ne, isAdministrator, isGuestOnly, nodefolderSubContext);
+				relPath = VFSManager.getRelativeItemPath(target, courseContainer, null);
 			}
+			boolean canDownload = BCCourseNode.canDownload(ne);
+			boolean canUpload = BCCourseNode.canUpload(ne);
+			boolean isAdministrator = userCourseEnv.isAdmin();
+			scallback = new FolderNodeCallback(relPath, canDownload, canUpload, isAdministrator, isGuestOnly, nodefolderSubContext);
 		}
 		
 		//course is read only, override the security callback
@@ -200,6 +206,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	// no events to catch
 	}
@@ -207,6 +214,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		if (frc != null) {
 			frc.dispose();

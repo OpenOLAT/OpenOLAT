@@ -42,7 +42,7 @@ import org.olat.course.nodes.video.VideoEditController;
 import org.olat.course.nodes.video.VideoPeekviewController;
 import org.olat.course.nodes.video.VideoRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.VideoFileResource;
 import org.olat.repository.RepositoryEntry;
@@ -92,7 +92,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(
 			UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback,
 			String nodecmd) {
 		updateModuleConfigDefaults(false);
 		VideoRunController cprunC = new VideoRunController(getModuleConfiguration(), wControl, ureq, userCourseEnv, this);
@@ -153,7 +153,7 @@ public class VideoCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		return new VideoPeekviewController(ureq, wControl,
 				getReferencedRepositoryEntry().getOlatResource(),
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(),

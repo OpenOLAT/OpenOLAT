@@ -31,7 +31,6 @@ import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
-import org.olat.course.run.userview.NodeEvaluation;
 
 /**
  * Initial Date:  10.02.2005
@@ -42,21 +41,26 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 
 	private final String relPath;
 	private Quota nodeFolderQuota;
-	private final NodeEvaluation ne;
+	private final boolean canDownload;
+	private final boolean canUpload;
 	private final boolean isAdministrator;
 	private final boolean isGuestOnly;
 	private final SubscriptionContext nodefolderSubContext;
 
 	/**
 	 * Folder node security callback constructor
-	 * @param ne the current node evaluation
-	 * @param isOlatAdmin true if the current user has admin rights, false otherwhise. 
-	 * @param isGuestOnly true if the current user has guest rights, false otherwhise. 
-	 * admins will have full access, regardless of their node evaluation
+	 * 
+	 * @param relPath
+	 * @param canDownload 
+	 * @param canUpload 
+	 * @param isAdministrator admins will have full access, regardless of the canDownload and canUpload settings
+	 * @param isGuestOnly true if the current user has guest rights 
 	 * @param nodefolderSubContext
 	 */
-	public FolderNodeCallback(String relPath, NodeEvaluation ne, boolean isAdministrator, boolean isGuestOnly, SubscriptionContext nodefolderSubContext) {
-		this.ne = ne;
+	public FolderNodeCallback(String relPath, boolean canDownload, boolean canUpload, boolean isAdministrator,
+			boolean isGuestOnly, SubscriptionContext nodefolderSubContext) {
+		this.canDownload = canDownload;
+		this.canUpload = canUpload;
 		this.relPath = relPath;
 		this.isAdministrator = isAdministrator;
 		this.isGuestOnly = isGuestOnly;
@@ -65,18 +69,18 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 
 	@Override
 	public boolean canList() {
-		return isAdministrator || ne.isCapabilityAccessible("download") || ne.isCapabilityAccessible("upload");
+		return isAdministrator || canDownload || canUpload;
 	}
 
 	@Override
 	public boolean canRead() {
-		return isAdministrator || ne.isCapabilityAccessible("download") || ne.isCapabilityAccessible("upload");
+		return isAdministrator || canDownload || canUpload;
 	}
 
 	@Override
 	public boolean canWrite() {
-	    if (isGuestOnly) return false;
-		return isAdministrator || ne.isCapabilityAccessible("upload");
+		if (isGuestOnly) return false;
+		return isAdministrator || canUpload;
 	}
 
 	@Override
@@ -86,8 +90,8 @@ public class FolderNodeCallback implements VFSSecurityCallback {
 
 	@Override
 	public boolean canDelete() {
-	    if (isGuestOnly) return false;
-		return isAdministrator || ne.isCapabilityAccessible("upload");
+		if (isGuestOnly) return false;
+		return isAdministrator || canUpload;
 	}
 
 	@Override

@@ -28,7 +28,6 @@ package org.olat.course.run.userview;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.course.nodes.CourseNode;
 
 /**
@@ -37,9 +36,9 @@ import org.olat.course.nodes.CourseNode;
  *
  */
 public class TreeEvaluation {
-	private final Map<CourseNode,TreeNode> courseToTree = new HashMap<>();  // keys: coursenodes; values: treenodes
+	private final Map<CourseNode, CourseTreeNode> courseToTree = new HashMap<>();
 
-	public void cacheCourseToTreeNode(CourseNode cn, TreeNode tn) {
+	public void cacheCourseToTreeNode(CourseNode cn, CourseTreeNode tn) {
 		courseToTree.put(cn, tn);
 	}
 
@@ -49,13 +48,13 @@ public class TreeEvaluation {
 	 * @param cn to courseNode to find
 	 * @return null if the coursenode has no corresponding treenode in the newly built treemodel anymore (e.g. when the precondition evaluation changed so that the coursenode became invisible), or the TreeNode otherwise.
 	 */
-	public TreeNode getCorrespondingTreeNode(CourseNode cn) {
+	public CourseTreeNode getCorrespondingTreeNode(CourseNode cn) {
 		return courseToTree.get(cn);
 	}
 	
-	public TreeNode getCorrespondingTreeNode(String cnIdent) {
-		TreeNode tn = null;
-		for(Map.Entry<CourseNode, TreeNode> entry:courseToTree.entrySet()) {
+	public CourseTreeNode getCorrespondingTreeNode(String cnIdent) {
+		CourseTreeNode tn = null;
+		for(Map.Entry<CourseNode, CourseTreeNode> entry:courseToTree.entrySet()) {
 			CourseNode cn = entry.getKey();
 			if(cn.getIdent().equals(cnIdent)) {
 				tn = entry.getValue();

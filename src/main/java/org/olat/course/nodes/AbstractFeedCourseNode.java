@@ -38,6 +38,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.feed.FeedNodeEditController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -119,11 +120,11 @@ public abstract class AbstractFeedCourseNode extends GenericCourseNode {
 	 * @see org.olat.course.nodes.AbstractAccessableCourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation, java.lang.String)
+	 *      CourseNodeSecurityCallback, java.lang.String)
 	 */
 	@Override
 	public abstract NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl control,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd);
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd);
 
 	/**
 	 * @see org.olat.course.nodes.GenericCourseNode#isConfigValid(org.olat.course.editor.CourseEditorEnv)

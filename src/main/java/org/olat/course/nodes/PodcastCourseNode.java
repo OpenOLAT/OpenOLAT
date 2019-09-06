@@ -50,6 +50,7 @@ import org.olat.course.nodes.feed.FeedNodeSecurityCallback;
 import org.olat.course.nodes.feed.FeedPeekviewController;
 import org.olat.course.nodes.feed.podcast.PodcastNodeEditController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.PodcastFileResource;
@@ -93,10 +94,10 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl control,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		RepositoryEntry entry = getReferencedRepositoryEntry();
 		Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-		FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, ne);
+		FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, nodeSecCallback.getNodeEvaluation());
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), this); 
 		callback.setSubscriptionContext(subsContext);
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(this));
@@ -110,17 +111,17 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
-		if (ne.isAtLeastOneAccessible()) {
+			CourseNodeSecurityCallback nodeSecCallback) {
+		if (nodeSecCallback.isAccessible()) {
 			// Create a feed peekview controller that shows the latest two entries
 			RepositoryEntry entry = getReferencedRepositoryEntry();
 			Long courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
-			FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, ne);
+			FeedSecurityCallback callback = getFeedSecurityCallback(ureq, entry, userCourseEnv, nodeSecCallback.getNodeEvaluation());
 			FeedUIFactory uiFactory = PodcastUIFactory.getInstance(ureq.getLocale());
 			return new FeedPeekviewController(entry.getOlatResource(), ureq, wControl, callback, courseId, getIdent(), uiFactory, 2, "o_podcast_peekview");
 		} else {
 			// use standard peekview
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 		}
 	}
 	

@@ -39,7 +39,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.StatusDescriptionHelper;
 import org.olat.course.nodes.TitledWrapperHelper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -122,7 +122,7 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, true);
 		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ll_icon");
@@ -133,11 +133,11 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	 * @see org.olat.course.nodes.GenericCourseNode#createPeekViewRunController(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
+	 *      CourseNodeSecurityCallback)
 	 */
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
+			CourseNodeSecurityCallback nodeSecCallback) {
 		updateModuleConfigDefaults(false);
 		// Use normal view as peekview
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, false);
@@ -148,10 +148,10 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	 * @see org.olat.course.nodes.GenericCourseNode#createPreviewController(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
+	 *      CourseNodeSecurityCallback)
 	 */
 	@Override
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, true);
 		controller = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ll_icon");
 		return controller;

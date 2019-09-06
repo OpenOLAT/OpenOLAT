@@ -41,6 +41,7 @@ import org.olat.course.nodes.cal.CalEditController;
 import org.olat.course.nodes.cal.CalRunController;
 import org.olat.course.nodes.cal.CourseCalendarPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -123,17 +124,18 @@ public class CalCourseNode extends AbstractAccessableCourseNode {
 	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
-		CalRunController calCtlr = new CalRunController(wControl, ureq, this, userCourseEnv, ne);
+		CalRunController calCtlr = new CalRunController(wControl, ureq, this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
 		Controller wrapperCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, calCtlr, this, "o_cal_icon");
 		return new NodeRunConstructionResult(wrapperCtrl);
 	}
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
-		CourseCalendarPeekViewController peekViewCtrl = new CourseCalendarPeekViewController(ureq, wControl, userCourseEnv, this, ne);
+			CourseNodeSecurityCallback nodeSecCallback) {
+		CourseCalendarPeekViewController peekViewCtrl = new CourseCalendarPeekViewController(ureq, wControl,
+				userCourseEnv, this, nodeSecCallback.getNodeEvaluation());
 		return peekViewCtrl;
 	}
 

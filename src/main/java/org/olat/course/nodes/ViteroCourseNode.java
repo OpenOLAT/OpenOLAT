@@ -42,7 +42,7 @@ import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.vitero.ViteroEditController;
 import org.olat.course.nodes.vitero.ViteroPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.ui.ViteroBookingsRunController;
@@ -91,7 +91,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		Controller runCtr;
 		Roles roles = ureq.getUserSession().getRoles();
@@ -114,7 +114,7 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		return new ViteroPeekViewController(ureq, wControl, userCourseEnv, getIdent());
 	}
 

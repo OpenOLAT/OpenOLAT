@@ -50,7 +50,7 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.co.COEditController;
 import org.olat.course.nodes.co.CORunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.BusinessGroupShort;
@@ -92,7 +92,7 @@ public class COCourseNode extends AbstractAccessableCourseNode {
 
     @Override
     public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-            UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+            UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
     	updateModuleConfigDefaults(false);
         Controller controller;
         // Do not allow guests to send anonymous emails

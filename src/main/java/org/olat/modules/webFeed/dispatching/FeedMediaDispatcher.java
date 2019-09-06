@@ -54,7 +54,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -398,9 +398,9 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 					false);
 			// Build an evaluation tree
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-			NodeEvaluation nodeEval = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+			CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
 					.build(node, new TreeEvaluation(), new VisibleTreeFilter());
-			if (nodeEval.isVisible()) {
+			if (courseTreeNode.isVisible() && courseTreeNode.isAccessible()) {
 				hasAccess = true;
 			}
 		}

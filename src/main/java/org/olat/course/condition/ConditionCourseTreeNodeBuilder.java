@@ -17,29 +17,39 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodeaccess;
+package org.olat.course.condition;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
+import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.CourseTreeNode;
+import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.CourseTreeNodeBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 2 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
+public class ConditionCourseTreeNodeBuilder extends CourseTreeNodeBuilder {
 
-	public boolean isSupported(String courseNodeType);
+	private final ConditionInterpreter conditionInterpreter;
 
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
-			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel);
-
-	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment);
+	ConditionCourseTreeNodeBuilder(UserCourseEnvironment userCourseEnvironment) {
+		conditionInterpreter = userCourseEnvironment.getConditionInterpreter();
+	}
 	
+	@Override
+	protected CourseTreeNode createNodeEvaluation(CourseNode courseNode) {
+		NodeEvaluation nodeEval = new NodeEvaluation();
+		courseNode.calcAccessAndVisibility(conditionInterpreter, nodeEval);
+		
+		CourseTreeNode courseTreeNode = new CourseTreeNode(courseNode);
+		courseTreeNode.setNodeEvaluation(nodeEval);
+		courseTreeNode.setVisible(nodeEval.isVisible());
+		courseTreeNode.setAccessible(nodeEval.isAtLeastOneAccessible());
+		return courseTreeNode;
+	}
+
 }

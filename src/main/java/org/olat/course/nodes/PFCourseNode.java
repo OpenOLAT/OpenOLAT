@@ -53,7 +53,7 @@ import org.olat.course.nodes.pf.ui.PFPreviewController;
 import org.olat.course.nodes.pf.ui.PFRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -220,14 +220,14 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		PFRunController runController = new PFRunController(ureq, wControl, this, userCourseEnv);
 		return runController.createNodeRunConstructionResult(ureq);	
 	}
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		VFSContainer rootFolder = null;
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
@@ -246,7 +246,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		}
 		
 		if (rootFolder == null) {
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 		} else {
 			return new PFPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
 		}
@@ -254,7 +254,7 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		return new PFPreviewController(ureq, wControl, this, userCourseEnv);
 
 	}

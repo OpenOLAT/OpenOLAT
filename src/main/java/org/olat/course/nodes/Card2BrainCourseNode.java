@@ -40,7 +40,7 @@ import org.olat.course.nodes.card2brain.Card2BrainEditController;
 import org.olat.course.nodes.card2brain.Card2BrainPeekViewController;
 import org.olat.course.nodes.card2brain.Card2BrainRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.card2brain.Card2BrainModule;
 import org.olat.repository.RepositoryEntry;
@@ -82,7 +82,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		
 		updateModuleConfigDefaults(false);
 		
@@ -105,12 +105,12 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 	}
 		
 	@Override
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null).getRunController();
 	}
 	
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		return new Card2BrainPeekViewController(ureq, wControl, 
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry().getKey(), 
 				getIdent(),

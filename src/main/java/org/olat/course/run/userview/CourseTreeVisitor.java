@@ -59,10 +59,10 @@ public class CourseTreeVisitor {
 	
 	public boolean isAccessible(CourseNode node, TreeFilter filter) {
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		NodeEvaluation ne = nodeAccessService.getNodeEvaluationBuilder(uce)
+		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(uce)
 				.build(node, new TreeEvaluation(), filter);
 
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
+		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(courseTreeNode);
 		if(mayAccessWholeTreeUp) {
 			return true;
 		}
@@ -77,9 +77,9 @@ public class CourseTreeVisitor {
 	}
 	
 	private void visit(Visitor visitor, CourseNode node, UserCourseEnvironment userCourseEnv, TreeEvaluation treeEval, TreeFilter filter) {
-		NodeEvaluation ne = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
 				.build(node, treeEval, filter);
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(ne);
+		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(courseTreeNode);
 		if(mayAccessWholeTreeUp) {
 			visitor.visit(node);
 			for(int i=0; i<node.getChildCount(); i++) {

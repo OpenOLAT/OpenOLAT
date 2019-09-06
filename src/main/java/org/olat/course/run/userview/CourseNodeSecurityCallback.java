@@ -17,29 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodeaccess;
-
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.control.generic.tabbable.TabbableController;
-import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.CourseTreeNodeBuilder;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
+package org.olat.course.run.userview;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * 
+ * Initial date: 6 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
+public interface CourseNodeSecurityCallback {
 
-	public boolean isSupported(String courseNodeType);
-
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
-			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel);
-
-	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment);
+	/** 
+	 *
+	 * @return true if the user is allowed to see the node (in the menu tree)
+	 */
+	public boolean isVisible();
+	
+	/**
+	 *
+	 * @return true if the user is allowed to see the content of the course node.
+	 */
+	public boolean isAccessible();
+	
+	/**
+	 * Just for backwards compatibility. Don't use NodeEvaluations in new features.
+	 *
+	 * @return the NodeValuation. 
+	 */
+	public NodeEvaluation getNodeEvaluation();
 	
 }

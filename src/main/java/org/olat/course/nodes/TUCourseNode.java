@@ -41,7 +41,7 @@ import org.olat.course.nodes.tu.TUConfigForm;
 import org.olat.course.nodes.tu.TUEditController;
 import org.olat.course.nodes.tu.TURunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -86,7 +86,7 @@ public class TUCourseNode extends AbstractAccessableCourseNode {
 	 *      org.olat.course.run.userview.NodeEvaluation)
 	 */
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		return new NodeRunConstructionResult(new TURunController(wControl, getModuleConfiguration(), ureq, this, userCourseEnv.getCourseEnvironment()));
 	}
@@ -95,10 +95,10 @@ public class TUCourseNode extends AbstractAccessableCourseNode {
 	 * @see org.olat.course.nodes.GenericCourseNode#createPreviewController(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.control.WindowControl,
 	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
+	 *      CourseNodeSecurityCallback)
 	 */
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, ne, null).getRunController();
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		return createNodeRunConstructionResult(ureq, wControl, userCourseEnv, nodeSecCallback, null).getRunController();
 	}
 
 	@Override

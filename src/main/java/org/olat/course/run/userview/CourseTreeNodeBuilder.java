@@ -17,13 +17,9 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.condition;
+package org.olat.course.run.userview;
 
-import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.NodeEvaluationBuilder;
-import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -31,19 +27,33 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class ConditionNodeEvaluationBuilder extends NodeEvaluationBuilder {
-
-	private final ConditionInterpreter conditionInterpreter;
-
-	ConditionNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
-		conditionInterpreter = userCourseEnvironment.getConditionInterpreter();
-	}
+public abstract class CourseTreeNodeBuilder {
 	
-	@Override
-	protected NodeEvaluation createNodeEvaluation(CourseNode courseNode) {
-		NodeEvaluation nodeEval = new NodeEvaluation(courseNode);
-		courseNode.calcAccessAndVisibility(conditionInterpreter, nodeEval);
-		return nodeEval;
+	public CourseTreeNode build(CourseNode courseNode, TreeEvaluation treeEval,
+			TreeFilter filter) {
+		return getNodeEvaluation(courseNode, treeEval, filter);
 	}
+
+	private CourseTreeNode getNodeEvaluation(CourseNode courseNode, TreeEvaluation treeEval, TreeFilter filter) {
+		CourseTreeNode treeNode = createNodeEvaluation(courseNode);
+		if(filter != null && !filter.isVisible(courseNode)) {
+			treeNode.setVisible(false);
+		}
+		
+		treeEval.cacheCourseToTreeNode(courseNode, treeNode);
+		if (treeNode.isVisible()) {
+			int childcnt = courseNode.getChildCount();
+			for (int i = 0; i < childcnt; i++) {
+				CourseNode cn = (CourseNode) courseNode.getChildAt(i);
+				CourseTreeNode child = getNodeEvaluation(cn, treeEval, filter);
+				if (child.isVisible()) {
+					treeNode.addChild(child);
+				}
+			}
+		}
+		return treeNode;
+	}
+
+	protected abstract CourseTreeNode createNodeEvaluation(CourseNode courseNode);
 
 }

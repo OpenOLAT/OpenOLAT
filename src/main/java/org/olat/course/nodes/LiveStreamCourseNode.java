@@ -43,7 +43,7 @@ import org.olat.course.nodes.livestream.ui.LiveStreamEditController;
 import org.olat.course.nodes.livestream.ui.LiveStreamPeekviewController;
 import org.olat.course.nodes.livestream.ui.LiveStreamRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -82,7 +82,7 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		
 		Controller runCtrl;
@@ -92,7 +92,8 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("freezenoaccess.message");
 			runCtrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else {
-			CourseCalendars calendars = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, userCourseEnv, ne);
+			CourseCalendars calendars = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, userCourseEnv,
+					nodeSecCallback.getNodeEvaluation());
 			LiveStreamSecurityCallback secCallback = LiveStreamSecurityCallbackFactory
 					.createSecurityCallback(userCourseEnv, this.getModuleConfiguration());
 			OLATResource courseOres = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
@@ -104,8 +105,9 @@ public class LiveStreamCourseNode extends AbstractAccessableCourseNode {
 	
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		CourseCalendars calendars = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, userCourseEnv, ne);
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		CourseCalendars calendars = CourseCalendars.createCourseCalendarsWrapper(ureq, wControl, userCourseEnv,
+				nodeSecCallback.getNodeEvaluation());
 		return new LiveStreamPeekviewController(ureq, wControl, getIdent(), this.getModuleConfiguration(), calendars);
 	}
 

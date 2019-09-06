@@ -59,7 +59,7 @@ import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti.QTIResultManager;
@@ -130,7 +130,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	 */
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		
 		Controller runController;
 		RepositoryEntry testEntry = getReferencedRepositoryEntry();

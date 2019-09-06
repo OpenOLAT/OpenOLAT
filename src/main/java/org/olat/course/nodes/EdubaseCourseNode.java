@@ -38,7 +38,7 @@ import org.olat.course.nodes.edubase.EdubaseEditController;
 import org.olat.course.nodes.edubase.EdubasePeekViewController;
 import org.olat.course.nodes.edubase.EdubaseRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
@@ -75,7 +75,7 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		Controller runCtrl;
 		if(userCourseEnv.isCourseReadOnly()) {
@@ -96,7 +96,7 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 	}
 	
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		return new EdubasePeekViewController(ureq, wControl, getModuleConfiguration(), this.getIdent());
 	}
 

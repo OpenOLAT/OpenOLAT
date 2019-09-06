@@ -98,6 +98,7 @@ import org.olat.course.nodes.ta.ReturnboxController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -184,7 +185,7 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		Controller controller;
 		// Do not allow guests to access tasks
@@ -214,19 +215,19 @@ public class ProjectBrokerCourseNode extends GenericCourseNode implements Course
 	}
 
 	@Override
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		return ProjectBrokerControllerFactory.createPreviewController(ureq, wControl,userCourseEnv, this);
 	}
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
-		if (ne.isAtLeastOneAccessible()) {
+			CourseNodeSecurityCallback nodeSecCallback) {
+		if (nodeSecCallback.isAccessible()) {
 			Controller peekViewController = ProjectBrokerControllerFactory.createPeekViewRunController(ureq, wControl, userCourseEnv, this);
 			return peekViewController;			
 		} else {
 			// use standard peekview
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 		}
 	}	
 	

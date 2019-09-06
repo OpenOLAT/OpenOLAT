@@ -68,7 +68,9 @@ public class BCPreviewController extends DefaultController {
 		FolderRunController folder = new FolderRunController(namedContainer, false, ureq, getWindowControl());
 		previewVC.put("folder", folder.getInitialComponent());
 		// get additional infos
-		VFSSecurityCallback secCallback = new FolderNodeCallback(namedContainer.getRelPath(), ne, false, false, null);
+		boolean canDownload = BCCourseNode.canDownload(ne);
+		boolean canUpload = BCCourseNode.canUpload(ne);
+		VFSSecurityCallback secCallback = new FolderNodeCallback(namedContainer.getRelPath(), canDownload, canUpload, false, false, null);
 		previewVC.contextPut("canUpload", Boolean.valueOf(secCallback.canWrite()));
 		previewVC.contextPut("canDownload", Boolean.valueOf(secCallback.canRead()));
 		Quota q = secCallback.getQuota();
@@ -80,6 +82,7 @@ public class BCPreviewController extends DefaultController {
 	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
 	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
 	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
@@ -87,6 +90,7 @@ public class BCPreviewController extends DefaultController {
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
 		//
 	}

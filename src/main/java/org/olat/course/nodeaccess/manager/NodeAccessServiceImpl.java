@@ -31,7 +31,7 @@ import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.NodeEvaluationBuilder;
+import org.olat.course.run.userview.CourseTreeNodeBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +83,7 @@ public class NodeAccessServiceImpl implements NodeAccessService {
 	}
 
 	@Override
-	public NodeEvaluationBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
+	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnvironment);
 		return getNodeAccessProvider(type).getNodeEvaluationBuilder(userCourseEnvironment);
 	}

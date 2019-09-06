@@ -48,6 +48,7 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
@@ -204,7 +205,7 @@ public interface CourseNode extends INode, ShortName {
 	 * @param ureq The user request
 	 * @param wControl The current window controller
 	 * @param userCourseEnv The course environment
-	 * @param ne The node evaluation
+	 * @param nodeSecCallback The node evaluation
 	 * @return The node run controller
 	 * 
 	 * ATTENTION:
@@ -213,7 +214,7 @@ public interface CourseNode extends INode, ShortName {
 	 * to set the course node specific configuration default values!
 	 */
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd);
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd);
 
 	/**
 	 * Create a node edit controller for this node to configure node specific
@@ -232,10 +233,10 @@ public interface CourseNode extends INode, ShortName {
 	 * @param ureq
 	 * @param wControl
 	 * @param userCourseEnv
-	 * @param ne
+	 * @param nodeSecCallback
 	 * @return Controller
 	 */
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne);
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback);
 
 	/**
 	 * Create a minimised view for this course node that gives some insight about
@@ -246,10 +247,10 @@ public interface CourseNode extends INode, ShortName {
 	 * @param ureq
 	 * @param wContro
 	 * @param userCourseEnv
-	 * @param ne
+	 * @param nodeSecCallback
 	 * @return 
 	 */
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne);
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback);
 	
 	/**
 	 * Return a construct with all the informations needed to build the statistics of

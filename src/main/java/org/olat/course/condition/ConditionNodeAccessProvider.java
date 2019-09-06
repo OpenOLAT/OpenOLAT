@@ -30,7 +30,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.NodeEvaluationBuilder;
+import org.olat.course.run.userview.CourseTreeNodeBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.springframework.stereotype.Service;
@@ -75,8 +75,8 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public NodeEvaluationBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
-		return new ConditionNodeEvaluationBuilder(userCourseEnvironment);
+	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
+		return new ConditionCourseTreeNodeBuilder(userCourseEnvironment);
 	}
 
 }

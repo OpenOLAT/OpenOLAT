@@ -25,8 +25,8 @@ import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.ui.LearningPathTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.NodeEvaluationBuilder;
+import org.olat.course.run.userview.CourseTreeNode;
+import org.olat.course.run.userview.CourseTreeNodeBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -35,16 +35,16 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathNodeEvaluationBuilder extends NodeEvaluationBuilder {
+public class LearningPathCourseTreeNodeBuilder extends CourseTreeNodeBuilder {
 
 	private final GenericTreeModel learningPathModel;
 
-	public LearningPathNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
+	public LearningPathCourseTreeNodeBuilder(UserCourseEnvironment userCourseEnvironment) {
 		learningPathModel = LearningPathTreeModelBuilder.builder(userCourseEnvironment).create();
 	}
 
 	@Override
-	protected NodeEvaluation createNodeEvaluation(CourseNode courseNode) {
+	protected CourseTreeNode createNodeEvaluation(CourseNode courseNode) {
 		boolean accessible = false;
 		String iconDecorator1CssClass = null;
 		TreeNode treeNode = learningPathModel.getNodeById(courseNode.getIdent());
@@ -54,11 +54,11 @@ public class LearningPathNodeEvaluationBuilder extends NodeEvaluationBuilder {
 			accessible = treeNode.isAccessible();
 		}
 		
-		
-		NodeEvaluation nodeEval = new NodeEvaluation(courseNode, iconDecorator1CssClass);
-		nodeEval.putAccessStatus("access", accessible);
-		nodeEval.setVisible(true);
-		return nodeEval;
+		CourseTreeNode courseTreeNode = new CourseTreeNode(courseNode);
+		courseTreeNode.setVisible(true);
+		courseTreeNode.setAccessible(accessible);
+		courseTreeNode.setIconDecorator1CssClass(iconDecorator1CssClass);
+		return courseTreeNode;
 	}
 
 	private String getIconDecorator1CssClass(LearningPathStatus status) {

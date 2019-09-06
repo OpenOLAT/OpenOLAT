@@ -45,19 +45,23 @@ import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.logging.activity.CourseLoggingAction;
 import org.olat.core.logging.activity.StringResourceableType;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.highscore.ui.HighScoreRunController;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.scoring.ScoreEvaluation;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseTreeNode;
+import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -86,16 +90,10 @@ public class STCourseNodeRunController extends BasicController {
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 
-	/**
-	 * @param ureq
-	 * @param userCourseEnv
-	 * @param stCourseNode
-	 * @param se
-	 * @param ne
-	 */
-	public STCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, STCourseNode stCourseNode, ScoreEvaluation se,
-			NodeEvaluation ne) {
+	public STCourseNodeRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, STCourseNode stCourseNode, ScoreEvaluation se) {
 		super(ureq, wControl);
 		addLoggingResourceable(LoggingResourceable.wrap(stCourseNode));
 		this.userCourseEnv = userCourseEnv;
@@ -126,46 +124,50 @@ public class STCourseNodeRunController extends BasicController {
 		// grandchildren)
 		String peekviewChildNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, null);
 		List<String> peekviewChildNodes =  (peekviewChildNodesConfig == null ? new ArrayList<>() : Arrays.asList(peekviewChildNodesConfig.split(",")));
-		int chdCnt = ne.getChildCount();
+		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+				.build(stCourseNode, new TreeEvaluation(), new VisibleTreeFilter());
+		int chdCnt = courseTreeNode.getChildCount();
 		for (int i = 0; i < chdCnt; i++) {
-			NodeEvaluation neChd = ne.getNodeEvaluationChildAt(i);
-			if (neChd.isVisible()) {
-				// Build and add child generic or specific peek view
-				CourseNode child = neChd.getCourseNode();
-				Controller childViewController = null;
-				Controller childPeekViewController = null;
-				boolean accessible = NavigationHandler.mayAccessWholeTreeUp(neChd);
-				if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
-					if (peekviewChildNodes.size() == 0) {
-						// Special case: no child nodes configured. This is the case when
-						// the node has been configured before it had any children. We just
-						// use the first children as they appear in the list
-						if (i < STCourseNodeConfiguration.MAX_PEEKVIEW_CHILD_NODES) {
-							if(accessible) {
-								childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, neChd);
+			INode childNode = courseTreeNode.getChildAt(i);
+			if (childNode instanceof CourseTreeNode) {
+				CourseTreeNode childCourseTreeNode = (CourseTreeNode)childNode;
+				if (childCourseTreeNode.isVisible()) {
+					// Build and add child generic or specific peek view
+					CourseNode child = childCourseTreeNode.getCourseNode();
+					Controller childViewController = null;
+					Controller childPeekViewController = null;
+					boolean accessible = NavigationHandler.mayAccessWholeTreeUp(childCourseTreeNode);
+					if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
+						if (peekviewChildNodes.size() == 0) {
+							// Special case: no child nodes configured. This is the case when
+							// the node has been configured before it had any children. We just
+							// use the first children as they appear in the list
+							if (i < STCourseNodeConfiguration.MAX_PEEKVIEW_CHILD_NODES) {
+								if(accessible) {
+									childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, childCourseTreeNode);
+								}
+							} else {
+								// Stop, we already reached the max count
+								break;
 							}
 						} else {
-							// Stop, we already reached the max count
-							break;
-						}
-					} else {
-						// Only add configured children
-						if (peekviewChildNodes.contains(child.getIdent())) {
-							if(accessible) {
-								childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, neChd);
+							// Only add configured children
+							if (peekviewChildNodes.contains(child.getIdent())) {
+								if(accessible) {
+									childPeekViewController = child.createPeekViewRunController(ureq, wControl, userCourseEnv, childCourseTreeNode);
+								}
+							} else {
+								// Skip this child - not configured
+								continue;
 							}
-						} else {
-							// Skip this child - not configured
-							continue;
 						}
 					}
+					// Add child to list
+					children.add(child);
+					childViewController = new PeekViewWrapperController(ureq, wControl, child, childPeekViewController, accessible);
+					listenTo(childViewController); // auto-dispose controller
+					myContent.put("childView_" + child.getIdent(), childViewController.getInitialComponent());
 				}
-				// Add child to list
-				children.add(child);
-				childViewController = new PeekViewWrapperController(ureq, wControl, child, childPeekViewController, accessible);
-				listenTo(childViewController); // auto-dispose controller
-				myContent.put("childView_" + child.getIdent(), childViewController.getInitialComponent());
-
 			}
 		}
 
@@ -248,9 +250,6 @@ public class STCourseNodeRunController extends BasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 	// nothing to do yet

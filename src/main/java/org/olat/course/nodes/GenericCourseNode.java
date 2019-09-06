@@ -58,7 +58,7 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.statistic.StatisticResourceOption;
 import org.olat.course.statistic.StatisticResourceResult;
@@ -108,7 +108,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 
 	/**
 	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(UserRequest,
-	 *      WindowControl, UserCourseEnvironment, NodeEvaluation, String)
+	 *      WindowControl, UserCourseEnvironment, CourseNodeSecurityCallback, String)
 	 * 
 	 *      ATTENTION: all course nodes must call
 	 *      updateModuleConfigDefaults(false) here
@@ -116,7 +116,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	@Override
 	public abstract NodeRunConstructionResult createNodeRunConstructionResult(
 			UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback,
 			String nodecmd);
 
 	protected String getDefaultTitleOption() {
@@ -129,11 +129,11 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * Override this method with a specific implementation if you have
 	 * something interesting to show in the peekview
 	 * 
-	 * @see org.olat.course.nodes.CourseNode#createPeekViewRunController(UserRequest, WindowControl, UserCourseEnvironment, NodeEvaluation)
+	 * @see org.olat.course.nodes.CourseNode#createPeekViewRunController(UserRequest, WindowControl, UserCourseEnvironment, CourseNodeSecurityCallback)
 	 */
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
+			CourseNodeSecurityCallback nodeSecCallback) {
 		return null;
 	}
 	
@@ -147,7 +147,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 */
 	//no userCourseEnv or NodeEvaluation needed here
 	@Override
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		Translator translator = Util.createPackageTranslator(GenericCourseNode.class, ureq.getLocale());
 		String text = translator.translate("preview.notavailable");
 		return MessageUIFactory.createInfoMessage(ureq, wControl, null, text);

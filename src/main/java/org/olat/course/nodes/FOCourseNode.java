@@ -70,6 +70,7 @@ import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -126,7 +127,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			final UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			final UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		Roles roles = ureq.getUserSession().getRoles();
 		Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
@@ -164,9 +165,10 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		}
 		// Create subscription context and run controller
 		SubscriptionContext forumSubContext = CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), this);
-		ForumCallback foCallback = userCourseEnv.isCourseReadOnly() ?
-				new ReadOnlyForumCallback(ne, isAdministrator, isGuestOnly) :
-				new ForumNodeForumCallback(ne, isAdministrator, isGuestOnly, guestPostAllowed, pseudonymPostAllowed, defaultPseudonym, forumSubContext);
+		ForumCallback foCallback = userCourseEnv.isCourseReadOnly()
+				? new ReadOnlyForumCallback(nodeSecCallback.getNodeEvaluation(), isAdministrator, isGuestOnly)
+				: new ForumNodeForumCallback(nodeSecCallback.getNodeEvaluation(), isAdministrator, isGuestOnly,
+						guestPostAllowed, pseudonymPostAllowed, defaultPseudonym, forumSubContext);
 		FOCourseNodeRunController forumC = new FOCourseNodeRunController(ureq, wControl, theForum, foCallback, this);
 		return new NodeRunConstructionResult(forumC);
 	}
@@ -288,21 +290,21 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 * Implementation of the previewController for forumnode
 	 */
 	@Override
-	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		return new FOPreviewController(ureq, wControl, ne);
+	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
+		return new FOPreviewController(ureq, wControl, nodeSecCallback.getNodeEvaluation());
 	}
 
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
-			NodeEvaluation ne) {
-		if (ne.isAtLeastOneAccessible()) {
+			CourseNodeSecurityCallback nodeSecCallback) {
+		if (nodeSecCallback.isAccessible()) {
 			// Create a forum peekview controller that shows the latest two messages		
 			Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			return new FOPeekviewController(ureq, wControl, courseEntry, theForum, getIdent(), 3);		
 		} else {
 			// use standard peekview
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
+			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 		}
 	}
 

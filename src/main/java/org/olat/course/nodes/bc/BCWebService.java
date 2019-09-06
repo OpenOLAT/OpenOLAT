@@ -402,11 +402,14 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-		NodeEvaluation ne = nodeAccessService.getNodeEvaluationBuilder(uce)
-				.build(node, new TreeEvaluation(), new VisibleTreeFilter());
+		NodeEvaluation nodeEvaluation = nodeAccessService.getNodeEvaluationBuilder(uce)
+				.build(node, new TreeEvaluation(), new VisibleTreeFilter())
+				.getNodeEvaluation();
+		boolean canDownload = BCCourseNode.canDownload(nodeEvaluation);
+		boolean canUpload = BCCourseNode.canUpload(nodeEvaluation);
 
 		VFSContainer container = BCCourseNode.getNodeFolderContainer(node, courseEnv);
-		VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), ne, reSecurity.isEntryAdmin(), ienv.getRoles().isGuestOnly(), null);
+		VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), canDownload, canUpload, reSecurity.isEntryAdmin(), ienv.getRoles().isGuestOnly(), null);
 		container.setLocalSecurityCallback(secCallback);
 		return container;
 	}

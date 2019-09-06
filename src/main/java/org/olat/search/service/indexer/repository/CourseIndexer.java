@@ -30,7 +30,6 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -47,7 +46,7 @@ import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.navigation.NavigationHandler;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -195,22 +194,18 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		
 		TreeEvaluation treeEval = new TreeEvaluation();
 		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-		NodeEvaluation rootNodeEval = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
+		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
 				.build(rootCn, treeEval, new VisibleTreeFilter());
-		if (log.isDebugEnabled()) log.debug("rootNodeEval=" + rootNodeEval );
 
-		TreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);
+		CourseTreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);
 		if (newCalledTreeNode == null) {
 			// TreeNode no longer visible
 			return false;
 		}
-		// go further
-		NodeEvaluation nodeEval = (NodeEvaluation) newCalledTreeNode.getUserObject();
-		if (log.isDebugEnabled()) log.debug("nodeEval=" + nodeEval );
-		if (nodeEval.getCourseNode() != courseNode) throw new AssertException("error in structure");
-		if (!nodeEval.isVisible()) throw new AssertException("node eval not visible!!");
+
+		if (!newCalledTreeNode.isVisible()) throw new AssertException("node eval not visible!!");
 		if (log.isDebugEnabled()) log.debug("call mayAccessWholeTreeUp..." );
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(nodeEval);	
+		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(courseTreeNode);
 		if (log.isDebugEnabled()) log.debug("call mayAccessWholeTreeUp=" + mayAccessWholeTreeUp );
 		
 		if (mayAccessWholeTreeUp) {

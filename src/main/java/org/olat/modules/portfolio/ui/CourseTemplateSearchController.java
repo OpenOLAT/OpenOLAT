@@ -43,7 +43,7 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.run.navigation.NavigationHandler;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -133,9 +133,9 @@ public class CourseTemplateSearchController extends FormBasicController {
 			List<CourseTemplateRow> rows, Set<CurrentBinder> currentSet) {
 		if(courseNode instanceof PortfolioCourseNode) {
 			PortfolioCourseNode pNode = (PortfolioCourseNode)courseNode;
-			NodeEvaluation ne = nodeAccessService.getNodeEvaluationBuilder(uce)
+			CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(uce)
 					.build(pNode, new TreeEvaluation(), new VisibleTreeFilter());
-			if(NavigationHandler.mayAccessWholeTreeUp(ne)) {
+			if(NavigationHandler.mayAccessWholeTreeUp(courseTreeNode)) {
 				RepositoryEntry refEntry = pNode.getReferencedRepositoryEntry();
 				if("BinderTemplate".equals(refEntry.getOlatResource().getResourceableTypeName())) {
 					RepositoryEntry courseEntry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();

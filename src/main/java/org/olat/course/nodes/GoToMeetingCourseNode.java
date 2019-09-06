@@ -42,7 +42,7 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.gotomeeting.GoToMeetingEditController;
 import org.olat.course.nodes.gotomeeting.GoToMeetingPeekViewController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
-import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.gotomeeting.GoToMeetingManager;
 import org.olat.modules.gotomeeting.ui.GoToMeetingRunController;
@@ -97,7 +97,7 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 
 		Controller controller;
@@ -122,7 +122,7 @@ public class GoToMeetingCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		return new GoToMeetingPeekViewController(ureq, wControl, userCourseEnv, getIdent());
 	}
 

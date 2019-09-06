@@ -61,6 +61,7 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.wiki.WikiEditController;
 import org.olat.course.nodes.wiki.WikiRunController;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
+import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.types.WikiResource;
@@ -127,9 +128,9 @@ public class WikiCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, NodeEvaluation ne, String nodecmd) {
-		if(ne.isCapabilityAccessible("access")) {
-			WikiRunController wikiController = new WikiRunController(wControl, ureq, this, userCourseEnv, ne);
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
+		if(nodeSecCallback.isAccessible()) {
+			WikiRunController wikiController = new WikiRunController(wControl, ureq, this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
 			return wikiController.createNodeRunConstructionResult();
 		}
 		Controller controller = MessageUIFactory.createInfoMessage(ureq, wControl, null, this.getNoAccessExplanation());
