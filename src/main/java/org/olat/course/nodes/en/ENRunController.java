@@ -113,13 +113,6 @@ public class ENRunController extends BasicController implements GenericEventList
 	//registered in event bus
 	private List<Long> registeredGroupKeys;
 
-	/**
-	 * @param moduleConfiguration
-	 * @param ureq
-	 * @param wControl
-	 * @param userCourseEnv
-	 * @param enNode
-	 */
 	public ENRunController(ModuleConfiguration moduleConfiguration, UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, ENCourseNode enNode) {
 		super(ureq, wControl);
@@ -176,17 +169,11 @@ public class ENRunController extends BasicController implements GenericEventList
 		putInitialPanel (enrollVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		String cmd = event.getCommand();
@@ -371,10 +358,6 @@ public class ENRunController extends BasicController implements GenericEventList
  		return tableCtr;
 	}
 
-	/**
-	 *
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		deregisterGroupChangedEvents();
