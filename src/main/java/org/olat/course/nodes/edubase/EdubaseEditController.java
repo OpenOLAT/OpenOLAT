@@ -27,13 +27,8 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.EdubaseCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -43,27 +38,16 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class EdubaseEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_VCCONFIG = "pane.tab.config";
 	private static final String PANE_TAB_BOOK_SECTION_LIST = "pane.tab.book.section.list";
-	private final static String[] paneKeys = { PANE_TAB_BOOK_SECTION_LIST, PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
+	private final static String[] paneKeys = { PANE_TAB_BOOK_SECTION_LIST, PANE_TAB_VCCONFIG };
 	
 	private TabbedPane tabPane;
-	private ConditionEditController accessibilityCondContr;
 	private EdubaseConfigController edubaseConfigController;
 	private EdubaseBookSectionListController edubaseBookSectionListController;
 	
-	private final EdubaseCourseNode courseNode;
-
-	public EdubaseEditController(UserRequest ureq, WindowControl wControl, EdubaseCourseNode edubaseCourseNode,
-			ICourse course, UserCourseEnvironment userCourseEnv) {
+	public EdubaseEditController(UserRequest ureq, WindowControl wControl, EdubaseCourseNode edubaseCourseNode) {
 		super(ureq, wControl);
-		this.courseNode = edubaseCourseNode;
-
-		Condition accessCondition = edubaseCourseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv, accessCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), edubaseCourseNode));
-		listenTo(accessibilityCondContr);
 
 		edubaseConfigController = new EdubaseConfigController(ureq, wControl,
 				edubaseCourseNode.getModuleConfiguration());
@@ -77,8 +61,6 @@ public class EdubaseEditController extends ActivateableTabbableDefaultController
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),
-				accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), edubaseConfigController.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_BOOK_SECTION_LIST), edubaseBookSectionListController.getInitialComponent());
 	}
@@ -95,13 +77,7 @@ public class EdubaseEditController extends ActivateableTabbableDefaultController
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == edubaseConfigController && event.equals(Event.DONE_EVENT)) {
+		if (source == edubaseConfigController && event.equals(Event.DONE_EVENT)) {
 			edubaseConfigController.getUpdatedConfig();
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			edubaseBookSectionListController.dispatchEvent(ureq, edubaseConfigController, event);
