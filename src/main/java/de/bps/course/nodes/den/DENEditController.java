@@ -35,9 +35,6 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
@@ -47,7 +44,6 @@ import de.bps.course.nodes.DENCourseNode;
 public class DENEditController extends ActivateableTabbableDefaultController {
 	
 	public static final String PANE_TAB_DENCONFIG = "pane.tab.denconfig";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 
 	private ModuleConfiguration moduleConfiguration;
 	private OLATResourceable ores;
@@ -57,10 +53,9 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 	private CloseableModalController manageDatesModalCntrll, listParticipantsModalCntrll;
 	private Link manageDatesButton, manageParticipantsButton;
 	
-	private ConditionEditController accessibilityCondContr;
 	private DENEditForm dateFormContr;
 	private TabbedPane tabPane;
-	final static String[] paneKeys = {PANE_TAB_DENCONFIG,PANE_TAB_ACCESSIBILITY};
+	final static String[] paneKeys = {PANE_TAB_DENCONFIG};
 	
 	private final UserCourseEnvironment userCourseEnv;
 	
@@ -79,13 +74,8 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 		
 		editVc = this.createVelocityContainer("edit");
 		
-		Condition accessCondition = courseNode.getPreConditionAccess();
 		ICourse course = CourseFactory.loadCourse(ores);
 		moduleConfiguration.set(DENCourseNode.CONF_COURSE_ID, course.getResourceableId());
-		
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv, accessCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
-		listenTo(accessibilityCondContr);
 		
 		dateFormContr = new DENEditForm(ureq, getWindowControl(), this.moduleConfiguration);
 		dateFormContr.addControllerListener(this);
@@ -120,21 +110,11 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 			listParticipantsModalCntrll.dispose();
 			listParticipantsModalCntrll = null;
 		}
-		if(accessibilityCondContr != null) {
-			accessibilityCondContr.dispose();
-			accessibilityCondContr = null;
-		}
 	}
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == dateFormContr) {
+		if (source == dateFormContr) {
 			moduleConfiguration = dateFormContr.getModuleConfiguration();
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		} if(source == manageDatesModalCntrll) {
@@ -161,9 +141,9 @@ public class DENEditController extends ActivateableTabbableDefaultController {
 		}
 	}
 
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_DENCONFIG), editVc);
 	}
 	

@@ -34,6 +34,7 @@ import org.olat.core.id.Roles;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -65,9 +66,6 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONF_COURSE_ID = "den_course_id";
 	public static final String CONF_COURSE_NODE_ID = "den_course_node_id";
 
-	/**
-	 * Standard constructor
-	 */
 	public DENCourseNode() {
 		super(TYPE);
 		initDefaultConfig();
@@ -90,10 +88,13 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	@Override
-	public NodeRunConstructionResult createNodeRunConstructionResult(
-			UserRequest ureq, WindowControl wControl,
-			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback,
-			String nodecmd) {
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
+	}
+
+	@Override
+	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
+			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		Controller controller;
 		// Do not allow guests to enroll to dates
 		Roles roles = ureq.getUserSession().getRoles();
@@ -110,9 +111,6 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 		return new NodeRunConstructionResult(ctrl);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
@@ -120,9 +118,6 @@ public class DENCourseNode extends AbstractAccessableCourseNode {
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
