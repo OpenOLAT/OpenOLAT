@@ -161,6 +161,7 @@ public class AjaxController extends DefaultController {
 						resource = new NothingChangedMediaResource();
 					}
 				} catch (CannotReplaceDOMFragmentException e) {
+					log.error("", e);
 					String timestampID = uureq.getTimestampID();
 					String reRenderUri = window.buildURIFor(window, timestampID, null);
 					Command rmrcom = CommandFactory.createParentRedirectTo(reRenderUri);
