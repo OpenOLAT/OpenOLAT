@@ -38,17 +38,13 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.auditing.UserNodeAuditManager;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -58,16 +54,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class MSCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_CONFIGURATION = "pane.tab.configuration";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
-	private static final String[] paneKeys = { PANE_TAB_CONFIGURATION, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_CONFIGURATION };
 
 	private MSCourseNode msNode;
 	private VelocityContainer configurationVC;
 	private MSConfigController configController;
 	private HighScoreEditController highScoreNodeConfigController;
 
-	private ConditionEditController accessibilityCondContr;
 	private TabbedPane myTabbedPane;
 	
 	private boolean hasLogEntries;
@@ -86,21 +80,11 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	public MSCourseNodeEditController(UserRequest ureq, WindowControl wControl, MSCourseNode msNode, ICourse course, UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(HighScoreEditController.class, getLocale(), getTranslator()));
-		
 		this.msNode = msNode;
 		
 		configurationVC = createVelocityContainer("edit");
 		editScoringConfigButton = LinkFactory.createButtonSmall("scoring.config.enable.button", configurationVC, this);
 		
-		UserNodeAuditManager auditManager = course.getCourseEnvironment().getAuditManager();
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-
-		// Accessibility precondition
-		Condition accessCondition = msNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, msNode));		
-		this.listenTo(accessibilityCondContr);
-
 		configController = new MSConfigController(ureq, wControl, course, msNode);
 		listenTo(configController);
 		configurationVC.put("mseditform", configController.getInitialComponent());
@@ -109,6 +93,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		listenTo(highScoreNodeConfigController);
 		
 		// if there is already user data available, make for read only
+		UserNodeAuditManager auditManager = course.getCourseEnvironment().getAuditManager();
 		hasLogEntries = auditManager.hasUserNodeLogs(msNode);
 		configurationVC.contextPut("hasLogEntries", Boolean.valueOf(hasLogEntries));
 		if (hasLogEntries) {
@@ -126,13 +111,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				msNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == configController) {
+		if (source == configController) {
 			if (event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
@@ -152,7 +131,6 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_CONFIGURATION), configurationVC);
 		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
 		updateHighscoreTab();
