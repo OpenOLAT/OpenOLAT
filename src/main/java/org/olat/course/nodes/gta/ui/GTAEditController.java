@@ -27,9 +27,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.GTACourseNode;
@@ -37,7 +34,6 @@ import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.ModuleConfiguration;
 
 /**
@@ -48,7 +44,6 @@ import org.olat.modules.ModuleConfiguration;
  */
 public class GTAEditController extends ActivateableTabbableDefaultController {
 
-	public static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	public static final String PANE_TAB_WORKLOW = "pane.tab.workflow";
 	public static final String PANE_TAB_ASSIGNMENT = "pane.tab.assignment";
 	public static final String PANE_TAB_SUBMISSION = "pane.tab.submission";
@@ -57,10 +52,8 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	public static final String PANE_TAB_SOLUTIONS = "pane.tab.solutions";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
 	private static final String[] paneKeys = {
-		PANE_TAB_ACCESSIBILITY, PANE_TAB_WORKLOW, PANE_TAB_ASSIGNMENT,
-		PANE_TAB_SUBMISSION, PANE_TAB_REVIEW_AND_CORRECTIONS, PANE_TAB_GRADING,
-		PANE_TAB_SOLUTIONS
-	};
+			PANE_TAB_WORKLOW, PANE_TAB_ASSIGNMENT, PANE_TAB_SUBMISSION, PANE_TAB_REVIEW_AND_CORRECTIONS,
+			PANE_TAB_GRADING, PANE_TAB_SOLUTIONS };
 	private int workflowPos, assignmentPos, submissionPos, revisionPos, gradingPos, solutionsPos, highScoreTabPosition;
 	
 	private TabbedPane myTabbedPane;
@@ -69,7 +62,6 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	private GTAAssignmentEditController assignmentCtrl;
 	private GTASubmissionEditController submissionCtrl;
 	private MSEditFormController manualAssessmentCtrl;
-	private ConditionEditController accessibilityCondCtrl;
 	private GTASampleSolutionsEditController solutionsCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
 	
@@ -87,12 +79,6 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 		courseEnv = course.getCourseEnvironment();
 		config = gtaNode.getModuleConfiguration();
 
-		// Accessibility precondition
-		Condition accessCondition = gtaNode.getPreConditionAccess();
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		accessibilityCondCtrl = new ConditionEditController(ureq, getWindowControl(), euce,
-				accessCondition, AssessmentHelper.getAssessableNodes(editorModel, gtaNode));		
-		listenTo(accessibilityCondCtrl);
 		//workflow
 		workflowCtrl = new GTAWorkflowEditController(ureq, getWindowControl(), gtaNode, euce.getCourseEditorEnv());
 		listenTo(workflowCtrl);
@@ -127,7 +113,6 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondCtrl.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		workflowPos = tabbedPane.addTab(translate(PANE_TAB_WORKLOW), workflowCtrl.getInitialComponent());
 		assignmentPos = tabbedPane.addTab(translate(PANE_TAB_ASSIGNMENT), assignmentCtrl.getInitialComponent());
 		submissionPos = tabbedPane.addTab(translate(PANE_TAB_SUBMISSION), submissionCtrl.getInitialComponent());
@@ -164,13 +149,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondCtrl) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondCtrl.getCondition();
-				gtaNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if(workflowCtrl == source) {
+		if(workflowCtrl == source) {
 			 if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				updateEnabledDisabledTabs();
