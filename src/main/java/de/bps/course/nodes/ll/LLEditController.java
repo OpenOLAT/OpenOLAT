@@ -34,11 +34,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 
 import de.bps.course.nodes.LLCourseNode;
@@ -55,33 +51,21 @@ import de.bps.course.nodes.LLCourseNode;
 public class LLEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_LLCONFIG = "pane.tab.llconfig";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private ModuleConfiguration moduleConfiguration;
-	private LLCourseNode courseNode;
 	private VelocityContainer editVc;
-	private ConditionEditController accessibilityCondContr;
-	private static final String[] paneKeys = { PANE_TAB_LLCONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_LLCONFIG };
 	private TabbedPane tabPane;
 	private LLEditForm llFormContr;
 
-	public LLEditController(ModuleConfiguration moduleConfiguration, UserRequest ureq, WindowControl wControl, LLCourseNode courseNode,
-			ICourse course, UserCourseEnvironment userCourseEnv) {
+	public LLEditController(ModuleConfiguration moduleConfiguration, UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
-
 		this.moduleConfiguration = moduleConfiguration;
-		this.courseNode = courseNode;
 
 		editVc = createVelocityContainer("edit");
-
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
-		this.listenTo(accessibilityCondContr);
 
 		llFormContr = new LLEditForm(ureq, getWindowControl(), this.moduleConfiguration, course.getCourseEnvironment());
 		llFormContr.addControllerListener(this);
 		editVc.put("llEditForm", llFormContr.getInitialComponent());
-
 	}
 
 	@Override
@@ -97,7 +81,6 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 	@Override
 	protected void doDispose() {
 	// nothing to dispose
-
 	}
 
 	@Override
@@ -107,13 +90,7 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == llFormContr) {
+		if (source == llFormContr) {
 			moduleConfiguration = llFormContr.getModuleConfiguration();
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
@@ -122,15 +99,9 @@ public class LLEditController extends ActivateableTabbableDefaultController impl
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr
-				.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_LLCONFIG), editVc);
-
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	public static boolean isConfigValid(ModuleConfiguration moduleConfig) {
 		List<LLModel> linkList = (List<LLModel>) moduleConfig.get(LLCourseNode.CONF_LINKLIST);
 		if (linkList != null) {

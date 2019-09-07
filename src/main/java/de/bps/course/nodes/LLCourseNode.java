@@ -31,6 +31,7 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -64,9 +65,6 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONF_COURSE_NODE_ID = "ll_course_node_id";
 	public static final String CONF_LINKLIST = "ll_link_list";
 
-	/**
-	 * Create default link list course node.
-	 */
 	public LLCourseNode() {
 		super(TYPE);
 		initDefaultConfig();
@@ -102,14 +100,11 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course,
 			UserCourseEnvironment userCourseEnv) {
 		updateModuleConfigDefaults(false);
-		LLEditController childTabCntrllr = new LLEditController(getModuleConfiguration(), ureq, wControl, this, course, userCourseEnv);
+		LLEditController childTabCntrllr = new LLEditController(getModuleConfiguration(), ureq, wControl, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(userCourseEnv.getCourseEditorEnv().getCurrentCourseNodeId());
 		// needed for DENEditController.isConfigValid()
 		getModuleConfiguration().set(CONF_COURSE_ID, course.getResourceableId());
@@ -117,9 +112,11 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		return new NodeEditController(ureq, wControl, course, chosenNode, userCourseEnv, childTabCntrllr);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
+	}
+
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
@@ -129,12 +126,6 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		return new NodeRunConstructionResult(controller);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPeekViewRunController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      CourseNodeSecurityCallback)
-	 */
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNodeSecurityCallback nodeSecCallback) {
@@ -144,12 +135,6 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		return controller;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#createPreviewController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      CourseNodeSecurityCallback)
-	 */
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		Controller controller = new LLRunController(ureq, wControl, getModuleConfiguration(), this, userCourseEnv, true);
@@ -157,9 +142,6 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		return controller;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		String translatorStr = Util.getPackageName(ConditionEditController.class);
@@ -167,16 +149,12 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		return StatusDescriptionHelper.sort(statusDescs);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public StatusDescription isConfigValid() {
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
@@ -192,9 +170,7 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		return sd;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
