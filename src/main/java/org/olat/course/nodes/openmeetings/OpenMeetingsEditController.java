@@ -31,12 +31,8 @@ import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultCon
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.OpenMeetingsCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
 
@@ -48,9 +44,8 @@ import org.olat.modules.openmeetings.model.OpenMeetingsRoom;
  */
 public class OpenMeetingsEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	public static final String PANE_TAB_VCCONFIG = "pane.tab.vcconfig";
-	private static final String[] paneKeys = { PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_VCCONFIG };
 
 	public static final String CONFIG_ROOM_NAME = "roomName";
 	public static final String CONFIG_ROOM_SIZE = "roomSize";
@@ -60,21 +55,15 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 	public static final String CONFIG_ROOM_AUDIO_ONLY = "roomAudioOnly";
 
 	private VelocityContainer editVc;
-	private ConditionEditController accessibilityCondContr;
 	private TabbedPane tabPane;
 	private OpenMeetingsEditFormController editForm;
 
 	private final OpenMeetingsCourseNode courseNode;
 
 	public OpenMeetingsEditController(UserRequest ureq, WindowControl wControl, OpenMeetingsCourseNode courseNode,
-			ICourse course, UserCourseEnvironment userCourseEnv) {
+			ICourse course) {
 		super(ureq, wControl);
 		this.courseNode = courseNode;
-
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
-		listenTo(accessibilityCondContr);
 		
 		editVc = createVelocityContainer("edit");
 
@@ -107,13 +96,7 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == editForm) { // config form action
+		if (source == editForm) { // config form action
 			if (event == Event.DONE_EVENT || event == Event.CHANGED_EVENT) {
 				OpenMeetingsRoom room = editForm.getRoom();
 				if(room != null) {
@@ -136,8 +119,6 @@ public class OpenMeetingsEditController extends ActivateableTabbableDefaultContr
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),
-				accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_VCCONFIG), editVc);
 	}
 	
