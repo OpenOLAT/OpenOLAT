@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -44,11 +45,11 @@ import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Organisation;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -103,18 +104,11 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	private static final String PACKAGE_IQ = Util.getPackageName(IQRunController.class);
 	private static final String TYPE = "iqself";
 
-	/**
-	 * Constructor to create a course node of type IMS QTI.
-	 */
 	public IQSELFCourseNode() {
 		super(TYPE);
 		updateModuleConfigDefaults(true);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		TabbableController childTabCntrllr = new IQEditController(ureq, wControl, stackPanel, course, this, euce);
@@ -122,12 +116,11 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
+	}
+
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
@@ -150,14 +143,8 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		return new NodeRunConstructionResult(ctrl);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
-		/*
-		 * first check the one click cache
-		 */
 		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
 
 		boolean isValid = getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY) != null;
@@ -188,9 +175,6 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		return sd;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
@@ -201,9 +185,6 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		return oneClickStatusCache;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		// ",false" because we do not want to be strict, but just indicate whether
@@ -212,9 +193,6 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		return re;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return true;
@@ -225,10 +203,6 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#informOnDelete(org.olat.core.gui.UserRequest,
-	 *      org.olat.course.ICourse)
-	 */
 	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		// Check if there are qtiresults for this selftest
@@ -239,9 +213,6 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#cleanupOnDelete(org.olat.course.ICourse)
-	 */
 	@Override
 	public void cleanupOnDelete(ICourse course) {
 		super.cleanupOnDelete(course);
@@ -352,10 +323,6 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		}
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.course.nodes.SelfAssessableCourseNode#getUserScoreEvaluation(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public ScoreEvaluation getUserScoreEvaluation(final UserCourseEnvironment userCourseEnv) {
 		// read score from properties save score, passed and attempts information
@@ -367,10 +334,8 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 			Boolean passed = am.getNodePassed(this, mySelf);
 			Float score = am.getNodeScore(this, mySelf);
 			Long assessmentID = am.getAssessmentID(this, mySelf);
-			// <OLATCE-374>
 			Boolean fullyAssessed = am.getNodeFullyAssessed(this, mySelf);
 			scoreEvaluation = new ScoreEvaluation(score, passed, fullyAssessed, assessmentID);
-			// </OLATCE-374>
 		} else if(referencedRepositoryEntry != null && ImsQTI21Resource.TYPE_NAME.equals(referencedRepositoryEntry.getOlatResource().getResourceableTypeName())) {
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			Identity assessedIdentity = userCourseEnv.getIdentityEnvironment().getIdentity();
@@ -401,9 +366,6 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 		return am.getNodeAttempts(this, mySelf);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.AssessableCourseNode#incrementUserAttempts(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public void incrementUserAttempts(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();

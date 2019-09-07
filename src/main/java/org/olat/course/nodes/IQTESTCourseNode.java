@@ -55,6 +55,7 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -141,6 +142,11 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 		TabbableController childTabCntrllr = new IQEditController(ureq, wControl, stackPanel, course, this, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override

@@ -36,9 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.logging.AssertException;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
@@ -66,7 +63,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String PANE_TAB_IQCONFIG_SURV = "pane.tab.iqconfig.surv";
 	public static final String PANE_TAB_IQCONFIG_SELF = "pane.tab.iqconfig.self";
 	public static final String PANE_TAB_IQCONFIG_TEST = "pane.tab.iqconfig.test";
-	public static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore"; 
 
 	/** configuration key: repository sof key reference to qti file*/
@@ -119,12 +115,10 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	public static final String CONFIG_KEY_ALLOW_RELATIVE_LINKS = "allowRelativeLinks";
 	/** configuration key: enable 'show score infos' on start page */
 	public static final String CONFIG_KEY_ENABLESCOREINFO = "enableScoreInfo";
-	//<OLATCE-982>
+	
 	public static final String CONFIG_KEY_ALLOW_SHOW_SOLUTION = "showSolution";
-	//</OLATCE-982>
-	//<OLATCE-2009>
+	
 	public static final String CONFIG_KEY_ALLOW_SUSPENSION_ALLOWED = "suspendAllowed";
-	//</OLATCE-2009>
 	/** Test in full window mode*/
 	public static final String CONFIG_FULLWINDOW = "fullwindow";
 	/** Enable manual correction */
@@ -176,7 +170,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 	private final BreadcrumbPanel stackPanel;
 	
-	private ConditionEditController accessibilityCondContr;
 	private IQConfigurationController configurationCtrl;
 	private IQLayoutConfigurationController layoutConfigurationCtrl;
 	private HighScoreEditController highScoreNodeConfigController;
@@ -195,7 +188,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
 		this.moduleConfiguration = courseNode.getModuleConfiguration();
-		//o_clusterOk by guido: save to hold reference to course inside editor
 		this.course = course;
 		this.courseNode = courseNode;
 		this.euce = euce;
@@ -203,7 +195,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 		
 		type = AssessmentInstance.QMD_ENTRY_TYPE_ASSESS;
 		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_TEST;
-		paneKeys = new String[]{paneTabIQConfiguration,PANE_TAB_ACCESSIBILITY};
+		paneKeys = new String[]{paneTabIQConfiguration};
 		// put some default values
 		if (moduleConfiguration.get(CONFIG_KEY_ENABLECANCEL) == null) {
 			moduleConfiguration.set(CONFIG_KEY_ENABLECANCEL, Boolean.FALSE);
@@ -238,7 +230,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 		type = AssessmentInstance.QMD_ENTRY_TYPE_SELF;
 		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_SELF;
-		paneKeys = new String[]{paneTabIQConfiguration,PANE_TAB_ACCESSIBILITY};
+		paneKeys = new String[]{paneTabIQConfiguration};
 		// put some default values
 		if (moduleConfiguration.get(CONFIG_KEY_ENABLECANCEL) == null) {
 			moduleConfiguration.set(CONFIG_KEY_ENABLECANCEL, Boolean.TRUE);
@@ -270,7 +262,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 		type = AssessmentInstance.QMD_ENTRY_TYPE_SURVEY;
 		this.paneTabIQConfiguration = PANE_TAB_IQCONFIG_SURV;
-		paneKeys = new String[]{paneTabIQConfiguration,PANE_TAB_ACCESSIBILITY};
+		paneKeys = new String[]{paneTabIQConfiguration};
 
 		// put some default values
 		if (moduleConfiguration.get(CONFIG_KEY_SCOREPROGRESS) == null){
@@ -292,10 +284,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 			highScoreNodeConfigController = new HighScoreEditController(ureq, getWindowControl(), moduleConfiguration);
 			listenTo(highScoreNodeConfigController);
 		}
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));		
-		listenTo(accessibilityCondContr);
 	}
 
 	@Override
@@ -305,13 +293,7 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == configurationCtrl) {
+		if (source == configurationCtrl) {
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				layoutConfigurationCtrl.updateEditController(urequest);
@@ -332,8 +314,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
-		//PANE_TAB_IQCONFIG_XXX is set during construction time
 		tabbedPane.addTab(translate(paneTabIQConfiguration), configurationCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_IQLAYOUTCONFIG), layoutConfigurationCtrl.getInitialComponent());
 		if (AssessmentInstance.QMD_ENTRY_TYPE_ASSESS.equals(type)) {
@@ -388,7 +368,6 @@ public class IQEditController extends ActivateableTabbableDefaultController impl
 
 	@Override
 	protected void doDispose() {
-    //child controllers registered with listenTo() get disposed in BasicController
 		if (previewLayoutCtr != null) {
 			previewLayoutCtr.dispose();
 			previewLayoutCtr = null;
