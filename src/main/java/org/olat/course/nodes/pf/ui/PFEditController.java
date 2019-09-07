@@ -28,14 +28,8 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.PFCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
 /**
 *
 * @author Fabian Kiefer, fabian.kiefer@frentix.com, http://www.frentix.com
@@ -44,39 +38,26 @@ import org.olat.course.tree.CourseEditorTreeModel;
 public class PFEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 	
 	private static final String PANE_TAB_CONFIGURATION = "pane.tab.configuration";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";	
-	private static final String[] paneKeys = { PANE_TAB_CONFIGURATION, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_CONFIGURATION };
 
 	private VelocityContainer configVC;
 	private PFEditFormController modConfigCtr;
 	private TabbedPane myTabbedPane;
-	private ConditionEditController accessibilityCondCtr;
-	private PFCourseNode pfNode;
-
 	
 	public PFEditController(UserRequest ureq, WindowControl wControl, 
-			PFCourseNode pfNode, ICourse course, UserCourseEnvironment euce) {
+			PFCourseNode pfNode) {
 		super(ureq, wControl);
-		this.pfNode = pfNode;
 		
 		configVC = createVelocityContainer("edit");
-		// Accessibility precondition
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		Condition accessCondition = pfNode.getPreConditionAccess();
-		accessibilityCondCtr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, pfNode));		
-		listenTo(accessibilityCondCtr);
 		
 		modConfigCtr = new PFEditFormController(ureq, wControl, pfNode);
 		listenTo(modConfigCtr);
 		configVC.put("sfeditform", modConfigCtr.getInitialComponent());		
-		
 	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondCtr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_CONFIGURATION), configVC);
 	}
 
@@ -97,13 +78,7 @@ public class PFEditController extends ActivateableTabbableDefaultController impl
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondCtr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondCtr.getCondition();
-				pfNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else 	if (source == modConfigCtr) {
+		if (source == modConfigCtr) {
 			if (Event.DONE_EVENT.equals(event)) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);	
 			}

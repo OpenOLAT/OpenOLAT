@@ -42,6 +42,7 @@ import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -71,9 +72,6 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_DATESTART = "datestart";
 	public static final String CONFIG_KEY_DATEEND = "dateend";
 
-	/**
-	 * 
-	 */
 	public static final long serialVersionUID = 1L;
 
 	public PFCourseNode() {
@@ -81,9 +79,6 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		updateModuleConfigDefaults(true);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.GenericCourseNode#updateModuleConfigDefaults(boolean)
-	 */
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		if (isNewNode) {
@@ -213,9 +208,14 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
-		PFEditController ordnerCtr = new PFEditController(ureq, wControl, this, course, euce);
+		PFEditController ordnerCtr = new PFEditController(ureq, wControl, this);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, ordnerCtr); 
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
