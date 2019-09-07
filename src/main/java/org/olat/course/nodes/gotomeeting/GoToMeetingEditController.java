@@ -22,18 +22,10 @@ package org.olat.course.nodes.gotomeeting;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.tabbedpane.TabbedPane;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
-import org.olat.course.editor.NodeEditController;
-import org.olat.course.nodes.GoToMeetingCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -43,25 +35,14 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class GoToMeetingEditController extends ActivateableTabbableDefaultController implements ControllerEventListener  {
 
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	public static final String PANE_TAB_VCCONFIG = "pane.tab.vcconfig";
-	final static String[] paneKeys = { PANE_TAB_VCCONFIG, PANE_TAB_ACCESSIBILITY };
+	final static String[] paneKeys = { PANE_TAB_VCCONFIG };
 	
-	private ConditionEditController accessibilityCondContr;
 	private TabbedPane tabPane;
 
-	private final GoToMeetingCourseNode courseNode;
-	
-	public GoToMeetingEditController(UserRequest ureq, WindowControl wControl, GoToMeetingCourseNode courseNode,
-			ICourse course, UserCourseEnvironment userCourseEnv) {
+	public GoToMeetingEditController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		this.courseNode = courseNode;
-		
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv,
-				accessCondition, AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), courseNode));
-		listenTo(accessibilityCondContr);
-		
+		// Has no configurations
 	}
 	
 	@Override
@@ -72,8 +53,6 @@ public class GoToMeetingEditController extends ActivateableTabbableDefaultContro
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),
-				accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 	}
 
 	@Override
@@ -89,16 +68,5 @@ public class GoToMeetingEditController extends ActivateableTabbableDefaultContro
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		//
-	}
-
-	@Override
-	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		}
 	}
 }
