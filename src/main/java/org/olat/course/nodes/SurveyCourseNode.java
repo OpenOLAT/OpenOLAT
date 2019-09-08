@@ -41,6 +41,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -142,9 +143,14 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		TabbableController childTabCntrllr	= new SurveyEditController(ureq, wControl, this, course, euce);
+		TabbableController childTabCntrllr	= new SurveyEditController(ureq, wControl, this, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
@@ -228,7 +234,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			RepositoryEntry re = handler.importResource(owner, rie.getInitialAuthor(), rie.getDisplayName(),
 				rie.getDescription(), false, organisation, locale, rie.importGetExportedFile(), null);
 			setEvaluationFormReference(re, getModuleConfiguration());
-			postImportCopy(course, getIdent());
+			postImportCopy(course);
 		} else {
 			removeEvaluationFormReference(getModuleConfiguration());
 		}
@@ -237,17 +243,17 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void postCopy(CourseEnvironmentMapper envMapper, Processing processType, ICourse course, ICourse sourceCrourse) {
 		super.postCopy(envMapper, processType, course, sourceCrourse);
-		postImportCopy(course, getIdent());
+		postImportCopy(course);
 	}
 	
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		CourseNode copyInstance = super.createInstanceForCopy(isNewTitle, course, author);
-		postImportCopy(course, copyInstance.getIdent());
+		postImportCopy(course);
 		return copyInstance;
 	}
 
-	private void postImportCopy(ICourse course, String nodeIdent) {
+	private void postImportCopy(ICourse course) {
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
