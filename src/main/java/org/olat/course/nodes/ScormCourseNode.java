@@ -51,6 +51,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.ZipUtil;
 import org.olat.course.ICourse;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -83,23 +84,26 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	public static final String TYPE = "scorm";
 	private static final int CURRENT_CONFIG_VERSION = 5;
 	
-
 	private static final String CONFIG_RAW_CONTENT = "rawcontent";
 	private static final String CONFIG_HEIGHT = "height";	
 	private final static String CONFIG_HEIGHT_AUTO = "auto";
 	
 	public ScormCourseNode() {
 		super(TYPE);
-		// init default values
 		updateModuleConfigDefaults(true);
 	}
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		ScormEditController childTabCntrllr = new ScormEditController(this, ureq, wControl, course, euce);
+		ScormEditController childTabCntrllr = new ScormEditController(this, ureq, wControl, course);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
@@ -184,7 +188,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 			config.set(CONFIG_HEIGHT, "680");
 			config.set(NodeEditController.CONFIG_CONTENT_ENCODING, NodeEditController.CONFIG_CONTENT_ENCODING_AUTO);	
 			config.set(NodeEditController.CONFIG_JS_ENCODING, NodeEditController.CONFIG_JS_ENCODING_AUTO);	
-			//fxdiff FXOLAT-116: SCORM improvements
 			config.setBooleanEntry(ScormEditController.CONFIG_FULLWINDOW, true);
 			config.setBooleanEntry(ScormEditController.CONFIG_CLOSE_ON_FINISH, false);
 			config.setBooleanEntry(ScormEditController.CONFIG_ADVANCESCORE, true);
@@ -216,7 +219,6 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 				
 				if (version == 3) {
 					version = 4;
-					//fxdiff FXOLAT-116: SCORM improvements
 					config.setBooleanEntry(ScormEditController.CONFIG_FULLWINDOW, false);
 					config.setBooleanEntry(ScormEditController.CONFIG_CLOSE_ON_FINISH, false);
 					config.setBooleanEntry(ScormEditController.CONFIG_ADVANCESCORE, false);

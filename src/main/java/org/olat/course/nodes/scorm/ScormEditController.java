@@ -54,13 +54,9 @@ import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.ScormCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.fileresource.types.ScormCPFileResource;
 import org.olat.modules.ModuleConfiguration;
@@ -84,10 +80,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class ScormEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_CPCONFIG = "pane.tab.cpconfig";
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_DELIVERY = "pane.tab.delivery";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
-
 
 	private static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "reporef";
 	public static final String CONFIG_SHOWMENU = "showmenu";
@@ -103,21 +97,18 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	public static final String CONFIG_FULLWINDOW = "fullwindow";
 	public static final String CONFIG_CLOSE_ON_FINISH = "CLOSEONFINISH";
 	
-	// <OLATCE-289>
 	public static final String CONFIG_MAXATTEMPTS = "attempts";
 	public static final String CONFIG_ADVANCESCORE = "advancescore";
 	public static final String CONFIG_ATTEMPTSDEPENDONSCORE = "scoreattampts";
-	// </OLATCE-289>
 
 	private static final String VC_CHOSENCP = "chosencp";
 
-	private static final String[] paneKeys = { PANE_TAB_CPCONFIG, PANE_TAB_ACCESSIBILITY };
+	private static final String[] paneKeys = { PANE_TAB_CPCONFIG };
 
 	// NLS support:
 	
 	private static final String NLS_ERROR_CPREPOENTRYMISSING = "error.cprepoentrymissing";
 	private static final String NLS_NO_CP_CHOSEN = "no.cp.chosen";
-	private static final String NLS_CONDITION_ACCESSIBILITY_TITLE = "condition.accessibility.title";
 	
 	private Panel main;
 	private VelocityContainer cpConfigurationVc;
@@ -126,7 +117,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	private ReferencableEntriesSearchController searchController;
 	private CloseableModalController cmc;
 	
-	private ConditionEditController accessibilityCondContr;
 	private DeliveryOptionsConfigurationController deliveryOptionsCtrl;
 	private ScormCourseNode scormNode;
 	private HighScoreEditController highScoreNodeConfigController;
@@ -144,16 +134,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	@Autowired
 	private ScormMainManager scormMainManager;
 
-	/**
-	 * @param cpNode CourseNode
-	 * @param ureq
-	 * @param wControl
-	 * @param course Course Interface
-	 * @param euce User course environment
-	 */
-	public ScormEditController(ScormCourseNode scormNode, UserRequest ureq, WindowControl wControl, ICourse course, UserCourseEnvironment euce) {
+	public ScormEditController(ScormCourseNode scormNode, UserRequest ureq, WindowControl wControl, ICourse course) {
 		super(ureq, wControl);
-		//o_clusterOk by guido: save to hold reference to course inside editor
 		this.course = course;
 		this.scormNode = scormNode;
 		this.config = scormNode.getModuleConfiguration();
@@ -200,7 +182,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		boolean showNavButtons = config.getBooleanSafe(CONFIG_SHOWNAVBUTTONS, true);
 		boolean skipLaunchPage = config.getBooleanSafe(CONFIG_SKIPLAUNCHPAGE,false);
 		
-		// <OLATCE-289>
 		boolean assessable = config.getBooleanSafe(CONFIG_ISASSESSABLE, true);
 		String assessableType = null;
 		if(assessable) {
@@ -209,7 +190,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		boolean attemptsDependOnScore = config.getBooleanSafe(CONFIG_ATTEMPTSDEPENDONSCORE, true);
 		int maxAttempts = config.getIntegerSafe(CONFIG_MAXATTEMPTS, 0);
 		boolean advanceScore = config.getBooleanSafe(CONFIG_ADVANCESCORE, true);
-		// </OLATCE-289>
 		int cutvalue = config.getIntegerSafe(CONFIG_CUTVALUE, 0);
 		boolean fullWindow = config.getBooleanSafe(CONFIG_FULLWINDOW, true);
 		boolean closeOnFinish = config.getBooleanSafe(CONFIG_CLOSE_ON_FINISH, false);
@@ -219,13 +199,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				closeOnFinish, maxAttempts, advanceScore, attemptsDependOnScore);
 		listenTo(scorevarform);
 		cpConfigurationVc.put("scorevarform", scorevarform.getInitialComponent());
-
-		// Accessibility precondition
-		Condition accessCondition = scormNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, 
-				accessCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), scormNode));		
-		listenTo(accessibilityCondContr);
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CONFIG_DELIVERY_OPTIONS);
 		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, "Knowledge Transfer#_scorm_layout" , parentConfig);
@@ -298,12 +271,6 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 				}
 				// else cancelled repo search
 			}
-		} else if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				scormNode.setPreConditionAccess(cond);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
 		} else if (source == scorevarform) {
 			if (event == Event.DONE_EVENT) {
 				//save form-values to config
@@ -343,12 +310,9 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		myTabbedPane.setEnabled(5, sf);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
 		tabbedPane.addTab(translate(PANE_TAB_CPCONFIG), main); // the choose learning content tab
 		tabbedPane.addTab(translate(PANE_TAB_DELIVERY), deliveryOptionsCtrl.getInitialComponent());
 		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());
@@ -390,25 +354,21 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		moduleConfiguration.set(CONFIG_KEY_REPOSITORY_SOFTKEY, re.getSoftkey());
 	}
 
-	/**
-	 * @param moduleConfiguration
-	 * @return boolean
-	 */
 	public static boolean isModuleConfigValid(ModuleConfiguration moduleConfiguration) {
 		return (moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
     //child controllers registered with listenTo() get disposed in BasicController
 	}
 
+	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
+	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
 	}
@@ -467,9 +427,6 @@ class VarForm extends FormBasicController {
 		updateUI();
 	}
 
-	/**
-	 * @return
-	 */
 	public int getCutValue() {
 		String val = cutValueEl.getValue();
 		if(StringHelper.containsNonWhitespace(val) && StringHelper.isLong(val)) {
