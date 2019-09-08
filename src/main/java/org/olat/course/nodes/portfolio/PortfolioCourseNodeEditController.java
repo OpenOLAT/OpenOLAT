@@ -31,17 +31,13 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.auditing.UserNodeAuditManager;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.highscore.ui.HighScoreEditController;
 import org.olat.course.nodes.MSCourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
 import org.olat.course.nodes.ms.MSEditFormController;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 import org.olat.repository.RepositoryEntry;
@@ -51,7 +47,7 @@ import org.olat.repository.RepositoryEntry;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class PortfolioCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
+	
 	public static final String PANE_TAB_CONFIG = "pane.tab.portfolio_config";
 	public static final String PANE_TAB_SCORING = "pane.tab.portfolio_scoring";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
@@ -68,7 +64,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	
 	private boolean hasLogEntries;
 	private ModuleConfiguration config;
-	private ConditionEditController accessibilityCondContr;
 	private PortfolioCourseNode courseNode;
 	
 	public PortfolioCourseNodeEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, PortfolioCourseNode node,
@@ -88,13 +83,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		configContent = createVelocityContainer("edit");
 		configContent.put("configForm", configForm.getInitialComponent());
 		configContent.put("textForm", textForm.getInitialComponent());
-
-		//Accessibility precondition
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		Condition accessCondition = node.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, node));		
-		listenTo(accessibilityCondContr);
 		
 		//highscore
 		highScoreNodeConfigController = new HighScoreEditController(ureq, wControl, config);
@@ -116,10 +104,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		//
 	}
 	
-	/**
-	 * @param moduleConfiguration
-	 * @return boolean
-	 */
 	public static boolean isModuleConfigValid(ModuleConfiguration moduleConfiguration) {
 		return (moduleConfiguration.get(PortfolioCourseNodeConfiguration.MAP_KEY) != null)
 				|| (moduleConfiguration.get(PortfolioCourseNodeConfiguration.REPO_SOFT_KEY) != null);
@@ -132,13 +116,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == configForm) {
+		if (source == configForm) {
 			if (event == Event.DONE_EVENT) {
 				configForm.getUpdatedConfig();
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
@@ -181,7 +159,6 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(PANE_TAB_ACCESSIBILITY)));
 		tabbedPane.addTab(translate(PANE_TAB_CONFIG), configContent);
 		tabbedPane.addTab(translate(PANE_TAB_SCORING), scoringContent);
 		tabbedPane.addTab(translate(PANE_TAB_HIGHSCORE) , highScoreNodeConfigController.getInitialComponent());

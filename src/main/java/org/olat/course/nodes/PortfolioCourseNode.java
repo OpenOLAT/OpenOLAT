@@ -45,6 +45,7 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -136,13 +137,17 @@ public class PortfolioCourseNode extends AbstractAccessableCourseNode {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
+	}
 	
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
 		updateModuleConfigDefaults(false);
 		Controller controller;
-		// OO-136 : do not allow guests to access portfolio task
 		Roles roles = ureq.getUserSession().getRoles();
 		if (roles.isGuestOnly()) {
 			Translator trans =  Util.createPackageTranslator(PortfolioCourseNode.class, ureq.getLocale());
