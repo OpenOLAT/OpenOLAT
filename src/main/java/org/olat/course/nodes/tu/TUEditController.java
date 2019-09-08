@@ -39,14 +39,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.TUCourseNode;
 import org.olat.course.run.preview.PreviewConfigHelper;
-import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.tu.IframeTunnelController;
 
@@ -62,9 +57,8 @@ import org.olat.modules.tu.IframeTunnelController;
 public class TUEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	public static final String PANE_TAB_TUCONFIG = "pane.tab.tuconfig";
-	public static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	
-	private static final String[] paneKeys = {PANE_TAB_TUCONFIG, PANE_TAB_ACCESSIBILITY};
+	private static final String[] paneKeys = {PANE_TAB_TUCONFIG};
 
 	private ModuleConfiguration config;	
 	private VelocityContainer myContent;
@@ -72,23 +66,13 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 
 	private TUConfigForm tuConfigForm;	
 	private TUCourseNode courseNode;
-	private ConditionEditController accessibilityCondContr;
 	private TabbedPane myTabbedPane;
 	private LayoutMain3ColsController previewLayoutCtr;
 	private Link previewButton;
 	private ICourse course; //used only for preview of the current node
 
-
-	/**
-	 * Constructor for tunneling editor controller 
-	 * @param config The node module configuration
-	 * @param ureq The user request
-	 * @param wControl The window controller
-	 * @param tuCourseNode The current single page course node
-	 * @param course
-	 */
 	public TUEditController(ModuleConfiguration config, UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
-			TUCourseNode tuCourseNode, ICourse course, UserCourseEnvironment euce) {
+			TUCourseNode tuCourseNode, ICourse course) {
 		super(ureq, wControl);
 		
 		this.config = config;
@@ -104,22 +88,13 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 		listenTo(tuConfigForm);
 		myContent.put("tuConfigForm", tuConfigForm.getInitialComponent());
 
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		//Accessibility precondition
-		Condition accessCondition = courseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, getWindowControl(), euce, accessCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, tuCourseNode));		
-		listenTo(accessibilityCondContr);
-
 		// Enable preview button only if node configuration is valid
 		if (!(tuCourseNode.isConfigValid().isError())) myContent.contextPut("showPreviewButton", Boolean.TRUE);
 		else myContent.contextPut("showPreviewButton", Boolean.FALSE);
 		
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == previewButton) { // those must be links
 			Controller tunnelRunCtr;
@@ -135,20 +110,10 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == tuConfigForm) {
-			if (event == Event.CANCELLED_EVENT) {
-				// do nothing
-			} else if (event == Event.DONE_EVENT) {
+		if (source == tuConfigForm) {
+			if (event == Event.DONE_EVENT) {
 				config = tuConfigForm.getUpdatedConfig();
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				// form valid -> node config valid -> show preview button
@@ -157,32 +122,26 @@ public class TUEditController extends ActivateableTabbableDefaultController impl
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_TUCONFIG), myContent);
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
-    //child controllers registered with listenTo() get disposed in BasicController
 		if (previewLayoutCtr != null) {
 			previewLayoutCtr.dispose();
 			previewLayoutCtr = null;
 		}
 	}
 
-
+	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
+	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
 	}
