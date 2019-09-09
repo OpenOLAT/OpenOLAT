@@ -39,7 +39,7 @@ import org.olat.group.ui.main.BusinessGroupListFlexiTableModel.Cols;
  *
  */
 public abstract class AbstractStandardBusinessGroupListController extends AbstractBusinessGroupListController {
-	
+
 	public AbstractStandardBusinessGroupListController(UserRequest ureq, WindowControl wControl, String page, String prefsKey) {
 		super(ureq, wControl, page, prefsKey);
 	}
@@ -74,6 +74,8 @@ public abstract class AbstractStandardBusinessGroupListController extends Abstra
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.accessTypes.i18n(), Cols.accessTypes.ordinal(),
 				true, Cols.accessTypes.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGAccessControlledCellRenderer()));
 		//launch dates
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.createionDate.i18n(), Cols.createionDate.ordinal(),
+				true, Cols.createionDate.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.firstTime.i18n(), Cols.firstTime.ordinal(),
 				true, Cols.firstTime.name(), FlexiColumnModel.ALIGNMENT_LEFT, new DateFlexiCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.lastTime.i18n(), Cols.lastTime.ordinal(),
@@ -83,6 +85,24 @@ public abstract class AbstractStandardBusinessGroupListController extends Abstra
 		//roles
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.role.i18n(), Cols.role.ordinal(),
 				true, Cols.role.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGRoleCellRenderer(getLocale())));
+		
+		DefaultFlexiColumnModel tutorColumnModel = new DefaultFlexiColumnModel(false, Cols.tutorsCount.i18n(),
+				Cols.tutorsCount.ordinal(), true, Cols.tutorsCount.name());
+		tutorColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		tutorColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(tutorColumnModel);
+		
+		DefaultFlexiColumnModel participantsColumnModel = new DefaultFlexiColumnModel(false,
+				Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(), true, Cols.participantsCount.name());
+		participantsColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		participantsColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(participantsColumnModel);
+		
+		DefaultFlexiColumnModel waitingListColumnModel = new DefaultFlexiColumnModel(false,
+				Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(), true, Cols.waitingListCount.name());
+		waitingListColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		waitingListColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(waitingListColumnModel);
 		
 		//actions
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.allowLeave.i18n(), Cols.allowLeave.ordinal(), TABLE_ACTION_LEAVE,

@@ -80,15 +80,30 @@ public abstract class AbstractSelectBusinessGroupListController extends Abstract
 				true, Cols.resources.name(), FlexiColumnModel.ALIGNMENT_LEFT, new BGResourcesCellRenderer(flc)));
 
 		//stats
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.tutorsCount.i18n(), Cols.tutorsCount.ordinal(),
-				true, Cols.tutorsCount.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(),
-				true, Cols.participantsCount.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.freePlaces.i18n(), Cols.freePlaces.ordinal(),
-				true, Cols.freePlaces.name(), FlexiColumnModel.ALIGNMENT_LEFT, new TextFlexiCellRenderer(EscapeMode.none)));
-		//free places = max participant - num of participant - num pending
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(),
-				true, Cols.waitingListCount.name()));
+		DefaultFlexiColumnModel tutorColumnModel = new DefaultFlexiColumnModel(true, Cols.tutorsCount.i18n(),
+				Cols.tutorsCount.ordinal(), true, Cols.tutorsCount.name());
+		tutorColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		tutorColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(tutorColumnModel);
+		
+		DefaultFlexiColumnModel participantsColumnModel = new DefaultFlexiColumnModel(true,
+				Cols.participantsCount.i18n(), Cols.participantsCount.ordinal(), true, Cols.participantsCount.name());
+		participantsColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		participantsColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(participantsColumnModel);
+		
+		DefaultFlexiColumnModel freePlacesColumnModel = new DefaultFlexiColumnModel(true, Cols.freePlaces.i18n(),
+				Cols.freePlaces.ordinal(), true, Cols.freePlaces.name(), FlexiColumnModel.ALIGNMENT_LEFT,
+				new TextFlexiCellRenderer(EscapeMode.none));
+		freePlacesColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		freePlacesColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(freePlacesColumnModel);
+		
+		DefaultFlexiColumnModel waitingListColumnModel = new DefaultFlexiColumnModel(true,
+				Cols.waitingListCount.i18n(), Cols.waitingListCount.ordinal(), true, Cols.waitingListCount.name());
+		waitingListColumnModel.setAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		waitingListColumnModel.setHeaderAlignment(FlexiColumnModel.ALIGNMENT_RIGHT);
+		columnsModel.addFlexiColumnModel(waitingListColumnModel);
 		
 		//actions
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), TABLE_ACTION_SELECT));
