@@ -90,6 +90,11 @@ public class TransientIdentity implements Identity, User {
 		return properties.get(UserConstants.INSTITUTIONALEMAIL);
 	}
 
+	@Override
+	public String getSmsTelMobile() {
+		return properties.get(UserConstants.SMSTELMOBILE);
+	}
+
 	public String getPassword() {
 		return password;
 	}

@@ -280,6 +280,11 @@ public class OnlyOfficeServiceImpl implements OnlyOfficeService {
 	}
 
 	@Override
+	public boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity) {
+		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.collaboration, LOCK_APP_NAME);
+	}
+
+	@Override
 	public LockResult lock(VFSLeaf vfsLeaf, Identity identity) {
 		LockResult lock = lockManager.lock(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP_NAME);
 		log.debug("Locked file. File name: " + vfsLeaf.getName() + ", Identity: " + identity);

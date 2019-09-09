@@ -42,6 +42,7 @@ public abstract class QualityUIContextsBuilder {
 	
 	protected List<Attribute> attributes = new ArrayList<>();
 	protected boolean alwaysEvenKeyValues;
+	protected boolean curriculumElementsHierarchy;
 	
 	public QualityUIContextsBuilder addAttribute(Attribute attribute) {
 		attributes.add(attribute);
@@ -55,6 +56,11 @@ public abstract class QualityUIContextsBuilder {
 	
 	public QualityUIContextsBuilder withAlwaysEvenKeyValues() {
 		alwaysEvenKeyValues = true;
+		return this;
+	}
+	
+	public QualityUIContextsBuilder withCurriculumElementsHierarchy() {
+		curriculumElementsHierarchy = true;
 		return this;
 	}
 	

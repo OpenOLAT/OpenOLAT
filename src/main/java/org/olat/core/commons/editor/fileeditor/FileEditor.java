@@ -26,6 +26,7 @@ import java.util.Locale;
 import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -90,6 +91,14 @@ public class FileEditor implements DocEditor {
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity, Mode mode) {
 		if (Mode.EDIT.equals(mode)) {
 			return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.vfs, null);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity, Mode mode) {
+		if (Mode.EDIT.equals(mode)) {
+			return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.vfs, null);
 		}
 		return false;
 	}

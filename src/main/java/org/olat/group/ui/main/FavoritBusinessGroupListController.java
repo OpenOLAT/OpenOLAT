@@ -30,7 +30,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.group.BusinessGroupMembership;
 import org.olat.group.model.BusinessGroupQueryParams;
-import org.olat.group.model.BusinessGroupRow;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 
 /**
  * 
@@ -72,9 +72,9 @@ public class FavoritBusinessGroupListController extends AbstractStandardBusiness
 
 	@Override
 	protected List<BGTableItem> searchTableItems(BusinessGroupQueryParams params) {
-		List<BusinessGroupRow> rows = businessGroupService.findBusinessGroupsWithMemberships(params, getIdentity());
+		List<StatisticsBusinessGroupRow> rows = businessGroupService.findBusinessGroupsWithMemberships(params, getIdentity());
 		List<BGTableItem> items = new ArrayList<>(rows.size());
-		for(BusinessGroupRow row:rows) {
+		for(StatisticsBusinessGroupRow row:rows) {
 			BusinessGroupMembership membership = row.getMember();
 			Boolean allowLeave =  membership != null;
 			Boolean allowDelete = isAdmin() ? Boolean.TRUE : (membership == null ? null : new Boolean(membership.isOwner()));
@@ -83,6 +83,10 @@ public class FavoritBusinessGroupListController extends AbstractStandardBusiness
 			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
 			
 			BGTableItem item = new BGTableItem(row, markLink, allowLeave, allowDelete);
+			item.setNumOfOwners(row.getNumOfCoaches());
+			item.setNumOfParticipants(row.getNumOfParticipants());
+			item.setNumWaiting(row.getNumWaiting());
+			item.setNumOfPendings(row.getNumPending());
 			items.add(item);
 		}
 		return items;

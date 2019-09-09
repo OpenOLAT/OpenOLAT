@@ -106,6 +106,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	
 	private static final Logger log = Tracing.createLoggerFor(VFSRepositoryServiceImpl.class);
 	private final OLATResourceable fileSizeSubscription = OresHelper.createOLATResourceableType("UpdateFileSizeAsync");
+	private final OLATResourceable incrementFileDownload = OresHelper.createOLATResourceableType("IncrementFileDownloadAsync");
 	private static final String CANONICAL_ROOT_REL_PATH = "/";
 	
 	@Autowired
@@ -138,13 +139,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, fileSizeSubscription);
+		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, incrementFileDownload);
 	}
 
 	@Override
 	public void event(Event event) {
 		if(event instanceof AsyncFileSizeUpdateEvent) {
 			processFileSizeUpdateEvent((AsyncFileSizeUpdateEvent)event);
-		}	
+		} else if(event instanceof AsyncIncrementFileDownloadEvent) {
+			processIncrementFileDownnload((AsyncIncrementFileDownloadEvent)event);
+		}
 	}
 	
 	private void processFileSizeUpdateEvent(AsyncFileSizeUpdateEvent event) {
@@ -157,6 +161,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			} catch (Exception e) {
 				log.error("Cannot update file size of: " + event.getRelativePath() + " " + event.getFilename(), e);
 			}
+		}
+	}
+	
+	private void processIncrementFileDownnload(AsyncIncrementFileDownloadEvent event) {
+		try {
+			metadataDao.increaseDownloadCount(event.getRelativePath(), event.getFilename());
+			dbInstance.commit();
+		} catch (Exception e) {
+			log.error("Cannot increment file downloads of: " + event.getRelativePath() + " " + event.getFilename(), e);
 		}
 	}
 	
@@ -492,7 +505,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public void increaseDownloadCount(VFSLeaf item) {
 		String relPath = getContainerRelativePath(item);
 		if(StringHelper.containsNonWhitespace(relPath)) {
-			metadataDao.increaseDownloadCount(relPath, item.getName());
+			AsyncIncrementFileDownloadEvent event = new AsyncIncrementFileDownloadEvent(relPath, item.getName());
+			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, incrementFileDownload);
 		}
 	}
 	

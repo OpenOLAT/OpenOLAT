@@ -64,6 +64,8 @@ public interface Office365Service {
 	boolean isLockNeeded(Mode mode);
 
 	boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity);
+	
+	boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity);
 
 	String getLockToken(VFSLeaf vfsLeaf);
 

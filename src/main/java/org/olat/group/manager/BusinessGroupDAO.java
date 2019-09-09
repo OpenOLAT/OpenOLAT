@@ -721,15 +721,21 @@ public class BusinessGroupDAO {
 		return dbq;
 	}
 	
-	/**
-	 * 	
-	 * @param params
-	 * @param identity
-	 * @return
-	 */
-	public List<BusinessGroupRow> searchBusinessGroupsWithMemberships(BusinessGroupQueryParams params, IdentityRef identity) {
+	public List<StatisticsBusinessGroupRow> searchBusinessGroupsWithMemberships(BusinessGroupQueryParams params, IdentityRef identity) {
 	    StringBuilder sm = new StringBuilder();
-		sm.append("select memberships, bgi");
+		sm.append("select memberships, bgi,")
+		  .append(" (select count(nCoaches.key) from bgroupmember as nCoaches ")
+		  .append("  where nCoaches.group.key=bgi.baseGroup.key and nCoaches.role='").append(GroupRoles.coach.name()).append("'")
+		  .append(" ) as numOfCoaches,")
+		  .append(" (select count(nParticipants.key) from bgroupmember as nParticipants ")
+		  .append("  where nParticipants.group.key=bgi.baseGroup.key and nParticipants.role='").append(GroupRoles.participant.name()).append("'")
+		  .append(" ) as numOfParticipants,")
+		  .append(" (select count(nWaiting.key) from bgroupmember as nWaiting ")
+		  .append("  where bgi.waitingListEnabled=true and nWaiting.group.key=bgi.baseGroup.key and nWaiting.role='").append(GroupRoles.waiting.name()).append("'")
+		  .append(" ) as numWaiting,")
+		  .append(" (select count(reservation.key) from resourcereservation as reservation ")
+		  .append("  where reservation.resource.key=bgi.resource.key")
+		  .append(" ) as numOfReservations");
 		appendMarkedSubQuery(sm, params);
 		sm.append(" from businessgrouptosearch as bgi ")
 		  .append(" inner join fetch bgi.resource as bgResource ")
@@ -741,23 +747,26 @@ public class BusinessGroupDAO {
 		filterBusinessGroupToSearchParameters(objectsQuery, params, identity, true);
 		
 		List<Object[]> objects = objectsQuery.getResultList();
-		List<BusinessGroupRow> groups = new ArrayList<>(objects.size());
-		Map<Long,BusinessGroupRow> keyToGroup = new HashMap<>();
-		Map<Long,BusinessGroupRow> resourceKeyToGroup = new HashMap<>();
+		List<StatisticsBusinessGroupRow> groups = new ArrayList<>(objects.size());
+		Map<Long,StatisticsBusinessGroupRow> keyToGroup = new HashMap<>();
+		Map<Long,StatisticsBusinessGroupRow> resourceKeyToGroup = new HashMap<>();
 		for(Object[] object:objects) {
 			BusinessGroupToSearch businessGroup = (BusinessGroupToSearch)object[1];
+			Number numOfCoaches = (Number)object[2];
+			Number numOfParticipants = (Number)object[3];
+			Number numWaiting = (Number)object[4];
+			Number numPending = (Number)object[5];
+			Number numOfMarks = (Number)object[6];
 			
-			BusinessGroupRow row;
+			StatisticsBusinessGroupRow row;
 			if(keyToGroup.containsKey(businessGroup.getKey())) {
 				row = keyToGroup.get(businessGroup.getKey());
 			} else {
-				row = new BusinessGroupRow(businessGroup);
+				row = new StatisticsBusinessGroupRow(businessGroup, numOfCoaches, numOfParticipants, numWaiting, numPending);
 				groups.add(row);
 				keyToGroup.put(businessGroup.getKey(), row);
 				resourceKeyToGroup.put(businessGroup.getResource().getKey(), row);
 			}
-
-			Number numOfMarks = (Number)object[2];
 			row.setMarked(numOfMarks == null ? false : numOfMarks.intValue() > 0);
 			addMembershipToRow(row, (GroupMembershipImpl)object[0]);
 		}
