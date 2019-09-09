@@ -531,15 +531,16 @@ div.o_assessment_mode_row {
 		border: none;
 		border-radius: 0;
 		box-shadow: none;
+		background: none;
 	}
 	.btn-primary {
 		color: #000;
 		font-size: ceil(($font-size-base * 1.7));
-		background-color: transparent;
+		background: none;
 	}
 	.btn-default, .btn-default:hover, .btn-default:active, .btn-default:focus {
 		color: $o-content-link-color;
-		background-color: transparent;
+		background: none;
 	}
 	.o_segment_separator {
 		color: #000;
