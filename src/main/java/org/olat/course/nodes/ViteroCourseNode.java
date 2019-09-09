@@ -36,6 +36,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -87,6 +88,11 @@ public class ViteroCourseNode extends AbstractAccessableCourseNode {
 				childTabCntrllr);
 		nodeEditCtr.addControllerListener(childTabCntrllr);
 		return nodeEditCtr;
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
