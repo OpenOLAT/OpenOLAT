@@ -343,6 +343,14 @@ public class UserImpl implements Persistable, User {
 		this.institutionalEmail = institutionalEmail;
 	}
 	
+	public String getSmsTelMobile() {
+		return smsTelMobile;
+	}
+
+	public void setSmsTelMobile(String smsTelMobile) {
+		this.smsTelMobile = smsTelMobile;
+	}
+
 	public boolean isWebdav() {
 		return webdav;
 	}
