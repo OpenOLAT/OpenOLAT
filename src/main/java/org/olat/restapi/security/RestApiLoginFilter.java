@@ -37,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.user.delete.service.UserDeletionManager;
 import org.olat.basesecurity.AuthHelper;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -47,7 +48,6 @@ import org.olat.core.gui.UserRequestImpl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.util.SessionInfo;
@@ -443,6 +443,9 @@ public class RestApiLoginFilter implements Filter {
 			urls.add(context + "/ping");
 			urls.add(context + "/openmeetings");
 			urls.add(context + "/system");
+			urls.add(context + "/collabora");
+			urls.add(context + "/onlyoffice");
+			urls.add(context + "/office365");
 			alwaysEnabledUrls = urls;
 		}
 		return alwaysEnabledUrls;
