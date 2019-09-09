@@ -27,6 +27,7 @@ import org.olat.core.commons.services.doceditor.DocEditor;
 import org.olat.core.commons.services.doceditor.DocEditor.Mode;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.DocumentEditorService;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.FileUtils;
@@ -87,6 +88,16 @@ public class DocumentEditorServiceImpl implements DocumentEditorService {
 				.isPresent();
 	}
 	
-	
+	@Override
+	public boolean hasEditor(Identity identity, Roles roles, VFSLeaf vfsLeaf, VFSMetadata metadata, DocEditorSecurityCallback secCallback) {
+		String suffix = FileUtils.getFileSuffix(vfsLeaf.getName());
+		return editors.stream()
+				.filter(DocEditor::isEnable)
+				.filter(editor -> editor.isEnabledFor(identity, roles))
+				.filter(editor -> editor.isSupportingFormat(suffix, secCallback.getMode(), secCallback.hasMeta()))
+				.filter(editor -> !editor.isLockedForMe(vfsLeaf, metadata, identity, secCallback.getMode()))
+				.findFirst()
+				.isPresent();
+	}
 
 }

@@ -21,6 +21,7 @@ package org.olat.core.commons.services.doceditor;
 
 import java.util.Locale;
 
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -74,6 +75,8 @@ public interface DocEditor {
 	 * @return true if the file is locked and therefore the identity is not able to edit the vfsLeaf with this editor.
 	 */
 	boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity, Mode mode);
+	
+	boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity, Mode mode);
 	
 	Controller getRunController(UserRequest ureq, WindowControl wControl, Identity identity, VFSLeaf vfsLeaf,
 			DocEditorSecurityCallback securityCallback, DocEditorConfigs configs);

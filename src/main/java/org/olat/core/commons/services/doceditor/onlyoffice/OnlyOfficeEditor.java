@@ -26,6 +26,7 @@ import org.olat.core.commons.services.doceditor.DocEditorConfigs;
 import org.olat.core.commons.services.doceditor.DocEditorIdentityService;
 import org.olat.core.commons.services.doceditor.DocEditorSecurityCallback;
 import org.olat.core.commons.services.doceditor.onlyoffice.ui.OnlyOfficeEditorController;
+import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -95,6 +96,14 @@ public class OnlyOfficeEditor implements DocEditor {
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity, Mode mode) {
 		if (onlyOfficeService.isLockNeeded(mode)) {
 			return onlyOfficeService.isLockedForMe(vfsLeaf, identity);
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity, Mode mode) {
+		if (onlyOfficeService.isLockNeeded(mode)) {
+			return onlyOfficeService.isLockedForMe(vfsLeaf, metadata, identity);
 		}
 		return false;
 	}
