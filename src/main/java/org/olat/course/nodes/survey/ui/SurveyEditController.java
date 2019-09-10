@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.survey;
+package org.olat.course.nodes.survey.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -27,8 +27,8 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
 import org.olat.course.nodes.SurveyCourseNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -46,10 +46,10 @@ public class SurveyEditController extends ActivateableTabbableDefaultController 
 	private TabbedPane tabPane;
 	
 	public SurveyEditController(UserRequest ureq, WindowControl wControl, SurveyCourseNode surveyCourseNode,
-			ICourse course) {
+			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		
-		surveyConfigController = new SurveyConfigController(ureq, wControl, course, surveyCourseNode);
+		surveyConfigController = new SurveyConfigController(ureq, wControl, surveyCourseNode, userCourseEnv);
 		listenTo(surveyConfigController);
 	}
 

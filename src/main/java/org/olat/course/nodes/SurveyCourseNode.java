@@ -46,10 +46,10 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
-import org.olat.course.nodes.survey.SurveyEditController;
-import org.olat.course.nodes.survey.SurveyRunController;
 import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
-import org.olat.course.nodes.survey.SurveyStatisticResourceResult;
+import org.olat.course.nodes.survey.ui.SurveyEditController;
+import org.olat.course.nodes.survey.ui.SurveyRunController;
+import org.olat.course.nodes.survey.ui.SurveyStatisticResourceResult;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -142,7 +142,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		TabbableController childTabCntrllr	= new SurveyEditController(ureq, wControl, this, course);
+		TabbableController childTabCntrllr	= new SurveyEditController(ureq, wControl, this, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}

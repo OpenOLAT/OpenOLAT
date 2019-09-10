@@ -47,15 +47,15 @@ public class SurveyRunSecurityCallback {
 		this.canRunCommands = userCourseEnv.isAdmin();
 	}
 
-	boolean isGuestOnly() {
+	public boolean isGuestOnly() {
 		return guestOnly;
 	}
 
-	boolean isExecutor() {
+	public boolean isExecutor() {
 		return executor;
 	}
 
-	boolean isReportViewer() {
+	public boolean isReportViewer() {
 		return reportViewer;
 	}
 
@@ -107,15 +107,15 @@ public class SurveyRunSecurityCallback {
 		return false;
 	}
 	
-	boolean canParticipate() {
+	public boolean canParticipate() {
 		return isExecutor() && !courseReadOnly;
 	}
 	
-	boolean hasParticipated(EvaluationFormParticipation participation) {
+	public boolean hasParticipated(EvaluationFormParticipation participation) {
 		return participation != null && EvaluationFormParticipationStatus.done.equals(participation.getStatus());
 	}
 
-	boolean canExecute(EvaluationFormParticipation participation) {
+	public boolean canExecute(EvaluationFormParticipation participation) {
 		return participation != null && isExecutor() && !hasParticipated(participation);
 	}
 	
@@ -134,14 +134,12 @@ public class SurveyRunSecurityCallback {
 		return false;
 	}
 
-	boolean isReadOnly() {
+	public boolean isReadOnly() {
 		return courseReadOnly && isExecutor();
 	}
 
 	public boolean canRunCommands() {
 		return canRunCommands;
 	}
-
-
 
 }

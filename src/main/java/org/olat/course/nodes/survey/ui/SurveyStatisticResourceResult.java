@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.survey;
+package org.olat.course.nodes.survey.ui;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
@@ -30,6 +30,7 @@ import org.olat.core.gui.control.generic.messages.SimpleMessageController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.util.Util;
+import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
 import org.olat.course.statistic.StatisticResourceResult;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;

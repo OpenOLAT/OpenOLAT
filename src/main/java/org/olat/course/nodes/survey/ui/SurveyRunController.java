@@ -17,11 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.survey;
-
-import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
-
-import java.util.UUID;
+package org.olat.course.nodes.survey.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -35,20 +31,15 @@ import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
-import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
-import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.SurveyCourseNode;
+import org.olat.course.nodes.survey.SurveyManager;
+import org.olat.course.nodes.survey.SurveyRunSecurityCallback;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
-import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
-import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
+import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,24 +60,20 @@ public class SurveyRunController extends BasicController {
 	
 	private final UserCourseEnvironment userCourseEnv;
 	private final SurveyCourseNode courseNode;
-	private final OLATResourceable ores;
-	private final String subIdent;
 	private final SurveyRunSecurityCallback secCallback;
+	private final EvaluationFormSurveyIdentifier surveyIdent;
 	private EvaluationFormSurvey survey;
 	private EvaluationFormParticipation participation;
 	
 	@Autowired
-	private EvaluationFormManager evaluationFormManager;
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
+	private SurveyManager surveyManager;
 
 	public SurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			SurveyCourseNode courseNode, SurveyRunSecurityCallback secCallback) {
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
-		this.ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		this.subIdent = courseNode.getIdent();
+		this.surveyIdent = surveyManager.getSurveyIdentifier(courseNode, userCourseEnv);
 		this.secCallback = secCallback;
 
 		mainVC = createVelocityContainer("run");
@@ -104,7 +91,7 @@ public class SurveyRunController extends BasicController {
 			mainVC.contextPut("withCmds", Boolean.TRUE);
 		}
 		
-		survey = evaluationFormManager.loadSurvey(of(ores, subIdent));
+		survey = surveyManager.loadSurvey(surveyIdent);
 		doShowView(ureq);
 	}
 
@@ -127,52 +114,9 @@ public class SurveyRunController extends BasicController {
 
 	private EvaluationFormParticipation loadOrCreateParticipation(UserRequest ureq) {
 		if (secCallback.isGuestOnly()) {
-			UserSession usess = ureq.getUserSession();
-			String anonymousIdentifier = getAnonymousIdentifier(usess);
-			EvaluationFormParticipationIdentifier identifier = new EvaluationFormParticipationIdentifier("course-node", anonymousIdentifier);
-			return loadOrCreateParticipation(identifier);
+			return surveyManager.loadOrCreateGuestParticipation(survey, ureq.getUserSession());
 		}
-		return loadOrCreateParticipation(getIdentity());
-	}
-	
-	private String getAnonymousIdentifier(UserSession usess) {
-		String sessionId = usess.getSessionInfo().getSession().getId();
-		Object id = usess.getEntry(sessionId);
-		if (id instanceof String) {
-			return (String) id;
-		}
-
-		String newId = UUID.randomUUID().toString();
-		usess.putEntryInNonClearedStore(sessionId, newId);
-		return newId;
-	}
-
-	private EvaluationFormParticipation loadOrCreateParticipation(EvaluationFormParticipationIdentifier identifier) {
-		EvaluationFormParticipation loadedParticipation = evaluationFormManager.loadParticipationByIdentifier(survey, identifier);
-		if (loadedParticipation == null) {
-			loadedParticipation = evaluationFormManager.createParticipation(survey, identifier);
-			loadedParticipation.setAnonymous(true);
-			loadedParticipation = evaluationFormManager.updateParticipation(loadedParticipation);
-		}
-		return loadedParticipation;
-	}
-
-	private EvaluationFormParticipation loadOrCreateParticipation(Identity executor) {
-		EvaluationFormParticipation loadedParticipation = evaluationFormManager.loadParticipationByExecutor(survey, executor);
-		if (loadedParticipation == null) {
-			loadedParticipation = evaluationFormManager.createParticipation(survey, executor);
-			loadedParticipation.setAnonymous(true);
-			loadedParticipation = evaluationFormManager.updateParticipation(loadedParticipation);
-		}
-		return loadedParticipation;
-	}
-
-	private EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation) {
-		EvaluationFormSession session = evaluationFormManager.loadSessionByParticipation(participation);
-		if (session == null) {
-			session = evaluationFormManager.createSession(participation);
-		}
-		return session;
+		return surveyManager.loadOrCreateParticipation(survey, getIdentity());
 	}
 
 	@Override
@@ -208,20 +152,17 @@ public class SurveyRunController extends BasicController {
 	}
 
 	private void doExecutionFinished(UserRequest ureq) {
-		courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
-		courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, Double.valueOf(1),
-				AssessmentRunStatus.done, Role.user);
+		surveyManager.onExecutionFinished(courseNode, userCourseEnv);
 		doShowView(ureq);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	private void doQuickSaved() {
-		courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, AssessmentRunStatus.running,
-				Role.user);
+		surveyManager.onExecutionStarted(courseNode, userCourseEnv);
 	}
 
 	private void doConfirmDeleteAllData(UserRequest ureq) {
-		long countOfSessions = evaluationFormManager.getCountOfSessions(survey);
+		long countOfSessions = surveyManager.getCountOfSessions(survey);
 		deleteDataConfirmationCtrl = new SurveyDeleteDataConfirmationController(ureq, getWindowControl(), countOfSessions);
 		listenTo(deleteDataConfirmationCtrl);
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
@@ -231,13 +172,13 @@ public class SurveyRunController extends BasicController {
 	}
 
 	private void doDeleteAllData(UserRequest ureq) {
-		evaluationFormManager.deleteAllData(survey);
+		surveyManager.deleteAllData(survey);
 		initVelocityContainer(ureq);
 	}
 
 	private void doShowExecution(UserRequest ureq) {
 		removeAllComponents();
-		EvaluationFormSession session = loadOrCreateSesssion(participation);
+		EvaluationFormSession session = surveyManager.loadOrCreateSesssion(participation);
 		executionCtrl = new EvaluationFormExecutionController(ureq, getWindowControl(), session);
 		listenTo(executionCtrl);
 		mainVC.put("execution", executionCtrl.getInitialComponent());

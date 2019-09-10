@@ -17,9 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.survey;
-
-import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
+package org.olat.course.nodes.survey.ui;
 
 import java.io.File;
 import java.util.Collection;
@@ -41,21 +39,18 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.course.ICourse;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.SurveyCourseNode;
-import org.olat.fileresource.FileResourceManager;
+import org.olat.course.nodes.survey.SurveyManager;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.ceditor.DataStorage;
-import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.handler.EvaluationFormResource;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -101,22 +96,18 @@ public class SurveyConfigController extends FormBasicController {
 	private LayoutMain3ColsPreviewController previewCtr;
 	
 	private final ModuleConfiguration moduleConfiguration;
-	private final OLATResourceable ores;
-	private final String subIdent;
-	private EvaluationFormSurveyIdentifier surveyIdent;
+	private final EvaluationFormSurveyIdentifier surveyIdent;
 	private EvaluationFormSurvey survey;
 	
 	@Autowired
-	private EvaluationFormManager evaluationFormManager;
+	private SurveyManager surveyManager;
 
-	public SurveyConfigController(UserRequest ureq, WindowControl wControl, ICourse course,
-			SurveyCourseNode surveyCourseNode) {
+	public SurveyConfigController(UserRequest ureq, WindowControl wControl, SurveyCourseNode surveyCourseNode,
+			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		this.moduleConfiguration = surveyCourseNode.getModuleConfiguration();
-		this.ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-		this.subIdent = surveyCourseNode.getIdent();
-		this.surveyIdent = EvaluationFormSurveyIdentifier.of(ores, subIdent);
-		this.survey = evaluationFormManager.loadSurvey(surveyIdent);
+		this.surveyIdent = surveyManager.getSurveyIdentifier(surveyCourseNode, userCourseEnv);
+		this.survey = surveyManager.loadSurvey(surveyIdent);
 		initForm(ureq);
 	}
 
@@ -162,7 +153,7 @@ public class SurveyConfigController extends FormBasicController {
 	}
 
 	private void updateUI() {
-		boolean replacePossible = evaluationFormManager.isFormUpdateable(survey);
+		boolean replacePossible = surveyManager.isFormUpdateable(survey);
 		boolean hasRepoConfig = survey != null;
 		RepositoryEntry formEntry = survey != null? survey.getFormEntry(): null;
 		
@@ -237,11 +228,11 @@ public class SurveyConfigController extends FormBasicController {
 		RepositoryEntry formEntry = searchCtrl.getSelectedEntry();
 		if (formEntry != null) {
 			if (survey == null) {
-				survey = evaluationFormManager.createSurvey(surveyIdent, formEntry);
+				survey = surveyManager.createSurvey(surveyIdent, formEntry);
 			} else {
-				boolean isFormUpdateable = evaluationFormManager.isFormUpdateable(survey);
+				boolean isFormUpdateable = surveyManager.isFormUpdateable(survey);
 				if (isFormUpdateable) {
-					survey = evaluationFormManager.updateSurveyForm(survey, formEntry);
+					survey = surveyManager.updateSurveyForm(survey, formEntry);
 				} else {
 					showError("error.repo.entry.not.replaceable");
 				}
@@ -264,10 +255,8 @@ public class SurveyConfigController extends FormBasicController {
 	}
 
 	private void doPreviewEvaluationForm(UserRequest ureq) {
-		RepositoryEntry formEntry = survey.getFormEntry();
-		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(formEntry.getOlatResource()), FileResourceManager.ZIPDIR);
-		File formFile = new File(repositoryDir, FORM_XML_FILE);
-		DataStorage storage = evaluationFormManager.loadStorage(formEntry);
+		File formFile = surveyManager.getFormFile(survey);
+		DataStorage storage = surveyManager.loadStorage(survey);
 		Controller controller = new EvaluationFormExecutionController(ureq, getWindowControl(), formFile, storage);
 
 		previewCtr = new LayoutMain3ColsPreviewController(ureq, getWindowControl(), null,

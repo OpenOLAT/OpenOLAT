@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.survey;
+package org.olat.course.nodes.survey.ui;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -25,8 +25,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.course.nodes.survey.SurveyManager;
 import org.olat.modules.ceditor.DataStorage;
-import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.SessionFilter;
 import org.olat.modules.forms.SessionFilterFactory;
@@ -45,14 +45,14 @@ public class SurveyReportingController extends BasicController {
 	private final VelocityContainer mainVC;
 	
 	@Autowired
-	private EvaluationFormManager evaluationFormManager;
+	private SurveyManager surveyManager;
 
 	public SurveyReportingController(UserRequest ureq, WindowControl wControl, EvaluationFormSurvey survey) {
 		super(ureq, wControl);
 		mainVC = createVelocityContainer("reporting");
 
-		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
-		DataStorage storage = evaluationFormManager.loadStorage(survey.getFormEntry());
+		Form form = surveyManager.loadForm(survey);
+		DataStorage storage = surveyManager.loadStorage(survey);
 		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
 		EvaluationFormReportsController reportsCtrl = new EvaluationFormReportsController(ureq, wControl, form, storage, filter);
 		mainVC.put("report", reportsCtrl.getInitialComponent());

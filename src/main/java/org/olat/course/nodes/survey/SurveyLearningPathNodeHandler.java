@@ -31,6 +31,7 @@ import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController.LearningPathControllerConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SurveyCourseNode;
+import org.olat.course.nodes.survey.ui.SurveyRunController;
 import org.springframework.stereotype.Service;
 
 /**
