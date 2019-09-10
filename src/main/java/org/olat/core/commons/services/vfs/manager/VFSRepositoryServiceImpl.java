@@ -1226,10 +1226,19 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		String extension = FileUtils.getFileSuffix(originalFilename);
 		String nameOnly = originalFilename.substring(0, originalFilename.length() - extension.length() - 1);
 		String thumbnailExtension = preferedThumbnailType(extension);
-		
 		StringBuilder sb = new StringBuilder(128);
-		sb.append("._oo_th_").append(fill).append("_").append(maxWidth).append("_").append(maxHeight)
-		  .append("_").append(nameOnly).append(".").append(thumbnailExtension);
+		sb.append("._oo_th_").append(fill).append("_").append(maxWidth).append("_").append(maxHeight).append("_");
+		
+		if(nameOnly.length() + sb.length() + thumbnailExtension.length() > 230) {
+			log.info("File name too long: {}", nameOnly);
+			int maxLength = 230 - sb.length() - thumbnailExtension.length();
+			if(maxLength < 1) {
+				maxLength = 1;
+			}
+			nameOnly = nameOnly.substring(0, maxLength);
+		}
+		
+		sb.append(nameOnly).append(".").append(thumbnailExtension);
 		return sb.toString();
 	}
 	

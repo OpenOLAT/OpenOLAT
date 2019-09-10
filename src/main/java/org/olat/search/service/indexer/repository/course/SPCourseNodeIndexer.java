@@ -58,17 +58,17 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 
 	// Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
-	public final static String TYPE = "type.course.node.sp";
+	public static final String TYPE = "type.course.node.sp";
 
-	private final static String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.SPCourseNode";
-	private final static boolean indexOnlyChosenFile = false;
+	private static final String SUPPORTED_TYPE_NAME = "org.olat.course.nodes.SPCourseNode";
+	private static final boolean indexOnlyChosenFile = false;
   
 	private static final Pattern HREF_PATTERN = Pattern.compile("href=\\\"(?!http:\\/\\/|https:\\/\\/|javascript:|mailto:|tel:|\\/|:|#|\\.\\.)([^\\\"]*)\\\"", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 	private static final String HTML_SUFFIXES = "html htm xhtml xml";
 
 	@Override
 	public void doIndex(SearchResourceContext courseResourceContext, ICourse course, CourseNode courseNode, OlatFullIndexer indexWriter) throws IOException,InterruptedException  {
-		if (log.isDebugEnabled()) log.debug("Index SinglePage...");
+		log.debug("Index SinglePage...");
 
 		SearchResourceContext courseNodeResourceContext = createSearchResourceContext(courseResourceContext, courseNode, TYPE);
 		Document nodeDocument = CourseNodeDocument.createDocument(courseNodeResourceContext, courseNode);
@@ -105,8 +105,13 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 				startURI = startURI.substring(sla+1);
 				// Create new root folder from the relative folder path
 				VFSContainer newroot = (VFSContainer)courseFolderContainer.resolve(root);
-				newroot.setParentContainer(null);
-				rootContainer = newroot;
+				if(newroot == null) {
+					// configuration is correupted, last hope
+					rootContainer = courseFolderContainer;
+				} else {
+					newroot.setParentContainer(null);
+					rootContainer = newroot;
+				}
 			} else {
 				// No subpath detected, just use course base container
 				rootContainer = courseFolderContainer;				
@@ -127,7 +132,7 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 				Set<String> alreadyIndexFileNames = new HashSet<>();
 				alreadyIndexFileNames.add(chosenFile);
 				// Check if page has links to subpages and index those as well
-				indexSubPages(courseNodeResourceContext,rootContainer,indexWriter,leaf,alreadyIndexFileNames,0,filePath);
+				indexSubPages(courseNodeResourceContext, rootContainer, indexWriter, leaf, alreadyIndexFileNames, 0, filePath);
 			} else if (log.isDebugEnabled()) {
 				log.debug("Index only chosen file in SP.");
 			}
@@ -160,8 +165,8 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 				}
 				if (!alreadyIndexFileNames.contains(link)) {
 					VFSItem item = rootContainer.resolve(link);
-					if ((item != null) && (item instanceof VFSLeaf)) {
-						VFSLeaf subPageLeaf = (VFSLeaf) item;
+					if (item instanceof VFSLeaf) {
+						VFSLeaf subPageLeaf = (VFSLeaf)item;
 						if (log.isDebugEnabled())
 							log.debug("subPageLeaf=" + subPageLeaf);
 						String filePath = getPathFor(subPageLeaf);
@@ -173,17 +178,14 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 						
 						indexSubPages(courseNodeResourceContext, rootContainer, indexWriter, subPageLeaf, alreadyIndexFileNames, mySubPageLevel, newRootFilePath);
 					} else {
-						if (log.isDebugEnabled())
-							log.debug("Could not found sub-page for link=" + link);
+						log.debug("Could not found sub-page for link={}", link);
 					}
 				} else {
-					if (log.isDebugEnabled())
-						log.debug("sub-page already indexed, link=" + link);
+					log.debug("sub-page already indexed, link={}", link);
 				}
 			}
 		} else {
-			if (log.isDebugEnabled())
-				log.debug("Reach to many sub-page levels. Go not further with indexing sub-pages last leaf=" + leaf.getName());
+			log.debug("Reach to many sub-page levels. Go not further with indexing sub-pages last leaf={}", leaf);
 		}
 	}
 
@@ -224,7 +226,6 @@ public class SPCourseNodeIndexer extends LeafIndexer implements CourseNodeIndexe
 		if (dotpos < 0 || dotpos == fileName.length() - 1) {
 			return "";
 		}
-		String suffix = fileName.substring(dotpos+1).toLowerCase();
-		return suffix;
+		return fileName.substring(dotpos+1).toLowerCase();
 	}
 }

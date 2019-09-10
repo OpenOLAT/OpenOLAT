@@ -234,7 +234,7 @@ public class ImportCalendarManager {
 			}
 			calendarManager.persistCalendar(kalendar);
 		} catch (Exception e) {
-		  	log.error("Could not reload calendar from url=" + importUrl, e);
+		  	log.info("Could not reload calendar from url={}", importUrl, e);
 		}
 	}
 	
