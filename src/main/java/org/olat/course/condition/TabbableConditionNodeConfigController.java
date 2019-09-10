@@ -27,7 +27,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.core.util.Util;
-import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.editor.AccessEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.VisibilityEditController;
@@ -48,26 +48,23 @@ public class TabbableConditionNodeConfigController extends ActivateableTabbableD
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private final static String[] paneKeys = { PANE_TAB_VISIBILITY, PANE_TAB_ACCESSIBILITY };
 	
-	private final CourseNode courseNode;
 	private final VisibilityEditController visibilityCtrl;
-	private ConditionEditController accessCtrl;
+	private AccessEditController accessCtrl;
 	private TabbedPane tabPane;
 	
 	public TabbableConditionNodeConfigController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
-			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel, ConditionAccessEditConfig accessEditConfig) {
+			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel,
+			ConditionAccessEditConfig accessEditConfig) {
 		super(ureq, wControl);
-		this.courseNode = courseNode;
 		setTranslator(Util.createPackageTranslator(NodeEditController.class, getLocale(), getTranslator()));
 		
 		visibilityCtrl = new VisibilityEditController(ureq, getWindowControl(), courseNode, userCourseEnvironment,
 				editorModel);
 		listenTo(visibilityCtrl);
-		
-		if (courseNode instanceof AbstractAccessableCourseNode) {
-			Condition accessCondition = courseNode.getPreConditionAccess();
-			accessCtrl = new ConditionEditController(ureq, wControl, accessCondition,
-					AssessmentHelper.getAssessableNodes(editorModel, courseNode), userCourseEnvironment,
-					accessEditConfig.isShowPassword());
+
+		if (courseNode instanceof AbstractAccessableCourseNode && !accessEditConfig.isCustomAccessConditionController()) {
+			accessCtrl = new AccessEditController(ureq, getWindowControl(), (AbstractAccessableCourseNode) courseNode,
+					userCourseEnvironment, editorModel, accessEditConfig);
 			listenTo(accessCtrl);
 		}
 	}
@@ -77,9 +74,7 @@ public class TabbableConditionNodeConfigController extends ActivateableTabbableD
 		tabPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_VISIBILITY), visibilityCtrl.getInitialComponent());
 		if (accessCtrl != null) {
-			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),
-					accessCtrl.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
-			
+			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessCtrl.getInitialComponent());
 		}
 	}
 
@@ -99,11 +94,11 @@ public class TabbableConditionNodeConfigController extends ActivateableTabbableD
 			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == accessCtrl && event.equals(Event.CHANGED_EVENT)) {
-			Condition cond = accessCtrl.getCondition();
-			((AbstractAccessableCourseNode)courseNode).setPreConditionAccess(cond);
-			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-		}
+		} else if (source == accessCtrl) {
+			if (event == NodeEditController.NODECONFIG_CHANGED_EVENT) {
+				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
+			}
+		} 
 	}
 	
 	@Override

@@ -1,12 +1,12 @@
-<fieldset>
+<fieldset class="o_form form-horizontal o_sel_course_access_condition_form">
 	<legend>$r.contextHelpWithWrapper("General Configuration of Course Elements#_zugang")
-	$title</legend>
-	$r.render("defaultAccessConditionView")
+	$r.translate("pane.tab.accessibility")</legend>
+	$r.render("accessCondition")
 </fieldset>
 #if($renderPW)
 	<fieldset class="o_sel_course_node_password_config">
 		<legend>
 		$r.translate("password.field")</legend>
-		$r.render("pwcond")
+		$r.render("passwordCondition")
 	</fieldset>
 #end
