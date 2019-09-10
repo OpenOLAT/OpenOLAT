@@ -38,6 +38,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -138,6 +139,9 @@ public interface CourseAssessmentService {
 
 	public void updateCurrentCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentRunStatus status, Role by);
+	
+	public void updateAssessmentStatus(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			AssessmentEntryStatus status, Role by);
 
 	/**
 	 * @param courseNode

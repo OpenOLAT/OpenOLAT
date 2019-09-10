@@ -49,6 +49,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
@@ -165,6 +166,14 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.updateCurrentCompletion(courseNode, assessedIdentity, userCourseEnvironment, currentCompletion, runStatus,
 				by);
+	}
+	
+	@Override
+	public void updateAssessmentStatus(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			AssessmentEntryStatus status, Role by) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateAssessmentStatus(courseNode, identity, status, by);
 	}
 
 	@Override

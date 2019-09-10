@@ -455,6 +455,7 @@ import org.junit.runners.Suite;
 	org.olat.core.gui.components.form.flexible.impl.elements.TextElementRendererTest.class,
 	org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluatorTest.class,
 	org.olat.course.learningpath.evaluation.LinearAccessEvaluator.class,
+	org.olat.course.learningpath.manager.LearningPathNodeAccessProviderTest.class,
 	org.olat.course.nodes.st.learningpath.STDurationEvaluatorTest.class,
 	org.olat.course.nodes.st.learningpath.STLinearStatusEvaluatorTest.class,
 	org.olat.login.validation.PasswordSyntaxValidatorTest.class,
