@@ -272,6 +272,7 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			if(mainForm.validate(ureq)) {
 				mainForm.forceSubmittedAndValid();
 				doSaveResponses();
+				fireEvent(ureq, Event.CHANGED_EVENT);
 			}
 		}
 		super.formInnerEvent(ureq, source, event);

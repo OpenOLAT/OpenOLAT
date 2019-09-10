@@ -17,17 +17,24 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.assessment;
+package org.olat.course.nodes.survey;
+
+import org.olat.course.learningpath.LearningPathOnlyAssessmentHandler;
+import org.olat.course.nodes.SurveyCourseNode;
+import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 10 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum AssessmentAction {
+@Service
+public class SurveyAssessmentHandler extends LearningPathOnlyAssessmentHandler {
 
-	nodeVisited,
-	confirmed
-	
+	@Override
+	public String acceptCourseNodeType() {
+		return SurveyCourseNode.TYPE;
+	}
+
 }

@@ -40,6 +40,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -85,21 +86,35 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeV
 	}
 
 	@Override
+	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
+		return new LearningPathCourseTreeNodeBuilder(userCourseEnvironment);
+	}
+
+	@Override
 	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
 		boolean doneOnNodeStarted = getConfigs(courseNode).isDoneOnNodeVisited();
 		boolean participant = userCourseEnvironment.isParticipant();
 		if (doneOnNodeStarted && participant) {
-			AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-			Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-			am.updateAssessmentStatus(courseNode, identity, AssessmentEntryStatus.done, Role.user);
+			updateAssessmentStatusDone(courseNode, userCourseEnvironment, Role.user);
 			return true;
 		}
 		return false;
 	}
 
 	@Override
-	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
-		return new LearningPathCourseTreeNodeBuilder(userCourseEnvironment);
+	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			Double completion, AssessmentRunStatus runStatus, Role by) {
+		boolean isDoneOnCompletion = getConfigs(courseNode).isDoneOnCompletion(completion);
+		boolean isDoneOnRunStatus = getConfigs(courseNode).isDoneOnRunStatus(runStatus);
+		if (isDoneOnCompletion || isDoneOnRunStatus) {
+			updateAssessmentStatusDone(courseNode, userCourseEnvironment, by);
+		}
+	}
+
+	private void updateAssessmentStatusDone(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Role by) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateAssessmentStatus(courseNode, identity, AssessmentEntryStatus.done, by);
 	}
 
 }

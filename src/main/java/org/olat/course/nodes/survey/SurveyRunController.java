@@ -39,10 +39,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
-import org.olat.course.assessment.AssessmentManager;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -76,6 +77,8 @@ public class SurveyRunController extends BasicController {
 	
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	public SurveyRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			SurveyCourseNode courseNode, SurveyRunSecurityCallback secCallback) {
@@ -181,8 +184,12 @@ public class SurveyRunController extends BasicController {
 
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == executionCtrl && event == Event.DONE_EVENT) {
-			doPostExecution(ureq);
+		if (source == executionCtrl) {
+			if (event == Event.DONE_EVENT) {
+				doExecutionFinished(ureq);
+			} else if (event == Event.CHANGED_EVENT) {
+				doQuickSaved();
+			}
 		} else if(source == deleteDataConfirmationCtrl) {
 			if (event == Event.DONE_EVENT) {
 				doDeleteAllData(ureq);
@@ -200,11 +207,17 @@ public class SurveyRunController extends BasicController {
 		cmc = null;
 	}
 
-	private void doPostExecution(UserRequest ureq) {
-		AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-		Identity mySelf = userCourseEnv.getIdentityEnvironment().getIdentity();
-		am.incrementNodeAttempts(courseNode, mySelf, userCourseEnv, Role.auto);
+	private void doExecutionFinished(UserRequest ureq) {
+		courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
+		courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, Double.valueOf(1),
+				AssessmentRunStatus.done, Role.user);
 		doShowView(ureq);
+		fireEvent(ureq, Event.CHANGED_EVENT);
+	}
+
+	private void doQuickSaved() {
+		courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, AssessmentRunStatus.running,
+				Role.user);
 	}
 
 	private void doConfirmDeleteAllData(UserRequest ureq) {

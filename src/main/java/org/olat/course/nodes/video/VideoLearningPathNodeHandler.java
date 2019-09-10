@@ -22,7 +22,6 @@ package org.olat.course.nodes.video;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.course.assessment.AssessmentAction;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
@@ -59,7 +58,7 @@ public class VideoLearningPathNodeHandler implements LearningPathNodeHandler {
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
 		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
-				.addAssessmentAction(AssessmentAction.nodeVisited)
+				.enableNodeVisited()
 				.build();
 		return new LearningPathNodeConfigController(ureq, wControl, courseNode.getModuleConfiguration(), ctrlConfig);
 	}

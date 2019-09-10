@@ -28,6 +28,8 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.CourseTreeNodeBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * 
@@ -58,5 +60,17 @@ public interface NodeAccessService {
 			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel);
 
 	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment);
+
+	/**
+	 * Hook after the completion and the run status is updated.
+	 *
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @param completion
+	 * @param runStatus
+	 * @param by
+	 */
+	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			Double completion, AssessmentRunStatus runStatus, Role by);
 
 }

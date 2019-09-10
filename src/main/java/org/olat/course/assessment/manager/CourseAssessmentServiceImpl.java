@@ -65,7 +65,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CourseAssessmentServiceImpl implements CourseAssessmentService, NodeVisitedListener {
 	
-	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;
+	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;	
 	
 	@Autowired
 	private List<AssessmentHandler> loadedAssessmentHandlers;
@@ -160,7 +160,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	
 	@Override
 	public void updateCurrentCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			Identity identity, Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
+			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.updateCurrentCompletion(courseNode, assessedIdentity, userCourseEnvironment, currentCompletion, runStatus,

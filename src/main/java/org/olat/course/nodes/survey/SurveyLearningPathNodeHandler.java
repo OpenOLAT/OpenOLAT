@@ -17,32 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.sp;
+package org.olat.course.nodes.survey;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.Util;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.model.ModuleLearningPathConfigs;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController.LearningPathControllerConfig;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.SPCourseNode;
+import org.olat.course.nodes.SurveyCourseNode;
 import org.springframework.stereotype.Service;
 
 /**
  * 
- * Initial date: 28 Aug 2019<br>
+ * Initial date: 10 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
 @Service
-public class SPLearningPathNodeHandler implements LearningPathNodeHandler {
+public class SurveyLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
 	public String acceptCourseNodeType() {
-		return SPCourseNode.TYPE;
+		return SurveyCourseNode.TYPE;
 	}
 
 	@Override
@@ -57,8 +59,10 @@ public class SPLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
 	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+		Translator translator = Util.createPackageTranslator(SurveyRunController.class, ureq.getLocale());
 		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
 				.enableNodeVisited()
+				.enableRunStatusDone(translator.translate("done.trigger.status.done"))
 				.build();
 		return new LearningPathNodeConfigController(ureq, wControl, courseNode.getModuleConfiguration(), ctrlConfig);
 	}

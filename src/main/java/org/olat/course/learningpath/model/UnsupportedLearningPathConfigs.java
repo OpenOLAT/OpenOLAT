@@ -21,6 +21,7 @@ package org.olat.course.learningpath.model;
 
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathObligation;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * 
@@ -42,6 +43,16 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	
 	@Override
 	public boolean isDoneOnNodeVisited() {
+		return false;
+	}
+
+	@Override
+	public boolean isDoneOnCompletion(Double completion) {
+		return false;
+	}
+
+	@Override
+	public boolean isDoneOnRunStatus(AssessmentRunStatus runStatus) {
 		return false;
 	}
 

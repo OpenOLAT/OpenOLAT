@@ -19,6 +19,8 @@
  */
 package org.olat.course.learningpath;
 
+import org.olat.modules.assessment.model.AssessmentRunStatus;
+
 /**
  * 
  * Initial date: 30 Aug 2019<br>
@@ -32,5 +34,9 @@ public interface LearningPathConfigs {
 	public LearningPathObligation getObligation();
 	
 	public boolean isDoneOnNodeVisited();
+
+	public boolean isDoneOnCompletion(Double completion);
 	
+	public boolean isDoneOnRunStatus(AssessmentRunStatus runStatus);
+
 }

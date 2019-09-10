@@ -750,8 +750,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		removeHistory(ureq);
 		if(courseNode instanceof IQTESTCourseNode) {
-			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, getIdentity(), null, null,
-					Role.user);
+			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, Role.user);
 		}
 		
 		OLATResourceable ores = OresHelper.createOLATResourceableInstance("test", -1l);
@@ -830,8 +829,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	@Override
 	public void updateOutcomes(Float score, Boolean pass, Double completion) {
 		if(courseNode instanceof IQTESTCourseNode) {
-			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, getIdentity(), completion,
-					AssessmentRunStatus.running, Role.user);
+			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, completion, AssessmentRunStatus.running,
+					Role.user);
 			coordinatorManager.getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CompletionEvent(CompletionEvent.PROGRESS, courseNode.getIdent(), completion, AssessmentRunStatus.running, getIdentity().getKey()),
 						userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource());

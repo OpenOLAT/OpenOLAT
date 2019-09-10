@@ -86,11 +86,10 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = 905046067514602922L;
 
+	public static final String TYPE = "survey";
 	public static final String SURVEY_ICON = "o_survey_icon";
 
-	private static final String TYPE = "survey";
-	
-	public static final int CURRENT_VERSION = 1;
+	private static final int CURRENT_VERSION = 1;
 	public static final String CONFIG_KEY_REPOSITORY_SOFTKEY = "repository.softkey";
 	public static final String CONFIG_KEY_EXECUTION_BY_OWNER = "execution.by.owner";
 	public static final String CONFIG_KEY_EXECUTION_BY_COACH = "execution.by.coach";

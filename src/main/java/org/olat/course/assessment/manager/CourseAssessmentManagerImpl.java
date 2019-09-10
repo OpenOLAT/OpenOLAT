@@ -61,6 +61,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -75,6 +76,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -93,18 +95,21 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	private static final Integer INTEGER_ZERO = Integer.valueOf(0);
 	
 	private final CourseGroupManager cgm;
-	private final AssessmentService assessmentService;
-	private final CertificatesManager certificatesManager;
-	private final EfficiencyStatementManager efficiencyStatementManager;
-	private final CourseAssessmentService courseAssessmentService;
-
+	
+	@Autowired
+	private AssessmentService assessmentService;
+	@Autowired
+	private CertificatesManager certificatesManager;
+	@Autowired
+	private EfficiencyStatementManager efficiencyStatementManager;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	
 	public CourseAssessmentManagerImpl(CourseGroupManager cgm) {
 		this.cgm = cgm;
-		assessmentService = CoreSpringFactory.getImpl(AssessmentService.class);
-		certificatesManager = CoreSpringFactory.getImpl(CertificatesManager.class);
-		efficiencyStatementManager = CoreSpringFactory.getImpl(EfficiencyStatementManager.class);
-		courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
+		CoreSpringFactory.autowireObject(this);
 	}
 
 	private AssessmentEntry getOrCreate(Identity assessedIdentity, CourseNode courseNode) {
@@ -415,6 +420,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		DBFactory.getInstance().commit();
+		
+		nodeAccessService.onCompletionUpdate(courseNode, userCourseEnvironment, currentCompletion, runStatus, by);
 	}
 
 	@Override

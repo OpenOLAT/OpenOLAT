@@ -211,8 +211,8 @@ public class QTI21ResetDataController extends FormBasicController {
 				UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 				courseAssessmentService.updateScoreEvaluation(courseNode, scoreEval, uce, getIdentity(), false,
 						Role.coach);
-				courseAssessmentService.updateCurrentCompletion(courseNode, uce, getIdentity(), null,
-						AssessmentRunStatus.notStarted, Role.coach);
+				courseAssessmentService.updateCurrentCompletion(courseNode, uce, null, AssessmentRunStatus.notStarted,
+						Role.coach);
 			}
 		} else if(assessedEntry != null) {
 			archiveData(assessedEntry);

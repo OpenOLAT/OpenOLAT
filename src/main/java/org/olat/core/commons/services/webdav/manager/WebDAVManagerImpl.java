@@ -310,7 +310,7 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	}
 	
 	/**
-	 * @see org.olat.core.commons.services.webdav.WebDAVManager#isEnabled()
+	 * @see org.olat.core.commons.services.webdav.WebDAVManager#isTrue()
 	 */
 	public boolean isEnabled() {
 		return enabled;

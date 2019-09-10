@@ -137,7 +137,7 @@ public interface CourseAssessmentService {
 	public Double getCurrentRunCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
 
 	public void updateCurrentCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			Identity identity, Double currentCompletion, AssessmentRunStatus status, Role by);
+			Double currentCompletion, AssessmentRunStatus status, Role by);
 
 	/**
 	 * @param courseNode

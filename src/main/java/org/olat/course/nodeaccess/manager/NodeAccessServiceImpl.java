@@ -34,6 +34,8 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.CourseTreeNodeBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
+import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -86,6 +88,13 @@ public class NodeAccessServiceImpl implements NodeAccessService {
 	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnvironment);
 		return getNodeAccessProvider(type).getNodeEvaluationBuilder(userCourseEnvironment);
+	}
+
+	@Override
+	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			Double completion, AssessmentRunStatus runStatus, Role by) {
+		NodeAccessType type = NodeAccessType.of(userCourseEnvironment);
+		getNodeAccessProvider(type).onCompletionUpdate(courseNode, userCourseEnvironment, completion, runStatus, by);
 	}
 
 }

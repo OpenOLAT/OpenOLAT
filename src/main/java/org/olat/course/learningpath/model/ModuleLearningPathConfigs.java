@@ -24,12 +24,13 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DONE_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_ESTIMATED_DURATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_OBLIGATION;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_DONE_TRIGGER_RUN_DONE;
 
 import org.olat.core.util.StringHelper;
-import org.olat.course.assessment.AssessmentAction;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * 
@@ -71,11 +72,26 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	@Override
 	public boolean isDoneOnNodeVisited() {
 		String doneTriggerName = getDoneTriggerName();
-		return AssessmentAction.nodeVisited.name().equals(doneTriggerName);
+		return CONFIG_VALUE_DONE_TRIGGER_RUN_DONE.equals(doneTriggerName);
 	}
 
 	private String getDoneTriggerName() {
 		return moduleConfiguration.getStringValue(CONFIG_KEY_DONE_TRIGGER, CONFIG_DEFAULT_DONE_TRIGGER);
+	}
+
+	@Override
+	public boolean isDoneOnCompletion(Double completion) {
+		// not implemented yet
+		return false;
+	}
+
+	@Override
+	public boolean isDoneOnRunStatus(AssessmentRunStatus runStatus) {
+		String doneTriggerName = getDoneTriggerName();
+		if (AssessmentRunStatus.done.equals(runStatus) && CONFIG_VALUE_DONE_TRIGGER_RUN_DONE.equals(doneTriggerName)) {
+			return true;
+		}
+		return false;
 	}
 
 }
