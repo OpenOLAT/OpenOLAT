@@ -50,6 +50,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.ConditionEditController;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -184,12 +185,17 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		ChecklistEditController editController = new ChecklistEditController(ureq, wControl, this, course, euce);
+		ChecklistEditController editController = new ChecklistEditController(ureq, wControl, this, course);
 		getModuleConfiguration().set(CONF_COURSE_ID, course.getResourceableId());
 		getModuleConfiguration().set(CONF_COURSE_NODE_ID, chosenNode.getIdent());
 		NodeEditController nodeEditController = new NodeEditController(ureq, wControl, course, chosenNode, euce, editController);
 		nodeEditController.addControllerListener(editController);
 		return nodeEditController;
+	}
+
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return ConditionAccessEditConfig.regular(false);
 	}
 
 	@Override
@@ -273,6 +279,7 @@ public class ChecklistCourseNode extends AbstractAccessableCourseNode {
 		return sd;
 	}
 
+	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
