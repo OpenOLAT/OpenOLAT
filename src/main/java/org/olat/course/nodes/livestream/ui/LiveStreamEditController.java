@@ -27,13 +27,8 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.condition.Condition;
-import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.NodeEditController;
-import org.olat.course.nodes.LiveStreamCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.ModuleConfiguration;
 
 /**
  * 
@@ -43,36 +38,22 @@ import org.olat.course.run.userview.UserCourseEnvironment;
  */
 public class LiveStreamEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
-	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
 	private static final String PANE_TAB_CONFIG = "pane.tab.config";
-	private final static String[] paneKeys = { PANE_TAB_CONFIG, PANE_TAB_ACCESSIBILITY };
+	private final static String[] paneKeys = { PANE_TAB_CONFIG };
 	
 	private TabbedPane tabPane;
-	private ConditionEditController accessibilityCondContr;
 	private LiveStreamConfigController liveStreamConfigController;
 	
-	private final LiveStreamCourseNode courseNode;
-
-	public LiveStreamEditController(UserRequest ureq, WindowControl wControl, LiveStreamCourseNode liveStreamCourseNode,
-			ICourse course, UserCourseEnvironment userCourseEnv) {
+	public LiveStreamEditController(UserRequest ureq, WindowControl wControl, ModuleConfiguration moduleConfig) {
 		super(ureq, wControl);
-		this.courseNode = liveStreamCourseNode;
 
-		Condition accessCondition = liveStreamCourseNode.getPreConditionAccess();
-		accessibilityCondContr = new ConditionEditController(ureq, wControl, userCourseEnv, accessCondition,
-				AssessmentHelper.getAssessableNodes(course.getEditorTreeModel(), liveStreamCourseNode));
-		listenTo(accessibilityCondContr);
-
-		liveStreamConfigController = new LiveStreamConfigController(ureq, wControl,
-				liveStreamCourseNode.getModuleConfiguration());
+		liveStreamConfigController = new LiveStreamConfigController(ureq, wControl, moduleConfig);
 		listenTo(liveStreamConfigController);
 	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		tabPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY),
-				accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate("condition.accessibility.title")));
 		tabbedPane.addTab(translate(PANE_TAB_CONFIG), liveStreamConfigController.getInitialComponent());
 	}
 
@@ -88,13 +69,7 @@ public class LiveStreamEditController extends ActivateableTabbableDefaultControl
 
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
-		if (source == accessibilityCondContr) {
-			if (event == Event.CHANGED_EVENT) {
-				Condition cond = accessibilityCondContr.getCondition();
-				courseNode.setPreConditionAccess(cond);
-				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
-		} else if (source == liveStreamConfigController && event.equals(Event.DONE_EVENT)) {
+		if (source == liveStreamConfigController && event.equals(Event.DONE_EVENT)) {
 			liveStreamConfigController.getUpdatedConfig();
 			fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 		}
