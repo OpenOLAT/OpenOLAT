@@ -43,7 +43,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.survey.SurveyManager;
-import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormSurvey;
@@ -103,10 +102,10 @@ public class SurveyConfigController extends FormBasicController {
 	private SurveyManager surveyManager;
 
 	public SurveyConfigController(UserRequest ureq, WindowControl wControl, SurveyCourseNode surveyCourseNode,
-			UserCourseEnvironment userCourseEnv) {
+			RepositoryEntry courseEntry) {
 		super(ureq, wControl);
 		this.moduleConfiguration = surveyCourseNode.getModuleConfiguration();
-		this.surveyIdent = surveyManager.getSurveyIdentifier(surveyCourseNode, userCourseEnv);
+		this.surveyIdent = surveyManager.getSurveyIdentifier(surveyCourseNode, courseEntry);
 		this.survey = surveyManager.loadSurvey(surveyIdent);
 		initForm(ureq);
 	}

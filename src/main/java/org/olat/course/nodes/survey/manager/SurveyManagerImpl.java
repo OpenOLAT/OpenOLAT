@@ -22,15 +22,18 @@ package org.olat.course.nodes.survey.manager;
 import static org.olat.modules.forms.handler.EvaluationFormResource.FORM_XML_FILE;
 
 import java.io.File;
+import java.util.List;
 import java.util.UUID;
 
 import org.olat.core.id.Identity;
 import org.olat.core.util.UserSession;
+import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.survey.SurveyManager;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
+import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.ceditor.DataStorage;
@@ -62,10 +65,9 @@ public class SurveyManagerImpl implements SurveyManager {
 
 	@Override
 	public EvaluationFormSurveyIdentifier getSurveyIdentifier(SurveyCourseNode surveyCourseNode,
-			UserCourseEnvironment userCourseEnv) {
-		RepositoryEntry ores = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+			RepositoryEntry courseEntry) {
 		String subIdent = surveyCourseNode.getIdent();
-		return EvaluationFormSurveyIdentifier.of(ores, subIdent);
+		return EvaluationFormSurveyIdentifier.of(courseEntry, subIdent);
 	}
 
 	@Override
@@ -179,8 +181,20 @@ public class SurveyManagerImpl implements SurveyManager {
 	}
 
 	@Override
-	public void deleteAllData(EvaluationFormSurvey survey) {
+	public void deleteAllData(EvaluationFormSurvey survey, SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		evaluationFormManager.deleteAllData(survey);
+		
+		AssessmentManager assessmentManager = userCourseEnv.getCourseEnvironment().getAssessmentManager();
+		List<AssessmentEntry> assessmentEntries = assessmentManager.getAssessmentEntries(courseNode);
+		for (AssessmentEntry assessmentEntry : assessmentEntries) {
+			assessmentEntry.setCurrentRunCompletion(null);
+			assessmentEntry.setCurrentRunStatus(null);
+			assessmentEntry.setCompletion(null);
+			assessmentEntry.setAssessmentStatus(null);
+			assessmentEntry.setFullyAssessed(null);
+			assessmentManager.updateAssessmentEntry(assessmentEntry);
+		}
+
 	}
 
 }

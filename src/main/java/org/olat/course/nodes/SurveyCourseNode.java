@@ -142,9 +142,10 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel,
 			ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		TabbableController childTabCntrllr	= new SurveyEditController(ureq, wControl, this, euce);
+		RepositoryEntry courseEntry = euce.getCourseEditorEnv().getCourseGroupManager().getCourseEntry();
+		TabbableController childTabCtrl	= new SurveyEditController(ureq, wControl, this, courseEntry);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
-		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
+		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCtrl);
 	}
 
 	@Override

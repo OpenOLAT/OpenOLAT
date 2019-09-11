@@ -41,6 +41,7 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -73,7 +74,8 @@ public class SurveyRunController extends BasicController {
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		this.courseNode = courseNode;
-		this.surveyIdent = surveyManager.getSurveyIdentifier(courseNode, userCourseEnv);
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		this.surveyIdent = surveyManager.getSurveyIdentifier(courseNode, courseEntry);
 		this.secCallback = secCallback;
 
 		mainVC = createVelocityContainer("run");
@@ -172,7 +174,7 @@ public class SurveyRunController extends BasicController {
 	}
 
 	private void doDeleteAllData(UserRequest ureq) {
-		surveyManager.deleteAllData(survey);
+		surveyManager.deleteAllData(survey, courseNode, userCourseEnv);
 		initVelocityContainer(ureq);
 	}
 

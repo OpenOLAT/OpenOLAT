@@ -42,7 +42,7 @@ import org.olat.repository.RepositoryEntry;
 public interface SurveyManager {
 
 	public EvaluationFormSurveyIdentifier getSurveyIdentifier(SurveyCourseNode surveyCourseNode,
-			UserCourseEnvironment userCourseEnv);
+			RepositoryEntry courseEntry);
 
 	public EvaluationFormSurvey loadSurvey(EvaluationFormSurveyIdentifier surveyIdent);
 
@@ -71,6 +71,6 @@ public interface SurveyManager {
 
 	public long getCountOfSessions(EvaluationFormSurvey survey);
 
-	public void deleteAllData(EvaluationFormSurvey survey);
+	public void deleteAllData(EvaluationFormSurvey survey, SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
 }

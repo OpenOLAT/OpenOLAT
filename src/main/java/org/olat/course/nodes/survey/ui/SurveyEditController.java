@@ -28,7 +28,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.ActivateableTabbableDefaultController;
 import org.olat.course.nodes.SurveyCourseNode;
-import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -46,10 +46,10 @@ public class SurveyEditController extends ActivateableTabbableDefaultController 
 	private TabbedPane tabPane;
 	
 	public SurveyEditController(UserRequest ureq, WindowControl wControl, SurveyCourseNode surveyCourseNode,
-			UserCourseEnvironment userCourseEnv) {
+			RepositoryEntry courseEntry) {
 		super(ureq, wControl);
 		
-		surveyConfigController = new SurveyConfigController(ureq, wControl, surveyCourseNode, userCourseEnv);
+		surveyConfigController = new SurveyConfigController(ureq, wControl, surveyCourseNode, courseEntry);
 		listenTo(surveyConfigController);
 	}
 
