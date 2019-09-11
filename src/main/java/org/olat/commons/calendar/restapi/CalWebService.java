@@ -59,6 +59,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -84,18 +86,18 @@ public class CalWebService {
 	@Path("events")
 	@Operation(summary = "List events from a calendar.", description = "Returns list of events from a specific calendar.")
 	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Request was successful.",
+			@ApiResponse(responseCode = "200", description = "Request was successful",
 				content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = EventVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = EventVO.class))
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EventVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = EventVO.class)))
 				} 
 			),
-			@ApiResponse(responseCode = "401", description = "Not authorized."),
-			@ApiResponse(responseCode = "404", description = "Not found.")}
+			@ApiResponse(responseCode = "401", description = "Not authorized"),
+			@ApiResponse(responseCode = "404", description = "Not found")}
 	)	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getEventsByCalendar(@QueryParam("start")@Parameter(description = "Set the date for the earliest event.") @DefaultValue("0") Integer start,
-			@QueryParam("limit")  @Parameter(description = "Limit the amount of events to be returned.") @DefaultValue("25") Integer limit,
+	public Response getEventsByCalendar(@QueryParam("start")@Parameter(description = "Set the date for the earliest event") @DefaultValue("0") Integer start,
+			@QueryParam("limit")  @Parameter(description = "Limit the amount of events to be returned") @DefaultValue("25") Integer limit,
 			@QueryParam("onlyFuture") @DefaultValue("false") Boolean onlyFuture,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		
@@ -158,14 +160,9 @@ public class CalWebService {
 	@Path("event")
 	@Operation(summary = "Put a specific event.", description = "Puts a specific event in a specific calendar.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200",
-				content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = EventVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = EventVO.class))
-				}
-			),
-			@ApiResponse(responseCode = "401", description = "Not authorized."),
-			@ApiResponse(responseCode = "404", description = "Not found.")}
+			@ApiResponse(responseCode = "200",description = "Ok"),
+			@ApiResponse(responseCode = "401", description = "Not authorized"),
+			@ApiResponse(responseCode = "404", description = "Not found")}
 		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -178,13 +175,9 @@ public class CalWebService {
 	@Path("events")
 	@Operation(summary = "Put specific events.", description = "Puts specific events in a specific calendar.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200",
-				content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = EventVO[].class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = EventVO[].class))
-				}
+			@ApiResponse(responseCode = "200", description = "Ok"
 			),
-			@ApiResponse(responseCode = "401", description = "Not authorized."),
+			@ApiResponse(responseCode = "401", description = "Not authorized"),
 			@ApiResponse(responseCode = "404", description = "Not found.")}
 		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -201,14 +194,10 @@ public class CalWebService {
 	@Path("event")
 	@Operation(summary = "Post a specific event.", description = "Posts a specific event in a specific calendar.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200",
-				content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = EventVO.class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = EventVO.class))
-				}
+			@ApiResponse(responseCode = "200", description = "Ok"
 			),
-			@ApiResponse(responseCode = "401", description = "Not authorized."),
-			@ApiResponse(responseCode = "404", description = "Not found.")}
+			@ApiResponse(responseCode = "401", description = "Not authorized"),
+			@ApiResponse(responseCode = "404", description = "Not found")}
 		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -221,11 +210,7 @@ public class CalWebService {
 	@Path("events")
 	@Operation(summary = "Post specific events.", description = "Posts specific events in a specific calendar.")
 	@ApiResponses(value = {
-			@ApiResponse(responseCode = "200",
-				content = {
-					@Content(mediaType = "application/json", schema = @Schema(implementation = EventVO[].class)),
-					@Content(mediaType = "application/xml", schema = @Schema(implementation = EventVO[].class))
-				}
+			@ApiResponse(responseCode = "200", description = "Ok."
 			),
 			@ApiResponse(responseCode = "401", description = "Not authorized."),
 			@ApiResponse(responseCode = "404", description = "Not found.")}

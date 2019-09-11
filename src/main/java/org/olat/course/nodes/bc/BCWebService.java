@@ -75,9 +75,18 @@ import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CourseWebService;
 import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
 import org.springframework.stereotype.Component;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -107,6 +116,18 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted structure element (fully populated)
 	 */
 	@GET
+	@Operation(summary = "Retrieve metadata",
+	description = "Retrieves metadata of the course node")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = FolderVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = FolderVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "TThe roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFolders(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
 		final ICourse course = CoursesWebService.loadCourse(courseId);
@@ -178,13 +199,26 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted folder element (fully populated)
 	 */
 	@PUT
+	@Operation(summary = "attach a Folder Element onto course",
+	description = "This attaches a Folder Element onto a given course. The element will be\n" + 
+			" inserted underneath the supplied parentNodeId")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachFolder(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("downloadExpertRules") String downloadExpertRules,
-			@QueryParam("uploadExpertRules") String uploadExpertRules, @Context HttpServletRequest request) {
+	public Response attachFolder(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this folder") String parentNodeId,
+			@QueryParam("position") @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position, @QueryParam("shortTitle") @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") @Parameter(description = "The node long title") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @Parameter(description = "The node learning objectives") @DefaultValue("undefined") String objectives,
+			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules, @QueryParam("downloadExpertRules") @Parameter(description = "The rules to download files (optional)") String downloadExpertRules,
+			@QueryParam("uploadExpertRules") @Parameter(description = "The rules to upload files (optional)") String uploadExpertRules, @Context HttpServletRequest request) {
 		
 		FolderCustomConfig config = new FolderCustomConfig(downloadExpertRules, uploadExpertRules);
 		return attach(courseId, parentNodeId, "bc", position, shortTitle, longTitle, objectives, visibilityExpertRules, null, config, request);
@@ -213,6 +247,19 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted folder element (fully populated)
 	 */
 	@POST
+	@Operation(summary = "attach a Folder Element onto course",
+	description = "This attaches a Folder Element onto a given course. The element will be\n" + 
+			" inserted underneath the supplied parentNodeId")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The folder node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachFolderPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
@@ -245,6 +292,18 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 */
 	@POST
 	@Path("{nodeId}")
+	@Operation(summary = "update a Folder Element onto course",
+	description = "This updates a Folder Element onto a given course")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The folder node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
@@ -271,6 +330,18 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 */
 	@GET
 	@Path("{nodeId}")
+	@Operation(summary = "Retrieves metadata of the course node",
+	description = "Retrieves metadata of the course node")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = FolderVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = FolderVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFolder(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
@@ -314,6 +385,13 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	 * @return
 	 */
 	@Path("{nodeId}/files")
+	@Operation(summary = "Return the FX implementation to manage a folder",
+	description = "Return the FX implementation to manage a folder")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok"
+					
+			)}
+		)
 	public VFSWebservice getVFSWebService(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {

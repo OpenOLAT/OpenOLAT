@@ -115,7 +115,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 					url = "https://github.com/OpenOLAT/OpenOLAT/blob/master/LICENSE"
 				)
 		),
-	servers = { @Server(url = "/restapi") }
+	servers = { @Server(url = "/restapi"),
+				@Server(url = "/olat/restapi")}
 )
 @Path("repo/entries")
 public class RepositoryEntriesWebService {

@@ -47,6 +47,7 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.collaboration.CollaborationTools;
+import org.olat.commons.calendar.restapi.EventVO;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;
@@ -69,6 +70,12 @@ import org.olat.restapi.group.LearningGroupWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -108,6 +115,7 @@ public class MyForumsWebService {
 	 */
 
 	@Path("group/{groupKey}")
+
 	public ForumWebService getGroupForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		if(groupKey == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
@@ -147,6 +155,19 @@ public class MyForumsWebService {
 	 * @return The forums
 	 */
 	@GET
+	@Operation(summary = "Retrieves a list of forums on a user base.", description = "Retrieves a list of forums on a user base. All forums of groups \n" + 
+			"where the user is participant/tutor + all forums in course where\n" + 
+			"the user is a participant (owner, tutor or participant)")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Request was successful.",
+				content = {
+						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ForumVO.class))),
+						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ForumVO.class)))
+					} 
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+		@ApiResponse(responseCode = "404", description = "Not found.")}
+)	
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getForums(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {

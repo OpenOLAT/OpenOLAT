@@ -22,6 +22,7 @@ package org.olat.course.db.restapi;
 
 import java.util.List;
 
+
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -37,7 +38,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
@@ -54,6 +54,12 @@ import org.olat.restapi.support.vo.KeyValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -83,6 +89,9 @@ public class CourseDbWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "Retrieve version",
+	description = "Retrieves the version of the Course DB Web Service")
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -101,6 +110,16 @@ public class CourseDbWebService {
 	 */
 	@GET
 	@Path("values")
+	@Operation(summary = "Retrieve all values of the authenticated user",
+	description = "Retrieve all values of the authenticated user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "All the values in the course",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
+						} 
+			)}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getValues(@PathParam("courseId") Long courseId, @PathParam("category") String category, @Context HttpServletRequest request) {
 		ICourse course = loadCourse(courseId);
@@ -132,6 +151,16 @@ public class CourseDbWebService {
 	 */
 	@PUT
 	@Path("values")
+	@Operation(summary = "Put a new value for an authenticated user",
+	description = "Put a new value for an authenticated user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "the key value pair is saved on the db",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
+						} 
+			)}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putValues(@PathParam("courseId") Long courseId, @PathParam("category") String category, KeyValuePair pair, @Context HttpServletRequest request) {
 		return internPutValues(courseId, category, pair, request);
@@ -152,6 +181,16 @@ public class CourseDbWebService {
 	 */
 	@POST
 	@Path("values")
+	@Operation(summary = "Update a value for an authenticated user",
+	description = "Update a value for an authenticated user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "the key value pair is saved on the db",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
+						} 
+			)}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postValues(@PathParam("courseId") Long courseId, @PathParam("category") String category, KeyValuePair pair, @Context HttpServletRequest request) {
 		return internPutValues(courseId, category, pair, request);
@@ -172,6 +211,20 @@ public class CourseDbWebService {
 	 */
 	@GET
 	@Path("values/{name}")
+	@Operation(summary = "Retrieve a value of an authenticated user",
+	description = "Retrieve a value of an authenticated user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The value in the course",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "204", description = "The entry cannot be found"
+					
+			)
+			}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name, @Context HttpServletRequest request) {
 		ICourse course = loadCourse(courseId);
@@ -201,6 +254,20 @@ public class CourseDbWebService {
 	 */
 	@GET
 	@Path("values/{name}")
+	@Operation(summary = "Retrieve a value of an authenticated user",
+	description = "Retrieve a value of an authenticated user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The value in the course",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = KeyValuePair.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "404", description = "The entry cannot be found"
+					
+			)
+			}
+		)
 	@Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
 	public Response getValuePlain(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name,
 			@Context HttpServletRequest request) {
@@ -228,6 +295,12 @@ public class CourseDbWebService {
 	 */
 	@PUT
 	@Path("values/{name}")
+	@Operation(summary = "Put a new value for an authenticated user",
+	description = "Put a new value for an authenticated user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The value is saved in the course")
+			}
+		)
 	public Response putValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name,
 			@QueryParam("value") String value, @Context HttpServletRequest request) {
 		return internPutValue(courseId, category, name, value, request);
@@ -245,6 +318,12 @@ public class CourseDbWebService {
 	 */
 	@POST
 	@Path("values/{name}")
+	@Operation(summary = "Update a value for an authenticated user",
+	description = "Update a value for an authenticated user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The value is saved in the course")
+			}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response formValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name,
 			@FormParam("val") String value, @Context HttpServletRequest request){
@@ -264,6 +343,20 @@ public class CourseDbWebService {
 	 */
 	@DELETE
 	@Path("values/{name}")
+	@Operation(summary = "Delete a value for an authenticated user",
+	description = "Delete a value for an authenticated user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "the key value pair is remove from the db"
+
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"
+					
+			),
+			@ApiResponse(responseCode = "404", description = "The entry cannot be found"
+			
+					)
+			}
+		)
 	public Response deleteValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, 
 			@PathParam("name") String name, @Context HttpServletRequest request) {
 		UserRequest ureq = RestSecurityHelper.getUserRequest(request);
@@ -280,7 +373,7 @@ public class CourseDbWebService {
 	}
 	
 	/**
-	 * Fallbakc method for the browsers
+	 * Fallback method for the browsers
 	 * 
 	 * @response.representation.200.doc the key value pair is remove from the db
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
@@ -293,6 +386,20 @@ public class CourseDbWebService {
 	 */
 	@POST
 	@Path("values/{name}/delete")
+	@Operation(summary = "Fallback method for the browsers",
+	description = "Fallbakc method for the browsers")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "the key value pair is remove from the db"
+
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"
+					
+			),
+			@ApiResponse(responseCode = "404", description = "The entry cannot be found"
+			
+					)
+			}
+		)
 	public Response deleteValuePost(@PathParam("courseId") Long courseId, @PathParam("category") String category,
 			@PathParam("name") String name, @Context HttpServletRequest request) {
 		return deleteValue(courseId, category, name, request);

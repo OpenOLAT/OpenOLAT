@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.restapi;
 
 import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Set;
 
@@ -45,6 +46,12 @@ import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -67,13 +74,24 @@ public class CurriculumElementTypesWebService {
 	 * 
 	 * @response.representation.200.qname {http://www.example.com}curriculumElementTypeVO
 	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc An array of curriculum element typess
+	 * @response.representation.200.doc An array of curriculum element types
 	 * @response.representation.200.example {@link org.olat.modules.curriculum.restapi.Examples#SAMPLE_CURRICULUMELEMENTTYPEVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @param httpRequest  The HTTP request
 	 * @return An array of curriculum element types
 	 */
 	@GET
+	@Operation(summary = "Return the curriculum element types",
+	description = "Return the curriculum element types used in the whole OpenOLAT instance")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "An array of curriculum element types",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementTypeVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementTypeVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient.")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getElementTypes() {
 		List<CurriculumElementType> elementTypes = curriculumService.getCurriculumElementTypes();
@@ -101,6 +119,18 @@ public class CurriculumElementTypesWebService {
 	 * @return The new persisted <code>curriculum element type</code>
 	 */
 	@PUT
+	@Operation(summary = "Create and persists a new curriculum element type entity",
+	description = "Creates and persists a new curriculum element type entity")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The persisted curriculum element type",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementTypeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementTypeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json.")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putCurriculumElementType(CurriculumElementTypeVO curriculumelementType) {
@@ -124,6 +154,18 @@ public class CurriculumElementTypesWebService {
 	 * @return The merged <code>curriculum element type</code>
 	 */
 	@POST
+	@Operation(summary = "Update a new curriculum element type entity",
+	description = "Updates a new curriculum element type entity")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The merged curriculum element type",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementTypeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementTypeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json.")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculumElementType(CurriculumElementTypeVO curriculumElementType) {
@@ -150,6 +192,19 @@ public class CurriculumElementTypesWebService {
 	 */
 	@POST
 	@Path("{curriculumElementTypeKey}")
+	@Operation(summary = "Update a new curriculum element type entity",
+	description = "Updates a new curriculum element type entity. The primary key is taken from\n" + 
+			"	  the URL. The curriculum element type object can be \"primary key free\"")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The merged type curriculum element",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementTypeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementTypeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json.")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculumElementType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey,
@@ -199,6 +254,17 @@ public class CurriculumElementTypesWebService {
 	 */
 	@GET
 	@Path("{curriculumElementTypeKey}")
+	@Operation(summary = "Get a specific curriculum element type",
+	description = "Get a specific curriculum element type")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The merged type curriculum element",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementTypeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementTypeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient.")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumElementTypes(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey) {
 		CurriculumElementType elementType = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
@@ -222,6 +288,18 @@ public class CurriculumElementTypesWebService {
 	 */
 	@GET
 	@Path("{curriculumElementTypeKey}/allowedSubTypes")
+	@Operation(summary = "Get the allowed sub-types",
+	description = "Get the allowed sub-types of a specified curriculum element type")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "An array of curriculum element types",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementTypeVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementTypeVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "405", description = "The curriculum element type was not found")}
+		)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getAllowedSubTypes(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey) {
 		CurriculumElementType type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
@@ -252,6 +330,14 @@ public class CurriculumElementTypesWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementTypeKey}/allowedSubTypes/{subTypeKey}")
+	@Operation(summary = "Add a sub-type to a specified curriculum element type",
+	description = "Add a sub-type to a specified curriculum element type")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The sub type was added to the allowed sub types"
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "405", description = "The curriculum element type was not found")}
+		)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response allowSubTaxonomyLevelType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey, @PathParam("subTypeKey") Long subTypeKey) {
 		CurriculumElementType type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
@@ -276,6 +362,13 @@ public class CurriculumElementTypesWebService {
 	 */
 	@DELETE
 	@Path("{curriculumElementTypeKey}/allowedSubTypes/{subTypeKey}")
+	@Operation(summary = "Remove a sub-type to a specified curriculum element type",
+	description = "Remove a sub-type to a specified curriculum element type")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The sub type was removed successfully"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "405", description = "The curriculum element type was not found")}
+		)
 	public Response disalloweSubType(@PathParam("curriculumElementTypeKey") Long curriculumElementTypeKey, @PathParam("subTypeKey") Long subTypeKey) {
 		CurriculumElementType type = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(curriculumElementTypeKey));
 		CurriculumElementType subType = curriculumService.getCurriculumElementType(new CurriculumElementTypeRefImpl(subTypeKey));

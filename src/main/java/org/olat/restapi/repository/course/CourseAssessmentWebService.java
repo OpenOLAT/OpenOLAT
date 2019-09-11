@@ -87,6 +87,9 @@ import org.olat.restapi.support.vo.AssessableResultsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -197,6 +200,7 @@ public class CourseAssessmentWebService {
 	
 	@GET
 	@Path("users/{identityKey}")
+
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseResultsOf(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest, @Context Request request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);

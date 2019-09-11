@@ -73,9 +73,15 @@ import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CourseWebService;
 import org.olat.restapi.repository.course.CoursesWebService;
 import org.olat.restapi.security.RestSecurityHelper;
+import org.olat.restapi.support.vo.CourseNodeVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -112,6 +118,18 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted structure element (fully populated)
 	 */
 	@GET
+	@Operation(summary = "Retrieves metadata of the published course node",
+	description = "Retrieves metadata of the published course node")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = ForumVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = ForumVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getForums(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest) {
 		final ICourse course = CoursesWebService.loadCourse(courseId);
@@ -172,6 +190,19 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted Forum Element (fully populated)
 	 */
 	@POST
+	@Operation(summary = "attach a Forum Element onto a given course",
+	description = "This attaches a Forum Element onto a given course. The element will be\n" + 
+			"	 inserted underneath the supplied parentNodeId")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachForumPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
@@ -206,6 +237,19 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted Forum Element (fully populated)
 	 */
 	@PUT
+	@Operation(summary = "attach a Forum Element onto a given course",
+	description = "This attaches a Forum Element onto a given course. The element will be\n" + 
+			"	 inserted underneath the supplied parentNodeId")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachForum(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
 			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
@@ -232,6 +276,18 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 */
 	@GET
 	@Path("{nodeId}")
+	@Operation(summary = "Retrieve metadata of the published course node",
+	description = "Retrieves metadata of the published course node")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = ForumVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = ForumVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
@@ -315,6 +371,18 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 */
 	@PUT
 	@Path("{nodeId}/thread")
+	@Operation(summary = "Create a new thread in the forum of the course node",
+	description = "Creates a new thread in the forum of the course node")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = MessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = MessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response newThreadToForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @QueryParam("title") String title,
 			@QueryParam("body") String body, @QueryParam("identityName") String identityName, @QueryParam("sticky") Boolean isSticky,

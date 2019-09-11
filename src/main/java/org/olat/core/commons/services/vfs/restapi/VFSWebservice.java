@@ -68,6 +68,14 @@ import org.olat.restapi.support.MultipartReader;
 import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileMetadataVO;
 import org.olat.restapi.support.vo.FileVO;
+import org.olat.restapi.support.vo.LinkVO;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 public class VFSWebservice {
 
@@ -96,6 +104,9 @@ public class VFSWebservice {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "Retrieve version",
+	description = "Retrieves the version of the Folder Course Node Web Service")
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -110,6 +121,12 @@ public class VFSWebservice {
 	 * @return 
 	 */
 	@GET
+	@Operation(summary = "Retrieve files",
+	description = "This retrieves the files or a specific file in the root folder")
+	@ApiResponse(responseCode = "200", description = "The list of files", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class)))
+		} )
 	@Produces({"*/*", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM})
 	public Response listFiles(@Context UriInfo uriInfo, @Context Request request) {
 		return get(Collections.<PathSegment>emptyList(), uriInfo, request);
@@ -126,6 +143,12 @@ public class VFSWebservice {
 	 */
 	@GET
 	@Path("{path:.*}")
+	@Operation(summary = "Retrieve files",
+	description = "This retrieves the files or a specific file in a folder")
+	@ApiResponse(responseCode = "200", description = "The list of files or the file", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class)))
+		} )
 	@Produces({"*/*", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM})
 	public Response listFiles(@PathParam("path") List<PathSegment> path, @Context UriInfo uriInfo, @Context Request request) {
 		return get(path, uriInfo, request);
@@ -143,8 +166,15 @@ public class VFSWebservice {
 	 */
 	@GET
 	@Path("metadata/{path:.*}")
+	@Operation(summary = "Retrieve metadata",
+	description = "This retrieves some metadata of a specific file in a folder.\n" + 
+			"	  The metadata are: filename, size, date of last modification, MIME-type and file href for downloading via REST")
+	@ApiResponse(responseCode = "200", description = "The list of files or the file", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = FileMetadataVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = FileMetadataVO.class))
+		} )
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response getFileMetadata(@PathParam("path") List<PathSegment> path, @Context UriInfo uriInfo) {
+	public Response getFileMetadata(@PathParam("path") @Parameter(description = "the path to the file List<PathSegment>") List<PathSegment> path, @Context UriInfo uriInfo) {
 		return getFMetadata(path, uriInfo);
 	}
 	
@@ -160,6 +190,13 @@ public class VFSWebservice {
 	 * @return The link to the created file
 	 */
 	@POST
+	@Operation(summary = "Upload a file",
+	description = "Upload a file to the root folder or create a new folder. One of the two sets\n" + 
+			" of parameters must be set: foldername to create")
+	@ApiResponse(responseCode = "200", description = "The link to the created file", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response postFileToRoot(@Context UriInfo uriInfo, @Context HttpServletRequest request) {
@@ -178,10 +215,17 @@ public class VFSWebservice {
 	 * @return The link to the created file
 	 */
 	@POST
+	@Operation(summary = "Upload a file",
+	description = "Upload a file to the root folder or create a new folder. One of the two sets\n" + 
+			"of parameters must be set: foldername to create")
+	@ApiResponse(responseCode = "200", description = "The link to the created file", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response postFile64ToRoot(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
-			@FormParam("file") String file, @Context UriInfo uriInfo) {
+	public Response postFile64ToRoot(@FormParam("foldername")String foldername, @FormParam("filename") String filename,
+			@FormParam("file")String file, @Context UriInfo uriInfo) {
 		byte[] fileAsBytes = Base64.decodeBase64(file);
 		try(InputStream in = new ByteArrayInputStream(fileAsBytes)) {
 			return putFile(foldername, filename, in, uriInfo, Collections.<PathSegment>emptyList());
@@ -205,6 +249,12 @@ public class VFSWebservice {
 	 */
 	@POST
 	@Path("{path:.*}")
+	@Operation(summary = "Upload a file",
+	description = "Upload a file to the specified folder or create a new folder")
+	@ApiResponse(responseCode = "200", description = "The link to the created file", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({"*/*", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response postFileToFolder(@Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path,
@@ -225,6 +275,12 @@ public class VFSWebservice {
 	 */
 	@POST
 	@Path("{path:.*}")
+	@Operation(summary = "Upload a file",
+	description = "Upload a file to the specified folder or create a new folder")
+	@ApiResponse(responseCode = "200", description = "The link to the created file", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({"*/*", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response postFile64ToFolder(@FormParam("foldername") String foldername, @FormParam("filename") String filename,
@@ -250,6 +306,12 @@ public class VFSWebservice {
 	 * @return The link to the created file
 	 */
 	@PUT
+	@Operation(summary = "Upload a file",
+	description = "Upload a file to the specified folder or create a new folder")
+	@ApiResponse(responseCode = "200", description = "The link to the created file", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putFileToRoot(@Context UriInfo uriInfo, @Context HttpServletRequest request) {
@@ -267,6 +329,12 @@ public class VFSWebservice {
 	 * @return The link to the created file
 	 */
 	@PUT
+	@Operation(summary = "Upload a file",
+	description = "Upload a file to the specified folder or create a new folder")
+	@ApiResponse(responseCode = "200", description = "The link to the created file", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putFile64VOToRoot(File64VO file, @Context UriInfo uriInfo) {
@@ -292,6 +360,12 @@ public class VFSWebservice {
 	 * @return The link to the created file
 	 */
 	@PUT
+	@Operation(summary = "Upload a file",
+	description = "Upload a file to the specified folder or create a new folder")
+	@ApiResponse(responseCode = "200", description = "The link to the created file", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Path("{path:.*}")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({"*/*", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -338,6 +412,12 @@ public class VFSWebservice {
 	 */
 	@PUT
 	@Path("{path:.*}")
+	@Operation(summary = "Upload a file",
+	description = "Upload a file to the specified folder or create a new folder")
+	@ApiResponse(responseCode = "200", description = "The link to the created file", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putFile64ToFolder(File64VO file, @Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
@@ -361,6 +441,12 @@ public class VFSWebservice {
 	 */
 	@PUT
 	@Path("{path:.*}")
+	@Operation(summary = "Create folders",
+	description = "Create fodlers")
+	@ApiResponse(responseCode = "200", description = "The link to the created folder", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response putFolders(@Context UriInfo uriInfo, @PathParam("path") List<PathSegment> path) {
@@ -369,6 +455,12 @@ public class VFSWebservice {
 	
 	@DELETE
 	@Path("{path:.*}")
+	@Operation(summary = "Delete folders",
+	description = "Delete")
+	@ApiResponse(responseCode = "200", description = "Ok", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = LinkVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = LinkVO.class))
+		} )
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response deleteItem(@PathParam("path") List<PathSegment> path) {
 		if(container.getLocalSecurityCallback() != null && !container.getLocalSecurityCallback().canDelete()) {

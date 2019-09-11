@@ -521,6 +521,7 @@ public class LearningGroupWebService {
 	 * @return
 	 */
 	@Path("{groupKey}/forum")
+	
 	public ForumWebService getForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
