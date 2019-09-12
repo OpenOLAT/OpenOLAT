@@ -51,7 +51,6 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
-import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
@@ -315,7 +314,7 @@ public class CurriculumElementsWebService {
 		if(curriculumElement.getKey() == null) {
 			elementToSave = curriculumService.createCurriculumElement(curriculumElement.getIdentifier(), curriculumElement.getDisplayName(),
 					null, curriculumElement.getBeginDate(), curriculumElement.getEndDate(), parentElement, type,
-					CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+					null, null, curriculum);
 		} else {
 			elementToSave = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElement.getKey()));
 			elementToSave.setDisplayName(curriculumElement.getDisplayName());

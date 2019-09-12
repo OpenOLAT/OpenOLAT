@@ -400,7 +400,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			eventCalloutCtr.deactivate();
 			cleanUp();
 		} else if(source == cmc) {
-			calendarEl.getComponent().setDirty(true);
+			calendarEl.setCalendars(calendarWrappers);
 			cleanUp();
 		} else if (source == dbcSequence) {
 			if(event != Event.CANCELLED_EVENT) {
@@ -443,13 +443,13 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			if(event instanceof CalendarGUIImportEvent) {
 				CalendarGUIImportEvent importEvent = (CalendarGUIImportEvent)event;
 				calendarWrappers.add(importEvent.getCalendar());
-				calendarEl.setCalendars(calendarWrappers);
+				// reload only after closing the configuration
 			} else if(event instanceof CalendarGUIRemoveEvent) {
 				CalendarGUIRemoveEvent removeEvent = (CalendarGUIRemoveEvent)event;
 				calendarWrappers.remove(removeEvent.getCalendar());
-				calendarEl.setCalendars(calendarWrappers);
+				// reload only after closing the configuration
 			} else if(event instanceof CalendarGUISettingEvent) {
-				calendarEl.setCalendars(calendarWrappers);
+				// reload only after closing the configuration
 			}
 		} else if(eventCalloutCtr == source) {
 			cleanUp();
@@ -515,7 +515,7 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		if(callerOres == null || calendarWrappers == null) return new ArrayList<>(1);
 		
 		List<KalendarRenderWrapper> alwaysVisible = new ArrayList<>();
-		if(WeeklyCalendarController.CALLER_CURRICULUM.equals(caller)) {
+		if(CalendarController.CALLER_CURRICULUM.equals(caller)) {
 			alwaysVisible.addAll(calendarWrappers);
 		} else {
 			KalendarRenderWrapper callerKalendar = getCallerKalendarRenderWrapper();
@@ -535,11 +535,11 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 			String calendarType = calendarWrapper.getKalendar().getType();
 			String calendarId = calendarWrapper.getKalendar().getCalendarID();
 			if(callerResId.equals(calendarId)) {
-				if((WeeklyCalendarController.CALLER_COLLAB.equals(caller) && CalendarManager.TYPE_GROUP.equals(calendarType))
-						|| (WeeklyCalendarController.CALLER_COURSE.equals(caller) && CalendarManager.TYPE_COURSE.equals(calendarType))) {
+				if((CalendarController.CALLER_COLLAB.equals(caller) && CalendarManager.TYPE_GROUP.equals(calendarType))
+						|| (CalendarController.CALLER_COURSE.equals(caller) && CalendarManager.TYPE_COURSE.equals(calendarType))) {
 					return calendarWrapper;
 				}
-			} else if((WeeklyCalendarController.CALLER_PROFILE.equals(caller) || WeeklyCalendarController.CALLER_HOME.equals(caller))
+			} else if((CalendarController.CALLER_PROFILE.equals(caller) || CalendarController.CALLER_HOME.equals(caller))
 				&& CalendarManager.TYPE_USER.equals(calendarType) && calendarId.equals(callerOres.getResourceableTypeName())) {
 					return calendarWrapper;
 			}
@@ -551,11 +551,11 @@ public class WeeklyCalendarController extends FormBasicController implements Act
 		if(callerOres == null) return null;
 		
 		String url = null;
-		if(WeeklyCalendarController.CALLER_COLLAB.equals(caller)) {
+		if(CalendarController.CALLER_COLLAB.equals(caller)) {
 			url = getCallerCalendarUrl(CalendarManager.TYPE_GROUP, callerOres.getResourceableId().toString());
-		} else if(WeeklyCalendarController.CALLER_COURSE.equals(caller)) {
+		} else if(CalendarController.CALLER_COURSE.equals(caller)) {
 			url = getCallerCalendarUrl(CalendarManager.TYPE_COURSE, callerOres.getResourceableId().toString());
-		} else if(WeeklyCalendarController.CALLER_CURRICULUM.equals(caller)) {
+		} else if(CalendarController.CALLER_CURRICULUM.equals(caller)) {
 			url = getAggregatedCalendarUrl(CalendarManager.TYPE_CURRICULUM_EL_AGGREGATED, callerOres.getResourceableId());
 		}
 		return url;

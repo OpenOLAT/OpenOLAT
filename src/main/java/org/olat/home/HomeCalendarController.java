@@ -67,7 +67,7 @@ public class HomeCalendarController extends BasicController implements Activatea
 		OLATResourceable callerOres = OresHelper.createOLATResourceableInstanceWithoutCheck(identity.getName(), identity.getKey());
 		List<KalendarRenderWrapper> calendars = homeCalendarManager.getListOfCalendarWrappers(ureq, windowControl);
 		calendarController = new WeeklyCalendarController(ureq, windowControl, calendars,
-				WeeklyCalendarController.CALLER_HOME, callerOres, true);
+				CalendarController.CALLER_HOME, callerOres, true);
 		calendarController.setDifferentiateManagedEvent(true);
 		listenTo(calendarController);
 
