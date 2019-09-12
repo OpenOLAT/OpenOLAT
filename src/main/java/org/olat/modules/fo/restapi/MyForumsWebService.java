@@ -47,7 +47,6 @@ import javax.ws.rs.core.Response.Status;
 import org.olat.basesecurity.BaseSecurityManager;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.collaboration.CollaborationTools;
-import org.olat.commons.calendar.restapi.EventVO;
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.notifications.Subscriber;
 import org.olat.core.id.Identity;

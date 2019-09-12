@@ -39,7 +39,6 @@ import org.olat.modules.taxonomy.Taxonomy;
 import org.olat.modules.taxonomy.TaxonomyService;
 import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyWebService;
-import org.olat.restapi.support.vo.CourseNodeVO;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
