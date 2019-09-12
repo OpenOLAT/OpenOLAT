@@ -20,6 +20,7 @@
 package org.olat.restapi.repository.course;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 import static org.olat.restapi.security.RestSecurityHelper.getUserRequest;
 
@@ -91,6 +92,12 @@ import org.olat.restapi.support.vo.CourseVOes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -136,6 +143,11 @@ public class CoursesWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "The version of the Course Web Service", description = "The version of the Course Web Service")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The version of this specific Web Service" 
+		)}
+)	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -157,6 +169,10 @@ public class CoursesWebService {
 	 * @return
 	 */
 	@GET
+	@Operation(summary = "Get all courses", description = "Get all courses viewable by the authenticated user")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "List of visible courses", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) }) })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseList(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,
@@ -249,6 +265,11 @@ public class CoursesWebService {
 	 * @return It returns the id of the newly created Course
 	 */
 	@PUT
+	@Operation(summary = "Creates an empty course", description = "Creates an empty course, or a copy from a course if the parameter copyFrom is set")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) }),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(@QueryParam("shortTitle") String shortTitle, @QueryParam("title") String title,
@@ -330,6 +351,11 @@ public class CoursesWebService {
 	 * @return It returns the newly created course
 	 */
 	@PUT
+	@Operation(summary = "Creates an empty course", description = "Creates an empty course")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) }),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createEmptyCourse(CourseVO courseVo, @Context HttpServletRequest request) {
@@ -362,6 +388,11 @@ public class CoursesWebService {
 	 * @return It returns the imported course
 	 */
 	@POST
+	@Operation(summary = "Imports a course from a course archive zip file", description = "Imports a course from a course archive zip file")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) }),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response importCourse(@QueryParam("ownerUsername") String ownerUsername, @Context HttpServletRequest request) {

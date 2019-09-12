@@ -85,6 +85,12 @@ import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 
@@ -137,6 +143,12 @@ public class LearningGroupWebService {
 	 * @return
 	 */
 	@GET
+	@Operation(summary = "Return the list of all groups ", description = "Return the list of all groups if you have group manager permission, or all\n" + 
+			"	  learning group that you particip with or owne")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Array of results for the whole the course", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) })})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroupList(@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
 			@Context HttpServletRequest request) {

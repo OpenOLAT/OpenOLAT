@@ -22,6 +22,7 @@ package org.olat.modules.fo.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;

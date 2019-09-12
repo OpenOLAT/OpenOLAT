@@ -20,6 +20,7 @@
 package org.olat.modules.fo.restapi;
 
 import static org.olat.collaboration.CollaborationTools.KEY_FORUM;
+
 import static org.olat.collaboration.CollaborationTools.PROP_CAT_BG_COLLABTOOLS;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
@@ -66,6 +67,7 @@ import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.restapi.group.LearningGroupWebService;
+import org.olat.restapi.support.vo.FileVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -114,7 +116,17 @@ public class MyForumsWebService {
 	 */
 
 	@Path("group/{groupKey}")
-
+	@Operation(summary = "Retrieves the forum of a group", description = "Retrieves the forum of a group")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The forum",
+				content = {
+						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = FileVO.class))),
+						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = FileVO.class)))
+					} 
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+		@ApiResponse(responseCode = "404", description = "Not found.")}
+)	
 	public ForumWebService getGroupForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		if(groupKey == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
@@ -135,6 +147,17 @@ public class MyForumsWebService {
 	 * @return The files
 	 */
 	@Path("course/{courseKey}/{courseNodeId}")
+	@Operation(summary = "Retrieves the forum of a course building block", description = "Retrieves the forum of a course building block")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The files",
+				content = {
+						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = FileVO.class))),
+						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = FileVO.class)))
+					} 
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "Not found")}
+)	
 	public ForumWebService getCourseFolder(@PathParam("courseKey") Long courseKey, @PathParam("courseNodeId") String courseNodeId,
 			@Context HttpServletRequest request) {
 		return new ForumCourseNodeWebService().getForumContent(courseKey, courseNodeId, request);
@@ -154,18 +177,18 @@ public class MyForumsWebService {
 	 * @return The forums
 	 */
 	@GET
-	@Operation(summary = "Retrieves a list of forums on a user base.", description = "Retrieves a list of forums on a user base. All forums of groups \n" + 
+	@Operation(summary = "Retrieves a list of forums on a user base", description = "Retrieves a list of forums on a user base. All forums of groups \n" + 
 			"where the user is participant/tutor + all forums in course where\n" + 
 			"the user is a participant (owner, tutor or participant)")
 	@ApiResponses({
-		@ApiResponse(responseCode = "200", description = "Request was successful.",
+		@ApiResponse(responseCode = "200", description = "The Forums",
 				content = {
 						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ForumVO.class))),
 						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ForumVO.class)))
 					} 
 		),
-		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
-		@ApiResponse(responseCode = "404", description = "Not found.")}
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "Not found")}
 )	
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getForums(@PathParam("identityKey") Long identityKey,
