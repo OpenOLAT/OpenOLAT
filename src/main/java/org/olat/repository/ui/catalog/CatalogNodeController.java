@@ -148,7 +148,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		searchParams.setClosed(Boolean.FALSE);
 		
 		entryListController = new RepositoryEntryListController(ureq, wControl, searchParams, true, false, "catalog", stackPanel);
-		if(!entryListController.isEmpty()) {
+		if(!entryListController.isEmpty() || searchParams.getFilters() != null) {
 			mainVC.put("entries", entryListController.getInitialComponent());
 		}
 		listenTo(entryListController);
@@ -159,7 +159,7 @@ public class CatalogNodeController extends BasicController implements Activateab
 		searchClosedParams.setParentEntry(catalogEntry);
 		searchClosedParams.setClosed(Boolean.TRUE);
 		closedEntryListController = new RepositoryEntryListController(ureq, wControl, searchClosedParams, true, false, "catalog-closed", stackPanel);
-		if(!closedEntryListController.isEmpty()) {
+		if(!closedEntryListController.isEmpty() || searchClosedParams.getFilters() != null) {
 			mainVC.put("closedEntries", closedEntryListController.getInitialComponent());
 		}
 		listenTo(closedEntryListController);
