@@ -156,6 +156,7 @@ public class CourseGroupWebService {
 	 * @return
 	 */
 	@Path("{groupKey}/forum")
+	@Operation(summary = "Return the Forum web service", description = "Return the Forum web service")
 	public ForumWebService getForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);

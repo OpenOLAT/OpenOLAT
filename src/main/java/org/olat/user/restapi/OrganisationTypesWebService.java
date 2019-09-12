@@ -21,6 +21,7 @@ package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,13 @@ import org.olat.core.id.Roles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * Initial date: 14 mai 2018<br>
@@ -73,6 +81,12 @@ public class OrganisationTypesWebService {
 	 * @return An array of organization types
 	 */
 	@GET
+	@Operation(summary = "List of organizations types", description = "List of organizations types")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The list of all organization types in the OpenOLAT system", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationTypeVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationTypeVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
@@ -101,6 +115,13 @@ public class OrganisationTypesWebService {
 	 * @return The new persisted <code>organization type</code>
 	 */
 	@PUT
+	@Operation(summary = "Creates and persists a new organization type entity", description = "Creates and persists a new organization type entity")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Creates and persists a new organization type entity", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationTypeVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationTypeVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putOrganisationType(OrganisationTypeVO organisationType, @Context HttpServletRequest httpRequest) {
@@ -128,6 +149,13 @@ public class OrganisationTypesWebService {
 	 * @return The merged <code>organization type</code>
 	 */
 	@POST
+	@Operation(summary = "Updates a new organization type entity", description = "Updates a new organization type entity")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The merged organization type", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationTypeVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationTypeVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisationType(OrganisationTypeVO organisationType, @Context HttpServletRequest httpRequest) {
@@ -158,6 +186,14 @@ public class OrganisationTypesWebService {
 	 */
 	@POST
 	@Path("{organisationTypeKey}")
+	@Operation(summary = "Updates a new organization type entity", description = "Updates a new organization type entity. The primary key is taken from\n" + 
+			"	  the URL. The organization type object can be \"primary key free\"")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The merged type organization", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationTypeVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationTypeVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisation(@PathParam("organisationTypeKey") Long organisationTypeKey, OrganisationTypeVO organisationType,
@@ -207,6 +243,12 @@ public class OrganisationTypesWebService {
 	 */
 	@GET
 	@Path("{organisationTypeKey}")
+	@Operation(summary = "Get a specific organization type", description = "Get a specific organization type")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The organization type", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationTypeVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationTypeVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOrganisations(@PathParam("organisationTypeKey") Long organisationTypeKey,
 			@Context HttpServletRequest httpRequest) {
@@ -236,6 +278,13 @@ public class OrganisationTypesWebService {
 	 * @return An array of organization types
 	 */
 	@GET
+	@Operation(summary = "Get the allowed sub-types of a specified organization type", description = "Get the allowed sub-types of a specified organization type")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "An array of organization types", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationTypeVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationTypeVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "401", description = "The organization type was not found")})
 	@Path("{organisationTypeKey}/allowedSubTypes")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getAllowedSubTypes(@PathParam("organisationTypeKey") Long organisationTypeKey, @Context HttpServletRequest httpRequest) {
@@ -272,6 +321,13 @@ public class OrganisationTypesWebService {
 	 */
 	@PUT
 	@Path("{organisationTypeKey}/allowedSubTypes/{subTypeKey}")
+	@Operation(summary = "Add a sub-type", description = "Add a sub-type to a specified organization type")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The sub type was added to the allowed sub types", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationTypeVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationTypeVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "401", description = "The organization type was not found")})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response allowSubTaxonomyLevelType(@PathParam("organisationTypeKey") Long organisationTypeKey, @PathParam("subTypeKey") Long subTypeKey,
 			@Context HttpServletRequest httpRequest) {
@@ -302,6 +358,11 @@ public class OrganisationTypesWebService {
 	 */
 	@DELETE
 	@Path("{organisationTypeKey}/allowedSubTypes/{subTypeKey}")
+	@Operation(summary = "Remove a sub-type", description = "Remove a sub-type to a specified organization type")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The sub type was removed successfully"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "401", description = "The organization type was not found")})
 	public Response disalloweSubTaxonomyLevelType(@PathParam("organisationTypeKey") Long organisationTypeKey, @PathParam("subTypeKey") Long subTypeKey,
 			@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {

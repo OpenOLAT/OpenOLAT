@@ -86,6 +86,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.info.License;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.servers.Server;
@@ -139,6 +140,10 @@ public class RepositoryEntriesWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "The version number of this web service", description = "The version number of this web service")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version number of this web service" )})	
+			
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -166,8 +171,8 @@ public class RepositoryEntriesWebService {
 		@ApiResponse(responseCode = "200",
 			description = "JVM system properties of a particular host.",
 			content = {
-				@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO[].class)),
-				@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO[].class))
+				@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
+				@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class)))
 			}
 		)}
 	)
@@ -239,6 +244,12 @@ public class RepositoryEntriesWebService {
 	 */
 	@GET
 	@Path("search")
+	@Operation(summary = "Search for repository entries", description = "Search for repository entries, possible search attributes are name, author and type")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Search for repository entries", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response searchEntries(@QueryParam("type") String type, @QueryParam("author") @DefaultValue("*") String author,
 			@QueryParam("name") @DefaultValue("*") String name, @QueryParam("myentries") @DefaultValue("false") boolean myEntries,
@@ -306,6 +317,12 @@ public class RepositoryEntriesWebService {
 	 * @return
 	 */
 	@PUT
+	@Operation(summary = "Import a resource in the repository", description = "Import a resource in the repository")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Import the resource and return the repository entry", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response putResource(@Context HttpServletRequest request) {

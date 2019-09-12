@@ -45,6 +45,11 @@ import org.olat.restapi.system.vo.EnvironmentInformationsVO;
 import org.olat.restapi.system.vo.ReleaseInfosVO;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -79,6 +84,12 @@ public class SystemWebService {
 	 */
 	@GET
 	@Path("environment")
+	@Operation(summary = "Return some informations about the environment", description = "Return some informations about the environment")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "A short summary of the number of classes", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = EnvironmentInformationsVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = EnvironmentInformationsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getEnvironnementXml(@Context HttpServletRequest request) {
 		if(!isAdminOrSystemAdmin(request)) {
@@ -102,6 +113,12 @@ public class SystemWebService {
 	 */
 	@GET
 	@Path("release")
+	@Operation(summary = "Return the version of the instance", description = "Return the version of the instance")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = ReleaseInfosVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = ReleaseInfosVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getReleaseInfos(@Context HttpServletRequest request) {
 		if(!isAdminOrSystemAdmin(request)) {
@@ -123,6 +140,12 @@ public class SystemWebService {
 	}
 	
 	@Path("monitoring")
+	@Operation(summary = "Return the version of the instance", description = "Return the version of the instance")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = MonitoringWebService.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = MonitoringWebService.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	public MonitoringWebService getImplementedProbes(@Context HttpServletRequest request) {
 		if(!isMonitoringEnabled() && !isAdminOrSystemAdmin(request)) {
 			return null;
@@ -131,6 +154,12 @@ public class SystemWebService {
 	}
 	
 	@Path("indexer")
+	@Operation(summary = "Return the version of the instance", description = "Return the version of the instance")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = IndexerWebService.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = IndexerWebService.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	public IndexerWebService getIndexer(@Context HttpServletRequest request) {
 		if(!isAdminOrSystemAdmin(request)) {
 			return null;
@@ -139,6 +168,12 @@ public class SystemWebService {
 	}
 	
 	@Path("notifications")
+	@Operation(summary = "Return the version of the instance", description = "Return the version of the instance")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = NotificationsAdminWebService.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = NotificationsAdminWebService.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	public NotificationsAdminWebService getNotifications(@Context HttpServletRequest request) {
 		if(!isAdminOrSystemAdmin(request)) {
 			return null;

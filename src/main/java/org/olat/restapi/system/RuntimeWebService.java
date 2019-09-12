@@ -40,6 +40,12 @@ import org.olat.restapi.system.vo.MemoryStatisticsVO;
 import org.olat.restapi.system.vo.RuntimeStatisticsVO;
 import org.olat.restapi.system.vo.ThreadStatisticsVO;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -65,6 +71,14 @@ public class RuntimeWebService {
 	 * @return The informations about runtime, uptime, classes loaded, memory summary...
 	 */
 	@GET
+	@Operation(summary = "Return the statistics about runtime", description = "Return the statistics about runtime: uptime, classes loaded, memory\n" + 
+			"	  summary, threads count...")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RuntimeStatisticsVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RuntimeStatisticsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSystemSummaryVO() {
 		RuntimeStatisticsVO stats = new RuntimeStatisticsVO();
@@ -94,6 +108,13 @@ public class RuntimeWebService {
 	 */
 	@GET
 	@Path("memory")
+	@Operation(summary = "Return the statistics about memory", description = "Return the statistics about memory")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = MemoryStatisticsVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = MemoryStatisticsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMemoryStatistics() {
 		MemoryStatisticsVO stats = getMemoryStatisticsVO();
@@ -113,6 +134,13 @@ public class RuntimeWebService {
 	 */
 	@GET
 	@Path("threads")
+	@Operation(summary = "Return the statistics about threads", description = "Return the statistics about threads")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+				@Content(mediaType = "application/json", schema = @Schema(implementation = ThreadStatisticsVO.class)),
+				@Content(mediaType = "application/xml", schema = @Schema(implementation = ThreadStatisticsVO.class)) }),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The course not found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getThreadStatistics() {
 		ThreadStatisticsVO stats = getThreadStatisticsVO();
@@ -131,6 +159,13 @@ public class RuntimeWebService {
 	 */
 	@GET
 	@Path("classes")
+	@Operation(summary = "Return some informations about the number of Java classes", description = "Return some informations about the number of Java classes...")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "A short summary of the number of classes", content = {
+				@Content(mediaType = "application/json", schema = @Schema(implementation = ClasseStatisticsVO.class)),
+				@Content(mediaType = "application/xml", schema = @Schema(implementation = ClasseStatisticsVO.class)) }),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The course not found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCompilationXml() {
 		ClasseStatisticsVO stats = getClasseStatisticsVO();

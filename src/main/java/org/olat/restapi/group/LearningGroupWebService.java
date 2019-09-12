@@ -146,7 +146,7 @@ public class LearningGroupWebService {
 	@Operation(summary = "Return the list of all groups ", description = "Return the list of all groups if you have group manager permission, or all\n" + 
 			"	  learning group that you particip with or owne")
 	@ApiResponses({
-			@ApiResponse(responseCode = "200", description = "Array of results for the whole the course", content = {
+			@ApiResponse(responseCode = "200", description = "This is the list of all groups in OLAT system", content = {
 					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))),
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) })})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -188,6 +188,11 @@ public class LearningGroupWebService {
 	 */
 	@GET
 	@Path("{groupKey}")
+	@Operation(summary = "Return the group specified by the key of the group", description = "RReturn the group specified by the key of the group")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "A business group in the OLAT system", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) })})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response findById(@PathParam("groupKey") Long groupKey, @Context Request request,
 			@Context HttpServletRequest httpRequest) {
@@ -228,6 +233,13 @@ public class LearningGroupWebService {
 	 * @return
 	 */
 	@PUT
+	@Operation(summary = "Create a group", description = "Create a group")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The saved business group", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found") })	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response createGroup(final GroupVO group, @Context HttpServletRequest request) {
@@ -273,6 +285,13 @@ public class LearningGroupWebService {
 	 */
 	@POST
 	@Path("{groupKey}")
+	@Operation(summary = "Update a group", description = "Update a group")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The saved business group", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found") })	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postGroup(@PathParam("groupKey") Long groupKey, final GroupVO group, @Context HttpServletRequest request) {
@@ -308,6 +327,13 @@ public class LearningGroupWebService {
 	 */
 	@GET
 	@Path("{groupKey}/news")
+	@Operation(summary = "Returns the news", description = "Returns the news")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The news", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = String.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = String.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled") })	
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getNews(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -347,6 +373,13 @@ public class LearningGroupWebService {
 	 */
 	@POST
 	@Path("{groupKey}/news")
+	@Operation(summary = "Update the news", description = "Update the news")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The updated news", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = String.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = String.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled") })	
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	public Response postNews(@PathParam("groupKey") Long groupKey, @FormParam("news") String news, @Context HttpServletRequest request) {
 		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
@@ -377,6 +410,11 @@ public class LearningGroupWebService {
 	 */
 	@DELETE
 	@Path("{groupKey}/news")
+	@Operation(summary = "Deletes the news of the group if the news tool is enabled", description = "Deletes the news of the group if the news tool is enabled")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The new are deleted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled") })	
 	public Response deleteNews(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
 		if(bg == null) {
@@ -480,6 +518,11 @@ public class LearningGroupWebService {
 	 */
 	@DELETE
 	@Path("{groupKey}")
+	@Operation(summary = "Deletes the business group specified by the groupKey", description = "Deletes the business group specified by the groupKey")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The business group is deleted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found or the news tool is not enabled") })
 	public Response deleteGroup(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -507,6 +550,12 @@ public class LearningGroupWebService {
 	 */
 	@GET
 	@Path("{groupKey}/infos")
+	@Operation(summary = " Returns the informations of the group specified by the groupKey", description = " Returns the informations of the group specified by the groupKey")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The updated news", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = GroupInfoVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupInfoVO.class)) }),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getInformations(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -533,7 +582,7 @@ public class LearningGroupWebService {
 	 * @return
 	 */
 	@Path("{groupKey}/forum")
-	
+	@Operation(summary = "Return the Forum web service", description = "Return the Forum web service")
 	public ForumWebService getForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = CoreSpringFactory.getImpl(BusinessGroupService.class).loadBusinessGroup(groupKey);
@@ -559,6 +608,7 @@ public class LearningGroupWebService {
 	}
 	
 	@Path("{groupKey}/folder")
+	@Operation(summary = "Return the folder", description = "Return the folder")
 	public VFSWebservice getFolder(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
@@ -600,6 +650,7 @@ public class LearningGroupWebService {
 	 * @return
 	 */
 	@Path("{groupKey}/wiki")
+	@Operation(summary = "Return the Forum web service", description = "Return the Forum web service")
 	public GroupWikiWebService getWiki(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		BusinessGroup bg = bgs.loadBusinessGroup(groupKey);
@@ -628,6 +679,7 @@ public class LearningGroupWebService {
 	 * @return
 	 */
 	@Path("{groupKey}/calendar")
+	@Operation(summary = "Return the calendar web service", description = "Return the calendar web service")
 	public CalWebService getCalendarWebService(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		CalendarModule calendarModule = CoreSpringFactory.getImpl(CalendarModule.class);
 		if(!calendarModule.isEnabled() || !calendarModule.isEnableGroupCalendar()) {
@@ -671,6 +723,13 @@ public class LearningGroupWebService {
 	 */
 	@GET
 	@Path("{groupKey}/owners")
+	@Operation(summary = "Returns the list of owners of the group specified by the groupKey", description = "Returns the list of owners of the group specified by the groupKey")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Owners of the business group", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found")
+			})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTutors(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -707,6 +766,13 @@ public class LearningGroupWebService {
 	 */
 	@GET
 	@Path("{groupKey}/participants")
+	@Operation(summary = "Returns the list of participants of the group specified by the groupKey", description = "Returns the list of participants of the group specified by the groupKey")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Participants of the business group", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found")
+			})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
@@ -751,6 +817,12 @@ public class LearningGroupWebService {
 	 */
 	@PUT
 	@Path("{groupKey}/owners/{identityKey}")
+	@Operation(summary = "Add an owner to the group", description = "Adds an owner to the group")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is added as owner of the group"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group cannot be found")
+			})
 	public Response addTutor(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
@@ -785,6 +857,12 @@ public class LearningGroupWebService {
 	 */
 	@DELETE
 	@Path("{groupKey}/owners/{identityKey}")
+	@Operation(summary = "Removes the owner from the group", description = "Removes the owner from the group")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is removed as owner from the group"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
+			})
 	public Response removeTutor(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
@@ -819,6 +897,12 @@ public class LearningGroupWebService {
 	 */
 	@PUT
 	@Path("{groupKey}/participants/{identityKey}")
+	@Operation(summary = "Adds a participant to the group", description = "Adds a participant to the group")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is added as participant of the group"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
+			})
 	public Response addParticipant(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {
@@ -858,6 +942,12 @@ public class LearningGroupWebService {
 	 */
 	@DELETE
 	@Path("{groupKey}/participants/{identityKey}")
+	@Operation(summary = "Removes a participant from the group", description = "Removes a participant from the group")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is remove from the group as participant"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The business group or the user cannot be found")
+			})
 	public Response removeParticipant(@PathParam("groupKey") Long groupKey, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if(!isGroupManager(request)) {

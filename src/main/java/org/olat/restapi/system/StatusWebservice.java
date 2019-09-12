@@ -50,6 +50,12 @@ import org.olat.properties.Property;
 import org.olat.properties.PropertyManager;
 import org.olat.restapi.system.vo.StatusVO;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 
 /**
  * 
@@ -77,6 +83,13 @@ public class StatusWebservice {
 	 * @return The informations about runtime, uptime, classes loaded, memory summary...
 	 */
 	@GET
+	@Operation(summary = "Return the statistics about runtime", description = "Return the statistics about runtime: uptime, classes loaded, memory\n" + 
+			"	  summary, threads count...")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = StatusVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = StatusVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSystemSummaryVO() {
 		StatusVO stats = new StatusVO();

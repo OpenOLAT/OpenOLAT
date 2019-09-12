@@ -37,9 +37,16 @@ import org.olat.core.id.Roles;
 import org.olat.repository.manager.RepositoryEntryLifecycleDAO;
 import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
+import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -67,6 +74,11 @@ public class RepositoryEntryLifecycleWebService {
 	 * @return
 	 */
 	@GET
+	@Operation(summary = "List all public lifecycles", description = "List all public lifecycles")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "List all entries in the repository", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))) })})	
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getPublicLifeCycles(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
