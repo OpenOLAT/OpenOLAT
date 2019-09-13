@@ -20,6 +20,7 @@
 package org.olat.modules.openmeetings.restapi;
 
 import java.io.File;
+
 import java.util.Date;
 
 import javax.ws.rs.GET;
@@ -39,6 +40,10 @@ import org.olat.modules.openmeetings.manager.OpenMeetingsManager;
 import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserManager;
 import org.springframework.stereotype.Component;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -63,6 +68,10 @@ public class OpenMeetingsWebService {
 	 */
 	@GET
 	@Path("{identityToken}/portrait")
+	@Operation(summary = "Retrieve the portrait of an user", description = "Retrieves the portrait of an user")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The portrait as image"),
+			@ApiResponse(responseCode = "404", description = "The identity or the portrait not found") })	
 	@Produces({"image/jpeg","image/jpg",MediaType.APPLICATION_OCTET_STREAM})
 	public Response getPortrait(@PathParam("identityToken") String identityToken, @Context Request request) {
 		OpenMeetingsModule module = CoreSpringFactory.getImpl(OpenMeetingsModule.class);

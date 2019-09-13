@@ -44,6 +44,12 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -56,6 +62,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @Tag(name = "Repo")
 @Path("repo/wikis")
+	
 @Component
 public class WikisWebService {
 	
@@ -69,6 +76,8 @@ public class WikisWebService {
 	 * @return
 	 */
 	@Path("{wikiKey}")
+	@Operation(summary = "export a specific wiki", description = "export a specific wiki")
+	
 	public WikiWebService getWiki() {
 		WikiWebService wikiWebservice = new WikiWebService();
 		CoreSpringFactory.autowireObject(wikiWebservice);
@@ -84,6 +93,11 @@ public class WikisWebService {
 	 * @return
 	 */
 	@GET
+	@Operation(summary = "get list of repo-entry wikis", description = "get list of repo-entry wikis. Group-Wikis are not listed!")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Retrieve all the wikis", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = WikiVOes.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = WikiVOes.class))) })})
 	@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 	public Response getWikis(@Context HttpServletRequest httpRequest) {
 		List<RepositoryEntry> res = getAccessibleWikiRepositoryEntries(httpRequest);

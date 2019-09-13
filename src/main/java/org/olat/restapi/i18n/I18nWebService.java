@@ -39,6 +39,10 @@ import org.olat.core.util.i18n.I18nModule;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * Description:<br>
@@ -65,6 +69,9 @@ public class I18nWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "Retrieves the version of the i18n Web Service", description = "Retrieves the version of the i18n Web Service")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Return the version number") })	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -84,6 +91,10 @@ public class I18nWebService {
 	 */
 	@GET
 	@Path("{package}/{key}")
+	@Operation(summary = "Return the translation of the key", description = "Return the translation of the key. If the \"locale\" parameter is not specified, the method\n" + 
+			"	  try to use the \"locale\" of the user and if it hasn't, take the default locale")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The translation of the package + key") })
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getTranslation(@PathParam("package") String packageName, @PathParam("key") String key, @QueryParam("locale") String localeKey, @Context HttpServletRequest request) {
 		I18nManager i18n = CoreSpringFactory.getImpl(I18nManager.class);

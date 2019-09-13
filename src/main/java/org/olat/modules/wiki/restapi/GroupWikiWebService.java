@@ -20,6 +20,7 @@
 package org.olat.modules.wiki.restapi;
 
 import javax.servlet.http.HttpServletRequest;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -29,6 +30,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import org.olat.group.BusinessGroup;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -56,6 +61,10 @@ public class GroupWikiWebService {
 	 * @return
 	 */
 	@GET
+	@Operation(summary = "will export the wiki", description = "will export the wiki from the current group to a CP and serve as\n" + 
+			"	  zip-file.<br />")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "wiki expoted") })	
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response exportWiki(@Context HttpServletRequest request, @Context HttpServletResponse response) {
 		if (learningGroup == null)

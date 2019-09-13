@@ -20,6 +20,7 @@
 package org.olat.modules.wiki.restapi;
 
 import javax.servlet.http.HttpServletRequest;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.PathParam;
@@ -41,6 +42,7 @@ import org.olat.resource.OLATResourceManager;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.swagger.v3.oas.annotations.Operation;
 /**
  * 
  * The Wiki Webservice<br />
@@ -70,6 +72,9 @@ public class WikiWebService {
 	 * @return
 	 */
 	@GET
+	@Operation(summary = "will export the specified wiki ", description = "will export the specified wiki (which must be a repo-entry-wiki) to a CP\n" + 
+			"	  and serve as zip-file.<br />")
+		
 	@Produces({"application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response exportWiki(@PathParam("wikiKey") String wikiKey, @Context HttpServletRequest request, @Context HttpServletResponse response) {
 		RepositoryEntry wikiEntry = getExportableWikiRepoEntryByAnyKey(wikiKey);

@@ -39,6 +39,13 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroupService;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * Description:<br>
@@ -61,6 +68,11 @@ public class ContactsWebService {
 	 * @return The list of contacts
 	 */
 	@GET
+	@Operation(summary = "Retrieve the contacts of the logged in identity", description = "Retrieve the contacts of the logged in identity")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The list of contacts", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = ContactVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = ContactVO.class))) }) })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMyContacts(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,

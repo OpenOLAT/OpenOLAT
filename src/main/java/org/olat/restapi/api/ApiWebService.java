@@ -31,6 +31,9 @@ import javax.ws.rs.core.Response.Status;
 
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -59,6 +62,9 @@ public class ApiWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "Version number of the whole REST API of OLAT", description = "Version number of the whole REST API of OLAT")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Return the version number") })	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -66,6 +72,9 @@ public class ApiWebService {
 	
 	@GET
 	@Path("doc")
+	@Operation(summary = "Get the doc", description = "Get the doc")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Return the doc") })	
 	@Produces(MediaType.TEXT_HTML)
 	public Response getHtmlDoc() {
 		InputStream in = ApiWebService.class.getResourceAsStream("_content/application.html");
@@ -83,6 +92,9 @@ public class ApiWebService {
 	 */
 	@GET
 	@Path("doc/{filename}")
+	@Operation(summary = "Returns images for the documentation of OLAT", description = "Returns images for the documentation of OLAT")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Images for the documentation") })	
 	@Produces("image/jpeg")
 	public Response getImage1(@PathParam("filename") String filename) {
 		InputStream in = ApiWebService.class.getResourceAsStream("_content/" + filename);
@@ -100,6 +112,9 @@ public class ApiWebService {
 	 */
 	@GET
 	@Path("{filename}")
+	@Operation(summary = "Returns images for the documentation of OLAT", description = "Returns images for the documentation of OLAT")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Images for the documentation") })	
 	@Produces("image/jpeg")
 	public Response getImage2(@PathParam("filename") String filename) {
 		InputStream in = ApiWebService.class.getResourceAsStream("_content/" + filename);
@@ -114,6 +129,9 @@ public class ApiWebService {
 	 */
 	@GET
 	@Path("copyright")
+	@Operation(summary = "Returns the copyright of OLAT", description = "Returns the copyright of OLAT")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The copyright of the REST API") })	
 	@Produces({MediaType.APPLICATION_XHTML_XML, MediaType.TEXT_HTML})
 	public Response getCopyrightXhtml() {
 		StringBuilder sb = new StringBuilder();
@@ -132,6 +150,9 @@ public class ApiWebService {
 	 */
 	@GET
 	@Path("copyright")
+	@Operation(summary = "Returns the copyright of OLAT", description = "Returns the copyright of OLAT")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The copyright of the REST API") })
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getCopyrightPlainText() {
 		return Response.ok(COPYRIGHT).build();

@@ -412,6 +412,18 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 */
 	@PUT
 	@Path("{nodeId}/message")
+	@Operation(summary = "Creates a new forum message",
+	description = "Creates a new forum message in the forum of the course node")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The root message of the thread",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = MessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = MessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The author, forum or message not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response newMessageToForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @QueryParam("parentMessageId") Long parentMessageId, @QueryParam("title") String title,
 			@QueryParam("body") String body, @QueryParam("identityName") String identityName, @Context HttpServletRequest request) {

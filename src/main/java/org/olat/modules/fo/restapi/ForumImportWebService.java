@@ -21,6 +21,7 @@
 package org.olat.modules.fo.restapi;
 
 import javax.ws.rs.GET;
+
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -33,6 +34,9 @@ import org.olat.modules.fo.manager.ForumManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -64,6 +68,9 @@ public class ForumImportWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "The version of the Forum Web Service", description = "The version of the Forum Web Service")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the Forum Web Service")})	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -75,6 +82,7 @@ public class ForumImportWebService {
 	 * @return
 	 */
 	@Path("{forumKey}")
+	@Operation(summary = "Web service to manage a forum", description = "Web service to manage a forum")
 	public ForumWebService getForumWebservice(@PathParam("forumKey") Long forumKey) {
 		Forum forum = forumManager.loadForum(forumKey);
 		ForumWebService ws = new ForumWebService(forum);
