@@ -36,11 +36,11 @@ import org.olat.core.id.Identity;
 import org.olat.core.util.mail.ContactList;
 import org.olat.core.util.mail.ContactMessage;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.co.COToolRecipientsController.Config;
 import org.olat.course.nodes.co.COToolRecipientsController.Recipients;
 import org.olat.course.nodes.members.MembersHelpers;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.co.ContactFormController;
-import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -52,37 +52,51 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class COToolController extends BasicController {
 
+	private static final Recipients[] PARTICIPANT_RECIPIENTS = new Recipients[] {Recipients.owners, Recipients.coaches};
+
 	private final ContactFormController emailCtrl;
 	private final COToolRecipientsController recipientCtrl;
 	
-	private final RepositoryEntry courseRepositoryEntry;
 	private final CourseGroupManager courseGroupManager;
 
 	@Autowired
 	private RepositoryService repositoryService;
 
+	private VelocityContainer mainVC;
+
 	public COToolController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
-		courseGroupManager = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
-		this.courseRepositoryEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		this.courseGroupManager = userCourseEnv.getCourseEnvironment().getCourseGroupManager();
 		
-		VelocityContainer mainVC = createVelocityContainer("tool");
+		mainVC = createVelocityContainer("tool");
 		
-		recipientCtrl = new COToolRecipientsController(ureq, wControl);
+		Config recipientCtrlConfig = createRecipientCtrlConfigs(userCourseEnv);
+		recipientCtrl = new COToolRecipientsController(ureq, wControl, recipientCtrlConfig);
 		listenTo(recipientCtrl);
 		mainVC.put("recipients", recipientCtrl.getInitialComponent());
 		
 		ContactMessage cmsg = new ContactMessage(getIdentity());
-		Set<Recipients> recipients = recipientCtrl.getSelectedRecipients();
-		for (ContactList recipientList : getRecipientsLists(recipients)) {
-			cmsg.addEmailTo(recipientList);
-		}
+		// Empty contact lists are rejected by the constructor of the ContactMessage.
+		// So we use a dummy list to have at least one recipient and set the real
+		// contacts lists in a second step.
+		ContactList dummyList = new ContactList("dummy");
+		dummyList.add(getIdentity());
+		cmsg.addEmailTo(dummyList);
 		emailCtrl = new ContactFormController(ureq, getWindowControl(), false, false, false, cmsg, null);
 		emailCtrl.setContactFormTitle(null);
+		Set<Recipients> recipients = recipientCtrl.getSelectedRecipients();
+		doSetReciepients(recipients);
 		listenTo(emailCtrl);
 		mainVC.put("email", emailCtrl.getInitialComponent());
 		
 		putInitialPanel(mainVC);
+	}
+
+	private Config createRecipientCtrlConfigs(UserCourseEnvironment userCourseEnv) {
+		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
+			return new Config(true, Recipients.values());
+		}
+		return new Config(false, PARTICIPANT_RECIPIENTS);
 	}
 
 	@Override
@@ -90,6 +104,9 @@ public class COToolController extends BasicController {
 		if (source == recipientCtrl && event == FormEvent.CHANGED_EVENT) {
 			Set<Recipients> recipients = recipientCtrl.getSelectedRecipients();
 			doSetReciepients(recipients);
+		} else if (source == emailCtrl && (event == Event.DONE_EVENT || event == Event.FAILED_EVENT)) {
+			recipientCtrl.setReadOnly();
+			mainVC.setDirty(true);
 		}
 		super.event(ureq, source, event);
 	}
@@ -114,21 +131,21 @@ public class COToolController extends BasicController {
 	}
 	
 	private ContactList getOwnersContactList() {
-		ContactList cl = new ContactList(translate("form.message.chckbx.owners"));
-		List<Identity> identities = MembersHelpers.getOwners(repositoryService, courseRepositoryEntry);
+		ContactList cl = new ContactList(translate("tool.recipients.owners"));
+		List<Identity> identities = MembersHelpers.getOwners(repositoryService, courseGroupManager.getCourseEntry());
 		cl.addAllIdentites(identities);
 		return cl;
 	}
 	
 	private ContactList getCoachesContactList() {
-		ContactList cl = new ContactList(translate("form.message.chckbx.coaches"));
+		ContactList cl = new ContactList(translate("tool.recipients.coaches"));
 		Collection<Identity> identities = courseGroupManager.getCoaches();
 		cl.addAllIdentites(identities);
 		return cl;
 	}
 	
 	private ContactList getParticipantsContactList() {
-		ContactList cl = new ContactList(translate("form.message.chckbx.partips"));
+		ContactList cl = new ContactList(translate("tool.recipients.participants"));
 		Collection<Identity> identities = courseGroupManager.getParticipants();
 		cl.addAllIdentites(identities);
 		return cl;

@@ -60,9 +60,12 @@ public class COToolRecipientsController extends FormBasicController {
 	}
 	
 	private MultipleSelectionElement recipientsEl;
+
+	private final Config config;
 	
-	public COToolRecipientsController(UserRequest ureq, WindowControl wControl) {
+	public COToolRecipientsController(UserRequest ureq, WindowControl wControl, Config config) {
 		super(ureq, wControl);
+		this.config = config;
 		initForm(ureq);
 	}
 	
@@ -83,8 +86,15 @@ public class COToolRecipientsController extends FormBasicController {
 			recipientKV.add(entry(recipient.name(), translate(recipient.getI18nKey())));
 		}
 		recipientsEl = uifactory.addCheckboxesHorizontal("tool.recipients", formLayout, recipientKV.keys(), recipientKV.values());
-		recipientsEl.select(Recipients.owners.name(), true);
+		recipientsEl.setEnabled(config.isRecipientsEnabled());
+		for (Recipients recipients : config.getInitialRecipients()) {
+			recipientsEl.select(recipients.name(), true);
+		}
 		recipientsEl.addActionListener(FormEvent.ONCHANGE);
+	}
+
+	public void setReadOnly() {
+		recipientsEl.setEnabled(false);
 	}
 
 	@Override
@@ -119,6 +129,25 @@ public class COToolRecipientsController extends FormBasicController {
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	static class Config {
+		
+		private final boolean recipientsEnabled;
+		private final Recipients[] initialRecipients;
+		
+		Config(boolean recipientsEnabled, Recipients[] recipients) {
+			this.recipientsEnabled = recipientsEnabled;
+			this.initialRecipients = recipients;
+		}
+
+		private boolean isRecipientsEnabled() {
+			return recipientsEnabled;
+		}
+
+		private Recipients[] getInitialRecipients() {
+			return initialRecipients;
+		}
 	}
 
 }

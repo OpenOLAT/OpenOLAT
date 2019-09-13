@@ -66,10 +66,6 @@ public class ContactList {
 	//container for addresses contributed as identites
 	private Map<Long, Identity> identiEmails = new HashMap<>();
 	private boolean emailPrioInstitutional = false;
-
-	public ContactList() {
-		//
-	}
 	
 	/**
 	 * A ContacList must have at least a name != null, matching ^[^;,:]*$
