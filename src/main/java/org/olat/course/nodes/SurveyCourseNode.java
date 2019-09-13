@@ -268,17 +268,17 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 			ZipOutputStream exportStream, String archivePath, String charset) {
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		
-		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
-		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(ores, getIdent()));
-		SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
-		Form form = evaluationFormManager.loadForm(survey.getFormEntry());
-		
-		LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
-		ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
-
-		EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter, reportHelper,
-				getShortName());
 		try {
+			RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
+			EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(of(ores, getIdent()));
+			SessionFilter filter = SessionFilterFactory.createSelectDone(survey);
+			Form form = evaluationFormManager.loadForm(survey.getFormEntry());
+			
+			LegendNameGenerator legendNameGenerator = new SessionInformationLegendNameGenerator(filter);
+			ReportHelper reportHelper = ReportHelper.builder(locale).withLegendNameGenrator(legendNameGenerator).build();
+
+			EvaluationFormExcelExport evaluationFormExport = new EvaluationFormExcelExport(form, filter, reportHelper,
+					getShortName());
 			evaluationFormExport.export(exportStream, archivePath);
 		} catch (IOException e) {
 			log.error("", e);
