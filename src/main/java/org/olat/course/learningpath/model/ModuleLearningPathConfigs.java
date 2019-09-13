@@ -24,6 +24,7 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DONE_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_ESTIMATED_DURATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_OBLIGATION;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_DONE_TRIGGER_NODE_VISITED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_DONE_TRIGGER_RUN_DONE;
 
 import org.olat.core.util.StringHelper;
@@ -72,7 +73,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	@Override
 	public boolean isDoneOnNodeVisited() {
 		String doneTriggerName = getDoneTriggerName();
-		return CONFIG_VALUE_DONE_TRIGGER_RUN_DONE.equals(doneTriggerName);
+		return CONFIG_VALUE_DONE_TRIGGER_NODE_VISITED.equals(doneTriggerName);
 	}
 
 	private String getDoneTriggerName() {
