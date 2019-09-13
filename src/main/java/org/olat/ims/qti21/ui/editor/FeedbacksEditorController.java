@@ -103,9 +103,6 @@ public class FeedbacksEditorController extends FormBasicController implements Sy
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_feedback");
-		formLayout.setElementCssClass("o_sel_assessment_item_feedbacks");
-
 		DropdownItem dropdownEl = uifactory.addDropdownMenu("add.feedback.menu", null, formLayout, getTranslator());
 		dropdownEl.setOrientation(DropdownOrientation.right);
 		dropdownEl.setElementCssClass("o_sel_add_feedbacks");
