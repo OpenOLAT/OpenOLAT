@@ -28,6 +28,9 @@ package org.olat.core.gui.components.form.flexible.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.checkerframework.checker.initialization.qual.UnderInitialization;
+import org.checkerframework.checker.initialization.qual.UnknownInitialization;
+import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -288,7 +291,8 @@ public abstract class FormBasicController extends BasicController {
 	 * @param listener
 	 * @param ureq
 	 */
-	abstract protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq);
+	@RequiresNonNull({"mainForm", "uifactory"})
+	abstract protected void initForm(@UnderInitialization FormItemContainer formLayout, @UnknownInitialization Controller listener, UserRequest ureq);
 
 	public FormItem getInitialFormItem() {
 		return flc;

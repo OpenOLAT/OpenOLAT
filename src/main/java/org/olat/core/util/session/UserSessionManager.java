@@ -73,7 +73,7 @@ import org.springframework.stereotype.Service;
 public class UserSessionManager implements GenericEventListener {
 	
 	private static final Logger log = Tracing.createLoggerFor(UserSessionManager.class);
-	private static final String USERSESSIONKEY = UserSession.class.getName();
+	public static final String USERSESSIONKEY = UserSession.class.getName();
 	
 	public static final OLATResourceable ORES_USERSESSION = OresHelper.createOLATResourceableType(UserSession.class);
 	public static final String STORE_KEY_KILLED_EXISTING_SESSION = "killedExistingSession";
@@ -636,4 +636,5 @@ public class UserSessionManager implements GenericEventListener {
 		}
 		return identitySession;
 	}
+
 }
