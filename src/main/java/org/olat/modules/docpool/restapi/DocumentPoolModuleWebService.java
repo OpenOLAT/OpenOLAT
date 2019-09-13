@@ -41,6 +41,11 @@ import org.olat.modules.taxonomy.model.TaxonomyRefImpl;
 import org.olat.modules.taxonomy.restapi.TaxonomyWebService;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -67,6 +72,17 @@ public class DocumentPoolModuleWebService {
 	 */
 	@GET
 	@Path("module/configuration")
+	@Operation(summary = "Return the configuration of the taxonomy module",
+	description = "Return the configuration of the taxonomy module")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The configuration of the taxonomy module",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = DocumentPoolModuleConfigurationVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = DocumentPoolModuleConfigurationVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")}
+		)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getModuleConfiguration(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);

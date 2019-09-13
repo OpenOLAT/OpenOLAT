@@ -40,6 +40,7 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
+import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.ExecutionIdentity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +100,12 @@ public class SessionInformationsController extends FormBasicController implement
 		fillInButton = uifactory.addFormLink("gi_" + CodeHelper.getRAMUniqueID(), "session.informations.fill.in",
 				"session.informations.fill.in.label", flc, Link.BUTTON);
 		fillInButton.addActionListener(FormEvent.ONCLICK);
-		fillInButton.setVisible(!sessionInformationWrappers.isEmpty());
+		boolean hasFields = !sessionInformationWrappers.isEmpty();
+		fillInButton.setVisible(hasFields && isNotAutoFill());
+		
+		if (isAutoFill()) {
+			doFillIn();
+		}
 	}
 
 	private SessionInformationWrapper createWrapper(InformationType informationType) {
@@ -107,6 +113,8 @@ public class SessionInformationsController extends FormBasicController implement
 		TextElement informationEl = uifactory.addTextElement(name, name, "session.informations.label", 400, null, flc);
 		String label = SessionInformationsUIFactory.getTranslatedType(informationType, getLocale());
 		informationEl.setLabel("session.informations.label", new String[] { label });
+		informationEl.setMandatory(isMandatory());
+		informationEl.setEnabled(isNotAutoFill());
 		return new SessionInformationWrapper(informationType, name, informationEl);
 	}
 
@@ -116,6 +124,24 @@ public class SessionInformationsController extends FormBasicController implement
 			doFillIn();
 		}
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		if (isMandatory()) {
+			for (SessionInformationWrapper sessionInformationWrapper : sessionInformationWrappers) {
+				TextElement informationEl = sessionInformationWrapper.getInformationEl();
+				informationEl.clearError();
+				if (!StringHelper.containsNonWhitespace(informationEl.getValue())) {
+					informationEl.setErrorKey("form.legende.mandatory", null);
+					allOk = false;
+				}
+			}
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
@@ -152,10 +178,10 @@ public class SessionInformationsController extends FormBasicController implement
 	@Override
 	public void setReadOnly(boolean readOnly) {
 		for (SessionInformationWrapper wrapper: sessionInformationWrappers) {
-			wrapper.getInformationEl().setEnabled(!readOnly);
+			wrapper.getInformationEl().setEnabled(!readOnly && isNotAutoFill());
 		}
-		boolean fillInInisible = readOnly || sessionInformationWrappers.isEmpty();
-		fillInButton.setVisible(!fillInInisible);
+		boolean fillInVisible = !readOnly && !sessionInformationWrappers.isEmpty() && isNotAutoFill();
+		fillInButton.setVisible(fillInVisible);
 	}
 
 	@Override
@@ -167,7 +193,9 @@ public class SessionInformationsController extends FormBasicController implement
 	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
 		for (SessionInformationWrapper wrapper: sessionInformationWrappers) {
 			String value = SessionInformationsUIFactory.getValue(wrapper.getInformationType(), session);
-			wrapper.getInformationEl().setValue(value);
+			if (StringHelper.containsNonWhitespace(value)) {
+				wrapper.getInformationEl().setValue(value);
+			}
 		}
 	}
 
@@ -212,6 +240,18 @@ public class SessionInformationsController extends FormBasicController implement
 			
 			evaluationFormManager.updateSession(reloadedSession, email, firstname, lastname, age, gender, orgUnit, studySubject);
 		}
+	}
+	
+	private boolean isMandatory() {
+		return Obligation.mandatory.equals(sessionInformations.getObligation());
+	}
+	
+	private boolean isNotAutoFill() {
+		return !isAutoFill();
+	}
+	
+	private boolean isAutoFill() {
+		return Obligation.autofill.equals(sessionInformations.getObligation());
 	}
 	
 	private SessionInformationWrapper getWrapper(InformationType informationType) {

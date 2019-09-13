@@ -41,6 +41,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String LECTURE_ENABLED = "lecture.enabled";
 	private static final String LECTURE_MANAGED = "lecture.managed";
+	private static final String LECTURE_ABSENCE_NOTICE_ENABLED = "lecture.absence.notice.enabled";
 	
 	private static final String ASSESSMENT_MODE_ENABLED = "lecture.assessment.mode.enabled";
 	private static final String ASSESSMENT_MODE_LEAD_TIME = "lecture.assessment.mode.lead.time";
@@ -89,6 +90,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean lecturesManaged;
 	@Value("${lecture.can.override.standard.configuration:false}")
 	private boolean canOverrideStandardConfiguration;
+	@Value("${lecture.absence.notice.enabled:false}")
+	private boolean absenceNoticeEnabled;
 	
 	@Value("${lecture.status.partially.done.enabled:true}")
 	private boolean statusPartiallyDoneEnabled;
@@ -179,13 +182,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		// Add controller factory extension point to launch groups
 		NewControllerFactory.getInstance().addContextEntryControllerCreator("Lectures",
 				new LecturesManagementContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("LecturesManagementSite",
+				new LecturesManagementContextEntryControllerCreator());
 		
 		updateProperties();
 	}
 	
 	@Override
 	protected void initFromChangedProperties() {
-		init();
+		updateProperties();
 	}
 	
 	private void updateProperties() {
@@ -199,7 +204,12 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(managedObj)) {
 			lecturesManaged = "true".equals(managedObj);
 		}
-	
+		
+		String absenceNoticeEnabledObj = getStringPropertyValue(LECTURE_ABSENCE_NOTICE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(absenceNoticeEnabledObj)) {
+			absenceNoticeEnabled = "true".equals(absenceNoticeEnabledObj);
+		}
+		
 		String canOverrideSStandardConfigurationObj = getStringPropertyValue(CAN_OVERRIDE_STANDARD_CONFIGURATION, true);
 		if(StringHelper.containsNonWhitespace(canOverrideSStandardConfigurationObj)) {
 			canOverrideStandardConfiguration = "true".equals(canOverrideSStandardConfigurationObj);
@@ -390,6 +400,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setLecturesManaged(boolean lecturesManaged) {
 		this.lecturesManaged = lecturesManaged;
 		setStringProperty(LECTURE_MANAGED, Boolean.toString(lecturesManaged), true);
+	}
+	
+	public boolean isAbsenceNoticeEnabled() {
+		return absenceNoticeEnabled;
+	}
+
+	public void setAbsenceNoticeEnabled(boolean enabled) {
+		this.absenceNoticeEnabled = enabled;
+		setStringProperty(LECTURE_ABSENCE_NOTICE_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	public boolean isAuthorizedAbsenceEnabled() {

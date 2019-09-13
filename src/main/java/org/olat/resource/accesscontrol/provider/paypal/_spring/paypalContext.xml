@@ -22,7 +22,7 @@
 				<value>org.olat.admin.SystemAdminMainController</value>		
 			</list>
 		</property>
-		<property name="parentTreeNodeIdentifier" value="modulesParent" /> 
+		<property name="parentTreeNodeIdentifier" value="paymentsParent" /> 
 		<property name="order" value="7221" />
 	</bean>
 	

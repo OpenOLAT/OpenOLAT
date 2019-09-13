@@ -166,6 +166,27 @@ public class MultipleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentI
 	}
 
 	@Override
+	public boolean scoreOfCorrectAnswerWarning() {
+		boolean warning;
+		if(getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
+			boolean wrongAnswerHasPoint = false;
+			boolean correctAnswerHasNotPoint = true;
+			for(SimpleChoice choice:getChoices()) {
+				Double score = getMapping(choice.getIdentifier());
+				if(isCorrect(choice)) {
+					correctAnswerHasNotPoint &= (score == null || score.doubleValue() < 0.000001);
+				} else {
+					wrongAnswerHasPoint |= (score != null && score.doubleValue() > 0.6);
+				}	
+			}
+			warning = wrongAnswerHasPoint && correctAnswerHasNotPoint;
+		} else {
+			warning = false;
+		}
+		return warning;
+	}
+
+	@Override
 	public void clearSimpleChoices() {
 		if(correctAnswers != null) {
 			correctAnswers.clear();

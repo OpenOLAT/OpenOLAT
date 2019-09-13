@@ -28,9 +28,11 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.CodeHelper;
@@ -38,6 +40,7 @@ import org.olat.modules.ceditor.PageElementEditorController;
 import org.olat.modules.ceditor.ui.event.ChangePartEvent;
 import org.olat.modules.forms.model.xml.SessionInformations;
 import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
+import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
 
 /**
  * 
@@ -48,6 +51,7 @@ import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 public class SessionInformationsEditorController extends FormBasicController implements PageElementEditorController {
 	
 	private SessionInformationsController sessionInforamtionsCtrl;
+	private SingleSelection obligationEl;
 	private MultipleSelectionElement informationsEl;
 	
 	private final SessionInformations sessionInformations;
@@ -74,6 +78,18 @@ public class SessionInformationsEditorController extends FormBasicController imp
 				getTranslator());
 		settingsCont.setRootForm(mainForm);
 		formLayout.add("settings", settingsCont);
+		
+		KeyValues obligationKV = new KeyValues();
+		obligationKV.add(KeyValues.entry(Obligation.optional.name(), translate("session.information.obligation.optional")));
+		obligationKV.add(KeyValues.entry(Obligation.mandatory.name(), translate("session.information.obligation.mandatory")));
+		obligationKV.add(KeyValues.entry(Obligation.autofill.name(), translate("session.information.obligation.autofill")));
+		obligationEl = uifactory.addDropdownSingleselect("gi_m_" + postfix, "session.information.obligation",
+				settingsCont, obligationKV.keys(), obligationKV.values());
+		String selectedObligation = sessionInformations.getObligation() != null
+				? sessionInformations.getObligation().name()
+				: Obligation.optional.name();
+		obligationEl.select(selectedObligation, true);
+		obligationEl.addActionListener(FormEvent.ONCHANGE);
 		
 		String[] keys = SessionInformationsUIFactory.getTypeKeys();
 		String[] values = SessionInformationsUIFactory.getTranslatedTypes(getLocale());
@@ -102,12 +118,21 @@ public class SessionInformationsEditorController extends FormBasicController imp
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == informationsEl) {
+		if (source == obligationEl) {
+			doSetObligation();
+		} else if (source == informationsEl) {
 			doEnableInformations();
 		}
 		sessionInforamtionsCtrl.update();
 		fireEvent(ureq, new ChangePartEvent(sessionInformations));
 		super.formInnerEvent(ureq, source, event);
+	}
+
+	private void doSetObligation() {
+		Obligation sselectedObligation = obligationEl.isOneSelected()
+				? Obligation.valueOf(obligationEl.getSelectedKey())
+				: Obligation.optional;
+		sessionInformations.setObligation(sselectedObligation);
 	}
 
 	private void doEnableInformations() {

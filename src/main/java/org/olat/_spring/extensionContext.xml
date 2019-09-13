@@ -84,6 +84,21 @@
 		</property>
 	</bean>
 	
+	<!-- The payment parent node -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
+		<property name="order" value="7400" />
+		<property name="navigationKey" value="modules" />
+		<property name="nodeIdentifierIfParent" value="paymentsParent" />
+		<property name="translationPackage" value="org.olat.admin" />
+		<property name="i18nActionKey" value="menu.payments" />
+		<property name="i18nDescriptionKey" value="menu.payments.alt" />
+		<property name="extensionPoints">
+			<list>
+				<value>org.olat.admin.SystemAdminMainController</value>
+			</list>
+		</property>
+	</bean>
+	
 	<!-- The e-Assessment parent node -->
 	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
 		<property name="order" value="7420" />

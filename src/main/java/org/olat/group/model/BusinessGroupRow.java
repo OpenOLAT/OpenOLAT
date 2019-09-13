@@ -37,6 +37,7 @@ import org.olat.resource.accesscontrol.model.PriceMethodBundle;
 public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 	
 	private final Long key;
+	private final Date creationDate;
 	private final String name;
 	private final String description;
 	private final String externalId;
@@ -57,6 +58,7 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 
 	public BusinessGroupRow(BusinessGroupToSearch businessGroup) {
 		key = businessGroup.getKey();
+		creationDate = businessGroup.getCreationDate();
 		name = businessGroup.getName();
 		lastUsage = businessGroup.getLastUsage();
 		description = businessGroup.getDescription();
@@ -70,6 +72,7 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 	
 	public BusinessGroupRow(BusinessGroupRow businessGroup) {
 		key = businessGroup.getKey();
+		creationDate = businessGroup.getCreationDate();
 		name = businessGroup.getName();
 		lastUsage = businessGroup.getLastUsage();
 		description = businessGroup.getDescription();
@@ -98,10 +101,15 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		return key;
 	}
 
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
 	public Long getResourceKey() {
 		return resourceKey;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -128,6 +136,7 @@ public class BusinessGroupRow implements BusinessGroupRef, BusinessGroupShort {
 		return externalId;
 	}
 
+	@Override
 	public BusinessGroupManagedFlag[] getManagedFlags() {
 		return managedFlags;
 	}

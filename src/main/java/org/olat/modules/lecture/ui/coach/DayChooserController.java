@@ -79,6 +79,10 @@ public class DayChooserController extends FormBasicController {
 		}
 		return date;
 	}
+	
+	public void setDate(Date date) {
+		dateEl.setDate(date);
+	}
 
 	@Override
 	protected void doDispose() {

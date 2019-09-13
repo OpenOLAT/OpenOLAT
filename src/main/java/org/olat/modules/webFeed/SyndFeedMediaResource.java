@@ -26,8 +26,10 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.notifications.PersonalRSSServlet;
 import org.olat.core.gui.media.MediaResource;
+import org.olat.core.logging.Tracing;
 
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.FeedException;
@@ -42,6 +44,8 @@ import com.rometools.rome.io.SyndFeedOutput;
  * @author gwassmann
  */
 public class SyndFeedMediaResource implements MediaResource {
+	
+	private static final Logger log = Tracing.createLoggerFor(SyndFeedMediaResource.class);
 
 	private SyndFeed feed;
 	private String feedString;
@@ -55,7 +59,7 @@ public class SyndFeedMediaResource implements MediaResource {
 			SyndFeedOutput output = new SyndFeedOutput();
 			feedString = output.outputString(feed);
 		} catch (FeedException e) {
-			// cannot convert feed to string or something
+			log.error("", e);
 		}
 	}
 	

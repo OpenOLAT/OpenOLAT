@@ -21,6 +21,7 @@ package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -54,6 +55,13 @@ import org.olat.modules.lecture.model.LectureBlockRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -90,6 +98,17 @@ public class LectureBlocksWebService {
 	 * @return The lecture blocks
 	 */
 	@GET
+	@Operation(summary = "Return the lecture blocks", description = "Return the lecture blocks of the specified course or repository entry")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "An array of lecture blocks",
+				content = {
+						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LectureBlockVO.class))),
+						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LectureBlockVO.class)))
+					} 
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The course not found")}
+)	
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getLectureBlocks(@Context HttpServletRequest httpRequest) {
 		if(!administrator) {
@@ -117,6 +136,17 @@ public class LectureBlocksWebService {
 	 * @return It returns the updated / created lecture block.
 	 */
 	@PUT
+	@Operation(summary = "Create or update a lecture block", description = "Create or update a lecture block")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The updated lecture block",
+				content = {
+						@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockVO.class)),
+						@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockVO.class))
+					} 
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The course not found")}
+)	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putLectureBlocks(LectureBlockVO block) {
@@ -142,6 +172,19 @@ public class LectureBlocksWebService {
 	 * @return It returns the updated / created lecture block.
 	 */
 	@POST
+	@Operation(summary = "Create or update a lecture block", description = "Create or update a lecture block. The status of the blocks will be set to\n" + 
+			"	  autoclose only for newly created blocks. By update, the states of the\n" + 
+			"	  block and the roll call will not be updated")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The updated configuration",
+				content = {
+						@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockVO.class)),
+						@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockVO.class))
+					} 
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The course not found")}
+)	
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postLectureBlocks(LectureBlockVO block) {
@@ -242,6 +285,13 @@ public class LectureBlocksWebService {
 	 */
 	@GET
 	@Path("configuration")
+	@Operation(summary = "Return the configuration", description = "Return the configuration of the specified course or repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The configuration of the lecture's feature", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getConfiguration(@Context HttpServletRequest httpRequest) {
 		if(!administrator) {
@@ -272,6 +322,12 @@ public class LectureBlocksWebService {
 	 */
 	@POST
 	@Path("configuration")
+	@Operation(summary = "Update the configuration", description = "Update the configuration of the lecture's feature of a specified")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The updated configuration", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryLectureConfigurationVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	@Consumes({MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateConfiguration(RepositoryEntryLectureConfigurationVO configuration) {
@@ -311,6 +367,8 @@ public class LectureBlocksWebService {
 	 * @return The web service for a single lecture block.
 	 */
 	@Path("{lectureBlockKey}")
+	@Operation(summary = "Get the web service for a specific lecture block", description = "Get the web service for a specific lecture block")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The web service for a single lecture block")})
 	public LectureBlockWebService getLectureBlockWebService(@PathParam("lectureBlockKey") Long lectureBlockKey, @Context HttpServletRequest httpRequest)
 	throws WebApplicationException {
 		if(!administrator) {
@@ -350,6 +408,8 @@ public class LectureBlocksWebService {
 	 */
 	@POST
 	@Path("sync/calendar")
+	@Operation(summary = "Synchronize the calendars based on the lecture blocks", description = "Synchronize the calendars based on the lecture blocks")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The calendar is successfully synchronized")})
 	public Response syncCalendar() {
 		lectureService.syncCalendars(entry);
 		return Response.ok().build();
@@ -363,6 +423,8 @@ public class LectureBlocksWebService {
 	 */
 	@GET
 	@Path("adaptation")
+	@Operation(summary = "Adapt all roll call to the effective number of lectures", description = "Adapt all roll call to the effective number of lectures. Use with caution!")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The adaptation is successful")})
 	public Response adapatation(@Context HttpServletRequest httpRequest) {
 		if(!administrator) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

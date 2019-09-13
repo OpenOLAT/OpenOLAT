@@ -60,6 +60,7 @@ import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.util.vfs.VFSContainer;
+import org.olat.core.util.vfs.VFSItem;
 import org.olat.core.util.vfs.VFSManager;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.user.UserManager;
@@ -247,6 +248,19 @@ public class DeletedFileListController extends FormBasicController {
 			revisionsToDelete.addAll(rowRevisions);
 		}
 		vfsRepositoryService.deleteRevisions(getIdentity(), revisionsToDelete);
+		for(DeletedFileRow rowToDelete:rowsToDelete) {
+			List<VFSRevision> revisions = new ArrayList<>(rowToDelete.getRevisions());
+			revisions.removeAll(revisionsToDelete);
+			if(revisions.isEmpty()) {
+				// double check if the real file is really deleted 
+				VFSItem item = vfsRepositoryService.getItemFor(rowToDelete.getMetadata());
+				if(item == null || !item.exists()) {
+					VFSMetadata orphanMeta = vfsRepositoryService.getMetadata(rowToDelete);
+					vfsRepositoryService.deleteMetadata(orphanMeta);
+				}
+			}
+		}
+		
 		status = FolderCommandStatus.STATUS_SUCCESS;
 	}
 	

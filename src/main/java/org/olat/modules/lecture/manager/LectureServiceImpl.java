@@ -576,7 +576,45 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		auditLog(Action.createAbsenceNoticeRelations, null, afterXml, null, notice, absentIdentity, actingIdentity);
 		return notice;
 	}
-	
+
+	@Override
+	public void deleteAbsenceNotice(AbsenceNotice absenceNotice, Identity actingIdentity) {
+		AbsenceNotice notice = absenceNoticeDao.loadAbsenceNotice(absenceNotice.getKey());
+		if(notice == null) return; // nothing to do
+		
+		String beforeNotice = toAuditXml(absenceNotice);
+		Identity assessedIdentity = notice.getIdentity();
+		AbsenceNoticeRelationsAuditImpl beforeRelations = new AbsenceNoticeRelationsAuditImpl();
+		
+		List<AbsenceNoticeToLectureBlock> noticeToBlocks = absenceNoticeToLectureBlockDao.getRelations(absenceNotice);
+		if(noticeToBlocks != null && !noticeToBlocks.isEmpty()) {
+			beforeRelations.setNoticeToBlocks(noticeToBlocks);
+			absenceNoticeToLectureBlockDao.deleteRelations(noticeToBlocks);
+		}
+		List<AbsenceNoticeToRepositoryEntry> noticeToEntries = absenceNoticeToRepositoryEntryDao.getRelations(absenceNotice);
+		if(noticeToEntries != null && !noticeToEntries.isEmpty()) {
+			beforeRelations.setNoticeToEntries(noticeToEntries);
+			absenceNoticeToRepositoryEntryDao.deleteRelations(noticeToEntries);
+		}
+		
+		List<LectureBlockRollCall> rollCalls = absenceNoticeDao.getRollCalls(notice);
+		if(rollCalls != null && !rollCalls.isEmpty()) {
+			for(LectureBlockRollCall rollCall:rollCalls) {
+				rollCall.setAbsenceNotice(null);
+			}
+		}
+		// delete
+		absenceNoticeDao.deleteAbsenceNotice(notice);
+		dbInstance.commit();
+
+		auditLog(Action.deleteAbsenceNotice, beforeNotice, null, null, absenceNotice, assessedIdentity, actingIdentity);
+		if((noticeToBlocks != null && !noticeToBlocks.isEmpty()) || (noticeToEntries != null && !noticeToEntries.isEmpty())) {
+			String beforeXml = auditLogDao.toXml(beforeRelations);
+			auditLog(Action.deleteAbsenceNotice, beforeXml, null, null, absenceNotice, assessedIdentity, actingIdentity);
+		}
+		dbInstance.commit();
+	}
+
 	@Override
 	public AbsenceNotice updateAbsenceNotice(AbsenceNotice absenceNotice, Identity authorizer,
 			List<RepositoryEntry> entries, List<LectureBlock> lectureBlocks, Identity actingIdentity) {
@@ -695,7 +733,25 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 			after.setRollCalls(rollCalls);
 		}
 	}
-	
+
+	@Override
+	public AbsenceNotice updateAbsenceNoticeAuthorization(AbsenceNotice absenceNotice, Identity authorizer,
+			Boolean authorize, Identity actingIdentity) {
+		absenceNotice = absenceNoticeDao.loadAbsenceNotice(absenceNotice.getKey());
+		if(absenceNotice != null) {
+			String beforeNotice = toAuditXml(absenceNotice);
+			
+			absenceNotice.setAbsenceAuthorized(authorize);
+			((AbsenceNoticeImpl)absenceNotice).setAuthorizer(authorizer);
+			absenceNotice = absenceNoticeDao.updateAbsenceNotice(absenceNotice);
+			dbInstance.commit();
+
+			String afterNotice = toAuditXml(absenceNotice);
+			auditLog(Action.updateAbsenceNotice, beforeNotice, afterNotice, null, absenceNotice, absenceNotice.getIdentity(), actingIdentity);
+		}
+		return absenceNotice;
+	}
+
 	@Override
 	public AbsenceNotice updateAbsenceNoticeAttachments(AbsenceNotice absenceNotice, List<VFSItem> newFiles, List<VFSItem> filesToDelete) {
 		if(!filesToDelete.isEmpty()) {
@@ -1081,7 +1137,8 @@ public class LectureServiceImpl implements LectureService, UserDataDeletable, De
 		auditLog(LectureBlockAuditLog.Action.saveLectureBlock, before, after, null, lectureBlock, null, lectureBlock.getEntry(), null, teacher);
 	}
 
-	private AbsenceNotice getAbsenceNotice(Identity identity, LectureBlock lectureBlock) {
+	@Override
+	public AbsenceNotice getAbsenceNotice(IdentityRef identity, LectureBlock lectureBlock) {
 		List<AbsenceNotice> notices = absenceNoticeDao.getAbsenceNotices(identity, lectureBlock);
 		AbsenceNotice preferedNotice;
 		if(notices.isEmpty()) {

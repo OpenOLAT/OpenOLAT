@@ -74,6 +74,7 @@ public interface LectureBlockAuditLog {
 		
 		createAbsenceNotice,
 		updateAbsenceNotice,
+		deleteAbsenceNotice,
 		createAbsenceNoticeRelations,
 		updateAbsenceNoticeRelations,
 		

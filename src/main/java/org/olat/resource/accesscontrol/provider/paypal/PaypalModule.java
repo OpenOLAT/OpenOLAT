@@ -27,7 +27,6 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.GenericEventListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -43,7 +42,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class PaypalModule extends AbstractSpringModule implements GenericEventListener {
+public class PaypalModule extends AbstractSpringModule {
 	
 	private static final String X_PAYPAL_SECURITY_USERID = "paypal.security.user.id";
 	private static final String X_PAYPAL_SECURITY_CREDENTIAL = "paypal.security.password";

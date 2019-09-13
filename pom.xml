@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>14.1-SNAPSHOT</version>
+	<version>14.2-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>https://www.openolat.com</url>
@@ -62,15 +62,14 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.1.8.RELEASE</org.springframework.version>
+		<org.springframework.version>5.1.9.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.4.Final</org.hibernate.version>
-		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
-		<apache.cxf>3.3.2</apache.cxf>
+		<apache.cxf>3.3.3</apache.cxf>
 		<apache.pdfbox>2.0.16</apache.pdfbox>
 		<apache.poi>4.1.0</apache.poi>
-		<apache.log4j>2.12.0</apache.log4j>
+		<apache.log4j>2.12.1</apache.log4j>
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
-		<io.undertow>2.0.23.Final</io.undertow>
+		<io.undertow>2.0.26.Final</io.undertow>
 		<jackson.version>2.9.9</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.6</org.postgresql.version>
@@ -78,7 +77,7 @@
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
-		<activemq.version>5.15.9</activemq.version>
+		<activemq.version>5.15.10</activemq.version>
 		<qtiworks.version>1.0.18</qtiworks.version>
 
 	    <!-- properties for testing and Q&A -->
@@ -104,29 +103,6 @@
 		<skipSeleniumTests>false</skipSeleniumTests>
 	</properties>
 	<profiles>
-		<profile>
-			<id>documentation</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>jaxb2-maven-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>com.sun.jersey.contribs</groupId>
-						<artifactId>maven-wadl-plugin</artifactId>
-					</plugin>
-					<plugin>
-						<groupId>org.codehaus.mojo</groupId>
-						<artifactId>xml-maven-plugin</artifactId>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
 		<profile>
 			<id>compressjs</id>
 			<build>
@@ -434,7 +410,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.23.2</version>
+				    <version>3.23.5</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1542,238 +1518,6 @@
 					</executions>
 				</plugin>
 
-				<!-- start rest api documentation: broken:  mvn javadoc:javadoc -->
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>jaxb2-maven-plugin</artifactId>
-					<version>2.3.1</version>
-					<executions>
-						<execution>
-							<id>schemagen</id>
-							<goals>
-								<goal>schemagen</goal>
-							</goals>
-						</execution>
-					</executions>
-					<configuration>
-						<sources>
-							<source>src/main/java/org/olat/core/commons/services/notifications/restapi/vo/</source>
-							<source>src/main/java/org/olat/commons/calendar/restapi/</source>
-							<source>src/main/java/org/olat/modules/curriculum/restapi/</source>
-							<source>src/main/java/org/olat/modules/fo/restapi/</source>
-							<source>src/main/java/org/olat/modules/docpool/restapi/</source>
-							<source>src/main/java/org/olat/modules/gotomeeting/restapi/</source>
-							<source>src/main/java/org/olat/modules/taxonomy/restapi/</source>
-							<source>src/main/java/org/olat/modules/vitero/restapi/</source>
-							<source>src/main/java/org/olat/modules/wiki/restapi/vo/</source>
-							<source>src/main/java/org/olat/restapi/system/vo/</source>
-							<source>src/main/java/org/olat/restapi/support/vo/</source>
-							<source>src/main/java/org/olat/registration/restapi/</source>
-							<source>src/main/java/org/olat/user/restapi/</source>
-						</sources>
-						<schemaSourceExcludeFilters>
-                 			<myExcludes implementation="org.codehaus.mojo.jaxb2.shared.filters.pattern.PatternFileFilter">
-		                        <patterns>
-		                            <pattern>jaxb\.index</pattern>
-		                            <pattern>.*WebService.java</pattern>
-		                            <pattern>.*Factory.java</pattern>
-		                            <pattern>.*Examples.java</pattern>
-		                            <pattern>.*DateParam.java</pattern>
-		                            <pattern>.*StatusVO.java</pattern>
-		                            <pattern>.*GoToErrorVO.java</pattern>
-		                        </patterns>
-		                    </myExcludes>
-             			</schemaSourceExcludeFilters>
-						<outputDirectory>${project.build.outputDirectory}</outputDirectory>
-						<verbose>true</verbose>
-					</configuration>
-				</plugin>
-
-				<!-- Javadoc -->
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>2.4</version>
-					<executions>
-						<execution>
-							<goals>
-								<goal>javadoc</goal>
-							</goals>
-							<phase>compile</phase>
-						</execution>
-					</executions>
-
-					<configuration>
-						<encoding>UTF-8</encoding>
-						<verbose>false</verbose>
-						<show>public</show>
-						<subpackages>
-							org.olat.core.commons.services.notifications.restapi,
-							org.olat.commons.calendar.restapi,
-							org.olat.course.nodes.bc,
-							org.olat.course.nodes.bc,
-							org.olat.course.nodes.co,
-							org.olat.course.nodes.en,
-							org.olat.course.certificate.restapi,
-							org.olat.course.db.restapi,
-							org.olat.modules.curriculum.restapi,
-							org.olat.modules.docpool.restapi,
-							org.olat.modules.fo.restapi,
-							org.olat.modules.gotomeeting.restapi,
-							org.olat.modules.openmeetings.restapi,
-							org.olat.modules.taxonomy.restapi,
-							org.olat.modules.vitero.restapi,
-							org.olat.modules.wiki.restapi,
-							org.olat.registration.restapi,
-							org.olat.restapi,
-							org.olat.user.restapi
-						</subpackages>
-						<doclet>com.sun.jersey.wadl.resourcedoc.ResourceDoclet</doclet>
-						<docletArtifacts>
-							<docletArtifact>
-								<groupId>com.sun.jersey.contribs</groupId>
-								<artifactId>wadl-resourcedoc-doclet</artifactId>
-								<version>${com.sun.jersey.version}</version>
-							</docletArtifact>
-							<!-- Also specify jersey and xerces as doclet artifacts as the ResourceDoclet 
-								uses classes provided by them to generate the resourcedoc. -->
-							<docletArtifact>
-								<groupId>com.sun.jersey</groupId>
-								<artifactId>jersey-server</artifactId>
-								<version>${com.sun.jersey.version}</version>
-							</docletArtifact>
-							<docletArtifact>
-								<groupId>xerces</groupId>
-								<artifactId>xercesImpl</artifactId>
-								<version>2.12.0</version>
-							</docletArtifact>
-						</docletArtifacts>
-						<additionalparam>-output
-							${project.build.outputDirectory}/resourcedoc.xml</additionalparam>
-					</configuration>
-				</plugin>
-
-				<plugin>
-					<groupId>com.sun.jersey.contribs</groupId>
-					<artifactId>maven-wadl-plugin</artifactId>
-					<version>${com.sun.jersey.version}</version>
-					<executions>
-						<execution>
-							<id>generate</id>
-							<goals>
-								<goal>generate</goal>
-							</goals>
-							<phase>compile</phase>
-						</execution>
-					</executions>
-
-					<configuration>
-						<wadlFile>${project.build.outputDirectory}/application.wadl</wadlFile>
-						<formatWadlFile>true</formatWadlFile>
-						<baseUri>http://www.example.com</baseUri>
-						<packagesResourceConfig>
-							<param>
-								org.olat.core.commons.services.notifications.restapi;
-								org.olat.commons.calendar.restapi;
-								org.olat.course.nodes.bc;
-								org.olat.course.nodes.co;
-								org.olat.course.nodes.en;
-								org.olat.course.certificate.restapi;
-								org.olat.course.db.restapi;
-								org.olat.modules.curriculum.restapi;
-								org.olat.modules.fo.restapi;
-								org.olat.modules.docpool.restapi;
-								org.olat.modules.gotomeeting.restapi;
-								org.olat.modules.openmeetings.restapi;
-								org.olat.modules.taxonomy.restapi;
-								org.olat.modules.vitero.restapi;
-								org.olat.modules.wiki.restapi;
-								org.olat.registration.restapi;
-								org.olat.restapi;
-								org.olat.user.restapi;
-							</param>
-						</packagesResourceConfig>
-						<wadlGenerators>
-							<wadlGeneratorDescription>
-								<className>com.sun.jersey.server.wadl.generators.WadlGeneratorApplicationDoc</className>
-								<properties>
-									<property>
-										<name>applicationDocsFile</name>
-										<value>src/main/java/org/olat/restapi/support/application-doc.xml</value>
-									</property>
-								</properties>
-							</wadlGeneratorDescription>
-							<wadlGeneratorDescription>
-								<className>com.sun.jersey.server.wadl.generators.WadlGeneratorGrammarsSupport</className>
-								<properties>
-									<property>
-										<name>grammarsFile</name>
-										<value>src/main/java/org/olat/restapi/support/application-grammars.xml</value>
-									</property>
-								</properties>
-							</wadlGeneratorDescription>
-							<wadlGeneratorDescription>
-								<className>com.sun.jersey.server.wadl.generators.resourcedoc.WadlGeneratorResourceDocSupport</className>
-								<properties>
-									<property>
-										<name>resourceDocFile</name>
-										<value>${project.build.outputDirectory}/resourcedoc.xml</value>
-									</property>
-								</properties>
-							</wadlGeneratorDescription>
-						</wadlGenerators>
-					</configuration>
-					<dependencies>
-						<dependency>
-							<groupId>xerces</groupId>
-							<artifactId>xercesImpl</artifactId>
-							<version>2.12.0</version>
-						</dependency>
-					</dependencies>
-				</plugin>
-
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>xml-maven-plugin</artifactId>
-					<version>1.0.1</version>
-					<executions>
-						<execution>
-							<id>xslt: ${project.build.outputDirectory}/application.html</id>
-							<phase>compile</phase> <!-- append to the packaging phase. -->
-							<goals>
-								<goal>transform</goal> <!-- goals == mojos -->
-							</goals>
-							<configuration>
-								<transformationSets>
-									<transformationSet>
-										<dir>${project.build.outputDirectory}</dir>
-										<includes>
-											<include>application.wadl</include>
-										</includes>
-										<outputDir>src/main/java/org/olat/restapi/api/_content/</outputDir>
-										<stylesheet>src/main/java/org/olat/restapi/support/wadl_documentation.xsl</stylesheet>
-										<fileMappers>
-											<fileMapper
-												implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
-												<targetExtension>.html</targetExtension>
-											</fileMapper>
-										</fileMappers>
-									</transformationSet>
-								</transformationSets>
-							</configuration>
-						</execution>
-					</executions>
-					<dependencies>
-						<dependency>
-							<groupId>net.sf.saxon</groupId>
-							<artifactId>saxon9</artifactId>
-							<version>9.1.0.8</version>
-						</dependency>
-					</dependencies>
-				</plugin>
-
-				<!-- end rest api documentation -->
-				
 				<!-- Dependency checks -->
 				<plugin>
 					<groupId>org.owasp</groupId>
@@ -2125,7 +1869,7 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.7.26</version>
+			<version>1.7.28</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -2240,7 +1984,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
-			<version>4.4.11</version>
+			<version>4.4.12</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -2266,7 +2010,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.7</version>
+			<version>1.8</version>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>
@@ -2361,7 +2105,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20180813</version>
+			<version>20190722</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2396,7 +2140,7 @@
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>jakarta.mail</artifactId>
-			<version>1.6.3</version>		
+			<version>1.6.4</version>		
 		</dependency>
 		<dependency>
 			<groupId>com.neemsoft</groupId>
@@ -2516,6 +2260,11 @@
 			<groupId>com.paypal.sdk</groupId>
 			<artifactId>adaptivepaymentssdk</artifactId>
 			<version>2.9.117</version>
+		</dependency>
+		<dependency>
+			<groupId>com.paypal.sdk</groupId>
+			<artifactId>checkout-sdk</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 		<!-- end Paypal -->
 

@@ -109,6 +109,10 @@ public class BusinessGroupToSearch implements Persistable {
 		return key;
 	}
 	
+	public Date getCreationDate() {
+		return creationDate;
+	}
+
 	public String getName() {
 		return name;
 	}

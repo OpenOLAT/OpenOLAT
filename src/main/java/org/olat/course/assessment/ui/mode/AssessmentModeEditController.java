@@ -41,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -239,31 +240,28 @@ public class AssessmentModeEditController extends FormBasicController {
 		}
 		startModeEl.setEnabled(status != Status.end);
 		
-		String[] audienceKeys = new String[] {
-			AssessmentMode.Target.courseAndGroups.name(),
-			AssessmentMode.Target.course.name(),
-			AssessmentMode.Target.groups.name(),
-			AssessmentMode.Target.curriculumEls.name()
-		};
-		String[] audienceValues = new String[] {
-			translate("target.courseAndGroups"),
-			translate("target.course"),
-			translate("target.groups"),
-			translate("target.curriculumElements")
-		};
-		targetEl = uifactory.addRadiosVertical("audience", "mode.target", formLayout, audienceKeys, audienceValues);
+		KeyValues targetKeyValues = new KeyValues();
+		boolean curriculumEnabled = curriculumModule.isEnabled();
+		String allLabel = curriculumEnabled ? translate("target.courseGroupsAndCurriculums") : translate("target.courseAndGroups");
+		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.courseAndGroups.name(), allLabel));
+		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.course.name(), translate("target.course")));
+		targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.groups.name(), translate("target.groups")));
+		if(curriculumEnabled) {
+			targetKeyValues.add(KeyValues.entry(AssessmentMode.Target.curriculumEls.name(), translate("target.curriculumElements")));
+		}
+		targetEl = uifactory.addRadiosVertical("audience", "mode.target", formLayout, targetKeyValues.keys(), targetKeyValues.values());
 		targetEl.setElementCssClass("o_sel_assessment_mode_audience");
 		targetEl.setEnabled(status != Status.end);
 		Target target = assessmentMode.getTargetAudience();
 		if(target != null) {
-			for(String audienceKey:audienceKeys) {
+			for(String audienceKey:targetKeyValues.keys()) {
 				if(audienceKey.equals(target.name())) {
 					targetEl.select(audienceKey, true);
 				}
 			}
 		}
 		if(!targetEl.isOneSelected()) {
-			targetEl.select(audienceKeys[0], true);
+			targetEl.select(targetKeyValues.keys()[0], true);
 		}
 		//choose groups / curriculum
 		String groupPage = velocity_root + "/choose_groups.html";
@@ -277,7 +275,7 @@ public class AssessmentModeEditController extends FormBasicController {
 		chooseAreasButton.setEnabled(status != Status.end);
 		chooseCurriculumElementsButton = uifactory.addFormLink("choose.curriculum.elements", chooseGroupsCont, Link.BUTTON);
 		chooseCurriculumElementsButton.setEnabled(status != Status.end);
-		chooseCurriculumElementsButton.setVisible(curriculumModule.isEnabled());
+		chooseCurriculumElementsButton.setVisible(curriculumEnabled);
 
 		groupKeys = new ArrayList<>();
 		groupNames = new ArrayList<>();

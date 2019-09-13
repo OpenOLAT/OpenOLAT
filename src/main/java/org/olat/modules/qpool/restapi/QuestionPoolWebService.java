@@ -58,6 +58,12 @@ import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -74,6 +80,11 @@ public class QuestionPoolWebService {
 	private static final Logger log = Tracing.createLoggerFor(QuestionPoolWebService.class);
 	
 	@PUT
+	@Operation(summary = "Put QuestionItem", description = "Put QuestionItem")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The QuestionItem", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = QuestionItemVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = QuestionItemVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response importQuestionItemsPut(@Context HttpServletRequest request) {
@@ -81,6 +92,11 @@ public class QuestionPoolWebService {
 	}
 	
 	@POST
+	@Operation(summary = "Post QuestionItem", description = "Post QuestionItem")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The QuestionItem", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = QuestionItemVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = QuestionItemVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.MULTIPART_FORM_DATA})
 	public Response importQuestionItemsPost(@Context HttpServletRequest request) {
@@ -146,6 +162,12 @@ public class QuestionPoolWebService {
 	 */
 	@DELETE
 	@Path("{itemKey}")
+	@Operation(summary = "Delete a question item by id", description = "Delete a question item by id")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Nothing"),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The question item not found")}
+)	
 	public Response deleteQuestionItem(@PathParam("itemKey") Long itemKey, @Context HttpServletRequest request) {
 		if(!isQuestionPoolManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -180,6 +202,12 @@ public class QuestionPoolWebService {
 	 */
 	@GET
 	@Path("{itemKey}/authors")
+	@Operation(summary = "Get all authors of the question item", description = "Get all authors of the question item")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The array of authors", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The question item not found") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthors(@PathParam("itemKey") Long itemKey,
 			@Context HttpServletRequest request) {
@@ -218,6 +246,17 @@ public class QuestionPoolWebService {
 	 */
 	@GET
 	@Path("{itemKey}/authors/{identityKey}")
+	@Operation(summary = "Get this specific author of the quesiton item", description = "Get this specific author of the quesiton item")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The author",
+				content = {
+						@Content(mediaType = "application/json", schema = @Schema(implementation = UserVO.class)),
+						@Content(mediaType = "application/xml", schema = @Schema(implementation = UserVO.class))
+					} 
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The question item not found")}
+)	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAuthor(@PathParam("itemKey") Long itemKey, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest request) {
@@ -253,6 +292,13 @@ public class QuestionPoolWebService {
 	 */
 	@PUT
 	@Path("{itemKey}/authors/{identityKey}")
+	@Operation(summary = "Add an author to the question item", description = "Add an author to the question item")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The user is an author of the question item"
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The question item or the user not found")}
+)	
 	public Response addAuthor(@PathParam("itemKey") Long itemKey, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {
 		if(!isQuestionPoolManager(httpRequest)) {
@@ -290,6 +336,13 @@ public class QuestionPoolWebService {
 	 */
 	@DELETE
 	@Path("{itemKey}/authors/{identityKey}")
+	@Operation(summary = "Remove an author to the question item", description = "Remove an author to the question item")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The user was successfully removed as author of the question item"
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The question item or the user not found")}
+)	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response removeAuthor(@PathParam("itemKey") Long itemKey, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest) {

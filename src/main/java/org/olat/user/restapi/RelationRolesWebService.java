@@ -20,6 +20,7 @@
 package org.olat.user.restapi;
 
 import java.util.Collections;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,12 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -73,6 +80,9 @@ public class RelationRolesWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "The version of the Web Service", description = "The version of the Web Service")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service") })	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -91,6 +101,12 @@ public class RelationRolesWebService {
 	 */
 	@GET
 	@Path("roles")
+	@Operation(summary = "List of relation roles", description = "List of relation roles")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The list of all relation roles in the OpenOLAT system", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RelationRoleVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RelationRoleVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRoles(@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
@@ -120,6 +136,13 @@ public class RelationRolesWebService {
 	 */
 	@PUT
 	@Path("roles")
+	@Operation(summary = "Creates and persists a new relation role entity", description = "Creates and persists a new relation role entity")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The persisted relation role", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RelationRoleVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RelationRoleVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putRelationRole(RelationRoleVO relationRoleVo, @Context HttpServletRequest httpRequest) {
@@ -148,6 +171,13 @@ public class RelationRolesWebService {
 	 */
 	@POST
 	@Path("roles")
+	@Operation(summary = "Update a relation role entity", description = "Updates a relation role entity")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The merged relation role", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RelationRoleVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RelationRoleVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postRelationRole(RelationRoleVO relationRoleVo, @Context HttpServletRequest httpRequest) {
@@ -176,6 +206,13 @@ public class RelationRolesWebService {
 	 */
 	@POST
 	@Path("roles/{relationRoleKey}")
+	@Operation(summary = "Update a relation role entity", description = "Updates a relation role entity")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The merged relation role", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RelationRoleVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RelationRoleVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postRelationRole(RelationRoleVO relationRoleVo, @PathParam("relationRoleKey") Long relationRoleKey,
@@ -216,6 +253,11 @@ public class RelationRolesWebService {
 	
 	@DELETE
 	@Path("roles/{relationRoleKey}")
+	@Operation(summary = "Remove role", description = "Remove a role")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The role has been removed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Role not found")})	
 	public Response deleteRelationRole(@PathParam("relationRoleKey") Long relationRoleKey, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

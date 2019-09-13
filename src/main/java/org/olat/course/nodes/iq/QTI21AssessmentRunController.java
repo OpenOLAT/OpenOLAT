@@ -316,7 +316,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					}
 				}
 				Integer attempts = assessmentEntry.getAttempts();
-				mainVC.contextPut("attempts", attempts == null ? new Integer(0) : attempts);
+				mainVC.contextPut("attempts", attempts == null ? Integer.valueOf(0) : attempts);
 				boolean showChangelog = (!anonym && enableScoreInfo && resultsVisible && isResultVisible(config));
 				mainVC.contextPut("showChangeLog", showChangelog);
 				
@@ -358,7 +358,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 					mainVC.contextPut("endTestDate", formatter.formatDateAndTime(endTestDate));
 				}
 				Date now = new Date();
-				if(startTestDate != null && startTestDate.after(now)) {
+				if(startTestDate.after(now)) {
 					return true;
 				}
 	
@@ -429,7 +429,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		
 		if(!anonym && resultsVisible) {
 			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-			mainVC.contextPut("log", am.getUserNodeLog(courseNode, getIdentity()));	
+			String userLog = am.getUserNodeLog(courseNode, getIdentity());
+			mainVC.contextPut("log", StringHelper.escapeHtml(userLog));	
 		}
 	}
 	

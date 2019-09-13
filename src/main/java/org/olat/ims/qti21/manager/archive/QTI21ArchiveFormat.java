@@ -1,4 +1,6 @@
 /**
+
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -419,6 +421,7 @@ public class QTI21ArchiveFormat {
 		header2Row.addCell(col++, translator.translate("column.header.duration"), headerStyle);
 
 		List<AbstractInfos> infos = getItemInfos();
+		int itemPos = 0;
 		for(int i=0; i<infos.size(); i++) {
 			AbstractInfos info = infos.get(i);
 			if(info instanceof ItemInfos) {
@@ -428,8 +431,9 @@ public class QTI21ArchiveFormat {
 					for(int j=0; j<interactions.size(); j++) {
 						Interaction interaction = interactions.get(j);
 						col = interactionArchiveMap.get(interaction.getQtiClassName())
-								.writeHeader2(item.getAssessmentItem(), interaction, i, j, header2Row, col, workbook);
+								.writeHeader2(item.getAssessmentItem(), interaction, itemPos, j, header2Row, col, workbook);
 					}
+					itemPos++;
 				}
 				if (exportConfig.isPointCol()) {
 					header2Row.addCell(col++, translator.translate("item.score"), headerStyle);
@@ -482,7 +486,7 @@ public class QTI21ArchiveFormat {
 		for(int i=0; i<numOfSessions; i++) {
 			AssessmentTestSession testSession = sessions.get(i);
 			SessionResponses sessionResponses = sessionToResponses.get(testSession);
-			writeDataRow(i + 2, sessionResponses, exportSheet, workbook);
+			writeDataRow(i + 1, sessionResponses, exportSheet, workbook);
 		}
 	}
 	

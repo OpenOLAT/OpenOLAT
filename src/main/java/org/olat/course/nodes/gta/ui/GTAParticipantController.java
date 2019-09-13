@@ -705,7 +705,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			if(businessGroupTask) {
 				String userLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, getIdentity());
 				if(StringHelper.containsNonWhitespace(userLog)) {
-					mainVC.contextPut("userLog", userLog);
+					mainVC.contextPut("userLog", StringHelper.escapeHtml(userLog));
 				} else {
 					mainVC.contextRemove("userLog");
 				}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<bean id="paypalCheckoutAccessHandler" class="org.olat.resource.accesscontrol.provider.paypalcheckout.PaypalCheckoutAccessHandler"/>
+	
+	<!--  Paypal admin panel -->
+	<bean class="org.olat.core.extensions.action.GenericActionExtension" id="sysadmin.menupoint.checkout" init-method="initExtensionPoints">
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.resource.accesscontrol.provider.paypalcheckout.ui.PaypalCheckoutAdminController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="checkout" />
+		<property name="i18nActionKey" value="paypal.menu.title"/>
+		<property name="i18nDescriptionKey" value="paypal.menu.title.alt"/>
+		<property name="translationPackage" value="org.olat.resource.accesscontrol.provider.paypalcheckout.ui"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+		<property name="parentTreeNodeIdentifier" value="paymentsParent" /> 
+		<property name="order" value="7220" />
+	</bean>
+	
+</beans>

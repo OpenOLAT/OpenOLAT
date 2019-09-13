@@ -16,5 +16,6 @@
 
 	<import resource="classpath:/org/olat/resource/accesscontrol/_spring/acContext.xml"/>
 	<import resource="classpath:/org/olat/resource/accesscontrol/provider/paypal/_spring/paypalContext.xml"/>
+	<import resource="classpath:/org/olat/resource/accesscontrol/provider/paypalcheckout/_spring/paypalCheckoutContext.xml"/>
 
 </beans>

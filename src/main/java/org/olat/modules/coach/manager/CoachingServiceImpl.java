@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
@@ -73,6 +74,11 @@ public class CoachingServiceImpl implements CoachingService {
 		boolean teacher = lectureModule.isEnabled() && coachingDao.isTeacher(identity);
 		boolean masterCoach =  lectureModule.isEnabled() && coachingDao.isMasterCoach(identity);
 		return new CoachingSecurity(masterCoach, coach, teacher);
+	}
+
+	@Override
+	public boolean isTeacher(IdentityRef identity) {
+		return coachingDao.isTeacher(identity);
 	}
 
 	@Override

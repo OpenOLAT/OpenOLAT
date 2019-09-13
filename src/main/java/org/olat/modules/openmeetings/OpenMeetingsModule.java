@@ -61,6 +61,8 @@ public class OpenMeetingsModule  extends AbstractSpringModule implements ConfigO
 	private String adminLogin;
 	@Value("${vc.openmeetings.adminpassword}")
 	private String adminPassword;
+	@Value("${vc.openmeetings.supportemail:#{null}}")
+	private String supportEmail;
 
 	
 	@Autowired
@@ -194,5 +196,14 @@ public class OpenMeetingsModule  extends AbstractSpringModule implements ConfigO
 	public void setAdminPassword(String adminPassword) {
 		setSecretStringProperty(ADMIN_CREDENTIAL, adminPassword, true);
 	}
+
+	public String getSupportEmail() {
+		return supportEmail;
+	}
+
+	public void setSupportEmail(String supportEmail) {
+		this.supportEmail = supportEmail;
+	}
+	
 	
 }

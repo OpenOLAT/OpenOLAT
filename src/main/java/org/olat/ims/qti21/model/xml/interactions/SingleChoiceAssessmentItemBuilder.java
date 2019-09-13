@@ -149,6 +149,26 @@ public class SingleChoiceAssessmentItemBuilder extends SimpleChoiceAssessmentIte
 		correctAnswer = null;
 		super.clearSimpleChoices();
 	}
+	
+	@Override
+	public boolean scoreOfCorrectAnswerWarning() {
+		boolean warning = false;
+		if(getScoreEvaluationMode() == ScoreEvaluation.perAnswer) {
+			boolean wrongAnswerHasPoint = false;
+			boolean correctAnswerHasNotPoint = false;
+			
+			for(SimpleChoice choiceWrapper:getChoices()) {
+				Double score = getMapping(choiceWrapper.getIdentifier());
+				if(isCorrect(choiceWrapper)) {
+					correctAnswerHasNotPoint = (score == null || score.doubleValue() < 0.000001);
+				} else {
+					wrongAnswerHasPoint |= (score != null && score.doubleValue() > 0.6);
+				}	
+			}
+			warning |= wrongAnswerHasPoint && correctAnswerHasNotPoint;
+		}
+		return warning;
+	}
 
 	@Override
 	protected void buildResponseAndOutcomeDeclarations() {

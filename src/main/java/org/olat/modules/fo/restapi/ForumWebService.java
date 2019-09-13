@@ -22,6 +22,7 @@ package org.olat.modules.fo.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -86,6 +87,12 @@ import org.olat.restapi.support.vo.FileVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -130,6 +137,17 @@ public class ForumWebService {
 	 * @return The forum
 	 */
 	@GET
+	@Operation(summary = "Retrieves the forum of a group.", description = "Retrieves the forum of a group.")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Request was successful.",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = ForumVO.class)),
+							@Content(mediaType = "application/xml",schema = @Schema(implementation = ForumVO.class))							
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The forum not found.")}
+	)	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getForum() {
 		if(forum == null) {
@@ -161,10 +179,20 @@ public class ForumWebService {
 	@Path("threads")
 	@Operation(summary = "Get threads",
 	description = "Retrieves the threads in the forum.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Request was successful.", 
+				content = {
+				@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MessageVO.class))),
+				@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = MessageVO.class)))
+			} 
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+		@ApiResponse(responseCode = "404", description = "The author, forum or message not found.")}
+)	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getThreads(@QueryParam("start") @DefaultValue("0") Integer start,
-			@QueryParam("limit") @DefaultValue("25") Integer limit,  @QueryParam("orderBy") @DefaultValue("creationDate") String orderBy,
-			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
+	public Response getThreads(@QueryParam("start") @Parameter(description = "Set the date for the earliest thread.")@DefaultValue("0") Integer start,
+			@QueryParam("limit") @Parameter(description = "Limit the amount of threads to be returned.") @DefaultValue("25") Integer limit,  @QueryParam("orderBy") @Parameter(description = "orderBy (value name,creationDate)") @DefaultValue("creationDate") String orderBy,
+			@QueryParam("asc") @Parameter(description = "Determine the type of order.") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
 			@Context Request request) {
 		if(forum == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
@@ -206,6 +234,16 @@ public class ForumWebService {
 	@Path("threads")
 	@Operation(summary = "Post threads",
 	description = "Creates a new thread in the forum of the course node.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok.",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = MessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = MessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "404", description = "The author, forum or message not found.")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response newThreadToForumPost(@FormParam("title") String title,
@@ -232,7 +270,18 @@ public class ForumWebService {
 	@Path("threads")
 	@Operation(summary = "Put threads",
 	description = "Creates a new thread in the forum of the course node.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok.",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = MessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = MessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "404", description = "The author, forum or message not found.")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response newThreadToForum(@QueryParam("title") String title,
 			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
 			@Context HttpServletRequest httpRequest) {
@@ -271,9 +320,19 @@ public class ForumWebService {
 	@Path("posts/{threadKey}")
 	@Operation(summary = "Get posts",
 	description = "Retrieves the messages in the thread.")
-	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @DefaultValue("0") Integer start,
-			@QueryParam("limit") @DefaultValue("25") Integer limit, @QueryParam("orderBy") @DefaultValue("creationDate") String orderBy,
-			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok.",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MessageVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = MessageVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "404", description = "The author, forum or message not found.")}
+		)
+	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @Parameter(description = "Set the date for the earliest thread.") @DefaultValue("0") Integer start,
+			@QueryParam("limit")@Parameter(description = "Limit the amount of threads to be returned.") @DefaultValue("25") Integer limit, @QueryParam("orderBy")@Parameter(description = "orderBy (value name,creationDate)") @DefaultValue("creationDate") String orderBy,
+			@QueryParam("asc") @Parameter(description = "Determine the type of order.") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
 			@Context Request request) {
 		
 		if(forum == null) {
@@ -316,7 +375,17 @@ public class ForumWebService {
 	@POST
 	@Path("posts/{messageKey}")
 	@Operation(summary = "Post posts",
-	description = "Creates a new reply in the forum of the course node.")
+	description = "Creates a new reply in the forum of the course node")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = MessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = MessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The author or message not found")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPostPost(@PathParam("messageKey") Long messageKey, @FormParam("title") String title,
@@ -345,6 +414,16 @@ public class ForumWebService {
 	@Path("posts/{messageKey}")
 	@Operation(summary = "Put posts",
 	description = "Creates a new reply in the forum of the course node.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok.",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = MessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = MessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "404", description = "The author or message not found.")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") String title,
@@ -371,6 +450,16 @@ public class ForumWebService {
 	@Path("posts/{messageKey}")
 	@Operation(summary = "Put posts",
 	description = "Creates a new reply in the forum of the course node.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok.",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = MessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = MessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "404", description = "The author or message not found.")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, ReplyVO reply,
@@ -437,6 +526,11 @@ public class ForumWebService {
 	@Path("posts/{messageKey}/attachments")
 	@Operation(summary = "Get attachments",
 	description = "Retrieves the attachments of the message.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok."
+			),
+			@ApiResponse(responseCode = "404", description = "The message not found")}
+		)
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getAttachments(@PathParam("messageKey") Long messageKey, @Context UriInfo uriInfo) {
 		//load message
@@ -466,6 +560,11 @@ public class ForumWebService {
 	@Operation(summary = "Get attachment",
 	description = "Retrieves the attachment of the message.")
 	@Path("posts/{messageKey}/attachments/{filename}")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok."
+			),
+			@ApiResponse(responseCode = "404", description = " The identity or the portrait not found")}
+		)
 	@Produces({"*/*", MediaType.APPLICATION_OCTET_STREAM})
 	public Response getAttachment(@PathParam("messageKey") Long messageKey, @PathParam("filename") String filename, 
 			@Context Request request) {
@@ -517,9 +616,15 @@ public class ForumWebService {
 	 * @param request The HTTP request
 	 * @return Ok
 	 */
+	
 	@POST
 	@Operation(summary = "Post attachment",
 	description = "Upload the attachment of a message, as parameter.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok."
+			),
+			@ApiResponse(responseCode = "404", description = " The identity or the portrait not found")}
+		)
 	@Path("posts/{messageKey}/attachments")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -556,6 +661,11 @@ public class ForumWebService {
 	@Operation(summary = "Post attachment",
 	description = "Upload the attachment of a message.")
 	@Path("posts/{messageKey}/attachments")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok."
+			),
+			@ApiResponse(responseCode = "404", description = " The identity or the portrait not found")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPostAttachment(@PathParam("messageKey") Long messageKey, @FormParam("filename") String filename,
@@ -568,6 +678,11 @@ public class ForumWebService {
 	@PUT
 	@Operation(summary = "Put attachment",
 	description = "Upload the attachment of a message.")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok."
+			),
+			@ApiResponse(responseCode = "404", description = " The identity or the portrait not found")}
+		)
 	@Path("posts/{messageKey}/attachments")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

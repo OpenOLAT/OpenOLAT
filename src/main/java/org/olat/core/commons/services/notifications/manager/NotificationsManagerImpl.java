@@ -1268,12 +1268,12 @@ implements UserDataDeletable, UserDataExportable, GenericEventListener, Initiali
 			SubscriptionItem si = null;
 			Publisher pub = subscriber.getPublisher();
 			NotificationsHandler notifHandler = getNotificationsHandler(pub);
-			if(debug) log.debug("create subscription with handler: " + notifHandler.getClass().getName());
+			if(debug) log.debug("create subscription with handler: {}", notifHandler.getClass().getName());
 			// do not create subscription item when deleted
 			if (isPublisherValid(pub) && notifHandler != null) {
-				if(debug) log.debug("NotifHandler: " + notifHandler.getClass().getName() + " compareDate: " + latestEmailed.toString() + " now: " + new Date().toString());
+				if(debug) log.debug("NotifHandler: {} compareDate: {} now: {}", notifHandler.getClass().getName(), latestEmailed, new Date());
 				SubscriptionInfo subsInfo = notifHandler.createSubscriptionInfo(subscriber, locale, latestEmailed);
-				if (subsInfo.hasNews()) {
+				if (subsInfo != null && subsInfo.hasNews()) {
 					si = createSubscriptionItem(subsInfo, subscriber, locale, mimeTypeTitle, mimeTypeContent);
 				}
 			}

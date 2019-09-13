@@ -450,7 +450,7 @@ public class ListRenderer {
 		if (!xssErrors) {
 			Identity identity = fc.getIdentityEnvironnement().getIdentity();
 			Roles roles = fc.getIdentityEnvironnement().getRoles();
-			String openIcon = getOpenIconCss(child, canWrite, identity, roles);
+			String openIcon = getOpenIconCss(child, metadata, canWrite, identity, roles);
 			if (openIcon != null) {
 				sb.append("<a ");
 				ubu.buildHrefAndOnclick(sb, null, iframePostEnabled, false, false,
@@ -513,7 +513,7 @@ public class ListRenderer {
 		sb.append("</td></tr>");
 	}
 	
-	private String getOpenIconCss(VFSItem child, boolean canWrite, Identity identity, Roles roles) {
+	private String getOpenIconCss(VFSItem child, VFSMetadata metadata, boolean canWrite, Identity identity, Roles roles) {
 		if (child instanceof VFSLeaf) {
 			VFSLeaf vfsLeaf = (VFSLeaf) child;
 			boolean hasMeta = vfsLeaf.canMeta() == VFSConstants.YES;
@@ -522,9 +522,9 @@ public class ListRenderer {
 					.withHasMeta(hasMeta);
 			DocEditorSecurityCallback editSecCallback = secCallbackBuilder.withMode(Mode.EDIT).build();
 			DocEditorSecurityCallback viewSecCallback = secCallbackBuilder.withMode(Mode.VIEW).build();
-			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, editSecCallback)) {
+			if (canWrite && docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, editSecCallback)) {
 				return "o_icon_edit";
-			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, viewSecCallback)) {
+			} else if (docEditorService.hasEditor(identity, roles, vfsLeaf, metadata, viewSecCallback)) {
 				return "o_icon_preview";
 			}
 		}

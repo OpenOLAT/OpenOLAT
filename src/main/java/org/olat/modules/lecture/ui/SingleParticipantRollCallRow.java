@@ -19,10 +19,13 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.id.Identity;
 import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -41,8 +44,10 @@ public class SingleParticipantRollCallRow implements RollCallRow, RollCallItem {
 	private final LectureBlock lectureBlock;
 	private final AbsenceNotice absenceNotice;
 	private LectureBlockRollCall rollCall;
+	private List<Identity> teachers;
 
 	private FormLink allLink;
+	private FormLink noticeLink;
 	private FormLink reasonLink;
 	private TextElement commentEl;
 	private MultipleSelectionElement[] checks;
@@ -50,10 +55,11 @@ public class SingleParticipantRollCallRow implements RollCallRow, RollCallItem {
 	private FormLayoutContainer authorizedAbsenceCont;
 	private LectureBlockRollCallStatusItem rollCallStatusEl;
 	
-	public SingleParticipantRollCallRow(LectureBlock lectureBlock, AbsenceNotice absenceNotice, int numOfLectures) {
+	public SingleParticipantRollCallRow(LectureBlock lectureBlock, AbsenceNotice absenceNotice, int numOfLectures, List<Identity> teachers) {
 		this.lectureBlock = lectureBlock;
 		this.absenceNotice = absenceNotice;
 		this.numOfLectures = numOfLectures;
+		this.teachers = teachers;
 	}
 	
 	public int getNumOfLectures() {
@@ -75,6 +81,10 @@ public class SingleParticipantRollCallRow implements RollCallRow, RollCallItem {
 	@Override
 	public AbsenceNotice getAbsenceNotice() {
 		return absenceNotice;
+	}
+
+	public List<Identity> getTeachers() {
+		return teachers;
 	}
 
 	@Override
@@ -145,6 +155,14 @@ public class SingleParticipantRollCallRow implements RollCallRow, RollCallItem {
 
 	public void setReasonLink(FormLink reasonLink) {
 		this.reasonLink = reasonLink;
+	}
+
+	public FormLink getNoticeLink() {
+		return noticeLink;
+	}
+
+	public void setNoticeLink(FormLink noticeLink) {
+		this.noticeLink = noticeLink;
 	}
 
 	@Override

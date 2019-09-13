@@ -88,6 +88,12 @@ import org.olat.restapi.support.vo.AssessableResultsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -129,6 +135,11 @@ public class CourseAssessmentWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "Retireves the version of the Course Assessment Web Service", description = "Retireves the version of the Course Assessment Web Service")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The version of this specific Web Service" 
+		)}
+)	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -148,6 +159,13 @@ public class CourseAssessmentWebService {
 	 * @return
 	 */
 	@GET
+	@Operation(summary = "Returns the results of the course", description = "Returns the results of the course")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Array of results for the whole the course", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = AssessableResultsVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = AssessableResultsVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseResults(@PathParam("courseId") Long courseId, @Context HttpServletRequest httpRequest, @Context Request request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
@@ -198,6 +216,12 @@ public class CourseAssessmentWebService {
 	
 	@GET
 	@Path("users/{identityKey}")
+	@Operation(summary = "Returns the results of the course", description = "Returns the results of the course")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The result of the course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseResultsOf(@PathParam("courseId") Long courseId, @PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest, @Context Request request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
@@ -244,6 +268,12 @@ public class CourseAssessmentWebService {
 	 */
 	@GET
 	@Path("{nodeId}")
+	@Operation(summary = "Export results", description = "Exports results for an assessable course node for all students")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Export all results of all user of the course", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })
 	@Produces( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
@@ -295,6 +325,12 @@ public class CourseAssessmentWebService {
 	 */
 	@POST
 	@Path("{nodeId}")
+	@Operation(summary = "Import results", description = "Imports results for an assessable course node for the authenticated student")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "A result to import", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })
 	@Consumes( { MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response postAssessableResults(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId,
 			AssessableResultsVO resultsVO, @Context HttpServletRequest request) {
@@ -468,6 +504,12 @@ public class CourseAssessmentWebService {
 	 */
 	@GET
 	@Path("{nodeId}/users/{identityKey}")
+	@Operation(summary = "Return results", description = "Returns the results of a student at a specific assessable node")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The result of a user at a specific node", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = AssessableResultsVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = AssessableResultsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseNodeResultsForNode(@PathParam("courseId") Long courseId, @PathParam("nodeId") Long nodeId, @PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest httpRequest, @Context Request request) {

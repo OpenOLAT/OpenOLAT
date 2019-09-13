@@ -1140,6 +1140,31 @@ create table if not exists o_ac_paypal_transaction (
    primary key (transaction_id)
 );
 
+-- paypal checkout
+create table o_ac_checkout_transaction (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_success_uuid varchar(64) not null,
+   p_cancel_uuid varchar(64) not null,
+   p_order_nr varchar(64) not null,
+   p_order_id bigint not null,
+   p_order_part_id bigint not null,
+   p_method_id bigint not null,
+   p_amount_currency_code varchar(3) not null,
+   p_amount_amount decimal(12,4) not null,
+   p_status varchar(32) not null,
+   p_paypal_order_id varchar(64),
+   p_paypal_order_status varchar(64),
+   p_paypal_order_status_reason text,
+   p_paypal_authorization_id varchar(64),
+   p_paypal_capture_id varchar(64),
+   p_capture_currency_code varchar(3),
+   p_capture_amount decimal(12,4),
+   p_paypal_invoice_id varchar(64),
+   primary key (id)
+);
+
 -- openmeetings
 create table if not exists o_om_room_reference (
    id bigint not null,
@@ -3744,9 +3769,7 @@ alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_lo
 alter table o_vfs_metadata add constraint fmeta_to_lockid_idx foreign key (fk_author) references o_bs_identity (id);
 alter table o_vfs_metadata add constraint fmeta_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 alter table o_vfs_metadata add constraint fmeta_to_parent_idx foreign key (fk_parent) references o_vfs_metadata (id);
-create index f_m_path_keys_idx on o_vfs_metadata (f_m_path_keys(100));
 create index f_m_rel_path_idx on o_vfs_metadata (f_relative_path(255));
-create index f_m_filename_idx on o_vfs_metadata (f_filename(255));
 create index f_m_file_idx on o_vfs_metadata (f_relative_path(255),f_filename(255));
 create index f_m_uuid_idx on o_vfs_metadata (f_uuid);
 

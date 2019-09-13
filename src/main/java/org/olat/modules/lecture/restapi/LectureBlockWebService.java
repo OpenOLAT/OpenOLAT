@@ -21,6 +21,7 @@ package org.olat.modules.lecture.restapi;
 
 import java.util.List;
 
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -53,6 +54,13 @@ import org.olat.repository.RepositoryService;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -98,6 +106,13 @@ public class LectureBlockWebService {
 	 * @return The lecture blocks
 	 */
 	@GET
+	@Operation(summary = "Return a specific lecture block", description = "Return a specific lecture block")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The lecture block", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getLectureBlock() {
 		return Response.ok(new LectureBlockVO(lectureBlock, entry.getKey())).build();
@@ -105,6 +120,13 @@ public class LectureBlockWebService {
 	
 	@POST
 	@Path("entry/{repositoryEntryKey}")
+	@Operation(summary = "Post a specific lecture block", description = "Post a specific lecture block")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The lecture block posted", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = LectureBlockVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = LectureBlockVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response moveLectureBlock(@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
 		RepositoryEntry newEntry = repositoryService.loadByKey(repositoryEntryKey);
@@ -124,6 +146,12 @@ public class LectureBlockWebService {
 	 * @return Nothing
 	 */
 	@DELETE
+	@Operation(summary = "Delete a specific lecture block", description = "Delete a specific lecture block")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Lecture block deleted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "404", description = "Not found.") })
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteLectureBlock() {
 		lectureService.deleteLectureBlock(lectureBlock);
 		log.info(Tracing.M_AUDIT, "Lecture block deleted: " + lectureBlock);
@@ -141,6 +169,13 @@ public class LectureBlockWebService {
 	 */
 	@GET
 	@Path("teachers")
+	@Operation(summary = "Get all teachers of the specific lecture block", description = "Get all teachers of the specific lecture block")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The array of authors", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTeacher() {
 		List<Identity> teachers = lectureService.getTeachers(lectureBlock);
@@ -157,6 +192,12 @@ public class LectureBlockWebService {
 	 */
 	@PUT
 	@Path("teachers/{identityKey}")
+	@Operation(summary = "Add a teacher to the lecture block ", description = "Add a teacher to the lecture block ")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is a teacher of the lecture block"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or the user not found") })
+	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addTeacher(@PathParam("identityKey") Long identityKey) {
 		Identity teacher = securityManager.loadIdentityByKey(identityKey);
 		if(teacher == null) {
@@ -176,6 +217,11 @@ public class LectureBlockWebService {
 	 */
 	@DELETE
 	@Path("teachers/{identityKey}")
+	@Operation(summary = "Remove a teacher of the lecture block", description = "Remove a teacher of the lecture block")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user was successfully removed as teacher of the lecture block"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course, the lecture block or the user not found") })
 	public Response removeTeacher(@PathParam("identityKey") Long identityKey) {
 		Identity teacher = securityManager.loadIdentityByKey(identityKey);
 		if(teacher == null) {
@@ -193,6 +239,9 @@ public class LectureBlockWebService {
 	 */
 	@PUT
 	@Path("participants/repositoryentry")
+	@Operation(summary = "Add group", description = "Add the group of the course to the lecture block participants list")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Successfully added")})
 	public Response addRepositoryEntryParticipantGroup() {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
 		Group defGroup = repositoryService.getDefaultGroup(entry);
@@ -213,6 +262,9 @@ public class LectureBlockWebService {
 	 */
 	@DELETE
 	@Path("participants/repositoryentry")
+	@Operation(summary = "Remove group", description = "Remove the group of the course from the lecture block participants")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Successfully removed")})
 	public Response deleteRepositoryEntryParticipantGroup() {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
 		Group defGroup = repositoryService.getDefaultGroup(entry);
@@ -231,6 +283,9 @@ public class LectureBlockWebService {
 	 */
 	@PUT
 	@Path("participants/curriculum")
+	@Operation(summary = "Add group", description = "Add the group of all curriculum elements to the lecture block participants list")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Successfully added")})
 	public Response addCurriculumElementParticipantGroup() {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
 		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
@@ -260,6 +315,9 @@ public class LectureBlockWebService {
 	 */
 	@DELETE
 	@Path("participants/curriculum")
+	@Operation(summary = "Remove group", description = "Remove the group of all curriculum elements from the lecture block participants")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Successfully removed")})
 	public Response deleteCurriculumElementParticipantGroup() {
 		LectureBlock reloadedBlock = lectureService.getLectureBlock(lectureBlock);
 		List<CurriculumElement> elements = curriculumService.getCurriculumElements(entry);
@@ -284,6 +342,13 @@ public class LectureBlockWebService {
 	
 	@GET
 	@Path("taxonomy/levels")
+	@Operation(summary = "Get all levels from specific taxonomy", description = "Get all levels from specific taxonomy")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The levels", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTaxonomyLevels() {	
 		List<TaxonomyLevel> levels = lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(lectureBlock);
@@ -296,6 +361,13 @@ public class LectureBlockWebService {
 	
 	@PUT
 	@Path("taxonomy/levels/{taxonomyLevelKey}")
+	@Operation(summary = "Put level", description = "Put level to a specific taxonomy")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The level put", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyLevelVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyLevelVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	public Response putTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
 		List<TaxonomyLevel> levels = lectureBlockToTaxonomyLevelDao.getTaxonomyLevels(lectureBlock);
 		for(TaxonomyLevel level:levels) {
@@ -313,6 +385,11 @@ public class LectureBlockWebService {
 	
 	@DELETE
 	@Path("taxonomy/levels/{taxonomyLevelKey}")
+	@Operation(summary = "Remove level", description = "Remove level from a specific taxonomy")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Level removed successfully"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not found") })
 	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
 		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
 		if(level == null) {
@@ -329,6 +406,9 @@ public class LectureBlockWebService {
 	 */
 	@POST
 	@Path("sync/calendar")
+	@Operation(summary = "Synchronize the calendars", description = "Synchronize the calendars based on the lecture block")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The calendar is successfully synchronized")})
 	public Response syncCalendar() {
 		lectureService.syncCalendars(lectureBlock);
 		return Response.ok().build();

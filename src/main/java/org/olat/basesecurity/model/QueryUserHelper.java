@@ -76,6 +76,11 @@ public class QueryUserHelper implements User {
 	}
 
 	@Override
+	public String getSmsTelMobile() {
+		return null;
+	}
+
+	@Override
 	public Preferences getPreferences() {
 		return null;
 	}

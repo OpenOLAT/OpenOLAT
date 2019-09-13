@@ -71,7 +71,7 @@ public class CurriculumsSearchController extends BasicController {
 		super(ureq, wControl, Util.createPackageTranslator(LectureRepositoryAdminController.class, ureq.getLocale()));
 		this.secCallback = secCallback;
 		
-		elementsSearchCtrl = new CurriculumElementsListController(ureq, getWindowControl());
+		elementsSearchCtrl = new CurriculumElementsListController(ureq, getWindowControl(), secCallback);
 		listenTo(elementsSearchCtrl);
 		panel = new BreadcrumbedStackedPanel("c-search", getTranslator(), this);
 		panel.pushController(translate("search.curriculums"), elementsSearchCtrl);

@@ -36,6 +36,7 @@ import org.olat.resource.accesscontrol.method.AccessMethodHandler;
 import org.olat.resource.accesscontrol.model.FreeAccessMethod;
 import org.olat.resource.accesscontrol.model.TokenAccessMethod;
 import org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod;
+import org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -63,6 +64,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private static final String TOKEN_ENABLED = "method.token.enabled";
 	private static final String FREE_ENABLED = "method.free.enabled";
 	private static final String PAYPAL_ENABLED = "method.paypal.enabled";
+	private static final String PAYPAL_CHECKOUT_ENABLED = "method.paypal.checkout.enabled";
 	private static final String AUTO_ENABLED = "method.auto.enabled";
 
 	@Value("${resource.accesscontrol.enabled:true}")
@@ -77,6 +79,8 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 	private boolean tokenEnabled;
 	@Value("${method.paypal.enabled:false}")
 	private boolean paypalEnabled;
+	@Value("${method.paypal.checkout.enabled:false}")
+	private boolean paypalCheckoutEnabled;
 	@Value("${vat.enabled:false}")
 	private boolean vatEnabled;
 	@Value("${vat.rate:7.0}")
@@ -124,6 +128,11 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		if(StringHelper.containsNonWhitespace(paypalEnabledObj)) {
 			paypalEnabled = "true".equals(paypalEnabledObj);
 		}
+		
+		String paypalCheckoutEnabledObj = getStringPropertyValue(PAYPAL_CHECKOUT_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(paypalCheckoutEnabledObj)) {
+			paypalCheckoutEnabled = "true".equals(paypalCheckoutEnabledObj);
+		}
 
 		String freeEnabledObj = getStringPropertyValue(FREE_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(freeEnabledObj)) {
@@ -164,6 +173,7 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		acMethodManager.enableMethod(TokenAccessMethod.class, isTokenEnabled());
 		acMethodManager.enableMethod(FreeAccessMethod.class, isFreeEnabled());
 		acMethodManager.enableMethod(PaypalAccessMethod.class, isPaypalEnabled());
+		acMethodManager.enableMethod(PaypalCheckoutAccessMethod.class, isPaypalCheckoutEnabled());
 		acMethodManager.enableAutoMethods(isAutoEnabled());
 		dbInstance.commitAndCloseSession();
 	}
@@ -218,6 +228,16 @@ public class AccessControlModule extends AbstractSpringModule implements ConfigO
 		this.paypalEnabled = paypalEnabled;
 		setStringProperty(PAYPAL_ENABLED, Boolean.toString(paypalEnabled), true);
 		acMethodManager.enableMethod(PaypalAccessMethod.class, paypalEnabled);
+	}
+	
+	public boolean isPaypalCheckoutEnabled() {
+		return paypalCheckoutEnabled;
+	}
+
+	public void setPaypalCheckoutEnabled(boolean enabled) {
+		this.paypalCheckoutEnabled = enabled;
+		setStringProperty(PAYPAL_CHECKOUT_ENABLED, Boolean.toString(enabled), true);
+		acMethodManager.enableMethod(PaypalCheckoutAccessMethod.class, enabled);
 	}
 
 	public boolean isHomeOverviewEnabled() {

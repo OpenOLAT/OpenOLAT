@@ -36,6 +36,12 @@ import org.olat.instantMessaging.InstantMessagingModule;
 import org.olat.restapi.system.vo.MonitoringDependencyVO;
 import org.olat.restapi.system.vo.MonitoringInfosVO;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -95,6 +101,14 @@ public class MonitoringWebService {
 	 */
 	@GET
 	@Path("configuration")
+	@Operation(summary = "Return the configuration of the monitoring", description = "Return the configuration of the monitoring, which probes are available,\n" + 
+			"	  which dependency...")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "he version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = MonitoringInfosVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = MonitoringInfosVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getImplementedProbes() {
 		MonitoringInfosVO vo = new MonitoringInfosVO();

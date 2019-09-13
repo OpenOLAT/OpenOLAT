@@ -93,7 +93,6 @@ import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupMembershipsChanges;
 import org.olat.group.model.BusinessGroupQueryParams;
 import org.olat.group.model.BusinessGroupRelationModified;
-import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.IdentityGroupKey;
 import org.olat.group.model.LeaveOption;
@@ -671,7 +670,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
-	public List<BusinessGroupRow> findBusinessGroupsWithMemberships(BusinessGroupQueryParams params, IdentityRef identity) {
+	public List<StatisticsBusinessGroupRow> findBusinessGroupsWithMemberships(BusinessGroupQueryParams params, IdentityRef identity) {
 		return businessGroupDAO.searchBusinessGroupsWithMemberships(params, identity);
 	}
 

@@ -137,9 +137,11 @@ public class OpenMeetingsRunController extends BasicController {
 		checkLink.setTarget("openmeetings");
 		mainVC.put("check.test", checkLink);
 		
-		checkEmailLink = LinkFactory.createButton("check.email", mainVC, this);
-		checkEmailLink.setTarget("openmeetings");
-		mainVC.put("check.email", checkEmailLink);
+		if(StringHelper.containsNonWhitespace(openMeetingsModule.getSupportEmail())) {
+			checkEmailLink = LinkFactory.createButton("check.email", mainVC, this);
+			checkEmailLink.setTarget("openmeetings");
+			mainVC.put("check.email", checkEmailLink);
+		}
 //		</VCRP-OM>
 		
 		updateState();
@@ -353,7 +355,7 @@ public class OpenMeetingsRunController extends BasicController {
 		String id = "";
 		if (ores != null) id = "Kurs "+ores.getResourceableId().toString();
 		else if (group != null) id = "Gruppe "+group.getKey();
-		String url = "mailto:om-tickets@vcrp.de?subject=Probleme beim Aufruf von OpenMeetings aus "+id+"&body=BITTE HIER DAS PROBLEM BESCHREIBEN";
+		String url = "mailto:" + openMeetingsModule.getSupportEmail() + "?subject=Probleme beim Aufruf von OpenMeetings aus " + id + "&body=BITTE HIER DAS PROBLEM BESCHREIBEN";
 		RedirectMediaResource redirect = new RedirectMediaResource(url);
 		ureq.getDispatchResult().setResultingMediaResource(redirect);
 	}

@@ -127,6 +127,11 @@ public class EMailIdentity implements Identity {
 		}
 
 		@Override
+		public String getSmsTelMobile() {
+			return data.get(UserConstants.SMSTELMOBILE);
+		}
+
+		@Override
 		public Date getLastModified() {
 			return null;
 		}

@@ -61,8 +61,13 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
 /**
  * 
  * Initial date: 14 mai 2018<br>
@@ -94,6 +99,9 @@ public class OrganisationsWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "The version of the User Web Service", description = "The version of the User Web Service")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service") })	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -112,6 +120,12 @@ public class OrganisationsWebService {
 	 * @return An array of organizations
 	 */
 	@GET
+	@Operation(summary = "List of organizations flat", description = "List of organizations flat")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The list of all organization in the OpenOLAT system", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
@@ -140,6 +154,12 @@ public class OrganisationsWebService {
 	 * @return The new persisted <code>organization</code>
 	 */
 	@PUT
+	@Operation(summary = "Creates and persists a new organization entity", description = "Creates and persists a new organization entity")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The persisted organization", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putOrganisation(OrganisationVO organisation, @Context HttpServletRequest httpRequest) {
@@ -167,6 +187,13 @@ public class OrganisationsWebService {
 	 * @return The merged <code>organization</code>
 	 */
 	@POST
+	@Operation(summary = "Updates a new organization entity", description = "Updates a new organization entity")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The merged organization", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisation(OrganisationVO organisation, @Context HttpServletRequest httpRequest) {
@@ -193,6 +220,12 @@ public class OrganisationsWebService {
 	 */
 	@GET
 	@Path("membership/{role}/{identityKey}")
+	@Operation(summary = "Get the organizations", description = "Get the organizations where the specified user has the role")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The list of organizations", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMemberships(@PathParam("role") String role, @PathParam("identityKey") Long identityKey,
 			@QueryParam("withInheritance") Boolean withInheritance, @Context HttpServletRequest httpRequest) {
@@ -228,6 +261,12 @@ public class OrganisationsWebService {
 	 */
 	@GET
 	@Path("{organisationKey}")
+	@Operation(summary = "Get a specific organization", description = "Get a specific organization")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The list of all organizations in the OpenOLAT system", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
@@ -241,6 +280,12 @@ public class OrganisationsWebService {
 	
 	@GET
 	@Path("{organisationKey}/entries")
+	@Operation(summary = "Get entries", description = "Get entries of a specific organization")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The list of all entries in the organization system", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRepositoryEntriesInOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
@@ -275,6 +320,13 @@ public class OrganisationsWebService {
 	 */
 	@POST
 	@Path("{organisationKey}")
+	@Operation(summary = "Updates a new organization entity", description = "Updates a new organization entity. the primary key is taken from\n" + 
+			"	  the url. The organization object can be \"primary key free\"")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The merged organization", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postOrganisation(@PathParam("organisationKey") Long organisationKey, OrganisationVO organisation,
@@ -355,6 +407,13 @@ public class OrganisationsWebService {
 	 */
 	@GET
 	@Path("{organisationKey}/{role}")
+	@Operation(summary = "Updates a new organization entity", description = "Updates a new organization entity. the primary key is taken from\n" + 
+			"	  the url. The organization object can be \"primary key free\"")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The merged organization", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OrganisationVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OrganisationVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})
 	public Response getMembers(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {
@@ -395,6 +454,12 @@ public class OrganisationsWebService {
 	 */
 	@PUT
 	@Path("{organisationKey}/{role}/{identityKey}")
+	@Operation(summary = "Make the specified user a member of the specified organization", description = "Make the specified user a member of the specified organization\n" + 
+			"	  with the specified role")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The membership was added"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The organization or the identity was not found") })	
 	public Response putMember(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@PathParam("identityKey") Long identityKey, @QueryParam("inheritanceMode") String inheritanceMode,
 			@Context HttpServletRequest httpRequest) {
@@ -443,6 +508,12 @@ public class OrganisationsWebService {
 	 */
 	@PUT
 	@Path("{organisationKey}/{role}")
+	@Operation(summary = "Add a membership to the specified curriculum element", description = "Add a membership to the specified curriculum element")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The membership was persisted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found"),
+			@ApiResponse(responseCode = "409", description = "The role is not allowed")})
 	public Response putMembers(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@QueryParam("inheritanceMode") String inheritanceMode, UserVO[] members,
 			@Context HttpServletRequest httpRequest) {
@@ -488,6 +559,11 @@ public class OrganisationsWebService {
 	 */
 	@DELETE
 	@Path("{organisationKey}/{role}/{identityKey}")
+	@Operation(summary = "Remove the membership", description = "Remove the membership of the identity from the specified organization and role")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The membership was removed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")})
 	public Response deleteMember(@PathParam("organisationKey") Long organisationKey, @PathParam("role") String role,
 			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
 		if(!isAdministrator(httpRequest)) {

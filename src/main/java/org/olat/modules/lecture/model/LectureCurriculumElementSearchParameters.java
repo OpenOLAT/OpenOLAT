@@ -19,6 +19,9 @@
  */
 package org.olat.modules.lecture.model;
 
+import org.olat.basesecurity.IdentityRef;
+import org.olat.modules.lecture.ui.LectureRoles;
+
 /**
  * 
  * Initial date: 9 août 2019<br>
@@ -26,6 +29,10 @@ package org.olat.modules.lecture.model;
  *
  */
 public class LectureCurriculumElementSearchParameters {
+	
+	private IdentityRef teacher;
+	private IdentityRef masterCoach;
+	private IdentityRef manager;
 	
 	private String searchString;
 	
@@ -37,6 +44,36 @@ public class LectureCurriculumElementSearchParameters {
 		this.searchString = searchString;
 	}
 	
+	public IdentityRef getTeacher() {
+		return teacher;
+	}
 
+	public void setTeacher(IdentityRef teacher) {
+		this.teacher = teacher;
+	}
+
+	public IdentityRef getMasterCoach() {
+		return masterCoach;
+	}
+
+	public void setMasterCoach(IdentityRef masterCoach) {
+		this.masterCoach = masterCoach;
+	}
+
+	public IdentityRef getManager() {
+		return manager;
+	}
+
+	public void setManager(IdentityRef manager) {
+		this.manager = manager;
+	}
+
+	public void setViewAs(IdentityRef identity, LectureRoles role) {
+		switch(role) {
+			case lecturemanager: setManager(identity); break;
+			case mastercoach: setMasterCoach(identity); break;
+			default: setTeacher(identity); break;
+		}
+	}
 
 }

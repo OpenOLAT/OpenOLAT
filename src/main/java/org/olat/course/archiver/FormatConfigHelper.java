@@ -19,15 +19,15 @@
  */
 package org.olat.course.archiver;
 
-import org.olat.core.gui.UserRequest;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.gui.UserRequest;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.xml.XStreamHelper;
-import org.olat.course.nodes.ArchiveOptions;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.security.ExplicitTypePermission;
 
 /**
  * this class reads and writes XML serialized config data to personal gui prefs and retrieves them
@@ -40,8 +40,11 @@ public class FormatConfigHelper {
 	private static final String QTI_EXPORT_ITEM_FORMAT_CONFIG = "QTIExportItemFormatConfig";
 	private static final Logger log = Tracing.createLoggerFor(FormatConfigHelper.class);
 	
-	private static XStream configXstream = XStreamHelper.createXStreamInstance();
+	private static final XStream configXstream = XStreamHelper.createXStreamInstance();
 	static {
+		XStream.setupDefaultSecurity(configXstream);
+		Class<?>[] types = new Class[] { ExportFormat.class };
+		configXstream.addPermission(new ExplicitTypePermission(types));
 		configXstream.alias(QTI_EXPORT_ITEM_FORMAT_CONFIG, ExportFormat.class);
 	}
 
@@ -76,12 +79,5 @@ public class FormatConfigHelper {
 				log.error("",e);
 			}
 		}
-	}
-	
-	public static ArchiveOptions getArchiveOptions(UserRequest ureq) {
-		ArchiveOptions options = new ArchiveOptions();
-		ExportFormat formatConfig = loadExportFormat(ureq);
-		options.setExportFormat(formatConfig);
-		return options;
 	}
 }

@@ -20,6 +20,7 @@
 package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
+
 import static org.olat.restapi.security.RestSecurityHelper.parseDate;
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
@@ -47,6 +48,13 @@ import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -76,8 +84,19 @@ public class LectureBlocksRootWebService {
 	 * @return The lecture blocks
 	 */
 	@GET
+	@Operation(summary = "Return the lecture blocks", description = "Return the lecture blocks of the specified course or repository entry")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "An array of lecture blocks",
+				content = {
+						@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LectureBlockVO.class))),
+						@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LectureBlockVO.class)))
+					} 
+		),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "The course not found")}
+)	
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-	public Response searchLectureBlocks(@QueryParam("date") String date, @Context HttpServletRequest httpRequest) {
+	public Response searchLectureBlocks(@QueryParam("date") @Parameter(description = "The date") String date, @Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
 		if(!roles.isAdministrator() && !roles.isLectureManager()) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

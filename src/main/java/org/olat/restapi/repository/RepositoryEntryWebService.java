@@ -111,6 +111,13 @@ import org.olat.user.restapi.UserVOFactory;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * Description:<br>
  * Repository entry resource
@@ -167,6 +174,12 @@ public class RepositoryEntryWebService {
    * @return
    */
 	@GET
+	@Operation(summary = "get a resource in the repository", description = "get a resource in the repository")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Get the repository resource", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryVO.class)) }),
+			@ApiResponse(responseCode = "404", description = "The repository entry not found") })	
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public Response getById(@Context Request request) {
 		Date lastModified = entry.getLastModified();
@@ -196,6 +209,9 @@ public class RepositoryEntryWebService {
 	 * @return The web service for lecture blocks.
 	 */
 	@Path("lectureblocks")
+	@Operation(summary = "Get the web service for the lecture blocks", description = "To get the web service for the lecture blocks of a specific learning resource")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "A web service to manage the lecture blocks") })	
 	public LectureBlocksWebService getLectureBlocksWebService(@Context HttpServletRequest request)
 	throws WebApplicationException {
 		boolean administrator = isLectureManager(request);
@@ -210,6 +226,9 @@ public class RepositoryEntryWebService {
 	 * @return The web service for reminders.
 	 */
 	@Path("reminders")
+	@Operation(summary = "To get the web service for the reminders of a specific course", description = "To get the web service for the reminders of a specific course")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The web service for reminders") })	
 	public RemindersWebService getRemindersWebService(@Context HttpServletRequest request) {
 		boolean administrator = isAuthorEditor(request);
 		RemindersWebService service = new RemindersWebService(entry, administrator);
@@ -219,6 +238,11 @@ public class RepositoryEntryWebService {
 	
 	@GET
 	@Path("curriculum/elements")
+	@Operation(summary = "Get elements", description = "Get elements")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The elements", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))) }) })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumElements() {
 		List<CurriculumElement> curriculumElements = curriculumService.getCurriculumElements(entry);
@@ -242,6 +266,12 @@ public class RepositoryEntryWebService {
 	 */
 	@GET
 	@Path("owners")
+	@Operation(summary = "Returns the list of owners", description = "Returns the list of owners of the repository entry specified by the groupKey")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Owners of the repository entry", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
+			@ApiResponse(responseCode = "404", description = "The course not found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOwners(@Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
@@ -262,6 +292,11 @@ public class RepositoryEntryWebService {
 	 */
 	@PUT
 	@Path("owners/{identityKey}")
+	@Operation(summary = "Adds an owner to the repository entry", description = "Adds an owner to the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is added as owner of the repository entry"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found") })	
 	public Response addOwner(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -280,6 +315,11 @@ public class RepositoryEntryWebService {
 	
 	@PUT
 	@Path("owners")
+	@Operation(summary = "Add owners to the repository entry", description = "Add owners to the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The owners are added to the repository entry"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found") })	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addOwners(UserVO[] owners, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
@@ -305,6 +345,11 @@ public class RepositoryEntryWebService {
 	 */
 	@DELETE
 	@Path("owners/{identityKey}")
+	@Operation(summary = "Removes the owner from the repository entry", description = "Removes the owner from the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is removed as owner from the repository entry"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found") })	
 	public Response removeOwner(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		try {
 			if (!isAuthorEditor(request)) {
@@ -338,6 +383,12 @@ public class RepositoryEntryWebService {
 	 */
 	@GET
 	@Path("coaches")
+	@Operation(summary = "Returns the list of coaches of the repository entry", description = "Returns the list of coaches of the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Coaches of the repository entry", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
+			@ApiResponse(responseCode = "404", description = "The repository entry cannot be found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCoaches(@Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
@@ -358,6 +409,10 @@ public class RepositoryEntryWebService {
 	 */
 	@PUT
 	@Path("coaches/{identityKey}")
+	@Operation(summary = "Adds a coach to the repository entry", description = "Adds a coach to the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is added as coach of the repository entry"),
+			@ApiResponse(responseCode = "404", description = "The repository entry cannot be found") })	
 	public Response addCoach(@PathParam("identityKey") Long identityKey,
 			@Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
@@ -377,6 +432,10 @@ public class RepositoryEntryWebService {
 
 	@PUT
 	@Path("coaches")
+	@Operation(summary = "Adds coaches to the repository entry", description = "Adds coaches to the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The coaches are added to the repository entry"),
+			@ApiResponse(responseCode = "404", description = "The repository entry cannot be found") })	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addCoach(UserVO[] coaches, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
@@ -402,6 +461,11 @@ public class RepositoryEntryWebService {
 	 */
 	@DELETE
 	@Path("coaches/{identityKey}")
+	@Operation(summary = "Removes the coach from the repository entry", description = "Removes the coach from the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is removed as owner from the repository entry"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found") })	
 	public Response removeCoach(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -430,6 +494,12 @@ public class RepositoryEntryWebService {
 	 */
 	@GET
 	@Path("participants")
+	@Operation(summary = "Returns the list of participants of the repository entry", description = "Returns the list of participants of the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Participants of the repository entry", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))) }),
+			@ApiResponse(responseCode = "404", description = "The repository entry cannot be found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants( @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
@@ -450,6 +520,11 @@ public class RepositoryEntryWebService {
 	 */
 	@PUT
 	@Path("participants/{identityKey}")
+	@Operation(summary = "Adds a participant to the repository entry", description = "Adds a participant to the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is added as participant of the repository entry"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found") })	
 	public Response addParticipant(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -468,6 +543,11 @@ public class RepositoryEntryWebService {
 	
 	@PUT
 	@Path("participants")
+	@Operation(summary = "Adds participants to the repository entry", description = "Adds participants to the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The participants are added to the repository entry"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found") })	
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response addParticipants(UserVO[] participants, @Context HttpServletRequest request) {
 		if(!isAuthorEditor(request)) {
@@ -501,6 +581,11 @@ public class RepositoryEntryWebService {
 	 */
 	@DELETE
 	@Path("participants/{identityKey}")
+	@Operation(summary = "Removes the participant from the repository entry", description = "Removes the participant from the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The user is removed as participant from the repository entry"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The repository entry or the user cannot be found") })	
 	public Response removeParticipant(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest request) {
 		if (!isAuthorEditor(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -533,6 +618,13 @@ public class RepositoryEntryWebService {
    */
 	@GET
 	@Path("file")
+	@Operation(summary = "Download the export zip file of a repository entry", description = "Download the export zip file of a repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Download the repository entry as export zip file"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The repository entry cannot be found"),
+			@ApiResponse(responseCode = "406", description = "Download of this resource is not possible"),
+			@ApiResponse(responseCode = "409", description = "The resource is locked")})	
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getRepoFileById(@Context HttpServletRequest request, @Context HttpServletResponse response) {
 		RepositoryHandler typeToDownload = repositoryHandlerFactory.getRepositoryHandler(entry);
@@ -648,6 +740,11 @@ public class RepositoryEntryWebService {
    * @return
    */
 	@POST
+	@Operation(summary = "Replace a resource in the repository", description = "Replace a resource in the repository and update its display name. The implementation is\n" + 
+			"    limited to CP")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Replace the resource and return the updated repository entry"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Consumes({ MediaType.MULTIPART_FORM_DATA })
 	public Response replaceResource(@Context HttpServletRequest request) {
@@ -738,6 +835,11 @@ public class RepositoryEntryWebService {
 	 *         object representing the course.
 	 */
 	@DELETE
+	@Operation(summary = "Delete a resource by id", description = "Delete a resource by id")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The metadatas of the deleted resource"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteCourse(@Context HttpServletRequest request) {
 		if(!isAuthor(request)) {
@@ -775,6 +877,18 @@ public class RepositoryEntryWebService {
 	 *         object representing the course.
 	 */
 	@POST
+	@Operation(summary = "Change the status of a course by id", description = "Change the status of a course by id. The possible status are:\n" + 
+			"	 * <ul>\n" + 
+			"	 * 	<li>closed</li>\n" + 
+			"	 * 	<li>unclosed</li>\n" + 
+			"	 * 	<li>unpublished</li>\n" + 
+			"	 * 	<li>deleted</li>\n" + 
+			"	 * 	<li>restored</li>\n" + 
+			"	 * </ul>")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The metadatas of the deleted resource"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Path("status")
 	public Response postStatus(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
@@ -820,6 +934,13 @@ public class RepositoryEntryWebService {
 	 */
 	@GET
 	@Path("access")
+	@Operation(summary = "Get the access configuration of the repository entry", description = "Get the access configuration of the repository entry")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAccess(@Context HttpServletRequest request) {
 		if(!isAuthor(request) && !isAuthorEditor(request)) {
@@ -845,6 +966,15 @@ public class RepositoryEntryWebService {
 	 */
 	@POST
 	@Path("access")
+	@Operation(summary = "Update the access configuration of the repository entry", description = "Update the access configuration of the repository entry. Attention! It's\n" + 
+			"	  a low level method which only change the status without the stuff\n" + 
+			"	  done by the change status methods. Use it only if you know what you do")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The access configuration of the repository entry", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateAccess(RepositoryEntryAccessVO accessVo, @Context HttpServletRequest request) {
@@ -864,6 +994,13 @@ public class RepositoryEntryWebService {
 	
 	@GET
 	@Path("organisations")
+	@Operation(summary = "Get organisations", description = "Get organisations")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The list of organisations", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not found")})	
 	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
 		if (!isAuthorEditor(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -879,6 +1016,11 @@ public class RepositoryEntryWebService {
 	
 	@PUT
 	@Path("organisations/{organisationKey}")
+	@Operation(summary = "Put organisation", description = "Put organisation")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Organisation was put"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not found")})	
 	public Response addOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		Organisation organisationToAdd = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if (!isAuthorEditor(httpRequest) && !isManager(organisationToAdd, httpRequest)) {
@@ -900,6 +1042,11 @@ public class RepositoryEntryWebService {
 	
 	@DELETE
 	@Path("organisations/{organisationKey}")
+	@Operation(summary = "Remove organisation", description = "Remove organisation")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Organisation was deleted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not found")})	
 	public Response removeOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		Organisation organisationToRemove = organisationService.getOrganisation(new OrganisationRefImpl(organisationKey));
 		if (!isAuthorEditor(httpRequest) && !isManager(organisationToRemove, httpRequest)) {
@@ -913,6 +1060,13 @@ public class RepositoryEntryWebService {
 	
 	@GET
 	@Path("taxonomy/levels")
+	@Operation(summary = "Get levels", description = "Get levels")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The list of levels", content = {
+				@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))),
+				@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))) }),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "Not found")})		
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTaxonomyLevels(@Context HttpServletRequest request) {	
 		if(!isAuthorEditor(request)) {
@@ -929,6 +1083,11 @@ public class RepositoryEntryWebService {
 	
 	@PUT
 	@Path("taxonomy/levels/{taxonomyLevelKey}")
+	@Operation(summary = "Get level", description = "Get level")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The level put"),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "Not found")})		
 	public Response putTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
 		List<TaxonomyLevel> levels = repositoryEntryToTaxonomyLevelDao.getTaxonomyLevels(entry);
 		for(TaxonomyLevel level:levels) {
@@ -946,6 +1105,11 @@ public class RepositoryEntryWebService {
 	
 	@DELETE
 	@Path("taxonomy/levels/{taxonomyLevelKey}")
+	@Operation(summary = "Remove level", description = "Remove level")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "The level was removed"),
+		@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+		@ApiResponse(responseCode = "404", description = "Not found")})		
 	public Response deleteTaxonomyLevel(@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
 		TaxonomyLevel level = taxonomyService.getTaxonomyLevel(new TaxonomyLevelRefImpl(taxonomyLevelKey));
 		if(level == null) {

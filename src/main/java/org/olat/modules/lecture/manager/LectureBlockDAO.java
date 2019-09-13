@@ -272,6 +272,7 @@ public class LectureBlockDAO {
 		  .append(" from curriculumelement curEl")
 		  .append(" inner join fetch curEl.group curElGroup")
 		  .append(" inner join fetch curEl.curriculum cur")
+		  .append(" left join fetch cur.organisation organis")
 		  .append(" where exists (select v.key from repositoryentry as v")
 		  .append("  inner join v.groups as relGroup")
 		  .append("  inner join lectureentryconfig config on (config.entry.key=v.key)")
@@ -285,7 +286,7 @@ public class LectureBlockDAO {
 			ref = searchParams.getSearchString();
 			fuzzyRef = PersistenceHelper.makeFuzzyQueryString(ref);
 			
-			sb.append(" and (cur.externalId=:ref or curEl.externalId=:ref or v.externalId=:ref or ")
+			sb.append(" and (cur.externalId=:ref or curEl.externalId=:ref or ")
 			  .likeFuzzy("cur.displayName", "fuzzyRef", dbInstance.getDbVendor())
 			  .append(" or ")
 			  .likeFuzzy("cur.identifier", "fuzzyRef", dbInstance.getDbVendor())
@@ -300,6 +301,31 @@ public class LectureBlockDAO {
 			sb.append(")");	
 		}
 		
+		if(searchParams.getManager() != null) {
+			sb.append(" and exists (select membership.key from bgroupmember as membership")
+			  .append("  where membership.identity.key=:managerKey")
+			  .append("  and membership.role").in(OrganisationRoles.administrator, LectureRoles.lecturemanager)
+			  .append("  and (membership.group.key=curElGroup.key or membership.group.key=organis.group.key)")
+			  .append(" )");
+		}
+		
+		if(searchParams.getMasterCoach() != null) {
+			sb.append(" and exists (select masterCoachMembership.key from bgroupmember as masterCoachMembership")
+			  .append("  where curElGroup.key=masterCoachMembership.group.key and masterCoachMembership.identity.key=:masterCoachKey")
+			  .append("  and masterCoachMembership.role ").in(LectureRoles.mastercoach)
+			  .append(" )");
+		}
+		
+		if(searchParams.getTeacher() != null) {
+			sb.append(" and exists (select teacherMembership.key from lectureblock as block")
+			  .append(" inner join block.teacherGroup tGroup")
+			  .append(" inner join tGroup.members teacherMembership")
+			  .append(" inner join repoentrytogroup as rel on (block.entry.key=rel.entry.key)")
+			  .append(" where curElGroup.key=rel.group.key and teacherMembership.identity.key=:teacherKey")
+			  .append("  and teacherMembership.role ").in(LectureRoles.teacher)
+			  .append(" )");
+		}
+		
 		TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), Object[].class);
 		if(key != null) {
@@ -310,6 +336,15 @@ public class LectureBlockDAO {
 		}
 		if(fuzzyRef != null) {
 			query.setParameter("fuzzyRef", fuzzyRef);
+		}
+		if(searchParams.getManager() != null) {
+			query.setParameter("managerKey", searchParams.getManager().getKey());
+		}
+		if(searchParams.getMasterCoach() != null) {
+			query.setParameter("masterCoachKey", searchParams.getMasterCoach().getKey());
+		}
+		if(searchParams.getTeacher() != null) {
+			query.setParameter("teacherKey", searchParams.getTeacher().getKey());
 		}
 		
 		List<Object[]> rawObjects = query.getResultList();

@@ -474,7 +474,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		} else {
 			String userLog = courseEnv.getAuditManager().getUserNodeLog(gtaNode, assessedIdentity);
 			if(StringHelper.containsNonWhitespace(userLog)) {
-				mainVC.contextPut("userLog", userLog);
+				mainVC.contextPut("userLog", StringHelper.escapeHtml(userLog));
 			} else {
 				mainVC.contextRemove("userLog");
 			}

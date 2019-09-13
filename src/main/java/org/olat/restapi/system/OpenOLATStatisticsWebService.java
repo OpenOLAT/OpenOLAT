@@ -42,12 +42,18 @@ import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
 import org.olat.portfolio.manager.InvitationDAO;
 import org.olat.repository.RepositoryManager;
+import org.olat.restapi.system.vo.IndexerStatisticsVO;
 import org.olat.restapi.system.vo.OpenOLATStatisticsVO;
 import org.olat.restapi.system.vo.RepositoryStatisticsVO;
 import org.olat.restapi.system.vo.SessionsVO;
 import org.olat.restapi.system.vo.TasksVO;
 import org.olat.restapi.system.vo.UserStatisticsVO;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -69,6 +75,12 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	 * @return The statistics about OpenOLAT
 	 */
 	@GET
+	@Operation(summary = "Return the statistics about OpenOLAT", description = "Return the statistics about OpenOLAT, users count, courses count...")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OpenOLATStatisticsVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OpenOLATStatisticsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getStatistics() {
 		OpenOLATStatisticsVO stats = new OpenOLATStatisticsVO();
@@ -92,6 +104,12 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	@Tag(name = "Users")
 	@GET
 	@Path("users")
+	@Operation(summary = "Return the statistics about OpenOLAT users", description = "Return the statistics about OpenOLAT users")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = UserStatisticsVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = UserStatisticsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getUserStatistics() {
 		UserStatisticsVO stats = getUserStatisticsVO();
@@ -111,6 +129,12 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	@Tag(name = "Repo")
 	@GET
 	@Path("repository")
+	@Operation(summary = "Return the statistics about the repository", description = "Return the statistics about the repository, courses count, published courses... ")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryStatisticsVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryStatisticsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRepositoryStatistics() {
 		RepositoryStatisticsVO stats = getRepositoryStatisticsVO();
@@ -128,6 +152,12 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	 * @return The statistics about the indexer
 	 */
 	@Path("indexer")
+	@Operation(summary = "Return the statistics about the repository", description = "Return the statistics about the repository, courses count, published courses... ")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = IndexerStatisticsVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = IndexerStatisticsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
 	public IndexerWebService getIndexerStatistics() {
 		return indexerWebService;
 	}
@@ -144,6 +174,12 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	 */
 	@GET
 	@Path("sessions")
+	@Operation(summary = "Return some statistics about session", description = "Return some statistics about session")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of the instance", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = SessionsVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = SessionsVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getSessions() {
 		SessionsVO vo = getSessionsVO();
@@ -162,6 +198,12 @@ public class OpenOLATStatisticsWebService implements Sampler {
 	 */
 	@GET
 	@Path("tasks")
+	@Operation(summary = "Return some statistics about long running tasks", description = "Return some statistics about long running tasks")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "A short summary about sessions", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = TasksVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = TasksVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTasks() {
 		TasksVO vo = getTasksVO();

@@ -33,6 +33,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.login.SupportsAfterLoginInterceptor;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
@@ -66,14 +67,14 @@ public class RollCallInterceptorController extends FormBasicController implement
 	public boolean isUserInteractionRequired(UserRequest ureq) {
 		if(lectureModule.isEnabled()) {
 			List<LectureBlock> lectureBlocks = lectureService.getRollCallAsTeacher(ureq.getIdentity());
-			if(lectureBlocks.size() > 0) {
+			if(!lectureBlocks.isEmpty()) {
 				Formatter format = Formatter.getInstance(getLocale());
 				
 				lectureBlockToStart = lectureBlocks.get(0);
 				String[] args = new String[] {
-						lectureBlockToStart.getEntry().getDisplayname(),
-						lectureBlockToStart.getEntry().getExternalRef() == null ? "" : lectureBlockToStart.getEntry().getExternalRef(),
-						lectureBlockToStart.getTitle(),
+						StringHelper.escapeHtml(lectureBlockToStart.getEntry().getDisplayname()),
+						lectureBlockToStart.getEntry().getExternalRef() == null ? "" : StringHelper.escapeHtml(lectureBlockToStart.getEntry().getExternalRef()),
+						StringHelper.escapeHtml(lectureBlockToStart.getTitle()),
 						(lectureBlockToStart.getStartDate() == null ? "" : format.formatDate(lectureBlockToStart.getStartDate())),
 						(lectureBlockToStart.getStartDate() == null ? "" : format.formatTimeShort(lectureBlockToStart.getStartDate())),
 						(lectureBlockToStart.getEndDate() == null ? "" : format.formatTimeShort(lectureBlockToStart.getEndDate()))

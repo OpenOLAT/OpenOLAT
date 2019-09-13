@@ -668,8 +668,8 @@ public class IQRunController extends BasicController implements GenericEventList
 		}
 		
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-		myContent.contextPut("log", am.getUserNodeLog(courseNode, identity));
-						
+		String userLog = am.getUserNodeLog(courseNode, identity);
+		myContent.contextPut("log", StringHelper.escapeHtml(userLog));
 		exposeResults(ureq);
 	}
 	

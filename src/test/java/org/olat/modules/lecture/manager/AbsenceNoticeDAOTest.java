@@ -211,17 +211,59 @@ public class AbsenceNoticeDAOTest extends OlatTestCase {
 		Assert.assertTrue(collisions.isEmpty());
 	}
 	
+	/**
+	 * Search absences
+	 */
 	@Test
 	public void searchAbsenceNotice() {
+		Date now = new Date();
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3");
-		
-		Date start = CalendarUtils.startOfDay(new Date());
-		Date end = CalendarUtils.endOfDay(new Date());
+		Date start = CalendarUtils.startOfDay(now);
+		Date end = CalendarUtils.endOfDay(now);
 		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
 				start, end, null, null, null, null, null);
 		dbInstance.commitAndCloseSession();
-		
+
 		AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
+		List<AbsenceNoticeInfos> foundNotices = absenceNoticeDao.search(searchParams, true);
+		Assert.assertNotNull(foundNotices);
+		Assert.assertFalse(foundNotices.isEmpty());
+		
+		long count = foundNotices.stream()
+				.filter(n -> notice.equals(n.getAbsenceNotice())).count(); 
+		Assert.assertEquals(1, count);
+	}
+	
+	/**
+	 * Search the absence of a participant
+	 */
+	@Test
+	public void searchAbsenceNotice_allentries() {
+		Date now = new Date();
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(now);
+		cal.set(Calendar.HOUR_OF_DAY, 10);
+		Date startLecture = cal.getTime();
+		cal.set(Calendar.HOUR_OF_DAY, 14);
+		Date endLecture = cal.getTime();
+		
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-3");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		LectureBlock lectureBlock = createMinimalLectureBlock(entry, startLecture, endLecture);
+		// create the participant's relation (lecture block use repo entry group, participant is participant in this group)
+		repositoryEntryRelationDao.addRole(identity, entry, GroupRoles.participant.name());
+		Group defGroup = repositoryEntryRelationDao.getDefaultGroup(lectureBlock.getEntry());
+		lectureBlockDao.addGroupToLectureBlock(lectureBlock, defGroup);
+		dbInstance.commit();
+		
+		Date start = CalendarUtils.startOfDay(now);
+		Date end = CalendarUtils.endOfDay(now);
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.allentries,
+				start, end, null, null, null, null, null);
+		dbInstance.commitAndCloseSession();
+
+		AbsenceNoticeSearchParameters searchParams = new AbsenceNoticeSearchParameters();
+		searchParams.setParticipant(identity);
 		List<AbsenceNoticeInfos> foundNotices = absenceNoticeDao.search(searchParams, true);
 		Assert.assertNotNull(foundNotices);
 		Assert.assertFalse(foundNotices.isEmpty());

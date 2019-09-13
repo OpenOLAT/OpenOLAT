@@ -70,8 +70,16 @@ import org.olat.resource.accesscontrol.AccessResult;
 import org.olat.restapi.support.MediaTypeVariants;
 import org.olat.restapi.support.vo.CourseInfoVO;
 import org.olat.restapi.support.vo.CourseInfoVOes;
+import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.FolderVO;
 import org.springframework.stereotype.Component;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -101,6 +109,10 @@ public class CoursesInfosWebService {
 	 * @return
 	 */
 	@GET
+	@Operation(summary = "Get course informations", description = "Get course informations viewable by the authenticated user")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "List of visible courses", content = {
+			@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
+			@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) }) })
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseInfoList(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
@@ -149,6 +161,10 @@ public class CoursesInfosWebService {
 	 */
 	@GET
 	@Path("{courseId}")
+	@Operation(summary = "Get course informations", description = "Get course informations viewable by the authenticated user")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Course informations", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) }) })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCourseInfo(@PathParam("courseId") Long courseId,
 			@Context HttpServletRequest httpRequest) {

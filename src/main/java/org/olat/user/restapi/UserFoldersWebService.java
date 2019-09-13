@@ -20,6 +20,7 @@
 package org.olat.user.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
+
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
 
 import java.util.ArrayList;
@@ -69,8 +70,16 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.restapi.group.LearningGroupWebService;
+import org.olat.restapi.support.vo.FileVO;
 import org.olat.restapi.support.vo.FolderVO;
 import org.olat.restapi.support.vo.FolderVOes;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -121,6 +130,12 @@ public class UserFoldersWebService {
 	 * @return The files
 	 */
 	@Path("group/{groupKey}")
+	@Operation(summary = "Retrieve the folder of a group", description = "Retrieves the folder of a group")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The files", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = FileVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = FileVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	public VFSWebservice getGroupFolder(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		if(groupKey == null) {
 			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
@@ -142,6 +157,12 @@ public class UserFoldersWebService {
 	 * @return The files
 	 */
 	@Path("course/{courseKey}/{courseNodeId}")
+	@Operation(summary = "Retrieves the folder of a course building block", description = "Retrieves the folder of a course building block")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The files", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = FileVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = FileVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
 	public VFSWebservice getCourseFolder(@PathParam("courseKey") Long courseKey, @PathParam("courseNodeId") String courseNodeId,
 			@Context HttpServletRequest request) {
 		return new BCWebService().getVFSWebService(courseKey, courseNodeId, request);
@@ -161,6 +182,14 @@ public class UserFoldersWebService {
 	 * @return The folders
 	 */
 	@GET
+	@Operation(summary = "Retrieves a list of folders on a user base", description = "Retrieves a list of folders on a user base. All folders of groups \n" + 
+			"	  where the user is participant/tutor + all folders in course where\n" + 
+			"	  the user is a participant (owner, tutor or participant)")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The folders", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = FolderVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = FolderVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getFolders(@Context HttpServletRequest httpRequest) {
 		

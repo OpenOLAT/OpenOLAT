@@ -393,7 +393,7 @@ public class TeacherRollCallController extends FormBasicController {
 			absenceCont.contextPut("row", row);
 		}
 		
-		if(secCallback.canEditAbsences()) {
+		if(secCallback.canEditAbsences() && notice == null) {
 			FormLink allLink = uifactory.addFormLink("all_".concat(Integer.toString(++counter)), "all", null, flc, Link.LINK);
 			allLink.setTitle("all.desc");
 			allLink.setDomReplacementWrapperRequired(false);

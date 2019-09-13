@@ -29,6 +29,12 @@ import javax.ws.rs.core.Response;
 
 import org.olat.commons.info.InfoMessage;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * Description:<br>
@@ -58,6 +64,18 @@ public class InfoMessageWebService {
 	 * @return It returns the newly info message
 	 */
 	@GET
+	@Operation(summary = "Get an new info message by key",
+	description = "Get an new info message by key")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The info message",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = InfoMessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = InfoMessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not Found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMessage(@Context HttpServletRequest request) {
 		InfoMessageVO msgVO = new InfoMessageVO(msg);

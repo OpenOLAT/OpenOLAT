@@ -48,6 +48,12 @@ import org.olat.core.util.resource.OresHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -79,6 +85,9 @@ public class InfoMessagesWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "The version of the Info messages Web Service",
+	description = "The version of the Info messages Web Service")
+	@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")		
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -102,11 +111,23 @@ public class InfoMessagesWebService {
 	 * @return It returns the id of the newly info message
 	 */
 	@PUT
+	@Operation(summary = "Creates a new info message",
+	description = "Creates a new info message")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The info message",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = InfoMessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = InfoMessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not Found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response createEmptyCourse(final @QueryParam("resName") String resName,
-			final @QueryParam("resId") Long resId, @QueryParam("resSubPath") String resSubPath,
-			@QueryParam("businessPath") String businessPath, @QueryParam("authorKey") Long authorKey,
-			@QueryParam("title") String title, @QueryParam("message") String message,
+	public Response createEmptyCourse(final @QueryParam("resName") @Parameter(description = "The OLAT Resourceable name") String resName,
+			final @QueryParam("resId") @Parameter(description = "The OLAT Resourceable id") Long resId, @QueryParam("resSubPath") @Parameter(description = "The resource sub path (optional)") String resSubPath,
+			@QueryParam("businessPath") @Parameter(description = "The business path") String businessPath, @QueryParam("authorKey") @Parameter(description = "The identity key of the author") Long authorKey,
+			@QueryParam("title") @Parameter(description = "The title") String title, @QueryParam("message") @Parameter(description = "The message") String message,
 			@Context HttpServletRequest request) {
 		
 		if(!isAuthor(request)) {

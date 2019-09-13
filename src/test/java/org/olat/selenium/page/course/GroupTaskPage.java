@@ -154,6 +154,7 @@ public class GroupTaskPage {
 		OOGraphene.waitElement(saveAndCloseDirtyBy, browser);
 		browser.findElement(saveAndCloseDirtyBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitElement(By.className("o_process"), browser);
 		return this;
 	}
 	

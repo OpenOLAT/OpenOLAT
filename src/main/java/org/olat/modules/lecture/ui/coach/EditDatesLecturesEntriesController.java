@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui.coach;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -59,6 +60,7 @@ import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.modules.lecture.ui.component.LectureBlockWithTeachersComparator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -347,6 +349,7 @@ public class EditDatesLecturesEntriesController extends FormBasicController {
 	
 		}
 		loadedLectureBlocks = lectureService.getLectureBlocksWithTeachers(searchParams);
+		Collections.sort(loadedLectureBlocks, new LectureBlockWithTeachersComparator());
 		
 		KeyValues keyValues = new KeyValues();
 		for(LectureBlockWithTeachers lectureBlock:loadedLectureBlocks) {

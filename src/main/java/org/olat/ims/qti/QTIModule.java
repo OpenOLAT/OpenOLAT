@@ -46,6 +46,8 @@ public class QTIModule extends AbstractSpringModule {
 	private boolean createResourcesEnabled;
 	@Value("${qti12.survey.create.resources.enabled:false}")
 	private boolean createSurveyResourcesEnabled;
+	@Value("${qti12.survey.create.course.nodes.enabled:false}")
+	private boolean createSurveyCourseNodesEnabled;
 	@Value("${qti12.edit.resources.enabled:false}")
 	private boolean createEditResourcesEnabled;
 
@@ -74,6 +76,10 @@ public class QTIModule extends AbstractSpringModule {
 		return createSurveyResourcesEnabled;
 	}
 	
+	public boolean isCreateSurveyCourseNodesEnabled() {
+		return createSurveyCourseNodesEnabled;
+	}
+
 	public boolean isEditResourcesEnabled() {
 		return createEditResourcesEnabled;
 	}

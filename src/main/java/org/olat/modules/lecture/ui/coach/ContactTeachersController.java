@@ -188,15 +188,14 @@ public class ContactTeachersController extends FormBasicController {
 	private void doSend(UserRequest ureq) {
 		boolean success = false;
 		try {
-			List<ContactList> contactList = new ArrayList<>();
-			ContactList memberList = new ContactList(translate("contact.teachers.list.name"));
+			ContactList teachersList = new ContactList(translate("contact.teachers.list.name"));
 			List<Identity> selectedTeachers = getSelectedTeacher();
-			memberList.addAllIdentites(selectedTeachers);
+			teachersList.addAllIdentites(selectedTeachers);
 			MailContext context = new MailContextImpl(getWindowControl().getBusinessControl().getAsString());
 			MailBundle bundle = new MailBundle();
 			bundle.setContext(context);
 			bundle.setFromId(getIdentity());						
-			bundle.setContactLists(contactList);
+			bundle.setContactList(teachersList);
 			bundle.setContent(subjectEl.getValue(), bodyEl.getValue());
 			MailerResult result = mailService.sendMessage(bundle);
 			success = result.isSuccessful();

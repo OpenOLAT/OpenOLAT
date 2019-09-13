@@ -8,9 +8,6 @@
 	#if($r.available("edit.type.notice.absence"))
 	<li>$r.render("edit.type.notice.absence")</li>
 	#end
-	#if($r.available("delete"))
-	<li>$r.render("delete")</li>
-	#end
 	#if($r.available("profile"))
 	<li>$r.render("profile")</li>
 	#end
@@ -18,9 +15,13 @@
 	<li>$r.render("contact.teachers")</li>
 	#end
 	#if($r.isNotEmpty($entryLinkIds))
-		<li class="separator"></li>
+		<li class="divider"> </li>
 		#foreach($entryLinkId in $entryLinkIds)
 			<li>$r.render($entryLinkId)</li>
 		#end
+	#end
+	#if($r.available("delete"))
+		<li class="divider"> </li>
+		<li>$r.render("delete")</li>
 	#end
 </ul>

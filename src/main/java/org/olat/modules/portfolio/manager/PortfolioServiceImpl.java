@@ -510,7 +510,10 @@ public class PortfolioServiceImpl implements PortfolioService {
 				instanciatedAssignment = assignmentDao.startEssayAssignment(instanciatedAssignment, page, author);
 			} else if (instanciatedAssignment.getAssignmentType() == AssignmentType.form) {
 				RepositoryEntry formEntry = instanciatedAssignment.getFormEntry();
-				page = appendNewPage(author, instanciatedAssignment.getTitle(), instanciatedAssignment.getSummary(), null, false, null, section);
+				if(!StringHelper.containsNonWhitespace(title)) {
+					title = instanciatedAssignment.getTitle();
+				}
+				page = appendNewPage(author, title, instanciatedAssignment.getSummary(), null, false, null, section);
 				instanciatedAssignment = assignmentDao.startFormAssignment(instanciatedAssignment, page, author);
 				// create the session for the assignee
 				EvaluationFormSurvey survey = loadOrCreateSurvey(page.getBody(), formEntry);

@@ -152,7 +152,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		MultipleSelectionElement boxEl = uifactory
 				.addCheckboxesHorizontal(boxId, null, formLayout, onKeys, values);
 		boxEl.setEnabled(!readOnly && !coachCourseEnv.isCourseReadOnly());
-		boxEl.setLabel(checkbox.getTitle(), null, false);
+		boxEl.setLabel(StringHelper.escapeHtml(checkbox.getTitle()), null, false);
 		boxEl.showLabel(true);
 		boxEl.addActionListener(FormEvent.ONCHANGE);
 		
@@ -220,10 +220,9 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
 		
-		boolean allOk = true;
 		for(CheckboxWrapper wrapper:wrappers) {
-		
 			TextElement pointEl = wrapper.getPointEl();
 			if(pointEl != null) {
 				pointEl.clearError();
@@ -245,7 +244,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 				}
 			}
 		}
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	private void doSave() {
@@ -256,7 +255,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 				String val = wrapper.getPointEl().getValue();
 				if(StringHelper.containsNonWhitespace(val)) {
 					try {
-						editedPoint = new Float(val);
+						editedPoint = Float.valueOf(val);
 					} catch (NumberFormatException e) {
 						editedPoint = null;
 					}	
@@ -352,7 +351,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 			this.dbCheckbox = dbCheckbox;
 		}
 
-		public String getTitle() {
+		public String getTitle2() {
 			return checkbox.getTitle();
 		}
 		
@@ -369,7 +368,7 @@ public class AssessedIdentityCheckListController extends FormBasicController {
 		}
 		
 		public String getCheckboxElName() {
-			return checkboxEl.getName();//getComponent().getComponentName();
+			return checkboxEl.getName();
 		}
 	}
 }

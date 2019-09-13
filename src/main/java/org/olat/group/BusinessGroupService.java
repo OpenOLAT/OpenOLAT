@@ -36,13 +36,12 @@ import org.olat.group.model.BGRepositoryEntryRelation;
 import org.olat.group.model.BusinessGroupEnvironment;
 import org.olat.group.model.BusinessGroupMembershipChange;
 import org.olat.group.model.BusinessGroupQueryParams;
-import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.LeaveOption;
 import org.olat.group.model.MembershipModification;
 import org.olat.group.model.OpenBusinessGroupRow;
-import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.group.model.StatisticsBusinessGroupRow;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
@@ -279,7 +278,7 @@ public interface BusinessGroupService {
 	 * @param ordering
 	 * @return
 	 */
-	public List<BusinessGroupRow> findBusinessGroupsWithMemberships(BusinessGroupQueryParams params, IdentityRef identity);
+	public List<StatisticsBusinessGroupRow> findBusinessGroupsWithMemberships(BusinessGroupQueryParams params, IdentityRef identity);
 	
 	/**
 	 * Retrieve the business groups of a repository entry with the number of coaches, participants,

@@ -56,6 +56,9 @@ public class LectureBlockRollCallStatusComponentRenderer extends DefaultComponen
 		} else if(cmp.getLecturesAttendedNumber() >= numOfLectures) {
 			iconCssClass = "o_lectures_rollcall_ok";
 			title = cmp.getTranslator().translate("rollcall.tooltip.ok");
+		} else if(cmp.getRollCall() == null || cmp.getRollCall().getRollCall() == null) {
+			iconCssClass = "o_lectures_rollcall_pending";
+			title = cmp.getTranslator().translate("rollcall.tooltip.pending");
 		} else if(cmp.isAuthorizedAbsenceEnabled()) {
 			if(cmp.isAbsenceDefaultAuthorized()) {
 				if(cmp.isLecturesAuthorizedAbsent() || cmp.getRollCall().getRollCall().getAbsenceAuthorized() == null) {

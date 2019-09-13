@@ -28,6 +28,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
 import org.olat.basesecurity.GroupRoles;
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
@@ -84,6 +85,10 @@ public class AbsenceNoticeDAO {
 	public AbsenceNotice updateAbsenceNotice(AbsenceNotice notice) {
 		((AbsenceNoticeImpl)notice).setLastModified(new Date());
 		return dbInstance.getCurrentEntityManager().merge(notice);
+	}
+	
+	public void deleteAbsenceNotice(AbsenceNotice notice) {
+		dbInstance.getCurrentEntityManager().remove(notice);
 	}
 	
 	public List<LectureBlockRollCall> getRollCalls(AbsenceNotice notice) {
@@ -204,6 +209,7 @@ public class AbsenceNoticeDAO {
 	public List<AbsenceNoticeInfos> search(AbsenceNoticeSearchParameters searchParams, boolean absenceDefaultAuthorized) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select notice from absencenotice as notice")
+		  .append(" left join fetch notice.absenceCategory as category")
 		  .append(" inner join fetch notice.identity as aIdent")
 		  .append(" inner join fetch aIdent.user as aUser");
 		if(!searchParams.getTypes().isEmpty()) {
@@ -262,11 +268,10 @@ public class AbsenceNoticeDAO {
 		}
 		
 		if(searchParams.getMasterCoach() != null) {
-			sb.and().append(" exists (select block.key from lectureblock as block")
-			  .append("  inner join block.groups as blockToGroup")
-			  .append("  inner join blockToGroup.group as bGroup")
-			  .append("  inner join bGroup.members participants")
-			  .append("  inner join bGroup.members masterCoaches")
+			sb.and().append(" exists (select curEl.key from curriculumelement as curEl")
+			  .append("  inner join curEl.group as curElGroup")
+			  .append("  inner join curElGroup.members participants")
+			  .append("  inner join curElGroup.members masterCoaches")
 			  .append("  where masterCoaches.identity.key=:masterCoachKey and masterCoaches.role ").in(CurriculumRoles.mastercoach.name())
 			  .append("  and aIdent.key=participants.identity.key and participants.role ").in(GroupRoles.participant.name())
 			  .append(")");
@@ -326,7 +331,7 @@ public class AbsenceNoticeDAO {
 	 * @param lectureBlock The lecture block (mandatory)
 	 * @return
 	 */
-	public List<AbsenceNotice> getAbsenceNotices(Identity calleeIdentity, LectureBlock lectureBlock) {
+	public List<AbsenceNotice> getAbsenceNotices(IdentityRef calleeIdentity, LectureBlock lectureBlock) {
 		QueryBuilder sb = new QueryBuilder(1024);
 		sb.append("select notice from absencenotice as notice")
 		  .append(" inner join fetch notice.identity as aIdent")

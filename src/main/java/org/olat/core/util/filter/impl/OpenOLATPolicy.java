@@ -22,6 +22,7 @@ package org.olat.core.util.filter.impl;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.olat.core.util.CodeHelper;
 import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.HtmlStreamEventProcessor;
 import org.owasp.html.HtmlStreamEventReceiver;
@@ -40,29 +41,20 @@ import com.google.common.base.Predicate;
  *
  */
 public class OpenOLATPolicy {
+	
+	private static final String MEDIA_HOST = "http://my" + CodeHelper.getForeverUniqueID() + "localhost:8123/";
 
 	private static final Pattern PARAGRAPH = Pattern.compile("([\\p{L}\\p{N},'\\.\\s\\-_\\(\\)]|&[0-9]{2};)*");
-	//private static final Pattern POSITIVELENGTH = Pattern.compile("((\\+)?0|(\\+)?([0-9]+(.[0-9]+)?)(em|ex|px|in|cm|mm|pt|pc))");
 	private static final Pattern COLORNAME = Pattern.compile("(aqua|black|blue|fuchsia|gray|grey|green|lime|maroon|navy|olive|purple|red|silver|teal|white|yellow)");
 	private static final Pattern OFFSITEURL = Pattern.compile("(\\s)*((ht)tp(s?)://|mailto:)[\\p{L}\\p{N}]+[\\p{L}\\p{N}\\p{Zs}\\.\\#@\\$%\\+&;:\\-_~,\\?=/!\\(\\)]*(\\s)*");
-	//private static final Pattern RELATIVE_SIZE = Pattern.compile("(larger|smaller)");
-	//private static final Pattern SYSTEMCOLOR = Pattern.compile("(activeborder|activecaption|appworkspace|background|buttonface|buttonhighlight|buttonshadow|buttontext|captiontext|graytext|highlight|highlighttext|inactiveborder|inactivecaption|inactivecaptiontext|infobackground|infotext|menu|menutext|scrollbar|threeddarkshadow|threedface|threedhighlight|threedlightshadow|threedshadow|window|windowframe|windowtext)");
 	private static final Pattern HTMLCLASS = Pattern.compile("[a-zA-Z0-9\\s,-_]+");
-	//private static final Pattern LENGTH = Pattern.compile("((-|\\+)?0|(-|\\+)?([0-9]+(.[0-9]+)?)(em|ex|px|in|cm|mm|pt|pc))");
-	//private static final Pattern ABSOLUTE_SIZE = Pattern.compile("(xx-small|x-small|small|medium|large|x-large|xx-large)");
-	//private static final Pattern POSITIVEPERCENTAGE = Pattern.compile("(\\+)?([0-9]+(.[0-9]+)?)%");
 	private static final Pattern ANYTHING = Pattern.compile(".*");
 	private static final Pattern ONSITEURL = Pattern.compile("([\\p{L}\\p{N}\\p{Zs}/\\.\\?=&\\-~_]|ccrep:)+");
 	private static final Pattern NUMBER = Pattern.compile("[0-9]+");
 	private static final Pattern HTMLTITLE = Pattern.compile("[a-zA-Z0-9\\s-_',:\\[\\]!\\./\\\\\\(\\)%&;\\+#]*");
-	
-	//private static final Pattern CSSONSITEURI = Pattern.compile("url\\(([\\p{L}\\p{N}\\\\/\\.\\?=\\#&;\\-_~]+|\\#(\\w)+)\\)");
-	//private static final Pattern RGBCODE = Pattern.compile("rgb\\(([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5]),([1]?[0-9]{1,2}|2[0-4][0-9]|25[0-5])\\)");
-	//private static final Pattern PERCENTAGE = Pattern.compile("(-|\\+)?([0-9]+(.[0-9]+)?)%");
 	private static final Pattern OLATINTERNALURL = Pattern.compile("javascript:parent\\.gotonode\\(\\d+\\)");
 	private static final Pattern NUMBERORPERCENT = Pattern.compile("(\\d)+(%{0,1})");
 	private static final Pattern COLORCODE = Pattern.compile("(#([0-9a-fA-F]{6}|[0-9a-fA-F]{3}))");
-	//private static final Pattern CSSOFFSITEURI = Pattern.compile("url\\((\\s)*(http(s?)://)[\\p{L}\\p{N}]+[~\\p{L}\\p{N}\\p{Zs}\\-_\\.@#$%&;:,\\?=/\\+!]*(\\s)*\\)");
 
 	public static final PolicyFactory POLICY_DEFINITION = new HtmlPolicyBuilder()
 		.allowStyling()
@@ -302,7 +294,10 @@ public class OpenOLATPolicy {
 							&& attrs.get(i+1).startsWith("javascript:parent.goto")
 							&& OLATINTERNALURL.matcher(attrs.get(i + 1)).matches()) {
 						attrs.set(i, "onclick");
-					}	
+					} else if("href".equals(attr) && i+1 < numOfAttrs
+							&& attrs.get(i+1).startsWith("media/")) {
+						attrs.set(i + 1, MEDIA_HOST + attrs.get(i+1));
+					}
 				}
 			}
 			super.openTag(elementName, attrs);
@@ -313,13 +308,13 @@ public class OpenOLATPolicy {
 
 		@Override
 		public HtmlStreamEventReceiver wrap(HtmlStreamEventReceiver sink) {
-			return new OpenOLATostReceiver(sink);
+			return new OpenOLATPostReceiver(sink);
 		}
 	}
 	
-	private static class OpenOLATostReceiver extends HtmlStreamEventReceiverWrapper {
+	private static class OpenOLATPostReceiver extends HtmlStreamEventReceiverWrapper {
 		
-		public OpenOLATostReceiver(HtmlStreamEventReceiver sink) {
+		public OpenOLATPostReceiver(HtmlStreamEventReceiver sink) {
 			super(sink);
 		}
 
@@ -333,6 +328,9 @@ public class OpenOLATPolicy {
 							&& attrs.get(i+1).startsWith("javascript:parent.goto")
 							&& OLATINTERNALURL.matcher(attrs.get(i + 1)).matches()) {
 						attrs.set(i, "href");
+					} else if("href".equals(attr) && i+1 < numOfAttrs
+							&& attrs.get(i+1).startsWith(MEDIA_HOST)) {
+						attrs.set(i + 1, attrs.get(i+1).substring(MEDIA_HOST.length()));
 					}	
 				}
 			}
@@ -354,7 +352,7 @@ public class OpenOLATPolicy {
 		// java.util.function.Predicate.
 		// For some reason the default test method implementation that calls
 		// through to apply is not assumed here.
-		@SuppressWarnings("unused")
+		@Override
 		public boolean test(String s) {
 			return apply(s);
 		}
@@ -387,7 +385,7 @@ public class OpenOLATPolicy {
 		// java.util.function.Predicate.
 		// For some reason the default test method implementation that calls
 		// through to apply is not assumed here.
-		@SuppressWarnings("unused")
+		@Override
 		public boolean test(String s) {
 			return apply(s);
 		}

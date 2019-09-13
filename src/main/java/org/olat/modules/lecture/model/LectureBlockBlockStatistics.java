@@ -107,7 +107,7 @@ public class LectureBlockBlockStatistics {
 					numOfAbsenceUnauthorized++;
 				}
 			} else if(notice.getNoticeType() == AbsenceNoticeType.notified) {
-				if(notice.getAbsenceAuthorized() && notice.getAbsenceAuthorized().booleanValue()) {
+				if(notice.getAbsenceAuthorized() != null && notice.getAbsenceAuthorized().booleanValue()) {
 					numOfNoticeOfAbsenceAuthorized++;
 				} else {
 					numOfNoticeOfAbsenceUnauthorized++;

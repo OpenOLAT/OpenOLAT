@@ -263,7 +263,8 @@ public class MSCourseNodeRunController extends BasicController implements Activa
 
 		if(showLog) {
 			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-			myContent.contextPut("log", am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity()));
+			String userLog = am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
+			myContent.contextPut("log", StringHelper.escapeHtml(userLog));
 		}
 	}
 	

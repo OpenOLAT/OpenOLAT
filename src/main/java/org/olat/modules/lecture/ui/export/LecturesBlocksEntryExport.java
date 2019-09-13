@@ -22,14 +22,13 @@ package org.olat.modules.lecture.ui.export;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -42,6 +41,7 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.Reason;
 import org.olat.modules.lecture.model.LectureBlockWithTeachers;
 import org.olat.modules.lecture.ui.component.LectureBlockStatusCellRenderer;
+import org.olat.modules.lecture.ui.component.LectureBlockWithTeachersComparator;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
 
@@ -180,18 +180,5 @@ public class LecturesBlocksEntryExport extends OpenXMLWorkbookResource {
 	
 	private String formatDate(Date date) {
 		return date == null ? null : formatter.formatDate(date);
-	}
-	
-	private static class LectureBlockWithTeachersComparator implements Comparator<LectureBlockWithTeachers> {
-
-		@Override
-		public int compare(LectureBlockWithTeachers o1, LectureBlockWithTeachers o2) {
-			Date s1 = o1.getLectureBlock().getStartDate();
-			Date s2 = o2.getLectureBlock().getStartDate();
-			if(s1 == null && s2 == null) return 0;
-			if(s1 == null) return 1;
-			if(s2 == null) return -1;
-			return s1.compareTo(s2);
-		}
 	}
 }

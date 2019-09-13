@@ -22,6 +22,7 @@ package org.olat.modules.coach;
 import java.util.List;
 import java.util.Locale;
 
+import org.olat.basesecurity.IdentityRef;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.UserEfficiencyStatement;
 import org.olat.group.BusinessGroup;
@@ -43,6 +44,9 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
 public interface CoachingService {
 
 	public CoachingSecurity isCoach(Identity identity);
+	
+	//TODO absence remove it in a few weeks
+	public boolean isTeacher(IdentityRef identity);
 
 	public List<RepositoryEntry> getStudentsCourses(Identity coach, Identity student);
 	

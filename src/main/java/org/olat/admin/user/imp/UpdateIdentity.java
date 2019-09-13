@@ -174,6 +174,11 @@ public class UpdateIdentity implements Identity {
 		}
 
 		@Override
+		public String getSmsTelMobile() {
+			return updatedProperties.get(UserConstants.SMSTELMOBILE);
+		}
+
+		@Override
 		public Date getCreationDate() {
 			return user.getCreationDate();
 		}

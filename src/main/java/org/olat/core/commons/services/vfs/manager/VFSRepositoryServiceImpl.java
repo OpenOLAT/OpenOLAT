@@ -106,6 +106,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	
 	private static final Logger log = Tracing.createLoggerFor(VFSRepositoryServiceImpl.class);
 	private final OLATResourceable fileSizeSubscription = OresHelper.createOLATResourceableType("UpdateFileSizeAsync");
+	private final OLATResourceable incrementFileDownload = OresHelper.createOLATResourceableType("IncrementFileDownloadAsync");
 	private static final String CANONICAL_ROOT_REL_PATH = "/";
 	
 	@Autowired
@@ -138,13 +139,16 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, fileSizeSubscription);
+		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null, incrementFileDownload);
 	}
 
 	@Override
 	public void event(Event event) {
 		if(event instanceof AsyncFileSizeUpdateEvent) {
 			processFileSizeUpdateEvent((AsyncFileSizeUpdateEvent)event);
-		}	
+		} else if(event instanceof AsyncIncrementFileDownloadEvent) {
+			processIncrementFileDownnload((AsyncIncrementFileDownloadEvent)event);
+		}
 	}
 	
 	private void processFileSizeUpdateEvent(AsyncFileSizeUpdateEvent event) {
@@ -157,6 +161,15 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			} catch (Exception e) {
 				log.error("Cannot update file size of: " + event.getRelativePath() + " " + event.getFilename(), e);
 			}
+		}
+	}
+	
+	private void processIncrementFileDownnload(AsyncIncrementFileDownloadEvent event) {
+		try {
+			metadataDao.increaseDownloadCount(event.getRelativePath(), event.getFilename());
+			dbInstance.commit();
+		} catch (Exception e) {
+			log.error("Cannot increment file downloads of: " + event.getRelativePath() + " " + event.getFilename(), e);
 		}
 	}
 	
@@ -492,7 +505,8 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	public void increaseDownloadCount(VFSLeaf item) {
 		String relPath = getContainerRelativePath(item);
 		if(StringHelper.containsNonWhitespace(relPath)) {
-			metadataDao.increaseDownloadCount(relPath, item.getName());
+			AsyncIncrementFileDownloadEvent event = new AsyncIncrementFileDownloadEvent(relPath, item.getName());
+			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, incrementFileDownload);
 		}
 	}
 	
@@ -1087,18 +1101,18 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 				if(directory.isHidden() || VFSRepositoryModule.canMeta(directory) != VFSConstants.YES) {
 					return FileVisitResult.SKIP_SUBTREE;
 				}
-				if(dir.getNameCount() > 50) {
+				if(dir.getNameCount() > 50 || parentLine.size() > 50) {
 					log.error("More than 50 directories deep. Stop migrating metadata: {}", directory);
 					return FileVisitResult.SKIP_SUBTREE;
 				}
 				
 				VFSMetadata parent = parentLine.peekLast();
 				VFSMetadata metadata = migrateMetadata(dir.toFile(), parent);
-				parentLine.add(metadata);
 				if(metadata != null && "migrated".equals(metadata.getMigrated())) {
 					dbInstance.commitAndCloseSession();
 					return FileVisitResult.SKIP_SUBTREE;
 				}
+				parentLine.add(metadata);
 				dbInstance.commit();
 				return FileVisitResult.CONTINUE;
 			}
@@ -1212,10 +1226,19 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 		String extension = FileUtils.getFileSuffix(originalFilename);
 		String nameOnly = originalFilename.substring(0, originalFilename.length() - extension.length() - 1);
 		String thumbnailExtension = preferedThumbnailType(extension);
-		
 		StringBuilder sb = new StringBuilder(128);
-		sb.append("._oo_th_").append(fill).append("_").append(maxWidth).append("_").append(maxHeight)
-		  .append("_").append(nameOnly).append(".").append(thumbnailExtension);
+		sb.append("._oo_th_").append(fill).append("_").append(maxWidth).append("_").append(maxHeight).append("_");
+		
+		if(nameOnly.length() + sb.length() + thumbnailExtension.length() > 230) {
+			log.info("File name too long: {}", nameOnly);
+			int maxLength = 230 - sb.length() - thumbnailExtension.length();
+			if(maxLength < 1) {
+				maxLength = 1;
+			}
+			nameOnly = nameOnly.substring(0, maxLength);
+		}
+		
+		sb.append(nameOnly).append(".").append(thumbnailExtension);
 		return sb.toString();
 	}
 	

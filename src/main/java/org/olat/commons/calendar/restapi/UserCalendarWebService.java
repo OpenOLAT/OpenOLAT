@@ -88,6 +88,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 
 /**
  * 
@@ -120,8 +121,8 @@ public class UserCalendarWebService {
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "Request was successful.",
 			content = {
-				@Content(mediaType = "application/json", schema = @Schema(implementation = CalendarVO.class)),
-				@Content(mediaType = "application/xml", schema = @Schema(implementation = CalendarVO.class))
+				@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CalendarVO.class))),
+				@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CalendarVO.class)))
 			}, links = {}),
 		@ApiResponse(responseCode = "401", description = "Not authorized."),
 		@ApiResponse(responseCode = "404", description = "Not found.")}
@@ -173,12 +174,12 @@ public class UserCalendarWebService {
 
 	@GET
 	@Path("events")
-	@Operation(summary = "List all events.", description = "Returns list of all events in for a specific user.")
+	@Operation(summary = "List all events from a user.", description = "Returns list of all events in for a specific user.")
 	@ApiResponses({
 		@ApiResponse(responseCode = "200", description = "Request was successful.",
 			content = {
-				@Content(mediaType = "application/json", schema = @Schema(implementation = EventVO[].class)),
-				@Content(mediaType = "application/xml", schema = @Schema(implementation = EventVO[].class))
+				@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = EventVO.class))),
+				@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = EventVO.class)))
 			} 
 		),
 		@ApiResponse(responseCode = "401", description = "Not authorized."),

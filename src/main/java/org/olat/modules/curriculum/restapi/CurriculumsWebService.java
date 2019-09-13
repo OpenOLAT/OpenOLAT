@@ -62,6 +62,12 @@ import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -85,7 +91,7 @@ public class CurriculumsWebService {
 	private OrganisationService organisationService;
 	
 	/**
-	 * The version of the User Web Service
+	 * 
 	 * @response.representation.200.mediaType text/plain
  	 * @response.representation.200.doc The version of this specific Web Service
  	 * @response.representation.200.example 1.0
@@ -93,6 +99,11 @@ public class CurriculumsWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "Get the version of the User Web Service",
+	description = "Get the version of the User Web Service")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")}
+		)
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -110,6 +121,17 @@ public class CurriculumsWebService {
 	 * @return An array of curriculums
 	 */
 	@GET
+	@Operation(summary = "Return the curriculums a manager user is allowed to see",
+	description = "Return the curriculums a manager user is allowed to see")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "An array of curriculums",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculums(@Context HttpServletRequest httpRequest) {
 		Roles roles = getRoles(httpRequest);
@@ -157,6 +179,18 @@ public class CurriculumsWebService {
 	 * @return The new persisted <code>curriculum</code>
 	 */
 	@PUT
+	@Operation(summary = "Creates and persists a new curriculum",
+	description = "Creates and persists a new curriculum")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The persisted curriculum",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putCurriculum(CurriculumVO curriculum, @Context HttpServletRequest httpRequest) {
@@ -186,6 +220,18 @@ public class CurriculumsWebService {
 	 * @return The merged <code>curriculum</code>
 	 */
 	@POST
+	@Operation(summary = "Updates a curriculum entity",
+	description = "Updates a curriculum entity")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The curriculum to update",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculum(CurriculumVO curriculum, @Context HttpServletRequest httpRequest) {
@@ -212,6 +258,18 @@ public class CurriculumsWebService {
 	 */
 	@GET
 	@Path("{curriculumKey}")
+	@Operation(summary = "Get a specific curriculum",
+	description = "Get a specific curriculum")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The curriculum",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculum(@PathParam("curriculumKey") Long curriculumKey, @Context HttpServletRequest httpRequest) {
 		Curriculum curriculum = curriculumService.getCurriculum(new CurriculumRefImpl(curriculumKey));
@@ -255,6 +313,19 @@ public class CurriculumsWebService {
 	 */
 	@POST
 	@Path("{curriculumKey}")
+	@Operation(summary = "Update a curriculum entity",
+	description = "Updates a curriculum entity. The primary key is taken from\n" + 
+			"	  the URL. The curriculum object can be \"primary key free\"")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The merged curriculum",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculum(@PathParam("curriculumKey") Long curriculumKey, CurriculumVO curriculum, @Context HttpServletRequest httpRequest) {
@@ -350,6 +421,18 @@ public class CurriculumsWebService {
 	 */
 	@GET
 	@Path("{curriculumKey}/curriculumowners")
+	@Operation(summary = "Get all curriculum managers",
+	description = "Get all curriculum managers of the specified curriculum")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The array of curriculum managers",
+					content = {
+							@Content(mediaType = "application/json", array  = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+							@Content(mediaType = "application/xml", array  = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")}
+		)
 	public Response getCurriculumManagers(@PathParam("curriculumKey") Long curriculumKey, @Context HttpServletRequest httpRequest) {
 		return getMembers(curriculumKey, CurriculumRoles.curriculumowner, httpRequest);
 	}
@@ -383,6 +466,13 @@ public class CurriculumsWebService {
 	 */
 	@PUT
 	@Path("{curriculumKey}/curriculumowners/{identityKey}")
+	@Operation(summary = "Make the specified user a curriculum manager of the curriculum",
+	description = "Make the specified user a curriculum manager of the curriculum")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was added"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")}
+		)
 	public Response putCurriculumOwner(@PathParam("curriculumKey") Long curriculumKey,
 			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
 		return putMember(curriculumKey, identityKey, CurriculumRoles.curriculumowner, httpRequest);
@@ -417,6 +507,13 @@ public class CurriculumsWebService {
 	 */
 	@DELETE
 	@Path("{curriculumKey}/curriculumowners/{identityKey}")
+	@Operation(summary = "Remove the curriculum manager membership",
+	description = "Remove the curriculum manager membership of the identity from the specified curriculum")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was removed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")}
+		)
 	public Response deleteCurriculumManager(@PathParam("curriculumKey") Long curriculumKey,
 			@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
 		return deleteMember(curriculumKey, identityKey, CurriculumRoles.curriculumowner, httpRequest);

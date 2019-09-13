@@ -23,7 +23,6 @@ package org.olat.resource.accesscontrol.provider.paypal.ui;
 import java.math.BigDecimal;
 import java.net.UnknownHostException;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -41,6 +40,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.resource.accesscontrol.AccessControlModule;
 import org.olat.resource.accesscontrol.provider.paypal.PaypalModule;
 import org.olat.resource.accesscontrol.provider.paypal.manager.PaypalManager;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -67,9 +67,12 @@ public class PaypalMasterAccountController extends FormBasicController {
 	
 	private FormLink checkButton;
 	
-	private final PaypalModule paypalModule;
-	private final PaypalManager paypalManager;
-	private final AccessControlModule acModule;
+	@Autowired
+	private PaypalModule paypalModule;
+	@Autowired
+	private PaypalManager paypalManager;
+	@Autowired
+	private AccessControlModule acModule;
 	
 	private static final String[] vatKeys = new String[]{"on"};
 	private final String[] vatValues;
@@ -102,13 +105,7 @@ public class PaypalMasterAccountController extends FormBasicController {
 	
 	public PaypalMasterAccountController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-
-		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
-		paypalModule = CoreSpringFactory.getImpl(PaypalModule.class);
-		paypalManager = CoreSpringFactory.getImpl(PaypalManager.class);
-		
 		vatValues = new String[]{ translate("vat.on") };
-		
 		initForm(ureq);
 	}
 	
@@ -120,6 +117,7 @@ public class PaypalMasterAccountController extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("paypal.config.title");
+		setFormWarning("paypal.config.deprecated");
 
 		if(acModule.isPaypalEnabled()) {
 			setFormDescription("paypal.config.description");

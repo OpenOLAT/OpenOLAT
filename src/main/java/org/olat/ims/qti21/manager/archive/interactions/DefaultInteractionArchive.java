@@ -47,7 +47,7 @@ public class DefaultInteractionArchive implements InteractionArchive {
 
 	@Override
 	public int writeHeader2(AssessmentItem item, Interaction interaction, int itemNumber, int interactionNumber, Row dataRow, int col, OpenXMLWorkbook workbook) {
-		String header = (itemNumber + 1) + "_U" + (interactionNumber + 1);;
+		String header = (itemNumber + 1) + "_U" + (interactionNumber + 1);
 		dataRow.addCell(col++, header, workbook.getStyles().getHeaderStyle());
 		return col;
 	}

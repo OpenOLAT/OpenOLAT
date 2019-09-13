@@ -50,10 +50,17 @@ import org.olat.group.BusinessGroupShort;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.olat.restapi.repository.course.CoursesWebService;
+import org.olat.restapi.support.vo.CourseNodeVO;
 import org.olat.restapi.support.vo.GroupVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -98,13 +105,26 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted contact element (fully populated)
 	 */
 	@PUT
+	@Operation(summary = "attach an enrollment element onto a given course",
+	description = "This attaches a contact element onto a given course, the element will be\n" + 
+			"	  inserted underneath the supplied parentNodeId")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachEnrolmment(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("groups") String groups, @QueryParam("cancelEnabled") @DefaultValue("false") boolean cancelEnabled,
+	public Response attachEnrolmment(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this structure") String parentNodeId,
+			@QueryParam("position")  @Parameter(description = "The node's position relative to its sibling nodes (optional)")Integer position, @QueryParam("shortTitle") @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") @Parameter(description = "The node long title") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @Parameter(description = "The node learning objectives") @DefaultValue("undefined") String objectives,
+			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules, @QueryParam("accessExpertRules") @Parameter(description = "The rules to access the node (optional)") String accessExpertRules,
+			@QueryParam("groups") @Parameter(description = "A list of learning groups (list of keys)") String groups, @QueryParam("cancelEnabled") @Parameter(description = "cancel enrollment enabled or not") @DefaultValue("false") boolean cancelEnabled,
 			@Context HttpServletRequest request) {
 		
 		EnrollmentConfigDelegate config = new EnrollmentConfigDelegate(groups, cancelEnabled);
@@ -137,6 +157,19 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	 * @return The persisted contact element (fully populated)
 	 */
 	@POST
+	@Operation(summary = "attach an enrollment element onto a given course",
+	description = "This attaches a contact element onto a given course, the element will be\n" + 
+			"	  inserted underneath the supplied parentNodeId")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The course node metadatas",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachEnrollmenetPost(@PathParam("courseId") Long courseId, @FormParam("parentNodeId") String parentNodeId,
@@ -153,7 +186,7 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	 * Retrieves the groups where the enrollment happens
 	 * @response.representation.200.qname {http://www.example.com}groupVO
 	 * @response.representation.200.mediaType application/xml, application/json
-	 * @response.representation.200.doc The groups
+	 * @response.representation.200.doc Retrieves the groups where the enrollment happens
 	 * @response.representation.200.example {@link org.olat.restapi.support.vo.Examples#SAMPLE_GROUPVO}
 	 * @response.representation.401.doc The roles of the authenticated user are not sufficient
 	 * @response.representation.404.doc The course or course node not found
@@ -163,6 +196,18 @@ public class ENWebService extends AbstractCourseNodeWebService {
 	 */
 	@GET
 	@Path("{nodeId}/groups")
+	@Operation(summary = "Retrieves the groups where the enrollment happens",
+	description = "Retrieves the groups where the enrollment happens")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Retrieves the groups where the enrollment happens",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = GroupVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = GroupVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getGroups(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest httpRequest) {
 		ICourse course = CoursesWebService.loadCourse(courseId);

@@ -20,6 +20,7 @@
 package org.olat.modules.curriculum.restapi;
 
 import java.util.ArrayList;
+
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -50,7 +51,6 @@ import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementManagedFlag;
 import org.olat.modules.curriculum.CurriculumElementStatus;
 import org.olat.modules.curriculum.CurriculumElementType;
-import org.olat.modules.curriculum.CurriculumLectures;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.manager.CurriculumElementToTaxonomyLevelDAO;
@@ -68,6 +68,13 @@ import org.olat.restapi.support.vo.RepositoryEntryVO;
 import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * The security checks are done by the CurriculumsWebService.
@@ -111,6 +118,17 @@ public class CurriculumElementsWebService {
 	 * @return The taxonomy
 	 */
 	@GET
+	@Operation(summary = "Return the curriculum elements of a curriculum",
+	description = "Return the curriculum elements of a curriculum")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "A taxonomy",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumElements() {
 		List<CurriculumElement> elements = curriculumService.getCurriculumElements(curriculum, CurriculumElementStatus.notDeleted());
@@ -135,6 +153,17 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}")
+	@Operation(summary = "Get a specific curriculum element",
+	description = "Get a specific curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The curriculum element",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, @Context HttpServletRequest httpRequest) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
@@ -161,6 +190,18 @@ public class CurriculumElementsWebService {
 	 * @return The new persisted <code>curriculum element</code>
 	 */
 	@PUT
+	@Operation(summary = "Creates and persists a new curriculum element entity",
+	description = "Creates and persists a new curriculum element entity")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The curriculum element to persist",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putCurriculumElement(CurriculumElementVO curriculumElement)
@@ -185,6 +226,18 @@ public class CurriculumElementsWebService {
 	 * @return The merged <code>curriculum element</code>
 	 */
 	@POST
+	@Operation(summary = "Updates a curriculum element entity",
+	description = "Updates a curriculum element entity")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The curriculum element to update",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculumElement(CurriculumElementVO curriculumElement)
@@ -212,6 +265,19 @@ public class CurriculumElementsWebService {
 	 */
 	@POST
 	@Path("{curriculumElementKey}")
+	@Operation(summary = "Updates a curriculum element entity",
+	description = "Updates a curriculum element entity. The primary key is taken from\n" + 
+			"	  the URL. The curriculum element object can be \"primary key free\"")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The curriculum element to update",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "406", description = "application/xml, application/json")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response postCurriculumElement(@PathParam("curriculumElementKey") Long curriculumElementKey, CurriculumElementVO curriculumElement)
@@ -248,7 +314,7 @@ public class CurriculumElementsWebService {
 		if(curriculumElement.getKey() == null) {
 			elementToSave = curriculumService.createCurriculumElement(curriculumElement.getIdentifier(), curriculumElement.getDisplayName(),
 					null, curriculumElement.getBeginDate(), curriculumElement.getEndDate(), parentElement, type,
-					CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+					null, null, curriculum);
 		} else {
 			elementToSave = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElement.getKey()));
 			elementToSave.setDisplayName(curriculumElement.getDisplayName());
@@ -311,6 +377,18 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/elements")
+	@Operation(summary = "Get the curriculum elements",
+	description = "Get the curriculum elements laying under the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The curriculum elements under the specified element",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CurriculumElementVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element was not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumElementChildren(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
@@ -344,6 +422,18 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/entries")
+	@Operation(summary = "Get the repository entries",
+	description = "Get the repository entries laying under the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The repository entries",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the repository entry was not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRepositoryEntriesInElement(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
@@ -373,6 +463,13 @@ public class CurriculumElementsWebService {
 	 */
 	@HEAD
 	@Path("{curriculumElementKey}/entries/{repositoryEntryKey}")
+	@Operation(summary = "see if a repository entry is under curriculum element",
+	description = "To see if a repository entry is under the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The repository entry is there"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the repository entry was not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response headRepositoryEntryInElement(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
@@ -409,6 +506,18 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/entries/{repositoryEntryKey}")
+	@Operation(summary = "Load the repository entry",
+	description = "Load the repository entry laying under the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The repository entries",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = RepositoryEntryVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the repository entry was not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getRepositoryEntryInElement(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
@@ -442,6 +551,14 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/entries/{repositoryEntryKey}")
+	@Operation(summary = "Add a relation",
+	description = "Add a relation between a repository entry and a curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The relation was added"),
+			@ApiResponse(responseCode = "304", description = "There is already a relation, nothing changed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the repository entry was not found")}
+		)
 	public Response addRepositoryEntryToElement(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
@@ -477,6 +594,14 @@ public class CurriculumElementsWebService {
 	 */
 	@DELETE
 	@Path("{curriculumElementKey}/entries/{repositoryEntryKey}")
+	@Operation(summary = "Remove a relation",
+	description = "Remove a relation between a curriculum element and a repository entry")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The relation was successfully removed"),
+			@ApiResponse(responseCode = "304", description = "here is no relation to remove"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the repository entry was not found")}
+		)
 	public Response removeRepositoryEntryToElement(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("repositoryEntryKey") Long repositoryEntryKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
@@ -512,6 +637,17 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/members")
+	@Operation(summary = "Get memberships informations",
+	description = "Get the memberships informations of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The curriculum element membership",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = CurriculumElementMemberVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = CurriculumElementMemberVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")}
+		)
 	public Response getMembers(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
@@ -544,6 +680,19 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/users")
+	@Operation(summary = "Get all members",
+	description = "Get all members of the specified curriculum element. A query parameter can\n" + 
+			"	  specify the role of them")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The array of authors",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "401", description = "The course not found")}
+		)
 	public Response getUsers(@PathParam("curriculumElementKey") Long curriculumElementKey, @QueryParam("role") String role) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
@@ -581,6 +730,14 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/members")
+	@Operation(summary = "Add a membership ",
+	description = "Add a membership to the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was persisted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found"),
+			@ApiResponse(responseCode = "409", description = "The role is not allowed")}
+		)
 	public Response putMembers(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			CurriculumElementMemberVO membership) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
@@ -615,6 +772,13 @@ public class CurriculumElementsWebService {
 	 */
 	@DELETE
 	@Path("{curriculumElementKey}/members/{identityKey}")
+	@Operation(summary = "Remove all memberships ",
+	description = "Remove all memberships of the identity from the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was removed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")}
+		)
 	public Response deleteMembers(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("identityKey") Long identityKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
@@ -647,6 +811,18 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/participants")
+	@Operation(summary = "Get all participants",
+	description = "Get all participants of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The array of participants",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getParticipants(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		return getMembers(curriculumElementKey, CurriculumRoles.participant);
@@ -666,6 +842,18 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/coaches")
+	@Operation(summary = "Get all coaches",
+	description = "Get all coaches of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The array of coaches",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		return getMembers(curriculumElementKey, CurriculumRoles.coach);
@@ -685,6 +873,18 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/owners")
+	@Operation(summary = "Get all owners",
+	description = "Get all owners of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The array of owners",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOwners(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		return getMembers(curriculumElementKey, CurriculumRoles.owner);
@@ -704,6 +904,18 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/mastercoaches")
+	@Operation(summary = "Get all master coaches",
+	description = "Get all master coaches of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The array of master coaches",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMasterCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		return getMembers(curriculumElementKey, CurriculumRoles.mastercoach);
@@ -722,7 +934,19 @@ public class CurriculumElementsWebService {
 	 * @return It returns an array of <code>UserVO</code>
 	 */
 	@GET
-	@Path("{curriculumElementKey}/curriculumelementowners")
+	@Path("{curriculumElementKey}/curriculumelementowners")	
+	@Operation(summary = "Get all curriculum managers",
+	description = "Get all curriculum managers of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The array of curriculum managers",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCurriculumManagers(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		return getMembers(curriculumElementKey, CurriculumRoles.curriculumelementowner);
@@ -756,6 +980,13 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/participants/{identityKey}")
+	@Operation(summary = "Make the specified user a participant of the curriculum element ",
+	description = "Make the specified user a participant of the curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was added"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")}
+		)
 	public Response putParticipant(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
 		return putMember(curriculumElementKey, identityKey, CurriculumRoles.participant);
 	}
@@ -772,6 +1003,13 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/coaches/{identityKey}")
+	@Operation(summary = "Make the specified user a coach of the curriculum element",
+	description = "Make the specified user a coach of the curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was added"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")}
+		)
 	public Response putCoach(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
 		return putMember(curriculumElementKey, identityKey, CurriculumRoles.coach);
 	}
@@ -788,6 +1026,13 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/owners/{identityKey}")
+	@Operation(summary = "Make the specified user a course owner of the curriculum element",
+	description = "Make the specified user a course owner of the curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was added"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")}
+		)
 	public Response putOwner(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
 		return putMember(curriculumElementKey, identityKey, CurriculumRoles.owner);
 	}
@@ -804,6 +1049,13 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/curriculumelementowners/{identityKey}")
+	@Operation(summary = "Make the specified user a curriculum manager of the curriculum element",
+	description = "Make the specified user a curriculum manager of the curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was added"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")}
+		)
 	public Response putCurriculumElementOwner(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
 		return putMember(curriculumElementKey, identityKey, CurriculumRoles.curriculumelementowner);
 	}
@@ -820,6 +1072,13 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/mastercoaches/{identityKey}")
+	@Operation(summary = "Make the specified user a master coach of the curriculum element",
+	description = "Make the specified user a master coach of the curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was added"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element or the identity was not found")}
+		)
 	public Response putMasterCoach(@PathParam("curriculumElementKey") Long curriculumElementKey, @PathParam("identityKey") Long identityKey) {
 		return putMember(curriculumElementKey, identityKey, CurriculumRoles.mastercoach);
 	}
@@ -858,6 +1117,19 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/participants")
+	@Operation(summary = "Make the array of users participant of the specified curriculum element",
+	description = "Make the array of users participant of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The memberships was persisted",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found"),
+			@ApiResponse(responseCode = "409", description = "The role is not allowed")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putParticipants(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] participants) {
 		return putMembers(curriculumElementKey, participants, CurriculumRoles.participant);
@@ -880,6 +1152,14 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/coaches")
+	@Operation(summary = "Make the array of users coach of the specified curriculum element",
+	description = "Make the array of users coach of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The memberships was persisted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found"),
+			@ApiResponse(responseCode = "409", description = "The role is not allowed")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
 		return putMembers(curriculumElementKey, coaches, CurriculumRoles.coach);
@@ -902,6 +1182,14 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/owners")
+	@Operation(summary = "Make the array of users course owner of the specified curriculum element",
+	description = "Make the array of users course owner of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The memberships was persisted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found"),
+			@ApiResponse(responseCode = "409", description = "The role is not allowed")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putOwners(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] owners) {
 		return putMembers(curriculumElementKey, owners, CurriculumRoles.owner);
@@ -924,6 +1212,14 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/mastercoaches")
+	@Operation(summary = "Make the array of users course master coaches of the specified curriculum element",
+	description = "Make the array of users course master coaches of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The memberships was persisted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found"),
+			@ApiResponse(responseCode = "409", description = "The role is not allowed")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putMasterCoaches(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] masterCoaches) {
 		return putMembers(curriculumElementKey, masterCoaches, CurriculumRoles.mastercoach);
@@ -946,6 +1242,14 @@ public class CurriculumElementsWebService {
 	 */
 	@PUT
 	@Path("{curriculumElementKey}/curriculumelementowners")
+	@Operation(summary = "Make the array of users curriculum managers of the specified curriculum element",
+	description = "Make the array of users curriculum managers of the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The memberships was persisted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found"),
+			@ApiResponse(responseCode = "409", description = "The role is not allowed")}
+		)
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putCurriculumManagers(@PathParam("curriculumElementKey") Long curriculumElementKey, UserVO[] coaches) {
 		return putMembers(curriculumElementKey, coaches, CurriculumRoles.curriculumelementowner);
@@ -981,6 +1285,13 @@ public class CurriculumElementsWebService {
 	 */
 	@DELETE
 	@Path("{curriculumElementKey}/participants/{identityKey}")
+	@Operation(summary = "Remove the participant membership",
+	description = "Remove the participant membership of the identity from the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was removed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	public Response deleteParticipant(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("identityKey") Long identityKey) {
 		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.participant);
@@ -998,6 +1309,13 @@ public class CurriculumElementsWebService {
 	 */
 	@DELETE
 	@Path("{curriculumElementKey}/coaches/{identityKey}")
+	@Operation(summary = "Remove the coach membership",
+	description = "Remove the coach membership of the identity from the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was removed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	public Response deleteCoach(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("identityKey") Long identityKey) {
 		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.coach);
@@ -1015,6 +1333,13 @@ public class CurriculumElementsWebService {
 	 */
 	@DELETE
 	@Path("{curriculumElementKey}/owners/{identityKey}")
+	@Operation(summary = "Remove the owners membership",
+	description = "Remove the owners membership of the identity from the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was removed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	public Response deleteOwner(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("identityKey") Long identityKey) {
 		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.owner);
@@ -1032,6 +1357,13 @@ public class CurriculumElementsWebService {
 	 */
 	@DELETE
 	@Path("{curriculumElementKey}/mastercoaches/{identityKey}")
+	@Operation(summary = "Remove the master coach membership",
+	description = "Remove the master coach membership of the identity from the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was removed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	public Response deleteMasterCoach(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("identityKey") Long identityKey) {
 		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.mastercoach);
@@ -1049,6 +1381,13 @@ public class CurriculumElementsWebService {
 	 */
 	@DELETE
 	@Path("{curriculumElementKey}/curriculumelementowners/{identityKey}")
+	@Operation(summary = "Remove the curriculum manager membership",
+	description = "Remove the curriculum manager membership of the identity from the specified curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The membership was removed"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum element not found")}
+		)
 	public Response deleteCurriculumManager(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("identityKey") Long identityKey) {
 		return deleteMember(curriculumElementKey, identityKey, CurriculumRoles.curriculumelementowner);
@@ -1073,6 +1412,18 @@ public class CurriculumElementsWebService {
 	
 	@GET
 	@Path("{curriculumElementKey}/taxonomy/levels")
+	@Operation(summary = "Get levels",
+	description = "Get levels from a specific curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The list of levels",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = TaxonomyLevelVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum or curriculum element not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTaxonomyLevels(@PathParam("curriculumElementKey") Long curriculumElementKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
@@ -1092,6 +1443,18 @@ public class CurriculumElementsWebService {
 	
 	@PUT
 	@Path("{curriculumElementKey}/taxonomy/levels/{taxonomyLevelKey}")
+	@Operation(summary = "Put level",
+	description = "Put level from a specific curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The level",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = TaxonomyLevelVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = TaxonomyLevelVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum or curriculum element not found")}
+		)
 	public Response getTaxonomyLevels(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
@@ -1119,6 +1482,14 @@ public class CurriculumElementsWebService {
 	
 	@DELETE
 	@Path("{curriculumElementKey}/taxonomy/levels/{taxonomyLevelKey}")
+	@Operation(summary = "Delete level",
+	description = "Delete level from a specific curriculum element")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Remove level"
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The curriculum or curriculum element not found")}
+		)
 	public Response deleteTaxonomyLevel(@PathParam("curriculumElementKey") Long curriculumElementKey,
 			@PathParam("taxonomyLevelKey") Long taxonomyLevelKey) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));

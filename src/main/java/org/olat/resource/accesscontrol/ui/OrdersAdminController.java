@@ -25,11 +25,13 @@ import java.util.List;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.commons.calendar.CalendarUtils;
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FlexiTableSortOptions;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
@@ -128,7 +130,7 @@ public class OrdersAdminController extends FormBasicController implements Activa
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.status, new OrderStatusRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.status, new OrderStatusRenderer(getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.orderNr));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.creationDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(OrderCol.summary));
@@ -177,6 +179,13 @@ public class OrdersAdminController extends FormBasicController implements Activa
 		filters.add(new FlexiTableFilter(translate("order.status.error"), OrderStatus.ERROR.name()));
 		tableEl.setFilters("", filters, false);
 		
+		FlexiTableSortOptions options = new FlexiTableSortOptions();
+		options.setDefaultOrderBy(new SortKey(OrderCol.creationDate.sortKey(), false));
+		tableEl.setSortSettings(options);
+		
+		String id = resource == null ? "orders-admin-list" : "orders-resource-list";
+		tableEl.setAndLoadPersistedPreferences(ureq, id);
+	
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			layoutCont.contextPut("title", translate("orders.admin.my"));

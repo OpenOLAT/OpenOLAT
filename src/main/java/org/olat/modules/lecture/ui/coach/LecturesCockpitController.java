@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui.coach;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,6 +57,7 @@ import org.olat.modules.lecture.ui.LectureRepositoryAdminController;
 import org.olat.modules.lecture.ui.LectureRoles;
 import org.olat.modules.lecture.ui.LecturesSecurityCallback;
 import org.olat.modules.lecture.ui.TeacherRollCallController;
+import org.olat.modules.lecture.ui.component.LectureBlockComparator;
 import org.olat.modules.lecture.ui.event.ChangeDayEvent;
 import org.olat.modules.lecture.ui.event.OpenRepositoryEntryEvent;
 import org.olat.modules.lecture.ui.event.RollCallEvent;
@@ -73,8 +75,8 @@ public class LecturesCockpitController extends BasicController implements Activa
 	private final VelocityContainer mainVC;
 	private final List<Link> pendingLecturesLink = new ArrayList<>();
 	
+	private DailyAbsencesController absencesListCtrl;
 	private final DayChooserController dayChooserCtrl;
-	private final DailyAbsencesController absencesListCtrl;
 	private DailyLectureBlockOverviewController lectureBlocksCtrl;
 
 	private TeacherRollCallController rollCallCtrl;
@@ -101,14 +103,16 @@ public class LecturesCockpitController extends BasicController implements Activa
 		
 		viewAsTeacher = secCallback.viewAs() == LectureRoles.teacher;
 		if(viewAsTeacher) {
-			lectureBlocksCtrl = new DailyLectureBlockOverviewController(ureq, getWindowControl(), getCurrentDate(), getIdentity(), secCallback);
+			lectureBlocksCtrl = new DailyLectureBlockOverviewController(ureq, getWindowControl(), getCurrentDate(), null, secCallback);
 			listenTo(lectureBlocksCtrl);
 			mainVC.put("lectureBlocks", lectureBlocksCtrl.getInitialComponent());
 		}
 		
-		absencesListCtrl = new DailyAbsencesController(ureq, getWindowControl(), getCurrentDate(), null, secCallback);
-		listenTo(absencesListCtrl);
-		mainVC.put("absences", absencesListCtrl.getInitialComponent());
+		if(lectureModule.isAbsenceNoticeEnabled()) {
+			absencesListCtrl = new DailyAbsencesController(ureq, getWindowControl(), getCurrentDate(), null, secCallback);
+			listenTo(absencesListCtrl);
+			mainVC.put("absences", absencesListCtrl.getInitialComponent());
+		}
 		
 		mainVC.contextPut("pendingLectures", pendingLecturesLink);
 
@@ -156,10 +160,10 @@ public class LecturesCockpitController extends BasicController implements Activa
 				fireEvent(ureq, event);
 			}
 		} else if(source == rollCallCtrl) {
-			if(event == Event.DONE_EVENT) {
+			if(event == Event.DONE_EVENT || event == Event.BACK_EVENT || event == Event.CANCELLED_EVENT) {
 				backToDaily();
+				reloadModels();
 			}
-			
 		} else if(event == Event.BACK_EVENT) {
 			backToDaily();
 		}
@@ -192,7 +196,9 @@ public class LecturesCockpitController extends BasicController implements Activa
 		if(lectureBlocksCtrl != null) {
 			lectureBlocksCtrl.loadModel();
 		}
-		absencesListCtrl.reloadModel();
+		if(absencesListCtrl != null) {
+			absencesListCtrl.reloadModel();
+		}
 		loadPendingLectureBlocks();
 	}
 	
@@ -243,6 +249,8 @@ public class LecturesCockpitController extends BasicController implements Activa
 
 		Formatter formatter = Formatter.getInstance(getLocale());
 		List<LectureBlock> lectureBlocks = lectureService.getLectureBlocks(searchParams);
+		Collections.sort(lectureBlocks, new LectureBlockComparator());
+		
 		List<Link> pendingLinks = new ArrayList<>();
 		Set<String> deduplicate = new HashSet<>();
 		for(LectureBlock lectureBlock:lectureBlocks) {
@@ -272,10 +280,13 @@ public class LecturesCockpitController extends BasicController implements Activa
 	}
 	
 	private void doChangeCurrentDate(Date date) {
+		dayChooserCtrl.setDate(date);
 		if(lectureBlocksCtrl != null) {
 			lectureBlocksCtrl.setCurrentDate(date);
 		}
-		absencesListCtrl.setCurrentDate(date);
+		if(absencesListCtrl != null) {
+			absencesListCtrl.setCurrentDate(date);
+		}
 		updateCurrentDate();
 	}
 }

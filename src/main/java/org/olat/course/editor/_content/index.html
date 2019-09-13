@@ -12,8 +12,12 @@
 #end
 #if($courseNodeDeprecated)
 <div class="o_block o_important">
-	<p>$r.translate("course.building.block.deprecated")</p>
-	$r.render("alternative")
+	#if($courseNodeDeprecatedHasAlternative)
+		<p>$r.translate("course.building.block.deprecated")</p>
+		$r.render("alternative")
+	#else
+		<p>$r.translate("course.building.block.deprecated.no.alternative")</p>
+	#end
 </div>
 #end
 #if($targetSelection)

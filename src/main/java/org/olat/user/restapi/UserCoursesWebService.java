@@ -20,6 +20,7 @@
 package org.olat.user.restapi;
 
 import java.util.ArrayList;
+
 import java.util.Collections;
 import java.util.List;
 
@@ -48,6 +49,13 @@ import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.CourseVO;
 import org.olat.restapi.support.vo.CourseVOes;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -84,6 +92,12 @@ public class UserCoursesWebService {
 	 */
 	@GET
 	@Path("my")
+	@Operation(summary = "Retrieves the list of \"My entries\"", description = "Retrieves the list of \"My entries\" but limited to courses")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The courses", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getMyCourses(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
@@ -120,6 +134,12 @@ public class UserCoursesWebService {
 	 */
 	@GET
 	@Path("teached")
+	@Operation(summary = "Retrieves the list of \"My supervised courses\"", description = "Retrieves the list of \"My supervised courses\" but limited to courses")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The courses", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getTeachedCourses(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,
@@ -156,6 +176,12 @@ public class UserCoursesWebService {
 	 */
 	@GET
 	@Path("favorite")
+	@Operation(summary = "Retrieves the list of my favorite courses", description = "Retrieves the list of my favorite courses")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The courses", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = CourseVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getFavoritCourses(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @Context HttpServletRequest httpRequest,

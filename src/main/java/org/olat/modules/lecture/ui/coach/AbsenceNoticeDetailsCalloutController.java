@@ -20,8 +20,10 @@
 package org.olat.modules.lecture.ui.coach;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.core.gui.UserRequest;
@@ -72,10 +74,10 @@ public class AbsenceNoticeDetailsCalloutController extends BasicController {
 		mainVC = createVelocityContainer("notice_details");
 		
 		List<LectureBlockWithNotice> lectureBlocksWith = lectureService.getLectureBlocksWithAbsenceNotices(Collections.singletonList(notice));
-		List<RepositoryEntry> entries = lectureBlocksWith.stream()
+		Set<RepositoryEntry> entries = lectureBlocksWith.stream()
 				.filter(block -> block.getEntry() != null)
 				.map(LectureBlockWithNotice::getEntry)
-				.collect(Collectors.toList());
+				.collect(Collectors.toSet());
 		List<LectureBlock> lectureBlocks = lectureBlocksWith.stream()
 				.map(LectureBlockWithNotice::getLectureBlock)
 				.collect(Collectors.toList());
@@ -85,7 +87,7 @@ public class AbsenceNoticeDetailsCalloutController extends BasicController {
 		putInitialPanel(mainVC);
 	}
 	
-	private void init(AbsenceNotice notice, List<LectureBlock> lectureBlocks, List<RepositoryEntry> entries, List<Identity> teachers) {
+	private void init(AbsenceNotice notice, List<LectureBlock> lectureBlocks, Collection<RepositoryEntry> entries, List<Identity> teachers) {
 		// info absences, reason, status, type
 		AbsenceCategory category = notice.getAbsenceCategory();
 		if(category != null) {
@@ -108,6 +110,7 @@ public class AbsenceNoticeDetailsCalloutController extends BasicController {
 		for(RepositoryEntry entry:entries) {
 			entriesInfo.add(entry.getDisplayname());
 		}
+		Collections.sort(entriesInfo);
 		mainVC.contextPut("entries", entriesInfo);
 
 		// teachers

@@ -41,7 +41,7 @@ public class HierarchicalPartCellRenderer implements FlexiCellRenderer {
 			ControlObjectRow controlObject = (ControlObjectRow)cellValue;
 			int depth = controlObject.getDepth();
 			target.append("<div class='o_table_flexi_l").append(depth).append("'><span><i class='o_icon ").append(controlObject.getIconCssClass()).append("'> </i> ")
-			      .append(controlObject.getTitle()).append("</span></div>");
+			      .appendHtmlEscaped(controlObject.getTitle()).append("</span></div>");
 		} else if(cellValue instanceof String) {
 			target.append((String)cellValue);
 		}

@@ -300,7 +300,7 @@ public class ParticipantLecturesOverviewController extends FormBasicController i
 		}
 
 		for(CurriculumElementRepositoryEntryViews view:elementsWithViews) {
-			for(CurriculumElementRepositoryEntryViews parent=view; parent.getParent() != null; parent=parent.getParent()) {
+			for(CurriculumElementRepositoryEntryViews parent=view; parent != null; parent=parent.getParent()) {
 				if(references.contains(parent)) {
 					results.get(parent).addDescendant(view);
 				}

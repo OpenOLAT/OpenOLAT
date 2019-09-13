@@ -168,6 +168,7 @@ import org.junit.runners.Suite;
 	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,
 	org.olat.instantMessaging.RosterDAOTest.class,
 	org.olat.instantMessaging.InstantMessageServiceTest.class,
+	org.olat.course.archiver.FormatConfigHelperTest.class,
 	org.olat.course.condition.ConditionTest.class,
 	org.olat.course.condition.KeyAndNameConverterTest.class,
 	org.olat.course.highscore.HighScoreManagerTest.class,
@@ -441,6 +442,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
 	org.olat.resource.accesscontrol.ACReservationDAOTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAOTest.class,
+	org.olat.resource.accesscontrol.provider.paypalcheckout.manager.PaypalCheckoutTransactionDAOTest.class,
 	/**
 	 * Pure JUnit test without need of framework
 	 */

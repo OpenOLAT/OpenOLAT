@@ -24,6 +24,7 @@ package org.olat.core.commons.services.notifications.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.parseDate;
 
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -62,10 +63,19 @@ import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.fo.restapi.MessageVO;
 import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.user.restapi.UserVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 /**
  * 
@@ -98,6 +108,18 @@ public class NotificationsWebService {
 	 */
 	@GET
 	@Path("publisher/{ressourceName}/{ressourceId}/{subIdentifier}")
+	@Operation(summary = "Get publisher",
+	description = "Get the publisher by resource name and id + sub identifier")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The publisher",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = PublisherVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = PublisherVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "204", description = "The publisher doesn't exist"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")}
+		)
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getPublisher(@PathParam("ressourceName") String ressourceName, @PathParam("ressourceId") Long ressourceId,
 			@PathParam("subIdentifier") String subIdentifier, @Context HttpServletRequest request) {
@@ -118,6 +140,19 @@ public class NotificationsWebService {
 	
 	@GET
 	@Path("subscribers/{ressourceName}/{ressourceId}/{subIdentifier}")
+	@Operation(summary = "Get subscribers",
+	description = "Get the subscribers by resource name and id + sub identifier")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The subscribers",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = SubscriberVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = SubscriberVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "204", description = "The subscribers don't exist"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")}
+		)
+	
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response getSubscriber(@PathParam("ressourceName") String ressourceName, @PathParam("ressourceId") Long ressourceId,
 			@PathParam("subIdentifier") String subIdentifier, @Context HttpServletRequest request) {
@@ -148,6 +183,13 @@ public class NotificationsWebService {
 
 	@PUT
 	@Path("subscribers")
+	@Operation(summary = "Put subscribers",
+	description = "Put the subscribers")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The author or message not found")}
+		)
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response subscribe(PublisherVO publisherVO, @Context HttpServletRequest request) {
 		if(!isAdmin(request)) {
@@ -171,6 +213,13 @@ public class NotificationsWebService {
 	
 	@DELETE
 	@Path("subscribers/{subscriberKey}")
+	@Operation(summary = "Delete subscribers",
+	description = "Delete the subscribers by id")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The author or message not found")}
+		)
 	@Consumes({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
 	public Response unsubscribe(@PathParam("subscriberKey") Long subscriberKey, @Context HttpServletRequest request) {
 		if(!isAdmin(request)) {
@@ -196,9 +245,20 @@ public class NotificationsWebService {
 	 *         correspond to a <code>SubscriptionInfoVO</code>. <code>SubscriptionInfoVO</code>
 	 */
 	@GET
+	@Operation(summary = "Retrieves the notification of the logged in user",
+	description = "Retrieves the notification of the logged in user")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok.",
+					content = {
+							@Content(mediaType = "application/json", schema = @Schema(implementation = MessageVO.class)),
+							@Content(mediaType = "application/xml", schema = @Schema(implementation = MessageVO.class))
+						} 
+			),
+			@ApiResponse(responseCode = "404", description = "The identity not found")}
+		)
 	@Produces({MediaType.APPLICATION_XML ,MediaType.APPLICATION_JSON})
-	public Response getNotifications(@QueryParam("date") String date,
-			@QueryParam("type") String type, @Context HttpServletRequest httpRequest) {
+	public Response getNotifications(@QueryParam("date") @Parameter(description = "The date (optional)") String date,
+			@QueryParam("type") @Parameter(description = "The type of notifications (User, Forum...) (optional)") String type, @Context HttpServletRequest httpRequest) {
 		Identity identity = RestSecurityHelper.getIdentity(httpRequest);
 		Locale locale = RestSecurityHelper.getLocale(httpRequest);
 		
