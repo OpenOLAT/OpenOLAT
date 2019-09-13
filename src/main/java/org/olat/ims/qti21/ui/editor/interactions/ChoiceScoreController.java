@@ -82,16 +82,14 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private final ChoiceAssessmentItemBuilder itemBuilder;
 	
 	private int counter = 0;
-	private final String contextHelpUrl;
 	
 	public ChoiceScoreController(UserRequest ureq, WindowControl wControl,
 			ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, File itemFileRef,
-			boolean restrictedEdit, boolean readOnly, String contextHelpUrl) {
+			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, itemRef, restrictedEdit, readOnly);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		this.itemFileRef = itemFileRef;
-		this.contextHelpUrl = contextHelpUrl;
 		
 		URI assessmentObjectUri = itemFileRef.toURI();
 		mapperUri = registerCacheableMapper(null, "ChoiceScoreController::" + CodeHelper.getRAMUniqueID(),
@@ -103,7 +101,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp(contextHelpUrl);
+		setFormContextHelp("Configure test questions#_tab_score");
 		super.initForm(formLayout, listener, ureq);
 		
 		ScoreBuilder minScore = itemBuilder.getMinScoreBuilder();
