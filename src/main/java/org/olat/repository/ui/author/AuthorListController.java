@@ -1250,7 +1250,7 @@ public class AuthorListController extends FormBasicController implements Activat
 		}
 	}
 	
-	private class ToolsController extends BasicController {
+	protected class ToolsController extends BasicController {
 
 		private final VelocityContainer mainVC;
 		

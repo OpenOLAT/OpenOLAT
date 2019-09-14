@@ -292,7 +292,12 @@ public abstract class FormBasicController extends BasicController {
 	 * @param ureq
 	 */
 	@RequiresNonNull({"mainForm", "uifactory"})
-	abstract protected void initForm(@UnderInitialization FormItemContainer formLayout, @UnknownInitialization Controller listener, UserRequest ureq);
+	protected void initForm(@UnderInitialization FormItemContainer formLayout, @UnknownInitialization Controller listener, UserRequest ureq) {};
+
+	@RequiresNonNull({"mainForm", "uifactory"})
+	protected void initFormWithItemContainer(@UnderInitialization FormBasicController this, FormItemContainer formLayout, @UnknownInitialization Controller listener, UserRequest ureq) {
+
+	};
 
 	public FormItem getInitialFormItem() {
 		return flc;
