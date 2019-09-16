@@ -152,7 +152,7 @@ public class DataCollectionConfigurationController extends FormBasicController {
 		if (topicCurriculumElement != null) {
 			this.topicCurriculum = topicCurriculumElement.getCurriculum();
 		}
-		this.topicRepository = dataCollection.getTopicRepositoryEntry();
+		this.topicRepository = this.dataCollection.getTopicRepositoryEntry();
 		this.currentOrganisations = qualityService.loadDataCollectionOrganisations(dataCollection);
 		
 		initForm(ureq);
