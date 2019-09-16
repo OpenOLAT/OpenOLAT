@@ -20,14 +20,18 @@
 package org.olat.course.condition.interpreter.score;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.olat.course.Structure;
 import org.olat.course.condition.interpreter.AbstractFunction;
 import org.olat.course.condition.interpreter.ArgumentParseException;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
@@ -87,10 +91,44 @@ public class GetAverageScoreFunction extends AbstractFunction {
 			return defaultValue();
 		}
 		
-		// Runtime mode
-		ScoreAccounting sa = getUserCourseEnv().getScoreAccounting();
-		Float score = sa.evalAverageScore(childIds);
+		Float score = evalAverageScore(childIds);
 		return new Double(score);
+	}
+	
+	/**
+	 * Evaluate the average score of the course element. The method
+	 * takes the visibility of the results in account.
+	 * 
+	 * @param childIds The specified course element idents
+	 * @return A float (never null)
+	 */
+	private Float evalAverageScore(Collection<String> childIds) {
+		ScoreAccounting sa = getUserCourseEnv().getScoreAccounting();
+		Structure structure = getUserCourseEnv().getCourseEnvironment().getRunStructure();
+		
+		int count = 0;
+		float sum = 0.0f;
+		
+		for (String childId : childIds) {
+			CourseNode foundNode = structure.getNode(childId);
+			Float score = null;
+			if (foundNode != null) {
+				ScoreEvaluation se = sa.evalCourseNode(foundNode);
+				if(se != null) {
+					// the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
+					if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
+						score = se.getScore();
+						if (score != null) {
+							count++;
+							sum += score.floatValue();
+						}
+					}
+				}
+			}
+		}
+		
+		// Calculate the average only if at least one score is available.
+		return count > 0? Float.valueOf(sum / count): Float.valueOf(0.0f);
 	}
 
 	@Override

@@ -27,6 +27,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 import org.olat.course.assessment.AssessmentModeManager;
 import org.olat.course.editor.CourseEditorEnv;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ScoreAccounting;
+import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 
@@ -39,19 +42,12 @@ import org.olat.repository.RepositoryEntry;
 public class IsAssessmentModeFunction extends AbstractFunction {
 	public static final String name = "isAssessmentMode";
 
-	/**
-	 * Constructor
-	 * @param userCourseEnv
-	 */
 	public IsAssessmentModeFunction(UserCourseEnvironment userCourseEnv) {
 		super(userCourseEnv);
 	}
 
 	@Override
 	public Object call(Object[] inStack) {
-		/*
-		 * expression check only if cev != null
-		 */
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
 			if(inStack != null && inStack.length == 2) {
@@ -84,12 +80,25 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 		boolean open = false;
 		if(inStack != null && inStack.length == 2) {
 			String nodeId = (String) inStack[0];
-			open = isAssessmentModeActive(lockedResource) ||
-					getUserCourseEnv().getScoreAccounting().evalUserVisibleOfCourseNode(nodeId);
+			open = isAssessmentModeActive(lockedResource) || isScoreUserVisible(nodeId);
 		} else {
 			open = isAssessmentModeActive(lockedResource);
 		}
 		return open ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+	}
+	
+	public boolean isScoreUserVisible(String childId) {
+		ScoreAccounting sa = getUserCourseEnv().getScoreAccounting();
+		CourseNode foundNode = getUserCourseEnv().getCourseEnvironment().getRunStructure().getNode(childId);
+		if (foundNode == null) {
+			return Boolean.FALSE;
+		}
+		ScoreEvaluation se = sa.evalCourseNode(foundNode);
+		if (se == null) {
+			return Boolean.FALSE;
+		}
+		// check if the results are visible
+		return se.getUserVisible() != null && se.getUserVisible().booleanValue();
 	}
 	
 	private boolean isAssessmentModeActive(OLATResourceable lockedResource) {

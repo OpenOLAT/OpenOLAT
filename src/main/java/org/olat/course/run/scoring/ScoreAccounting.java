@@ -26,17 +26,14 @@
 package org.olat.course.run.scoring;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.logging.log4j.Logger;
 import org.hibernate.LazyInitializationException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.Identity;
-import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
@@ -64,9 +61,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ScoreAccounting {
 	
-	private static final Logger log = Tracing.createLoggerFor(ScoreAccounting.class);
-
-	private boolean error;
 	private final UserCourseEnvironment userCourseEnvironment;
 	private final Map<CourseNode, AssessmentEvaluation> cachedScoreEvals = new HashMap<>();
 	
@@ -386,128 +380,6 @@ public class ScoreAccounting {
 			cachedScoreEvals.put(cn, se);
 		}
 		return se;
-	}
-
-	/**
-	 * Evaluate the score of the course element. The method
-	 * takes the visibility of the results in account and will
-	 * return 0.0 if the results are not visible.
-	 * 
-	 * @param childId The specified course element ident
-	 * @return A float (never null)
-	 */
-	public Float evalScoreOfCourseNode(String childId) {
-		CourseNode foundNode = findChildByID(childId);
-		
-		Float score = null;
-		if (foundNode != null) {
-			ScoreEvaluation se = evalCourseNode(foundNode);
-			if(se != null) {
-				// the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-				if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
-					score = se.getScore();
-				} else {
-					score = Float.valueOf(0.0f);
-				}
-			}
-			if (score == null) { // a child has no score yet
-				score = Float.valueOf(0.0f); // default to 0.0, so that the condition can be evaluated (zero points makes also the most sense for "no results yet", if to be expressed in a number)
-			}
-		} else {
-			error = true;
-			score = Float.valueOf(0.0f);
-		}
-		
-		return score;
-	}
-	
-	/**
-	 * Evaluate the average score of the course element. The method
-	 * takes the visibility of the results in account.
-	 * 
-	 * @param childIds The specified course element idents
-	 * @return A float (never null)
-	 */
-	public Float evalAverageScore(Collection<String> childIds) {
-		int count = 0;
-		float sum = 0.0f;
-		
-		for (String childId : childIds) {
-			CourseNode foundNode = findChildByID(childId);
-			Float score = null;
-			if (foundNode != null) {
-				ScoreEvaluation se = evalCourseNode(foundNode);
-				if(se != null) {
-					// the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-					if(se.getUserVisible() == null || se.getUserVisible().booleanValue()) {
-						score = se.getScore();
-						if (score != null) {
-							count++;
-							sum += score.floatValue();
-						}
-					}
-				}
-			}
-		}
-		
-		// Calculate the average only if at least one score is available.
-		return count > 0? Float.valueOf(sum / count): Float.valueOf(0.0f);
-	}
-
-	/**
-	 * Evaluate the passed / failed state of a course element. The method
-	 * takes the visibility of the results in account and will return false
-	 * if the results are not visible.
-	 * 
-	 * @param childId The specified course element ident
-	 * @return true/false never null
-	 */
-	public Boolean evalPassedOfCourseNode(String childId) {
-		CourseNode foundNode = findChildByID(childId);
-		if (foundNode == null) {
-			error = true;
-			return Boolean.FALSE;
-		}
-		ScoreEvaluation se = evalCourseNode(foundNode);
-		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-			log.error("could not evaluate node '{}' ({},{})", foundNode.getShortTitle(), foundNode.getClass().getName(), childId);
-			return Boolean.FALSE;
-		}
-		// check if the results are visible
-		if(se.getUserVisible() != null && !se.getUserVisible().booleanValue()) {
-			return Boolean.FALSE;
-		}
-		Boolean passed = se.getPassed();
-		if (passed == null) { // a child has no "Passed" yet
-			passed = Boolean.FALSE;
-		}
-		return passed;
-	}
-	
-	public boolean evalUserVisibleOfCourseNode(String childId) {
-		CourseNode foundNode = findChildByID(childId);
-		if (foundNode == null) {
-			error = true;
-			return Boolean.FALSE;
-		}
-		ScoreEvaluation se = evalCourseNode(foundNode);
-		if (se == null) { // the node could not provide any sensible information on scoring. e.g. a STNode with no calculating rules
-			log.error("could not evaluate node '{}' ({},{})", foundNode.getShortTitle(), foundNode.getClass().getName(), childId);
-			return Boolean.FALSE;
-		}
-		// check if the results are visible
-		return se.getUserVisible() != null && se.getUserVisible().booleanValue();
-	}
-
-	private CourseNode findChildByID(String id) {
-		return userCourseEnvironment.getCourseEnvironment().getRunStructure().getNode(id);
-	}
-
-	/**
-	 * @return true if an error occured
-	 */
-	public boolean isError() {
-		return error;
 	}
 	
 	private static class LastModifications {
