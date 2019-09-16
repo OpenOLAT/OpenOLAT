@@ -60,6 +60,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private static final String LAYOUT_DEFAULT = VELOCITY_ROOT + "/form_default.html";
 	private static final String LAYOUT_DEFAULT_6_6 = VELOCITY_ROOT + "/form_default_6_6.html";
 	private static final String LAYOUT_DEFAULT_9_3 = VELOCITY_ROOT + "/form_default_9_3.html";
+	private static final String LAYOUT_TABLE_CONDENSED = VELOCITY_ROOT + "/form_table_condensed.html";
 	private static final String LAYOUT_DEFAULT_2_10 = VELOCITY_ROOT + "/form_default_2_10.html";
 	private static final String LAYOUT_HORIZONTAL = VELOCITY_ROOT + "/form_horizontal.html";
 	private static final String LAYOUT_VERTICAL = VELOCITY_ROOT + "/form_vertical.html";
@@ -113,7 +114,8 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	private FormLayoutContainer(String id, String name, Translator formTranslator, String page) {
 		super(id, name, false);
 		formLayoutContainer = new VelocityContainer(id == null ? null : id + "_VC", name, page, formTranslator, null);
-		if (page.equals(LAYOUT_DEFAULT) || page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_HORIZONTAL) || page.equals(LAYOUT_BUTTONGROUP) || page.equals(LAYOUT_INPUTGROUP)) {
+		if (page.equals(LAYOUT_DEFAULT) || page.equals(LAYOUT_VERTICAL) || page.equals(LAYOUT_HORIZONTAL)
+				|| page.equals(LAYOUT_BUTTONGROUP) || page.equals(LAYOUT_INPUTGROUP) || page.equals(LAYOUT_TABLE_CONDENSED)) {
 			// optimize for lower DOM element count - provides its own DOM ID in velocity template
 			formLayoutContainer.setDomReplacementWrapperRequired(false);
 		}
@@ -318,6 +320,12 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 		formLayoutContainer.remove(toBeRemoved.getLabelC());
 	}
 	
+	public void removeAll() {
+		formComponentsNames.clear();
+		formComponents.clear();
+		formLayoutContainer.clear();
+	}
+	
 	public void moveBefore(FormItem itemToBeMoved, FormItem itemRef) {
 		int index = formComponentsNames.indexOf(itemToBeMoved.getName());
 		int indexRef = formComponentsNames.indexOf(itemRef.getName());
@@ -391,6 +399,11 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	
 	public String getId(String prefix) {
 		return VelocityRenderDecorator.getId(prefix, formLayoutContainer);
+	}
+	
+	@Override
+	public String getForId() {
+		return null;
 	}
 	
 	@Override
@@ -562,6 +575,16 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	public static FormLayoutContainer createButtonLayout(String name, Translator formTranslator) {
 		return new FormLayoutContainer(name, formTranslator, LAYOUT_BUTTONGROUP);
 	}
+	
+	/**
+	 * 
+	 * @param name
+	 * @param formTranslator
+	 * @return
+	 */
+	public static FormLayoutContainer createTableCondensedLayout(String name, Translator formTranslator) {
+		return new FormLayoutContainer(name, formTranslator, LAYOUT_TABLE_CONDENSED);
+	}
 
 	/**
 	 * Create a layout container that should be only used to render input groups. Input groups are 
@@ -607,7 +630,7 @@ public class FormLayoutContainer extends FormItemImpl implements FormItemContain
 	public void setTranslator(Translator translator) {
 		super.setTranslator(translator);
 		// set also translator on velocity container delegate
-		this.formLayoutContainer.setTranslator(translator);
+		formLayoutContainer.setTranslator(translator);
 	}
 
 	/**

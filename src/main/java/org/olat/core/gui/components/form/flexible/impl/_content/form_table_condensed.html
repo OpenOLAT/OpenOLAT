@@ -1,0 +1,39 @@
+## for odd reason bootstrap calls vertial horizontal
+<fieldset #if(!$!f.domReplacementWrapperRequired) id="$r.getCId()" #end class="o_form form-horizontal #if ($off_css_class) $off_css_class #end $f.getContainerCssClass()">
+#if ($off_desc || $off_warn || $off_info)
+	<div class="row"><div class="col-sm-offset-3 col-sm-9">
+		#if ($off_desc) <div class="o_desc">$off_desc</div> #end
+		#if ($off_warn) <div class="o_warning">$off_warn</div> #end
+		#if ($off_info) <div class="o_info">$off_info</div> #end
+	</div></div>
+#end
+<table class="o_tabled_form table table-condensed">
+#if ($off_title) 
+	<thead><tr class="">
+		<th colspan="2">$off_title</th>
+	</tr></thead>
+#end
+<tbody>
+#foreach ($item in $formitemnames)
+	#if ($f.isVisible($item))
+	<tr class="$f.getElementCssClass($item) #if($f.hasError($item)) has-feedback has-error #end">
+		<th class="col-left">#if ($f.hasLabel($item))
+			$r.render("${item}_LABEL", "$f.getItemId($item)")
+		#end
+		</th><td class="col-right">
+			$r.render(${item}, "form")
+			#if($f.hasError($item))
+				<span class="o_icon o_icon_error form-control-feedback"></span>
+			#end
+			#if($f.hasExample($item))
+			<div class="help-block">$r.render("${item}_EXAMPLE")</div>
+			#end
+			#if($f.hasError($item))
+				<div>$r.render("${item}_ERROR")</div>
+			#end
+		</td>
+	</tr>
+	#end
+#end
+</tbody></table>
+</fieldset>
