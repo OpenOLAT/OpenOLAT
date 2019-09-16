@@ -19,6 +19,9 @@
  */
 package org.olat.core.gui.components.segmentedview;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.DefaultComponentRenderer;
@@ -33,12 +36,17 @@ class SegmentViewRenderer extends DefaultComponentRenderer {
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		SegmentViewComponent component = (SegmentViewComponent)source;
-		if(component.isEmpty() || (component.isDontShowSingleSegment() && component.getSegments().size() == 1)) {
+		List<Component> visibleComponents = component.getSegments()
+				.stream()
+				.filter(Component::isVisible)
+				.collect(Collectors.toList());
+		
+		if(visibleComponents.isEmpty() || (component.isDontShowSingleSegment() && visibleComponents.size() == 1)) {
 			return;
 		}
 
 		sb.append("<div class='o_segments btn-group btn-group-justified' role='navigation'>");
-		for(Component segment:component.getSegments()) {
+		for(Component segment:visibleComponents) {
 			ComponentRenderer subRenderer = segment.getHTMLRendererSingleton();
 			Translator subTranslator = segment.getTranslator();
 			subRenderer.render(renderer, sb, segment, ubu, subTranslator, renderResult, args);

@@ -97,6 +97,15 @@ public class SegmentViewComponent extends AbstractComponent  {
 		this.reselect = reselect;
 	}
 
+	@Override
+	public boolean isDirty() {
+		boolean dirty = super.isDirty();
+		for(Component segment:segments) {
+			dirty |= segment.isDirty();
+		}
+		return dirty;
+	}
+
 	public boolean isEmpty() {
 		return segments.isEmpty();
 	}

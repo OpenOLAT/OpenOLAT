@@ -19,6 +19,7 @@
  */
 package org.olat.core.gui.components.segmentedview;
 
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 
@@ -33,6 +34,19 @@ public class SegmentViewFactory {
 		}
 		if(vc != null) {
 			vc.put(component.getComponentName(), component);
+		}
+		return component;
+	}
+	
+	public static SegmentViewComponent createSegmentView(String name, FormLayoutContainer container, Controller listeningController) {
+		SegmentViewComponent component = new SegmentViewComponent(name);
+		component.setAllowMultipleSelection(false);
+		component.setAllowNoSelection(false);
+		if(listeningController != null) {
+			component.addListener(listeningController);
+		}
+		if(container != null) {
+			container.put(component.getComponentName(), component);
 		}
 		return component;
 	}

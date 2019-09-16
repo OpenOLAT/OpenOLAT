@@ -58,8 +58,12 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 		if (StringHelper.containsNonWhitespace(css)) {
 			sb.append(" ").append(css);
 		}
-		sb.append("'>");
+		sb.append("' role='navigation'>");
 		for (int i = 0; i < cnt; i++) {
+			if(tb.isHideDisabledTab() && !tb.isEnabled(i)) {
+				continue;
+			}
+			
 			String tabName = tb.getDisplayNameAt(i);
 			// Render active tab as non clickable, passive tabs with link
 			sb.append("<li");
@@ -70,10 +74,11 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 					sb.append(">").append(tabName).append("</a></li>");				
 				} else {
 					// disabled panels can not be clicked, but for layout reason needs still a a href
-					sb.append(" class='disabled'><a href='javascript:;' title='").append(StringHelper.escapeHtml(translator.translate("disabled"))).append("'>").append(tabName).append("</a></li>");
+					sb.append(" class='disabled'><a href='javascript:;' title='")
+					  .append(StringHelper.escapeHtml(tb.getCompTrans().translate("disabled"))).append("'>")
+					  .append(tabName).append("</a></li>");
 				}
-			}
-			else {
+			} else {
 				sb.append(" class='active'><a href='javascript:;'>").append(tabName).append("</a></li>");
 			}
 		}
