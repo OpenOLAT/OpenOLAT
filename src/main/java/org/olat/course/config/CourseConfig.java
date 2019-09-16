@@ -282,9 +282,9 @@ public class CourseConfig implements Serializable, Cloneable {
 				this.version = 16;
 			}
 			
-			if (version == 17) {
+			if (version == 16) {
 				if (!configuration.containsKey(FORUM_ENABLED)) configuration.put(FORUM_ENABLED, Boolean.FALSE);
-				if (!configuration.containsKey(DOCUMENTS_ENABLED)) configuration.put(FORUM_ENABLED, Boolean.FALSE);
+				if (!configuration.containsKey(DOCUMENTS_ENABLED)) configuration.put(DOCUMENTS_ENABLED, Boolean.FALSE);
 				
 				this.version = 17;
 			}
