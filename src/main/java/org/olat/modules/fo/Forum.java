@@ -35,5 +35,8 @@ import org.olat.core.id.Persistable;
  * @author Felix Jost
  */
 public interface Forum extends CreateInfo, Persistable, OLATResourceable {
-    // nothing to be declared
+	
+	public OLATResourceable getReference();
+	
+	public void setReference(OLATResourceable ores);
 }

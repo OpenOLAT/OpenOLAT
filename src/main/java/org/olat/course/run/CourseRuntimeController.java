@@ -106,6 +106,7 @@ import org.olat.course.member.MembersManagementMainController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.nodes.co.COToolController;
+import org.olat.course.nodes.fo.FOToolController;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
 import org.olat.course.reminder.ui.CourseRemindersController;
@@ -178,7 +179,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//my course
 		efficiencyStatementsLink, noteLink, leaveLink,
 		//course tools
-		learninPathLink, calendarLink, chatLink, participantListLink, participantInfoLink, emailLink, searchLink,
+		learninPathLink, calendarLink, chatLink, participantListLink, participantInfoLink, forumLink, emailLink,
+		searchLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
 	private Link currentUserCountLink;
@@ -186,6 +188,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private CloseableModalController cmc;
 	private COToolController emailCtrl;
+	private FOToolController forumCtrl;
 	private CourseAreasController areasCtrl;
 	private ConfirmLeaveController leaveDialogBox;
 	private ArchiverMainController archiverCtrl;
@@ -831,6 +834,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock) {
+			forumLink = LinkFactory.createToolLink("forum", translate("command.forum"), this, "o_fo_icon");
+			forumLink.setVisible(cc.isForumEnabled());
+			toolbarPanel.addTool(forumLink);
+		}
+		
+		if(!assessmentLock) {
 			glossary = new Dropdown("glossary", "command.glossary", false, getTranslator());
 			glossary.setIconCSS("o_icon o_FileResource-GLOSSARY_icon");
 			glossary.setVisible(cc.hasGlossary() && cc.isGlossaryEnabled());
@@ -962,6 +971,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doParticipantInfo(ureq);
 		} else if(emailLink == source) {
 			doEmail(ureq);
+		} else if(forumLink == source) {
+			doForum(ureq);
 		} else if(learninPathLink == source) {
 			doLearningPath(ureq);
 		} else if(calendarLink == source) {
@@ -1069,6 +1080,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case participantList: doParticipantList(ureq); break;
 						case participantInfo: doParticipantInfo(ureq); break;
 						case email: doEmail(ureq); break;
+						case forum: doForum(ureq); break;
 					}
 					delayedClose = null;
 				} else {
@@ -1150,6 +1162,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("Email".equalsIgnoreCase(type)) {
 				if (emailLink != null && emailLink.isVisible()) {
 					doEmail(ureq);
+				}
+			} else if("Forum".equalsIgnoreCase(type)) {
+				if (forumLink != null && forumLink.isVisible()) {
+					doForum(ureq);
 				}
 			} else if("Certification".equalsIgnoreCase(type)) {
 				doEfficiencyStatements(ureq);
@@ -1760,6 +1776,22 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		};
 	}
 	
+	private void doForum(UserRequest ureq) {
+		if(delayedClose == Delayed.forum || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("forum");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			forumCtrl = new FOToolController(ureq, swControl, getUserCourseEnvironment());
+
+			pushController(ureq, translate("command.forum"), forumCtrl);
+			setActiveTool(forumLink);
+			currentToolCtr = forumCtrl;
+		} else {
+			delayedClose = Delayed.forum;
+		};
+	}
+	
 	private void launchCalendar(UserRequest ureq) {
 		ControllerCreator ctrlCreator = (lureq, lwControl) -> {
 			ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -1912,6 +1944,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
+			case forum: {
+				if(forumLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					forumLink.setVisible(cc.isForumEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case chat: {
 				if(chatLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -2052,6 +2093,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		pop,
 		participantList,
 		participantInfo,
-		email
+		email,
+		forum
 	}
 }

@@ -74,7 +74,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 16;
+	private static final transient int CURRENTVERSION = 17;
 	
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
@@ -103,6 +103,8 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String PARTICIPANT_LIST_ENABLED = "PARTICIPANT_LIST_ENABLED";
 	public static final transient String PARTICIPANT_INFO_ENABLED = "PARTICIPANT_INFO_ENABLED";
 	public static final transient String EMAIL_ENABLED = "EMAIL_ENABLED";
+	public static final transient String FORUM_ENABLED = "FORUM_ENABLED";
+	public static final transient String DOCUMENTS_ENABLED = "DOCUMENTS_ENABLED";
 	public static final transient String KEY_CALENDAR_ENABLED = "KEY_CALENDAR_ENABLED";
 	
 	public static final transient String KEY_GLOSSARY_ENABLED = "KEY_GLOSSARY_ENABLED";
@@ -169,6 +171,8 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(PARTICIPANT_LIST_ENABLED, Boolean.FALSE);
 		configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.FALSE);
 		configuration.put(EMAIL_ENABLED, Boolean.FALSE);
+		configuration.put(FORUM_ENABLED, Boolean.FALSE);
+		configuration.put(DOCUMENTS_ENABLED, Boolean.FALSE);
 		
 		configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
 
@@ -276,6 +280,13 @@ public class CourseConfig implements Serializable, Cloneable {
 				if (!configuration.containsKey(NODE_ACCESS_TYPE)) configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
 				
 				this.version = 16;
+			}
+			
+			if (version == 17) {
+				if (!configuration.containsKey(FORUM_ENABLED)) configuration.put(FORUM_ENABLED, Boolean.FALSE);
+				if (!configuration.containsKey(DOCUMENTS_ENABLED)) configuration.put(FORUM_ENABLED, Boolean.FALSE);
+				
+				this.version = 17;
 			}
 
 			
@@ -584,6 +595,24 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(EMAIL_ENABLED, Boolean.valueOf(b));
 	}
 	
+	public boolean isForumEnabled() {
+		Boolean bool = (Boolean) configuration.get(FORUM_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setForumEnabled(boolean b) {
+		configuration.put(FORUM_ENABLED, Boolean.valueOf(b));
+	}
+	
+	public boolean isDocumentsEnabled() {
+		Boolean bool = (Boolean) configuration.get(DOCUMENTS_ENABLED);
+		return bool.booleanValue();
+	}
+	
+	public void setDocumentsEnabled(boolean b) {
+		configuration.put(DOCUMENTS_ENABLED, Boolean.valueOf(b));
+	}
+	
 	public boolean isToolbarEnabled() {
 		Boolean bool = (Boolean) configuration.get(TOOLBAR_ENABLED);
 		return bool.booleanValue();
@@ -629,6 +658,8 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setParticipantListEnabled(isParticipantListEnabled());
 		clone.setParticipantInfoEnabled(isParticipantInfoEnabled());
 		clone.setEmailEnabled(isEmailEnabled());
+		clone.setForumEnabled(isForumEnabled());
+		clone.setDocumentsEnabled(isDocumentsEnabled());
 		return clone;
 	}
 

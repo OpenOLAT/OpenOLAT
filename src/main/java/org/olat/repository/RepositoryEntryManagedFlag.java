@@ -50,6 +50,7 @@ public enum RepositoryEntryManagedFlag {
       participantList(settings, all),
       participantInfo(settings, all),
       email(settings, all),
+      forum(settings, all),
       chat(settings,all),
       layout(settings,all),
       resourcefolder(settings,all),

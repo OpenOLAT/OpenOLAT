@@ -5,6 +5,8 @@ CREATE TABLE o_forum (
   forum_id number(20) NOT NULL,
   version number(20) NOT NULL,
   creationdate date,
+  f_refresname varchar(50),
+  f_refresid number(20),
   PRIMARY KEY (forum_id)
 );
 CREATE TABLE o_forum_pseudonym (
@@ -3563,6 +3565,7 @@ create index mark_subpath_idx on o_mark(substr(ressubpath,0,255));
 create index mark_businesspath_idx on o_mark(substr(businesspath,0,255));
 
 -- forum
+create index idx_forum_ref_idx on o_forum (f_refresid, f_refresname);
 alter table o_message add constraint FKF26C8375236F20E foreign key (creator_id) references o_bs_identity (id);
 create index FKF26C8375236F20E on o_message (creator_id);
 alter table o_message add constraint FKF26C837A3FBEB83 foreign key (modifier_id) references o_bs_identity (id);

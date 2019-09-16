@@ -45,6 +45,7 @@ import org.olat.modules.fo.model.ForumUserStatistics;
 import org.olat.modules.fo.model.MessageImpl;
 import org.olat.modules.fo.model.PseudonymStatistics;
 import org.olat.modules.fo.ui.MessagePeekview;
+import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.UserManager;
@@ -66,6 +67,27 @@ public class ForumManagerTest extends OlatTestCase {
 	public ForumManager forumManager;
 	@Autowired
 	public BaseSecurity securityManager;
+	
+	@Test
+	public void addAForum() {
+		Forum fo = forumManager.addAForum();
+		dbInstance.commitAndCloseSession();
+		
+		fo = forumManager.loadForum(fo.getKey());
+		
+		Assert.assertNotNull(fo);
+	}
+	
+	@Test
+	public void addAForumForOlatResourceable() {
+		RepositoryEntry repositoryEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		Forum fo = forumManager.addAForum(repositoryEntry);
+		dbInstance.commitAndCloseSession();
+		
+		fo = forumManager.loadForum(repositoryEntry);
+		
+		Assert.assertNotNull(fo);
+	}
 	
 	@Test
 	public void getThread() {

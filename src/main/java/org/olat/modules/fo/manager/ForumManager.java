@@ -40,6 +40,7 @@ import java.util.Set;
 import javax.persistence.TemporalType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.persistence.DB;
@@ -50,7 +51,6 @@ import org.olat.core.commons.services.text.TextService;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
@@ -706,8 +706,13 @@ public class ForumManager {
 	 * @return the newly created and persisted forum
 	 */
 	public Forum addAForum() {
+		return addAForum(null);
+	}
+
+	public Forum addAForum(OLATResourceable refrence) {
 		ForumImpl fo = new ForumImpl();
 		fo.setCreationDate(new Date());
+		fo.setReference(refrence);
 		dbInstance.getCurrentEntityManager().persist(fo);
 		return fo;
 	}
@@ -721,6 +726,16 @@ public class ForumManager {
 		List<Forum> forumList = dbInstance.getCurrentEntityManager()
 				.createQuery(q, Forum.class)
 				.setParameter("forumKey", forumKey)
+				.getResultList();
+		return forumList == null || forumList.isEmpty() ? null : forumList.get(0);
+	}
+	
+	public Forum loadForum(OLATResourceable refrence) {
+		String q = "select fo from forum as fo where fo.refResName=:refResName and fo.refResId=:refResId";
+		List<Forum> forumList = dbInstance.getCurrentEntityManager()
+				.createQuery(q, Forum.class)
+				.setParameter("refResName", refrence.getResourceableTypeName())
+				.setParameter("refResId", refrence.getResourceableId())
 				.getResultList();
 		return forumList == null || forumList.isEmpty() ? null : forumList.get(0);
 	}

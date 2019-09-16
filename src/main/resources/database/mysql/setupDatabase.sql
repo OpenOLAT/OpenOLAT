@@ -4,6 +4,8 @@ create table if not exists o_forum (
    forum_id bigint not null,
    version mediumint unsigned not null,
    creationdate datetime,
+   f_refresname varchar(50),
+   f_refresid bigint,
    primary key (forum_id)
 );
 create table o_forum_pseudonym (
@@ -3547,6 +3549,7 @@ create index mark_subpath_idx on o_mark(ressubpath(255));
 create index mark_businesspath_idx on o_mark(businesspath(255));
 
 -- forum
+create index idx_forum_ref_idx on o_forum (f_refresid, f_refresname);
 alter table o_message add constraint FKF26C8375236F20E foreign key (creator_id) references o_bs_identity (id);
 alter table o_message add constraint FKF26C837A3FBEB83 foreign key (modifier_id) references o_bs_identity (id);
 alter table o_message add constraint FKF26C8377B66B0D0 foreign key (parent_id) references o_message (message_id);

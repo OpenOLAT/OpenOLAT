@@ -63,6 +63,7 @@ public class CourseConfigEvent extends MultiUserEvent {
 		participantList,
 		participantInfo,
 		email,
+		forum,
 		chat,
 		glossary,
 		layout

@@ -55,6 +55,7 @@ public enum ActionObject {
 	feeditem,
 	file,
 	folder,
+	forum,
 	forummessage,
 	forumthread,
 	glossar,
