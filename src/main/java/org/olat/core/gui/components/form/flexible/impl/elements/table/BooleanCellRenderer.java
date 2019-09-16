@@ -19,6 +19,9 @@
  */
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -32,7 +35,7 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class BooleanCellRenderer implements FlexiCellRenderer {
+public class BooleanCellRenderer implements FlexiCellRenderer, ActionDelegateCellRenderer {
 	
 	private final FlexiCellRenderer trueDelegate;
 	private final FlexiCellRenderer falseDelegate;
@@ -50,6 +53,25 @@ public class BooleanCellRenderer implements FlexiCellRenderer {
 			}
 		} else if(falseDelegate != null) {
 			falseDelegate.render(null, target, cellValue, row, source, ubu, translator);
+		}
+	}
+	
+	@Override
+	public List<String> getActions() {
+		List<String> actions = new ArrayList<>(2);
+		getActions(trueDelegate, actions);
+		if(falseDelegate != null) {
+			getActions(falseDelegate, actions);
+		}
+		return actions;
+	}
+	
+	private void getActions(FlexiCellRenderer delegate, List<String> actions) {
+		if(delegate instanceof ActionDelegateCellRenderer) {
+			List<String> delegateActions = ((ActionDelegateCellRenderer)delegate).getActions();
+			if(delegateActions != null && !delegateActions.isEmpty()) {
+				actions.addAll(delegateActions);
+			}
 		}
 	}
 }

@@ -56,7 +56,7 @@ public class SortableFlexiTableModelDelegate<T> {
 			asc = orderBy.isAsc();
 		} else {
 			columnIndex = 0;
-			asc = orderBy == null ? true : orderBy.isAsc();
+			asc = orderBy == null || orderBy.isAsc();
 		}
 		
 		if (locale != null) {

@@ -20,6 +20,8 @@
 package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -39,7 +41,7 @@ import org.olat.core.util.StringHelper;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class StaticFlexiCellRenderer implements FlexiCellRenderer {
+public class StaticFlexiCellRenderer implements FlexiCellRenderer, ActionDelegateCellRenderer {
 	
 	private static final Logger log = Tracing.createLoggerFor(StaticFlexiCellRenderer.class);
 
@@ -124,6 +126,14 @@ public class StaticFlexiCellRenderer implements FlexiCellRenderer {
 
 	public void setAction(String action) {
 		this.action = action;
+	}
+	
+	@Override
+	public List<String> getActions() {
+		if(StringHelper.containsNonWhitespace(action)) {
+			return Collections.singletonList(action);
+		}
+		return Collections.emptyList();
 	}
 
 	public boolean isNewWindow() {

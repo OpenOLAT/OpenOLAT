@@ -31,6 +31,7 @@ import java.util.Set;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
+import org.olat.core.gui.components.form.flexible.FormItemCollection;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.ExtendedFlexiTableSearchController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
@@ -41,11 +42,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.generic.ajax.autocompletion.ListProvider;
 import org.olat.core.util.UserSession;
+import org.olat.core.util.prefs.Preferences;
 
 /**
  * 
  */
-public interface FlexiTableElement extends FormItem {
+public interface FlexiTableElement extends FormItem, FormItemCollection {
 
 	public static final String ROM_SELECT_EVENT = "rSelect";
 	
@@ -145,6 +147,8 @@ public interface FlexiTableElement extends FormItem {
 	 * @param id
 	 */
 	public void setAndLoadPersistedPreferences(UserRequest ureq, String id);
+	
+	public void setAndLoadPersistedPreferences(Preferences prefs, String id);
 	
 	/**
 	 * @return The CSS selector used to calculate the height of the table

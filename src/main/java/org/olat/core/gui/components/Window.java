@@ -1225,7 +1225,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 		}
 		
 		ChiefController chief = wbackofficeImpl.getChiefController();
-		boolean reload = chief == null ? null : chief.wishReload(ureq, true);
+		boolean reload = chief == null ? false : chief.wishReload(ureq, true);
 		return new DispatchResult(toDispatch, incTimestamp, reload);
 	}
 	

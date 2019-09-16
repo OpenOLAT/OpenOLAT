@@ -46,6 +46,7 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	private boolean defaultVisible;
 	private boolean alwaysVisible;
 	private int alignment;
+	private boolean selectAll;
 	
 	private final String action;
 	
@@ -145,6 +146,11 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 		this(true, false, headerKey, null, columnIndex, null, false, null, FlexiColumnModel.ALIGNMENT_LEFT, renderer);
 	}
 	
+	public DefaultFlexiColumnModel(boolean defVisible, FlexiSortableColumnDef def, String action, FlexiCellRenderer renderer) {
+		this(defVisible, false, def.i18nHeaderKey(), null, def.ordinal(), action, def.sortable(), def.sortKey(), FlexiColumnModel.ALIGNMENT_LEFT, 
+				new StaticFlexiCellRenderer(action, renderer));
+	}
+	
 	/**
 	 * Always visible
 	 * @param headerKey
@@ -168,6 +174,11 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	public DefaultFlexiColumnModel(boolean defVisible, String headerKey, int columnIndex, String action, boolean sortable, String sortKey) {
 		this(defVisible, false, headerKey, null, columnIndex, action, sortable, sortKey, FlexiColumnModel.ALIGNMENT_LEFT,
 				new StaticFlexiCellRenderer(action, new TextFlexiCellRenderer()));
+	}
+	
+	public DefaultFlexiColumnModel(String headerKey, String label, String action, String iconCss) {
+		this(true, true, headerKey, null, -1, action, false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+				new StaticFlexiCellRenderer(label, action, null, iconCss));
 	}
 	
 	/**
@@ -286,6 +297,16 @@ public class DefaultFlexiColumnModel implements FlexiColumnModel {
 	
 	public void setDefaultVisible(boolean defaultVisible) {
 		this.defaultVisible = defaultVisible;
+	}
+
+	@Override
+	public boolean isSelectAll() {
+		return selectAll;
+	}
+
+	@Override
+	public void setSelectAll(boolean selectAll) {
+		this.selectAll = selectAll;
 	}
 
 	@Override

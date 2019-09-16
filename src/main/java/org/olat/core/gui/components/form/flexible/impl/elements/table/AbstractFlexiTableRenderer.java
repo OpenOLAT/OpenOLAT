@@ -83,7 +83,7 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 			//render headers
 			renderHeaders(sb, ftC, translator);
 			//render footers
-			if(ftE.isFooter()) {
+			if(hasFooter(ftE)) {
 				sb.append("<tfoot>");
 				renderFooter(renderer, sb, ftC, ubu, translator, renderResult);
 				sb.append("</tfoot>");
@@ -120,6 +120,21 @@ public abstract class AbstractFlexiTableRenderer extends DefaultComponentRendere
 		if (source.isEnabled()) {
 			FormJSHelper.appendFlexiFormDirty(sb, ftE.getRootForm(), id);
 		}
+	}
+	
+	protected boolean hasFooter(FlexiTableElementImpl ftE) {
+		if(ftE.isFooter()) {
+			return true;
+		}
+		
+		FlexiTableColumnModel columns = ftE.getTableDataModel().getTableColumnModel();
+		for(int i=columns.getColumnCount(); i-->0; ) {
+			if(columns.getColumnModel(i).isSelectAll()) {
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	protected void renderHeaderButtons(Renderer renderer, StringOutput sb, FlexiTableElementImpl ftE, URLBuilder ubu, Translator translator,

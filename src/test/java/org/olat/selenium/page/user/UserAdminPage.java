@@ -207,6 +207,17 @@ public class UserAdminPage {
 		return this;
 	}
 	
+	public UserAdminPage searchByEmail(String email) {
+		By emailBy = By.cssSelector(".o_sel_user_search_form .o_sel_user_search_email input[type='text']");
+		OOGraphene.waitElement(emailBy, browser);
+		browser.findElement(emailBy).sendKeys(email);
+		
+		By searchBy = By.cssSelector(".o_sel_user_search_form a.btn-default");
+		browser.findElement(searchBy).click();
+		OOGraphene.waitBusy(browser);
+		return this;
+	}
+	
 	public UserAdminPage assertOnUserInList(String username) {
 		By userLinksBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr/td/a[text()[contains(.,'" + username + "')]]");
 		OOGraphene.waitElement(userLinksBy, browser);

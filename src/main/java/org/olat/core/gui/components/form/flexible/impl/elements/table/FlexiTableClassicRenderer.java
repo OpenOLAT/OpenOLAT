@@ -263,6 +263,12 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 				cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, null);
 				cmp.setDirty(false);
 			}
+			if(formItem.hasError()) {
+				Component errorCmp = formItem.getErrorC();
+				errorCmp.getHTMLRendererSingleton().render(renderer, target, formItem.getErrorC(),
+						ubu, translator, renderResult, null);
+				errorCmp.setDirty(false);
+			}
 		} else if(cellValue instanceof Component) {
 			Component cmp = (Component)cellValue;
 			cmp.setTranslator(translator);
@@ -280,13 +286,45 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 	protected void renderFooter(Renderer renderer, StringOutput target, FlexiTableComponent ftC,
 			URLBuilder ubu, Translator translator, RenderResult renderResult) {
 		FlexiTableElementImpl ftE = ftC.getFlexiTableElement();
+		
+		boolean hasSelectAll = false;
+		FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
+		int numOfCols = columnsModel.getColumnCount();
+		for(int i=numOfCols; i-->0; ) {
+			if(columnsModel.getColumnModel(i).isSelectAll()) {
+				hasSelectAll = true;
+			}
+		}
+		
+		if(hasSelectAll) {
+			String dispatchId = ftE.getFormDispatchId();
+			target.append("<tr id='all_").append(ftC.getFormDispatchId()).append("' class=''>");		
+			if(ftE.isMultiSelect()) {
+				target.append("<td> </td>");
+			}
+			for (int j = 0; j<numOfCols; j++) {
+				FlexiColumnModel fcm = columnsModel.getColumnModel(j);
+				if(fcm.isSelectAll()) {
+					target.append("<td><a id='")
+					      .append(dispatchId).append("_csa' href=\"javascript:;\" onclick=\"")
+					      .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, false,
+							  new NameValuePair("cc-selectall", fcm.getColumnIndex())))
+					      .append("\"><i class='o_icon o_icon_check_on'> </i> <span>").append(translator.translate("form.select.all"))
+					      .append("</span></a><br><a id='")
+					      .append(dispatchId).append("_cdsa' href=\"javascript:;\" onclick=\"")
+					      .append(FormJSHelper.getXHRFnCallFor(ftE.getRootForm(), dispatchId, 1, true, true, false,
+							  new NameValuePair("cc-deselectall", fcm.getColumnIndex())))
+					      .append("\"><i class='o_icon o_icon_check_off'> </i> <span>").append(translator.translate("form.uncheckall"))
+					      .append("</span></a></td>");
+				} else {
+					target.append("<td> </td>");
+				}
+			}
+		}
 
 		FlexiTableDataModel<?> dataModel = ftE.getTableDataModel();
 		if(dataModel instanceof FlexiTableFooterModel) {
 			FlexiTableFooterModel footerDataModel = (FlexiTableFooterModel)dataModel;
-			FlexiTableColumnModel columnsModel = ftE.getTableDataModel().getTableColumnModel();
-			int numOfCols = columnsModel.getColumnCount();
-
 			target.append("<tr id='footer_").append(ftC.getFormDispatchId()).append("' class='o_table_footer'>");		
 			if(ftE.isMultiSelect()) {
 				target.append("<td> </td>");
