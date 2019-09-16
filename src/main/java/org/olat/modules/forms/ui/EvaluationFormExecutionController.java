@@ -289,6 +289,9 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 
 	@Override
 	protected void formOK(UserRequest ureq) {
+		// Suppress unwanted submit e.g. by pressing enter
+		if (!doneLink.isVisible()) return;
+		
 		boolean responsesSaved = doSaveResponses();
 		if (responsesSaved) {
 			doConfirmDone(ureq);
