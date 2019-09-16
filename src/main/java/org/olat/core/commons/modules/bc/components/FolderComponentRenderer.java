@@ -28,8 +28,10 @@ package org.olat.core.commons.modules.bc.components;
 
 import java.util.List;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderRunController;
 import org.olat.core.commons.modules.bc.commands.FolderCommandFactory;
+import org.olat.core.commons.services.vfs.VFSVersionModule;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -55,6 +57,8 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 	private final ListRenderer listRenderer;
 	private final CrumbRenderer crumbRenderer;
 
+	private VFSVersionModule vfsVersionModule;
+
 	/**
 	 * Constructor for TableRenderer. Singleton and must be reentrant
 	 * There must be an empty contructor for the Class.forName() call
@@ -67,6 +71,10 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
+		if(vfsVersionModule == null) {
+			vfsVersionModule = CoreSpringFactory.getImpl(VFSVersionModule.class);
+		}
+		
 		FolderComponent fc = (FolderComponent) source;
 		// is called for the current inline html
 		int renderType = 0;
@@ -94,7 +102,7 @@ public class FolderComponentRenderer extends DefaultComponentRenderer {
 		}
 		
 		boolean canDelete = false;
-		boolean canVersion = fc.getCurrentContainer().canVersion() == VFSConstants.YES;
+		boolean canVersion = vfsVersionModule.isEnabled() && fc.getCurrentContainer().canVersion() == VFSConstants.YES;
 		boolean canMail = fc.isCanMail();
 		
 		List<VFSItem> children = fc.getCurrentContainerChildren();
