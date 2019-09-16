@@ -31,7 +31,7 @@
 			<memory>
 				<object strategy="NONE" />
 			</memory>
-			<expiration max-idle="-1" interval="5000" />
+			<expiration max-idle="1" interval="5000" />
 		</local-cache>
 		
 		<local-cache name="VFSLockManager@lock-nulls" simple-cache="true" statistics="true" statistics-available="true">
