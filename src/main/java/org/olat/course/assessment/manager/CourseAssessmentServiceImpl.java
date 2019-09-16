@@ -40,8 +40,10 @@ import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.navigation.NodeVisitedListener;
+import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -98,6 +100,11 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	@Override
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode) {
 		return getAssessmentHandler(courseNode).getAssessmentConfig(courseNode);
+	}
+
+	@Override
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType) {
+		return getAssessmentHandler(courseNode).getEvaluators(courseNode, nodeAccessType);
 	}
 
 	@Override
@@ -169,11 +176,10 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 	
 	@Override
-	public void updateAssessmentStatus(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			AssessmentEntryStatus status, Role by) {
+	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			Boolean fullyAssessed, AssessmentEntryStatus status, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
-		Identity identity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		am.updateAssessmentStatus(courseNode, identity, status, by);
+		am.updateFullyAssessed(courseNode, userCourseEnvironment, fullyAssessed, status, by);
 	}
 
 	@Override

@@ -21,13 +21,15 @@ package org.olat.course.learningpath.manager;
 
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
-import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.ui.LearningPathTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.CourseTreeNodeBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -38,8 +40,10 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 public class LearningPathCourseTreeNodeBuilder extends CourseTreeNodeBuilder {
 
 	private final GenericTreeModel learningPathModel;
+	private final ScoreAccounting scoreAccounting;
 
 	public LearningPathCourseTreeNodeBuilder(UserCourseEnvironment userCourseEnvironment) {
+		scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		learningPathModel = LearningPathTreeModelBuilder.builder(userCourseEnvironment).create();
 	}
 
@@ -50,7 +54,7 @@ public class LearningPathCourseTreeNodeBuilder extends CourseTreeNodeBuilder {
 		TreeNode treeNode = learningPathModel.getNodeById(courseNode.getIdent());
 		if (treeNode instanceof LearningPathTreeNode) {
 			LearningPathTreeNode learningPathTreeNode = (LearningPathTreeNode)treeNode;
-			iconDecorator1CssClass = getIconDecorator1CssClass(learningPathTreeNode.getStatus());
+			iconDecorator1CssClass = getIconDecorator1CssClass(learningPathTreeNode);
 			accessible = treeNode.isAccessible();
 		}
 		
@@ -61,15 +65,24 @@ public class LearningPathCourseTreeNodeBuilder extends CourseTreeNodeBuilder {
 		return courseTreeNode;
 	}
 
-	private String getIconDecorator1CssClass(LearningPathStatus status) {
+	private String getIconDecorator1CssClass(LearningPathTreeNode learningPathTreeNode) {
 		String cssClass = null;
-				
+		
+		AssessmentEvaluation  eval = scoreAccounting.evalCourseNode(learningPathTreeNode.getCourseNode());
+		if (eval.getFullyAssessed() != null && eval.getFullyAssessed().booleanValue()) {
+			return "o_lp_done";
+		}
+		
+		AssessmentEntryStatus status = learningPathTreeNode.getStatus();
 		if (status != null) {
 			switch(status) {
-			case notAccessible: cssClass = "o_lp_not_accessible"; break;
-			case ready: cssClass = "o_lp_ready"; break;
+			case notReady: cssClass = "o_lp_not_accessible"; break;
+			case notStarted: cssClass = "o_lp_ready"; break;
 			case inProgress: cssClass = "o_lp_in_progress"; break;
-			case done: cssClass = "o_lp_done"; break;
+			case inReview: cssClass = "o_lp_in_progress"; break;
+			case done: cssClass = "o_lp_in_progress"; break;
+			default:
+				break;
 			}
 		}
 		

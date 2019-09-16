@@ -25,8 +25,10 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeProvider;
+import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -57,6 +59,15 @@ public interface AssessmentHandler extends CourseNodeProvider {
 	 * @return
 	 */
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+	
+	/**
+	 * Provides some evaluators to calculate some values automatically.
+	 *
+	 * @param courseNode
+	 * @param nodeAccessType
+	 * @return
+	 */
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType);
 
 	/**
 	 * This method has to be implemented if the AssessmentConfig.isEvaluationCalculated() return true.
@@ -85,4 +96,5 @@ public interface AssessmentHandler extends CourseNodeProvider {
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback);
+
 }

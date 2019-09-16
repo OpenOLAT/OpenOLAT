@@ -30,7 +30,9 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -54,6 +56,9 @@ import org.olat.repository.RepositoryEntry;
 public interface CourseAssessmentService {
 	
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
+	
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType);
+
 	
 	/**
 	 * Returns the persisted AssessmentEntry of the user. Check
@@ -140,9 +145,9 @@ public interface CourseAssessmentService {
 	public void updateCurrentCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentRunStatus status, Role by);
 	
-	public void updateAssessmentStatus(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			AssessmentEntryStatus status, Role by);
-
+	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			Boolean fullyAssessed, AssessmentEntryStatus status, Role by);
+	
 	/**
 	 * @param courseNode
 	 * @param userCourseEnvironment
@@ -309,5 +314,6 @@ public interface CourseAssessmentService {
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback);
+
 
 }

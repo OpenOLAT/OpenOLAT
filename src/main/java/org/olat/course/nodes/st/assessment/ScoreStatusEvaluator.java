@@ -17,37 +17,37 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st.learningpath;
+package org.olat.course.nodes.st.assessment;
 
-import org.olat.course.learningpath.evaluation.DurationEvaluator;
-import org.olat.course.learningpath.evaluation.NodeDurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.NodeLinearStatusEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluator;
-import org.olat.course.nodes.STCourseNode;
-import org.springframework.stereotype.Component;
+import java.util.List;
+
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.StatusEvaluator;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 20 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Component
-public class STLearningPathProviders implements NodeLinearStatusEvaluatorProvider, NodeDurationEvaluatorProvider {
+public class ScoreStatusEvaluator implements StatusEvaluator {
 
 	@Override
-	public String acceptCourseNodeType() {
-		return STCourseNode.TYPE;
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation,
+			AssessmentEvaluation currentEvaluation) {
+		if (currentEvaluation.getPassed() != null && currentEvaluation.getPassed().booleanValue()) {
+			return AssessmentEntryStatus.done;
+		} else if (currentEvaluation.getScore() != null) {
+			return AssessmentEntryStatus.inProgress;
+		}
+		return AssessmentEntryStatus.notStarted;
 	}
 
 	@Override
-	public StatusEvaluator getStatusEvaluator() {
-		return new STLinearStatusEvaluator();
-	}
-
-	@Override
-	public DurationEvaluator getDurationEvaluator() {
-		return new STDurationEvaluator();
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
+			List<AssessmentEvaluation> children) {
+		return currentEvaluation.getAssessmentStatus();
 	}
 
 }

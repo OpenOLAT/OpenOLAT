@@ -17,9 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
-
-import org.springframework.stereotype.Component;
+package org.olat.modules.assessment.model;
 
 /**
  * 
@@ -27,19 +25,9 @@ import org.springframework.stereotype.Component;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Component
-public class ConfigNodeDurationEvaluatorProvider implements NodeDurationEvaluatorProvider {
+public enum AssessmentObligation {
 	
-	public static final String NODE_TYPE = "ConfigNodeDurationEvaluatorProvider";
-
-	@Override
-	public String acceptCourseNodeType() {
-		return NODE_TYPE;
-	}
-
-	@Override
-	public DurationEvaluator getDurationEvaluator() {
-		return new ConfigDurationEvaluator();
-	}
+	mandatory,
+	optional
 
 }

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st.learningpath;
+package org.olat.course.nodes.st.assessment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,7 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.course.nodes.st.assessment.STDurationEvaluator;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 
 /**
  * 
@@ -49,15 +50,12 @@ public class STDurationEvaluatorTest {
 	
 	@Test
 	public void shouldSumDurationOfChildren() {
-		List<LearningPathTreeNode> children = new ArrayList<>();
-		LearningPathTreeNode child1 = new LearningPathTreeNode(null, 1);
-		child1.setDuration(Integer.valueOf(2));
+		List<AssessmentEvaluation> children = new ArrayList<>();
+		AssessmentEvaluation child1 = new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, 0, null, null, null, null, null, 2);
 		children.add(child1);
-		LearningPathTreeNode child2 = new LearningPathTreeNode(null, 1);
-		child2.setDuration(Integer.valueOf(3));
+		AssessmentEvaluation child2 = new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, 0, null, null, null, null, null, 3);
 		children.add(child2);
-		LearningPathTreeNode child3 = new LearningPathTreeNode(null, 1);
-		child3.setDuration(null);
+		AssessmentEvaluation child3 = new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, 0, null, null, null, null, null, null);
 		children.add(child3);
 		
 		Integer duration = sut.getDuration(children);

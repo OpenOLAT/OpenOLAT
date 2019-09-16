@@ -17,43 +17,35 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st.learningpath;
+package org.olat.course.learningpath;
 
-import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathObligation;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.course.learningpath.LearningPathConfigs.FullyAssessedResult;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 18 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STLearningPathConfigs implements LearningPathConfigs {
+class FullyAssessedResultImpl implements FullyAssessedResult {
 
-	@Override
-	public Integer getDuration() {
-		return null;
+	private final boolean fullyAssessed;
+	private final boolean done;
+
+	FullyAssessedResultImpl(boolean fullyAssessed, boolean done) {
+		this.fullyAssessed = fullyAssessed;
+		this.done = done;
+		
 	}
 
 	@Override
-	public LearningPathObligation getObligation() {
-		return null;
+	public boolean isFullyAssessed() {
+		return fullyAssessed;
 	}
 
 	@Override
-	public boolean isDoneOnNodeVisited() {
-		return false;
-	}
-
-	@Override
-	public boolean isDoneOnRunStatus(AssessmentRunStatus runStatus) {
-		return false;
-	}
-
-	@Override
-	public boolean isDoneOnCompletion(Double completion) {
-		return false;
+	public boolean isDone() {
+		return done;
 	}
 
 }

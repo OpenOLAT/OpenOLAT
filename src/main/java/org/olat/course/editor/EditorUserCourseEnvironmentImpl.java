@@ -35,6 +35,7 @@ import org.olat.core.logging.AssertException;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.ScoreAccountingImpl;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
@@ -65,7 +66,7 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 		this.windowControl = windowControl;
 		ci = new ConditionInterpreter(this);
 		courseEditorEnv.setConditionInterpreter(ci);
-		sa = new ScoreAccounting(this);
+		sa = new ScoreAccountingImpl(this);
 	}
 
 	@Override

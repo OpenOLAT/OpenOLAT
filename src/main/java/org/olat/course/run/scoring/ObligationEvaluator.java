@@ -17,10 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
+package org.olat.course.run.scoring;
 
-import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -30,6 +30,6 @@ import org.olat.course.nodes.CourseNode;
  */
 public interface ObligationEvaluator {
 	
-	public LearningPathObligation getObligation(CourseNode courseNode);
+	public AssessmentObligation getObligation(CourseNode courseNode);
 
 }

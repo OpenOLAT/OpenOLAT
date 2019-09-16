@@ -21,9 +21,12 @@ package org.olat.modules.assessment.model;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -117,9 +120,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Column(name="a_num_visits", nullable=true, insertable=true, updatable=true)
 	private Integer numberOfVisits;
 	
-	// fully passed and assessment id are only for onyx
 	@Column(name="a_fully_assessed", nullable=true, insertable=true, updatable=true)
 	private Boolean fullyAssessed;
+	@Column(name="a_date_fully_assessed", nullable=true, insertable=true, updatable=true)
+	private Date fullyAssessedDate;
+	@Enumerated(EnumType.STRING)
+	@Column(name="a_obligation", nullable=true, insertable=true, updatable=true)
+	private AssessmentObligation obligation;
+	@Column(name="a_duration", nullable=true, insertable=true, updatable=true)
+	private Integer duration;
+	// assessment id are only for onyx
 	@Column(name="a_assessment_id", nullable=true, insertable=true, updatable=true)
 	private Long assessmentId;
 	
@@ -278,7 +288,38 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 
 	@Override
 	public void setFullyAssessed(Boolean fullyAssessed) {
+		Boolean previousFullyAssessed = getFullyAssessed();
+		if (fullyAssessed != null && fullyAssessed.booleanValue() && !Objects.equals(fullyAssessed, previousFullyAssessed)) {
+			fullyAssessedDate = new Date();
+		} else {
+			fullyAssessedDate = null;
+		}
 		this.fullyAssessed = fullyAssessed;
+	}
+
+	@Override
+	public Date getFullyAssessedDate() {
+		return fullyAssessedDate;
+	}
+
+	@Override
+	public AssessmentObligation getObligation() {
+		return obligation;
+	}
+
+	@Override
+	public void setObligation(AssessmentObligation obligation) {
+		this.obligation = obligation;
+	}
+
+	@Override
+	public Integer getDuration() {
+		return duration;
+	}
+
+	@Override
+	public void setDuration(Integer duration) {
+		this.duration = duration;
 	}
 
 	@Override

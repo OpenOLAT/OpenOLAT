@@ -17,14 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
+package org.olat.course.run.scoring;
 
-import java.util.Date;
 import java.util.List;
 
-import org.olat.course.learningpath.LearningPathStatus;
-import org.olat.course.learningpath.ui.LearningPathTreeNode;
-import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -34,24 +31,8 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
  */
 public interface StatusEvaluator {
 	
-	public boolean isStatusDependingOnPreviousNode();
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation, AssessmentEvaluation currentEvaluation);
 	
-	public Result getStatus(LearningPathTreeNode previousNode, AssessmentEvaluation assessmentEvaluation);
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation>children);
 	
-	public boolean isStatusDependingOnChildNodes();
-	
-	public Result getStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode>children);
-	
-	public static Result result(LearningPathStatus status, Date doneDate) {
-		return new StatusEvaluatorResult(status, doneDate);
-	}
-	
-	public interface Result {
-		
-		public LearningPathStatus getStatus();
-		
-		public Date getDoneDate();
-		
-	}
-
 }

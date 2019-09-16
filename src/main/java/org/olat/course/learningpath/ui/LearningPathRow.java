@@ -23,8 +23,8 @@ import java.util.Date;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
-import org.olat.course.learningpath.LearningPathObligation;
-import org.olat.course.learningpath.LearningPathStatus;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -62,7 +62,7 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 		return learningPathNode.getCourseNode().getLongTitle();
 	}
 
-	public LearningPathStatus getStatus() {
+	public AssessmentEntryStatus getStatus() {
 		return learningPathNode.getStatus();
 	}
 
@@ -70,7 +70,7 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 		return learningPathNode.getDateDone();
 	}
 
-	public LearningPathObligation getObligation() {
+	public AssessmentObligation getObligation() {
 		return learningPathNode.getObligation();
 	}
 

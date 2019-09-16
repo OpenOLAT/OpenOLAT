@@ -29,6 +29,7 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.course.learningpath.LearningPathConfigs.FullyAssessedResult;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessProvider;
@@ -93,11 +94,12 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeV
 
 	@Override
 	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
-		boolean doneOnNodeStarted = getConfigs(courseNode).isDoneOnNodeVisited();
+		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnNodeVisited();
 		boolean participant = userCourseEnvironment.isParticipant();
-		if (participant && doneOnNodeStarted) {
-			courseAssessmentService.updateAssessmentStatus(courseNode, userCourseEnvironment,
-					AssessmentEntryStatus.done, Role.user);
+		if (participant && result.isFullyAssessed()) {
+			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnvironment, result.isDone());
+			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnvironment, Boolean.TRUE,
+					status, Role.auto);
 			return true;
 		}
 		return false;
@@ -106,13 +108,23 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeV
 	@Override
 	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Double completion, AssessmentRunStatus runStatus, Role by) {
-		boolean isDoneOnCompletion = getConfigs(courseNode).isDoneOnCompletion(completion);
-		boolean isDoneOnRunStatus = getConfigs(courseNode).isDoneOnRunStatus(runStatus);;
+		FullyAssessedResult onCompletion = getConfigs(courseNode).isFullyAssessedOnCompletion(completion);
+		FullyAssessedResult onRunStatus = getConfigs(courseNode).isFullyAssessedOnRunStatus(runStatus);
+		boolean isFullyAssessed = onCompletion.isFullyAssessed() || onRunStatus.isFullyAssessed();
 		boolean participant = userCourseEnvironment.isParticipant();
-		if (participant && (isDoneOnCompletion || isDoneOnRunStatus)) {
-			courseAssessmentService.updateAssessmentStatus(courseNode, userCourseEnvironment,
-					AssessmentEntryStatus.done, by);
+		if (participant && isFullyAssessed) {
+			boolean isDone = onCompletion.isDone() || onRunStatus.isDone();
+			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnvironment, isDone);
+			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnvironment, Boolean.TRUE,
+					status, by);
 		}
+	}
+
+	private AssessmentEntryStatus getStatus(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			boolean isDone) {
+		return isDone
+				? AssessmentEntryStatus.done
+				:courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnvironment).getAssessmentStatus();
 	}
 
 }

@@ -19,16 +19,14 @@
  */
 package org.olat.course.learningpath.evaluation;
 
-import java.util.Date;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.course.learningpath.LearningPathObligation;
-import org.olat.course.learningpath.LearningPathStatus;
-import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -41,44 +39,57 @@ public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 	private static final Logger log = Tracing.createLoggerFor(DefaultLinearStatusEvaluator.class);
 
 	@Override
-	public boolean isStatusDependingOnPreviousNode() {
-		return true;
-	}
-	
-	@Override
-	public Result getStatus(LearningPathTreeNode previousNode, AssessmentEvaluation assessmentEvaluation) {
-		LearningPathStatus status = LearningPathStatus.notAccessible;
-		AssessmentEntryStatus assessmentStatus = assessmentEvaluation.getAssessmentStatus();
-		if (AssessmentEntryStatus.done.equals(assessmentStatus)) {
-			status = LearningPathStatus.done;
-		} else if (AssessmentEntryStatus.inProgress.equals(assessmentStatus) || AssessmentEntryStatus.inReview.equals(assessmentStatus)) {
-			status = LearningPathStatus.inProgress;
-		} else if (previousNode == null) {
-			status = LearningPathStatus.ready;
-		} else if (LearningPathStatus.done.equals(previousNode.getStatus())) {
-			status = LearningPathStatus.ready;
-		} else if (!LearningPathObligation.mandatory.equals(previousNode.getObligation()) && LearningPathStatus.isAccessible(previousNode.getStatus())) {
-			status = LearningPathStatus.ready;
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation, AssessmentEvaluation currentEvaluation) {
+		AssessmentEntryStatus currentStatus = currentEvaluation.getAssessmentStatus();
+		AssessmentEntryStatus status = currentStatus;
+		if (isNotReadyYet(currentStatus)) {
+			if (isAccessible(previousEvaluation)) {
+				status = AssessmentEntryStatus.notStarted;
+			} else {
+				status = AssessmentEntryStatus.notReady;
+			}
 		}
-		log.debug("previous node type: {}, previous learning path status: {}, previous obligation: {}, current assessment status: {}, current learning path status: {}"
-				, previousNode != null && previousNode.getCourseNode() != null? previousNode.getCourseNode().getType(): null
-				, previousNode != null? previousNode.getStatus(): null
-				, previousNode != null? previousNode.getObligation(): null
-				, assessmentEvaluation
+
+		log.debug("Previous: fully assessed '{}', obligation '{}', status '{}'"
+				, previousEvaluation != null? previousEvaluation.getFullyAssessed(): null
+				, previousEvaluation != null? previousEvaluation.getObligation(): null
+				, previousEvaluation != null? previousEvaluation.getAssessmentStatus(): null);
+		log.debug("Current:  fully assessed '{}', obligation '{}, status '{}', new status '{}'"
+				, currentEvaluation.getFullyAssessed()
+				, currentEvaluation.getObligation()
+				, currentEvaluation.getAssessmentStatus()
 				, status);
 
-		Date dateDone = LearningPathStatus.done.equals(status)? assessmentEvaluation.getAssessmentDone(): null;
-		return StatusEvaluator.result(status, dateDone);
+		return status;
+	}
+
+	private boolean isNotReadyYet(AssessmentEntryStatus currentStatus) {
+		return currentStatus == null || AssessmentEntryStatus.notReady.equals(currentStatus);
+	}
+	
+	private boolean isAccessible(AssessmentEvaluation assessmentEvaluation) {
+		return isRoot(assessmentEvaluation)
+				|| isFullyAssessed(assessmentEvaluation)
+				|| isOptionalAndReady(assessmentEvaluation);
+	}
+
+	private boolean isRoot(AssessmentEvaluation assessmentEvaluation) {
+		return assessmentEvaluation == null;
+	}
+
+	private boolean isFullyAssessed(AssessmentEvaluation assessmentEvaluation) {
+		return assessmentEvaluation.getFullyAssessed() != null && assessmentEvaluation.getFullyAssessed();
+	}
+
+	private boolean isOptionalAndReady(AssessmentEvaluation assessmentEvaluation) {
+		return !AssessmentObligation.mandatory.equals(assessmentEvaluation.getObligation())
+				&& !AssessmentEntryStatus.notReady.equals(assessmentEvaluation.getAssessmentStatus());
 	}
 
 	@Override
-	public boolean isStatusDependingOnChildNodes() {
-		return false;
-	}
-
-	@Override
-	public Result getStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
-		return null;
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
+			List<AssessmentEvaluation> children) {
+		return currentEvaluation.getAssessmentStatus();
 	}
 
 }

@@ -36,7 +36,6 @@ import org.olat.core.helpers.Settings;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.AssessmentService;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -93,7 +92,8 @@ public class IdentityOverviewController extends BasicController implements Toole
 	private void doResetStatus() {
 		List<AssessmentEntry> assessmentEntries = assessmentService.loadAssessmentEntriesByAssessedIdentity(getIdentity(), courseEntry);
 		for (AssessmentEntry assessmentEntry : assessmentEntries) {
-			assessmentEntry.setAssessmentStatus(AssessmentEntryStatus.notStarted);
+			assessmentEntry.setFullyAssessed(null);
+			assessmentEntry.setAssessmentStatus(null);
 			assessmentService.updateAssessmentEntry(assessmentEntry);
 		}
 		learningPathListController.loadModel();

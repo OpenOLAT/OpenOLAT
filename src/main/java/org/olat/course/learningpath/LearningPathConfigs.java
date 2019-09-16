@@ -19,6 +19,7 @@
  */
 package org.olat.course.learningpath;
 
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
@@ -31,12 +32,27 @@ public interface LearningPathConfigs {
 	
 	public Integer getDuration();
 	
-	public LearningPathObligation getObligation();
+	public AssessmentObligation getObligation();
 	
-	public boolean isDoneOnNodeVisited();
+	public FullyAssessedResult isFullyAssessedOnNodeVisited();
 
-	public boolean isDoneOnCompletion(Double completion);
+	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion);
 	
-	public boolean isDoneOnRunStatus(AssessmentRunStatus runStatus);
+	public FullyAssessedResult isFullyAssessedOnRunStatus(AssessmentRunStatus runStatus);
+	
+	public static FullyAssessedResult notFullyAssessed() {
+		return new FullyAssessedResultImpl(false, false);
+	}
+	
+	public static FullyAssessedResult fullyAssessed(boolean fullyAssessed, boolean done) {
+		return new FullyAssessedResultImpl(fullyAssessed, done);
+	}
+	
+	public interface FullyAssessedResult {
+		
+		public boolean isFullyAssessed();
+		
+		public boolean isDone();
+	}
 
 }

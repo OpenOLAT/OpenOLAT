@@ -19,23 +19,28 @@
  */
 package org.olat.course.learningpath.evaluation;
 
-import org.olat.course.nodes.CourseNodeProvider;
+import org.olat.course.run.scoring.AccountingEvaluators;
+import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
+import org.olat.course.run.scoring.StatusEvaluator;
 
 /**
- * Interface to provide an individual
- * {@link org.olat.course.learningpath.evaluation.StatusEvaluator} for a course
- * node to use it in a linear learning path. If a node does not implement this
- * interface, the
- * {@link org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluator}
- * is used.
  * 
- * Initial date: 1 Sep 2019<br>
- * 
+ * Initial date: 17 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeLinearStatusEvaluatorProvider extends CourseNodeProvider {
+public class LearningPathEvaluatorBuilder {
 	
-	public StatusEvaluator getStatusEvaluator();
+	private static final StatusEvaluator LINEAR_STATUS_EVALUATOR = new DefaultLinearStatusEvaluator();
+	private static final AccountingEvaluators DEFAULT = AccountingEvaluatorsBuilder
+			.builder()
+			.withObligationEvaluator(new ConfigObligationEvaluator())
+			.withDurationEvaluator(new ConfigDurationEvaluator())
+			.withStatusEvaluator(LINEAR_STATUS_EVALUATOR)
+			.build();
+	
+	public static AccountingEvaluators buildDefault() {
+		return DEFAULT;
+	}
 
 }

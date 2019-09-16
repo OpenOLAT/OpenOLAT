@@ -17,48 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st.learningpath;
+package org.olat.course.nodes.st.assessment;
 
 import java.util.List;
 
-import org.olat.course.learningpath.evaluation.DurationEvaluator;
-import org.olat.course.learningpath.ui.LearningPathTreeNode;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.FullyAssessedEvaluator;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 18 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STDurationEvaluator implements DurationEvaluator {
+public class STFullyAssessedEvaluator implements FullyAssessedEvaluator {
 
 	@Override
-	public boolean isDependingOnCurrentNode() {
-		return false;
-	}
-
-	@Override
-	public Integer getDuration(CourseNode courseNode) {
-		return null;
-	}
-
-	@Override
-	public boolean isdependingOnChildNodes() {
-		return true;
-	}
-
-	@Override
-	public Integer getDuration(List<LearningPathTreeNode> children) {
-		boolean hasDurations = false;
-		int sum = 0;
-		for (LearningPathTreeNode child : children) {
-			if (child.getDuration() != null) {
-				sum += child.getDuration().intValue();
-				hasDurations = true;
+	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children) {
+		for (AssessmentEvaluation evaluation : children) {
+			if (isMandatory(evaluation) && isNotFullyAssessedYet(evaluation)) {
+				return Boolean.FALSE;
 			}
 		}
-		return hasDurations? Integer.valueOf(sum): null;
+		return Boolean.TRUE;
+	}
+
+	private boolean isNotFullyAssessedYet(AssessmentEvaluation evaluation) {
+		return evaluation.getFullyAssessed() == null || !evaluation.getFullyAssessed();
+	}
+
+	private boolean isMandatory(AssessmentEvaluation evaluation) {
+		return evaluation.getObligation() != null && AssessmentObligation.mandatory.equals(evaluation.getObligation());
 	}
 
 }

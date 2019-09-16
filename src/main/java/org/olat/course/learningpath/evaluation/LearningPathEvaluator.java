@@ -25,12 +25,8 @@ import java.util.List;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.util.nodes.INode;
-import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.learningpath.LearningPathRoles;
-import org.olat.course.learningpath.evaluation.StatusEvaluator.Result;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
-import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreAccounting;
 
 /**
  * 
@@ -40,27 +36,15 @@ import org.olat.course.run.scoring.ScoreAccounting;
  */
 public class LearningPathEvaluator {
 	
-	private ObligationEvaluatorProvider obligationEvaluatorProvider;
-	private StatusEvaluatorProvider statusEvaluatorProvider;
-	private ScoreAccounting scoreAccounting;
-	private DurationEvaluatorProvider durationEvaluatorProvider;
 	private AccessEvaluator accessEvaluator;
 	private LearningPathRoles roles;
 	
-	private LearningPathTreeNode previousNode;
-	
 	private LearningPathEvaluator(LearningPathEvaluatorBuilder builder) {
-		this.obligationEvaluatorProvider = builder.obligationEvaluatorProvider;
-		this.statusEvaluatorProvider = builder.statusEvaluatorProvider;
-		this.scoreAccounting = builder.scoreAccounting;
-		this.durationEvaluatorProvider = builder.durationEvaluatorProvider;
 		this.accessEvaluator = builder.assessEvaluator;
 		this.roles = builder.roles;
 	}
 	
 	public void refresh(GenericTreeModel treeModel) {
-		this.scoreAccounting.evaluateAll();
-		this.previousNode = null;
 		
 		TreeNode node = treeModel.getRootNode();
 		if (node instanceof LearningPathTreeNode) {
@@ -70,11 +54,6 @@ public class LearningPathEvaluator {
 	}
 
 	private void refreshNodeAndChildren(LearningPathTreeNode currentNode) {
-		refreshObligation(currentNode);
-		refreshStatus(currentNode, previousNode);
-		refreshDuration(currentNode);
-		previousNode = currentNode;
-		
 		int childCount = currentNode.getChildCount();
 		List<LearningPathTreeNode> children = new ArrayList<>(childCount);
 		for (int childIndex = 0; childIndex < childCount; childIndex++) {
@@ -86,61 +65,7 @@ public class LearningPathEvaluator {
 			}
 		}
 		
-		refreshStatus(currentNode, children);
-		refreshDuration(currentNode, children);
-		
 		refreshAccess(currentNode);
-	}
-
-	private void refreshObligation(LearningPathTreeNode currentNode) {
-		if (obligationEvaluatorProvider != null) {
-			ObligationEvaluator evaluator = obligationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-			LearningPathObligation obligation = evaluator.getObligation(currentNode.getCourseNode());
-			currentNode.setObligation(obligation);
-		}
-	}
-
-	private void refreshStatus(LearningPathTreeNode currentNode, LearningPathTreeNode previousNode) {
-		if (statusEvaluatorProvider != null) {
-			StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-			if (evaluator.isStatusDependingOnPreviousNode()) {
-				AssessmentEvaluation assessmentEvaluation = scoreAccounting.getScoreEvaluation(currentNode.getCourseNode());
-				Result result = evaluator.getStatus(previousNode, assessmentEvaluation);
-				currentNode.setStatus(result.getStatus());
-				currentNode.setDateDone(result.getDoneDate());
-			}
-		}
-	}
-
-	private void refreshDuration(LearningPathTreeNode currentNode) {
-		if (durationEvaluatorProvider != null) {
-			DurationEvaluator evaluator = durationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-			if (evaluator.isDependingOnCurrentNode()) {
-				Integer duration = evaluator.getDuration(currentNode.getCourseNode());
-				currentNode.setDuration(duration);
-			}
-		}
-	}
-
-	private void refreshStatus(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
-		if (statusEvaluatorProvider != null) {
-			StatusEvaluator evaluator = statusEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-			if (evaluator.isStatusDependingOnChildNodes()) {
-				Result result = evaluator.getStatus(currentNode, children);
-				currentNode.setStatus(result.getStatus());
-				currentNode.setDateDone(result.getDoneDate());
-			}
-		}
-	}
-
-	private void refreshDuration(LearningPathTreeNode currentNode, List<LearningPathTreeNode> children) {
-		if (durationEvaluatorProvider != null) {
-			DurationEvaluator evaluator = durationEvaluatorProvider.getEvaluator(currentNode.getCourseNode());
-			if (evaluator.isdependingOnChildNodes()) {
-				Integer duration = evaluator.getDuration(children);
-				currentNode.setDuration(duration);
-			}
-		}
 	}
 	
 	private void refreshAccess(LearningPathTreeNode currentNode) {
@@ -156,10 +81,6 @@ public class LearningPathEvaluator {
 	
 	public static class LearningPathEvaluatorBuilder {
 
-		private ObligationEvaluatorProvider obligationEvaluatorProvider;
-		private StatusEvaluatorProvider statusEvaluatorProvider;
-		private ScoreAccounting scoreAccounting;
-		private DurationEvaluatorProvider durationEvaluatorProvider;
 		private AccessEvaluator assessEvaluator;
 		private LearningPathRoles roles;
 		
@@ -169,22 +90,6 @@ public class LearningPathEvaluator {
 		
 		public LearningPathEvaluator build() {
 			return new LearningPathEvaluator(this);
-		}
-		
-		public LearningPathEvaluatorBuilder refreshObligation(ObligationEvaluatorProvider obligationEvaluatorProvider) {
-			this.obligationEvaluatorProvider = obligationEvaluatorProvider;
-			return this;
-		}
-		
-		public LearningPathEvaluatorBuilder refreshStatus(StatusEvaluatorProvider statusEvaluatorProvider, ScoreAccounting scoreAccounting) {
-			this.statusEvaluatorProvider = statusEvaluatorProvider;
-			this.scoreAccounting = scoreAccounting;
-			return this;
-		}
-		
-		public LearningPathEvaluatorBuilder refreshDuration(DurationEvaluatorProvider durationEvaluatorProvider) {
-			this.durationEvaluatorProvider = durationEvaluatorProvider;
-			return this;
 		}
 		
 		public LearningPathEvaluatorBuilder refreshAccess(AccessEvaluator accessEvaluator, LearningPathRoles roles) {

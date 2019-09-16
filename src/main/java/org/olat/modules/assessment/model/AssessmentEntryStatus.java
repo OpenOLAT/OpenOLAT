@@ -27,6 +27,7 @@ package org.olat.modules.assessment.model;
  */
 public enum AssessmentEntryStatus {
 	
+	notReady,
 	notStarted,
 	inProgress,//student
 	inReview,//coach

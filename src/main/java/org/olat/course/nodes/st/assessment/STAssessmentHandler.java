@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st;
+package org.olat.course.nodes.st.assessment;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -31,10 +31,21 @@ import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.course.nodes.st.STIdentityListCourseNodeController;
+import org.olat.course.run.scoring.AccountingEvaluators;
+import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.DurationEvaluator;
+import org.olat.course.run.scoring.FullyAssessedEvaluator;
+import org.olat.course.run.scoring.LastModificationsEvaluator;
+import org.olat.course.run.scoring.PassedEvaluator;
 import org.olat.course.run.scoring.ScoreCalculator;
+import org.olat.course.run.scoring.ScoreEvaluator;
+import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
@@ -51,7 +62,29 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class STAssessmentHandler implements AssessmentHandler {
-
+	
+	private static final ScoreEvaluator CONDITION_SCORE_EVALUATOR = new ConditionScoreEvaluator();
+	private static final PassedEvaluator CONDITION_PASSED_EVALUATOR = new ConditionPassedEvaluator();
+	private static final DurationEvaluator DURATION_EVALUATOR = new STDurationEvaluator();
+	private static final StatusEvaluator SCORE_STATUS_EVALUATOR = new ScoreStatusEvaluator();
+	private static final StatusEvaluator STATUS_LEARNING_PATH_STATUS_EVALUATOR = new STLinearStatusEvaluator();
+	private static final FullyAssessedEvaluator FULLY_ASSESSED_EVALUATOR = new STFullyAssessedEvaluator();
+	private static final LastModificationsEvaluator LAST_MODIFICATION_EVALUATOR = new STLastModificationsEvaluator();
+	private static final AccountingEvaluators CONVENTIONAL_EVALUATORS = AccountingEvaluatorsBuilder.builder()
+			.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
+			.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
+			.withStatusEvaluator(SCORE_STATUS_EVALUATOR)
+			.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
+			.build();
+	private static final AccountingEvaluators LEARNING_PATH_EVALUATORS = AccountingEvaluatorsBuilder.builder()
+			.withDurationEvaluator(DURATION_EVALUATOR)
+			.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
+			.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
+			.withStatusEvaluator(STATUS_LEARNING_PATH_STATUS_EVALUATOR)
+			.withFullyAssessedEvaluator(FULLY_ASSESSED_EVALUATOR)
+			.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
+			.build();
+	
 	@Override
 	public String acceptCourseNodeType() {
 		return STCourseNode.TYPE;
@@ -71,6 +104,14 @@ public class STAssessmentHandler implements AssessmentHandler {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		return am.getAssessmentEntry(courseNode, assessedIdentity);
+	}
+
+	@Override
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType) {
+		if (LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
+			return LEARNING_PATH_EVALUATORS;
+		}
+		return CONVENTIONAL_EVALUATORS;
 	}
 
 	@Override

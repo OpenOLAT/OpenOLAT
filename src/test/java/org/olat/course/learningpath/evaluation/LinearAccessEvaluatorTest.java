@@ -23,8 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;
 import org.olat.course.learningpath.LearningPathRoles;
-import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -38,22 +38,22 @@ public class LinearAccessEvaluatorTest {
 
 	@Test
 	public void shouldBeAccessibleIfIsDone() {
-		assertAccessible(LearningPathStatus.done, true);
+		assertAccessible(AssessmentEntryStatus.done, true);
 	}
 
 	@Test
 	public void shouldBeAccessibleIfIsInProgress() {
-		assertAccessible(LearningPathStatus.inProgress, true);
+		assertAccessible(AssessmentEntryStatus.inProgress, true);
 	}
 
 	@Test
 	public void shouldBeAccessibleIfIsReady() {
-		assertAccessible(LearningPathStatus.ready, true);
+		assertAccessible(AssessmentEntryStatus.notStarted, true);
 	}
 
 	@Test
 	public void shouldNotBeAccessibleIfIsNotAccessible() {
-		assertAccessible(LearningPathStatus.notAccessible, false);
+		assertAccessible(AssessmentEntryStatus.notReady, false);
 	}
 
 	@Test
@@ -61,7 +61,7 @@ public class LinearAccessEvaluatorTest {
 		assertAccessible(null, false);
 	}
 
-	private void assertAccessible(LearningPathStatus status, boolean expected) {
+	private void assertAccessible(AssessmentEntryStatus status, boolean expected) {
 		LearningPathTreeNode currentNode = new LearningPathTreeNode(null, 0);
 		currentNode.setStatus(status);
 		LearningPathRoles roles = LearningPathRoles.of(true, false, false);
@@ -74,7 +74,7 @@ public class LinearAccessEvaluatorTest {
 	@Test
 	public void shouldAlwysBeAccessibleAsCoach() {
 		LearningPathTreeNode currentNode = new LearningPathTreeNode(null, 0);
-		currentNode.setStatus(LearningPathStatus.notAccessible);
+		currentNode.setStatus(AssessmentEntryStatus.notReady);
 		LearningPathRoles roles = LearningPathRoles.of(true, true, false);
 		
 		boolean accessible = sut.isAccessible(currentNode, roles);
@@ -85,7 +85,7 @@ public class LinearAccessEvaluatorTest {
 	@Test
 	public void shouldAlwysBeAccessibleAsAdmin() {
 		LearningPathTreeNode currentNode = new LearningPathTreeNode(null, 0);
-		currentNode.setStatus(LearningPathStatus.notAccessible);
+		currentNode.setStatus(AssessmentEntryStatus.notReady);
 		LearningPathRoles roles = LearningPathRoles.of(true, false, true);
 		
 		boolean accessible = sut.isAccessible(currentNode, roles);

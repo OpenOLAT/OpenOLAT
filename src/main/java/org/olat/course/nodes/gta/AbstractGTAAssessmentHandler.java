@@ -30,10 +30,15 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.learningpath.evaluation.LearningPathEvaluatorBuilder;
+import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
 import org.olat.course.nodes.gta.ui.GTAIdentityListCourseNodeController;
+import org.olat.course.run.scoring.AccountingEvaluators;
+import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -61,6 +66,14 @@ public abstract class AbstractGTAAssessmentHandler implements AssessmentHandler 
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		return am.getAssessmentEntry(courseNode, assessedIdentity);
+	}
+	
+	@Override
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType) {
+		if (LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
+			return LearningPathEvaluatorBuilder.buildDefault();
+		}
+		return AccountingEvaluatorsBuilder.defaultConventional();
 	}
 
 	@Override

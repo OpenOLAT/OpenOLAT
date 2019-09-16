@@ -98,7 +98,18 @@ public interface AssessmentManager {
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentRunStatus status, Role by);
 
-	public void updateAssessmentStatus(CourseNode courseNode, Identity assessedIdentity, AssessmentEntryStatus status, Role by);
+	/**
+	 * Change the fully assessed flag of the assessment and set the status. If the
+	 * flag has not changed, the method returns immediately and nothing is saved.
+	 * 
+	 * @param courseNode
+	 * @param userCourseEnvironment
+	 * @param fullyAssessed
+	 * @param status 
+	 * @param by
+	 */
+	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+			Boolean fullyAssessed, AssessmentEntryStatus status, Role by);
 	
 	/**
 	 * Save an assessment comment for this node for a user. If there is already a comment property available, 

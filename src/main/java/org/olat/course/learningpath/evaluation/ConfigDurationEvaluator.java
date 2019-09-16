@@ -23,8 +23,9 @@ import java.util.List;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.course.learningpath.LearningPathService;
-import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.DurationEvaluator;
 
 /**
  * 
@@ -51,7 +52,7 @@ public class ConfigDurationEvaluator implements DurationEvaluator {
 	}
 
 	@Override
-	public Integer getDuration(List<LearningPathTreeNode> children) {
+	public Integer getDuration(List<AssessmentEvaluation> children) {
 		return null;
 	}
 

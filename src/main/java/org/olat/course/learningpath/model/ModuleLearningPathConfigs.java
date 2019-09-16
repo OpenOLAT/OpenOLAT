@@ -29,8 +29,8 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
@@ -65,15 +65,18 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public LearningPathObligation getObligation() {
+	public AssessmentObligation getObligation() {
 		String value = moduleConfiguration.getStringValue(CONFIG_KEY_OBLIGATION, CONFIG_DEFAULT_OBLIGATION);
-		return LearningPathObligation.valueOf(value);
+		return AssessmentObligation.valueOf(value);
 	}
 
 	@Override
-	public boolean isDoneOnNodeVisited() {
+	public FullyAssessedResult isFullyAssessedOnNodeVisited() {
 		String doneTriggerName = getDoneTriggerName();
-		return CONFIG_VALUE_DONE_TRIGGER_NODE_VISITED.equals(doneTriggerName);
+		if (CONFIG_VALUE_DONE_TRIGGER_NODE_VISITED.equals(doneTriggerName)) {
+			return LearningPathConfigs.fullyAssessed(true, true);
+		}
+		return LearningPathConfigs.notFullyAssessed();
 	}
 
 	private String getDoneTriggerName() {
@@ -81,18 +84,18 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public boolean isDoneOnCompletion(Double completion) {
+	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion) {
 		// not implemented yet
-		return false;
+		return LearningPathConfigs.notFullyAssessed();
 	}
 
 	@Override
-	public boolean isDoneOnRunStatus(AssessmentRunStatus runStatus) {
+	public FullyAssessedResult isFullyAssessedOnRunStatus(AssessmentRunStatus runStatus) {
 		String doneTriggerName = getDoneTriggerName();
 		if (AssessmentRunStatus.done.equals(runStatus) && CONFIG_VALUE_DONE_TRIGGER_RUN_DONE.equals(doneTriggerName)) {
-			return true;
+			return LearningPathConfigs.fullyAssessed(true, false);
 		}
-		return false;
+		return LearningPathConfigs.notFullyAssessed();
 	}
 
 }

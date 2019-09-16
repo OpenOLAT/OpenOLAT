@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st;
+package org.olat.course.nodes.st.assessment;
 
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.util.StringHelper;

@@ -17,7 +17,11 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.run.scoring;
+
+import java.util.List;
+
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
@@ -25,9 +29,14 @@ package org.olat.course.learningpath;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public enum LearningPathObligation {
+public interface DurationEvaluator {
 	
-	mandatory,
-	optional
+	boolean isDependingOnCurrentNode();
+	
+	Integer getDuration(CourseNode courseNode);
+	
+	boolean isdependingOnChildNodes();
+	
+	Integer getDuration(List<AssessmentEvaluation> children);
 
 }

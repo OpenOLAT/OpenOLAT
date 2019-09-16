@@ -19,9 +19,11 @@
  */
 package org.olat.course.learningpath.evaluation;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.course.learningpath.LearningPathRoles;
-import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -30,11 +32,13 @@ import org.olat.course.learningpath.ui.LearningPathTreeNode;
  *
  */
 public class LinearAccessEvaluator implements AccessEvaluator {
+
+	private static final Logger log = Tracing.createLoggerFor(LinearAccessEvaluator.class);
 	
-	private static final LearningPathStatus[] accessibleStati = {
-			LearningPathStatus.done,
-			LearningPathStatus.inProgress,
-			LearningPathStatus.ready
+	private static final AssessmentEntryStatus[] accessibleStati = {
+			AssessmentEntryStatus.done,
+			AssessmentEntryStatus.inProgress,
+			AssessmentEntryStatus.notStarted
 	};
 			
 
@@ -42,8 +46,19 @@ public class LinearAccessEvaluator implements AccessEvaluator {
 	public boolean isAccessible(LearningPathTreeNode currentNode, LearningPathRoles roles) {
 		if (roles.isAdmin() || roles.isCoach()) return true;
 		
-		LearningPathStatus status = currentNode.getStatus();
-		for (LearningPathStatus accessibleStatus : accessibleStati) {
+		AssessmentEntryStatus status = currentNode.getStatus();
+		boolean hasAccess = hasAccess(status);
+		log.debug("Access for couse node {} ({}): status '{}' => access '{}'",
+				currentNode.getIdent(),
+				currentNode.getCourseNode().getType(),
+				status,
+				hasAccess);
+		return hasAccess;
+	}
+
+
+	private boolean hasAccess(AssessmentEntryStatus status) {
+		for (AssessmentEntryStatus accessibleStatus : accessibleStati) {
 			if (accessibleStatus.equals(status)) {
 				return true;
 			}

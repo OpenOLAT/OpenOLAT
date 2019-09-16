@@ -20,19 +20,19 @@
 package org.olat.course.learningpath.evaluation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.olat.course.learningpath.LearningPathObligation.mandatory;
-import static org.olat.course.learningpath.LearningPathObligation.optional;
+import static org.olat.modules.assessment.model.AssessmentEntryStatus.done;
+import static org.olat.modules.assessment.model.AssessmentEntryStatus.notReady;
+import static org.olat.modules.assessment.model.AssessmentEntryStatus.notStarted;
+import static org.olat.modules.assessment.model.AssessmentObligation.mandatory;
+import static org.olat.modules.assessment.model.AssessmentObligation.optional;
 
-import java.util.Date;
-import java.util.GregorianCalendar;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
-import org.olat.course.learningpath.LearningPathObligation;
-import org.olat.course.learningpath.LearningPathStatus;
-import org.olat.course.learningpath.evaluation.StatusEvaluator.Result;
-import org.olat.course.learningpath.ui.LearningPathTreeNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -42,118 +42,107 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public class DefaultLinearStatusEvaluatorTest {
 	
-	DefaultLinearStatusEvaluator sut = new DefaultLinearStatusEvaluator();
-	
-	@Test
-	public void shouldDependOnPreviousNode() {
-		assertThat(sut.isStatusDependingOnPreviousNode()).isTrue();
-	}
-	
-	@Test
-	public void shouldNotDependOnChildren() {
-		assertThat(sut.isStatusDependingOnChildNodes()).isFalse();
-	}
+	private DefaultLinearStatusEvaluator sut = new DefaultLinearStatusEvaluator();
 
 	@Test
 	public void shouldReturnDoneIfAssessmentStatusIsDone() {
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(AssessmentEntryStatus.done, null);
+		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, done, null);
 		
-		Result result = sut.getStatus(null, assessmentEvaluation);
+		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation);
 		
-		assertThat(result.getStatus()).isEqualTo(LearningPathStatus.done);
+		assertThat(status).isEqualTo(done);
 	}
 	
 	@Test
 	public void shouldReturnReadyIfIsRootNodeAndNotAlreadyDone() {
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(AssessmentEntryStatus.notStarted, null);;
+		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, notStarted, null);
 		
-		Result result = sut.getStatus(null, assessmentEvaluation);
+		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation);
 		
-		assertThat(result.getStatus()).isEqualTo(LearningPathStatus.ready);
+		assertThat(status).isEqualTo(notStarted);
+	}
+	
+	@Test
+	public void shouldReturnReadyIfIsRootNodeAndIsNotStartedYet() {
+		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, notReady, null);
+		
+		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation);
+		
+		assertThat(status).isEqualTo(notStarted);
+	}
+	
+	@Test
+	public void shouldReturnReadyIfIsRootNodeAndHasNoStatusYet() {
+		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, null, null);
+		
+		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation);
+		
+		assertThat(status).isEqualTo(notStarted);
 	}
 
 	@Test
-	public void shouldReturnReadyIfPreviousNodeIsDone() {
-		assertStatus(LearningPathStatus.done, null, AssessmentEntryStatus.notStarted, LearningPathStatus.ready);
+	public void shouldReturnReadyIfPreviousNodeFullyAssessed() {
+		assertStatus(Boolean.TRUE, null, null, null, notStarted);
 	}
 
 	@Test
-	public void shouldReturnReadyIfPreviousNodeIsReadyAndIsOptional() {
-		assertStatus(LearningPathStatus.ready, optional, AssessmentEntryStatus.notStarted, LearningPathStatus.ready);
+	public void shouldReturnReadyIfPreviousNodeFullyAssessedAndIsMandatory() {
+		assertStatus(Boolean.TRUE, null, mandatory, null, notStarted);
 	}
 
 	@Test
-	public void shouldReturnNotAccessibleIfPreviousNodeIsInProgressAndIsMandatory() {
-		assertStatus(LearningPathStatus.inProgress, mandatory, AssessmentEntryStatus.notStarted, LearningPathStatus.notAccessible);
+	public void shouldReturnReadyIfPreviousNodeIsOptionalAndIsReady() {
+		assertStatus(Boolean.FALSE, notStarted, optional, notReady, notStarted);
 	}
 
 	@Test
-	public void shouldReturnReadyIfPreviousNodeIsStartedAndHasNoObligation() {
+	public void shouldReturnReadyIfPreviousNodeHasNoObligationAndIsReady() {
 		// No obligation means optional. E.g. the STCourseNode has no obligation and is
 		// always the first node in a course tree
-		assertStatus(LearningPathStatus.inProgress, null, AssessmentEntryStatus.notStarted, LearningPathStatus.ready);
+		assertStatus(Boolean.FALSE, notStarted, null, notReady, notStarted);
 	}
 
 	@Test
-	public void shouldReturnAccessibleIfPreviousNodeIsReadyAndIsMandatory() {
-		assertStatus(LearningPathStatus.ready, mandatory, AssessmentEntryStatus.notStarted, LearningPathStatus.notAccessible);
+	public void shouldReturnNotReadyIfPreviousNodeIsOptionalAndIsNotReady() {
+		assertStatus(Boolean.FALSE, notReady, optional, notReady, notReady);
 	}
 
 	@Test
-	public void shouldReturnAccessibleIfPreviousNodeIsInProgressAndIsMandatory() {
-		assertStatus(LearningPathStatus.inProgress, mandatory, AssessmentEntryStatus.notStarted, LearningPathStatus.notAccessible);
+	public void shouldReturnNotReadyIfPreviousNodeIsMandatoryAndNotFullyAssessedYet() {
+		assertStatus(Boolean.FALSE, null, mandatory, null, notReady);
 	}
 
 	@Test
-	public void shouldReturnNotAccessibleIfPreviousNodeIsNotAccessibleAndIsMandatory() {
-		assertStatus(LearningPathStatus.notAccessible, mandatory, AssessmentEntryStatus.notStarted, LearningPathStatus.notAccessible);
+	public void shouldReturnNotReadyIfPreviousNodeIsMandatoryAndFullyAssessedIsNull() {
+		assertStatus(null, null, mandatory, null, notReady);
 	}
 
-	@Test
-	public void shouldReturnNotAccessibleIfPreviousNodeIsNotAccessibleAndIsOptional() {
-		assertStatus(LearningPathStatus.notAccessible, optional, AssessmentEntryStatus.notStarted, LearningPathStatus.notAccessible);
-	}
-	@Test
-	public void shouldReturnNotAccessibleIfPreviousNodeNotAccessibleAndHasNoObligation() {
-		assertStatus(LearningPathStatus.notAccessible, null, AssessmentEntryStatus.notStarted, LearningPathStatus.notAccessible);
-	}
-
-	private void assertStatus(LearningPathStatus previousStatus, LearningPathObligation previousObligation,
-			AssessmentEntryStatus currentStatus, LearningPathStatus expected) {
-		LearningPathTreeNode previousNode = new LearningPathTreeNode(null, 0);
-		previousNode.setStatus(previousStatus);
-		previousNode.setObligation(previousObligation);
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(currentStatus, null);
+	private void assertStatus(Boolean previousFullyAssessd, AssessmentEntryStatus previousStatus,
+			AssessmentObligation previousObligation, AssessmentEntryStatus currentStatus,
+			AssessmentEntryStatus expected) {
+		AssessmentEvaluation previousEvaluation = getAssessmentEvaluation(previousFullyAssessd, previousStatus, previousObligation);
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, currentStatus, null);
 		
-		Result result = sut.getStatus(previousNode, assessmentEvaluation);
+		AssessmentEntryStatus status = sut.getStatus(previousEvaluation, currentEvaluation);
 		
-		assertThat(result.getStatus()).isEqualTo(expected);
+		assertThat(status).isEqualTo(expected);
 	}
 	
 	@Test
-	public void shouldReturnDateDone() {
-		LearningPathTreeNode previousNode = new LearningPathTreeNode(null, 0);
-		Date dateDone = new GregorianCalendar(2019, 3, 1).getTime();
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(AssessmentEntryStatus.done, dateDone);
+	public void shouldNotChangeStatusWhenCheckingAgainstChildren() {
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, notStarted, null);
+		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.TRUE, done, null);
+		AssessmentEvaluation child2 = getAssessmentEvaluation(Boolean.TRUE, done, null);
+		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
 		
-		Result result = sut.getStatus(previousNode, assessmentEvaluation);
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
 		
-		assertThat(result.getDoneDate()).isEqualTo(dateDone);
-	}
-	
-	@Test
-	public void shouldReturnDateDoneOnlyIfStatusIsDone() {
-		LearningPathTreeNode previousNode = new LearningPathTreeNode(null, 0);
-		Date dateDone = new GregorianCalendar(2019, 3, 1).getTime();
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(AssessmentEntryStatus.inProgress, dateDone);
-		
-		Result result = sut.getStatus(previousNode, assessmentEvaluation);
-		
-		assertThat(result.getDoneDate()).isEqualTo(null);
+		assertThat(status).isEqualTo(notStarted);
 	}
 
-	private AssessmentEvaluation getAssessmentEvaluation(AssessmentEntryStatus assessmentStatus, Date assessmentDone) {
-		return new AssessmentEvaluation(null, null, null, assessmentStatus, null, null, null, null, null, null, null, 0, null, null, null, assessmentDone);
+
+	private AssessmentEvaluation getAssessmentEvaluation(Boolean fullyAssessd, AssessmentEntryStatus assessmentStatus, AssessmentObligation obligation) {
+		return new AssessmentEvaluation(null, null, null, assessmentStatus, null, fullyAssessd, null, null, null, null, null, 0, null, null, null, null, obligation, null);
 	}
 
 }

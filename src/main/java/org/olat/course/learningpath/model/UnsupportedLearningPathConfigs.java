@@ -20,7 +20,7 @@
 package org.olat.course.learningpath.model;
 
 import org.olat.course.learningpath.LearningPathConfigs;
-import org.olat.course.learningpath.LearningPathObligation;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
@@ -37,23 +37,23 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public LearningPathObligation getObligation() {
-		return LearningPathObligation.optional;
+	public AssessmentObligation getObligation() {
+		return AssessmentObligation.optional;
 	}
 	
 	@Override
-	public boolean isDoneOnNodeVisited() {
-		return false;
+	public FullyAssessedResult isFullyAssessedOnNodeVisited() {
+		return LearningPathConfigs.notFullyAssessed();
 	}
 
 	@Override
-	public boolean isDoneOnCompletion(Double completion) {
-		return false;
+	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion) {
+		return LearningPathConfigs.notFullyAssessed();
 	}
 
 	@Override
-	public boolean isDoneOnRunStatus(AssessmentRunStatus runStatus) {
-		return false;
+	public FullyAssessedResult isFullyAssessedOnRunStatus(AssessmentRunStatus runStatus) {
+		return LearningPathConfigs.notFullyAssessed();
 	}
 
 }

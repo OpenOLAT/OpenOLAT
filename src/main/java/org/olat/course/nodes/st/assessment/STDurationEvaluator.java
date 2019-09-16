@@ -17,9 +17,13 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
+package org.olat.course.nodes.st.assessment;
 
-import org.springframework.stereotype.Component;
+import java.util.List;
+
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.DurationEvaluator;
 
 /**
  * 
@@ -27,19 +31,34 @@ import org.springframework.stereotype.Component;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Component
-public class DefaultNodeLinearStatusEvaluatorProvider implements NodeLinearStatusEvaluatorProvider {
-
-	public static final String NODE_TYPE = "defaultLinearNodeStatusEvaluatorProvider";
+public class STDurationEvaluator implements DurationEvaluator {
 
 	@Override
-	public String acceptCourseNodeType() {
-		return NODE_TYPE;
+	public boolean isDependingOnCurrentNode() {
+		return false;
 	}
 
 	@Override
-	public StatusEvaluator getStatusEvaluator() {
-		return new DefaultLinearStatusEvaluator();
+	public Integer getDuration(CourseNode courseNode) {
+		return null;
+	}
+
+	@Override
+	public boolean isdependingOnChildNodes() {
+		return true;
+	}
+
+	@Override
+	public Integer getDuration(List<AssessmentEvaluation> children) {
+		boolean hasDurations = false;
+		int sum = 0;
+		for (AssessmentEvaluation child : children) {
+			if (child.getDuration() != null) {
+				sum += child.getDuration().intValue();
+				hasDurations = true;
+			}
+		}
+		return hasDurations? Integer.valueOf(sum): null;
 	}
 
 }

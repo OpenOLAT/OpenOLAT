@@ -20,9 +20,10 @@
 package org.olat.course.learningpath.evaluation;
 
 import org.olat.core.CoreSpringFactory;
-import org.olat.course.learningpath.LearningPathObligation;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.ObligationEvaluator;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -33,7 +34,7 @@ import org.olat.course.nodes.CourseNode;
 public class ConfigObligationEvaluator implements ObligationEvaluator {
 
 	@Override
-	public LearningPathObligation getObligation(CourseNode courseNode) {
+	public AssessmentObligation getObligation(CourseNode courseNode) {
 		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
 		return learningPathService.getConfigs(courseNode).getObligation();
 	}

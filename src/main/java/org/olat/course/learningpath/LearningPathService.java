@@ -20,9 +20,6 @@
 package org.olat.course.learningpath;
 
 import org.olat.course.learningpath.evaluation.AccessEvaluator;
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
 import org.olat.course.nodes.CourseNode;
 
 /**
@@ -34,12 +31,6 @@ import org.olat.course.nodes.CourseNode;
 public interface LearningPathService {
 
 	public LearningPathConfigs getConfigs(CourseNode courseNode);
-
-	public ObligationEvaluatorProvider getObligationEvaluatorProvider();
-
-	public StatusEvaluatorProvider getStatusEvaluatorProvider();
-
-	public DurationEvaluatorProvider getDurationEvaluatorProvider();
 
 	public AccessEvaluator getAccessEvaluator();
 

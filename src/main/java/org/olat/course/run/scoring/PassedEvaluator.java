@@ -17,27 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
+package org.olat.course.run.scoring;
 
-import java.util.List;
-
-import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 20 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface DurationEvaluator {
-	
-	boolean isDependingOnCurrentNode();
-	
-	Integer getDuration(CourseNode courseNode);
-	
-	boolean isdependingOnChildNodes();
-	
-	Integer getDuration(List<LearningPathTreeNode>children);
+public interface PassedEvaluator {
+
+	public Boolean getPassed(AssessmentEvaluation currentEvaluation, CourseNode courseNode, RepositoryEntry courseEntry,
+			ConditionInterpreter conditionInterpreter);
 
 }

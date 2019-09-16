@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.olat.core.id.Identity;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.repository.RepositoryEntry;
 
@@ -71,13 +72,19 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	
 	public Date getAssessmentDone();
 
-	/**
-	 * Used by Onyx
-	 * @return 
-	 */
 	public Boolean getFullyAssessed();
 
 	public void setFullyAssessed(Boolean fullyAssessed);
+	
+	public Date getFullyAssessedDate();
+	
+	public AssessmentObligation getObligation();
+	
+	public void setObligation(AssessmentObligation obligation);
+	
+	public Integer getDuration();
+	
+	public void setDuration(Integer duration);
 
 	public Double getCompletion();
 

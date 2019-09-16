@@ -17,37 +17,34 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
+package org.olat.course.nodes.st.assessment;
 
 import java.util.Date;
+import java.util.List;
 
-import org.olat.course.learningpath.LearningPathStatus;
-import org.olat.course.learningpath.evaluation.StatusEvaluator.Result;
+import org.olat.core.util.DateUtils;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.LastModificationsEvaluator;
 
 /**
  * 
- * Initial date: 2 Sep 2019<br>
+ * Initial date: 18 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-class StatusEvaluatorResult implements Result {
-	
-	private final LearningPathStatus status;
-	private final Date doneDate;
-	
-	StatusEvaluatorResult(LearningPathStatus status, Date doneDate) {
-		this.status = status;
-		this.doneDate = doneDate;
-	}
+public class STLastModificationsEvaluator implements LastModificationsEvaluator {
 
 	@Override
-	public LearningPathStatus getStatus() {
-		return status;
-	}
-
-	@Override
-	public Date getDoneDate() {
-		return doneDate;
+	public LastModifications getLastModifications(AssessmentEvaluation currentEvaluation,
+			List<AssessmentEvaluation> children) {
+		Date lastUserModified = currentEvaluation.getLastUserModified();
+		Date lastCoachModified = currentEvaluation.getLastCoachModified();
+		for (AssessmentEvaluation child : children) {
+			lastUserModified = DateUtils.getLater(lastUserModified, child.getLastUserModified());
+			lastCoachModified = DateUtils.getLater(lastCoachModified, child.getLastCoachModified());
+		}
+		
+		return LastModificationsEvaluator.of(lastUserModified, lastCoachModified);
 	}
 
 }

@@ -17,18 +17,19 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
+package org.olat.course.run.scoring;
 
+import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 16 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface ObligationEvaluatorProvider {
+public interface ScoreEvaluator {
 
-	public ObligationEvaluator getEvaluator(CourseNode node);
-	
+	public Float getScore(AssessmentEvaluation currentEvaluation, CourseNode courseNode, ConditionInterpreter conditionInterpreter);
+
 }

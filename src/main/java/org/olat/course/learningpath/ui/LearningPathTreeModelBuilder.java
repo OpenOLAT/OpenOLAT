@@ -24,11 +24,9 @@ import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.course.learningpath.LearningPathRoles;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.evaluation.AccessEvaluator;
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
 import org.olat.course.learningpath.evaluation.LearningPathEvaluator;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
@@ -59,6 +57,7 @@ public class LearningPathTreeModelBuilder {
 	private LearningPathTreeModelBuilder(CourseNode rootNode, ScoreAccounting scoreAccounting, LearningPathRoles roles) {
 		this.rootNode = rootNode;
 		this.scoreAccounting = scoreAccounting;
+		this.scoreAccounting.evaluateAll(true);
 		this.roles = roles;
 	}
 	
@@ -67,15 +66,9 @@ public class LearningPathTreeModelBuilder {
 		
 		GenericTreeModel treeModel = createTreeModel();
 		
-		StatusEvaluatorProvider statusEvaluatorProvider = learningPathService.getStatusEvaluatorProvider();
-		ObligationEvaluatorProvider obligationEvaluatorProvider = learningPathService.getObligationEvaluatorProvider();
-		DurationEvaluatorProvider durationEvaluatorProvider = learningPathService.getDurationEvaluatorProvider();
 		AccessEvaluator accessEvaluator = learningPathService.getAccessEvaluator();
 
 		LearningPathEvaluator.builder()
-				.refreshObligation(obligationEvaluatorProvider)
-				.refreshStatus(statusEvaluatorProvider, scoreAccounting)
-				.refreshDuration(durationEvaluatorProvider)
 				.refreshAccess(accessEvaluator, roles)
 				.build()
 				.refresh(treeModel);
@@ -85,7 +78,7 @@ public class LearningPathTreeModelBuilder {
 
 	private GenericTreeModel createTreeModel() {
 		int recursionLevel = 0;
-		LearningPathTreeNode rootLearningPathNode = new LearningPathTreeNode(rootNode, recursionLevel);
+		LearningPathTreeNode rootLearningPathNode = createLearningPathTreeNode(rootNode, recursionLevel);
 		GenericTreeModel treeModel = new GenericTreeModel();
 		treeModel.setRootNode(rootLearningPathNode);
 		addChildren(rootLearningPathNode, recursionLevel);
@@ -104,7 +97,12 @@ public class LearningPathTreeModelBuilder {
 	}
 
 	private LearningPathTreeNode createLearningPathTreeNode(CourseNode courseNode, int recursionLevel) {
-		return new LearningPathTreeNode(courseNode, recursionLevel);
+		LearningPathTreeNode learningPathTreeNode = new LearningPathTreeNode(courseNode, recursionLevel);
+		AssessmentEvaluation scoreEvaluation = scoreAccounting.evalCourseNode(courseNode);
+		learningPathTreeNode.setDuration(scoreEvaluation.getDuration());
+		learningPathTreeNode.setStatus(scoreEvaluation.getAssessmentStatus());
+		learningPathTreeNode.setObligation(scoreEvaluation.getObligation());
+		return learningPathTreeNode;
 	}
 
 }

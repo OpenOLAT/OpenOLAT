@@ -266,7 +266,49 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNotNull(nodeAssessment.getAssessmentDone());
+		
+		nodeAssessment.setAssessmentStatus(null);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNull(nodeAssessment.getAssessmentDone());
 	}
+	
+	@Test
+	public void setFullyAssessedDate() {
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		AssessmentEntry nodeAssessment = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, refEntry, 2.0f, Boolean.TRUE, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNull(nodeAssessment.getFullyAssessedDate());
+		
+		nodeAssessment.setFullyAssessed(Boolean.TRUE);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(nodeAssessment.getFullyAssessedDate());
+		
+		nodeAssessment.setFullyAssessed(Boolean.FALSE);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNull(nodeAssessment.getFullyAssessedDate());
+		
+		nodeAssessment.setFullyAssessed(Boolean.TRUE);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		Assert.assertNotNull(nodeAssessment.getFullyAssessedDate());
+		
+		nodeAssessment.setFullyAssessed(null);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		Assert.assertNull(nodeAssessment.getFullyAssessedDate());
+	}
+
 	
 	@Test
 	public void loadAssessmentEntries_subIdent() {

@@ -17,25 +17,28 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
-
-import org.olat.course.nodes.CourseNodeProvider;
+package org.olat.course.run.scoring;
 
 /**
- * Interface to provide an individual
- * {@link org.olat.course.learningpath.evaluation.DurationEvaluator} for a course
- * node to use it in a linear learning path. If a node does not implement this
- * interface, the
- * {@link org.olat.course.learningpath.evaluation.ConfigDurationEvaluator}
- * is used.
  * 
- * Initial date: 1 Sep 2019<br>
- * 
+ * Initial date: 16 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeDurationEvaluatorProvider extends CourseNodeProvider {
-	
+public interface AccountingEvaluators {
+
+	public ObligationEvaluator getObligationEvaluator();
+
 	public DurationEvaluator getDurationEvaluator();
+	
+	public ScoreEvaluator getScoreEvaluator();
+
+	public PassedEvaluator getPassedEvaluator();
+
+	public LastModificationsEvaluator getLastModificationsEvaluator();
+
+	public StatusEvaluator getStatusEvaluator();
+
+	public FullyAssessedEvaluator getFullyAssessedEvaluator();
 
 }

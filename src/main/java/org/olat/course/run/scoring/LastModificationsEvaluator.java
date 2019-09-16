@@ -17,18 +17,31 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
+package org.olat.course.run.scoring;
 
-import org.olat.course.nodes.CourseNode;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 
- * Initial date: 1 Sept 2019<br>
+ * Initial date: 18 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface DurationEvaluatorProvider {
+public interface LastModificationsEvaluator {
 	
-	DurationEvaluator getEvaluator(CourseNode node);
+	public LastModifications getLastModifications(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children);
+	
+	public static LastModifications of(Date lastUserModified, Date lastCoachModified) {
+		return new LastModificationsImpl(lastUserModified, lastCoachModified);
+	}
+	
+	public interface LastModifications {
+
+		public Date getLastUserModified();
+
+		public Date getLastCoachModified();
+		
+	}
 
 }

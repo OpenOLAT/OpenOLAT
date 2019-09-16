@@ -17,18 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
+package org.olat.course.run.scoring;
 
-import org.olat.course.nodes.CourseNode;
+import java.util.List;
 
 /**
  * 
- * Initial date: 27 Aug 2019<br>
+ * Initial date: 18 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface StatusEvaluatorProvider {
-	
-	StatusEvaluator getEvaluator(CourseNode node);
+public interface FullyAssessedEvaluator {
+
+	public Boolean getFullyAssessed(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children);
 
 }

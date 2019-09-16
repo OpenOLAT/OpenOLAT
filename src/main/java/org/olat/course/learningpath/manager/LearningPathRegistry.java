@@ -26,18 +26,6 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 
 import org.olat.course.learningpath.LearningPathNodeHandler;
-import org.olat.course.learningpath.evaluation.ConfigNodeDurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ConfigNodeObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.DefaultNodeLinearStatusEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.DurationEvaluator;
-import org.olat.course.learningpath.evaluation.DurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.NodeDurationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.NodeLinearStatusEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.NodeObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.ObligationEvaluator;
-import org.olat.course.learningpath.evaluation.ObligationEvaluatorProvider;
-import org.olat.course.learningpath.evaluation.StatusEvaluator;
-import org.olat.course.learningpath.evaluation.StatusEvaluatorProvider;
 import org.olat.course.nodes.CourseNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,33 +40,15 @@ import org.springframework.stereotype.Service;
 class LearningPathRegistry {
 	
 	private static final String UNSUPPORTED_LEARNING_PATH_TYPE = UnsupportedLearningPathNodeHandler.NODE_TYPE;
-	private static final String DEFAULT_OBLIGATION_EVALUATOR_NODE_TYPE = ConfigNodeObligationEvaluatorProvider.NODE_TYPE;
-	private static final String DEFAULT_LINEAR_STATUS_EVALUATOR_NODE_TYPE = DefaultNodeLinearStatusEvaluatorProvider.NODE_TYPE;
-	private static final String DEFAULT_DURATION_EVALUATOR_NODE_TYPE = ConfigNodeDurationEvaluatorProvider.NODE_TYPE;
 
 	@Autowired
 	private List<LearningPathNodeHandler> learningPathNodeHandlers;
 	private Map<String, LearningPathNodeHandler> nodeTypeToLearningPathNodeHandlers;
 	private LearningPathNodeHandler nonLearningPathNodeHandler;
-
-	@Autowired
-	private List<NodeObligationEvaluatorProvider> nodeObligationEvaluatorProviders;
-	private Map<String, ObligationEvaluator> nodeTypeToObligationEvaluator;
-
-	@Autowired
-	private List<NodeLinearStatusEvaluatorProvider> nodeLinearStatusEvaluatorProviders;
-	private Map<String, StatusEvaluator> nodeTypeToLinearStatusEvaluator;
-	
-	@Autowired
-	private List<NodeDurationEvaluatorProvider> nodeDurationEvaluatorProviders;
-	private Map<String, DurationEvaluator> nodeTypeToDurationEvaluator;
 	
 	@PostConstruct
 	void initProviders() {
 		initLearningPathHandlers();
-		initObligationEvaluator();
-		initLinearStatusEvaluator();
-		initDurationEvaluator();
 	}
 
 	private void initLearningPathHandlers() {
@@ -89,27 +59,6 @@ class LearningPathRegistry {
 			} else {
 				nodeTypeToLearningPathNodeHandlers.put(handler.acceptCourseNodeType(), handler);
 			}
-		}
-	}
-
-	private void initObligationEvaluator() {
-		nodeTypeToObligationEvaluator = new HashMap<>();
-		for (NodeObligationEvaluatorProvider provider : nodeObligationEvaluatorProviders) {
-			nodeTypeToObligationEvaluator.put(provider.acceptCourseNodeType(), provider.getObligationEvaluator());
-		}
-	}
-
-	private void initLinearStatusEvaluator() {
-		nodeTypeToLinearStatusEvaluator = new HashMap<>();
-		for (NodeLinearStatusEvaluatorProvider provider : nodeLinearStatusEvaluatorProviders) {
-			nodeTypeToLinearStatusEvaluator.put(provider.acceptCourseNodeType(), provider.getStatusEvaluator());
-		}
-	}
-	
-	private void initDurationEvaluator() {
-		nodeTypeToDurationEvaluator = new HashMap<>();
-		for (NodeDurationEvaluatorProvider provider : nodeDurationEvaluatorProviders) {
-			nodeTypeToDurationEvaluator.put(provider.acceptCourseNodeType(), provider.getDurationEvaluator());
 		}
 	}
 
@@ -124,35 +73,4 @@ class LearningPathRegistry {
 	LearningPathNodeHandler getLearningPathNodeHandler(CourseNode courseNode) {
 		return getLearningPathNodeHandler(courseNode.getType());
 	}
-
-	ObligationEvaluatorProvider getObligationEvaluatorProvider() {
-		return (node) -> {
-			ObligationEvaluator evaluator = nodeTypeToObligationEvaluator.get(node.getType());
-			if (evaluator == null) {
-				evaluator = nodeTypeToObligationEvaluator.get(DEFAULT_OBLIGATION_EVALUATOR_NODE_TYPE);
-			}
-			return evaluator;
-		};
-	}
-
-	StatusEvaluatorProvider getLinearStatusEvaluatorProvider() {
-		return (node) -> {
-			StatusEvaluator evaluator = nodeTypeToLinearStatusEvaluator.get(node.getType());
-			if (evaluator == null) {
-				evaluator = nodeTypeToLinearStatusEvaluator.get(DEFAULT_LINEAR_STATUS_EVALUATOR_NODE_TYPE);
-			}
-			return evaluator;
-		};
-	}
-
-	DurationEvaluatorProvider getDurationEvaluatorProvider() {
-		return (node) -> {
-			DurationEvaluator evaluator = nodeTypeToDurationEvaluator.get(node.getType());
-			if (evaluator == null) {
-				evaluator = nodeTypeToDurationEvaluator.get(DEFAULT_DURATION_EVALUATOR_NODE_TYPE);
-			}
-			return evaluator;
-		};
-	}
-
 }

@@ -24,6 +24,7 @@ import java.util.Date;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
@@ -36,6 +37,8 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	
 	public static final AssessmentEvaluation EMPTY_EVAL = new AssessmentEvaluation((Float)null, (Boolean)null);
 	
+	private final Integer duration;
+	private final AssessmentObligation obligation;
 	private final Integer attempts;
 	private final String comment;
 	private final String coachComment;
@@ -55,17 +58,17 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, null, null, fullyAssessed, null, null, assessmentID, null, null, -1, null, null, null, null);
+		this(score, passed, null, null, null, fullyAssessed, null, null, assessmentID, null, null, -1, null, null, null, null, null, null);
 	}
 	
 	public AssessmentEvaluation(Date lastModified, Date lastUserModified, Date lastCoachModified) {
-		this(null, null, null, null, null, null, null, null, null, null, null, -1, lastModified, lastUserModified, lastCoachModified, null);
+		this(null, null, null, null, null, null, null, null, null, null, null, -1, lastModified, lastUserModified, lastCoachModified, null, null, null);
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Integer attempts, AssessmentEntryStatus assessmentStatus, Boolean userVisibility,
 			Boolean fullyAssessed, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID,
 			String comment, String coachComment, int numOfAssessmentDocs,
-			Date lastModified, Date lastUserModified, Date lastCoachModified, Date assessmentDone) {
+			Date lastModified, Date lastUserModified, Date lastCoachModified, Date assessmentDone, AssessmentObligation obligation, Integer duration) {
 		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, currentRunCompletion, runStatus, assessmentID);
 		this.attempts = attempts;
 		this.comment = comment;
@@ -75,6 +78,8 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		this.lastUserModified = lastUserModified;
 		this.lastCoachModified = lastCoachModified;
 		this.assessmentDone = assessmentDone;
+		this.obligation = obligation;
+		this.duration = duration;
 	}
 	
 	/**
@@ -85,9 +90,18 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	 */
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
 		this(eval.getScore(), eval.getPassed(), eval.getAttempts(), assessmentStatus, eval.getUserVisible(),
-				eval.getFullyAssessed(), eval.getCurrentRunCompletion(), eval.getCurrentRunStatus(),  eval.getAssessmentID(),
-				eval.getComment(), eval.getCoachComment(), -1,
-				eval.getLastModified(), eval.getLastUserModified(), eval.getLastCoachModified(), eval.getAssessmentDone());
+				eval.getFullyAssessed(), eval.getCurrentRunCompletion(), eval.getCurrentRunStatus(),
+				eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1, eval.getLastModified(),
+				eval.getLastUserModified(), eval.getLastCoachModified(), eval.getAssessmentDone(), eval.getObligation(),
+				eval.getDuration());
+	}
+
+	public Integer getDuration() {
+		return duration;
+	}
+
+	public AssessmentObligation getObligation() {
+		return obligation;
 	}
 
 	public Integer getAttempts() {
@@ -155,8 +169,9 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		}
 		
 		return new AssessmentEvaluation(score, passed, attempts, entry.getAssessmentStatus(), entry.getUserVisibility(),
-				entry.getFullyAssessed(), currentRunCompletion, runStatus, entry.getAssessmentId(),
-				comment, entry.getCoachComment(), entry.getNumberOfAssessmentDocuments(),
-				entry.getLastModified(), entry.getLastUserModified(), entry.getLastCoachModified(), entry.getAssessmentDone());
+				entry.getFullyAssessed(), currentRunCompletion, runStatus, entry.getAssessmentId(), comment,
+				entry.getCoachComment(), entry.getNumberOfAssessmentDocuments(), entry.getLastModified(),
+				entry.getLastUserModified(), entry.getLastCoachModified(), entry.getAssessmentDone(),
+				entry.getObligation(), entry.getDuration());
 	}
 }

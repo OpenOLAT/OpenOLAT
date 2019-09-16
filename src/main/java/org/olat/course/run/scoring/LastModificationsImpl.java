@@ -17,24 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath.evaluation;
+package org.olat.course.run.scoring;
 
-import org.olat.course.nodes.CourseNodeProvider;
+import java.util.Date;
+
+import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
 
 /**
- * * Interface to provide an individual
- * {@link org.olat.course.learningpath.evaluation.ObligationEvaluator} for a
- * course node to use it in a learning path. If a node does not implement this
- * interface, the
- * {@link org.olat.course.learningpath.evaluation.ConfigObligationEvaluator} is
- * used.
  * 
- * Initial date: 1 Sep 2019<br>
- * 
+ * Initial date: 18 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface NodeObligationEvaluatorProvider extends CourseNodeProvider {
-	
-	public ObligationEvaluator getObligationEvaluator();
+class LastModificationsImpl implements LastModifications {
+
+	private final Date lastUserModified;
+	private final Date lastCoachModified;
+
+	LastModificationsImpl(Date lastUserModified, Date lastCoachModified) {
+		this.lastUserModified = lastUserModified;
+		this.lastCoachModified = lastCoachModified;
+	}
+
+	@Override
+	public Date getLastUserModified() {
+		return lastUserModified;
+	}
+
+	@Override
+	public Date getLastCoachModified() {
+		return lastCoachModified;
+	}
+
 }

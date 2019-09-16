@@ -41,6 +41,7 @@ import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentAccounting;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -90,7 +91,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 			Boolean coach, Boolean admin, Boolean participant, Boolean courseReadOnly) {
 		this.courseEnvironment = courseEnvironment;
 		this.identityEnvironment = identityEnvironment;
-		this.scoreAccounting = new ScoreAccounting(this);
+		this.scoreAccounting = new AssessmentAccounting(this);
 		this.conditionInterpreter = new ConditionInterpreter(this);
 		this.coachedGroups = coachedGroups;
 		this.participatingGroups = participatingGroups;

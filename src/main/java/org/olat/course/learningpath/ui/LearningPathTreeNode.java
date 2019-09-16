@@ -22,9 +22,9 @@ package org.olat.course.learningpath.ui;
 import java.util.Date;
 
 import org.olat.core.gui.components.tree.GenericTreeNode;
-import org.olat.course.learningpath.LearningPathObligation;
-import org.olat.course.learningpath.LearningPathStatus;
 import org.olat.course.nodes.CourseNode;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -38,8 +38,8 @@ public class LearningPathTreeNode extends GenericTreeNode {
 	
 	private final CourseNode courseNode;
 	private final int recursionLevel;
-	private LearningPathStatus status;
-	private LearningPathObligation obligation;
+	private AssessmentEntryStatus status;
+	private AssessmentObligation obligation;
 	private Date dateDone;
 	private Integer duration;
 	private Integer progress;
@@ -52,19 +52,19 @@ public class LearningPathTreeNode extends GenericTreeNode {
 		}
 	}
 
-	public LearningPathStatus getStatus() {
+	public AssessmentEntryStatus getStatus() {
 		return status;
 	}
 
-	public void setStatus(LearningPathStatus status) {
+	public void setStatus(AssessmentEntryStatus status) {
 		this.status = status;
 	}
 
-	public LearningPathObligation getObligation() {
+	public AssessmentObligation getObligation() {
 		return obligation;
 	}
 
-	public void setObligation(LearningPathObligation obligation) {
+	public void setObligation(AssessmentObligation obligation) {
 		this.obligation = obligation;
 	}
 

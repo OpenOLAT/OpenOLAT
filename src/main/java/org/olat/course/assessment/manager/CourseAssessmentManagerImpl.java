@@ -78,6 +78,8 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Objects;
+
 /**
  * 
  * Initial date: 20.07.2015<br>
@@ -425,16 +427,28 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
-	public void updateAssessmentStatus(CourseNode courseNode, Identity assessedIdentity, AssessmentEntryStatus status,
-			Role by) {
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
-		if(by == Role.coach) {
+	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Boolean fullyAssessed,
+			AssessmentEntryStatus status, Role by) {
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity , courseNode);
+		if (Objects.equal(fullyAssessed, nodeAssessment.getFullyAssessed())) {
+			// Fully assess can only set once to true
+			return;
+		}
+		
+		if (by == Role.coach) {
 			nodeAssessment.setLastCoachModified(new Date());
-		} else if(by == Role.user) {
+		} else if (by == Role.user) {
 			nodeAssessment.setLastUserModified(new Date());
 		}
 		nodeAssessment.setAssessmentStatus(status);
+		nodeAssessment.setFullyAssessed(fullyAssessed);
+		
 		assessmentService.updateAssessmentEntry(nodeAssessment);
+		DBFactory.getInstance().commit();
+		
+		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+		scoreAccounting.evaluateAll(true);
 		DBFactory.getInstance().commit();
 	}
 
