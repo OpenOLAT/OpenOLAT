@@ -27,6 +27,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
@@ -74,7 +75,7 @@ import org.olat.resource.OLATResource;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class CourseExportMediaResource implements MediaResource {
+public class CourseExportMediaResource implements MediaResource, StreamingOutput {
 	
 	private static Logger log = Tracing.createLoggerFor(CourseExportMediaResource.class);
 	
@@ -112,6 +113,15 @@ public class CourseExportMediaResource implements MediaResource {
 	@Override
 	public Long getLastModified() {
 		return null;
+	}
+
+	@Override
+	public void write(OutputStream output) throws IOException {
+		try(ZipOutputStream zout = new ZipOutputStream(output)) {
+			exportCourseToZIP(resource, zout);
+		} catch (Exception e) {
+			log.error("", e);
+		}
 	}
 
 	@Override
