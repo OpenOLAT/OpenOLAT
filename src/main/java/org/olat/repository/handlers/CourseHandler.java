@@ -50,7 +50,6 @@ import org.olat.core.gui.control.generic.layout.MainLayoutController;
 import org.olat.core.gui.control.generic.wizard.Step;
 import org.olat.core.gui.control.generic.wizard.StepRunnerCallback;
 import org.olat.core.gui.control.generic.wizard.StepsMainRunController;
-import org.olat.core.gui.media.CleanupAfterDeliveryFileMediaResource;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
@@ -62,7 +61,6 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.PathUtils;
-import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
@@ -85,6 +83,7 @@ import org.olat.course.Structure;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.CourseAccessAndProperties;
 import org.olat.course.export.CourseEnvironmentMapper;
+import org.olat.course.export.CourseExportMediaResource;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.groupsandrights.PersistingCourseGroupManager;
 import org.olat.course.run.CourseRuntimeController;
@@ -461,7 +460,7 @@ public class CourseHandler implements RepositoryHandler {
 			
 		File fExportDir = new File(WebappHelper.getTmpDir(), UUID.randomUUID().toString());
 		fExportDir.mkdirs();
-		sourceCgm.exportCourseBusinessGroups(fExportDir, env, false);
+		sourceCgm.exportCourseBusinessGroups(fExportDir, env);
 
 		ICourse course = CourseFactory.loadCourse(target);
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
@@ -546,11 +545,7 @@ public class CourseHandler implements RepositoryHandler {
 
 	@Override
 	public MediaResource getAsMediaResource(OLATResourceable res) {
-		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(res, true);
-		String exportFileName = StringHelper.transformDisplayNameToFileSystemName(re.getDisplayname()) + ".zip";
-		File fExportZIP = new File(WebappHelper.getTmpDir(), exportFileName);
-		CourseFactory.exportCourseToZIP(res, fExportZIP, false);
-		return new CleanupAfterDeliveryFileMediaResource(fExportZIP);
+		return new CourseExportMediaResource(res);
 	}
 	
 	@Override

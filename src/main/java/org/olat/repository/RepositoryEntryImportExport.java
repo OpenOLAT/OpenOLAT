@@ -41,6 +41,7 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -48,10 +49,10 @@ import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.ZipUtil;
 import org.olat.core.util.io.HttpServletResponseOutputStream;
 import org.olat.core.util.io.ShieldOutputStream;
 import org.olat.core.util.vfs.LocalFileImpl;
@@ -141,6 +142,39 @@ public class RepositoryEntryImportExport {
 		exportDoExportProperties();
 		return exportDoExportContent();
 	}
+	
+	public boolean exportDoExport(String zipPath, ZipOutputStream zout) {
+		exportDoExportProperties(zipPath, zout);
+		return exportDoExportContent(zipPath, zout);
+	}
+	
+	public void exportDoExportProperties(String zipPath, ZipOutputStream zout) {
+		// save repository entry properties
+		RepositoryEntryImport imp = new RepositoryEntryImport(re);
+		RepositoryManager rm = RepositoryManager.getInstance();
+		VFSLeaf image = rm.getImage(re);
+		if(image instanceof LocalFileImpl) {
+			imp.setImageName(image.getName());
+			ZipUtil.addFileToZip(ZipUtil.concat(zipPath, image.getName()) , ((LocalFileImpl)image).getBasefile(), zout);
+		}
+
+		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
+		VFSLeaf movie = repositoryService.getIntroductionMovie(re);
+		if(movie instanceof LocalFileImpl) {
+			imp.setMovieName(movie.getName());
+			ZipUtil.addFileToZip(ZipUtil.concat(zipPath, movie.getName()), ((LocalFileImpl)movie).getBasefile(), zout);
+		}
+		
+		try(ShieldOutputStream fOut = new ShieldOutputStream(zout)) {
+			addLicenseInformations(imp, re);
+			zout.putNextEntry(new ZipEntry(ZipUtil.concat(zipPath, PROPERTIES_FILE)));
+			xstream.toXML(imp, fOut);
+			zout.closeEntry();
+		} catch (IOException ioe) {
+			throw new OLATRuntimeException("Error writing repo properties.", ioe);
+		}
+	}
+	
 	/**
 	 * Export metadata of a repository entry to a file.
 	 * Only one repository entry's metadata may be exported into a directory. The
@@ -184,45 +218,6 @@ public class RepositoryEntryImportExport {
 		}
 	}
 
-	public void exportDoExportProperties(ZipOutputStream zout) throws IOException {
-		RepositoryEntryImport imp = new RepositoryEntryImport(re);
-		RepositoryManager rm = RepositoryManager.getInstance();
-		VFSLeaf image = rm.getImage(re);
-		if(image != null) {
-			imp.setImageName(image.getName());
-			zout.putNextEntry(new ZipEntry(image.getName()));
-			try(InputStream inImage=image.getInputStream();
-					OutputStream out = new ShieldOutputStream(zout)) {
-				FileUtils.copy(inImage, out);
-			} catch(Exception e) {
-				log.error("", e);
-			}
-			zout.closeEntry();
-		}
-
-		RepositoryService repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
-		VFSLeaf movie = repositoryService.getIntroductionMovie(re);
-		if(movie != null) {
-			imp.setMovieName(movie.getName());
-			zout.putNextEntry(new ZipEntry(movie.getName()));
-			try(InputStream inMovie=movie.getInputStream();
-					OutputStream out=new ShieldOutputStream(zout)) {
-				FileUtils.copy(inMovie, out);
-			} catch(Exception e) {
-				log.error("", e);
-			}
-			zout.closeEntry();
-		}
-		
-		zout.putNextEntry(new ZipEntry(PROPERTIES_FILE));
-		try(OutputStream out=new ShieldOutputStream(zout)) {
-			xstream.toXML(imp, out);
-		} catch(IOException e) {
-			log.error("", e);
-		}
-		zout.closeEntry();
-	}
-
 	/**
 	 * Export a repository entry referenced by a course node to the given export directory.
 	 * User importReferencedRepositoryEntry to import again.
@@ -242,6 +237,29 @@ public class RepositoryEntryImportExport {
 				IOUtils.copy(in, fOut);
 			}
 			fOut.flush();
+		} catch (IOException fnfe) {
+			return false;
+		} finally {
+			mr.release();
+		}
+		return true;
+	}
+	
+	public boolean exportDoExportContent(String zipPath, ZipOutputStream zout) {
+		// export resource
+		RepositoryHandler rh = RepositoryHandlerFactory.getInstance().getRepositoryHandler(re);
+		MediaResource mr = rh.getAsMediaResource(re.getOlatResource());
+		try(OutputStream fOut = new ShieldOutputStream(zout);
+				InputStream in = mr.getInputStream()) {
+			zout.putNextEntry(new ZipEntry(ZipUtil.concat(zipPath, CONTENT_FILE)));
+			if(in == null) {
+				HttpServletResponse hres = new HttpServletResponseOutputStream(fOut);
+				mr.prepare(hres);	
+			} else {
+				IOUtils.copy(in, fOut);
+			}
+			fOut.flush();
+			zout.closeEntry();
 		} catch (IOException fnfe) {
 			return false;
 		} finally {

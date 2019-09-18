@@ -29,20 +29,16 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.core.CoreSpringFactory;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.FileUtils;
-import org.olat.core.util.ZipUtil;
 import org.olat.core.util.nodes.INode;
-import org.olat.core.util.tree.TreeVisitor;
 import org.olat.core.util.tree.Visitor;
 import org.olat.core.util.vfs.LocalFolderImpl;
 import org.olat.core.util.vfs.VFSContainer;
@@ -63,11 +59,7 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.environment.CourseEnvironmentImpl;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.course.tree.CourseEditorTreeNode;
-import org.olat.modules.glossary.GlossaryManager;
-import org.olat.modules.reminder.ReminderService;
-import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryEntryImportExport;
 import org.olat.repository.RepositoryManager;
 import org.olat.resource.OLATResource;
 
@@ -90,9 +82,9 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 
 	public static final String COURSE_ROOT_DIR_NAME = "course";
 	
-	private static final String EDITORTREEMODEL_XML = "editortreemodel.xml";
-	private static final String RUNSTRUCTURE_XML = "runstructure.xml";
-	private static final String ORES_TYPE_NAME = CourseModule.getCourseTypeName();
+	public static final String EDITORTREEMODEL_XML = "editortreemodel.xml";
+	public static final String RUNSTRUCTURE_XML = "runstructure.xml";
+	public static final String ORES_TYPE_NAME = CourseModule.getCourseTypeName();
 	public static final String COURSEFOLDER = "coursefolder";
 
 	private Long resourceableId;
@@ -260,7 +252,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	/**
 	 * @return The directory "coursefolder" or storage folder of the course
 	 */
-	protected File getIsolatedCourseBaseFolder() {
+	public File getIsolatedCourseBaseFolder() {
 		// create local course folder
 		return VFSManager.olatRootDirectory(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER);
 	}
@@ -268,7 +260,7 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	/**
 	 * @return The directory "coursefolder" or storage folder of the course
 	 */
-	protected VFSContainer getIsolatedCourseBaseContainer() {
+	public VFSContainer getIsolatedCourseBaseContainer() {
 		// create local course folder
 		return VFSManager.olatRootContainer(courseRootContainer.getRelPath() + File.separator + COURSEFOLDER, null);
 	}
@@ -287,107 +279,6 @@ public class PersistingCourseImpl implements ICourse, OLATResourceable, Serializ
 	void saveEditorTreeModel() {
 		writeObject(EDITORTREEMODEL_XML, getEditorTreeModel());
 		log.debug("saveEditorTreeModel");
-	}
-
-	/**
-	 * @see org.olat.course.ICourse#exportToFilesystem(java.io.File)
-	 * <p>
-	 * See OLAT-5368: Course Export can take longer than say 2min.
-	 * <p>
-	 */
-	@Override
-	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory, boolean runtimeDatas) {
-		long s = System.currentTimeMillis();
-		log.info("exportToFilesystem: exporting course "+this+" to "+exportDirectory+"...");
-		File fCourseBase = getCourseBaseContainer().getBasefile();
-		//make the folder structure
-		File fExportedDataDir = new File(exportDirectory, EXPORTED_DATA_FOLDERNAME);
-		fExportedDataDir.mkdirs();
-
-		//export course config
-		FileUtils.copyFileToDir(new File(fCourseBase, CourseConfigManager.COURSECONFIG_XML), exportDirectory, "course export courseconfig");
-		
-		//export business groups
-		CourseEnvironmentMapper envMapper = getCourseEnvironment().getCourseGroupManager().getBusinessGroupEnvironment();
-
-		getCourseEnvironment().getCourseGroupManager().exportCourseBusinessGroups(fExportedDataDir, envMapper, runtimeDatas);
-		// export editor structure
-		FileUtils.copyFileToDir(new File(fCourseBase, EDITORTREEMODEL_XML), exportDirectory, "course export exitortreemodel");
-		// export run structure
-		FileUtils.copyFileToDir(new File(fCourseBase, RUNSTRUCTURE_XML), exportDirectory, "course export runstructure");
-
-		// export layout and media folder
-		FileUtils.copyDirToDir(new File(fCourseBase, "layout"), exportDirectory, "course export layout folder");
-		FileUtils.copyDirToDir(new File(fCourseBase, "media"), exportDirectory, "course export media folder");
-		// export course folder
-		File fExportedCoursefolderZip = new File(exportDirectory, "oocoursefolder.zip");
-		File courseFolder = getIsolatedCourseBaseFolder();
-		ZipUtil.zipAll(courseFolder, fExportedCoursefolderZip);
-
-		// export any node data
-		log.info("exportToFilesystem: exporting course "+this+": exporting all nodes...");
-		Visitor visitor = new NodeExportVisitor(fExportedDataDir, this);
-		TreeVisitor tv = new TreeVisitor(visitor, getEditorTreeModel().getRootNode(), true);
-		tv.visitAll();
-		log.info("exportToFilesystem: exporting course "+this+": exporting all nodes...done.");
-		
-		// Do intermediate commit to avoid transaction timeout
-		DBFactory.getInstance().intermediateCommit();
-
-		// export shared folder
-		CourseConfig config = getCourseConfig();
-		if (config.hasCustomSharedFolder()) {
-			log.info("exportToFilesystem: exporting course "+this+": shared folder...");
-			if (!SharedFolderManager.getInstance().exportSharedFolder(
-					config.getSharedFolderSoftkey(), fExportedDataDir)) {
-				// export failed, delete reference to shared folder in the course config
-				log.info("exportToFilesystem: exporting course "+this+": export of shared folder failed.");
-				config.setSharedFolderSoftkey(CourseConfig.VALUE_EMPTY_SHAREDFOLDER_SOFTKEY);
-				CoreSpringFactory.getImpl(CourseConfigManager.class).saveConfigTo(this, config);
-			}
-			log.info("exportToFilesystem: exporting course "+this+": shared folder...done.");
-		}
-		
-		// Do intermediate commit to avoid transaction timeout
-		DBFactory.getInstance().intermediateCommit();
-
-		// export glossary
-		if (config.hasGlossary()) {
-			log.info("exportToFilesystem: exporting course "+this+": glossary...");
-			final GlossaryManager glossaryManager = CoreSpringFactory.getImpl(GlossaryManager.class);
-			final CourseConfigManager courseConfigManager = CoreSpringFactory.getImpl(CourseConfigManager.class);
-			if (!glossaryManager.exportGlossary(
-					config.getGlossarySoftKey(), fExportedDataDir)) {
-				// export failed, delete reference to glossary in the course config
-				log.info("exportToFilesystem: exporting course "+this+": export of glossary failed.");
-				config.setGlossarySoftKey(null);
-				courseConfigManager.saveConfigTo(this, config);
-			}
-			log.info("exportToFilesystem: exporting course "+this+": glossary...done.");
-		}
-		
-		// Do intermediate commit to avoid transaction timeout
-		DBFactory.getInstance().intermediateCommit();
-
-		log.info("exportToFilesystem: exporting course "+this+": configuration and repo data...");
-		// export configuration file
-		FileUtils.copyFileToDir(new File(fCourseBase, CourseConfigManager.COURSECONFIG_XML), exportDirectory, "course export configuration and repo info");
-		
-		// export repo metadata
-		RepositoryManager rm = RepositoryManager.getInstance();
-		RepositoryEntry myRE = rm.lookupRepositoryEntry(this, true);
-		RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(myRE, fExportedDataDir);
-		importExport.exportDoExportProperties();
-		
-		// Do intermediate commit to avoid transaction timeout
-		DBFactory.getInstance().intermediateCommit();
-		
-		//export reminders
-		CoreSpringFactory.getImpl(ReminderService.class)
-			.exportReminders(myRE, fExportedDataDir);
-
-		log.info("exportToFilesystem: exporting course "+this+" to "+exportDirectory+" done.");
-		log.info("finished export course '"+getCourseTitle()+"' in t="+Long.toString(System.currentTimeMillis()-s));
 	}
 	
 	@Override
@@ -613,35 +504,4 @@ class NodePostCopyVisitor implements Visitor {
 			((CourseNode)node).postCopy(envMapper, processType, course, sourceCourse);
 		}
 	}
-}
-
-class NodeExportVisitor implements Visitor {
-
-	private File exportDirectory;
-	private ICourse course;
-
-	/**
-	 * Constructor of the node deletion visitor
-	 * 
-	 * @param exportDirectory
-	 * @param course
-	 */
-	public NodeExportVisitor(File exportDirectory, ICourse course) {
-		this.exportDirectory = exportDirectory;
-		this.course = course;
-	}
-
-	/**
-	 * Visitor pattern to delete the course nodes
-	 * 
-	 * @see org.olat.core.util.tree.Visitor#visit(org.olat.core.util.nodes.INode)
-	 */
-	@Override
-	public void visit(INode node) {
-		CourseEditorTreeNode cNode = (CourseEditorTreeNode) node;
-		cNode.getCourseNode().exportNode(exportDirectory, course);
-		// Do frequent intermediate commits to avoid transaction timeout
-		DBFactory.getInstance().intermediateCommit();
-	}
-
 }
