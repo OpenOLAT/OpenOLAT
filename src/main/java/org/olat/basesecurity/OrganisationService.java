@@ -94,6 +94,12 @@ public interface OrganisationService {
 	public List<Organisation> getOrganisations();
 	
 	/**
+	 * 
+	 * @return true if an other organisation as the default is available
+	 */
+	public boolean isMultiOrganisations();
+	
+	/**
 	 * Search the organisations by status.
 	 * 
 	 * @param status The status (mandatory)
