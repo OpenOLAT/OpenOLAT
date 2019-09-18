@@ -21,7 +21,6 @@ package org.olat.modules.reminder.manager;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.ParseException;
@@ -31,13 +30,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.velocity.VelocityContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -173,19 +172,17 @@ public class ReminderServiceImpl implements ReminderService {
 	}
 	
 	@Override
-	public void exportReminders(RepositoryEntry entry, File fExportedDataDir) {
+	public void exportReminders(RepositoryEntryRef entry, OutputStream fOut) {
 		List<Reminder> reminders = reminderDao.getReminders(entry);
-		if(reminders.size() > 0) {
-			try (OutputStream fOut = new FileOutputStream(new File(fExportedDataDir, REMINDERS_XML))) {
-				ImportExportReminders exportReminders = new ImportExportReminders();
-				for(Reminder reminder:reminders) {
-					ImportExportReminder exportReminder = new ImportExportReminder(reminder);
-					exportReminders.getReminders().add(exportReminder);
-				}
-				ReminderRulesXStream.toXML(exportReminders, fOut);
-			} catch(Exception e) {
-				log.error("", e);
+		try {
+			ImportExportReminders exportReminders = new ImportExportReminders();
+			for(Reminder reminder:reminders) {
+				ImportExportReminder exportReminder = new ImportExportReminder(reminder);
+				exportReminders.getReminders().add(exportReminder);
 			}
+			ReminderRulesXStream.toXML(exportReminders, fOut);
+		} catch(Exception e) {
+			log.error("", e);
 		}
 	}
 

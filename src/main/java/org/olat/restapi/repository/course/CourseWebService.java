@@ -45,6 +45,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -452,7 +453,12 @@ public class CourseWebService {
 				MediaResource mr = typeToDownload.getAsMediaResource(ores);
 				if (mr != null) {
 					repositoryService.incrementDownloadCounter(re);
-					return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
+					if(mr instanceof StreamingOutput) {
+						return Response.ok(mr).cacheControl(cc).build(); // success
+					} else {
+					
+						return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
+					}
 				} else {
 					return Response.serverError().status(Status.NO_CONTENT).build();
 				}

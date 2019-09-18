@@ -183,6 +183,16 @@ public class OrganisationDAO {
 				.getResultList();
 	}
 	
+	public long count(OrganisationStatus[] status) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select count(org.key) from organisation org")
+		  .append(" where org.status ").in(status);
+		List<Long> count = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.getResultList();
+		return count == null || count.isEmpty() || count.get(0) == null ? 0 : count.get(0).longValue();
+	}
+	
 	public List<OrganisationMember> getMembers(OrganisationRef organisation, SearchMemberParameters params) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select ident, membership.role, membership.inheritanceModeString from organisation org")

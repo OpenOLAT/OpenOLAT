@@ -33,6 +33,7 @@ import org.olat.admin.sysinfo.manager.SessionStatsManager;
 import org.olat.admin.sysinfo.model.SessionsStats;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.UserSession;
@@ -259,6 +260,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		long countGroups = bgs.countBusinessGroups(null, null);
+		DBFactory.getInstance().commitAndCloseSession();
 		stats.setTotalGroupCount(countGroups);
 		return stats;
 	}
@@ -268,6 +270,7 @@ public class OpenOLATStatisticsWebService implements Sampler {
 		RepositoryManager repoMgr = CoreSpringFactory.getImpl(RepositoryManager.class);
 		int allCourses = repoMgr.countByType(CourseModule.ORES_TYPE_COURSE);
 		int publishedCourses = repoMgr.countPublished(CourseModule.ORES_TYPE_COURSE);
+		DBFactory.getInstance().commitAndCloseSession();
 		stats.setCoursesCount(allCourses);
 		stats.setPublishedCoursesCount(publishedCourses);
 		return stats;
