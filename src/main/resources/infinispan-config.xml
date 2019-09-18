@@ -5,7 +5,9 @@
 
 	<cache-container name="NonTransactionalCacheManager" default-cache="default">
 		<jmx duplicate-domains="true" />
-		<local-cache name="default" />
+		<local-cache name="default">
+			<expiration max-idle="300000" interval="5000" lifespan="5" />
+		</local-cache>
 
 		<local-cache name="MapperService@mapper" simple-cache="true" statistics="true" statistics-available="true">
 			<locking isolation="READ_COMMITTED" concurrency-level="1000" acquire-timeout="15000" striping="false" />
@@ -13,7 +15,7 @@
 			<memory>
 				<object size="10000" strategy="REMOVE"/>
 			</memory>
-			<expiration max-idle="300000" interval="5000" />
+			<expiration max-idle="300000" interval="5000"  lifespan="5"  />
 		</local-cache>
 
 		<local-cache name="OpenMeetingsManager@session" simple-cache="true" statistics="true" statistics-available="true">
@@ -22,7 +24,7 @@
 			<memory>
 				<object size="10000"  strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="300000" interval="5000" />
+			<expiration max-idle="300000" interval="5000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="UserSessionManager@usersession" simple-cache="true" statistics="true" statistics-available="true">
@@ -31,7 +33,7 @@
 			<memory>
 				<object strategy="NONE" />
 			</memory>
-			<expiration max-idle="1" interval="5000" />
+			<expiration max-idle="1" interval="5000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="VFSLockManager@lock-nulls" simple-cache="true" statistics="true" statistics-available="true">
@@ -40,7 +42,7 @@
 			<memory>
 				<object size="50000"  strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="21600000" interval="5000" />
+			<expiration max-idle="21600000" interval="5000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="VFSLockManager@file-locks" simple-cache="true" statistics="true" statistics-available="true">
@@ -49,7 +51,7 @@
 			<memory>
 				<object size="50000"  strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="21600000" interval="5000" />
+			<expiration max-idle="21600000" interval="5000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="CalendarManager@calendar" simple-cache="true" statistics="true" statistics-available="true">
@@ -58,7 +60,7 @@
 			<memory>
 				<object size="500"  strategy="REMOVE"/>
 			</memory>
-			<expiration max-idle="900000" interval="5000" />
+			<expiration max-idle="900000" interval="5000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="AssessmentManager@newpersisting" simple-cache="true" statistics="true" statistics-available="true">
@@ -67,7 +69,7 @@
 			<memory>
 				<object size="20000" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="900000" interval="5000" />
+			<expiration max-idle="900000" interval="5000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="QTIHelper@QTI_xml_Documents" simple-cache="true" statistics="true" statistics-available="true">
@@ -76,7 +78,7 @@
 			<memory>
 				<object size="200" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="180000" interval="15000" />
+			<expiration max-idle="180000" interval="15000"   lifespan="5" />
 		</local-cache>
 		
 		<local-cache name="WebDAVManager@webdav" simple-cache="true" statistics="true" statistics-available="true">
@@ -85,7 +87,7 @@
 			<memory>
 				<object size="2013" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="300000" interval="5000" />
+			<expiration max-idle="300000" interval="5000"  lifespan="5"  />
 			<!-- max-idle same as session time out for WebDAV session in UserSessionManager -->
 		</local-cache>
 		
@@ -95,7 +97,7 @@
 			<memory>
 				<object size="20000" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="2700000" interval="15000" />
+			<expiration max-idle="2700000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="UserManager@userfullname" simple-cache="true" statistics="true" statistics-available="true">
@@ -104,7 +106,7 @@
 			<memory>
 				<object size="20000" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="2700000" interval="15000" />
+			<expiration max-idle="2700000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="Velocity@templates" simple-cache="true" statistics="true" statistics-available="true">
@@ -113,7 +115,7 @@
 			<memory>
 				<object size="7700" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="-1" lifespan="-1" interval="-1" />
+			<expiration max-idle="100000" lifespan="1" interval="1" />
 		</local-cache>
 		
 		<local-cache name="LoginModule@blockafterfailedattempts" simple-cache="true" statistics="true" statistics-available="true">
@@ -131,7 +133,7 @@
 			<memory>
 				<object size="2000" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="120000" interval="15000" />
+			<expiration max-idle="120000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="GlossaryItemManager@glossary" simple-cache="true" statistics="true" statistics-available="true">
@@ -140,7 +142,7 @@
 			<memory>
 				<object size="500" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="3600000" interval="15000" />
+			<expiration max-idle="3600000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="WikiManager@wiki" simple-cache="true" statistics="true" statistics-available="true">
@@ -149,7 +151,7 @@
 			<memory>
 				<object size="500" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="3600000" interval="15000" />
+			<expiration max-idle="3600000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="CollaborationToolsFactory@tools" simple-cache="true" statistics="true" statistics-available="true">
@@ -158,7 +160,7 @@
 			<memory>
 				<object size="5000" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="1800000" interval="15000" />
+			<expiration max-idle="1800000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="CourseFactory@courses" simple-cache="true" statistics="true" statistics-available="true">
@@ -167,7 +169,7 @@
 			<memory>
 				<object size="1000" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="3600000" interval="15000" />
+			<expiration max-idle="3600000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="ProjectBrokerManager@pb" simple-cache="true" statistics="true" statistics-available="true">
@@ -176,7 +178,7 @@
 			<memory>
 				<object size="100" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="3600000" interval="15000" />
+			<expiration max-idle="3600000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="Path@feed" simple-cache="true" statistics="true" statistics-available="true">
@@ -185,7 +187,7 @@
 			<memory>
 				<object size="5000" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="900000" interval="15000" />
+			<expiration max-idle="900000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 		<local-cache name="PdfService@delivery" simple-cache="true" statistics="true" statistics-available="true">
@@ -194,7 +196,7 @@
 			<memory>
 				<object size="50000" strategy="REMOVE" />
 			</memory>
-			<expiration max-idle="900000" interval="15000" />
+			<expiration max-idle="900000" interval="15000"  lifespan="5"  />
 		</local-cache>
 		
 	</cache-container>
