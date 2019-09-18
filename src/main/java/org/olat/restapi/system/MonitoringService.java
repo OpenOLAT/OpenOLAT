@@ -22,6 +22,7 @@ package org.olat.restapi.system;
 import org.olat.admin.sysinfo.manager.DatabaseStatsManager;
 import org.olat.admin.sysinfo.model.DatabaseConnectionVO;
 import org.olat.basesecurity.BaseSecurity;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
 import org.olat.course.CourseModule;
 import org.olat.group.BusinessGroupService;
@@ -44,13 +45,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class MonitoringService {
 	
-	private static final int RENEW_RATE = 60 * 60 * 1000;// once an hour
+	private static final int RENEW_RATE =  60 * 1000;// once an hour
 	
 	private long start;
 	private long activeUserCountCached;
 	private long totalGroupCountCached;
 	private long publishedCoursesCached;
 	
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private BaseSecurity securityManager;
 	@Autowired
@@ -79,6 +82,7 @@ public class MonitoringService {
 			activeUserCountCached = securityManager.countIdentitiesByPowerSearch(null, null, false, null, null, null, null, null, null, Identity.STATUS_ACTIV);
 			totalGroupCountCached = businessGroupService.countBusinessGroups(null, null);
 			publishedCoursesCached = repositoryManager.countPublished(CourseModule.ORES_TYPE_COURSE);
+			dbInstance.commitAndCloseSession();
 		}
 		statistics.setActiveUserCount(activeUserCountCached);
 		statistics.setTotalGroupCount(totalGroupCountCached);
@@ -90,6 +94,7 @@ public class MonitoringService {
 			statistics.setActiveConnectionCount(connections.getActiveConnectionCount());
 			statistics.setCurrentConnectionCount(connections.getCurrentConnectionCount());
 		}
+		dbInstance.commitAndCloseSession();
 		return statistics;
 	}
 
