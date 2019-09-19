@@ -78,9 +78,12 @@ public class ADFSProvider implements OAuthSPI {
 
 	@Override
 	public OAuthService getScribeProvider() {
-		return new ServiceBuilder(oauthModule.getAdfsApiKey())
-                .apiSecret(oauthModule.getAdfsApiSecret())
-                .callback(oauthModule.getCallbackUrl())
+		ServiceBuilder serviceBuilder = new ServiceBuilder(oauthModule.getAdfsApiKey());
+		if(StringHelper.containsNonWhitespace(oauthModule.getAdfsApiSecret())) {
+			serviceBuilder = serviceBuilder.apiSecret(oauthModule.getAdfsApiSecret());
+		}
+		return serviceBuilder
+				.callback(oauthModule.getCallbackUrl())
                 .build(new ADFSApi());
 	}
 
