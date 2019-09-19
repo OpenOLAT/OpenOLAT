@@ -458,8 +458,8 @@ public class CourseFactory {
 			// copy course folder
 			VFSContainer sourceCourseContainer = sourceCourse.getIsolatedCourseBaseContainer();
 			if (sourceCourseContainer.exists()) {
-				targetCourse.getIsolatedCourseBaseContainer()
-					.copyContentOf(sourceCourseContainer);
+				VFSContainer targetCourseContainer = targetCourse.getIsolatedCourseBaseContainer();
+				targetCourseContainer.copyContentOf(sourceCourseContainer);
 			}
 
 			// copy folder nodes directories

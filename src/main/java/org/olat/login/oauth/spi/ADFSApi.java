@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.helpers.Settings;
+import org.olat.core.util.StringHelper;
 import org.olat.login.oauth.OAuthLoginModule;
 
 import com.github.scribejava.core.builder.api.DefaultApi20;
@@ -117,7 +118,9 @@ public class ADFSApi extends DefaultApi20 {
 		throws InterruptedException, ExecutionException, IOException {
 			OAuthRequest request = new OAuthRequest(Verb.POST, api.getAccessTokenEndpoint());
 		    request.addBodyParameter(OAuthConstants.CLIENT_ID, getApiKey());
-            request.addBodyParameter(OAuthConstants.CLIENT_SECRET, getApiSecret());
+            if(StringHelper.containsNonWhitespace(getApiSecret())) {
+            	request.addBodyParameter(OAuthConstants.CLIENT_SECRET, getApiSecret());
+            }
             request.addBodyParameter(OAuthConstants.CODE, code);
             request.addBodyParameter(OAuthConstants.REDIRECT_URI, getCallback());
             request.addBodyParameter(GRANT_TYPE, GRANT_TYPE_AUTHORIZATION_CODE);
