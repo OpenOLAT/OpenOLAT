@@ -41,6 +41,7 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
+import org.olat.modules.portfolio.Assignment;
 import org.olat.modules.portfolio.AssignmentStatus;
 import org.olat.modules.portfolio.BinderRef;
 import org.olat.modules.portfolio.Page;
@@ -53,6 +54,7 @@ import org.olat.modules.portfolio.PortfolioService;
 import org.olat.modules.portfolio.Section;
 import org.olat.modules.portfolio.SectionRef;
 import org.olat.modules.portfolio.model.AbstractPart;
+import org.olat.modules.portfolio.model.AssignmentImpl;
 import org.olat.modules.portfolio.model.PageBodyImpl;
 import org.olat.modules.portfolio.model.PageImpl;
 import org.olat.repository.RepositoryEntryRef;
@@ -457,21 +459,37 @@ public class PageDAO {
 		reloadedPage.setLastModified(new Date());
 		reloadedPage.setSection(null);
 		reloadedPage.setPageStatus(PageStatus.deleted);
-		unlinkAssignment(page);
+		
+		List<Assignment> assignments = loadAssignmentsForRemoval(page);
+		for(Assignment assignment:assignments) {
+			Assignment template = assignment.getTemplateReference();
+			if(template != null && template.getSection() != null) {
+				// assignment within a section
+				((AssignmentImpl)assignment).setPage(null);
+				((AssignmentImpl)assignment).setStatus(AssignmentStatus.notStarted.name());
+				dbInstance.getCurrentEntityManager().merge(assignment);
+			} else if(template != null && template.getSection() == null && template.getBinder() != null) {
+				// assignment instance of a binder assignment template
+				dbInstance.getCurrentEntityManager().remove(assignment);
+			}
+		}
+		
 		if(section != null) {
 			dbInstance.getCurrentEntityManager().merge(section);
 		}
 		return dbInstance.getCurrentEntityManager().merge(reloadedPage);
 	}
 	
-	public int unlinkAssignment(Page page) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("update pfassignment assignment set assignment.page.key=null, assignment.status=:status where assignment.page.key=:pageKey");
+	private List<Assignment> loadAssignmentsForRemoval(Page page) {
+		StringBuilder sb = new StringBuilder(512);
+		sb.append("select assignment from pfassignment as assignment")
+		  .append(" inner join fetch assignment.section as section")
+		  .append(" inner join fetch assignment.page as page")
+		  .append(" where page.key=:pageKey");
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString())
+				.createQuery(sb.toString(), Assignment.class)
 				.setParameter("pageKey", page.getKey())
-				.setParameter("status", AssignmentStatus.notStarted.name())
-				.executeUpdate();
+				.getResultList();
 	}
 	
 	public PagePart persistPart(PageBody body, PagePart part) {
