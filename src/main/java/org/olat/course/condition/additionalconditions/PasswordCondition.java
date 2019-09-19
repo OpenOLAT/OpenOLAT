@@ -54,6 +54,8 @@ public class PasswordCondition extends AdditionalCondition {
 	// <OLATCE-91>
 	@Override
 	public boolean evaluate(Object userAnswerObj) {
+		if(password == null) return true;
+		
 		String userAnswer = null;
 		if(userAnswerObj instanceof IdentityEnvironment) {
 			IdentityEnvironment identityEnv = (IdentityEnvironment)userAnswerObj;
@@ -61,7 +63,7 @@ public class PasswordCondition extends AdditionalCondition {
 		} else if(userAnswerObj instanceof String) {
 			userAnswer = (String)userAnswerObj;
 		}
-		return password == null || password.equals(userAnswer); 
+		return password.equals(userAnswer); 
 	}
 
 	@Override
