@@ -19,13 +19,13 @@
  */
 package org.olat.course.learningpath.model;
 
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_DONE_TRIGGER;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_OBLIGATION;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DONE_TRIGGER;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_ESTIMATED_DURATION;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_TRIGGER;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DURATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_OBLIGATION;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_DONE_TRIGGER_NODE_VISITED;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_DONE_TRIGGER_RUN_DONE;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_NODE_VISITED;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_RUN_DONE;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.learningpath.LearningPathConfigs;
@@ -49,7 +49,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 
 	@Override
 	public Integer getDuration() {
-		String duration = moduleConfiguration.getStringValue(CONFIG_KEY_ESTIMATED_DURATION);
+		String duration = moduleConfiguration.getStringValue(CONFIG_KEY_DURATION);
 		return integerOrNull(duration);
 	}
 
@@ -73,14 +73,14 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	@Override
 	public FullyAssessedResult isFullyAssessedOnNodeVisited() {
 		String doneTriggerName = getDoneTriggerName();
-		if (CONFIG_VALUE_DONE_TRIGGER_NODE_VISITED.equals(doneTriggerName)) {
+		if (CONFIG_VALUE_TRIGGER_NODE_VISITED.equals(doneTriggerName)) {
 			return LearningPathConfigs.fullyAssessed(true, true);
 		}
 		return LearningPathConfigs.notFullyAssessed();
 	}
 
 	private String getDoneTriggerName() {
-		return moduleConfiguration.getStringValue(CONFIG_KEY_DONE_TRIGGER, CONFIG_DEFAULT_DONE_TRIGGER);
+		return moduleConfiguration.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_DEFAULT_TRIGGER);
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	@Override
 	public FullyAssessedResult isFullyAssessedOnRunStatus(AssessmentRunStatus runStatus) {
 		String doneTriggerName = getDoneTriggerName();
-		if (AssessmentRunStatus.done.equals(runStatus) && CONFIG_VALUE_DONE_TRIGGER_RUN_DONE.equals(doneTriggerName)) {
+		if (AssessmentRunStatus.done.equals(runStatus) && CONFIG_VALUE_TRIGGER_RUN_DONE.equals(doneTriggerName)) {
 			return LearningPathConfigs.fullyAssessed(true, false);
 		}
 		return LearningPathConfigs.notFullyAssessed();

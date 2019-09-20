@@ -45,19 +45,19 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class LearningPathNodeConfigController extends FormBasicController {	
 
-	public static final String CONFIG_KEY_ESTIMATED_DURATION = "learning.path.estimated.duration";
-	public static final String CONFIG_KEY_OBLIGATION = "learning.path.obligation";
+	public static final String CONFIG_KEY_DURATION = "duration";
+	public static final String CONFIG_KEY_OBLIGATION = "obligation";
 	public static final String CONFIG_DEFAULT_OBLIGATION = AssessmentObligation.mandatory.name();
-	public static final String CONFIG_KEY_DONE_TRIGGER = "learning.path.done.trigger";
-	public static final String CONFIG_VALUE_DONE_TRIGGER_NONE = "none";
-	public static final String CONFIG_VALUE_DONE_TRIGGER_NODE_VISITED = "nodeVisited";
-	public static final String CONFIG_VALUE_DONE_TRIGGER_CONFIRMED = "confirmed";
-	public static final String CONFIG_VALUE_DONE_TRIGGER_RUN_DONE = "runStatusDone";
-	public static final String CONFIG_DEFAULT_DONE_TRIGGER = CONFIG_VALUE_DONE_TRIGGER_NONE;
+	public static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
+	public static final String CONFIG_VALUE_TRIGGER_NONE = "none";
+	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = "nodeVisited";
+	public static final String CONFIG_VALUE_TRIGGER_CONFIRMED = "confirmed";
+	public static final String CONFIG_VALUE_TRIGGER_RUN_DONE = "runStatusDone";
+	public static final String CONFIG_DEFAULT_TRIGGER = CONFIG_VALUE_TRIGGER_NONE;
 	
-	private TextElement estimatedDurationEl;
+	private TextElement durationEl;
 	private SingleSelection obligationEl;
-	private SingleSelection doneTriggerEl;
+	private SingleSelection triggerEl;
 
 	private final ModuleConfiguration configs;
 	private final LearningPathControllerConfig ctrlConfig;
@@ -72,8 +72,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		String estimatedTime = configs.getStringValue(CONFIG_KEY_ESTIMATED_DURATION);
-		estimatedDurationEl = uifactory.addTextElement("config.estimated.duration", 128, estimatedTime , formLayout);
+		String estimatedTime = configs.getStringValue(CONFIG_KEY_DURATION);
+		durationEl = uifactory.addTextElement("config.duration", 128, estimatedTime , formLayout);
 		
 		KeyValues obligationKV = new KeyValues();
 		obligationKV.add(entry(AssessmentObligation.mandatory.name(), translate("config.obligation.mandatory")));
@@ -84,33 +84,33 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			obligationEl.select(obligationKey, true);
 		}
 		
-		KeyValues doneTriggerKV = getDoneTriggerKV();
-		doneTriggerEl = uifactory.addDropdownSingleselect("config.done.trigger", formLayout,
-				doneTriggerKV.keys(), doneTriggerKV.values());
-		doneTriggerEl.addActionListener(FormEvent.ONCHANGE);
-		String doneTriggerKey = configs.getStringValue(CONFIG_KEY_DONE_TRIGGER, CONFIG_DEFAULT_DONE_TRIGGER);
-		if (Arrays.asList(doneTriggerEl.getKeys()).contains(doneTriggerKey)) {
-			doneTriggerEl.select(doneTriggerKey, true);
+		KeyValues triggerKV = getTriggerKV();
+		triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,
+				triggerKV.keys(), triggerKV.values());
+		triggerEl.addActionListener(FormEvent.ONCHANGE);
+		String triggerKey = configs.getStringValue(CONFIG_KEY_TRIGGER, CONFIG_DEFAULT_TRIGGER);
+		if (Arrays.asList(triggerEl.getKeys()).contains(triggerKey)) {
+			triggerEl.select(triggerKey, true);
 		}
 		
 		uifactory.addFormSubmitButton("save", formLayout);
 	}
 	
-	private KeyValues getDoneTriggerKV() {
-		KeyValues doneTriggerKV = new KeyValues();
-		doneTriggerKV.add(entry(CONFIG_VALUE_DONE_TRIGGER_NONE, translate("config.done.trigger.none")));
-		if (ctrlConfig.isDoneTriggerNodeVisited()) {
-			doneTriggerKV.add(entry(CONFIG_VALUE_DONE_TRIGGER_NODE_VISITED, translate("config.done.trigger.visited")));
+	private KeyValues getTriggerKV() {
+		KeyValues triggerKV = new KeyValues();
+		triggerKV.add(entry(CONFIG_VALUE_TRIGGER_NONE, translate("config.trigger.none")));
+		if (ctrlConfig.isTriggerNodeVisited()) {
+			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_NODE_VISITED, translate("config.trigger.visited")));
 		}
-		if (ctrlConfig.isDoneTriggerConfirmed()) {
-			doneTriggerKV.add(entry(CONFIG_VALUE_DONE_TRIGGER_CONFIRMED, translate("config.done.trigger.confirmed")));
+		if (ctrlConfig.isTriggerConfirmed()) {
+			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_CONFIRMED, translate("config.trigger.confirmed")));
 		}
-		TranslateableBoolean doneTriggerRunDone = ctrlConfig.getDoneTriggerRunDone();
-		if (doneTriggerRunDone.isTrue()) {
-			doneTriggerKV.add(entry(CONFIG_VALUE_DONE_TRIGGER_RUN_DONE,
-					getTranslationOrDefault(doneTriggerRunDone, "config.done.trigger.run.done")));
+		TranslateableBoolean triggerRunDone = ctrlConfig.getTriggerRunDone();
+		if (triggerRunDone.isTrue()) {
+			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_RUN_DONE,
+					getTranslationOrDefault(triggerRunDone, "config.trigger.run.done")));
 		}
-		return doneTriggerKV;
+		return triggerKV;
 	}
 	
 	private String getTranslationOrDefault(TranslateableBoolean trans, String defaulI18nKey) {
@@ -123,7 +123,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	protected boolean validateFormLogic(UserRequest ureq) {
 		boolean allOk = true;
 		
-		allOk = validateInteger(estimatedDurationEl, 1, 10000, "error.positiv.int");
+		allOk = validateInteger(durationEl, 1, 10000, "error.positiv.int");
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
@@ -155,18 +155,18 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		String estimatedTime = estimatedDurationEl.getValue();
-		configs.setStringValue(CONFIG_KEY_ESTIMATED_DURATION, estimatedTime);
+		String estimatedTime = durationEl.getValue();
+		configs.setStringValue(CONFIG_KEY_DURATION, estimatedTime);
 		
 		String obligation = obligationEl.isOneSelected()
 				? obligationEl.getSelectedKey()
 				: CONFIG_DEFAULT_OBLIGATION;
 		configs.setStringValue(CONFIG_KEY_OBLIGATION, obligation);
 		
-		String doneTrigger = doneTriggerEl.isOneSelected()
-				? doneTriggerEl.getSelectedKey()
-				: CONFIG_DEFAULT_DONE_TRIGGER;
-		configs.setStringValue(CONFIG_KEY_DONE_TRIGGER, doneTrigger);
+		String trigger = triggerEl.isOneSelected()
+				? triggerEl.getSelectedKey()
+				: CONFIG_DEFAULT_TRIGGER;
+		configs.setStringValue(CONFIG_KEY_TRIGGER, trigger);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
@@ -178,11 +178,11 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	
 	public interface LearningPathControllerConfig {
 		
-		public boolean isDoneTriggerNodeVisited();
+		public boolean isTriggerNodeVisited();
 		
-		public boolean isDoneTriggerConfirmed();
+		public boolean isTriggerConfirmed();
 		
-		public TranslateableBoolean getDoneTriggerRunDone();
+		public TranslateableBoolean getTriggerRunDone();
 		
 	}
 	
@@ -192,25 +192,25 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	
 	public static class ControllerConfigBuilder {
 		
-		private boolean doneTriggerNodeVisited;
-		private boolean doneTriggerConfirmed;
-		private TranslateableBoolean doneTriggerRunDone;
+		private boolean triggerNodeVisited;
+		private boolean triggerConfirmed;
+		private TranslateableBoolean triggerRunDone;
 		
 		private ControllerConfigBuilder() {
 		}
 		
 		public ControllerConfigBuilder enableNodeVisited() {
-			doneTriggerNodeVisited = true;
+			triggerNodeVisited = true;
 			return this;
 		}
 		
 		public ControllerConfigBuilder enableRunStatusDone() {
-			doneTriggerRunDone = TranslateableBoolean.untranslatedTrue();
+			triggerRunDone = TranslateableBoolean.untranslatedTrue();
 			return this;
 		}
 		
 		public ControllerConfigBuilder enableRunStatusDone(String message) {
-			doneTriggerRunDone = TranslateableBoolean.translatedTrue(message);
+			triggerRunDone = TranslateableBoolean.translatedTrue(message);
 			return this;
 		}
 		
@@ -220,14 +220,14 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		private final static class ControllerConfigImpl implements LearningPathControllerConfig {
 			
-			public final boolean doneTriggerNodeVisited;
-			public final boolean doneTriggerConfirmed;
-			public final TranslateableBoolean doneTriggerRunDone;
+			public final boolean triggerNodeVisited;
+			public final boolean triggerConfirmed;
+			public final TranslateableBoolean triggerRunDone;
 
 			public ControllerConfigImpl(ControllerConfigBuilder builder) {
-				this.doneTriggerNodeVisited = builder.doneTriggerNodeVisited;
-				this.doneTriggerConfirmed = builder.doneTriggerConfirmed;
-				this.doneTriggerRunDone = falseIfNull(builder.doneTriggerRunDone);
+				this.triggerNodeVisited = builder.triggerNodeVisited;
+				this.triggerConfirmed = builder.triggerConfirmed;
+				this.triggerRunDone = falseIfNull(builder.triggerRunDone);
 			}
 			
 			private TranslateableBoolean falseIfNull(TranslateableBoolean translateableBoolean) {
@@ -237,18 +237,18 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			}
 
 			@Override
-			public boolean isDoneTriggerNodeVisited() {
-				return doneTriggerNodeVisited;
+			public boolean isTriggerNodeVisited() {
+				return triggerNodeVisited;
 			}
 
 			@Override
-			public boolean isDoneTriggerConfirmed() {
-				return doneTriggerConfirmed;
+			public boolean isTriggerConfirmed() {
+				return triggerConfirmed;
 			}
 
 			@Override
-			public TranslateableBoolean getDoneTriggerRunDone() {
-				return doneTriggerRunDone;
+			public TranslateableBoolean getTriggerRunDone() {
+				return triggerRunDone;
 			}
 			
 		}
