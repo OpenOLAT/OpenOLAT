@@ -152,6 +152,13 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	}
 
 	@Override
+	public void updateCompletion(CourseNode courseNode, Identity assessedIdentity,
+			UserCourseEnvironment userCourseEnvironment, Double currentCompletion, AssessmentEntryStatus status,
+			Role by) {
+		//
+	}
+
+	@Override
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Boolean fullyAssessed,
 			AssessmentEntryStatus status, Role by) {
 		//

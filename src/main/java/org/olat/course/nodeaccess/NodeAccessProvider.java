@@ -27,7 +27,7 @@ import org.olat.course.run.userview.CourseTreeNodeBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
  * 
@@ -45,6 +45,6 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment);
 
 	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			Double currentCompletion, AssessmentRunStatus runStatus, Role by);
+			Double completion, AssessmentEntryStatus status, Role by);
 	
 }

@@ -19,19 +19,19 @@
  */
 package org.olat.course.learningpath.model;
 
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_OBLIGATION;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_TRIGGER;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DURATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_OBLIGATION;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_NODE_VISITED;
-import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_RUN_DONE;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_DONE;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * 
@@ -90,9 +90,9 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public FullyAssessedResult isFullyAssessedOnRunStatus(AssessmentRunStatus runStatus) {
+	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status) {
 		String doneTriggerName = getDoneTriggerName();
-		if (AssessmentRunStatus.done.equals(runStatus) && CONFIG_VALUE_TRIGGER_RUN_DONE.equals(doneTriggerName)) {
+		if (AssessmentEntryStatus.done.equals(status) && CONFIG_VALUE_TRIGGER_STATUS_DONE.equals(doneTriggerName)) {
 			return LearningPathConfigs.fullyAssessed(true, false);
 		}
 		return LearningPathConfigs.notFullyAssessed();

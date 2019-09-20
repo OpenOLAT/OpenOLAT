@@ -422,8 +422,27 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		DBFactory.getInstance().commit();
+	}
+
+	@Override
+	public void updateCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
+			Double completion, AssessmentEntryStatus status, Role by) {
+		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		nodeAssessment.setCompletion(completion);
+		nodeAssessment.setAssessmentStatus(status);
+		if(by == Role.coach) {
+			nodeAssessment.setLastCoachModified(new Date());
+		} else if(by == Role.user) {
+			nodeAssessment.setLastUserModified(new Date());
+		}
+		assessmentService.updateAssessmentEntry(nodeAssessment);
+		DBFactory.getInstance().commit();
 		
-		nodeAccessService.onCompletionUpdate(courseNode, userCourseEnvironment, currentCompletion, runStatus, by);
+		nodeAccessService.onCompletionUpdate(courseNode, userCourseEnvironment, completion, status, by);
+		
+		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
+		scoreAccounting.evaluateAll(true);
+		DBFactory.getInstance().commit();
 	}
 
 	@Override

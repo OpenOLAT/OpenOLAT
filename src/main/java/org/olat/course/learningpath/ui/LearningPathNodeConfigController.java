@@ -52,7 +52,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	public static final String CONFIG_VALUE_TRIGGER_NONE = "none";
 	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = "nodeVisited";
 	public static final String CONFIG_VALUE_TRIGGER_CONFIRMED = "confirmed";
-	public static final String CONFIG_VALUE_TRIGGER_RUN_DONE = "runStatusDone";
+	public static final String CONFIG_VALUE_TRIGGER_STATUS_DONE = "statusDone";
 	public static final String CONFIG_DEFAULT_TRIGGER = CONFIG_VALUE_TRIGGER_NONE;
 	
 	private TextElement durationEl;
@@ -105,10 +105,10 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		if (ctrlConfig.isTriggerConfirmed()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_CONFIRMED, translate("config.trigger.confirmed")));
 		}
-		TranslateableBoolean triggerRunDone = ctrlConfig.getTriggerRunDone();
-		if (triggerRunDone.isTrue()) {
-			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_RUN_DONE,
-					getTranslationOrDefault(triggerRunDone, "config.trigger.run.done")));
+		TranslateableBoolean triggerStatusDone = ctrlConfig.getTriggerStatusDone();
+		if (triggerStatusDone.isTrue()) {
+			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_STATUS_DONE,
+					getTranslationOrDefault(triggerStatusDone, "config.trigger.status.done")));
 		}
 		return triggerKV;
 	}
@@ -182,7 +182,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		public boolean isTriggerConfirmed();
 		
-		public TranslateableBoolean getTriggerRunDone();
+		public TranslateableBoolean getTriggerStatusDone();
 		
 	}
 	
@@ -194,7 +194,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		private boolean triggerNodeVisited;
 		private boolean triggerConfirmed;
-		private TranslateableBoolean triggerRunDone;
+		private TranslateableBoolean triggerStatusDone;
 		
 		private ControllerConfigBuilder() {
 		}
@@ -204,13 +204,13 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			return this;
 		}
 		
-		public ControllerConfigBuilder enableRunStatusDone() {
-			triggerRunDone = TranslateableBoolean.untranslatedTrue();
+		public ControllerConfigBuilder enableStatusDone() {
+			triggerStatusDone = TranslateableBoolean.untranslatedTrue();
 			return this;
 		}
 		
-		public ControllerConfigBuilder enableRunStatusDone(String message) {
-			triggerRunDone = TranslateableBoolean.translatedTrue(message);
+		public ControllerConfigBuilder enableStatusDone(String message) {
+			triggerStatusDone = TranslateableBoolean.translatedTrue(message);
 			return this;
 		}
 		
@@ -222,12 +222,12 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			
 			public final boolean triggerNodeVisited;
 			public final boolean triggerConfirmed;
-			public final TranslateableBoolean triggerRunDone;
+			public final TranslateableBoolean triggerStatusDone;
 
 			public ControllerConfigImpl(ControllerConfigBuilder builder) {
 				this.triggerNodeVisited = builder.triggerNodeVisited;
 				this.triggerConfirmed = builder.triggerConfirmed;
-				this.triggerRunDone = falseIfNull(builder.triggerRunDone);
+				this.triggerStatusDone = falseIfNull(builder.triggerStatusDone);
 			}
 			
 			private TranslateableBoolean falseIfNull(TranslateableBoolean translateableBoolean) {
@@ -247,8 +247,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			}
 
 			@Override
-			public TranslateableBoolean getTriggerRunDone() {
-				return triggerRunDone;
+			public TranslateableBoolean getTriggerStatusDone() {
+				return triggerStatusDone;
 			}
 			
 		}

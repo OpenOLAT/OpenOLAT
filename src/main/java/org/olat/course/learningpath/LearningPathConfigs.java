@@ -19,8 +19,8 @@
  */
 package org.olat.course.learningpath;
 
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * 
@@ -38,7 +38,7 @@ public interface LearningPathConfigs {
 
 	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion);
 	
-	public FullyAssessedResult isFullyAssessedOnRunStatus(AssessmentRunStatus runStatus);
+	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status);
 	
 	public static FullyAssessedResult notFullyAssessed() {
 		return new FullyAssessedResultImpl(false, false);

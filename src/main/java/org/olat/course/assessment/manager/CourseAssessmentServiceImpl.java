@@ -176,6 +176,14 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 	
 	@Override
+	public void updateCompletion(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Double completion,
+			AssessmentEntryStatus runStatus, Role by) {
+		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();
+		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
+		am.updateCompletion(courseNode, assessedIdentity, userCourseEnvironment, completion, runStatus, by);
+	}
+	
+	@Override
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Boolean fullyAssessed, AssessmentEntryStatus status, Role by) {
 		AssessmentManager am = userCourseEnvironment.getCourseEnvironment().getAssessmentManager();

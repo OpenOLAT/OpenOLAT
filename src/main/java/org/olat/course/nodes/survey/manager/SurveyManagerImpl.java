@@ -35,7 +35,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
@@ -164,15 +164,15 @@ public class SurveyManagerImpl implements SurveyManager {
 
 	@Override
 	public void onExecutionStarted(SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, AssessmentRunStatus.running,
+		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, null, AssessmentEntryStatus.inProgress,
 				Role.user);
 	}
 
 	@Override
 	public void onExecutionFinished(SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		courseAssessmentService.incrementAttempts(courseNode, userCourseEnv, Role.user);
-		courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, Double.valueOf(1),
-				AssessmentRunStatus.done, Role.user);
+		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, Double.valueOf(1),
+				AssessmentEntryStatus.done, Role.user);
 	}
 
 	@Override

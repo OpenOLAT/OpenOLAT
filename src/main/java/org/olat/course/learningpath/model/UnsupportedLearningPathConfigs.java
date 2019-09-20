@@ -20,8 +20,8 @@
 package org.olat.course.learningpath.model;
 
 import org.olat.course.learningpath.LearningPathConfigs;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
 
 /**
  * 
@@ -52,7 +52,7 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public FullyAssessedResult isFullyAssessedOnRunStatus(AssessmentRunStatus runStatus) {
+	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status) {
 		return LearningPathConfigs.notFullyAssessed();
 	}
 

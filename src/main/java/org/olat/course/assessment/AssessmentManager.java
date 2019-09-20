@@ -97,6 +97,9 @@ public interface AssessmentManager {
 	 */
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentRunStatus status, Role by);
+	
+	public void updateCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
+			Double currentCompletion, AssessmentEntryStatus status, Role by);
 
 	/**
 	 * Change the fully assessed flag of the assessment and set the status. If the

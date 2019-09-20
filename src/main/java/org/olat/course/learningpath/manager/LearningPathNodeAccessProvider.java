@@ -40,7 +40,6 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -107,16 +106,16 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeV
 
 	@Override
 	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			Double completion, AssessmentRunStatus runStatus, Role by) {
+			Double completion, AssessmentEntryStatus status, Role by) {
 		FullyAssessedResult onCompletion = getConfigs(courseNode).isFullyAssessedOnCompletion(completion);
-		FullyAssessedResult onRunStatus = getConfigs(courseNode).isFullyAssessedOnRunStatus(runStatus);
+		FullyAssessedResult onRunStatus = getConfigs(courseNode).isFullyAssessedOnStatus(status);
 		boolean isFullyAssessed = onCompletion.isFullyAssessed() || onRunStatus.isFullyAssessed();
 		boolean participant = userCourseEnvironment.isParticipant();
 		if (participant && isFullyAssessed) {
 			boolean isDone = onCompletion.isDone() || onRunStatus.isDone();
-			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnvironment, isDone);
+			AssessmentEntryStatus newStatus = getStatus(courseNode, userCourseEnvironment, isDone);
 			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnvironment, Boolean.TRUE,
-					status, by);
+					newStatus, by);
 		}
 	}
 

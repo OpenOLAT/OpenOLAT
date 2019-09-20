@@ -147,7 +147,7 @@ public class SurveyRunController extends BasicController {
 			if (event == Event.DONE_EVENT) {
 				doExecutionFinished(ureq);
 			} else if (event == Event.CHANGED_EVENT) {
-				doQuickSaved();
+				doQuickSaved(ureq);
 			}
 		} else if(source == deleteDataConfirmationCtrl) {
 			if (event == Event.DONE_EVENT) {
@@ -172,8 +172,9 @@ public class SurveyRunController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
-	private void doQuickSaved() {
+	private void doQuickSaved(UserRequest ureq) {
 		surveyManager.onExecutionStarted(courseNode, userCourseEnv);
+		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
 	private void doConfirmDeleteAllData(UserRequest ureq) {
