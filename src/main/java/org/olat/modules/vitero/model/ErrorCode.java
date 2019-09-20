@@ -50,14 +50,20 @@ public enum ErrorCode {
 	
 	private final int code;
 	private final String i18nKey;
+	private final String codeString;
 	
 	private ErrorCode(int code, String i18nKey) {
 		this.code = code;
 		this.i18nKey = i18nKey;
+		codeString = Integer.toString(code);
 	}
 	
 	public int code() {
 		return code;
+	}
+	
+	public String codeString() {
+		return codeString;
 	}
 	
 	public String i18nKey() {
