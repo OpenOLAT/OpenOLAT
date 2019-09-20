@@ -24,6 +24,7 @@ import java.util.List;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.DurationEvaluator;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -31,7 +32,7 @@ import org.olat.course.run.scoring.DurationEvaluator;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STDurationEvaluator implements DurationEvaluator {
+public class CumulatingDurationEvaluator implements DurationEvaluator {
 
 	@Override
 	public boolean isDependingOnCurrentNode() {
@@ -53,12 +54,16 @@ public class STDurationEvaluator implements DurationEvaluator {
 		boolean hasDurations = false;
 		int sum = 0;
 		for (AssessmentEvaluation child : children) {
-			if (child.getDuration() != null) {
+			if (isMandatory(child) && child.getDuration() != null) {
 				sum += child.getDuration().intValue();
 				hasDurations = true;
 			}
 		}
 		return hasDurations? Integer.valueOf(sum): null;
+	}
+
+	private boolean isMandatory(AssessmentEvaluation child) {
+		return AssessmentObligation.mandatory.equals(child.getObligation());
 	}
 
 }

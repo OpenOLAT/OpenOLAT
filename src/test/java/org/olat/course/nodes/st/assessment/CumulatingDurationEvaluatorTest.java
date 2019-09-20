@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
-import org.olat.course.nodes.st.assessment.STDurationEvaluator;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -34,9 +34,9 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class STDurationEvaluatorTest {
+public class CumulatingDurationEvaluatorTest {
 	
-	STDurationEvaluator sut = new STDurationEvaluator();
+	CumulatingDurationEvaluator sut = new CumulatingDurationEvaluator();
 	
 	@Test
 	public void shouldNotDependOnCurrentNode() {
@@ -49,18 +49,25 @@ public class STDurationEvaluatorTest {
 	}
 	
 	@Test
-	public void shouldSumDurationOfChildren() {
+	public void shouldSumDurationOfMandatoryChildren() {
 		List<AssessmentEvaluation> children = new ArrayList<>();
-		AssessmentEvaluation child1 = new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, 0, null, null, null, null, null, 2);
+		AssessmentEvaluation child1 = createAssessmentEvaluation(AssessmentObligation.mandatory, 2);
 		children.add(child1);
-		AssessmentEvaluation child2 = new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, 0, null, null, null, null, null, 3);
+		AssessmentEvaluation child2 = createAssessmentEvaluation(AssessmentObligation.mandatory, 3);
 		children.add(child2);
-		AssessmentEvaluation child3 = new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, 0, null, null, null, null, null, null);
+		AssessmentEvaluation child3 = createAssessmentEvaluation(AssessmentObligation.mandatory, null);
 		children.add(child3);
+		AssessmentEvaluation child4 = createAssessmentEvaluation(AssessmentObligation.optional, 10);
+		children.add(child4);
 		
 		Integer duration = sut.getDuration(children);
 		
 		assertThat(duration).isEqualTo(5);
+	}
+	
+	private AssessmentEvaluation createAssessmentEvaluation(AssessmentObligation obligation, Integer duration) {
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, 0, null, null,
+				null, null, obligation, duration);
 	}
 
 }

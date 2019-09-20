@@ -65,7 +65,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 	
 	private static final ScoreEvaluator CONDITION_SCORE_EVALUATOR = new ConditionScoreEvaluator();
 	private static final PassedEvaluator CONDITION_PASSED_EVALUATOR = new ConditionPassedEvaluator();
-	private static final DurationEvaluator DURATION_EVALUATOR = new STDurationEvaluator();
+	private static final DurationEvaluator CUMMULATING_DURATION_EVALUATOR = new CumulatingDurationEvaluator();
 	private static final StatusEvaluator SCORE_STATUS_EVALUATOR = new ScoreStatusEvaluator();
 	private static final StatusEvaluator STATUS_LEARNING_PATH_STATUS_EVALUATOR = new STLinearStatusEvaluator();
 	private static final FullyAssessedEvaluator FULLY_ASSESSED_EVALUATOR = new STFullyAssessedEvaluator();
@@ -77,7 +77,7 @@ public class STAssessmentHandler implements AssessmentHandler {
 			.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
 			.build();
 	private static final AccountingEvaluators LEARNING_PATH_EVALUATORS = AccountingEvaluatorsBuilder.builder()
-			.withDurationEvaluator(DURATION_EVALUATOR)
+			.withDurationEvaluator(CUMMULATING_DURATION_EVALUATOR)
 			.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
 			.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
 			.withStatusEvaluator(STATUS_LEARNING_PATH_STATUS_EVALUATOR)
