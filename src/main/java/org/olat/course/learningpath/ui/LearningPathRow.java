@@ -78,7 +78,7 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 		return learningPathNode.getDuration();
 	}
 
-	public Integer getProgress() {
+	public Double getProgress() {
 		return learningPathNode.getProgress();
 	}
 

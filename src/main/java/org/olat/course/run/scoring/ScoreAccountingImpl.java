@@ -238,10 +238,10 @@ public class ScoreAccountingImpl implements ScoreAccounting {
 				LastModifications lastModifications = new LastModifications();
 				updateLastModified(cNode, lastModifications);
 				Date assessmentDone = aetAssessmentDone(entry, assessmentStatus);
-				se = new AssessmentEvaluation(score, passed, null, assessmentStatus, userVisibility, null,
-						currentRunCompletion, runStatus, assessmendId, null, null, numOfAssessmentDocs, lastModified,
-						lastModifications.getLastUserModified(), lastModifications.getLastCoachModified(),
-						assessmentDone, obligation, duration);
+				se = new AssessmentEvaluation(score, passed, null, null, assessmentStatus, userVisibility,
+						null, currentRunCompletion, runStatus, assessmendId, null, null, numOfAssessmentDocs,
+						lastModified, lastModifications.getLastUserModified(),
+						lastModifications.getLastCoachModified(), assessmentDone, obligation, duration);
 				
 				if(entry == null) {
 					Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();

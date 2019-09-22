@@ -102,6 +102,7 @@ public class LearningPathTreeModelBuilder {
 		learningPathTreeNode.setDuration(scoreEvaluation.getDuration());
 		learningPathTreeNode.setStatus(scoreEvaluation.getAssessmentStatus());
 		learningPathTreeNode.setObligation(scoreEvaluation.getObligation());
+		learningPathTreeNode.setProgress(scoreEvaluation.getCompletion());
 		return learningPathTreeNode;
 	}
 

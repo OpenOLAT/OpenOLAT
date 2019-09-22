@@ -42,7 +42,7 @@ public class LearningPathTreeNode extends GenericTreeNode {
 	private AssessmentObligation obligation;
 	private Date dateDone;
 	private Integer duration;
-	private Integer progress;
+	private Double progress;
 
 	public LearningPathTreeNode(CourseNode courseNode, int recursionLevel) {
 		this.courseNode = courseNode;
@@ -84,11 +84,11 @@ public class LearningPathTreeNode extends GenericTreeNode {
 		this.duration = duration;
 	}
 
-	public Integer getProgress() {
+	public Double getProgress() {
 		return progress;
 	}
 
-	public void setProgress(Integer progress) {
+	public void setProgress(Double progress) {
 		this.progress = progress;
 	}
 
