@@ -16,7 +16,7 @@
 	
 	<bean id ="org.olat.core.util.WebappHelper" class="org.olat.core.util.WebappHelper"  init-method="init" destroy-method="destroy">
 		<!-- relative path from the webapp directory to the source directory (only relavant for development/debuging mode) -->
-		<property name="fullPathToSrc" value="/Users/tom/VC/OLAT-UZH/openolat-lms-DEVELOPMENT/src/main/java" />
+		<property name="fullPathToSrc" value="${project.build.home.directory}" />
 		<property name="fullPathToWebappSrc" value="${project.build.home.directory}/src/main/webapp" />
 		<property name="instanceId" value="${instance.id}"/>
 		<property name="nodeId" value="${node.id}"/>
