@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -33,7 +34,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementEvent;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.CodeHelper;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -42,6 +42,7 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.FileUpload;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.olat.modules.forms.ui.model.Progress;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -168,6 +169,12 @@ public class FileUploadController extends FormBasicController implements Evaluat
 			evaluationFormManager.deleteResponse(response);
 			response = null;
 		}
+	}
+
+	@Override
+	public Progress getProgress() {
+		int current = hasResponse()? 1: 0;
+		return Progress.of(current, 1);
 	}
 
 }

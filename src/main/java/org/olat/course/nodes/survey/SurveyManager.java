@@ -65,7 +65,7 @@ public interface SurveyManager {
 
 	public EvaluationFormSession loadOrCreateSesssion(EvaluationFormParticipation participation);
 
-	public void onExecutionStarted(SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv);
+	public void onQuickSave(SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv, Double completion);
 
 	public void onExecutionFinished(SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv);
 

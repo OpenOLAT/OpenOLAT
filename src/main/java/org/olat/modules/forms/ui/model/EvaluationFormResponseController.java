@@ -38,5 +38,7 @@ public interface EvaluationFormResponseController extends FormController {
 	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses);
 	
 	public void saveResponse(EvaluationFormSession session);
+
+	public Progress getProgress();
 	
 }

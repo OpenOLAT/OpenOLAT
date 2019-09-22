@@ -163,8 +163,8 @@ public class SurveyManagerImpl implements SurveyManager {
 	}
 
 	@Override
-	public void onExecutionStarted(SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, null, AssessmentEntryStatus.inProgress,
+	public void onQuickSave(SurveyCourseNode courseNode, UserCourseEnvironment userCourseEnv, Double competion) {
+		courseAssessmentService.updateCompletion(courseNode, userCourseEnv, competion, AssessmentEntryStatus.inProgress,
 				Role.user);
 	}
 

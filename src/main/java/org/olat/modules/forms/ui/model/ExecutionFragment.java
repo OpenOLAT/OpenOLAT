@@ -63,6 +63,10 @@ public class ExecutionFragment extends PageFragment {
 	public void save(EvaluationFormSession session) {
 		executionElement.saveResponse(session);
 	}
+
+	public Progress getProgress() {
+		return executionElement.getProgress();
+	}
 	
 	public void dispose() {
 		executionElement.dispose();

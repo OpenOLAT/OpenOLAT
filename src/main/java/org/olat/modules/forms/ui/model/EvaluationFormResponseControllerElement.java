@@ -87,6 +87,11 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 	}
 
 	@Override
+	public Progress getProgress() {
+		return controller.getProgress();
+	}
+
+	@Override
 	public void dispose() {
 		controller.dispose();
 	}

@@ -64,6 +64,7 @@ import org.olat.modules.forms.model.xml.FormXStream;
 import org.olat.modules.forms.ui.model.EvaluationFormExecutionElement;
 import org.olat.modules.forms.ui.model.ExecutionFragment;
 import org.olat.modules.forms.ui.model.ExecutionIdentity;
+import org.olat.modules.forms.ui.model.Progress;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -272,7 +273,8 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			if(mainForm.validate(ureq)) {
 				mainForm.forceSubmittedAndValid();
 				doSaveResponses();
-				fireEvent(ureq, Event.CHANGED_EVENT);
+				Double progress = doCalculateProgress();
+				fireEvent(ureq, new ProgressEvent(progress));
 			}
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -333,6 +335,19 @@ public class EvaluationFormExecutionController extends FormBasicController imple
 			showError("error.cannot.save");
 		}
 		return allSaved;
+	}
+	
+	private Double doCalculateProgress() {
+		// The form is not done until it is submitted.
+		// This step is additionally counted with the progress value 1.
+		int progressMax = 1;
+		int currentProgress = 0;
+		for (ExecutionFragment fragment : fragments) {
+			Progress progress = fragment.getProgress();
+			currentProgress += progress.getCurrent();
+			progressMax += progress.getMax();
+		}
+		return Double.valueOf((double)currentProgress / progressMax);
 	}
 
 	private void doConfirmDone(UserRequest ureq) {

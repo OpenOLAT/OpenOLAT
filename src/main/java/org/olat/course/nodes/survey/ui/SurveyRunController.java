@@ -44,6 +44,7 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSurvey;
 import org.olat.modules.forms.EvaluationFormSurveyIdentifier;
 import org.olat.modules.forms.ui.EvaluationFormExecutionController;
+import org.olat.modules.forms.ui.ProgressEvent;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -146,8 +147,9 @@ public class SurveyRunController extends BasicController {
 		if (source == executionCtrl) {
 			if (event == Event.DONE_EVENT) {
 				doExecutionFinished(ureq);
-			} else if (event == Event.CHANGED_EVENT) {
-				doQuickSaved(ureq);
+			} else if (event instanceof ProgressEvent) {
+				ProgressEvent pe = (ProgressEvent)event;
+				doQuickSaved(ureq, pe.getProgress());
 			}
 		} else if(source == deleteDataConfirmationCtrl) {
 			if (event == Event.DONE_EVENT) {
@@ -172,8 +174,8 @@ public class SurveyRunController extends BasicController {
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 
-	private void doQuickSaved(UserRequest ureq) {
-		surveyManager.onExecutionStarted(courseNode, userCourseEnv);
+	private void doQuickSaved(UserRequest ureq, Double completion) {
+		surveyManager.onQuickSave(courseNode, userCourseEnv, completion);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 

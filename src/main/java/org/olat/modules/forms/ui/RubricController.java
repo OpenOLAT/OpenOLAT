@@ -47,6 +47,7 @@ import org.olat.modules.forms.model.xml.Rubric.SliderType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.forms.model.xml.StepLabel;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.olat.modules.forms.ui.model.Progress;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -359,6 +360,13 @@ public class RubricController extends FormBasicController implements EvaluationF
 				rubricResponses.remove(sliderWrapper.getId());
 			}
 		}
+	}
+
+	@Override
+	public Progress getProgress() {
+		int max = sliderWrappers.size();
+		int current = rubricResponses.size();
+		return Progress.of(current, max);
 	}
 	
 	public final static class RubricWrapper {

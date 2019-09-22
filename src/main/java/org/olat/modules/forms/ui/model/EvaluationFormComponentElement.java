@@ -86,6 +86,11 @@ public class EvaluationFormComponentElement implements EvaluationFormExecutionEl
 	}
 
 	@Override
+	public Progress getProgress() {
+		return Progress.none();
+	}
+
+	@Override
 	public void dispose() {
 		//
 	}

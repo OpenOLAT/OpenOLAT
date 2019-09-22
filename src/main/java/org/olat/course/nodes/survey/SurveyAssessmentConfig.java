@@ -17,35 +17,21 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.forms.ui.model;
+package org.olat.course.nodes.survey;
 
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.modules.ceditor.PageRunElement;
-import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
+import org.olat.course.learningpath.LearningPathOnlyAssessmentConfig;
 
 /**
  * 
- * Initial date: 13.04.2018<br>
+ * Initial date: 22 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormExecutionElement extends PageRunElement {
-	
-	public boolean hasFormItem();
+public class SurveyAssessmentConfig extends LearningPathOnlyAssessmentConfig {
 
-	public FormItem getFormItem();
-	
-	public void setReadOnly(boolean readOnly);
-	
-	public boolean hasResponse();
-	
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses);
-	
-	public void saveResponse(EvaluationFormSession session);
-
-	public Progress getProgress();
-	
-	public void dispose();
+	@Override
+	public boolean hasCompletion() {
+		return true;
+	}
 
 }

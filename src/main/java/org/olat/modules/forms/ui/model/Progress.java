@@ -19,33 +19,46 @@
  */
 package org.olat.modules.forms.ui.model;
 
-import org.olat.core.gui.components.form.flexible.FormItem;
-import org.olat.modules.ceditor.PageRunElement;
-import org.olat.modules.forms.EvaluationFormSession;
-import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
-
 /**
  * 
- * Initial date: 13.04.2018<br>
+ * Initial date: 22 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface EvaluationFormExecutionElement extends PageRunElement {
+public class Progress {
 	
-	public boolean hasFormItem();
+	private static final Progress NONE = new Progress(0, 0);
 
-	public FormItem getFormItem();
+	private final int current;
+	private final int max;
 	
-	public void setReadOnly(boolean readOnly);
+	public static final Progress none() {
+		return NONE;
+	}
 	
-	public boolean hasResponse();
-	
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses);
-	
-	public void saveResponse(EvaluationFormSession session);
+	public static final Progress of(int current, int max) {
+		return new Progress(current, max);
+	}
 
-	public Progress getProgress();
-	
-	public void dispose();
+	private Progress(int current, int max) {
+		this.current = current;
+		this.max = max;
+	}
+
+	/**
+	 *
+	 * @returnThe value of the current progress
+	 */
+	public int getCurrent() {
+		return current;
+	}
+
+	/**
+	 *
+	 * @return The maximum possible progress
+	 */
+	public int getMax() {
+		return max;
+	}
 
 }

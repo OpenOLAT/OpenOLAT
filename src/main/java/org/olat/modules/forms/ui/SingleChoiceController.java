@@ -37,6 +37,7 @@ import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.SingleChoice;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.olat.modules.forms.ui.model.Progress;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -144,5 +145,11 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 			evaluationFormManager.deleteResponse(response);
 			response = null;
 		}
+	}
+
+	@Override
+	public Progress getProgress() {
+		int current = hasResponse()? 1: 0;
+		return Progress.of(current, 1);
 	}
 }

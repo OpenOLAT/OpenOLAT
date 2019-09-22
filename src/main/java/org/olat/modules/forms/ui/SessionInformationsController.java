@@ -43,6 +43,7 @@ import org.olat.modules.forms.model.xml.SessionInformations.InformationType;
 import org.olat.modules.forms.model.xml.SessionInformations.Obligation;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
 import org.olat.modules.forms.ui.model.ExecutionIdentity;
+import org.olat.modules.forms.ui.model.Progress;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -240,6 +241,21 @@ public class SessionInformationsController extends FormBasicController implement
 			
 			evaluationFormManager.updateSession(reloadedSession, email, firstname, lastname, age, gender, orgUnit, studySubject);
 		}
+	}
+	
+	@Override
+	public Progress getProgress() {
+		int current = isAsLeastOneFilledIn()? 1: 0;;
+		return Progress.of(current, 1);
+	}
+
+	private boolean isAsLeastOneFilledIn() {
+		for (SessionInformationWrapper wrapper: sessionInformationWrappers) {
+			if (StringHelper.containsNonWhitespace(wrapper.getValue())) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean isMandatory() {

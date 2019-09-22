@@ -42,6 +42,7 @@ import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.Choice;
 import org.olat.modules.forms.model.xml.MultipleChoice;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.olat.modules.forms.ui.model.Progress;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -180,6 +181,12 @@ public class MultipleChoiceController extends FormBasicController implements Eva
 				selectedChoises.add(otherValue);
 			}
 		}
+	}
+
+	@Override
+	public Progress getProgress() {
+		int current = multipleChoiceResponses.isEmpty()? 0: 1;
+		return Progress.of(current, 1);
 	}
 
 }

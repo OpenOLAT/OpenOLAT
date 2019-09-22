@@ -37,6 +37,7 @@ import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.model.jpa.EvaluationFormResponses;
 import org.olat.modules.forms.model.xml.TextInput;
 import org.olat.modules.forms.ui.model.EvaluationFormResponseController;
+import org.olat.modules.forms.ui.model.Progress;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -175,5 +176,11 @@ public class TextInputController extends FormBasicController implements Evaluati
 			return singleRowEl.getValue();
 		}
 		return multiRowEl.getValue();
+	}
+
+	@Override
+	public Progress getProgress() {
+		int current = response != null && StringHelper.containsNonWhitespace(response.getStringuifiedResponse())? 1: 0;
+		return Progress.of(current, 1);
 	}
 }
