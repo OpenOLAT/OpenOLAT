@@ -205,7 +205,7 @@ var QRCode;
 			for (var row = 0; row < nCount; row++) {
 				for (var col = 0; col < nCount; col++) {
 					if (oQRCode.isDark(row, col)) {
-						var child = makeSVG("use", {"x": String(col), "y": String(row)});
+						var child = makeSVG("use", {"x": String(row), "y": String(col)});
 						child.setAttributeNS("http://www.w3.org/1999/xlink", "href", "#template")
 						svg.appendChild(child);
 					}

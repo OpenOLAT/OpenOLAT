@@ -39,3 +39,5 @@ src/test/java/org/olat/selenium/SeleniumTest.java
 .factorypath
 /*.iml
 /web
+
+/node*

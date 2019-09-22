@@ -26,8 +26,6 @@
                             <yarnVersion>v1.6.0</yarnVersion>
                         </configuration>
                     </execution>
-
-
                     <execution>
                         <id>yarn install</id>
                         <goals>
