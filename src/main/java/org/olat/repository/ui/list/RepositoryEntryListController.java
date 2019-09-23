@@ -146,7 +146,6 @@ public class RepositoryEntryListController extends FormBasicController
 	@Autowired
 	private RepositoryEntryListControllerFormInnerEventListener[] formInnerEventListerners;
 
-	private final RepositoryEntryRowsFactory repositoryEntryRowsFactory;
 	private final boolean guestOnly;
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
@@ -158,8 +157,6 @@ public class RepositoryEntryListController extends FormBasicController
 		this.name = name;
 		this.stackPanel = stackPanel;
 		this.withSearch = withSearch;
-		repositoryEntryRowsFactory = (RepositoryEntryRowsFactory)
-				applicationContext.getBean("repositoryEntryRowFactory", ureq);
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
@@ -253,8 +250,8 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
-		VelocityContainer row1 = (VelocityContainer)applicationContext.getBean("row_1", this);
-		tableEl.setRowRenderer(row1, this);
+		// VelocityContainer row1 = (VelocityContainer)applicationContext.getBean("row_1", this);
+		// tableEl.setRowRenderer(row1, this);
 
 		initFilters(tableEl);
 		initSorters(tableEl);
