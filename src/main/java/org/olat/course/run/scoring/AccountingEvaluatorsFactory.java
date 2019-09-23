@@ -22,6 +22,7 @@ package org.olat.course.run.scoring;
 import java.util.List;
 
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -39,6 +40,7 @@ class AccountingEvaluatorsFactory {
 	private static final DurationEvaluator NULL_DURATION_EVALUATOR = new NullDurationEvaluator();
 	private static final ScoreEvaluator UNCHANGING_SCORE_EVALUATOR = new UnchangingScoreEvaluator();
 	private static final PassedEvaluator UNCHANGING_PASSED_EVALUATOR = new UnchangingPassedEvaluator();
+	private static final CompletionEvaluator UNCHANGING_COMPLETION_EVALUATOR = new UnchangingCompletionEvaluator();
 	private static final StatusEvaluator UNCHANGING_STATUS_EVALUATOR = new UnchangingStatusEvaluator();
 	private static final FullyAssessedEvaluator UNCHANGING_FULLY_ASSESSED_EVALUATOR = new UnchangingFullyAssessedEvaluator();
 	private static final LastModificationsEvaluator UNCHANGING_LAST_MODIFICATIONS_EVALUATOR = new UnchangingLastModificationEvaluator();
@@ -56,6 +58,10 @@ class AccountingEvaluatorsFactory {
 	
 	static PassedEvaluator createUnchangingPassedEvaluator() {
 		return UNCHANGING_PASSED_EVALUATOR;
+	}
+	
+	public static CompletionEvaluator createUnchangingCompletionEvaluator() {
+		return UNCHANGING_COMPLETION_EVALUATOR;
 	}
 	
 	static StatusEvaluator createUnchangingStatusEvaluator() {
@@ -126,6 +132,16 @@ class AccountingEvaluatorsFactory {
 		}
 	}
 	
+	private static class UnchangingCompletionEvaluator implements CompletionEvaluator {
+
+		@Override
+		public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+				CourseConfig courseConfig, ScoreAccounting scoureAccounting) {
+			return currentEvaluation.getCompletion();
+		}
+		
+	}
+	
 	private static class UnchangingStatusEvaluator implements StatusEvaluator {
 
 		@Override
@@ -159,5 +175,5 @@ class AccountingEvaluatorsFactory {
 		}
 		
 	}
-	
+
 }

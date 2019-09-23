@@ -53,6 +53,7 @@ import org.olat.course.archiver.ScoreAccountingHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeController;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeTableModel.IdentityCourseElementCols;
 import org.olat.course.assessment.ui.tool.IdentityListCourseNodeToolsController;
@@ -145,7 +146,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 		super.initStatusColumns(columnsModel);
 		IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
 		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(courseNode);
-		if(testCourseNode != null && assessmentConfig.hasCompletion()) {
+		if(testCourseNode != null && Mode.setByNode.equals(assessmentConfig.getCompletionMode())) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(IdentityCourseElementCols.currentCompletion));
 		}
 		
@@ -374,7 +375,7 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 					(IQTESTCourseNode)courseNode, assessedIdentity, coachCourseEnv);
 		}
 		return  new IdentityListCourseNodeToolsController(ureq, getWindowControl(),
-				(IQTESTCourseNode)courseNode, assessedIdentity, coachCourseEnv);
+				courseNode, assessedIdentity, coachCourseEnv);
 	}
 	
 	private List<Identity> getIdentities() {

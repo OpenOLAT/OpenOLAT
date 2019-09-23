@@ -38,6 +38,7 @@ public class AccountingResult extends AssessmentEvaluation {
 	private AssessmentObligation evaluatedObligation;
 	private Float evaluatedScore;
 	private Boolean evaluatedPassed;
+	private Double evaluatedCompletion;
 	private AssessmentEntryStatus evaluatedStatus;
 	private Boolean evaluatedFullyAssessed;
 	private Date evaluatedLastUserModified;
@@ -50,6 +51,7 @@ public class AccountingResult extends AssessmentEvaluation {
 		this.evaluatedObligation = origin.getObligation();
 		this.evaluatedScore = origin.getScore();
 		this.evaluatedPassed = origin.getPassed();
+		this.evaluatedCompletion = origin.getCompletion();
 		this.evaluatedStatus = origin.getAssessmentStatus();
 		this.evaluatedFullyAssessed = origin.getFullyAssessed();
 		this.evaluatedLastUserModified = origin.getLastUserModified();
@@ -90,6 +92,15 @@ public class AccountingResult extends AssessmentEvaluation {
 
 	public void setPassed(Boolean passed) {
 		this.evaluatedPassed = passed;
+	}
+
+	@Override
+	public Double getCompletion() {
+		return evaluatedCompletion;
+	}
+
+	public void setCompletion(Double completion) {
+		this.evaluatedCompletion = completion;
 	}
 
 	@Override
@@ -136,6 +147,7 @@ public class AccountingResult extends AssessmentEvaluation {
 				|| !Objects.equals(origin.getFullyAssessed(), evaluatedFullyAssessed)
 				|| !Objects.equals(origin.getLastUserModified(), evaluatedLastUserModified)
 				|| !Objects.equals(origin.getLastCoachModified(), evaluatedLastCoachModified)
+				|| !Objects.equals(origin.getCompletion(), evaluatedCompletion)
 				|| !Objects.equals(origin.getAssessmentStatus(), evaluatedStatus);
 	}
 

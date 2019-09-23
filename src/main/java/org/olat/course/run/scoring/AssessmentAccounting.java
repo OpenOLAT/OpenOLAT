@@ -157,9 +157,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 			result.setDuration(duration);
 		}
 		
-		//TODO uh score 1:1 übernehmen (con / lp)
-		//TODO uh passed 1:1 übernehmen (con / lp)
-		//TODO uh status. con = passed. lp = childen fully assessed
 		ScoreEvaluator scoreEvaluator = evaluators.getScoreEvaluator();
 		Float score = scoreEvaluator.getScore(result, courseNode, userCourseEnvironment.getConditionInterpreter());
 		result.setScore(score);
@@ -196,6 +193,12 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setLastUserModified(lastModifications.getLastUserModified());
 		result.setLastCoachModified(lastModifications.getLastCoachModified());
 		
+		CompletionEvaluator completionEvaluator = evaluators.getCompletionEvaluator();
+		Double completion = completionEvaluator.getCompletion(result, courseNode,
+				userCourseEnvironment.getCourseEnvironment().getCourseConfig(),
+				this);
+		result.setCompletion(completion);
+		
 		status = statusEvaluator.getStatus(result, children);
 		result.setStatus(status);
 		
@@ -220,6 +223,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		entry.setDuration(result.getDuration());
 		entry.setLastUserModified(result.getLastUserModified());
 		entry.setLastCoachModified(result.getLastCoachModified());
+		entry.setDuration(result.getDuration());
 		entry.setAssessmentStatus(result.getAssessmentStatus());
 		entry.setFullyAssessed(result.getFullyAssessed());
 		

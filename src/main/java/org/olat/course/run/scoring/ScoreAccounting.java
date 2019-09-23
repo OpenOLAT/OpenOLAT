@@ -45,9 +45,9 @@ public interface ScoreAccounting {
 
 	/**
 	 * Evaluates the course node or simply returns the evaluation from the cache.
-	 * @param cn
+	 * @param cncourseNode
 	 * @return ScoreEvaluation
 	 */
-	AssessmentEvaluation evalCourseNode(CourseNode cn);
+	AssessmentEvaluation evalCourseNode(CourseNode courseNode);
 
 }

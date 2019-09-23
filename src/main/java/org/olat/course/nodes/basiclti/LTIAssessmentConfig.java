@@ -94,8 +94,8 @@ public class LTIAssessmentConfig implements AssessmentConfig {
 	}
 	
 	@Override
-	public boolean hasCompletion() {
-		return false;
+	public Mode getCompletionMode() {
+		return Mode.none;
 	}
 	
 	@Override

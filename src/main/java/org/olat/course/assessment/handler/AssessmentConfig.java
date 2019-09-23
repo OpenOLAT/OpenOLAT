@@ -27,6 +27,12 @@ package org.olat.course.assessment.handler;
  */
 public interface AssessmentConfig {
 	
+	public enum Mode {
+		none,
+		setByNode,
+		evaluated
+	}
+	
 	/**
 	 * Real assessments are in efficiency statements and are shown in the assessment tool.
 	 * 
@@ -75,9 +81,9 @@ public interface AssessmentConfig {
 	public Float getCutValue();
 	
 	/**
-	 * @return True if this course node can produces a completion variable for the learner
+	 * @return if this course node can produces a completion variable for the learner
 	 */
-	public boolean hasCompletion();
+	public Mode getCompletionMode();
 	
 	/**
 	 * @return True if this course node produces an attempts variable for the learner

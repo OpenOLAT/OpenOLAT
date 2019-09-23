@@ -17,21 +17,47 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.survey;
+package org.olat.course.assessment;
 
-import org.olat.course.learningpath.LearningPathOnlyAssessmentConfig;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.ScoreAccounting;
 
 /**
  * 
- * Initial date: 22 Sep 2019<br>
+ * Initial date: 23 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SurveyAssessmentConfig extends LearningPathOnlyAssessmentConfig {
+public class MappedScoreAccounting implements ScoreAccounting {
+	
+	private Map<CourseNode, AssessmentEvaluation> nodeToEvaluation = new HashMap<>();
+	
+	public void put(CourseNode courseNode, AssessmentEvaluation evaluation) {
+		nodeToEvaluation.put(courseNode, evaluation);
+	}
 
 	@Override
-	public Mode getCompletionMode() {
-		return Mode.setByNode;
+	public void evaluateAll() {
+		//
+	}
+
+	@Override
+	public boolean evaluateAll(boolean update) {
+		return false;
+	}
+
+	@Override
+	public AssessmentEvaluation getScoreEvaluation(CourseNode courseNode) {
+		return nodeToEvaluation.get(courseNode);
+	}
+
+	@Override
+	public AssessmentEvaluation evalCourseNode(CourseNode courseNode) {
+		return nodeToEvaluation.get(courseNode);
 	}
 
 }

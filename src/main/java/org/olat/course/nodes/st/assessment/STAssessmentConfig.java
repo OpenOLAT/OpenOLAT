@@ -85,8 +85,8 @@ public class STAssessmentConfig implements AssessmentConfig {
 	}
 
 	@Override
-	public boolean hasCompletion() {
-		return false;
+	public Mode getCompletionMode() {
+		return Mode.evaluated;
 	}
 
 	@Override

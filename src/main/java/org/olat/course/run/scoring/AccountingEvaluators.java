@@ -37,6 +37,8 @@ public interface AccountingEvaluators {
 
 	public LastModificationsEvaluator getLastModificationsEvaluator();
 
+	public CompletionEvaluator getCompletionEvaluator();
+
 	public StatusEvaluator getStatusEvaluator();
 
 	public FullyAssessedEvaluator getFullyAssessedEvaluator();

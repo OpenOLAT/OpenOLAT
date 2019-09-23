@@ -22,6 +22,7 @@ package org.olat.course.run.scoring;
 import java.util.Date;
 
 import org.olat.course.assessment.handler.AssessmentConfig;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -171,7 +172,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		Double completion = null;
 		Double currentRunCompletion = null;
 		AssessmentRunStatus runStatus = null;
-		if(assessmentConfig.hasCompletion()) {
+		if(assessmentConfig.getCompletionMode() != null && !Mode.none.equals(assessmentConfig.getCompletionMode())) {
 			completion = entry.getCompletion();
 			currentRunCompletion = entry.getCurrentRunCompletion();
 			runStatus = entry.getCurrentRunStatus();

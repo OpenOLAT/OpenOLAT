@@ -17,9 +17,10 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.survey;
+package org.olat.course.run.scoring;
 
-import org.olat.course.learningpath.LearningPathOnlyAssessmentConfig;
+import org.olat.course.config.CourseConfig;
+import org.olat.course.nodes.CourseNode;
 
 /**
  * 
@@ -27,11 +28,9 @@ import org.olat.course.learningpath.LearningPathOnlyAssessmentConfig;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class SurveyAssessmentConfig extends LearningPathOnlyAssessmentConfig {
+public interface CompletionEvaluator {
 
-	@Override
-	public Mode getCompletionMode() {
-		return Mode.setByNode;
-	}
+	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
+			CourseConfig courseConfig, ScoreAccounting scoreAccounting);
 
 }

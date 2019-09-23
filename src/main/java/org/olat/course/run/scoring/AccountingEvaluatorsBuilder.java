@@ -32,6 +32,7 @@ public class AccountingEvaluatorsBuilder {
 			.withDurationEvaluator(AccountingEvaluatorsFactory.createNullDurationEvaluator())
 			.withScoreEvaluator(AccountingEvaluatorsFactory.createUnchangingScoreEvaluator())
 			.withPassedEvaluator(AccountingEvaluatorsFactory.createUnchangingPassedEvaluator())
+			.withCompletionEvaluator(AccountingEvaluatorsFactory.createUnchangingCompletionEvaluator())
 			.withStatusEvaluator(AccountingEvaluatorsFactory.createUnchangingStatusEvaluator())
 			.withFullyAssessedEvaluator(AccountingEvaluatorsFactory.createUnchangingFullyAssessedEvaluator())
 			.withLastModificationsEvaluator(AccountingEvaluatorsFactory.createUnchangingLastModificationsEvaluator())
@@ -41,6 +42,7 @@ public class AccountingEvaluatorsBuilder {
 	private DurationEvaluator durationEvaluator;
 	private ScoreEvaluator scoreEvaluator;
 	private PassedEvaluator passedEvaluator;
+	private CompletionEvaluator completionEvaluator;
 	private StatusEvaluator statusEvaluator;
 	private FullyAssessedEvaluator fullyAssessedEvaluator;
 	private LastModificationsEvaluator lastModificationsEvaluator;
@@ -66,6 +68,11 @@ public class AccountingEvaluatorsBuilder {
 	
 	public AccountingEvaluatorsBuilder withPassedEvaluator(PassedEvaluator passedEvaluator) {
 		this.passedEvaluator = passedEvaluator;
+		return this;
+	}
+	
+	public AccountingEvaluatorsBuilder withCompletionEvaluator(CompletionEvaluator completionEvaluator) {
+		this.completionEvaluator = completionEvaluator;
 		return this;
 	}
 	
@@ -98,6 +105,9 @@ public class AccountingEvaluatorsBuilder {
 		impl.passedEvaluator = this.passedEvaluator != null
 				? this.passedEvaluator
 				: AccountingEvaluatorsFactory.createUnchangingPassedEvaluator();
+		impl.completionEvaluator = this.completionEvaluator != null
+				? this.completionEvaluator
+				: AccountingEvaluatorsFactory.createUnchangingCompletionEvaluator();
 		impl.statusEvaluator = this.statusEvaluator != null
 				? this.statusEvaluator
 				: AccountingEvaluatorsFactory.createUnchangingStatusEvaluator();
@@ -124,6 +134,7 @@ public class AccountingEvaluatorsBuilder {
 		private DurationEvaluator durationEvaluator;
 		private ScoreEvaluator scoreEvaluator;
 		private PassedEvaluator passedEvaluator;
+		private CompletionEvaluator completionEvaluator;
 		private StatusEvaluator statusEvaluator;
 		private FullyAssessedEvaluator fullyAssessedEvaluator;
 		private LastModificationsEvaluator lastModificationsEvaluator;
@@ -147,7 +158,12 @@ public class AccountingEvaluatorsBuilder {
 		public PassedEvaluator getPassedEvaluator() {
 			return passedEvaluator;
 		}
-
+		
+		@Override
+		public CompletionEvaluator getCompletionEvaluator() {
+			return completionEvaluator;
+		}
+		
 		@Override
 		public StatusEvaluator getStatusEvaluator() {
 			return statusEvaluator;
@@ -162,7 +178,7 @@ public class AccountingEvaluatorsBuilder {
 		public LastModificationsEvaluator getLastModificationsEvaluator() {
 			return lastModificationsEvaluator;
 		}
-		
+
 	}
 
 }
