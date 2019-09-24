@@ -88,7 +88,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 		}
 		
 		List<Authentication> authentications = securityManager.findAuthenticationByAuthusername(username, providers);
-		if(authentications != null && authentications.size() > 0) {
+		if(authentications != null && !authentications.isEmpty()) {
 			for(Authentication authentication:authentications) {
 				if("auth".equals(digestAuth.getQop())) {
 					String nonce = digestAuth.getNonce();
@@ -105,7 +105,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 						return authentication.getIdentity();
 					} else if(log.isDebugEnabled()) {
 						// don't log as error, happens all the time with certain clients, e.g. Microsoft-WebDAV-MiniRedir
-						log.debug("Verity::" + verity + " doesn't equals response::" + response);
+						log.debug("Verity: {} doesn't equals response: {}", verity, response);
 					}
 				}
 			}
@@ -305,7 +305,7 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	}
 	
 	private Authentication getAndRemoveAuthentication(String provider, List<Authentication> authentications) {
-		if(authentications != null && authentications.size() > 0) {
+		if(authentications != null && !authentications.isEmpty()) {
 			for(Authentication authentication:authentications) {
 				if(provider.equals(authentication.getProvider())) {
 					authentications.remove(authentication);
