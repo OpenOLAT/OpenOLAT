@@ -58,7 +58,7 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
+//@Service
 public class PaypalCheckoutManagerImpl implements PaypalCheckoutManager {
 
 	private static final Logger log = Tracing.createLoggerFor(PaypalCheckoutManagerImpl.class);

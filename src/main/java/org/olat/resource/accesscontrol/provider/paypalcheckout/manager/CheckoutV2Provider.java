@@ -65,7 +65,7 @@ import com.paypal.payments.StatusDetails;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-@Service
+//@Service
 public class CheckoutV2Provider {
 	
 	private static final Logger log = Tracing.createLoggerFor(CheckoutV2Provider.class);

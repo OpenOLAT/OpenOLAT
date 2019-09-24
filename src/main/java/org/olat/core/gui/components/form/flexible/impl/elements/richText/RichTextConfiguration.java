@@ -79,7 +79,7 @@ public class RichTextConfiguration implements Disposable {
 	private static final String JS_LANG_PATH = "/static/js/tinymce4/tinymce/langs";
 
 	private static boolean requiredJsLangFilesAvailable() {
-		Set<String> availableLanguageFiles = CoreSpringFactory.servletContext.getResourcePaths(JS_LANG_PATH);
+		Set<String> availableLanguageFiles = CoreSpringFactory.getServletContext().getResourcePaths(JS_LANG_PATH);
 		next : for (String enabledLanguageKey : I18nModule.getEnabledLanguageKeys()) {
 			if ("en".equals(enabledLanguageKey)) {
 				continue;

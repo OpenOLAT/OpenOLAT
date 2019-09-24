@@ -236,4 +236,8 @@ public class CoreSpringFactory implements ServletContextAware, BeanFactoryAware 
 	public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
 		CoreSpringFactory.beanFactory = (DefaultListableBeanFactory) beanFactory;
 	}
+
+	public static ServletContext getServletContext () {
+		return servletContext;
+	}
 }

@@ -147,13 +147,13 @@ public class StaticServlet extends HttpServlet {
 		try {
 			for (StaticDirectory staticDirectory : staticDirectories) {
 				String path = "/" + staticDirectory.getName() + subPath;
-				result = CoreSpringFactory.servletContext.getResource(path);
+				result = CoreSpringFactory.getServletContext().getResource(path);
 				if (result != null) {
 					break;
 				}
 			}
 			if (result == null) {
-				result = CoreSpringFactory.servletContext.getResource(subPath);
+				result = CoreSpringFactory.getServletContext().getResource(subPath);
 			}
 		} catch (MalformedURLException e) {
 			assert false : e;

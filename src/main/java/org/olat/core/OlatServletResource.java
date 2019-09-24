@@ -22,7 +22,7 @@ import java.util.zip.ZipOutputStream;
 public class OlatServletResource {
 
 	private static ServletContextResourcePatternResolver servletContextResourcePatternResolver =
-			new ServletContextResourcePatternResolver(CoreSpringFactory.servletContext);
+			new ServletContextResourcePatternResolver(CoreSpringFactory.getServletContext());
 
 	private static Resource[] getAllDirectoryPathsOfPath(Object path) throws IOException {
 		return servletContextResourcePatternResolver.getResources(
@@ -68,7 +68,7 @@ public class OlatServletResource {
 			ArrayList<String> result = new ArrayList<>();
 
 			for (Object path : paths) {
-				URL url = CoreSpringFactory.servletContext.getResource(path.toString());
+				URL url = CoreSpringFactory.getServletContext().getResource(path.toString());
 				assert url != null : "Themes path does not exist: " + path;
 				String[] resources = url.getPath().split("!");
 				assert resources.length > 0 : "Not a path to a resource within a JAR: " + url.getPath();
