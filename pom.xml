@@ -63,16 +63,16 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
 		<org.springframework.version>5.1.9.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.4.Final</org.hibernate.version>
+		<org.hibernate.version>5.4.5.Final</org.hibernate.version>
 		<apache.cxf>3.3.3</apache.cxf>
-		<apache.pdfbox>2.0.16</apache.pdfbox>
+		<apache.pdfbox>2.0.17</apache.pdfbox>
 		<apache.poi>4.1.0</apache.poi>
 		<apache.log4j>2.12.1</apache.log4j>
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
 		<io.undertow>2.0.26.Final</io.undertow>
 		<jackson.version>2.9.10</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
-		<org.postgresql.version>42.2.6</org.postgresql.version>
+		<org.postgresql.version>42.2.8</org.postgresql.version>
 		<org.infinispan.version>9.2.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
@@ -410,7 +410,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.23.5</version>
+				    <version>3.23.8</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1707,12 +1707,12 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk15on</artifactId>
-			<version>1.62</version>
+			<version>1.63</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.62</version>
+			<version>1.63</version>
 		</dependency>
 		<dependency>
 		    <groupId>com.github.scribejava</groupId>
@@ -1989,7 +1989,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.9</version>
+			<version>4.5.10</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2000,7 +2000,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.5.9</version>
+			<version>4.5.10</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -2278,7 +2278,7 @@
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>3.12.2</version>
+			<version>3.13.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
