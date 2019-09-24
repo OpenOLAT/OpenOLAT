@@ -170,7 +170,9 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 
 	@Override
 	protected void doDispose() {
-		//
+		if(fileUplCtr != null && fileUplCtr.getUploadContainer() != null) {
+			fileUplCtr.getUploadContainer().deleteSilently();
+		}
 	}
 	
 	@Override
@@ -221,8 +223,8 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 	}
 	
 	private void cleanUp() {
-		if(fileUplCtr != null && fileUplCtr.getUploadedFile() != null) {
-			fileUplCtr.getUploadedFile().getParentContainer().deleteSilently();
+		if(fileUplCtr != null && fileUplCtr.getUploadContainer() != null) {
+			fileUplCtr.getUploadContainer().deleteSilently();
 		}
 		removeAsListenerAndDispose(fileCopyCtr);
 		removeAsListenerAndDispose(fileUplCtr);

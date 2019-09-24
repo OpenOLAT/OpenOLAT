@@ -75,6 +75,7 @@ import org.olat.course.certificate.CertificateTemplate;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.PDFCertificatesOptions;
 import org.olat.course.certificate.RecertificationTimeUnit;
+import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
@@ -347,7 +348,7 @@ public class CertificatesOptionsController extends FormBasicController {
 		String custom1 = certificationCustom1El.getValue();
 		String custom2 = certificationCustom2El.getValue();
 		String custom3 = certificationCustom3El.getValue();
-		File preview = certificatesManager.previewCertificate(selectedTemplate, entry, getLocale(), custom1, custom2, custom3);
+		PreviewCertificate preview = certificatesManager.previewCertificate(selectedTemplate, entry, getLocale(), custom1, custom2, custom3);
 		MediaResource resource = new PreviewMediaResource(preview);
 		ureq.getDispatchResult().setResultingMediaResource(resource);
 	}
@@ -490,9 +491,9 @@ public class CertificatesOptionsController extends FormBasicController {
 	
 	private static class PreviewMediaResource implements MediaResource {
 		private static final Logger log = Tracing.createLoggerFor(PreviewMediaResource.class);
-		private File preview;
+		private PreviewCertificate preview;
 		
-		public PreviewMediaResource(File preview) {
+		public PreviewMediaResource(PreviewCertificate preview) {
 			this.preview = preview;
 		}
 		
@@ -513,13 +514,13 @@ public class CertificatesOptionsController extends FormBasicController {
 
 		@Override
 		public Long getSize() {
-			return preview.length();
+			return preview.getCertificate().length();
 		}
 
 		@Override
 		public InputStream getInputStream() {
 			try {
-				return new FileInputStream(preview);
+				return new FileInputStream(preview.getCertificate());
 			} catch (FileNotFoundException e) {
 				log.error("", e);
 				return null;
@@ -538,7 +539,7 @@ public class CertificatesOptionsController extends FormBasicController {
 
 		@Override
 		public void release() {
-			FileUtils.deleteDirsAndFiles(preview.getParentFile(), true, true);
+			FileUtils.deleteDirsAndFiles(preview.getTmpDirectory(), true, true);
 		}
 	}
 }

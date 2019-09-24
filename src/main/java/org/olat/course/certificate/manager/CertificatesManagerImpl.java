@@ -113,6 +113,7 @@ import org.olat.course.certificate.model.CertificateInfos;
 import org.olat.course.certificate.model.CertificateStandalone;
 import org.olat.course.certificate.model.CertificateTemplateImpl;
 import org.olat.course.certificate.model.JmsCertificateWork;
+import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.course.certificate.ui.CertificateController;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
@@ -732,7 +733,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 	}
 
 	@Override
-	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1,
+	public PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1,
 			String custom2, String custom3) {
 		Identity identity = getPreviewIdentity();
 		
@@ -763,7 +764,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 					new Date(), new Date(), custom1, custom2, custom3, certUrl, locale, userManager, this);
 			certificateFile = worker.fill(template, dirFile, "Certificate.pdf");
 		}
-		return certificateFile;
+		return new PreviewCertificate(certificateFile, dirFile);
 	}
 	
 	private Identity getPreviewIdentity() {
@@ -837,7 +838,7 @@ public class CertificatesManagerImpl implements CertificatesManager, MessageList
 			workUnit.setScore(score);
 			workUnit.setConfig(config);
 			
-			session = connection.createQueueSession(false, QueueSession.AUTO_ACKNOWLEDGE);
+			session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 			ObjectMessage message = session.createObjectMessage();
 			message.setObject(workUnit);
 

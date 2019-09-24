@@ -235,8 +235,8 @@ public class CatalogEntryEditController extends FormBasicController {
 		File uploadedFile = fileUpload.getUploadFile();
 		if(uploadedFile != null) {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
-			VFSContainer container = tmpHome.createChildContainer(UUID.randomUUID().toString());
-			VFSLeaf newFile = fileUpload.moveUploadFileTo(container, true);//give it it's real name and extension
+			VFSContainer tmpContainer = tmpHome.createChildContainer(UUID.randomUUID().toString());
+			VFSLeaf newFile = fileUpload.moveUploadFileTo(tmpContainer, true);//give it it's real name and extension
 			if(newFile != null) {
 				boolean ok = catalogManager.setImage(newFile, catalogEntry);
 				if (!ok) {
@@ -246,6 +246,7 @@ public class CatalogEntryEditController extends FormBasicController {
 				logError("Cannot move and or crop: " + fileUpload.getUploadFileName() + " ( " + fileUpload.getUploadMimeType() + " )", null);
 				showError("error.download.image");
 			}
+			tmpContainer.deleteSilently();
 		}
 		
 		fireEvent(ureq, Event.DONE_EVENT);
