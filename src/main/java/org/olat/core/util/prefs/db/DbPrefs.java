@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.core.util.prefs.PreferencesStorage;
@@ -109,6 +110,10 @@ public class DbPrefs implements Preferences, Serializable {
 		if (value == null) return defaultValue;
 		return value;
 	}
+	
+	
+
+
 
 	/**
 	 * @param attributedClass
@@ -117,7 +122,7 @@ public class DbPrefs implements Preferences, Serializable {
 	 */
 	@Override
 	public void put(Class<?> attributedClass, String key, Object value) {
-		prefstore.put(attributedClass.getName()+"::"+key, value);
+		prefstore.put(attributedClass.getName() + "::" + key, value);
 	}
 
 	@Override
@@ -131,21 +136,25 @@ public class DbPrefs implements Preferences, Serializable {
 	void setIdentity(Identity identity) {
 		this.owner = identity;
 	}
+	
+	@Override
+	public void commit(Class<?> attributedClass, String key, Object value) {
+		putAndSave(attributedClass, key, value);
+		DBFactory.getInstance().commit();
+	}
 
-	/**
-	 * 
-	 * @see org.olat.core.util.prefs.Preferences#putAndSave(java.lang.Class, java.lang.String, java.lang.Object)
-	 */
+	@Override
+	public void commit(String attributedClass, String key, Object value) {
+		putAndSave(attributedClass, key, value);
+		DBFactory.getInstance().commit();
+	}
+
 	@Override
 	public void putAndSave(Class<?> attributedClass, String key, Object value) {
 		put(attributedClass, key, value);
 		save();
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.util.prefs.Preferences#findPrefByKey(java.lang.String)
-	 */
 	@Override
 	public Object findPrefByKey(String partOfKey) {
 		for (Iterator<String> iterator = prefstore.keySet().iterator(); iterator.hasNext();) {

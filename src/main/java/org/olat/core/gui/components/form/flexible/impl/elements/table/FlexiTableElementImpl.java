@@ -1421,8 +1421,7 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			FlexiTablePreferences tablePrefs =
 					new FlexiTablePreferences(getPageSize(), sortedColKey, sortDirection,
 							convertColumnIndexToKeys(enabledColumnIndex), rendererType);
-			prefs.put(FlexiTableElement.class, persistentId, tablePrefs);
-			prefs.save();
+			prefs.putAndSave(FlexiTableElement.class, persistentId, tablePrefs);
 		}
 	}
 	

@@ -586,9 +586,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 	private void saveOpenPanel(UserRequest ureq, String panelId, boolean newValue) {
 		Preferences guiPrefs = ureq.getUserSession().getGuiPreferences();
 		if (guiPrefs != null) {
-			guiPrefs.putAndSave(QTI21AssessmentRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
+			guiPrefs.commit(QTI21AssessmentRunController.class, getOpenPanelId(panelId), Boolean.valueOf(newValue));
 		}
-		mainVC.getContext().put("in-" + panelId, Boolean.valueOf(newValue));
+		mainVC.getContext().put("in-".concat(panelId), Boolean.valueOf(newValue));
 	}
 	
 	private String getOpenPanelId(String panelId) {

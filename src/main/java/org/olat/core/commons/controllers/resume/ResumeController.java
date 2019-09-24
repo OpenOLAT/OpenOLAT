@@ -44,7 +44,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryManager;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.prefs.Preferences;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -139,9 +138,7 @@ public class ResumeController extends FormBasicController {
 	private void savePreferences(UserRequest ureq, String val) {
 		// check if checkbox (dont askagain) is checked
 		if(askagainCheckbox.isSelected(0)){
-			Preferences	prefs = ureq.getUserSession().getGuiPreferences();
-			prefs.put(WindowManager.class, "resume-prefs", val);
-			prefs.save();
+			ureq.getUserSession().getGuiPreferences().commit(WindowManager.class, "resume-prefs", val);
 		}
 	}
 }

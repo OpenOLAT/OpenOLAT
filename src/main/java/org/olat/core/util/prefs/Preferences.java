@@ -86,6 +86,24 @@ public interface Preferences {
 	public void putAndSave(String attributedClass, String key, Object value);
 	
 	/**
+	 * A very convenient method: as put, followed by a save() and commit.
+	 * 
+	 * @param attributedClass
+	 * @param key
+	 * @param value
+	 */
+	public void commit(String attributedClass, String key, Object value);
+	
+	/**
+	 * A very convenient method which put, save ant commit the preferences.
+	 * 
+	 * @param attributedClass The attribute
+	 * @param key The key of the preference
+	 * @param value The value of the preference
+	 */
+	public void commit(Class<?> attributedClass, String key, Object value);
+	
+	/**
 	 * to commit several put's
 	 *
 	 */

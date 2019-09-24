@@ -84,7 +84,7 @@ public class DbStorage implements PreferencesStorage {
 			// also save the properties to db, here (strentini)
 			// fixes the "non-present gui preferences" for new users, or where guiproperties were manually deleted
 			PropertyManager.getInstance().saveProperty(property);
-		}else{
+		} else {
 			property.setTextValue(props);
 			PropertyManager.getInstance().updateProperty(property);
 		}

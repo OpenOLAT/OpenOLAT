@@ -34,13 +34,15 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
-import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.ScreenMode.Mode;
+import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.MainLayoutBasicController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.gui.control.generic.layout.MainLayout3ColumnsController;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
+import org.olat.core.util.UserSession;
 
 /**
  * <h3>Description:</h3> This main layout controller provides a three column
@@ -79,7 +81,7 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	private LayoutMain3ColsConfig localLayoutConfig;
 	private String layoutConfigKey = null;
 	private Panel panel1, panel2, panel3;
-	private Activateable2 activateableDelegate2;	//fxdiff BAKS-7 Resume function
+	private Activateable2 activateableDelegate2;
 	private boolean fullScreen = false;
 	private ChiefController thebaseChief;
 
@@ -303,41 +305,45 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == layoutMainVC) {
-			String command = event.getCommand();
-			String width = ureq.getModuleURI();
-			int parsedWidth;
-			try {
+			doColumnWidth(ureq, event.getCommand(), ureq.getParameter("newEmWidth"));
+		}
+	}
+	
+	private void doColumnWidth(UserRequest ureq, String command, String width) {
+		int parsedWidth;
+		try {
+			if(StringHelper.isLong(width)) {
 				parsedWidth = Integer.parseInt(width);
 				if (parsedWidth < 1) {
 					// do not allow width smaller than 1em - resizer will be lost
 					// otherwhise
 					parsedWidth = 1;
 				}
-			} catch (NumberFormatException e) {
-				logWarn("Could not parse column width::" + width + " for command::" + command, e);
+			} else {
 				parsedWidth = 14; // default value
 			}
-			if (command.equals("saveCol1Width")) {
-				localLayoutConfig.setCol1WidthEM(parsedWidth);
-				saveGuiPrefs(ureq, localLayoutConfig);
-				layoutMainVC.contextPut("col1CustomCSSStyles", "width: " + localLayoutConfig.getCol1WidthEM() + "em;");
-				// don't refresh view in ajax mode!
-				layoutMainVC.setDirty(false);
-				
-			} else if (command.equals("saveCol2Width")) {
-				localLayoutConfig.setCol2WidthEM(parsedWidth);
-				saveGuiPrefs(ureq, localLayoutConfig);
-				layoutMainVC.contextPut("col2CustomCSSStyles", "width: " + localLayoutConfig.getCol2WidthEM() + "em;");
-				// don't refresh view in ajax mode!
-				layoutMainVC.setDirty(false);
-			}
+		} catch (NumberFormatException e) {
+			logWarn("Could not parse column width::" + width + " for command::" + command, e);
+			parsedWidth = 14; // default value
+		}
+		if (command.equals("saveCol1Width")) {
+			localLayoutConfig.setCol1WidthEM(parsedWidth);
+			saveGuiPrefs(ureq, localLayoutConfig);
+			layoutMainVC.getContext().put("col1CustomCSSStyles", "width: " + localLayoutConfig.getCol1WidthEM() + "em;");
+		} else if (command.equals("saveCol2Width")) {
+			localLayoutConfig.setCol2WidthEM(parsedWidth);
+			saveGuiPrefs(ureq, localLayoutConfig);
+			layoutMainVC.getContext().put("col2CustomCSSStyles", "width: " + localLayoutConfig.getCol2WidthEM() + "em;");
 		}
 	}
 	
 	private void saveGuiPrefs(UserRequest ureq, LayoutMain3ColsConfig layoutConfig ) {
-		// save config if not local setting
-		if (layoutConfigKey != null && ureq.getUserSession().isAuthenticated() && !ureq.getUserSession().getRoles().isGuestOnly()) {
-			ureq.getUserSession().getGuiPreferences().putAndSave(this.getClass(), layoutConfigKey, layoutConfig);
+		// save if not local setting
+		if (layoutConfigKey != null) {
+			UserSession usess = ureq.getUserSession();
+			if(usess.isAuthenticated() && !usess.getRoles().isGuestOnly()) {
+				ureq.getUserSession().getGuiPreferences().commit(this.getClass(), layoutConfigKey, layoutConfig);
+			}
 		}
 	}
 
@@ -489,15 +495,13 @@ public class LayoutMain3ColsController extends MainLayoutBasicController impleme
 	 * @return
 	 */
 	private String calculateMainCssClasses(Set<String> classes) {
-		String mainCss = "";
+		StringBuilder mainCss = new StringBuilder(32);
 		for (Iterator<String> iter = classes.iterator(); iter.hasNext();) {
-			String cssClass = iter.next();
-			mainCss += cssClass;
+			mainCss.append(iter.next());
 			if (iter.hasNext()) {
-				mainCss += " ";
+				mainCss.append(" ");
 			}
 		}
-		return mainCss;
+		return mainCss.toString();
 	}
-
 }
