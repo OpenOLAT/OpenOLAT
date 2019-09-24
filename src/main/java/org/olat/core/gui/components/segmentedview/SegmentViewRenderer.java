@@ -28,7 +28,7 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 
-public class SegmentViewRenderer extends DefaultComponentRenderer {
+class SegmentViewRenderer extends DefaultComponentRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
@@ -37,11 +37,12 @@ public class SegmentViewRenderer extends DefaultComponentRenderer {
 			return;
 		}
 
-		sb.append("<div class='o_segments btn-group btn-group-justified'>");
+		sb.append("<div class='o_segments btn-group btn-group-justified' role='navigation'>");
 		for(Component segment:component.getSegments()) {
 			ComponentRenderer subRenderer = segment.getHTMLRendererSingleton();
 			Translator subTranslator = segment.getTranslator();
 			subRenderer.render(renderer, sb, segment, ubu, subTranslator, renderResult, args);
+			segment.setDirty(false);
 		}
 		sb.append("</div>");
 	}

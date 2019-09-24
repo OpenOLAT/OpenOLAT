@@ -69,6 +69,8 @@ import org.olat.restapi.group.LearningGroupWebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Description:<br>
@@ -78,6 +80,7 @@ import org.springframework.stereotype.Component;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Tag(name = "Users")
 @Component
 @Path("users/{identityKey}/forums")
 public class MyForumsWebService {
@@ -103,6 +106,7 @@ public class MyForumsWebService {
 	 * @param request The REST request
 	 * @return The files
 	 */
+
 	@Path("group/{groupKey}")
 	public ForumWebService getGroupForum(@PathParam("groupKey") Long groupKey, @Context HttpServletRequest request) {
 		if(groupKey == null) {

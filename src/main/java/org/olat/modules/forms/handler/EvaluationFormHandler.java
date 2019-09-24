@@ -34,6 +34,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Locale;
 import java.util.Map;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
@@ -50,7 +51,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.PathUtils;
@@ -283,12 +283,13 @@ public class EvaluationFormHandler implements RepositoryHandler {
 		
 		//if in use -> edition is restricted
 		boolean restrictedEdit = evaluationFormManager.isEvaluationFormActivelyUsed(re);
+		boolean restrictedEditWeight = evaluationFormManager.isEvaluationFormWeightActivelyUsed(re);
 		if(restrictedEdit) {
 			Translator translator = Util.createPackageTranslator(EvaluationFormRuntimeController.class, ureq.getLocale());
 			toolbar.setMessage(translator.translate("evaluation.form.in.use"));
 			toolbar.setMessageCssClass("o_warning");
 		}
-		return new EvaluationFormEditorController(ureq, control, formFile, storage, restrictedEdit);
+		return new EvaluationFormEditorController(ureq, control, formFile, storage, restrictedEdit, restrictedEditWeight);
 	}
 	
 	public File getFormFile(RepositoryEntry re) {

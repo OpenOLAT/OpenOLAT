@@ -60,7 +60,7 @@ public class HtmlStaticPageComponentRenderer implements ComponentRenderer {
 		if (htmlContent != null && wrapperCssStyle != null) {
 			htmlContent = "<div style=\"" + wrapperCssStyle + "\">" + htmlContent + "</div>";			
 		}
-		// Indicate to framework that the page probably will load some media files
+		//S Indicate to framework that the page probably will load some media files
 		renderResult.setAsyncMediaResponsible(cpc); // indicate browser fetch of e.g. images includes in the rendered page should be directed to the cpcomponent so this component can deliver the e.g. images
 		if (htmlContent != null) target.append(htmlContent);
 	}

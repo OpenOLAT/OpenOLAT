@@ -44,6 +44,10 @@ public interface DateChooser extends TextElement {
 	 * @param date
 	 */
 	public void setDate(Date date);
+	
+	public Date getSecondDate();
+	
+	public void setSecondDate(Date date);
 
 	/**
 	 * @return
@@ -54,6 +58,32 @@ public interface DateChooser extends TextElement {
 	 * @param dateChooserTimeEnabled
 	 */
 	public void setDateChooserTimeEnabled(boolean dateChooserTimeEnabled);
+	
+	/**
+	 * @return true if the item handles a second date
+	 */
+	public boolean isSecondDate();
+	
+	/**
+	 * @param enableSecondDate true if the item needs to handle a second date
+	 */
+	public void setSecondDate(boolean enableSecondDate);
+	
+	/**
+	 * If true, only one date chooser is shown
+	 * @return
+	 */
+	public boolean isSameDay();
+	
+	/**
+	 * If time is enabled, and the two dates are on the same day, this option
+	 * allow to only show one date chooser with two times fileds.
+	 * 
+	 * @param sameDay
+	 */
+	public void setSameDay(boolean sameDay);
+	
+	public void setSeparator(String i18nKey);
 
 	/**
 	 * @param errorKey

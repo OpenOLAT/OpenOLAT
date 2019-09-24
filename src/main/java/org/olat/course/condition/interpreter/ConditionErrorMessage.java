@@ -24,22 +24,32 @@
 */
 
 package org.olat.course.condition.interpreter;
+
 /**
- * Description:<br>
- * TODO: patrick Class Description for ConditionErrorMessage
- * 
- * <P>
  * Initial Date:  Jul 8, 2005 <br>
  * @author patrick
  */
 public class ConditionErrorMessage {
-	//TODO:pb:a always! use getter and setters!
-	public String errorKey = null;
-	public String[] errorKeyParams = null;
-	public String solutionMsgKey = null;
+
+	private final String errorKey;
+	private final String[] errorKeyParams;
+	private final String solutionMsgKey;
+	
 	public ConditionErrorMessage(String errorKey, String solutionMsg, String[] errorKeyParams) {
 		this.errorKey = errorKey;
 		this.errorKeyParams = errorKeyParams;
 		this.solutionMsgKey = solutionMsg;
+	}
+
+	public String getErrorKey() {
+		return errorKey;
+	}
+
+	public String[] getErrorKeyParams() {
+		return errorKeyParams;
+	}
+
+	public String getSolutionMsgKey() {
+		return solutionMsgKey;
 	}
 }

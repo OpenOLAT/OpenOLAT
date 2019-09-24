@@ -26,6 +26,7 @@ import java.util.Set;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.forms.model.xml.Form;
@@ -47,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class TrendController extends GroupByController {
 
+	private GroupByDataModel dataModel;
 	private MultiTrendSeries<MultiKey> multiTrendSeries;
 	
 	@Autowired
@@ -85,6 +87,11 @@ public class TrendController extends GroupByController {
 		}
 		return 0;
 	}
+
+	@Override
+	protected void addTotalDataColumn(FlexiTableColumnModel columnsModel, int columnIndex) {
+		//
+	}
 	
 	private List<String> getTemporalHeaders() {
 		List<TemporalKey> temporalKeys = multiTrendSeries.getTemporalKeys();
@@ -107,6 +114,26 @@ public class TrendController extends GroupByController {
 	@Override
 	protected Set<MultiKey> getStatisticsMultiKeys() {
 		return multiTrendSeries.getIdentifiers();
+	}
+
+	@Override
+	protected boolean hasFooter() {
+		return false;
+	}
+
+	@Override
+	protected void initModel(FlexiTableColumnModel columnsModel) {
+		dataModel = new GroupByDataModel(columnsModel, getLocale());
+	}
+
+	@Override
+	protected FlexiTableDataModel<GroupByRow> getModel() {
+		return dataModel;
+	}
+
+	@Override
+	protected void setModelOjects(List<GroupByRow> rows) {
+		dataModel.setObjects(rows);
 	}
 
 }

@@ -189,14 +189,14 @@
 
 #if($mode == "one")
 	$r.render("singleThreadTable")
-	<script type="text/javascript">
+	<script>
 	/* <![CDATA[ */
 			o_scrollToElement('#o_top');
 	/* ]]> */
 	</script> 
 #end
 #if(${goToMessage.isTrue()})
-	<script type="text/javascript">
+	<script>
 	/* <![CDATA[ */
 	    o_scrollToElement('#o_forum_message_$goToMessageId');
 	/* ]]> */

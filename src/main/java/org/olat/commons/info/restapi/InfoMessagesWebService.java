@@ -48,6 +48,8 @@ import org.olat.core.util.resource.OresHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Description:<br>
@@ -56,6 +58,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:  29 jul. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Tag(name = "Infomessages")
 @Component
 @Path("infomessages")
 public class InfoMessagesWebService {

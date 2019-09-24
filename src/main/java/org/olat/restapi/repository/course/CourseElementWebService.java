@@ -81,6 +81,8 @@ import org.olat.restapi.support.vo.elements.TaskConfigVO;
 import org.olat.restapi.support.vo.elements.TestConfigVO;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 /**
  * This interface provides course building capabilities from our REST API.
@@ -89,6 +91,7 @@ import org.springframework.stereotype.Component;
  * 
  * @author cbuckley, srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/courses/{courseId}/elements")
 public class CourseElementWebService extends AbstractCourseNodeWebService {

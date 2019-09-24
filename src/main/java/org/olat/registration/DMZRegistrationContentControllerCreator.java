@@ -33,10 +33,6 @@ import org.olat.core.gui.control.creator.ControllerCreator;
 import org.olat.login.DmzBFWCParts;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for DMZContentControllerCreator
- * 
- * <P>
  * Initial Date:  29.01.2008 <br>
  * @author patrickb
  */

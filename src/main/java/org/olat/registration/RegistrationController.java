@@ -88,6 +88,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class RegistrationController extends BasicController implements Activateable2 {
 
 	private static final String SEPARATOR = "____________________________________________________________________\n";
+	private static final String STEP_LANG = "lang";
+	private static final String STEP_DISCLAIMER = "disclaimer";
+	private static final String STEP_EMAIL = "email";
+	private static final String STEP_REGISTRATION_FORM = "registration";
+	private static final String STEP_ADDITIONAL_REGISTRATION_FORM = "additional_registration";
+	private static final String STEP_FINAL = "final";
 
 	private Panel regarea;
 	private Link loginButton;
@@ -102,7 +108,7 @@ public class RegistrationController extends BasicController implements Activatea
 	
 	private TemporaryKey tempKey;
 	private String uniqueRegistrationKey;
-	private final int numOfSteps;
+	private final Steps steps;
 	private final boolean additionalRegistrationForm;
 	
 	@Autowired
@@ -130,7 +136,8 @@ public class RegistrationController extends BasicController implements Activatea
 	 * @param wControl
 	 */
 	public RegistrationController(UserRequest ureq, WindowControl wControl) {
-		super(ureq, wControl);		
+		super(ureq, wControl);
+		this.steps = new Steps();
 		if (!registrationModule.isSelfRegistrationEnabled()) {
 			String contact = WebappHelper.getMailConfig("mailSupport");
 			String text = translate("reg.error.disabled.body", new String[]{ contact });
@@ -138,10 +145,24 @@ public class RegistrationController extends BasicController implements Activatea
 			LayoutMain3ColsController layoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), null, msg.getInitialComponent(), null);
 			listenTo(layoutCtr);
 			putInitialPanel(layoutCtr.getInitialComponent());
-			numOfSteps = 0;
-			additionalRegistrationForm = false;
+			this.additionalRegistrationForm = false;
 			return;
 		}
+		this.additionalRegistrationForm = !userManager
+				.getUserPropertyHandlersFor(RegistrationAdditionalForm.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
+		
+		// Init steps
+		steps.add(STEP_LANG);
+		steps.add(STEP_DISCLAIMER);
+		if (registrationModule.isEmailValidationEnabled()) {
+			steps.add(STEP_EMAIL);
+		}
+		steps.add(STEP_REGISTRATION_FORM);
+		if (additionalRegistrationForm) {
+			steps.add(STEP_ADDITIONAL_REGISTRATION_FORM);
+		}
+		steps.add(STEP_FINAL);
+		
 		// override language when not the same as in ureq and add fallback to
 		// property handler translator for user properties
 		String lang = ureq.getParameter("language");
@@ -159,13 +180,9 @@ public class RegistrationController extends BasicController implements Activatea
 			setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));			
 		}
 		
-		additionalRegistrationForm = !userManager
-				.getUserPropertyHandlersFor(RegistrationAdditionalForm.USERPROPERTIES_FORM_IDENTIFIER, false).isEmpty();
-		numOfSteps = additionalRegistrationForm ? 6 : 5;
-		
 		//construct content
 		myContent = createVelocityContainer("reg");
-		wizInfoController = new WizardInfoController(ureq, numOfSteps);
+		wizInfoController = new WizardInfoController(ureq, steps.getNumberOfSteps());
 		listenTo(wizInfoController);
 		myContent.put("regwizard", wizInfoController.getInitialComponent());
 		regarea = new Panel("regarea");
@@ -243,8 +260,11 @@ public class RegistrationController extends BasicController implements Activatea
 			}
 		} else if (source == disclaimerController) {
 			if (event == Event.DONE_EVENT) {
-				// finalize the registration by creating the user
-				displayEmailForm(ureq);
+				if (registrationModule.isEmailValidationEnabled()) {
+					displayEmailForm(ureq);
+				} else {
+					displayRegistrationForm(ureq);
+				}
 			}
 		} else if (source == emailSendForm) {
 			if (event == Event.DONE_EVENT) { // form
@@ -302,7 +322,7 @@ public class RegistrationController extends BasicController implements Activatea
 	 */
 	private void displayDisclaimer(UserRequest ureq) {
 		if(registrationModule.isDisclaimerEnabled()) {
-			wizInfoController.setCurStep(2);
+			wizInfoController.setCurStep(steps.getStep(STEP_DISCLAIMER));
 			myContent.contextPut("text", translate("step4.reg.text"));
 			
 			removeAsListenerAndDispose(disclaimerController);
@@ -316,7 +336,7 @@ public class RegistrationController extends BasicController implements Activatea
 	}
 	
 	private void displayEmailForm(UserRequest ureq) {
-		wizInfoController.setCurStep(3);
+		wizInfoController.setCurStep(steps.getStep(STEP_EMAIL));
 
 		removeAsListenerAndDispose(emailSendForm);
 		emailSendForm = new EmailSendingForm(ureq, getWindowControl());
@@ -329,7 +349,7 @@ public class RegistrationController extends BasicController implements Activatea
 	private void processEmail(UserRequest ureq) {
 		// validation
 		// was ok
-		wizInfoController.setCurStep(3);
+		wizInfoController.setCurStep(steps.getStep(STEP_EMAIL));
 		// Email requested for tempkey
 		//save the fields somewhere
 		String email = emailSendForm.getEmailAddress();
@@ -403,19 +423,21 @@ public class RegistrationController extends BasicController implements Activatea
 	}
 	
 	private void displayRegistrationForm(UserRequest ureq) {
-		wizInfoController.setCurStep(4);
-		myContent.contextPut("text", translate("step3.reg.text"));
-		myContent.contextPut("email", tempKey.getEmailAddress());
-
+		wizInfoController.setCurStep(steps.getStep(STEP_REGISTRATION_FORM));
 		Map<String,String> userAttrs = new HashMap<>();
-		userAttrs.put("email", tempKey.getEmailAddress());
+
+		myContent.contextPut("text", translate("step3.reg.text"));
+		if (tempKey != null) {
+			myContent.contextPut("email", tempKey.getEmailAddress());
+			userAttrs.put("email", tempKey.getEmailAddress());
+		}
 		
 		if(registrationModule.getUsernamePresetBean() != null) {
 			UserNameCreationInterceptor interceptor = registrationModule.getUsernamePresetBean();
 			String proposedUsername = interceptor.getUsernameFor(userAttrs);
 			if(proposedUsername == null) {
 				if(interceptor.allowChangeOfUsername()) {
-					createRegForm2(ureq, null, false, false);
+					createRegForm2(ureq, null, userAttrs.get("email"), false, false);
 				} else {
 					myContent = setErrorPage("reg.error.no_username", getWindowControl());
 				}
@@ -423,32 +445,34 @@ public class RegistrationController extends BasicController implements Activatea
 				Identity identity = securityManager.findIdentityByName(proposedUsername);
 				if(identity != null) {
 					if(interceptor.allowChangeOfUsername()) {
-						createRegForm2(ureq, proposedUsername, true, false);
+						createRegForm2(ureq, proposedUsername, userAttrs.get("email"), true, false);
 					} else {
 						myContent = setErrorPage("reg.error.user_in_use", getWindowControl());
 					}
 				} else {
-					createRegForm2(ureq, proposedUsername, false, !interceptor.allowChangeOfUsername());
+					createRegForm2(ureq, proposedUsername, userAttrs.get("email"), false, !interceptor.allowChangeOfUsername());
 				}
 			}
 		} else {
-			createRegForm2(ureq, null, false, false);
+			createRegForm2(ureq, null, userAttrs.get("email"), false, false);
 		}
 	}
 	
-	private void createRegForm2(UserRequest ureq, String proposedUsername, boolean userInUse, boolean usernameReadonly) {
-		registrationForm = new RegistrationForm2(ureq, getWindowControl(), i18nModule.getLocaleKey(getLocale()), proposedUsername, userInUse, usernameReadonly);
+	private void createRegForm2(UserRequest ureq, String proposedUsername, String email, boolean userInUse, boolean usernameReadonly) {
+		registrationForm = new RegistrationForm2(ureq, getWindowControl(), i18nModule.getLocaleKey(getLocale()),
+				proposedUsername, email, userInUse, usernameReadonly);
 		listenTo(registrationForm);
 		regarea.setContent(registrationForm.getInitialComponent());
 	}
 	
 	private void displayRegistrationAdditionalForm(UserRequest ureq) {
-		wizInfoController.setCurStep(5);
+		wizInfoController.setCurStep(steps.getStep(STEP_ADDITIONAL_REGISTRATION_FORM));
 		myContent.contextPut("text", translate("step.add.reg.text"));
-		myContent.contextPut("email", tempKey.getEmailAddress());
+		String emailAddress = tempKey != null? tempKey.getEmailAddress(): null;
+		myContent.contextPut("email", emailAddress);
 
 		Map<String,String> userAttrs = new HashMap<>();
-		userAttrs.put("email", tempKey.getEmailAddress());
+		userAttrs.put("email", emailAddress);
 		
 		registrationAdditionalForm = new RegistrationAdditionalForm(ureq, getWindowControl());
 		listenTo(registrationAdditionalForm);
@@ -466,8 +490,7 @@ public class RegistrationController extends BasicController implements Activatea
 	 * 
 	 */
 	private void displayFinalStep(Identity persitedIdentity){
-		// set wizard step to 5
-		wizInfoController.setCurStep(numOfSteps);
+		wizInfoController.setCurStep(steps.getStep(STEP_FINAL));
 		
 		// hide the text we don't need anymore 
 		myContent.contextPut("text", "");
@@ -508,7 +531,7 @@ public class RegistrationController extends BasicController implements Activatea
 	 */
 	private Identity createNewUserAfterRegistration() {
 		// create user with mandatory fields from registration-form
-		User volatileUser = userManager.createUser(registrationForm.getFirstName(), registrationForm.getLastName(), tempKey.getEmailAddress());
+		User volatileUser = userManager.createUser(registrationForm.getFirstName(), registrationForm.getLastName(), registrationForm.getEmail());
 		// set user configured language
 		Preferences preferences = volatileUser.getPreferences();
 
@@ -584,6 +607,30 @@ public class RegistrationController extends BasicController implements Activatea
 	@Override
 	protected void doDispose() {
 		//
+	}
+	
+	private static class Steps {
+		
+		private List<String> steps = new ArrayList<>();
+		
+		private void add(String name) {
+			steps.add(name);
+		}
+		
+		private int getStep(String name) {
+			for (int i = 0; i < steps.size(); i++) {
+				String stepName = steps.get(i);
+				if (name.equals(stepName)) {
+					return ++i;
+				}
+			}
+			return -1;
+		}
+		
+		private int getNumberOfSteps() {
+			return steps.size();
+		}
+
 	}
 
 }

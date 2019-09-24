@@ -68,7 +68,7 @@ public enum CrudAction {
 	static {
 		Field[] fields = CrudAction.class.getDeclaredFields();
 		if (fields!=null) {
-			Set<String> initials = new HashSet<String>();
+			Set<String> initials = new HashSet<>();
 			for (int i = 0; i < fields.length; i++) {
 				Field field = fields[i];
 				if (field.getType()==CrudAction.class) {

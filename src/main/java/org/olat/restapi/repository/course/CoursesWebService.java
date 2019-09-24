@@ -91,6 +91,8 @@ import org.olat.restapi.support.vo.CourseVOes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  *
  * Description:<br>
@@ -100,6 +102,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:  27 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/courses")
 public class CoursesWebService {

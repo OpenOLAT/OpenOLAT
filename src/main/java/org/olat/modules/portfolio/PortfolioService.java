@@ -353,6 +353,12 @@ public interface PortfolioService {
 	 */
 	public boolean isTemplateInUse(Binder template, RepositoryEntry courseEntry, String subIdent);
 	
+	/**
+	 * @param templateEntry The resource of the template
+	 * @return The number of binder which copy this template
+	 */
+	public int getTemplateUsage(RepositoryEntryRef templateEntry);
+	
 	public Binder assignBinder(Identity owner, BinderRef templateBinder, RepositoryEntry entry, String subIdent, Date deadline);
 	
 	public SynchedBinder loadAndSyncBinder(BinderRef binder);

@@ -42,7 +42,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class ImageToThumbnail implements ThumbnailSPI {
 	
-	private final List<String> extensions = new ArrayList<String>();
+	private final List<String> extensions = new ArrayList<>();
 	
 	private ImageService imageHelper;
 	

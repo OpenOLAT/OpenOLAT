@@ -215,7 +215,7 @@
                         <xsl:otherwise>My Web Application</xsl:otherwise>
                     </xsl:choose>                 
                 </title>
-                <style type="text/css">
+                <style>
                     body {
                         font-family: sans-serif;
                         font-size: 0.85em;

@@ -1,0 +1,11 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("user.profil"))
+	<li>$r.render("user.profil")</li>
+	#end
+	#if($r.available("add.dispensation"))
+	<li>$r.render("add.dispensation")</li>
+	#end
+	#if($r.available("add.notice.absence"))
+	<li>$r.render("add.notice.absence")</li>
+	#end
+</ul>

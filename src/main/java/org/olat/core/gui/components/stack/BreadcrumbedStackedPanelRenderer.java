@@ -19,11 +19,8 @@
  */
 package org.olat.core.gui.components.stack;
 
-import java.util.List;
-
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
-import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
@@ -42,39 +39,13 @@ public class BreadcrumbedStackedPanelRenderer extends DefaultComponentRenderer {
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		BreadcrumbedStackedPanel panel = (BreadcrumbedStackedPanel) source;
-		List<Link> breadCrumbs = panel.getBreadCrumbs();
 
 		// panel div
 		String mainCssClass = panel.getCssClass();
 		sb.append("<div id='o_c").append(source.getDispatchID()).append("' class='")
 				.append(mainCssClass, mainCssClass != null).append("'>");
 
-		if (breadCrumbs.size() > panel.getInvisibleCrumb()) {
-			sb.append("<div class='o_breadcrumb'><ol class='breadcrumb'>");
-
-			Link backLink = panel.getBackLink();
-			int numOfCrumbs = breadCrumbs.size();
-			if(backLink.isVisible() && numOfCrumbs > panel.getInvisibleCrumb()) {
-				sb.append("<li class='o_breadcrumb_back'>");
-				backLink.getHTMLRendererSingleton().render(renderer, sb, backLink, ubu, translator, renderResult, args);
-				sb.append("</li>");
-				
-				for(Link crumb:breadCrumbs) {
-					sb.append("<li>");
-					renderer.render(crumb, sb, args);
-					sb.append("</li>");
-				}
-			}
-			
-			Link closeLink = panel.getCloseLink();
-			if (closeLink.isVisible()) {
-				sb.append("<li class='o_breadcrumb_close'>");
-				closeLink.getHTMLRendererSingleton().render(renderer, sb, closeLink, ubu, translator, renderResult, args);
-				sb.append("</li>");				
-			}	
-
-			sb.append("</ol></div>");
-		}
+		renderer.render(panel.getBreadcrumbBar(), sb, args);
 		
 		Component toRender = panel.getContent();
 		if(toRender != null) {

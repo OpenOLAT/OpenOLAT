@@ -48,8 +48,8 @@ public class ModulesFormController extends FormBasicController {
 	private ModuleConfiguration config;
 	private MultipleSelectionElement selectionDropbox;
 	private MultipleSelectionElement selectionReturnbox;
-	private final static String[] keys = new String[] { "form.modules.enabled.yes" };
-	private final static String[] values = new String[] { "" };
+	private static final String[] keys = new String[] { "form.modules.enabled.yes" };
+	private static final String[] values = new String[] { "" };
 	/**
 	 * Modules selection form.
 	 * @param name
@@ -63,19 +63,11 @@ public class ModulesFormController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		
 		//create form elements
 		final Boolean dropboxEnabled = (Boolean)config.get(ProjectBrokerCourseNode.CONF_DROPBOX_ENABLED);
 		selectionDropbox = uifactory.addCheckboxesHorizontal("dropbox", "form.modules.dropbox", formLayout, keys, values);
 		selectionDropbox.select(keys[0], dropboxEnabled);
 		selectionDropbox.addActionListener(FormEvent.ONCLICK);
-
-// TODO:cg 28.01.2010 no assessment-tool in V1.0   		
-//		final Boolean scoringEnabled = (Boolean)config.get(ProjectBrokerCourseNode.CONF_SCORING_ENABLED);
-//		selectionScoring = uifactory.addCheckboxesVertical("scoring", "form.modules.scoring", formLayout, keys, values, null, 1);
-//		selectionScoring.select(keys[0], scoringEnabled);
-//		selectionScoring.addActionListener(FormEvent.ONCLICK);
-//		selectionScoring.setVisible(false);// not available yet
 
 		Boolean returnboxEnabled = (Boolean)config.get(ProjectBrokerCourseNode.CONF_RETURNBOX_ENABLED);
 		if (returnboxEnabled == null) {

@@ -42,7 +42,8 @@ public class AppealRollCallRow extends UserPropertiesRow {
 	public AppealRollCallRow(LectureBlockRollCallAndCoach rollCall, List<UserPropertyHandler> propertyHandlers, Locale locale) {
 		super(rollCall.getRollCall().getIdentity(), propertyHandlers, locale);
 		this.rollCall = rollCall;
-		lectureBlockAndRollCall = new LectureBlockAndRollCall("", rollCall.getLectureBlock(), rollCall.getRollCall());
+		lectureBlockAndRollCall = new LectureBlockAndRollCall("",
+				rollCall.getLectureBlock(), rollCall.getRollCall(), rollCall.getAbsenceNotice());
 	}
 	
 	public String getCoach() {

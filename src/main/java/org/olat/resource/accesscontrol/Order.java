@@ -26,11 +26,6 @@ import java.util.List;
 import org.olat.core.id.Identity;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for Order
- * 
- * <P>
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

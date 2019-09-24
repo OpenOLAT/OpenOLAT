@@ -48,7 +48,7 @@ import org.olat.core.id.OLATResourceable;
  */
 public class BusListenerInfos {
 	// key: nodeId, values: a map with keys: derivedString of a olatresourceable; values: listener count of this node
-	private Map<Integer, BusListenerInfo> nodeBusInfos = new ConcurrentHashMap<Integer, BusListenerInfo>();
+	private Map<Integer, BusListenerInfo> nodeBusInfos = new ConcurrentHashMap<>();
 	
 	public int getListenerCountFor(OLATResourceable ores) {
 		synchronized (nodeBusInfos) {//cluster_ok
@@ -74,7 +74,7 @@ public class BusListenerInfos {
 	
 	public String getAsString() {
 		StringBuilder sb = new StringBuilder();
-		Set<String> allNodesDerivedStrings = new TreeSet<String>(); // the derived strings are sorted then
+		Set<String> allNodesDerivedStrings = new TreeSet<>(); // the derived strings are sorted then
 		for (BusListenerInfo busInfo : nodeBusInfos.values()) {
 			allNodesDerivedStrings.addAll(busInfo.getAllDerivedStrings());
 		}

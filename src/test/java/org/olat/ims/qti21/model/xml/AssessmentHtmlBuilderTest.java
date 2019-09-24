@@ -283,8 +283,8 @@ public class AssessmentHtmlBuilderTest {
 	@Test
 	public void appendHtml_serializeVideo() throws IOException {
 		String content = "<p><span id=\"olatFlashMovieViewer213060\" class=\"olatFlashMovieViewer\" style=\"display:block;border:solid 1px #000; width:320px; height:240px;\">\n"
-			+ "<script src=\"/raw/fx-111111x11/movie/player.js\" type=\"text/javascript\"></script>\n"
-			+ "<script type=\"text/javascript\" defer=\"defer\">// <![CDATA[\n"
+			+ "<script src=\"/raw/fx-111111x11/movie/player.js\"></script>\n"
+			+ "<script defer=\"defer\">// <![CDATA[\n"
 			+ "BPlayer.insertPlayer(\"demo-video.mp4\",\"olatFlashMovieViewer213060\",320,240,0,0,\"video\",undefined,false,false,true,undefined);\n"
 			+ "// ]]></script>\n"
 			+ "</span></p>";

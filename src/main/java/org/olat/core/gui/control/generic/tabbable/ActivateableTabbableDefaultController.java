@@ -37,9 +37,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 
 /**
- * Description:<br>
- * TODO: patrick Class Description for ActivateableTabbableDefaultController
- * <P>
  * Initial Date: Aug 8, 2005 <br>
  * 
  * @author patrick

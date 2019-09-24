@@ -120,7 +120,7 @@ public class UserSearchController extends BasicController {
 	
 	private AutoCompleterController autocompleterC;
 	private String actionKeyChoose;
-	private boolean isAdministrativeUser;
+	private final boolean isAdministrativeUser;
 	private Link backLink;
 	
 	@Autowired
@@ -131,47 +131,37 @@ public class UserSearchController extends BasicController {
 	protected OrganisationService organisationService;
 	@Autowired
 	private IdentityPowerSearchQueries identitySearchQueries;
-	
-	/**
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 */
+
 	public UserSearchController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, false, false, false);
 	}
-	
-	
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param cancelbutton
-	 */
+
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton) {
 		this(ureq, wControl, cancelbutton, false, false);
 	}
 
-	/**
-	 * @param ureq
-	 * @param windowControl
-	 * @param cancelbutton
-	 * @param userMultiSelect
-	 * @param statusEnabled
-	 * @param actionKeyChooseFinish
-	 */
+
 	public UserSearchController(UserRequest ureq, WindowControl windowControl, boolean cancelbutton, boolean userMultiSelect, String actionKeyChooseFinish) {
 		this(ureq, windowControl, cancelbutton, userMultiSelect, false);
 		this.actionKeyChoose = actionKeyChooseFinish;
 	}
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param cancelbutton
-	 * @param userMultiSelect
-	 * @param statusEnabled
-	 */
 	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect, boolean allowReturnKey) {
+		this(ureq, wControl, cancelbutton, userMultiSelect, allowReturnKey, false);
+	}
+
+	/**
+	 * 
+	 * 
+	 * @param ureq The user request
+	 * @param wControl The window control
+	 * @param cancelbutton 
+	 * @param userMultiSelect
+	 * @param allowReturnKey
+	 * @param wildCardOrgsForSysAdmin
+	 */
+	public UserSearchController(UserRequest ureq, WindowControl wControl, boolean cancelbutton, boolean userMultiSelect,
+			boolean allowReturnKey, boolean wildCardOrgsForSysAdmin) {
 		super(ureq, wControl);
 		this.useMultiSelect = userMultiSelect;
 		this.actionKeyChoose = ACTION_KEY_CHOOSE;
@@ -185,17 +175,22 @@ public class UserSearchController extends BasicController {
 		myContent.put("usersearchPanel", searchPanel);
 
 		UserSession usess = ureq.getUserSession();
-		searchableOrganisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(),
-				OrganisationRoles.valuesWithoutGuestAndInvitee());
-		
 		Roles roles = usess.getRoles();
-		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		if(wildCardOrgsForSysAdmin && roles.isSystemAdmin()) {
+			searchableOrganisations = organisationService.getOrganisations();
+			isAdministrativeUser = true;
+		} else {
+			searchableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
+					OrganisationRoles.valuesWithoutGuestAndInvitee());
+			isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
+		}
+
 		searchform = new UserSearchForm(ureq, wControl, isAdministrativeUser, cancelbutton, allowReturnKey);
 		listenTo(searchform);
 		searchPanel.setContent(searchform.getInitialComponent());
 	
-		myContent.contextPut("noList","false");			
-		myContent.contextPut("showButton","false");
+		myContent.contextPut("noList", "false");			
+		myContent.contextPut("showButton", "false");
 		
 		boolean autoCompleteAllowed = securityModule.isUserAllowedAutoComplete(roles);
 		if (autoCompleteAllowed) {

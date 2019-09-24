@@ -154,6 +154,8 @@
 		<class>org.olat.resource.accesscontrol.model.ResourceReservationImpl</class>
 		<class>org.olat.resource.accesscontrol.provider.auto.model.AdvanceOrderImpl</class>
 		<class>org.olat.resource.accesscontrol.provider.paypal.model.PaypalAccessMethod</class>
+		<class>org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutAccessMethod</class>
+		<class>org.olat.resource.accesscontrol.provider.paypalcheckout.model.PaypalCheckoutTransactionImpl</class>
 		<class>org.olat.instantMessaging.model.InstantMessageImpl</class>
 		<class>org.olat.instantMessaging.model.ImPreferencesImpl</class>
 		<class>org.olat.instantMessaging.model.RosterEntryImpl</class>
@@ -200,6 +202,10 @@
 		<class>org.olat.modules.lecture.model.LectureBlockReminderImpl</class>
 		<class>org.olat.modules.lecture.model.LectureBlockToTaxonomyLevelImpl</class>
 		<class>org.olat.modules.lecture.model.RepositoryEntryLectureConfigurationImpl</class>
+		<class>org.olat.modules.lecture.model.AbsenceCategoryImpl</class>
+		<class>org.olat.modules.lecture.model.AbsenceNoticeImpl</class>
+		<class>org.olat.modules.lecture.model.AbsenceNoticeToLectureBlockImpl</class>
+		<class>org.olat.modules.lecture.model.AbsenceNoticeToRepositoryEntryImpl</class>
 		<class>org.olat.modules.portfolio.model.BinderImpl</class>
 		<class>org.olat.modules.portfolio.model.SectionImpl</class>
 		<class>org.olat.modules.portfolio.model.PageImpl</class>

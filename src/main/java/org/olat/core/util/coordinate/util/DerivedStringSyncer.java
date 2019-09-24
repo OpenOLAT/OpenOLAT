@@ -48,10 +48,10 @@ import org.olat.core.id.OLATResourceable;
  * @author Felix Jost, http://www.goodsolutions.ch
  */
 public class DerivedStringSyncer {
-	public static DerivedStringSyncer INSTANCE = new DerivedStringSyncer();
+	public static final DerivedStringSyncer INSTANCE = new DerivedStringSyncer();
 	
 	// keys: OLATResource-Type:ResourceId ;values: Objects
-	private ConcurrentMap<String, Object> synchLockHashmap = new ConcurrentHashMap<String, Object>();
+	private ConcurrentMap<String, Object> synchLockHashmap = new ConcurrentHashMap<>();
 
 	public static DerivedStringSyncer getInstance() {
 		return INSTANCE;

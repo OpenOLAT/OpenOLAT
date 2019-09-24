@@ -168,6 +168,7 @@ import org.junit.runners.Suite;
 	org.olat.instantMessaging.InstantMessagePreferencesDAOTest.class,
 	org.olat.instantMessaging.RosterDAOTest.class,
 	org.olat.instantMessaging.InstantMessageServiceTest.class,
+	org.olat.course.archiver.FormatConfigHelperTest.class,
 	org.olat.course.condition.ConditionTest.class,
 	org.olat.course.condition.KeyAndNameConverterTest.class,
 	org.olat.course.highscore.HighScoreManagerTest.class,
@@ -262,6 +263,10 @@ import org.junit.runners.Suite;
 	org.olat.modules.quality.manager.QualityReminderDAOTest.class,
 	org.olat.modules.quality.manager.QualityReportAccessDAOTest.class,
 	org.olat.modules.quality.manager.RepositoryEntryQualityContextBuilderTest.class,
+	org.olat.modules.lecture.manager.AbsenceCategoryDAOTest.class,
+	org.olat.modules.lecture.manager.AbsenceNoticeDAOTest.class,
+	org.olat.modules.lecture.manager.AbsenceNoticeToLectureBlockDAOTest.class,
+	org.olat.modules.lecture.manager.AbsenceNoticeToRepositoryEntryDAOTest.class,
 	org.olat.modules.lecture.manager.LectureBlockDAOTest.class,
 	org.olat.modules.lecture.manager.LectureBlockRollCallDAOTest.class,
 	org.olat.modules.lecture.manager.LectureBlockToTaxonomyLevelDAOTest.class,
@@ -288,6 +293,8 @@ import org.junit.runners.Suite;
 	org.olat.modules.video.manager.VideoXStreamTest.class,
 	org.olat.modules.video.manager.VideoMetaXStreamTest.class,
 	org.olat.modules.video.manager.VideoManagerTest.class,
+	org.olat.modules.video.spi.youtube.YoutubeProviderTest.class,
+	org.olat.modules.video.spi.youtube.YoutubeVideoIdTest.class,
 	org.olat.modules.webFeed.manager.FeedDAOTest.class,
 	org.olat.modules.webFeed.manager.ItemDAOTest.class,
 	org.olat.modules.webFeed.manager.FeedFileStorgeTest.class,
@@ -435,6 +442,7 @@ import org.junit.runners.Suite;
 	org.olat.resource.accesscontrol.ACTransactionManagerTest.class,
 	org.olat.resource.accesscontrol.ACReservationDAOTest.class,
 	org.olat.resource.accesscontrol.provider.auto.manager.AdvanceOrderDAOTest.class,
+	org.olat.resource.accesscontrol.provider.paypalcheckout.manager.PaypalCheckoutTransactionDAOTest.class,
 	/**
 	 * Pure JUnit test without need of framework
 	 */
@@ -457,6 +465,7 @@ import org.junit.runners.Suite;
 	org.olat.modules.forms.manager.EvaluationFormMangerImplTest.class,
 	org.olat.modules.forms.manager.RubricStatisticCalculatorTest.class,
 	org.olat.modules.forms.model.xml.ScaleTypeTest.class,
+	org.olat.modules.forms.RubricsComparisonTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolServiceImplTest.class,
 	org.olat.modules.qpool.manager.QuestionPoolUserDataDeletableTest.class,
 	org.olat.modules.qpool.manager.review.LowerLimitProviderTest.class,

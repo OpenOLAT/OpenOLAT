@@ -113,8 +113,8 @@ public class ItemsController extends BasicController implements Activateable2 {
 	// at a time.
 	private LockResult lock;
 	private FeedItemDisplayConfig displayConfig;
-	public static Event HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT = new Event("cmd.handle.new.external.feed.dialog");
-	public static Event FEED_INFO_IS_DIRTY_EVENT = new Event("cmd.feed.info.is.dirty");
+	public static final Event HANDLE_NEW_EXTERNAL_FEED_DIALOG_EVENT = new Event("cmd.handle.new.external.feed.dialog");
+	public static final Event FEED_INFO_IS_DIRTY_EVENT = new Event("cmd.feed.info.is.dirty");
 
 	FeedManager feedManager = FeedManager.getInstance();
 	@Autowired

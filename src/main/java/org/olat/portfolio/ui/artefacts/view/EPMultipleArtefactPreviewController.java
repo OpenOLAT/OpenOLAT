@@ -47,12 +47,6 @@ import org.olat.portfolio.model.artefacts.AbstractArtefact;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Description:<br>
- * TODO: 
- * - maybe optimize new creation of artefacts controllers by watching which are yet existing and not
- * dropping/creating them again
- * 
- * <P>
  * Initial Date: 08.07.2010 <br>
  * 
  * @author Roman Haag, roman.haag@frentix.com, frentix GmbH
@@ -109,7 +103,7 @@ public class EPMultipleArtefactPreviewController extends BasicController impleme
 		if (nrOfArtefacts > artefactsPerPage){
 			int divRest = (nrOfArtefacts % artefactsPerPage);
 			int nrOfPages = (nrOfArtefacts / artefactsPerPage) + (divRest > 0 ? 1 : 0);
-			ArrayList<Link> pageLinkList = new ArrayList<Link>();
+			ArrayList<Link> pageLinkList = new ArrayList<>();
 			for (int i = 1; i < nrOfPages + 1; i++) {
 				Link pageLink = LinkFactory.createCustomLink("pageLink" + i, "pageLink" + i, String.valueOf(i), Link.LINK + Link.NONTRANSLATED, vC, this);
 				pageLink.setUserObject(i);
@@ -137,8 +131,8 @@ public class EPMultipleArtefactPreviewController extends BasicController impleme
 	private void initOrUpdateArtefactControllers(UserRequest ureq, List<AbstractArtefact> artefacts) {
 		vC.contextPut("artefacts", artefacts);
 		if (artefactCtrls != null) disposeArtefactControllers();
-		artefactCtrls = new ArrayList<Controller>();
-		ArrayList<Component> artefactCtrlComps = new ArrayList<Component>();
+		artefactCtrls = new ArrayList<>();
+		ArrayList<Component> artefactCtrlComps = new ArrayList<>();
 		int i = 1;
 		getArtefactAttributeDisplayConfig(ureq.getIdentity());
 		if (artefacts != null) {

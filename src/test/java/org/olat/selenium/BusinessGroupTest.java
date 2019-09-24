@@ -849,7 +849,7 @@ public class BusinessGroupTest extends Deployments {
 			.createNode("en")
 			.nodeTitle(enNodeTitle);
 		//configure enrolment with a group that we create
-		List<String> groups = new ArrayList<String>();
+		List<String> groups = new ArrayList<>();
 		groups.add("Enrolment group - 3 " + UUID.randomUUID());
 		groups.add("Enrolment group - 3 " + UUID.randomUUID());
 		groups.add("Enrolment group - 3 " + UUID.randomUUID());

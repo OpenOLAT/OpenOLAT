@@ -50,7 +50,7 @@ public class Item implements QTIObject {
 	private List itempreconditions = new ArrayList(); // occurs 0 to many
 	private List itempostconditions = new ArrayList(); // occurs 0 to many
 	private String objectives = null; // occurs 0 to many, 1st processed
-	private List<Control> itemcontrols = new ArrayList<Control>(); // occurs 0 to many
+	private List<Control> itemcontrols = new ArrayList<>(); // occurs 0 to many
 	private List itemrubrics = new ArrayList(); // occurs 0 to many
 	private List rubrics = new ArrayList(); // occurs 0 to many
 	private List itemfeedbacks = new ArrayList(); // occurs 0 to many

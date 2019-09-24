@@ -72,7 +72,7 @@ public class PageImpl implements Persistable, ModifiedInfo, CreateInfo, Page {
 	private Date lastModified;
 
 	/** Only used for order by */
-	@Column(name="pos", insertable=false, updatable=false)//TODO order hack
+	@Column(name="pos", insertable=false, updatable=false)
 	private Long pos;
 	
 	@Column(name="p_title", nullable=true, insertable=true, updatable=true)

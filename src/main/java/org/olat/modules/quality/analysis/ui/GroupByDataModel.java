@@ -37,7 +37,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 class GroupByDataModel extends DefaultFlexiTableDataModel<GroupByRow>
 		implements SortableFlexiTableDataModel<GroupByRow> {
 	
-	private final Locale locale;
+	protected final Locale locale;
 	
 	GroupByDataModel(FlexiTableColumnModel columnsModel, Locale locale) {
 		super(columnsModel);
@@ -58,13 +58,17 @@ class GroupByDataModel extends DefaultFlexiTableDataModel<GroupByRow>
 
 	@Override
 	public Object getValueAt(GroupByRow row, int col) {
-		int index = col;
-		if (index < row.getGroupNamesSize()) {
-			return row.getGroupName(index);
+		if (col >= GroupByController.DATA_OFFSET) {
+			int pos = col - GroupByController.DATA_OFFSET;
+			if (pos < row.getStatisticsSize()) {
+				return row.getStatistic(pos);
+			}
 		}
-		index = col - row.getGroupNamesSize();
-		if (index < row.getStatisticsSize()) {
-			return row.getStatistic(index);
+		if (col == GroupByController.TOTAL_OFFSET) {
+			return row.getTotal();
+		}
+		if (col < row.getGroupNamesSize()) {
+			return row.getGroupName(col);
 		}
 		return null;
 	}

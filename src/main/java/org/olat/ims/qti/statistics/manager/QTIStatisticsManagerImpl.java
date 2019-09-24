@@ -361,7 +361,7 @@ public class QTIStatisticsManagerImpl implements QTIStatisticsManager {
 		List<StatisticAnswerOption> answerToNumberList = getStatisticAnswerOptionsOfItem(item.getIdent(), searchParams);
 
 		List<Response> responses = item.getQuestion().getResponses();
-		List<StatisticChoiceOption> percentageRightAnswered = new ArrayList<StatisticChoiceOption>();
+		List<StatisticChoiceOption> percentageRightAnswered = new ArrayList<>();
 		for (Response response:responses) {
 			String answerIdent = response.getIdent();
 			long num = 0;

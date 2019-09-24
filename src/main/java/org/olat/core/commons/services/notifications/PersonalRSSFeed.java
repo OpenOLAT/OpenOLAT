@@ -84,7 +84,7 @@ public class PersonalRSSFeed extends SyndFeedImpl {
 		image.setLink(getLink());
 		setImage(image);
 
-		List<SyndEntry> entries = new ArrayList<SyndEntry>();
+		List<SyndEntry> entries = new ArrayList<>();
 		SyndEntry entry = new SyndEntryImpl();
 		entry.setTitle(translator.translate("rss.olat.title", new String[] { NotificationHelper.getFormatedName(identity) }));
 		entry.setLink(getLink());

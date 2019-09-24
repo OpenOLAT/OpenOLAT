@@ -84,8 +84,7 @@ public class QualityUIFactory {
 	private static final String INTENDING = "\u00a0"; // &nbsp; non-breaking space
 	private static final Comparator<? super Curriculum> DISPLAY_NAME_COMPARATOR = 
 			(c1, c2) -> c1.getDisplayName().compareTo(c2.getDisplayName());
-	private static final Comparator<IdentityShort> IDENTITY_LAST_FIRST_COMPARATOR = 
-			Comparator.comparing(IdentityShort::getFirstName).thenComparing(IdentityShort::getLastName);
+	private static final Comparator<IdentityShort> IDENTITY_LAST_FIRST_COMPARATOR = new LastFirstNameComporator();
 	
 	public static String[] emptyArray() {
 		return EMPTY_ARRAY;
@@ -644,6 +643,32 @@ public class QualityUIFactory {
 
 		public String[] getValues() {
 			return values;
+		}
+		
+	}
+	
+	private static final class LastFirstNameComporator implements Comparator<IdentityShort> {
+		
+		@Override
+		public int compare(IdentityShort i1, IdentityShort i2) {
+			// Compare last name...
+			String lastName1 = i1.getLastName();
+			String lastName2 = i2.getLastName();
+			// nulls last
+			if (lastName1 == null) return 1;
+			if (lastName2 == null) return -1;
+			
+			int lastNameComp = lastName1.toLowerCase().compareTo(lastName2.toLowerCase());
+			if (lastNameComp != 0) return lastNameComp;
+			
+			// ...and then the fist name
+			String firstName1 = i1.getFirstName();
+			String firstName2 = i2.getFirstName();
+			// nulls last
+			if (firstName1 == null) return 1;
+			if (firstName2 == null) return -1;
+			
+			return firstName1.toLowerCase().compareTo(firstName2.toLowerCase());
 		}
 		
 	}

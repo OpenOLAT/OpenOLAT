@@ -41,6 +41,8 @@ import org.olat.basesecurity.IdentityImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Persistable;
 import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.AbsenceCategory;
+import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -89,6 +91,9 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 	@Column(name="l_absence_supervisor_noti_date", nullable=true, insertable=true, updatable=true)
 	private Date absenceSupervisorNotificationDate;
 	
+	@Column(name="l_absence_notice_lectures", nullable=true, insertable=true, updatable=true)
+	private String absenceNoticeLectures;
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="l_absence_appeal_date", nullable=true, insertable=true, updatable=true)
 	private Date appealDate;
@@ -105,6 +110,13 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 	@ManyToOne(targetEntity=LectureBlockImpl.class,fetch=FetchType.LAZY,optional=false)
 	@JoinColumn(name="fk_lecture_block", nullable=false, insertable=true, updatable=false)
 	private LectureBlock lectureBlock;
+	@ManyToOne(targetEntity=AbsenceCategoryImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_absence_category", nullable=true, insertable=true, updatable=true)
+	private AbsenceCategory absenceCategory;
+	
+	@ManyToOne(targetEntity=AbsenceNoticeImpl.class,fetch=FetchType.LAZY,optional=true)
+	@JoinColumn(name="fk_absence_notice", nullable=true, insertable=true, updatable=true)
+	private AbsenceNotice absenceNotice;
 	
 	@Override
 	public Long getKey() {
@@ -208,7 +220,7 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 	
 	private String serialize(List<Integer> lectures) {
 		StringBuilder sb = new StringBuilder();
-		if(lectures != null && lectures.size() > 0) {
+		if(lectures != null && !lectures.isEmpty()) {
 			if(lectures.size() > 1) {
 				Collections.sort(lectures);
 			}
@@ -225,7 +237,7 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 		if(StringHelper.containsNonWhitespace(string)) {
 			String[] currentAttendeeArr = string.split("[|]");
 			for(String current:currentAttendeeArr) {
-				list.add(new Integer(current));
+				list.add(Integer.valueOf(current));
 			}
 		}
 		return list;
@@ -319,6 +331,36 @@ public class LectureBlockRollCallImpl implements Persistable, LectureBlockRollCa
 
 	public void setLectureBlock(LectureBlock lectureBlock) {
 		this.lectureBlock = lectureBlock;
+	}
+
+	@Override
+	public AbsenceCategory getAbsenceCategory() {
+		return absenceCategory;
+	}
+
+	@Override
+	public void setAbsenceCategory(AbsenceCategory absenceCategory) {
+		this.absenceCategory = absenceCategory;
+	}
+
+	@Override
+	public String getAbsenceNoticeLectures() {
+		return absenceNoticeLectures;
+	}
+
+	@Override
+	public void setAbsenceNoticeLectures(String absenceNoticeLectures) {
+		this.absenceNoticeLectures = absenceNoticeLectures;
+	}
+
+	@Override
+	public AbsenceNotice getAbsenceNotice() {
+		return absenceNotice;
+	}
+
+	@Override
+	public void setAbsenceNotice(AbsenceNotice absenceNotice) {
+		this.absenceNotice = absenceNotice;
 	}
 
 	@Override

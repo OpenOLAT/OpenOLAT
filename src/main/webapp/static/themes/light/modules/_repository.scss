@@ -145,23 +145,6 @@ a.o_repo_tools_status {
 	margin: 0 2px 2px 2px;
 	text-align: left;
 }
-.o_repo_status_filter {
-	.control-label {
-		margin-right: 0.5em;
-		&:after {
-			content: ':';
-		}
-	} 
-	
- 	> div {
-		display:inline-block;
-	
-		label {
-			font-weight: normal;
-		}
-	}
-}
-
 
 /* Status full style, e.g. in toolbar */
 .o_labeled,

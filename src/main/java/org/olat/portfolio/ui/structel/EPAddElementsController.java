@@ -70,14 +70,14 @@ public class EPAddElementsController extends BasicController {
 	public static final String ADD_PAGE = "page";
 	public static final String ADD_STRUCTUREELEMENT = "struct";
 	public static final String ADD_PORTFOLIOSTRUCTURE = "map";
-	private static final Set<String> typeSet = new HashSet<String>();
+	private static final Set<String> typeSet = new HashSet<>();
 	static {
 		typeSet.add(ADD_ARTEFACT);
 		typeSet.add(ADD_PAGE);
 		typeSet.add(ADD_STRUCTUREELEMENT);
 		typeSet.add(ADD_PORTFOLIOSTRUCTURE);
 	}
-	private final Map<String, Boolean> typeMap = new HashMap<String, Boolean>();
+	private final Map<String, Boolean> typeMap = new HashMap<>();
 	private CloseableModalController artefactBox;
 	private EPArtefactPoolRunController artefactPoolCtrl;
 	private Link linkArtefactLink;

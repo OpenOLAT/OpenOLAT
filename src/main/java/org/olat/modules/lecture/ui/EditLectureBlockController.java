@@ -20,7 +20,6 @@
 package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -42,6 +41,7 @@ import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -86,7 +86,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class EditLectureBlockController extends FormBasicController {
 	
 	private static final String[] onKeys = new String[] { "on" };
-	private static final String[] plannedLecturesKeys = new String[] { "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
 	
 	private TextElement titleEl;
 	private TextElement descriptionEl;
@@ -94,9 +93,9 @@ public class EditLectureBlockController extends FormBasicController {
 	private AutoCompleter locationEl;
 	private DateChooser dateEl;
 	private SingleSelection plannedLecturesEl;
-	private TextElement endHourEl, endMinuteEl;
-	private TextElement startHourEl, startMinuteEl;
-	private MultipleSelectionElement groupsEl, teacherEl, compulsoryEl;
+	private MultipleSelectionElement groupsEl;
+	private MultipleSelectionElement teacherEl;
+	private MultipleSelectionElement compulsoryEl;
 	
 	private final boolean readOnly;
 	private RepositoryEntry entry;
@@ -104,7 +103,8 @@ public class EditLectureBlockController extends FormBasicController {
 	
 	private List<Identity> teachers;
 	private List<GroupBox> groupBox;
-	private String[] teacherKeys, teacherValues;
+	private String[] teacherKeys;
+	private String[] teacherValues;
 	private final boolean lectureManagementManaged;
 	private final List<LocationHistory> locations;
 	
@@ -158,12 +158,22 @@ public class EditLectureBlockController extends FormBasicController {
 		titleEl.setElementCssClass("o_sel_repo_lecture_title");
 		titleEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.title));
 		titleEl.setMandatory(true);
-
+		if(!StringHelper.containsNonWhitespace(title)) {
+			titleEl.setFocus(true);
+		}
+		
+		int plannedNumOfLectures = lectureBlock == null ? 4 : lectureBlock.getPlannedLecturesNumber();
+		int maxNumOfLectures = Math.max(12, plannedNumOfLectures);
+		KeyValues plannedLecturesKeys = new KeyValues();
+		for(int i=1; i<=maxNumOfLectures; i++) {
+			String num = String.valueOf(i);
+			plannedLecturesKeys.add(KeyValues.entry(num, num));
+		}
 		plannedLecturesEl = uifactory.addDropdownSingleselect("planned.lectures", "planned.lectures", formLayout,
-				plannedLecturesKeys, plannedLecturesKeys, null);
+				plannedLecturesKeys.keys(), plannedLecturesKeys.values(), null);
 		plannedLecturesEl.setMandatory(true);
 		String plannedlectures = lectureBlock == null ? "4" : Integer.toString(lectureBlock.getPlannedLecturesNumber());
-		for(String plannedLecturesKey:plannedLecturesKeys) {
+		for(String plannedLecturesKey:plannedLecturesKeys.keys()) {
 			if(plannedlectures.equals(plannedLecturesKey)) {
 				plannedLecturesEl.select(plannedLecturesKey, true);
 				break;
@@ -282,71 +292,23 @@ public class EditLectureBlockController extends FormBasicController {
 		locationEl.setMinLength(1);
 
 		Date startDate = lectureBlock == null ? null : lectureBlock.getStartDate();
+		Date endDate = lectureBlock == null ? null : lectureBlock.getEndDate();
 		dateEl = uifactory.addDateChooser("lecture.date", startDate, formLayout);
+		dateEl.setSecondDate(endDate);
 		dateEl.setElementCssClass("o_sel_repo_lecture_date");
 		dateEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
-		dateEl.setDomReplacementWrapperRequired(false);
 		dateEl.setMandatory(true);
-		
-		String datePage = velocity_root + "/date_start_end.html";
-		FormLayoutContainer dateCont = FormLayoutContainer.createCustomFormLayout("start_end", getTranslator(), datePage);
-		dateCont.setLabel("lecture.time", null);
-		formLayout.add(dateCont);
-		
-		startHourEl = uifactory.addTextElement("lecture.start.hour", null, 2, "", dateCont);
-		startHourEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
-		startHourEl.setDomReplacementWrapperRequired(false);
-		startHourEl.setDisplaySize(2);
-		startHourEl.setMandatory(true);
-		startMinuteEl = uifactory.addTextElement("lecture.start.minute", null, 2, "", dateCont);
-		startMinuteEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
-		startMinuteEl.setDomReplacementWrapperRequired(false);
-		startMinuteEl.setDisplaySize(2);
-		
-		endHourEl = uifactory.addTextElement("lecture.end.hour", null, 2, "", dateCont);
-		endHourEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
-		endHourEl.setDomReplacementWrapperRequired(false);
-		endHourEl.setDisplaySize(2);
-		endHourEl.setMandatory(true);
-		endMinuteEl = uifactory.addTextElement("lecture.end.minute", null, 2, "", dateCont);
-		endMinuteEl.setEnabled(!readOnly && !lectureManagementManaged && !LectureBlockManagedFlag.isManaged(lectureBlock, LectureBlockManagedFlag.dates));
-		endMinuteEl.setDomReplacementWrapperRequired(false);
-		endMinuteEl.setDisplaySize(2);
+		dateEl.setSameDay(true);
+		dateEl.setSecondDate(true);
+		dateEl.setDateChooserTimeEnabled(true);
+		dateEl.setSeparator("lecture.time.until");
 
-		if(lectureBlock != null) {
-			Calendar cal = Calendar.getInstance();
-			if(lectureBlock.getStartDate() != null) {
-				cal.setTime(lectureBlock.getStartDate());
-				int hour = cal.get(Calendar.HOUR_OF_DAY);
-				int minute = cal.get(Calendar.MINUTE);
-				startHourEl.setValue(Integer.toString(hour));
-				startMinuteEl.setValue(formatMinute(minute));
-			}
-			if(lectureBlock.getEndDate() != null) {
-				cal.setTime(lectureBlock.getEndDate());
-				int hour = cal.get(Calendar.HOUR_OF_DAY);
-				int minute = cal.get(Calendar.MINUTE);
-				endHourEl.setValue(Integer.toString(hour));
-				endMinuteEl.setValue(formatMinute(minute));
-			}
-		}
-		
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		formLayout.add(buttonsCont);
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		if(!readOnly) {
 			uifactory.addFormSubmitButton("save", buttonsCont);
 		}
-	}
-	
-	private String formatMinute(int minute) {
-		if(minute < 0) {
-			return "";
-		}
-		if(minute < 10) {
-			return "0" + minute;
-		}
-		return Integer.toString(minute);
 	}
 	
 	private void updateUI() {
@@ -396,33 +358,6 @@ public class EditLectureBlockController extends FormBasicController {
 			allOk &= false;
 		}
 
-		allOk &= validateInt(startHourEl, 24);
-		allOk &= validateInt(startMinuteEl, 60);
-		allOk &= validateInt(endHourEl, 24);
-		allOk &= validateInt(endMinuteEl, 60);
-		return allOk;
-	}
-	
-	private boolean validateInt(TextElement element, int max) {
-		boolean allOk = true;
-		
-		element.clearError();
-		if(StringHelper.containsNonWhitespace(element.getValue())) {
-			try {
-				int val = Integer.parseInt(element.getValue());
-				if(val < 0 || val > max) {
-					element.setErrorKey("form.legende.mandatory", new String[] { "0", Integer.toString(max)} );
-					allOk &= false;
-				}
-			} catch (NumberFormatException e) {
-				element.setErrorKey("form.legende.mandatory", new String[] { "0", Integer.toString(max)} );
-				allOk &= false;
-			}
-		} else {
-			element.setErrorKey("form.legende.mandatory", null);
-			allOk &= false;
-		}
-		
 		return allOk;
 	}
 
@@ -459,15 +394,8 @@ public class EditLectureBlockController extends FormBasicController {
 		if(locationEl.isEnabled()) {// autocompleter don't collect value if disabled
 			lectureBlock.setLocation(locationEl.getValue());
 		}
-		
-		Calendar cal = Calendar.getInstance();
-		cal.setTime(dateEl.getDate());
-		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(startHourEl.getValue()));
-		cal.set(Calendar.MINUTE, Integer.parseInt(startMinuteEl.getValue()));
-		lectureBlock.setStartDate(cal.getTime());
-		cal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(endHourEl.getValue()));
-		cal.set(Calendar.MINUTE, Integer.parseInt(endMinuteEl.getValue()));
-		lectureBlock.setEndDate(cal.getTime());
+		lectureBlock.setStartDate(dateEl.getDate());
+		lectureBlock.setEndDate(dateEl.getSecondDate());
 		
 		int plannedLectures = Integer.parseInt(plannedLecturesEl.getSelectedKey());
 		lectureBlock.setPlannedLecturesNumber(plannedLectures);
@@ -640,7 +568,7 @@ public class EditLectureBlockController extends FormBasicController {
 
 		@Override
 		public void getResult(String searchValue, ListReceiver receiver) {
-			if(locations != null && locations.size() > 0) {
+			if(locations != null && !locations.isEmpty()) {
 				if(locations.size() > 2) {
 					Collections.sort(locations, new LocationDateComparator());
 				}

@@ -39,6 +39,7 @@ import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatisticKeys;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.HeatMapStatistic;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.MultiTrendSeries;
 import org.olat.modules.quality.analysis.RawGroupedStatistic;
@@ -47,6 +48,7 @@ import org.olat.modules.quality.analysis.TemporalKey;
 import org.olat.modules.quality.analysis.Trend;
 import org.olat.modules.quality.analysis.Trend.DIRECTION;
 import org.olat.modules.quality.analysis.model.GroupedStatisticImpl;
+import org.olat.modules.quality.analysis.model.HeatMapStatisticImpl;
 import org.olat.modules.quality.analysis.model.RawGroupedStatisticImpl;
 import org.olat.modules.quality.analysis.model.TrendImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,6 +115,73 @@ public class StatisticsCalculator {
 		log.debug("Grouped statistic:        " + statistic.toString());
 		return statistic;
 	}
+
+	public HeatMapStatistic calculateRubricsTotal(List<? extends GroupedStatistic> statistics,
+			Collection<Rubric> rubrics) {
+		Rubric firstRubric = null;
+		HeatMapStatistic total;
+		long count = 0;
+		long sumCount = 0;
+		double sumValues = 0;
+		for (Rubric rubric: rubrics) {
+			if (firstRubric == null) {
+				firstRubric = rubric;
+			}
+			for (Slider slider: rubric.getSliders()) {
+				GroupedStatistic statistic = getStatistic(statistics, slider);
+				if (statistic != null) {
+					Long statisticCount = statistic.getCount();
+					if (statisticCount != null) {
+						count += statisticCount.longValue();
+						long weightedCount = statisticCount.longValue() * slider.getWeight().intValue();
+						sumCount += weightedCount;
+						sumValues += weightedCount * statistic.getAvg().doubleValue();
+					}
+				}
+			}
+		}
+		if (count == 0) {
+			total = new HeatMapStatisticImpl(null, null, null);
+		} else {
+			double avg = sumValues / sumCount;
+			RubricRating rating = evaluationFormManager.getRubricRating(firstRubric, avg);
+			total = new HeatMapStatisticImpl(count, avg, rating);
+		}
+		return total;
+	}
+	
+	private GroupedStatistic getStatistic(List<? extends GroupedStatistic> statistics, Slider slider) {
+		for (GroupedStatistic statistic : statistics) {
+			if (statistic != null && slider.getId().equals(statistic.getIdentifier())) {
+				return statistic;
+			}
+		}
+		return null;
+	}
+
+	HeatMapStatistic calculateSliderTotal(List<? extends HeatMapStatistic> statistics, Rubric rubric) {
+		HeatMapStatistic total;
+		long count = 0;
+		double sumValues = 0;
+		for (HeatMapStatistic statistic : statistics) {
+			if (statistic != null) {
+				Long statisticCount = statistic.getCount();
+				if (statisticCount != null) {
+					count += statisticCount.longValue();
+					sumValues += statisticCount.longValue() * statistic.getAvg().doubleValue();
+				}
+			}
+		}
+		
+		if (count == 0) {
+			total = new HeatMapStatisticImpl(null, null, null);
+		} else {
+			double avg = sumValues / count;
+			RubricRating rating = evaluationFormManager.getRubricRating(rubric, avg);
+			total = new HeatMapStatisticImpl(count, avg, rating);
+		}
+		return total;
+	}
 	
 	List<RawGroupedStatistic> reduceIdentifier(List<RawGroupedStatistic> statisticsList, Set<Rubric> rubrics) {
 		Map<String, Integer> sliderToWeight = rubrics.stream()
@@ -154,8 +223,8 @@ public class StatisticsCalculator {
 		double sumValues = 0;
 		for (RawGroupedStatistic statistic : keysStatistics) {
 			long statisticCount = statistic.getCount()!= null? statistic.getCount().longValue(): 0;
-			count += statisticCount;
 			Integer weight = sliderToWeight.get(statistic.getIdentifier());
+			count += weight != 0? statisticCount: 0;
 			sumCount += statisticCount * weight;
 			double statisticAvg = statistic.getRawAvg()!= null? statistic.getRawAvg().doubleValue(): 0;
 			sumValues += statisticAvg * statisticCount * weight;

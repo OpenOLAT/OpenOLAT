@@ -43,9 +43,9 @@
 		<tr class="o_qti_coursename">
 			<th>$r.translate("results.contextinfo.context")</th>
 			<td>
-				<strong>$contextTitle</strong>
+				<strong>$r.escapeHtml($contextTitle)</strong>
 				<small class="hidden-xs text-muted small"> 
-					#if($contextExternalRef) ${contextExternalRef} #end
+					#if($r.isNotEmpty($contextExternalRef)) $r.escapeHtml(${contextExternalRef}) #end
 				</small>
 				<div class="hidden-xs text-muted small">
 					ID: ${contextId}#if($contextSubId) / ${contextSubId}#end
@@ -238,12 +238,10 @@
 	</div></div> ## END o_block_centered_wrapper
 	</div> ## END right column / o_qti_metainfo_visual
 			
-	<script type="text/javascript">
-	/* <![CDATA[ */
+	<script>
 	setTimeout(function() {
 		jQuery("#o_performance_summary_visual").attr("data-progress","${testResults.scorePercent}");
 	},100);
-	/* ]]> */
 	</script>
 	#end
 	
@@ -303,12 +301,10 @@
 			</div> ## END of radial-progress
 			
 			## Animate radial score progress via JS
-			<script type="text/javascript">
-			/* <![CDATA[ */
+			<script>
 			setTimeout(function() {
 				jQuery("#${foreach.count}").attr("data-progress","${itemResult.scorePercent}");
 			},100);
-			/* ]]> */
 			</script>			
 		</div>  ## END of o_performance_summary
 		#end
@@ -409,6 +405,9 @@
 			</h4>
 		</div>
 		#set($inItem = true)
+		#if($r.isTrue($itemResult.isDeleted()))
+			<div class="o_error">$r.translate("error.assessment.item.missing")</div>
+		#end
 	 	#if($itemResult.metadataVisible)
 		<table class="table"><tbody>
 			<tr class="o_qti_item_id">
@@ -565,8 +564,7 @@
 #end  ## END of #if($options.isQuestionSummary() || $options.isQuestions() || $options.isUserSolutions() || $options.isCorrectSolutions())
 
 #if($printCommand)
-<script type="text/javascript">
-/* <![CDATA[ */ 
+<script>
 	// execute after radial score rendering
 	jQuery(function() {
 		setTimeout(function() {
@@ -574,7 +572,6 @@
 			window.print();
 		},1500);
 	});
-/* ]]> */
 </script>
 #end
 </div> ## END of o_assessment_test_results

@@ -90,7 +90,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 
 		XPath meta = rootElement.createXPath("//ns:organization");
 		meta.setNamespaceURIs(nsuris);
-		Element orgaEl = (Element) meta.selectSingleNode(rootElement); // TODO: accept several organizations?
+		Element orgaEl = (Element) meta.selectSingleNode(rootElement);
 		if (orgaEl == null) throw new AssertException("could not find element organization");
 
 		XPath metares = rootElement.createXPath("//ns:resources");
@@ -100,7 +100,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 		
 		@SuppressWarnings("unchecked")
 		List<Element> resourcesList = elResources.elements("resource");
-		resources = new HashMap<String,String>(resourcesList.size());
+		resources = new HashMap<>(resourcesList.size());
 		for (Iterator<Element> iter = resourcesList.iterator(); iter.hasNext();) {
 			Element elRes = iter.next();
 			String identVal = elRes.attributeValue("identifier");
@@ -129,7 +129,7 @@ public class CPManifestTreeModel extends GenericTreeModel {
 	}
 	
 	public List<TreeNode> getFlattedTree() {
-		return new ArrayList<TreeNode>(treeNodes);
+		return new ArrayList<>(treeNodes);
 	}
 	
 	public TreeNode getNextNodeWithContent(TreeNode node) {

@@ -29,10 +29,6 @@ import org.olat.core.gui.components.form.flexible.elements.InlineElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for AbstractInlineElementComponent
- * 
- * <P>
  * Initial Date:  25.09.2009 <br>
  * @author patrickb
  */

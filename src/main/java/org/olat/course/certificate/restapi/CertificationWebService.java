@@ -64,12 +64,15 @@ import org.olat.restapi.support.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Initial date: 17.11.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/courses/{resourceKey}/certificates")
 public class CertificationWebService {

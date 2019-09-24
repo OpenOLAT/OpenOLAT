@@ -77,5 +77,17 @@ public interface LectureBlockRollCall extends LectureBlockRollCallRef, ModifiedI
 	public Date getAbsenceSupervisorNotificationDate();
 
 	public void setAbsenceSupervisorNotificationDate(Date absenceSupervisorNotificationDate);
+	
+	public AbsenceCategory getAbsenceCategory();
+	
+	public void setAbsenceCategory(AbsenceCategory category);
+	
+	public String getAbsenceNoticeLectures();
+
+	public void setAbsenceNoticeLectures(String absenceNoticeLectures);
+	
+	public AbsenceNotice getAbsenceNotice();
+	
+	public void setAbsenceNotice(AbsenceNotice absenceNotice);
 
 }

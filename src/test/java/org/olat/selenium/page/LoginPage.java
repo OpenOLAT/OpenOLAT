@@ -46,8 +46,8 @@ public class LoginPage {
 	
 	public static final By loginFormBy = By.cssSelector("div.o_login_form");
 	private static final By authOrDisclaimerXPath = By.xpath(footerUserDivXPath + "|" + acknowledgeCheckboxXPath);
-	private static final By disclaimerXPath = By.xpath(acknowledgeCheckboxXPath);
-	private static final By disclaimerButtonXPath = By.xpath("//div[contains(@class,'o_sel_disclaimer_buttons')]/button"); 
+	public static final By disclaimerXPath = By.xpath(acknowledgeCheckboxXPath);
+	public static final By disclaimerButtonXPath = By.xpath("//div[contains(@class,'o_sel_disclaimer_buttons')]/button"); 
 	
 	public static final By resumeButton = By.className("o_sel_resume_yes");	
 	public static final By usernameFooterBy = By.id("o_username");
@@ -73,7 +73,7 @@ public class LoginPage {
 	}
 
 	public LoginPage assertOnLoginPage() {
-		OOGraphene.waitElement(loginFormBy, 5, browser);
+		OOGraphene.waitElement(loginFormBy, browser);
 		return this;
 	}
 	
@@ -86,7 +86,7 @@ public class LoginPage {
 	}
 	
 	public void assertLoggedInByLastName(String lastName) {
-		OOGraphene.waitElement(usernameFooterBy, 5, browser);
+		OOGraphene.waitElement(usernameFooterBy, browser);
 		WebElement username = browser.findElement(usernameFooterBy);
 		Assert.assertNotNull(username);
 		Assert.assertTrue(username.isDisplayed());
@@ -148,7 +148,7 @@ public class LoginPage {
 	public LoginPage loginAs(String username, String password) {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
-		OOGraphene.waitElement(usernameId, 5, browser);//wait the login page
+		OOGraphene.waitElement(usernameId, browser);//wait the login page
 		WebElement usernameInput = browser.findElement(usernameId);
 		usernameInput.sendKeys(username);
 		By passwordId = By.id("o_fiooolat_login_pass");
@@ -184,6 +184,7 @@ public class LoginPage {
 	public LoginPage loginDenied(String username, String password) {
 		//fill login form
 		By usernameId = By.id("o_fiooolat_login_name");
+		OOGraphene.waitElement(usernameId, browser);//wait the login page
 		WebElement usernameInput = browser.findElement(usernameId);
 		usernameInput.sendKeys(username);
 		By passwordId = By.id("o_fiooolat_login_pass");

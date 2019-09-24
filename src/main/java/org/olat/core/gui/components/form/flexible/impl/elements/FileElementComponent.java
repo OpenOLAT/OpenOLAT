@@ -30,14 +30,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.components.image.ImageFormItem;
 
 /**
- * <h3>Description:</h3>
- * TODO
- * <h3>Events thrown by this controller:</h3>
- * TODO
- * <ul>
- * <li></li>
- * </ul>
- * <p>
  * Initial Date: 08.12.2008 <br>
  * 
  * @author Florian Gnaegi, frentix GmbH, http://www.frentix.com

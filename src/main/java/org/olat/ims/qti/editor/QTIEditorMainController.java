@@ -534,16 +534,6 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 					// -email with change message
 					// -after sending email successfully -> saveNexit is called.
 					chngMsgFormVC = createVelocityContainer("changeMsgForm");
-					// FIXME:pb:a Bitte diesen Velocity container entfernen und statt
-					// dessen den
-					// ContentOnlyController verwenden. Es ist äusserst wichtig dass das
-					// Layout nie selber gemacht
-					// wird sondern immer die Layout controller verwendet werden, d.h. den
-					// ContentOnlyController oder
-					// den MenuAndToolController. Dort kann das Tool übrigens auch null
-					// sein wenn man nur ein Menü braucht.
-					// TODO:pb:a extend ContentOnlyController to work also if menu and
-					// tool are null, hence only content is desired
 					String userN = UserManager.getInstance().getUserDisplayEmail(ureq.getIdentity(), ureq.getLocale());
 					String lastN = ureq.getIdentity().getUser().getProperty(UserConstants.LASTNAME, ureq.getLocale());
 					String firstN = ureq.getIdentity().getUser().getProperty(UserConstants.FIRSTNAME, ureq.getLocale());
@@ -1058,8 +1048,7 @@ public class QTIEditorMainController extends MainLayoutBasicController implement
 	private GenericQtiNode doConvertItemToQtiNode(QuestionItemView qitemv) {
 		VFSContainer editorContainer = qtiPackage.getBaseDir();
 		Item theItem = qtiQpoolServiceProvider.exportToQTIEditor(qitemv, editorContainer);
-		GenericQtiNode node = new ItemNode(theItem, qtiPackage);
-		return node;
+		return new ItemNode(theItem, qtiPackage);
 	}
 	
 	private void doSelectQItem(UserRequest ureq) {

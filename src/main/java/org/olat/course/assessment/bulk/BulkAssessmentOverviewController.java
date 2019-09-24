@@ -128,7 +128,7 @@ public class BulkAssessmentOverviewController extends FormBasicController {
 	
 	private void reloadTaskModel() {
 		List<Task> tasks = taskManager.getTasks(courseEntry.getOlatResource());
-		List<TaskData> taskDatas = new ArrayList<TaskData>(tasks.size());
+		List<TaskData> taskDatas = new ArrayList<>(tasks.size());
 		ICourse course = CourseFactory.loadCourse(courseEntry);
 		Structure structure = course.getRunStructure();
 		

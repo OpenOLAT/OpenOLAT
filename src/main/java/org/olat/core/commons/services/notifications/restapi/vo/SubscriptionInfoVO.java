@@ -50,7 +50,7 @@ public class SubscriptionInfoVO {
 	
 	@XmlElementWrapper(name="items")
 	@XmlElement(name="item")
-	private List<SubscriptionListItemVO> items = new ArrayList<SubscriptionListItemVO>();
+	private List<SubscriptionListItemVO> items = new ArrayList<>();
 	
 	public SubscriptionInfoVO() {
 		//make JAXB happy

@@ -264,10 +264,9 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 
 	@Override
 	public List<Identity> addCandidates(final List<Identity> addIdentities, final Project project) {
-	//TODO gsync
 		List<Identity> addedIdentities = CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<List<Identity>>(){
 			public List<Identity> execute() {
-				List<Identity> addedIdentityList = new ArrayList<Identity>();
+				List<Identity> addedIdentityList = new ArrayList<>();
 				for (Identity identity : addIdentities) {
 					if (!securityGroupDao.isIdentityInSecurityGroup(identity, project.getCandidateGroup()) ) {
 						securityGroupDao.addIdentityToSecurityGroup(identity, project.getCandidateGroup());
@@ -284,7 +283,6 @@ public class ProjectGroupManagerImpl implements ProjectGroupManager {
 
 	@Override
 	public void removeCandidates(final List<Identity> addIdentities, final Project project) {
-	//TODO gsync
 		CoordinatorManager.getInstance().getCoordinator().getSyncer().doInSync(project.getProjectGroup(), new SyncerCallback<Boolean>(){
 			public Boolean execute() {
 				Project reloadedProject = (Project) dbInstance.loadObject(project, true);

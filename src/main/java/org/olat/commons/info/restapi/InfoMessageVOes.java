@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class InfoMessageVOes {
 
 	@XmlElement(name="infoMessageVO")
-	private List<InfoMessageVO> infoMessages = new ArrayList<InfoMessageVO>();
+	private List<InfoMessageVO> infoMessages = new ArrayList<>();
 
 	public InfoMessageVOes() {
 		//make JAXB happy

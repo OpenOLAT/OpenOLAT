@@ -62,12 +62,15 @@ import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Initial date: 15 mai 2018<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Tag(name = "Curriculum")
 @Component
 @Path("curriculum")
 public class CurriculumsWebService {

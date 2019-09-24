@@ -21,6 +21,7 @@ package org.olat.modules.video.ui.question;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -60,8 +61,11 @@ import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer
 import org.olat.ims.qti21.ui.editor.AssessmentItemEditorController;
 import org.olat.ims.qti21.ui.editor.events.AssessmentItemEvent;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItemFull;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.QuestionType;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.SelectItemController;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.modules.video.VideoManager;
@@ -202,6 +206,8 @@ public class VideoQuestionEditController extends BasicController {
 		@Autowired
 		private VideoManager videoManager;
 		@Autowired
+		private QPoolService questionPoolService;
+		@Autowired
 		private QTI21QPoolServiceProvider qti21QPoolServiceProvider;
 		
 		public VideoQuestionsController(UserRequest ureq, WindowControl wControl) {
@@ -338,7 +344,17 @@ public class VideoQuestionEditController extends BasicController {
 			removeAsListenerAndDispose(cmc);
 			removeAsListenerAndDispose(selectQItemCtrl);
 			
-			selectQItemCtrl = new SelectItemController(ureq, getWindowControl(), QTI21Constants.QTI_21_FORMAT);
+			List<QItemType> itemTypes = questionPoolService.getAllItemTypes();
+			List<QItemType> excludedItemTypes = new ArrayList<>();
+			for(QItemType t:itemTypes) {
+				if(t.getType().equalsIgnoreCase(QuestionType.DRAWING.name())
+						|| t.getType().equalsIgnoreCase(QuestionType.ESSAY.name())
+						|| t.getType().equalsIgnoreCase(QuestionType.UPLOAD.name())) {
+					excludedItemTypes.add(t);
+				}
+			}
+
+			selectQItemCtrl = new SelectItemController(ureq, getWindowControl(), QTI21Constants.QTI_21_FORMAT, excludedItemTypes);
 			listenTo(selectQItemCtrl);
 
 			cmc = new CloseableModalController(getWindowControl(), translate("close"), selectQItemCtrl.getInitialComponent(), true, translate("title.add") );

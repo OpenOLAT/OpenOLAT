@@ -153,7 +153,7 @@ public class DatePropertyHandler extends AbstractUserPropertyHandler {
 		if (dateElem.isEmpty()) {
 			return !dateElem.isMandatory() || !dateElem.isEmpty("new.form.mandatory");
 		}
-		List<ValidationStatus> validation = new ArrayList<ValidationStatus>();
+		List<ValidationStatus> validation = new ArrayList<>();
 		dateElem.validate(validation);
 		if (validation.size()==0){
 			return true;

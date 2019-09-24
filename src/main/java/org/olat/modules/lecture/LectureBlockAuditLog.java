@@ -44,6 +44,8 @@ public interface LectureBlockAuditLog {
 	public Long getRollCallKey();
 	
 	public Long getEntryKey();
+	
+	public Long getAbsenceNoticeKey();
 
 	public Long getIdentityKey();
 
@@ -68,7 +70,14 @@ public interface LectureBlockAuditLog {
 		updateSummary,
 		removeCustomRate,
 		
-		sendAppeal
+		sendAppeal,
+		
+		createAbsenceNotice,
+		updateAbsenceNotice,
+		deleteAbsenceNotice,
+		createAbsenceNoticeRelations,
+		updateAbsenceNoticeRelations,
+		
 	}
 
 }

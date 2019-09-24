@@ -51,10 +51,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.i18n.I18nManager;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for LinksPortletEditController
- * 
- * <P>
  * Initial Date:  08.06.2011 <br>
  * @author rhaag
  */

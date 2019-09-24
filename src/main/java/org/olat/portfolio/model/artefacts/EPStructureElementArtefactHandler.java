@@ -22,11 +22,6 @@ package org.olat.portfolio.model.artefacts;
 import org.olat.portfolio.EPAbstractHandler;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for EPStructureElementArtefactHandler
- * 
- * <P>
  * Initial Date:  6 déc. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
@@ -41,7 +36,6 @@ public class EPStructureElementArtefactHandler extends EPAbstractHandler<EPStruc
 
 	@Override
 	public EPStructureElementArtefact createArtefact() {
-		EPStructureElementArtefact artefact = new EPStructureElementArtefact();
-		return artefact;
+		return new EPStructureElementArtefact();
 	}
 }

@@ -66,7 +66,7 @@ public class MetadatasStepController extends StepFormBasicController {
 		if(formLayout instanceof FormLayoutContainer) {
 			FormLayoutContainer layoutCont = (FormLayoutContainer)formLayout;
 			
-			wrappers = new ArrayList<DueDateWrapper>();
+			wrappers = new ArrayList<>();
 			for(int i=0;i<numOfChecklist;i++) {
 				wrappers.add(forgeRow(i, layoutCont));
 			}

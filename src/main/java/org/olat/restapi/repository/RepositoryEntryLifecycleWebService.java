@@ -40,12 +40,15 @@ import org.olat.restapi.support.vo.RepositoryEntryLifecycleVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Initial date: 10.06.2013<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/lifecycle")
 public class RepositoryEntryLifecycleWebService {

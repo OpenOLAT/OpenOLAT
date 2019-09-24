@@ -30,17 +30,21 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.model.ImportedToCalendar;
 import org.olat.commons.calendar.model.Kalendar;
+import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupDAO;
@@ -121,7 +125,36 @@ public class ImportToCalendarManager {
 		}
 		return false;
 	}
+	public void deleteImportedCalendarsAndEvents(Kalendar cal) {
+		List<ImportedToCalendar> importedToCalendars = importedToCalendarDao
+				.getImportedToCalendars(cal.getCalendarID(), cal.getType());
+		for(ImportedToCalendar importedToCalendar:importedToCalendars) {
+			deleteImportedCalendarsAndEvents(importedToCalendar);	
+		}
+	}
 	
+	public void deleteImportedCalendarsAndEvents(ImportedToCalendar importedToCalendar) {
+		String type = importedToCalendar.getToType();
+		String id = importedToCalendar.getToCalendarId();
+		String importUrl = importedToCalendar.getUrl();
+		
+		try(InputStream in = new URL(importUrl).openStream()) {
+			Kalendar importedKalendar = calendarManager.buildKalendarFrom(in, "TEMP", UUID.randomUUID().toString());
+			List<KalendarEvent> importedEvents = importedKalendar.getEvents();
+			Set<String>  importedEventsIds = importedEvents.stream().map(KalendarEvent::getID).collect(Collectors.toSet());
+			if(!importedEventsIds.isEmpty()) {
+				Kalendar cal = calendarManager.getCalendar(type, id);
+				List<KalendarEvent> allEvents = cal.getEvents();
+				List<KalendarEvent> importedEventsToDelete = allEvents.stream()
+					.filter(e -> importedEventsIds.contains(e.getID()))
+					.collect(Collectors.toList());
+				calendarManager.removeEventsFrom(cal, importedEventsToDelete);
+			}
+		} catch(Exception e) {
+			log.error("", e);
+		}
+		importedToCalendarDao.delete(importedToCalendar);
+	}
 	
 	private boolean check(ImportedToCalendar importedToCalendar) {
 		String id = importedToCalendar.getToCalendarId();
@@ -131,12 +164,12 @@ public class ImportToCalendarManager {
 			return identity != null && identity.getStatus() != null && identity.getStatus().intValue() < Identity.STATUS_DELETED;
 		}
 		if(CalendarManager.TYPE_COURSE.equals(type)) {
-			Long resourceId = new Long(id);
+			Long resourceId = Long.valueOf(id);
 			RepositoryEntry entry = repositoryEntryDao.loadByResourceId("CourseModule", resourceId);
 			return entry != null;
 		}
 		if(CalendarManager.TYPE_GROUP.equals(type)) {
-			Long resourceId = new Long(id);
+			Long resourceId = Long.valueOf(id);
 			BusinessGroup group = businessGroupDao.loadByResourceId(resourceId);
 			return group != null;
 		}
@@ -187,6 +220,10 @@ public class ImportToCalendarManager {
 			log.error("", e);
 			return false;
 		}
+	}
+	
+	public List<ImportedToCalendar> getImportedCalendarsIn(Kalendar cal) {
+		return importedToCalendarDao.getImportedToCalendars(cal.getCalendarID(), cal.getType());
 	}
 	
 	public void deletePersonalImportedCalendars(Identity identity) {

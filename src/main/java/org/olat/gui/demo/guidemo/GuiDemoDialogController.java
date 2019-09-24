@@ -95,7 +95,7 @@ public class GuiDemoDialogController extends BasicController {
 		}
 		if (source == genericDialogButton) {
 			// create list of internationalized button texsts
-			myButtons = new ArrayList<String>();
+			myButtons = new ArrayList<>();
 			myButtons.add("Lorem");
 			myButtons.add("Ipsum");
 			myButtons.add("Dolor");

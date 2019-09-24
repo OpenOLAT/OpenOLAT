@@ -53,8 +53,6 @@ public class Step_4_SendMail extends BasicStep {
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl,
 			StepsRunContext stepsRunContext, Form form) {
-		// TODO Auto-generated method stub
 		return new SendMailStepForm(ureq, windowControl, form, stepsRunContext);
 	}
-
 }

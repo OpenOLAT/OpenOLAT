@@ -78,7 +78,8 @@ public class HottextEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_hot");
+		setFormContextHelp("Configure test questions");
+	
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
 		titleEl.setMandatory(true);

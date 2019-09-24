@@ -222,7 +222,7 @@ public class UserCourseInformationsManagerTest extends OlatTestCase {
 		userCourseInformationsManager.updateUserCourseInformations(courseResource, user2);
 		dbInstance.commitAndCloseSession();
 		
-		List<Identity> users = new ArrayList<Identity>();
+		List<Identity> users = new ArrayList<>();
 		users.add(user1);
 		users.add(user2);
 

@@ -94,7 +94,7 @@ public class CalendarPrintMapper implements Mapper {
 		  .append("Calendar")
 		  .append("</title>")
 		  .append("<meta http-equiv='Content-type' content='text/html; charset=utf-8' />")
-		  .append("<link href='").append(themeBaseUri).append("theme.css' rel='stylesheet' type='text/css' />\n")
+		  .append("<link href='").append(themeBaseUri).append("theme.css' rel='stylesheet' />\n")
 		  .append("</head><body class='o_cal_print' onload='window.focus();window.print()'>");
 		
 		//collect all events
@@ -165,7 +165,7 @@ public class CalendarPrintMapper implements Mapper {
 		Collections.sort(eventList, new KalendarEventDateComparator());
 		
 		Date currentDate = null;
-		List<KalendarEventRenderWrapper> eventByDayList = new ArrayList<KalendarEventRenderWrapper>();
+		List<KalendarEventRenderWrapper> eventByDayList = new ArrayList<>();
 		for(KalendarEventRenderWrapper event:eventList) {
 			Date begin = event.getEvent().getBegin();
 			Date normalizedBegin = CalendarUtils.removeTime(begin);

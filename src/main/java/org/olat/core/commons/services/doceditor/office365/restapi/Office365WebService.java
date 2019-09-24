@@ -55,6 +55,8 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * The simplest way to test this class is to use the interactice WOPI Validation application.
  * https://wopi.readthedocs.io/en/latest/build_test_ship/validator.html#interactive-wopi-validation
@@ -63,6 +65,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@Tag(name = "Office365")
 @Service
 @Path("/office365/wopi/files/{fileId}")
 public class Office365WebService {

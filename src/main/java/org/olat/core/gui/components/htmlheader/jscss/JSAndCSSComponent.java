@@ -133,7 +133,7 @@ public class JSAndCSSComponent extends AbstractComponent {
 		jsFileNames = jsPath;
 		
 		if(cssPath != null) {
-			cssPathNames = new ArrayList<String>(cssPath.length);
+			cssPathNames = new ArrayList<>(cssPath.length);
 			for(String css:cssPath) {
 				cssPathNames.add(css);
 			}
@@ -201,8 +201,8 @@ public class JSAndCSSComponent extends AbstractComponent {
 	 */
 	public void addAutoRemovedCssPathName(String cssPathName, int cssLoadIndex) {
 		if (cssPathNames == null) { // only one gui thread has access to this object -> thread safe
-			cssPathNames = new ArrayList<String>(2);
-			cssPathNamesIndexes = new HashMap<String, Integer>(2);
+			cssPathNames = new ArrayList<>(2);
+			cssPathNamesIndexes = new HashMap<>(2);
 		}
 		cssPathNames.add(cssPathName);
 		cssPathNamesIndexes.put(cssPathName, cssLoadIndex);			

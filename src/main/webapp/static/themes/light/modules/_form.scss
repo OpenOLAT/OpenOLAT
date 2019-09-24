@@ -54,16 +54,21 @@
 		padding-right: $input-height-base;
 	}
 	
-	.o_date.form-inline .form-group  {
-		margin-left: 0;
+	.o_date.form-inline  {
+		.form-group {
+			margin-left: 0;
+		}
+		.form-group.o_second_date, .o_date_ms.form-group, .form-group.o_date_separator {
+			margin-left: 25px;
+		}
 	}
 	
+	.btn-group .o_date {
+		display: inline-block;
+	}
+
 	input.o_date_ms {
 		width: 3em;
-	}
-	
-	.o_date.form-inline .o_date_ms.form-group {
-		margin-left: 25px;
 	}
 	
 	.has-feedback .o_date.form-inline .form-control.o_date_ms {
@@ -75,7 +80,11 @@
 	}
 	
 	.input-group.o_date_picker {
-		width: 12em;
+		width: 11em;
+	}
+	
+	.has-feedback .o_date_picker .form-control {
+		padding-right: 0;
 	}
 	
 	/* file chooser */
@@ -128,6 +137,42 @@
 		overflow: auto;	
 		white-space: pre-wrap;
 		background: $input-bg-disabled;
+	}
+}
+
+.o_form_inline_mandatory_compact {
+	i {
+		width: 20px;
+	}
+	select.form-control {
+		width: calc(100% - 25px);
+	}
+}
+
+/* day chooser with previous next */
+.o_day_chooser {
+	.o_day_previous {
+		display: inline-block;
+		a {
+			border-bottom-right-radius: 0;
+			border-top-right-radius: 0;
+			border-right: 0;
+		}
+	}
+	.o_day_date {
+		display: inline-block;
+		border-radius: 0;
+		input, .input-group-addon {
+			border-radius: 0;
+		}
+	}
+	.o_day_next {
+		display: inline-block;
+		a {
+			border-bottom-left-radius: 0;
+			border-top-left-radius: 0;
+			border-left: 0;
+		}
 	}
 }
 

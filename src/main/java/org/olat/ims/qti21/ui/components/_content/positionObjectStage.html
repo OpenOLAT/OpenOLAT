@@ -27,7 +27,7 @@
 			#set($maxChoices = $r.maxToList($interaction.maxChoices))
 			#set($responseValue = $r.getResponseValue($interaction.responseIdentifier))
 
-	 		<script type="text/javascript">
+	 		<script>
 			jQuery(function() {
 				jQuery('#${containerId}').positionObjectStage({
 					responseIdentifier: '$responseIdentifier',

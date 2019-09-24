@@ -61,9 +61,7 @@ import org.olat.course.run.scoring.FailedEvaluationType;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 /**
- * 
- * Description:<br>
- * TODO: guido Class Description for EditScoreCalculationExpertForm
+ * @author guido
  * 
  */
 class EditScoreCalculationExpertForm extends FormBasicController {
@@ -74,7 +72,7 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 	private UserCourseEnvironment euce;
 	private ScoreCalculator sc;
 	private List<CourseNode> assessableNodesList;
-	private List<String> testElemWithNoResource = new ArrayList<String>();
+	private List<String> testElemWithNoResource = new ArrayList<>();
 	
 	private Translator pt = null;
 	/**
@@ -99,13 +97,13 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 		
 		//the error message
 		fi.setErrorKey("rules.error", new String[]{
-				pt.translate(cem[0].errorKey, cem[0].errorKeyParams)
+				pt.translate(cem[0].getErrorKey(), cem[0].getErrorKeyParams())
 		});
 		
-		if (cem[0].solutionMsgKey != null && !"".equals(cem[0].solutionMsgKey)) {
+		if (cem[0].getSolutionMsgKey() != null && !"".equals(cem[0].getSolutionMsgKey())) {
 			//and a hint or example to clarify the error message
 			fi.setExampleKey("rules.error", new String[]{
-					pt.translate(cem[0].solutionMsgKey, cem[0].errorKeyParams)
+					pt.translate(cem[0].getSolutionMsgKey(), cem[0].getErrorKeyParams())
 			});
 		}
 	}
@@ -178,7 +176,7 @@ class EditScoreCalculationExpertForm extends FormBasicController {
 	 * @return
 	 */
 	private List<String> getInvalidNodeDescriptions(ConditionExpression ce) {
-		List<String> nodeDescriptionList = new ArrayList<String>();
+		List<String> nodeDescriptionList = new ArrayList<>();
 		if (ce != null) {
 			Set<String> selectedNodesIds = ce.getSoftReferencesOf("courseNodeId");
 			for (Iterator<CourseNode> nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {

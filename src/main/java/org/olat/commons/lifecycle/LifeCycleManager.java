@@ -175,15 +175,6 @@ public class LifeCycleManager {
 	}
 
 	/**
-	 * Deletes all LifeCycleEntry of this resourceable
-	 *
-	 */
-	public void deleteAllEntriesForPersistentObject() {
-		// TODO:
-		log.error("NOT IMPLEMENTED YET !!!!!!!!!!!");
-	}
-
-	/**
 	 * Get a normalized type-name because type-name could be too long.
 	 * @param standardTypeName
 	 * @return

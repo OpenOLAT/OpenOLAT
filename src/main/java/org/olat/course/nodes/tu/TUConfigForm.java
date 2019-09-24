@@ -45,9 +45,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.ModuleConfiguration;
 
 /**
- * Description:<BR/>
- * TODO: Class Description for TUConfigForm
- * <P/>
  * Initial Date:  Oct 12, 2004
  *
  * @author Felix Jost

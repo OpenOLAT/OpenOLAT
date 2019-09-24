@@ -141,7 +141,7 @@ public class Table extends AbstractComponent {
 	private boolean isShowAllSelected;
 	private boolean suppressDirtyFormWarning;
 
-	private List<TableMultiSelect> multiSelectActions = new ArrayList<TableMultiSelect>();
+	private List<TableMultiSelect> multiSelectActions = new ArrayList<>();
 	private BitSet multiSelectSelectedRows = new BitSet();
 	private BitSet multiSelectReadonlyRows = new BitSet();
 
@@ -163,10 +163,10 @@ public class Table extends AbstractComponent {
 		
 	protected Table(String id, String name, Translator translator) {
 		super(id, name, translator);
-		columnOrder = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
-		allCDs = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
-		defaultVisibleCDs = new ArrayList<ColumnDescriptor>(INITIAL_COLUMNSIZE);
-		sorter = new ArrayList<Integer>(DEFAULT_RESULTS_PER_PAGE);
+		columnOrder = new ArrayList<>(INITIAL_COLUMNSIZE);
+		allCDs = new ArrayList<>(INITIAL_COLUMNSIZE);
+		defaultVisibleCDs = new ArrayList<>(INITIAL_COLUMNSIZE);
+		sorter = new ArrayList<>(DEFAULT_RESULTS_PER_PAGE);
 		selectedRowId = NO_ROW_SELECTED;
 		currentPageId = Integer.valueOf(1);
 		resultsPerPage = DEFAULT_RESULTS_PER_PAGE;
@@ -205,7 +205,7 @@ public class Table extends AbstractComponent {
 		// we got a new TableDataModel, so we need to prepare the sorting
 		int rows = getRowCount();
 		selectedRowId = NO_ROW_SELECTED; // no selection anymore
-		sorter = new ArrayList<Integer>();
+		sorter = new ArrayList<>();
 		for (int i = 0; i < rows; i++) {
 			sorter.add(Integer.valueOf(i));
 		}
@@ -430,7 +430,7 @@ public class Table extends AbstractComponent {
 			multiSelectSelectedRows = new BitSet(); //if all deselected create new multiSelectSelectedRows
 			return;
 		}
-		List<Integer> rowIds = new ArrayList<Integer>();
+		List<Integer> rowIds = new ArrayList<>();
 		for (int i = 0; i < sRowIds.length; i++) {
 			String sRowId = sRowIds[i];
 			try {
@@ -524,7 +524,11 @@ public class Table extends AbstractComponent {
 					}
 				}
 				currentSortingCd.sortingAboutToStart();
-				Collections.sort(sorter, new TableComparator(currentSortingCd, sortAscending));
+				try {
+					Collections.sort(sorter, new TableComparator(currentSortingCd, sortAscending));
+				} catch (IllegalArgumentException e) {
+					log.error("Sort column: {} in columns: {}", sortColumn, columnOrder, e);
+				}
 			} else {
 				log.error("Sort column not found:" + sortColumn + " in columns: " + columnOrder);
 			}
@@ -891,7 +895,7 @@ public class Table extends AbstractComponent {
 	}
 
 	private void buildFilteredTableDataModel(final String searchString) {
-		List<Object> filteredElementList = new ArrayList<Object>();
+		List<Object> filteredElementList = new ArrayList<>();
 		log.debug("buildFilteredTableDataModel: tableDataModel.getRowCount()=" + tableDataModel.getRowCount());
 		if (tableDataModel.getRowCount() > 0) {
 			log.debug("buildFilteredTableDataModel: tableDataModel.getObject(0)=" + tableDataModel.getObject(0));

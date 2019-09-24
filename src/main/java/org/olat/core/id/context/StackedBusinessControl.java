@@ -66,7 +66,7 @@ public class StackedBusinessControl implements BusinessControl {
 			}
 		}
 		if (list==null) {
-			list = new LinkedList<ContextEntry>();
+			list = new LinkedList<>();
 		}
 		list.add(contextEntry);
 		return list;
@@ -111,7 +111,7 @@ public class StackedBusinessControl implements BusinessControl {
 
 	@Override
 	public List<ContextEntry> getEntries() {
-		List<ContextEntry> entries = new ArrayList<ContextEntry>();
+		List<ContextEntry> entries = new ArrayList<>();
 		if(origBusinessControl != null) {
 			entries.addAll(origBusinessControl.getEntries());
 		}
@@ -168,7 +168,7 @@ public class StackedBusinessControl implements BusinessControl {
 	public void setCurrentContextEntry(ContextEntry ce) {
 		if(ce == null) throw new AssertException("ContextEntry can not be null!");
 		this.currentCe = ce;
-		List<ContextEntry>	ces = new ArrayList<ContextEntry>();
+		List<ContextEntry>	ces = new ArrayList<>();
 		notifyParent(ces);
 	}
 

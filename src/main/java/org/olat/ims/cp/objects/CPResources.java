@@ -168,8 +168,6 @@ public class CPResources extends DefaultElement implements CPNode {
 			res = it.next();
 			if (res.getIdentifier().equals(identifier)) { return res; }
 		}
-		// TODO: should it throw an exception, if no element with the given
-		// identifier is found ???
 		return null;
 	}
 

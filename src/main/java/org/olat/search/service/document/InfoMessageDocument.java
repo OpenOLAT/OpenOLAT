@@ -33,7 +33,7 @@ public class InfoMessageDocument extends OlatDocument {
 
   //Must correspond with LocalString_xx.properties
 	// Do not use '_' because we want to seach for certain documenttype and lucene haev problems with '_' 
-	public final static String TYPE = "type.info.message";
+	public static final String TYPE = "type.info.message";
 
 	public InfoMessageDocument() {
 		super();
@@ -44,7 +44,9 @@ public class InfoMessageDocument extends OlatDocument {
 
 		messageDocument.setTitle(message.getTitle());
 		messageDocument.setContent(message.getMessage());
-		messageDocument.setAuthor(message.getAuthor().getName());
+		if(message.getAuthor() != null) {
+			messageDocument.setAuthor(message.getAuthor().getName());
+		}
 		messageDocument.setCreatedDate(message.getCreationDate());
 		messageDocument.setLastChange(message.getCreationDate());
 		messageDocument.setResourceUrl(searchResourceContext.getResourceUrl());

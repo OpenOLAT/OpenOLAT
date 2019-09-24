@@ -59,10 +59,6 @@ public class WikiPage {
 	private long modifyAuthor = 0;
 	private long modificationTime = 0;
 	private long creationTime;
-	// TODO:gs viewCout does not work properly as it would save the property file
-	// on each click which would invalidate
-	// the cache for each page view which is nonsense.
-	// remove or find better solution which works also in a cluster cache scenario
 	private int viewCount = 0;
 
 	public WikiPage(String name) {

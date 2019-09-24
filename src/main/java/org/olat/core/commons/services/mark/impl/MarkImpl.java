@@ -26,11 +26,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for MarkImpl
- * 
- * <P>
  * Initial Date:  9 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
@@ -83,6 +78,7 @@ public class MarkImpl extends PersistentObject implements Mark {
 		this.resId = resId;
 	}
 
+	@Override
 	public String getResSubPath() {
 		return resSubPath;
 	}
@@ -91,6 +87,7 @@ public class MarkImpl extends PersistentObject implements Mark {
 		this.resSubPath = resSubPath;
 	}
 
+	@Override
 	public String getBusinessPath() {
 		return businessPath;
 	}
@@ -99,6 +96,7 @@ public class MarkImpl extends PersistentObject implements Mark {
 		this.businessPath = businessPath;
 	}
 
+	@Override
 	public Identity getCreator() {
 		return creator;
 	}

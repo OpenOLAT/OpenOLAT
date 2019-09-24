@@ -36,8 +36,7 @@ import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.IQSELFCourseNode;
 /**
  * 
- * Description:<br>
- * TODO: guido Class Description for IQSELFCourseNodeConfiguration
+ * @author guido
  */
 public class IQSELFCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 

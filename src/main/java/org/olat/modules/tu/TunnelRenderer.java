@@ -59,6 +59,7 @@ public class TunnelRenderer implements ComponentRenderer {
 	 * @param args
 	 * 
 	 */
+	@Override
 	public void render(Renderer renderer, StringOutput target, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
 		TunnelComponent tuc = (TunnelComponent) source;
@@ -68,20 +69,14 @@ public class TunnelRenderer implements ComponentRenderer {
 		if (htmlContent != null) target.append(htmlContent);
 	}
 
-	/**
-   * 
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
-	 */
+	@Override
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
 		TunnelComponent tuc = (TunnelComponent) source;
 		String htmlHead = tuc.getHtmlHead();
 		if (htmlHead != null) sb.append(htmlHead);
 	}
 
-	/**
-   * 
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component)
-	 */
+	@Override
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		TunnelComponent tuc = (TunnelComponent) source;
 		String jsBodyOnLoad = tuc.getJsOnLoad();

@@ -108,8 +108,8 @@ public class PortfolioFilterController extends FormBasicController {
 			this.filterSettings = filterSettings;
 		}
 		// allows to instantiate with filter presets
-		selectedTagsList = new ArrayList<String>(filterSettings.getTagFilter());
-		selectedTypeList = new ArrayList<String>(filterSettings.getTypeFilter());
+		selectedTagsList = new ArrayList<>(filterSettings.getTagFilter());
+		selectedTypeList = new ArrayList<>(filterSettings.getTypeFilter());
 		initForm(ureq);
 	}
 	
@@ -208,8 +208,8 @@ public class PortfolioFilterController extends FormBasicController {
 	
 	private void updateUI(EPFilterSettings newSettings) {
 		filterSettings = newSettings;
-		selectedTagsList = new ArrayList<String>(filterSettings.getTagFilter());
-		selectedTypeList = new ArrayList<String>(filterSettings.getTypeFilter());
+		selectedTagsList = new ArrayList<>(filterSettings.getTagFilter());
+		selectedTypeList = new ArrayList<>(filterSettings.getTypeFilter());
 		
 		initOrUpdateForm(flc);
 		flc.setDirty(true);
@@ -224,7 +224,7 @@ public class PortfolioFilterController extends FormBasicController {
 		}
 
 		int amount = existingFilters.size() + 1;
-		nonEmptyFilters = new ArrayList<EPFilterSettings>(amount);
+		nonEmptyFilters = new ArrayList<>(amount);
 		String[] theKeys = new String[amount];
 		String[] theValues = new String[amount];
 		
@@ -269,14 +269,14 @@ public class PortfolioFilterController extends FormBasicController {
 		tagNoneBtn = uifactory.addToggleButton("filter.notag", null, tagFlc, null, null);
 		Map<String, String> userTags = ePFMgr.getUsersMostUsedTags(getIdentity(), 8);
 		int i = 1;
-		tagCmpList = new ArrayList<FormToggle>();
-		LinkedList<Entry<String, String>> sortEntrySet = new LinkedList<Entry<String, String>>(userTags.entrySet());
+		tagCmpList = new ArrayList<>();
+		LinkedList<Entry<String, String>> sortEntrySet = new LinkedList<>(userTags.entrySet());
 		Collections.sort(sortEntrySet, new Comparator<Entry<String, String>>() {
 			public int compare(Entry<String, String> arg0, Entry<String, String> arg1) {
 				return arg0.getValue().compareTo(arg1.getValue());
 			}
 		});
-		List<String> allActiveTagToggles = new ArrayList<String>();
+		List<String> allActiveTagToggles = new ArrayList<>();
 		for (Entry<String, String> entry : sortEntrySet) {
 			String tag = entry.getValue();
 			String tagText = StringHelper.escapeHtml(tag);
@@ -300,7 +300,7 @@ public class PortfolioFilterController extends FormBasicController {
 	}
 	
 	private void updateTagFlc() {
-		List<String> allActiveTagToggles = new ArrayList<String>();
+		List<String> allActiveTagToggles = new ArrayList<>();
 		for(FormToggle link:tagCmpList) {
 			String tag = (String)link.getUserObject();
 			if (selectedTagsList.contains(tag)) {
@@ -333,9 +333,9 @@ public class PortfolioFilterController extends FormBasicController {
 		typeAllBtn = uifactory.addToggleButton("filter.all", null, typeFlc, null, null);
 		typeAllBtn.toggleOff();
 		List<EPArtefactHandler<?>> handlers = portfolioModule.getAllAvailableArtefactHandlers();
-		typeCmpList = new ArrayList<FormToggle>();
+		typeCmpList = new ArrayList<>();
 		int i=0;
-		List<String> allActiveTypeToggles = new ArrayList<String>();
+		List<String> allActiveTypeToggles = new ArrayList<>();
 		for (EPArtefactHandler<?> handler : handlers) {
 			String handlerClass = PortfolioFilterController.HANDLER_PREFIX + handler.getClass().getSimpleName() + HANDLER_TITLE_SUFFIX;
 			FormToggle link = (FormToggle) typeFlc.getFormComponent(handlerClass);
@@ -363,7 +363,7 @@ public class PortfolioFilterController extends FormBasicController {
 	}
 	
 	private void updateTypeFlc() {
-		List<String> allActiveTypeToggles = new ArrayList<String>();
+		List<String> allActiveTypeToggles = new ArrayList<>();
 		for(FormToggle link:typeCmpList) {
 			String type = (String)link.getUserObject();
 			if (selectedTypeList.contains(type)) {
@@ -477,7 +477,7 @@ public class PortfolioFilterController extends FormBasicController {
 			fireEvent(ureq, new PortfolioFilterChangeEvent(filterSettings));
 		} else if (source == dateStart || source == dateEnd) {
 			if (validateFormLogic(ureq)) {
-				List<Date> dateList = new ArrayList<Date>();
+				List<Date> dateList = new ArrayList<>();
 				Date selStartDate = dateStart.getDate();
 				Date selEndDate = dateEnd.getDate();
 				dateList.add(selStartDate);

@@ -1,5 +1,5 @@
 #if ($glossaryEnabled)
-<script type="text/javascript">
+<script>
 	var b_glossaryDefinitionMapperPath = "$glossaryDefinitionMapperPath"
 	var b_glossaryTermMapperPath = "$glossaryTermMapperPath"
 	var domID = '$domId';
@@ -7,7 +7,7 @@
 </script>
 #end
 <div id="$domId">$r.render("tmComponent")</div>
-<script type="text/javascript">
+<script>
 #if ($glossaryEnabled)
 	jQuery(function() {
 		var glossaryId = "$glossaryId";

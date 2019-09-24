@@ -1,4 +1,5 @@
 /**
+
  * <a href="http://www.openolat.org">
  * OpenOLAT - Online Learning and Training</a><br>
  * <p>
@@ -19,10 +20,12 @@
  */
 package org.olat.modules.lecture;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.modules.lecture.site.LecturesManagementContextEntryControllerCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,7 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final String LECTURE_ENABLED = "lecture.enabled";
 	private static final String LECTURE_MANAGED = "lecture.managed";
+	private static final String LECTURE_ABSENCE_NOTICE_ENABLED = "lecture.absence.notice.enabled";
 	
 	private static final String ASSESSMENT_MODE_ENABLED = "lecture.assessment.mode.enabled";
 	private static final String ASSESSMENT_MODE_LEAD_TIME = "lecture.assessment.mode.lead.time";
@@ -50,7 +54,21 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private static final String STATUS_CANCELLED_ENABLED = "lecture.status.cancelled.enabled";
 	private static final String AUTHORIZED_ABSENCE_ENABLED = "lecture.authorized.absence.enabled";
 	private static final String AUTHORIZED_ABSENCE_ATTENDANT_ENABLED = "lecture.authorized.absence.as.attendant";
+	
 	private static final String TEACHER_CAN_AUTHORIZED_ABSENCE = "teacher.can.authorized.absence";
+	private static final String TEACHER_CAN_SEE_APPEAL = "teacher.can.see.appeal";
+	private static final String TEACHER_CAN_AUTHORIZED_APPEAL = "teacher.can.authorized.appeal";
+	
+	private static final String MASTERCOACH_CAN_SEE_ABSENCE = "mastercoach.can.see.absence";
+	private static final String MASTERCOACH_CAN_RECORD_NOTICE = "mastercoach.can.record.notice";
+	private static final String MASTERCOACH_CAN_AUTHORIZED_ABSENCE = "mastercoach.can.authorized.absence";
+	private static final String MASTERCOACH_CAN_SEE_APPEAL = "mastercoach.can.see.appeal";
+	private static final String MASTERCOACH_CAN_AUTHORIZED_APPEAL = "mastercoach.can.authorized.appeal";
+
+	private static final String PARTICIPANT_CAN_NOTICE = "participant.can.notice";
+	
+	private static final String DAILY_ROLL_CALL = "daily.rollcall";
+	
 	private static final String OWNER_CAN_VIEW_ALL_COURSES_IN_CURRICULUM = "lecture.owner.can.view.all.courses.curriculum";
 	private static final String ROLLCALL_REMINDER_ENABLED = "lecture.rollcall.reminder.enabled";
 	private static final String ROLLCALL_REMINDER_PERIOD = "lecture.rollcall.reminder.period";
@@ -72,6 +90,8 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean lecturesManaged;
 	@Value("${lecture.can.override.standard.configuration:false}")
 	private boolean canOverrideStandardConfiguration;
+	@Value("${lecture.absence.notice.enabled:false}")
+	private boolean absenceNoticeEnabled;
 	
 	@Value("${lecture.status.partially.done.enabled:true}")
 	private boolean statusPartiallyDoneEnabled;
@@ -84,8 +104,27 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean countAuthorizedAbsenceAsAttendant;
 	@Value("${lecture.absence.default.authorized:false}")
 	private boolean absenceDefaultAuthorized;
+	
 	@Value("${lecture.teacher.can.authorized.absence:true}")
 	private boolean teacherCanAuthorizedAbsence;
+	@Value("${lecture.teacher.can.see.appeal:true}")
+	private boolean teacherCanSeeAppeal;
+	@Value("${lecture.teacher.can.authorized.appeal:false}")
+	private boolean teacherCanAuthorizedAppeal;
+	
+	@Value("${lecture.mastercoach.can.see.absence:true}")
+	private boolean masterCoachCanSeeAbsence;
+	@Value("${lecture.mastercoach.can.record.notice:true}")
+	private boolean masterCoachCanRecordNotice;
+	@Value("${lecture.mastercoach.can.authorized.absence:true}")
+	private boolean masterCoachCanAuthorizedAbsence;
+	@Value("${lecture.mastercoach.can.see.appeal:true}")
+	private boolean masterCoachCanSeeAppeal;
+	@Value("${lecture.mastercoach.can.authorized.appeal:true}")
+	private boolean masterCoachCanAuthorizedAppeal;
+
+	@Value("${lecture.participant.can.notice:false}")
+	private boolean participantCanNotice;
 	
 	@Value("${lecture.assessment.mode.enabled:true}")
 	private boolean assessmentModeEnabled;
@@ -130,6 +169,9 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	@Value("${lecture.course.show.all.teachers:false}")
 	private boolean showLectureBlocksAllTeachersDefault;
 	
+	@Value("${lecture.daily.rollcall:start}")
+	private String dailyRollCall;
+	
 	@Autowired
 	public LectureModule(CoordinatorManager coordinatorManager) {
 		super(coordinatorManager);
@@ -137,6 +179,21 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 
 	@Override
 	public void init() {
+		// Add controller factory extension point to launch groups
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("Lectures",
+				new LecturesManagementContextEntryControllerCreator());
+		NewControllerFactory.getInstance().addContextEntryControllerCreator("LecturesManagementSite",
+				new LecturesManagementContextEntryControllerCreator());
+		
+		updateProperties();
+	}
+	
+	@Override
+	protected void initFromChangedProperties() {
+		updateProperties();
+	}
+	
+	private void updateProperties() {
 		//module enabled/disabled
 		String enabledObj = getStringPropertyValue(LECTURE_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
@@ -147,7 +204,12 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		if(StringHelper.containsNonWhitespace(managedObj)) {
 			lecturesManaged = "true".equals(managedObj);
 		}
-	
+		
+		String absenceNoticeEnabledObj = getStringPropertyValue(LECTURE_ABSENCE_NOTICE_ENABLED, true);
+		if(StringHelper.containsNonWhitespace(absenceNoticeEnabledObj)) {
+			absenceNoticeEnabled = "true".equals(absenceNoticeEnabledObj);
+		}
+		
 		String canOverrideSStandardConfigurationObj = getStringPropertyValue(CAN_OVERRIDE_STANDARD_CONFIGURATION, true);
 		if(StringHelper.containsNonWhitespace(canOverrideSStandardConfigurationObj)) {
 			canOverrideStandardConfiguration = "true".equals(canOverrideSStandardConfigurationObj);
@@ -182,6 +244,46 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 			teacherCanAuthorizedAbsence = "true".equals(teacherCanAuthorizedAbsenceObj);
 		}
 		
+		String teacherCanSeeAppealObj = getStringPropertyValue(TEACHER_CAN_SEE_APPEAL, true);
+		if(StringHelper.containsNonWhitespace(teacherCanSeeAppealObj)) {
+			teacherCanSeeAppeal = "true".equals(teacherCanSeeAppealObj);
+		}
+		
+		String teacherCanAuthorizedAppealObj = getStringPropertyValue(TEACHER_CAN_AUTHORIZED_APPEAL, true);
+		if(StringHelper.containsNonWhitespace(teacherCanAuthorizedAppealObj)) {
+			teacherCanAuthorizedAppeal = "true".equals(teacherCanAuthorizedAppealObj);
+		}
+		
+		String masterCoachCanSeeAbsenceObj = getStringPropertyValue(MASTERCOACH_CAN_SEE_ABSENCE, true);
+		if(StringHelper.containsNonWhitespace(masterCoachCanSeeAbsenceObj)) {
+			masterCoachCanSeeAbsence = "true".equals(masterCoachCanSeeAbsenceObj);
+		}
+		
+		String masterCoachCanRecordNoticeObj = getStringPropertyValue(MASTERCOACH_CAN_RECORD_NOTICE, true);
+		if(StringHelper.containsNonWhitespace(masterCoachCanRecordNoticeObj)) {
+			masterCoachCanRecordNotice = "true".equals(masterCoachCanRecordNoticeObj);
+		}
+		
+		String masterCoachCanAuthorizedAbsenceObj = getStringPropertyValue(MASTERCOACH_CAN_AUTHORIZED_ABSENCE, true);
+		if(StringHelper.containsNonWhitespace(masterCoachCanAuthorizedAbsenceObj)) {
+			masterCoachCanAuthorizedAbsence = "true".equals(masterCoachCanAuthorizedAbsenceObj);
+		}
+
+		String masterCoachCanSeeAppealObj = getStringPropertyValue(MASTERCOACH_CAN_SEE_APPEAL, true);
+		if(StringHelper.containsNonWhitespace(masterCoachCanSeeAppealObj)) {
+			masterCoachCanSeeAppeal = "true".equals(masterCoachCanSeeAppealObj);
+		}
+		
+		String masterCoachCanAuthorizedAppealObj = getStringPropertyValue(MASTERCOACH_CAN_AUTHORIZED_APPEAL, true);
+		if(StringHelper.containsNonWhitespace(masterCoachCanAuthorizedAppealObj)) {
+			masterCoachCanAuthorizedAppeal = "true".equals(masterCoachCanAuthorizedAppealObj);
+		}
+		
+		String participantCanNoticeObj = getStringPropertyValue(PARTICIPANT_CAN_NOTICE, true);
+		if(StringHelper.containsNonWhitespace(participantCanNoticeObj)) {
+			participantCanNotice = "true".equals(participantCanNoticeObj);
+		}
+
 		String ownerCanViewAllCoursesInCurriculumObj = getStringPropertyValue(OWNER_CAN_VIEW_ALL_COURSES_IN_CURRICULUM, true);
 		if(StringHelper.containsNonWhitespace(ownerCanViewAllCoursesInCurriculumObj)) {
 			ownerCanViewAllCoursesInCurriculum = "true".equals(ownerCanViewAllCoursesInCurriculumObj);
@@ -262,14 +364,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 			assessmentModeFollowupTime = Integer.parseInt(followupTimeObj);
 		}
 		
+		String dailyRollCallObj = getStringPropertyValue(DAILY_ROLL_CALL, true);
+		if(StringHelper.containsNonWhitespace(dailyRollCallObj)) {
+			dailyRollCall = dailyRollCallObj;
+		}
+
 		assessmentModeAdmissibleIps = getStringPropertyValue(ASSESSMENT_MODE_ADMISSIBLE_IPS, assessmentModeAdmissibleIps);
 		assessmentModeSebKeys = getStringPropertyValue(ASSESSMENT_MODE_SEB_KEYS, assessmentModeSebKeys);
 	}
 
-	@Override
-	protected void initFromChangedProperties() {
-		init();
-	}
 
 	@Override
 	public boolean isEnabled() {
@@ -297,6 +400,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setLecturesManaged(boolean lecturesManaged) {
 		this.lecturesManaged = lecturesManaged;
 		setStringProperty(LECTURE_MANAGED, Boolean.toString(lecturesManaged), true);
+	}
+	
+	public boolean isAbsenceNoticeEnabled() {
+		return absenceNoticeEnabled;
+	}
+
+	public void setAbsenceNoticeEnabled(boolean enabled) {
+		this.absenceNoticeEnabled = enabled;
+		setStringProperty(LECTURE_ABSENCE_NOTICE_ENABLED, Boolean.toString(enabled), true);
 	}
 
 	public boolean isAuthorizedAbsenceEnabled() {
@@ -351,6 +463,78 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setTeacherCanAuthorizedAbsence(boolean enable) {
 		this.teacherCanAuthorizedAbsence = enable;
 		setStringProperty(TEACHER_CAN_AUTHORIZED_ABSENCE, Boolean.toString(enable), true);
+	}
+
+	public boolean isTeacherCanSeeAppeal() {
+		return teacherCanSeeAppeal;
+	}
+
+	public void setTeacherCanSeeAppeal(boolean enable) {
+		this.teacherCanSeeAppeal = enable;
+		setStringProperty(TEACHER_CAN_SEE_APPEAL, Boolean.toString(enable), true);
+	}
+
+	public boolean isTeacherCanAuthorizedAppeal() {
+		return teacherCanAuthorizedAppeal;
+	}
+
+	public void setTeacherCanAuthorizedAppeal(boolean enable) {
+		this.teacherCanAuthorizedAppeal = enable;
+		setStringProperty(TEACHER_CAN_AUTHORIZED_APPEAL, Boolean.toString(enable), true);
+	}
+	
+	public boolean isMasterCoachCanSeeAbsence() {
+		return masterCoachCanSeeAbsence;
+	}
+
+	public void setMasterCoachCanSeeAbsence(boolean enable) {
+		this.masterCoachCanSeeAbsence = enable;
+		setStringProperty(MASTERCOACH_CAN_SEE_ABSENCE, Boolean.toString(enable), true);
+	}
+
+	public boolean isMasterCoachCanRecordNotice() {
+		return masterCoachCanRecordNotice;
+	}
+
+	public void setMasterCoachCanRecordNotice(boolean enable) {
+		this.masterCoachCanRecordNotice = enable;
+		setStringProperty(MASTERCOACH_CAN_RECORD_NOTICE, Boolean.toString(enable), true);
+	}
+
+	public boolean isMasterCoachCanAuthorizedAbsence() {
+		return masterCoachCanAuthorizedAbsence;
+	}
+
+	public void setMasterCoachCanAuthorizedAbsence(boolean enable) {
+		this.masterCoachCanAuthorizedAbsence = enable;
+		setStringProperty(MASTERCOACH_CAN_AUTHORIZED_ABSENCE, Boolean.toString(enable), true);
+	}
+
+	public boolean isMasterCoachCanSeeAppeal() {
+		return masterCoachCanSeeAppeal;
+	}
+
+	public void setMasterCoachCanSeeAppeal(boolean enable) {
+		this.masterCoachCanSeeAppeal = enable;
+		setStringProperty(MASTERCOACH_CAN_SEE_APPEAL, Boolean.toString(enable), true);
+	}
+
+	public boolean isMasterCoachCanAuthorizedAppeal() {
+		return masterCoachCanAuthorizedAppeal;
+	}
+
+	public void setMasterCoachCanAuthorizedAppeal(boolean enable) {
+		this.masterCoachCanAuthorizedAppeal = enable;
+		setStringProperty(MASTERCOACH_CAN_AUTHORIZED_APPEAL, Boolean.toString(enable), true);
+	}
+	
+	public boolean isParticipantCanNotice() {
+		return participantCanNotice;
+	}
+
+	public void setParticipantCanNotice(boolean enable) {
+		this.participantCanNotice = enable;
+		setStringProperty(PARTICIPANT_CAN_NOTICE, Boolean.toString(enable), true);
 	}
 
 	public boolean isAssessmentModeEnabledDefault() {
@@ -514,4 +698,15 @@ public class LectureModule extends AbstractSpringModule implements ConfigOnOff {
 		showLectureBlocksAllTeachersDefault = enable;
 		setStringProperty(COURSE_SHOW_ALL_TEACHERS, Boolean.toString(enable), true);
 	}
+
+	public DailyRollCall getDailyRollCall() {
+		return DailyRollCall.relaxedValue(dailyRollCall);
+	}
+
+	public void setDailyRollCall(DailyRollCall enable) {
+		this.dailyRollCall = enable.name();
+		setStringProperty(DAILY_ROLL_CALL, dailyRollCall, true);
+	}
+	
+	
 }

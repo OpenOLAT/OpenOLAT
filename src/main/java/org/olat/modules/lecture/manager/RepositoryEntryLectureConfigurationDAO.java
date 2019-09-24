@@ -87,7 +87,7 @@ public class RepositoryEntryLectureConfigurationDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return configs != null && configs.size() > 0 && configs.get(0).intValue() > 0;
+		return configs != null && !configs.isEmpty() && configs.get(0).intValue() > 0;
 	}
 	
 	public RepositoryEntryLectureConfiguration getConfiguration(LectureBlockRef entry) {

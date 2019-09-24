@@ -30,6 +30,10 @@ public class ResourceEvaluation {
 	private boolean valid;
 	private String displayname;
 	private String description;
+	private String license;
+	private String licensor;
+	private String authors;
+	private Long duration;
 	private boolean references;
 	
 	public ResourceEvaluation() {
@@ -76,4 +80,35 @@ public class ResourceEvaluation {
 		this.references = references;
 	}
 
+	public String getLicense() {
+		return license;
+	}
+
+	public void setLicense(String license) {
+		this.license = license;
+	}
+
+	public String getLicensor() {
+		return licensor;
+	}
+
+	public void setLicensor(String licensor) {
+		this.licensor = licensor;
+	}
+
+	public String getAuthors() {
+		return authors;
+	}
+
+	public void setAuthors(String authors) {
+		this.authors = authors;
+	}
+
+	public Long getDuration() {
+		return duration;
+	}
+
+	public void setDuration(Long duration) {
+		this.duration = duration;
+	}
 }

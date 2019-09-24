@@ -22,6 +22,7 @@ package org.olat.ims.qti21.ui.editor.overview;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
+import org.olat.core.util.Formatter;
 
 /**
  * 
@@ -49,8 +50,18 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 			case type: return partRow.getType();
 			case identifier: return partRow.getIdentifier();
 			case feedback: return partRow.getFeedbacks();
+			case learningTime: return partRow.getLearningTime();
+			case license: return shortenedLicense(partRow);
 			default: return "ERROR";
 		}
+	}
+	
+	private String shortenedLicense(ControlObjectRow partRow) {
+		String text = partRow.getLicense();
+		if(text != null && text.length() > 32) {
+			text = Formatter.truncate(text, 32);
+		}
+		return text;
 	}
 
 	@Override
@@ -69,7 +80,9 @@ public class AssessmentTestOverviewDataModel extends DefaultFlexiTableDataModel<
 		solution("table.header.solution"),
 		type("table.header.type"),
 		identifier("table.header.identifier"),
-		feedback("table.header.feedback");
+		feedback("table.header.feedback"),
+		learningTime("table.header.learning.time"),
+		license("table.header.license");
 		
 		private final String i18nKey;
 		

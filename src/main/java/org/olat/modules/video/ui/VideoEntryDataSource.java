@@ -111,7 +111,7 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<Reposi
 		
 		List<RepositoryEntryMyView> views = repositoryService.searchMyView(searchParams, firstResult, maxResults);
 		List<RepositoryEntryRow> rows = processViewModel(views);
-		ResultInfos<RepositoryEntryRow> results = new DefaultResultInfos<RepositoryEntryRow>(firstResult + rows.size(), -1, rows);
+		ResultInfos<RepositoryEntryRow> results = new DefaultResultInfos<>(firstResult + rows.size(), -1, rows);
 		if(firstResult == 0 && views.size() < maxResults) {
 			count = new Integer(views.size());
 		}
@@ -119,7 +119,7 @@ public class VideoEntryDataSource implements FlexiTableDataSourceDelegate<Reposi
 	}
 
 	private List<RepositoryEntryRow> processViewModel(List<RepositoryEntryMyView> repoEntries) {
-		List<RepositoryEntryRow> items = new ArrayList<RepositoryEntryRow>();
+		List<RepositoryEntryRow> items = new ArrayList<>();
 		for(RepositoryEntryMyView entry:repoEntries) {
 			RepositoryEntryRow row = new RepositoryEntryRow(entry);
 			items.add(row);

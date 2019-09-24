@@ -169,7 +169,6 @@ public class HTMLEditorControllerWithoutFile extends FormBasicController {
 		if (htmlContent == null || htmlContent.length() == 0) {
 			htmlContent = "";
 		}
-		// TODO:gs:a create method in parser that delivers the full header untouched
 		SimpleHtmlParser parser = new SimpleHtmlParser(htmlContent);
 	
 		// now get the body part

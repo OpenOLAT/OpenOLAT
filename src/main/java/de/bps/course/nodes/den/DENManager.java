@@ -253,7 +253,7 @@ public class DENManager {
 		Kalendar cal = calManager.getCourseCalendar(course).getKalendar();
 		String sourceNode = denNode.getIdent();
 		//remove deleted events
-		Collection<KalendarEvent> allEvents = new ArrayList<KalendarEvent>(cal.getEvents());
+		Collection<KalendarEvent> allEvents = new ArrayList<>(cal.getEvents());
 		for( KalendarEvent event : allEvents) {
 			if(event.getSourceNodeId() != null) {
 				if ( event.getSourceNodeId().equals(sourceNode) && !lstEvents.contains(event) ) {
@@ -332,7 +332,7 @@ public class DENManager {
 	 * @return List of all KalendarEvent in this date enrollment
 	 */
 	protected List<KalendarEvent> getDENEvents(Long courseId, String sourceNodeId) {
-		List<KalendarEvent> denEvents = new ArrayList<KalendarEvent>();
+		List<KalendarEvent> denEvents = new ArrayList<>();
 		ICourse course = CourseFactory.loadCourse(courseId);
 		CalendarManager calManager = CoreSpringFactory.getImpl(CalendarManager.class);
 		Kalendar cal = calManager.getCourseCalendar(course).getKalendar();
@@ -693,7 +693,7 @@ public class DENManager {
 	 * @return list of strings with IDs
 	 */
 	protected List<String> getSelectedEventIDs(List<KalendarEvent> dataList, BitSet selection) {
-		List<String> lstIDs = new ArrayList<String>();
+		List<String> lstIDs = new ArrayList<>();
 		for(int i = 0; i < dataList.size(); i++) {
 			if(selection.get(i)) {
 				lstIDs.add(dataList.get(i).getID());
@@ -710,7 +710,7 @@ public class DENManager {
 	 * @return list of Identities
 	 */
 	protected List<Identity> getSelectedEventParticipants(List<KalendarEvent> dataList, BitSet selection) {
-		List<Identity> identities = new ArrayList<Identity>();
+		List<Identity> identities = new ArrayList<>();
 		BaseSecurity manager = BaseSecurityManager.getInstance();
 		for(int i = 0; i < dataList.size(); i++) {
 			if(selection.get(i)) {
@@ -734,8 +734,8 @@ public class DENManager {
 	 * @return list of Identities
 	 */
 	protected List<Identity> getEventParticipants(KalendarEvent event) {
-		List<Identity> identities = new ArrayList<Identity>();
-		List<KalendarEvent> lstEvent = new ArrayList<KalendarEvent>();
+		List<Identity> identities = new ArrayList<>();
+		List<KalendarEvent> lstEvent = new ArrayList<>();
 		lstEvent.add(event);
 		BitSet selection = new BitSet(1);
 		selection.set(0);
@@ -871,7 +871,7 @@ public class DENManager {
 		RepositoryEntry re = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 
 		OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(courseNode.getIdent()));
-		List<ContextEntry> ces = new ArrayList<ContextEntry>();
+		List<ContextEntry> ces = new ArrayList<>();
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(re));
 		ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
 		String extLink = BusinessControlFactory.getInstance().getAsURIString(ces, false);

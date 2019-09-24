@@ -81,6 +81,13 @@ public interface QPoolService {
 	 */
 	public List<QuestionItem> loadItemByIdentifier(String identifier);
 	
+	/**
+	 * 
+	 * @param identifiers A list of identifiers as defined in metadata
+	 * @return The question items with the corresponding identifiers
+	 */
+	public List<QuestionItemShort> loadItemsByIdentifier(List<String> identifiers);
+	
 	public List<QuestionItemFull> getAllItems(int firstResult, int maxResults);
 	
 	public QuestionItem updateItem(QuestionItem item);
@@ -160,10 +167,6 @@ public interface QPoolService {
 	
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity);
 	
-	public int countSharedItemByResource(OLATResource resource, SearchQuestionItemParams params);
-	
-	public ResultInfos<QuestionItemView> getSharedItemByResource(OLATResource resource, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
-	
 	public List<QuestionItem2Resource> getSharedResourceInfosByItem(QuestionItem item);
 
 	//list
@@ -179,10 +182,6 @@ public interface QPoolService {
 	
 	public List<QuestionItemCollection> getCollections(Identity owner);
 	
-	public int countItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams params);
-	
-	public ResultInfos<QuestionItemView> getItemsOfCollection(QuestionItemCollection collection, SearchQuestionItemParams params, int firstResult, int maxResults, SortKey... orderBy);
-
 	/**
 	 * Send the message to index this list of items.
 	 * @param items

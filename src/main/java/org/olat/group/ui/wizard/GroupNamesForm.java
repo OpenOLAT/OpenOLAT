@@ -62,7 +62,7 @@ public class GroupNamesForm extends FormBasicController {
 	}
 
 	protected boolean validateFormLogic(UserRequest ureq) {
-		List<String> namesList = new ArrayList<String>();
+		List<String> namesList = new ArrayList<>();
 		String groupNamesString = groupNames.getValue();
 		String[] groups = groupNamesString.split("[\t\n\f\r]");
 		

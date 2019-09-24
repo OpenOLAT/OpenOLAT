@@ -35,6 +35,8 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkResourceStat;
 import org.olat.core.commons.services.mark.MarkingService;
+import org.olat.core.commons.services.mark.impl.ui.MarkedEvent;
+import org.olat.core.commons.services.mark.impl.ui.UnmarkedEvent;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.dispatcher.mapper.Mapper;
@@ -207,7 +209,7 @@ public class MessageListController extends BasicController implements GenericEve
 		mainVC.contextPut("thumbMapper", thumbnailMapper);
 		mainVC.contextPut("guestOnly", new Boolean(guestOnly));
 		
-		messageTableCtrl = new ForumMessageListController(ureq, getWindowControl(), forum, false);
+		messageTableCtrl = new ForumMessageListController(ureq, getWindowControl(), forum, false, true, true);
 		listenTo(messageTableCtrl);
 		mainVC.put("singleThreadTable", messageTableCtrl.getInitialComponent());
 		
@@ -470,13 +472,13 @@ public class MessageListController extends BasicController implements GenericEve
 		}
 		
 		List<MarkResourceStat> statList = markingService.getMarkManager().getStats(forumOres, null, getIdentity());
-		Map<String,MarkResourceStat> stats = new HashMap<String,MarkResourceStat>(statList.size() * 2 + 1);
+		Map<String,MarkResourceStat> stats = new HashMap<>(statList.size() * 2 + 1);
 		for(MarkResourceStat stat:statList) {
 			stats.put(stat.getSubPath(), stat);
 		}
 
 		if(reorder) {
-			List<MessageLight> orderedMessages = new ArrayList<MessageLight>();
+			List<MessageLight> orderedMessages = new ArrayList<>();
 			orderMessagesThreaded(messages, orderedMessages, thread);
 			messages = orderedMessages;
 		}
@@ -522,9 +524,7 @@ public class MessageListController extends BasicController implements GenericEve
 		if (messages == null || orderedList == null || startMessage == null) return;
 
 		Map<Long, MessageNode> messagesMap = new HashMap<>();
-		if(startMessage != null) {
-			messagesMap.put(startMessage.getKey(), new MessageNode(startMessage));
-		}
+		messagesMap.put(startMessage.getKey(), new MessageNode(startMessage));
 		for(MessageLight message:messages) {
 			if(message.getParentKey() != null) {
 				messagesMap.put(message.getKey(), new MessageNode(message));
@@ -621,7 +621,7 @@ public class MessageListController extends BasicController implements GenericEve
 		// message attachments
 		VFSContainer msgContainer = forumManager.getMessageContainer(forum.getKey(), m.getKey());
 		messageView.setMessageContainer(msgContainer);
-		List<VFSItem> attachments = new ArrayList<VFSItem>(msgContainer.getItems(new VFSItemMetaFilter()));				
+		List<VFSItem> attachments = new ArrayList<>(msgContainer.getItems(new VFSItemMetaFilter()));				
 		messageView.setAttachments(attachments);
 
 		// number of children and modify/delete permissions
@@ -708,6 +708,7 @@ public class MessageListController extends BasicController implements GenericEve
 					getWindowControl().getBusinessControl().getAsString() + "[Message:" + m.getKey() + "]"
 					: currentMark.getBusinessPath();
 			Controller markCtrl = markingService.getMarkController(ureq, getWindowControl(), currentMark, stat, forumOres, keyString, businessPath);
+			listenTo(markCtrl);
 			mainVC.put("mark_".concat(keyString), markCtrl.getInitialComponent());
 		}
 		
@@ -896,6 +897,10 @@ public class MessageListController extends BasicController implements GenericEve
 			if(event instanceof SelectMessageEvent) {
 				SelectMessageEvent sme = (SelectMessageEvent)event;
 				doSelectTheOne(ureq, sme.getMessageKey());
+			} else if (event instanceof MessageMarkedEvent) {
+				MessageMarkedEvent mme = (MessageMarkedEvent) event;
+				Message message = forumManager.getMessageById(mme.getSelectedMessageKey());
+				reloadModel(ureq, message);
 			}
 		} else if(moveCtrl == source) {
 			if(event instanceof SelectMessageEvent) {
@@ -908,6 +913,12 @@ public class MessageListController extends BasicController implements GenericEve
 				MessageView splitedMessage = (MessageView)confirmSplitCtrl.getUserObject();
 				doSplitThread(ureq, splitedMessage);
 			}
+		} else if(event instanceof MarkedEvent) {
+			MarkedEvent me = (MarkedEvent) event;
+			messageTableCtrl.onMarked(me.getMark());
+		} else if(event instanceof UnmarkedEvent) {
+			UnmarkedEvent ue = (UnmarkedEvent)event;
+			messageTableCtrl.onUnmarked(ue.getSubPath());
 		} else if(source == cmc) {
 			cleanUp();
 		}
@@ -947,7 +958,7 @@ public class MessageListController extends BasicController implements GenericEve
 			}
 			
 			String reString = "";
-			if(parent != null && parent.isThreadTop()) {
+			if(parent.isThreadTop()) {
 				//add reString only for the first answer
 				reString = translate("msg.title.re");
 			}			
@@ -1242,7 +1253,7 @@ public class MessageListController extends BasicController implements GenericEve
 			case VIEWMODE_MESSAGE: doShowOne(ureq); break;
 			default: doShowAll(ureq);
 		}
-		return viewSettings == null ? VIEWMODE_THREAD : viewSettings;
+		return viewSettings;
 	}
 	
 	private void doShowAll(UserRequest ureq) {
@@ -1281,7 +1292,7 @@ public class MessageListController extends BasicController implements GenericEve
 			messageTableCtrl.loadMessages(new ArrayList<>(backupViews));
 		}
 	}
-	
+
 	private String getViewSettings(UserRequest ureq) {
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		Object setting = prefs.get(GUI_PREFS_VIEWMODE_CLASS, GUI_PREFS_VIEWMODE_KEY);
@@ -1369,7 +1380,7 @@ public class MessageListController extends BasicController implements GenericEve
 		removeAsListenerAndDispose(cmc);
 		
 		if (foCallback.mayEditMessageAsModerator()) {
-			moveCtrl = new ForumMessageListController(ureq, getWindowControl(), forum, true);
+			moveCtrl = new ForumMessageListController(ureq, getWindowControl(), forum, true, false, false);
 			moveCtrl.loadAllMessages();
 			moveCtrl.setSelectView(message);
 			listenTo(moveCtrl);

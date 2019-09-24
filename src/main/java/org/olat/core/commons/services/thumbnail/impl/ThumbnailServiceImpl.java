@@ -42,7 +42,7 @@ import org.olat.core.util.vfs.VFSLeaf;
  */
 public class ThumbnailServiceImpl implements ThumbnailService {
 
-	private final List<ThumbnailSPI> thumbnailSPIes = new ArrayList<ThumbnailSPI>();
+	private final List<ThumbnailSPI> thumbnailSPIes = new ArrayList<>();
 	
 	public ThumbnailServiceImpl() {
 		//

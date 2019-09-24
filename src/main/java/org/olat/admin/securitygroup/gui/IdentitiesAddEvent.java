@@ -63,9 +63,9 @@ public class IdentitiesAddEvent extends Event {
 	public IdentitiesAddEvent(List<Identity> addIdentities) {
 		super("identities_added");
 		this.addIdentities = addIdentities;
-		addedIdentities = new ArrayList<Identity>();
-		identitiesAlreadyInGroup = new ArrayList<Identity>();
-		identitiesWithoutPermission = new ArrayList<Identity>();
+		addedIdentities = new ArrayList<>();
+		identitiesAlreadyInGroup = new ArrayList<>();
+		identitiesWithoutPermission = new ArrayList<>();
 	}
 	
 	/**

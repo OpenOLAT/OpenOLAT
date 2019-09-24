@@ -92,8 +92,10 @@ public class LecturesTest extends Deployments {
 		 NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(true, true, true, false, false)
-			.save();
+			.configure(true, true, true, false)
+			.save()
+			.configurePermissions(false)
+			.savePermissions();
 		
 		// start the test with authorized absence on
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -198,6 +200,8 @@ public class LecturesTest extends Deployments {
 		participantUserTools
 			.openUserToolsMenu()
 			.openLectures()
+			.assertDailyOverview()
+			.openLecturesAndAbsences()
 			.assertOnParticipantLecturesList()
 			.selectCourseAsParticipant(title)
 			.assertOnParticipantLectureBlocks()
@@ -232,8 +236,10 @@ public class LecturesTest extends Deployments {
 		NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(true, true, true, false, false)
-			.save();
+			.configure(true, true, true, false)
+			.save()
+			.configurePermissions(false)
+			.savePermissions();
 		
 		// start the test with authorized absence on
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -343,6 +349,8 @@ public class LecturesTest extends Deployments {
 		participantUserTools
 			.openUserToolsMenu()
 			.openLectures()
+			.assertDailyOverview()
+			.openLecturesAndAbsences()
 			.assertOnParticipantLecturesList()
 			.selectCourseAsParticipant(title)
 			.assertOnParticipantLectureBlocks()
@@ -371,7 +379,7 @@ public class LecturesTest extends Deployments {
 		NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(true, true, false, false, false)
+			.configure(true, true, false, false)
 			.save();
 		
 		//start
@@ -493,8 +501,10 @@ public class LecturesTest extends Deployments {
 		NavigationPage.load(browser)
 			.openAdministration()
 			.openLecturesSettings()
-			.configure(false, false, true, true, true)
-			.save();
+			.configure(false, false, true, true)
+			.save()
+			.configurePermissions(true)
+			.savePermissions();
 		
 		// start the test with authorized absence on
 		UserVO author = new UserRestClient(deploymentUrl).createAuthor();
@@ -598,6 +608,8 @@ public class LecturesTest extends Deployments {
 		participantUserTools
 			.openUserToolsMenu()
 			.openLectures()
+			.assertDailyOverview()
+			.openLecturesAndAbsences()
 			.assertOnParticipantLecturesList()
 			.selectCourseAsParticipant(title)
 			.assertOnParticipantLectureBlocks()

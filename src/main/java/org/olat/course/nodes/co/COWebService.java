@@ -65,6 +65,8 @@ import org.olat.modules.ModuleConfiguration;
 import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Description:<br>
@@ -75,6 +77,7 @@ import org.springframework.stereotype.Component;
  * @author srosse, stephane.rosse@frentix.com
  * @author Dirk Furrer
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/courses/{courseId}/elements/contact")
 public class COWebService extends AbstractCourseNodeWebService {

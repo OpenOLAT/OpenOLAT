@@ -118,7 +118,7 @@ public class BGConfigResourcesStepController extends StepFormBasicController {
 				cmc.deactivate();
 				if (res != null && !res.isEmpty()) {
 					// check if already in model
-					List<RepositoryEntry> entries = new ArrayList<RepositoryEntry>(res.size());
+					List<RepositoryEntry> entries = new ArrayList<>(res.size());
 					for(RepositoryEntry re:res) {
 						if(!repoTableModel.getObjects().contains(re)) {
 							entries.add(re);

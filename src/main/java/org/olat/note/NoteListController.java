@@ -142,7 +142,6 @@ public class NoteListController extends BasicController implements GenericEventL
 				// delete is ok
 				nm.deleteNote(chosenN);
 				// fire local event (for the same user)
-				//TODO:fj:a make Note (and all persistables) olatresourceables: problem: type is then NoteImpl instead of Note
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance(Note.class, chosenN.getKey());
 				ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(new OLATResourceableJustBeforeDeletedEvent(ores), ores);
 				showInfo("note.delete.successfull");

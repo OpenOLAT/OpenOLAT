@@ -60,6 +60,7 @@ public class RegistrationAdminController extends FormBasicController {
 	private MultipleSelectionElement registrationLinkElement;
 	private MultipleSelectionElement registrationLoginElement;
 	private MultipleSelectionElement staticPropElement;
+	private MultipleSelectionElement emailValidationEl;
 	private SingleSelection propertyElement;
 	private SingleSelection pendingRegistrationStatusEl;
 	private TextElement pendingRegistrationNotificationEl;
@@ -159,6 +160,10 @@ public class RegistrationAdminController extends FormBasicController {
 		registrationLinkElement = uifactory.addCheckboxesHorizontal("enable.registration.link", "admin.enableRegistrationLink", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
 		registrationLinkElement.addActionListener(FormEvent.ONCHANGE);
 		registrationLinkElement.select("on", registrationModule.isSelfRegistrationLinkEnabled());
+		
+		emailValidationEl = uifactory.addCheckboxesHorizontal("email.validation", "admin.enable.email.validation", settingsContainer, enableRegistrationKeys, enableRegistrationValues);
+		emailValidationEl.addActionListener(FormEvent.ONCHANGE);
+		emailValidationEl.select("on", registrationModule.isEmailValidationEnabled());
 		
 		initOrganisationsEl(settingsContainer);
 		
@@ -316,6 +321,8 @@ public class RegistrationAdminController extends FormBasicController {
 		} else if(source == registrationLoginElement) {
 			registrationModule.setSelfRegistrationLoginEnabled(registrationLoginElement.isSelected(0));
 			updateUI();
+		} else if(source == emailValidationEl) {
+			registrationModule.setEmailValidationEnabled(emailValidationEl.isSelected(0));
 		} else if (source == staticPropElement) {
 			registrationModule.setStaticPropertyMappingEnabled(staticPropElement.isSelected(0));
 			updateUI();

@@ -27,24 +27,18 @@ package org.olat.gui.demo.guidemo;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.FormUIFactory;
-import org.olat.core.gui.components.form.flexible.elements.IntegerElement;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for GuiDemoInlineEditingBasedOnFlexiForm
- * 
- * <P>
  * Initial Date:  26.09.2009 <br>
  * @author patrickb
  */
 public class GuiDemoInlineEditingBasedOnFlexiForm extends FormBasicController {
 
 	private TextElement[] elements = new TextElement[5];
-	private IntegerElement[] intelems = new IntegerElement[5];
 	private TextElement inlineLabel;
 
 	public GuiDemoInlineEditingBasedOnFlexiForm(UserRequest ureq, WindowControl control) {
@@ -52,17 +46,11 @@ public class GuiDemoInlineEditingBasedOnFlexiForm extends FormBasicController {
 		initForm(this.flc, this, ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		String msg = "";
@@ -73,9 +61,6 @@ public class GuiDemoInlineEditingBasedOnFlexiForm extends FormBasicController {
 		showInfo("placeholder",msg);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("inline.editing.flexiform");

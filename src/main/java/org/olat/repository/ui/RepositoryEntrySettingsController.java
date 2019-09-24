@@ -46,6 +46,7 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -146,7 +147,9 @@ public class RepositoryEntrySettingsController extends BasicController implement
 			reviewLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.review, entryStatus);
 			coachPublishLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.coachpublished, entryStatus);
 			publishLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.published, entryStatus);
-			closeLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.closed, entryStatus);
+			if(!RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.close)) {
+				closeLink = initStatus(statusDropdown, RepositoryEntryStatusEnum.closed, entryStatus);
+			}
 		}
 		
 		stackPanel.setDirty(true);

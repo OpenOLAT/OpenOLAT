@@ -57,7 +57,7 @@ public class BusinessGroupImportExportXStreamTest {
 		assertNotNull(export.getGroups().getGroups());
 		assertEquals(2, export.getGroups().getGroups().size());
 		
-		assertEquals("Form Group 2", export.getGroups().getGroups().get(1).name);
+		assertEquals("Form Group 2", export.getGroups().getGroups().get(1).getName());
 		
 		String output = xstream.toXML(export);
 		assertNotNull(output);
@@ -75,7 +75,7 @@ public class BusinessGroupImportExportXStreamTest {
 		assertNotNull(export.getGroups().getGroups());
 		assertEquals(2, export.getGroups().getGroups().size());
 		
-		assertEquals("Test Right 2", export.getGroups().getGroups().get(1).name);
+		assertEquals("Test Right 2", export.getGroups().getGroups().get(1).getName());
 		
 		String output = xstream.toXML(export);
 		assertNotNull(output);

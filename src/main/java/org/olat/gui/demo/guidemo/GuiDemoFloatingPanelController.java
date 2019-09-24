@@ -65,8 +65,7 @@ public class GuiDemoFloatingPanelController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
 	@Override

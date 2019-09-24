@@ -56,6 +56,7 @@ public class DefaultModuleValues {
 		createAndPersistPredefined("CC BY-NC-SA", "o_icon_lic_by_nc_sa", "https://creativecommons.org/licenses/by-nc-sa/4.0/");
 		createAndPersistPredefined("CC BY-NC-ND", "o_icon_lic_by_nc_nd", "https://creativecommons.org/licenses/by-nc-nd/4.0/");
 		createAndPersistPredefined("all rights reserved", "o_icon_lic_all_rights_reserved", null);
+		createAndPersistPredefined("youtube", "o_icon_lic_youtube", "https://www.youtube.com/static?template=terms");
 	}
 	
 	private void createAndPersistPredefined(String name, String cssClass, String text) {

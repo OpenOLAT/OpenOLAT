@@ -103,7 +103,7 @@ public class PublishTreeModel extends GenericTreeModel implements INodeFilter {
 			INode node = currentRunStructure.getNode(cetn.getCourseNode().getIdent());
 			String runPath = getPositionPathFor(node);
 			String editorPath = getPositionPathFor(cetn);
-			return (!(runPath.equals(editorPath))) && cetn.isDirty(); // TODO: pb: Review : cetn.isDirty() added by chg to FIX OLAT-1662
+			return (!(runPath.equals(editorPath))) && cetn.isDirty();
 		}
 	}
 

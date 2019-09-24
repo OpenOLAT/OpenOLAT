@@ -129,7 +129,6 @@ public class CPManifest extends DefaultElement implements CPNode {
 				resources = res;
 				resourcesAdded = true;
 			} else if (child.getName().equals(CPCore.METADATA)) {
-				// TODO: implement LOM METADATA
 				metadata = new CPMetadata(child);
 				metadata.setParentElement(this);
 			}

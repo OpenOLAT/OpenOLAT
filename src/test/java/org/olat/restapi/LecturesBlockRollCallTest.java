@@ -87,10 +87,14 @@ public class LecturesBlockRollCallTest extends OlatRestTestCase {
 		lectureBlockDao.update(closedLectureBlock);
 
 		List<Integer> absences = Arrays.asList(1, 2);
-		LectureBlockRollCall rollCall1 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id1, null, null, null, Collections.emptyList());
-		LectureBlockRollCall rollCall2 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id2, null, null, null, absences);
-		LectureBlockRollCall rollCall3 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id1, null, null, null, absences);
-		LectureBlockRollCall rollCall4 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id2, null, null, null, Collections.emptyList());
+		LectureBlockRollCall rollCall1 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id1,
+				null, null, null, null, null, Collections.emptyList());
+		LectureBlockRollCall rollCall2 = lectureBlockRollCallDao.createAndPersistRollCall(closedLectureBlock, id2,
+				null, null, null, null, null, absences);
+		LectureBlockRollCall rollCall3 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id1,
+				null, null, null, null, null, absences);
+		LectureBlockRollCall rollCall4 = lectureBlockRollCallDao.createAndPersistRollCall(openLectureBlock, id2,
+				null, null, null, null, null, Collections.emptyList());
 		dbInstance.commit();
 		
 		rollCall2.setAbsenceSupervisorNotificationDate(new Date());
@@ -139,7 +143,8 @@ public class LecturesBlockRollCallTest extends OlatRestTestCase {
 		dbInstance.commit();
 
 		List<Integer> absences = Arrays.asList(1, 2);
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, absences);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id,
+				null, null, null, null, null, absences);
 		dbInstance.commitAndCloseSession();
 
 		// GET REST call
@@ -166,7 +171,8 @@ public class LecturesBlockRollCallTest extends OlatRestTestCase {
 		dbInstance.commit();
 
 		List<Integer> absences = Arrays.asList(1, 2);
-		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id, null, null, null, absences);
+		LectureBlockRollCall rollCall = lectureBlockRollCallDao.createAndPersistRollCall(lectureBlock, id,
+				null, null, null, null, null, absences);
 		dbInstance.commitAndCloseSession();
 
 		// POST REST call

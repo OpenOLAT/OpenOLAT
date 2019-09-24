@@ -20,6 +20,7 @@
 package org.olat.modules.qpool.ui.metadata;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
@@ -74,7 +75,7 @@ public class MetaUIFactory {
 		String[] contextValues = new String[ levels.size() ];
 		int count = 0;
 		for(QEducationalContext level:levels) {
-			contextKeys[count] = level.getLevel();
+			contextKeys[count] = level.getKey().toString();
 			String i18nKey = "item.level." + level.getLevel().toLowerCase();
 			String translation = translator.translate(i18nKey);
 			if(i18nKey.equals(translation) || translation.length() > 256) {
@@ -85,22 +86,38 @@ public class MetaUIFactory {
 		return new KeyValues(contextKeys, contextValues);
 	}
 	
-	public static KeyValues getQItemTypeKeyValues(Translator translator, QPoolService qpoolService) {
+	public static QEducationalContext getContextByKey(String key, QPoolService qpoolService) {
+		List<QEducationalContext> levels = qpoolService.getAllEducationlContexts();
+		return levels.stream()
+				.filter(level -> level.getKey().toString().equals(key))
+				.findFirst().orElse(null);
+	}
+	
+	public static KeyValues getQItemTypeKeyValues(Translator translator, List<QItemType> excludedItemTypes, QPoolService qpoolService) {
 		List<QItemType> types = qpoolService.getAllItemTypes();
-		String[] typeKeys = new String[types.size()];
-		String[] typeValues = new String[types.size()];
-		int count = 0;
+		List<String> typeKeys = new ArrayList<>(types.size());
+		List<String> typeValues = new ArrayList<>(types.size());
 		for(QItemType type:types) {
-			typeKeys[count] = type.getType();
+			if(excludedItemTypes != null && excludedItemTypes.contains(type)) {
+				continue;
+			}
+			
+			typeKeys.add(type.getType());
 			String translation = translator.translate("item.type." + type.getType().toLowerCase());
 			if(translation.length() > 128) {
-				typeValues[count] = typeKeys[count];
+				typeValues.add(type.getType());
 			} else {
-				typeValues[count] = translation;
+				typeValues.add(translation);
 			}
-			count++;
 		}
-		return new KeyValues(typeKeys, typeValues);
+		return new KeyValues(typeKeys.toArray(new String[typeKeys.size()]), typeValues.toArray(new String[typeValues.size()]));
+	}
+	
+	public static QItemType getQItemTypeByKey(String key, QPoolService qpoolService) {
+		List<QItemType> types = qpoolService.getAllItemTypes();
+		return types.stream()
+				.filter(type -> type.getType().equals(key))
+				.findFirst().orElse(null);
 	}
 	
 	public static boolean validateElementLogic(TextElement el, int maxLength, boolean mandatory, boolean enabled) {

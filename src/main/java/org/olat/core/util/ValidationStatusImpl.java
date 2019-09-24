@@ -28,17 +28,13 @@ package org.olat.core.util;
 import java.util.logging.Level;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for ValidationStatusImpl
- * 
- * <P>
  * Initial Date:  04.12.2006 <br>
  * @author patrickb
  */
 public class ValidationStatusImpl implements ValidationStatus {
 
 	private Level level = ValidationStatus.NOERROR;
-	public static ValidationStatus NOERROR = new ValidationStatusImpl();
+	public static final ValidationStatus NOERROR = new ValidationStatusImpl();
 	
 	private ValidationStatusImpl() {
 		//
@@ -48,30 +44,23 @@ public class ValidationStatusImpl implements ValidationStatus {
 		this.level = level;
 	}
 
-	/**
-	 * @see org.olat.core.util.ValidationStatus#isError()
-	 */
+	@Override
 	public boolean isError() {
 		return ValidationStatus.ERROR.equals(level);
 	}
 
-	/**
-	 * @see org.olat.core.util.ValidationStatus#isInfo()
-	 */
+	@Override
 	public boolean isInfo() {
 		return ValidationStatus.INFO.equals(level);
 	}
 
-	/**
-	 * @see org.olat.core.util.ValidationStatus#isWarning()
-	 */
+	@Override
 	public boolean isWarning() {
 		return ValidationStatus.WARNING.equals(level);
 	}
-	
+
+	@Override
 	public Level getLevel() {
 		return level;
 	}
-
-
 }

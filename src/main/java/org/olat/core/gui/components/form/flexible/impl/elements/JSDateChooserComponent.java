@@ -50,9 +50,6 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 		this.element = element;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#getHTMLRendererSingleton()
-	 */
 	@Override
 	public ComponentRenderer getHTMLRendererSingleton() {
 		return RENDERER;
@@ -81,7 +78,19 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 	public Date getDate() {
 		return element.getDate();
 	}
+	
+	public Date getSecondDate() {
+		return element.getSecondDate();
+	}
 
+	public String getValue() {
+		return element.getValue();
+	}
+	
+	public String getSecondValue() {
+		return element.getSecondValue();
+	}
+	
 	public TextElementComponent getTextElementComponent() {
 		return element.getTextElementComponent();
 	}
@@ -97,9 +106,21 @@ class JSDateChooserComponent extends FormBaseComponentImpl {
 	public boolean isDefaultTimeAtEndOfDay() {
 		return element.isDefaultTimeAtEndOfDay();
 	}
+	
+	public boolean isSecondDate() {
+		return element.isSecondDate();
+	}
+
+	public boolean isSameDay() {
+		return element.isSameDay();
+	}
 
 	public Translator getElementTranslator() {
 		return element.getTranslator();
+	}
+	
+	public String getSeparator() {
+		return element.getSeparator();
 	}
 
 	public String getExampleDateString() {

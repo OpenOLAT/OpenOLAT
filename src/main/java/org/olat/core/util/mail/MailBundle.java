@@ -130,7 +130,7 @@ public class MailBundle {
 	}
 	
 	public void setContent(String subject, String body, File... attachments) {
-		List<File> attachmentList = new ArrayList<File>();
+		List<File> attachmentList = new ArrayList<>();
 		if(attachments != null && attachments.length > 0) {
 			for(File attachment:attachments) {
 				if(attachment != null && attachment.exists()) {

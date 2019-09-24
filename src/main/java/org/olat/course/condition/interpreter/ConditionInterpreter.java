@@ -34,6 +34,7 @@ import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.condition.Condition;
+import org.olat.course.condition.interpreter.score.GetAverageScoreFunction;
 import org.olat.course.condition.interpreter.score.GetPassedFunction;
 import org.olat.course.condition.interpreter.score.GetPassedWithCourseIdFunction;
 import org.olat.course.condition.interpreter.score.GetScoreFunction;
@@ -157,6 +158,7 @@ public class ConditionInterpreter {
 		// functions to calculate score
 		env.addFunction(GetPassedFunction.name, new GetPassedFunction(userCourseEnv));
 		env.addFunction(GetScoreFunction.name, new GetScoreFunction(userCourseEnv));
+		env.addFunction(GetAverageScoreFunction.NAME, new GetAverageScoreFunction(userCourseEnv));
 		env.addFunction(GetPassedWithCourseIdFunction.name, new GetPassedWithCourseIdFunction(userCourseEnv));
 		env.addFunction(GetScoreWithCourseIdFunction.name, new GetScoreWithCourseIdFunction(userCourseEnv));
 
@@ -227,7 +229,6 @@ public class ConditionInterpreter {
 		String solutionMsg = "";
 		try {
 			throw e;
-			//TODO:pb:b do no rethrow, but test for instanceof
 		} catch (XIllegalOperation xe) {
 			msg = "error.illegal.operation.at";
 			params = new String[] { Integer.toString(xe.getPosition()) };

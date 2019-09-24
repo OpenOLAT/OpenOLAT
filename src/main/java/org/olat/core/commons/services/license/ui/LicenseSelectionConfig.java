@@ -109,6 +109,12 @@ public class LicenseSelectionConfig {
 		return values;
 	}
 	
+	public LicenseType getLicenseType(String key) {
+		return selectableLicenseTypes.stream()
+				.filter(lic -> lic.getKey().toString().equals(key))
+				.findFirst().orElse(null);
+	}
+	
 	private String setSpecialTranslation(String translation, LicenseType licenseType, Locale locale) {
 		Translator translator = Util.createPackageTranslator(LicenseAdminConfigController.class, locale);
 		String specialTranslation = translation;

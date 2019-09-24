@@ -28,6 +28,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.XMLConstants;
+
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.core.commons.persistence.DB;
@@ -172,6 +174,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 				QTI12SAXHandler handler = new QTI12SAXHandler();
 				try {
 					XMLReader parser = XMLReaderFactory.createXMLReader();
+					parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 					parser.setContentHandler(handler);
 					parser.setEntityResolver(new IMSEntityResolver());
 					parser.setFeature("http://xml.org/sax/features/validation", false);

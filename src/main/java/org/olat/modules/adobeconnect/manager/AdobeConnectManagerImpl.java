@@ -40,7 +40,6 @@ import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
@@ -548,9 +547,7 @@ public class AdobeConnectManagerImpl implements AdobeConnectManager, DeletableGr
 			
 			String creds = null;
 			if(aUser == null) {
-				if(compatible) {
-					creds = Encoder.md5hash(identity.getName() + "@" + Settings.getApplicationName());
-				} else if(getAdapter().isManagedPassword()) {
+				if( compatible || getAdapter().isManagedPassword()) {
 					creds = UUID.randomUUID().toString().replace("-", "");
 					if(creds.length() > 32) {
 						creds = creds.substring(0, 32);

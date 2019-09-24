@@ -48,9 +48,17 @@ public class OpenXMLWorkbookStyles {
 	
 	private List<CellStyle> cellXfs = new ArrayList<>();
 	
-	private final Font standardFont, boldFont;
-	private final Fill noneFile, gray125Fill, lightGrayFill, correctFill;
-	private final Border noBorder, borderRight;
+	private final Font boldFont;
+	private final Font standardFont;
+	
+	private final Fill noneFile;
+	private final Fill gray125Fill;
+	private final Fill correctFill;
+	private final Fill lightGrayFill;
+	
+	private final Border noBorder;
+	private final Border borderTop;
+	private final Border borderRight;
 	
 	/**
 	 * Definition of a standard style which is at index 0
@@ -85,6 +93,8 @@ public class OpenXMLWorkbookStyles {
 		borders.add(noBorder);
 		borderRight = new Border(borders.size(), "thin", null, null, null);
 		borders.add(borderRight);
+		borderTop = new Border(borders.size(), "thin", null, null, null);
+		borders.add(borderTop);
 		
 		standardStyle = new CellStyle(cellXfs.size(), "0", standardFont, noneFile, noBorder, null, null, null, null);
 		cellXfs.add(standardStyle);

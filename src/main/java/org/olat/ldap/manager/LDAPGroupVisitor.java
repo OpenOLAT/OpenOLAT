@@ -42,7 +42,7 @@ public class LDAPGroupVisitor implements LDAPVisitor {
 	
 	private static final Logger log = Tracing.createLoggerFor(LDAPGroupVisitor.class);
 
-	private final List<LDAPGroup> groups = new ArrayList<LDAPGroup>();
+	private final List<LDAPGroup> groups = new ArrayList<>();
 	
 	public List<LDAPGroup> getGroups() {
 		return groups;
@@ -61,7 +61,7 @@ public class LDAPGroupVisitor implements LDAPVisitor {
 				group.setCommonName((String)cn);
 			}
 
-			List<String> members = new ArrayList<String>();
+			List<String> members = new ArrayList<>();
 			try {
 				for(NamingEnumeration<?> memberEn = memberAttr.getAll(); memberEn.hasMoreElements(); ) {
 					Object member = memberEn.next();

@@ -65,7 +65,7 @@ public class CollaborationToolsFactory {
 	 * iterating possible tools, i.e. in jUnit testCase, also for building up a
 	 * tools choice
 	 */
-	public static String[] TOOLS;
+	private static String[] TOOLS;
 	
 	
 	/**

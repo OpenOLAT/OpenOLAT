@@ -84,13 +84,9 @@ public class ChooseRolesController extends StepFormBasicController {
 		allOrganisationsMap = allOrganisations.stream()
 				.collect(Collectors.toMap(Organisation::getKey, o -> o, (u, v) -> u));
 		Roles roles = ureq.getUserSession().getRoles();
-		if(roles.isSystemAdmin()) {
-			targetOrganisations = new ArrayList<>(allOrganisations);
-		} else {
-			targetOrganisations = organisationService.getOrganisations(getIdentity(), roles,
-					OrganisationRoles.administrator, OrganisationRoles.principal,
-					OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
-		}
+		targetOrganisations = organisationService.getOrganisations(getIdentity(), roles,
+				OrganisationRoles.administrator, OrganisationRoles.principal,
+				OrganisationRoles.usermanager, OrganisationRoles.rolesmanager);
 		
 		initForm(ureq);
 	}

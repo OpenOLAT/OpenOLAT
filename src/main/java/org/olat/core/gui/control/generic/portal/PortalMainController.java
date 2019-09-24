@@ -67,7 +67,7 @@ public class PortalMainController extends BasicController {
 		StringOutput staticUrl = new StringOutput();
 		StaticMediaDispatcher.renderStaticURI(staticUrl, "js/egg.js");
 		welcome.put("htmlHeader", new HtmlHeaderComponent("rss", null, "<link rel=\"alternate\" type=\"application/rss+xml\" title=\""
-				+ translate("welcome.rss") + "\" href=\"" + rssLink + "\" />\n" + "<script type=\"text/javascript\" src=\""
+				+ translate("welcome.rss") + "\" href=\"" + rssLink + "\" />\n" + "<script src=\""
 				+ staticUrl.toString() + "\"></script>"));
 
 		// add portal

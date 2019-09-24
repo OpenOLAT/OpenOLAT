@@ -37,7 +37,7 @@ import org.olat.core.util.vfs.filters.VFSItemFilter;
 //fxdiff FXOLAT-125: virtual file system for CP
 public class VFSMediaFilter implements VFSItemFilter {
 	
-	private static final Set<String> blackLists = new HashSet<String>();
+	private static final Set<String> blackLists = new HashSet<>();
 	
 	static {
 		blackLists.add("__macosx");

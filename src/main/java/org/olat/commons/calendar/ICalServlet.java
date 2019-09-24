@@ -97,14 +97,6 @@ public class ICalServlet extends HttpServlet {
 	
 	private static final int TTL_MINUTES = 15;
 	private static final ConcurrentMap<String,VTimeZone> outlookVTimeZones = new ConcurrentHashMap<>();
-	
-	/** collection of iCal feed prefixs **/
-	public static final String[] SUPPORTED_PREFIX = {
-			CalendarManager.ICAL_PREFIX_AGGREGATED,
-			CalendarManager.ICAL_PREFIX_PERSONAL,
-			CalendarManager.ICAL_PREFIX_COURSE,
-			CalendarManager.ICAL_PREFIX_GROUP
-	};
 
 	/**
 	 * Default constructor.

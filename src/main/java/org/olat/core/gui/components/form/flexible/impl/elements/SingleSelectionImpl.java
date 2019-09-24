@@ -36,9 +36,6 @@ import org.olat.core.util.ValidationStatus;
 import org.olat.core.util.ValidationStatusImpl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for SingleSelectionContainerImpl
- * <P>
  * Initial Date: 27.12.2006 <br>
  * 
  * @author patrickb

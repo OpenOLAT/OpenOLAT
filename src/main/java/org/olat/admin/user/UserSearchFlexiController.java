@@ -109,6 +109,7 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private UserSearchFlexiTableModel userTableModel;
 	private FormLayoutContainer autoCompleterContainer;
 	
+	private final boolean multiSelection;
 	private final boolean isAdministrativeUser;
 	private final List<UserPropertyHandler> userSearchFormPropertyHandlers;
 	private final List<Organisation> searchableOrganisations;
@@ -126,20 +127,20 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 	private IdentityPowerSearchQueries identitySearchQueries;
 
 	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm) {
-		this(ureq, wControl, rootForm, null);
+		this(ureq, wControl, rootForm, null, true);
 	}
 	
-	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm, GroupRoles repositoryEntryRole) {
+	public UserSearchFlexiController(UserRequest ureq, WindowControl wControl, Form rootForm, GroupRoles repositoryEntryRole, boolean multiSelection) {
 		super(ureq, wControl, LAYOUT_CUSTOM, "usersearchext", rootForm);
 		setTranslator(Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator()));
 		setTranslator(Util.createPackageTranslator(UserSearchFlexiController.class, getLocale(), getTranslator()));
 
+		this.multiSelection = multiSelection;
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
 		userSearchFormPropertyHandlers = userManager.getUserPropertyHandlersFor(UserSearchForm.class.getCanonicalName(), isAdministrativeUser);
 		
-		UserSession usess = ureq.getUserSession();
-		searchableOrganisations = organisationService.getOrganisations(getIdentity(), usess.getRoles(),
+		searchableOrganisations = organisationService.getOrganisations(getIdentity(), roles,
 				OrganisationRoles.valuesWithoutGuestAndInvitee());
 		this.repositoryEntryRole = repositoryEntryRole;
 
@@ -232,8 +233,8 @@ public class UserSearchFlexiController extends FlexiAutoCompleterController {
 			userTableModel = new UserSearchFlexiTableModel(Collections.<Identity>emptyList(), resultingPropertyHandlers, isAdministrativeUser, getLocale(), tableColumnModel);
 			tableEl = uifactory.addTableElement(getWindowControl(), "users", userTableModel, 250, false, myTrans, formLayout);
 			tableEl.setCustomizeColumns(false);
-			tableEl.setMultiSelect(true);
-			tableEl.setSelectAllEnable(true);
+			tableEl.setMultiSelect(multiSelection);
+			tableEl.setSelectAllEnable(multiSelection);
 
 			layoutCont.put("userTable", tableEl.getComponent());
 		}

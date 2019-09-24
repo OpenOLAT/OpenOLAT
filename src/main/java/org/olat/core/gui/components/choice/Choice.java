@@ -53,9 +53,9 @@ public class Choice extends AbstractComponent {
 
 	private String submitKey, cancelKey, resetKey;
 	private boolean displayOnly = false;
-	private List<Integer> selectedRows = new ArrayList<Integer>();
-	private List<Integer> removedRows = new ArrayList<Integer>();
-	private List<Integer> addedRows = new ArrayList<Integer>();
+	private List<Integer> selectedRows = new ArrayList<>();
+	private List<Integer> removedRows = new ArrayList<>();
+	private List<Integer> addedRows = new ArrayList<>();
 	private ChoiceModel model;
 	
 	private boolean escapeHtml = true;

@@ -1,0 +1,15 @@
+#if($r.isNotEmpty($unauthorizedAbsencesMsg))
+	<div class="o_error" role="alert">$unauthorizedAbsencesMsg</div>
+#end
+<fieldset>
+	<legend>$r.translate("absences.title")</legend>
+	#if($r.available("search"))
+		$r.render("search")
+	#end
+	#if($r.available("add.absence"))
+		<div class="o_button_group o_button_group_right">
+			$r.render("add.absence")
+		</div>
+	#end
+	$r.render("noticesList")
+</fieldset>

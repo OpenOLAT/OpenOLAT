@@ -97,8 +97,8 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 		this.name = portalName;
 		
 		this.portalColumns = portalColumns;
-		this.portletContainers = new HashMap<String, PortletContainer>();
-		this.inactivePortlets = new ArrayList<String>();
+		this.portletContainers = new HashMap<>();
+		this.inactivePortlets = new ArrayList<>();
 
 		trans = Util.createPackageTranslator(PortalImpl.class, ureq.getLocale());
 		portalVC = new VelocityContainer("portalVC", VELOCITY_ROOT + "/portal.html", trans, this);		// initialize arrays
@@ -135,11 +135,11 @@ public class PortalImpl extends DefaultController implements Portal, ControllerE
 
 		// check if users portal columns contain only defined portals. remove all non existing portals
 		// to make it possible to change the portlets in a next release or to remove a portlet
-		List<List<String>> cleanedUserColumns = new ArrayList<List<String>>();
+		List<List<String>> cleanedUserColumns = new ArrayList<>();
 		Set<String> availablePortlets = PortletFactory.getPortlets().keySet();
 		for (List<String> row: userColumns) {
 			// add this row as new cleaned row to columns
-			List<String> cleanedRow = new ArrayList<String>(row.size());
+			List<String> cleanedRow = new ArrayList<>(row.size());
 			cleanedUserColumns.add(cleanedRow);
 			// check all portlets in old row and copy to cleaned row if it exists
 			for(String portletName : row) {

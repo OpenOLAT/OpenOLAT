@@ -50,7 +50,7 @@ public class HeaderLE extends AbstractLayoutElement {
 	public HeaderLE(Map<String, Object> config) {
 		super(config);
 
-		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<String, Integer>();
+		HashMap<String, Integer> iFrameRelativeChildren = new HashMap<>();
 		iFrameRelativeChildren.put("h1", +2);
 		iFrameRelativeChildren.put("h2", +1);
 		iFrameRelativeChildren.put("h3", 0);
@@ -58,7 +58,7 @@ public class HeaderLE extends AbstractLayoutElement {
 		iFrameRelativeChildren.put("h5", -2);
 		setIframeRelativeChildren(iFrameRelativeChildren);
 
-		HashMap<String, Integer> mainRelativeChildren = new HashMap<String, Integer>();
+		HashMap<String, Integer> mainRelativeChildren = new HashMap<>();
 		mainRelativeChildren.put("#o_main h1", +2);
 		mainRelativeChildren.put("#o_main h2", +1);
 		mainRelativeChildren.put("#o_main h3", 0);
@@ -66,7 +66,7 @@ public class HeaderLE extends AbstractLayoutElement {
 		mainRelativeChildren.put("#o_main h5", -2);
 		setMainRelativeChildren(mainRelativeChildren);
 		
-		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<AbstractLayoutAttribute>();
+		ArrayList<AbstractLayoutAttribute> avAttribs = new ArrayList<>();
 		avAttribs.add(new FontLA());
 		avAttribs.add(new SizeLA());
 		avAttribs.add(new ColorLA());

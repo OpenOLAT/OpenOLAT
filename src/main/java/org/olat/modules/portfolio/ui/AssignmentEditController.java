@@ -79,15 +79,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class AssignmentEditController extends FormBasicController {
 
-	public static final AssignmentType[] assignmentsTypes = new AssignmentType[] {
+	protected static final AssignmentType[] assignmentsTypes = new AssignmentType[] {
 			AssignmentType.essay, AssignmentType.form
 	};
 	
-	public static final String[] assignmentsTypeKeys = new String[] {
+	protected static final String[] assignmentsTypeKeys = new String[] {
 			AssignmentType.essay.name(), AssignmentType.form.name()
 	};
 	
-	public static final AssignmentType[] templatesTypes = new AssignmentType[] {
+	protected static final AssignmentType[] templatesTypes = new AssignmentType[] {
 			AssignmentType.document, AssignmentType.form
 	};
 

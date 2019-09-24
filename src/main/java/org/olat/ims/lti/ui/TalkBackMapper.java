@@ -58,7 +58,7 @@ public class TalkBackMapper implements Mapper, Serializable {
 		StringMediaResource mediares = new StringMediaResource();
 		StringBuilder sb = new StringBuilder();
 		sb.append("<html><head>")
-			.append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"ocontentcss\" href=\"").append(themeBaseUri).append("content.css\" />\n")
+			.append("\n<link rel=\"stylesheet\" id=\"ocontentcss\" href=\"").append(themeBaseUri).append("content.css\" />\n")
 			.append("<title>").append(trans.translate("talkback.title")).append("</title></head><body>")
 			.append("<div class='o_lti_talkback'>")
 			.append("<h1>").append(trans.translate("talkback.title")).append("</h1>")

@@ -97,10 +97,6 @@ public class GroupForumIndexer extends ForumIndexer{
 		}
 	}
 
-  /**
-   * 
-   * @see org.olat.search.service.indexer.Indexer#checkAccess(org.olat.core.id.context.ContextEntry, org.olat.core.id.context.BusinessControl, org.olat.core.id.Identity, org.olat.core.id.Roles)
-   */
 	@Override
 	public boolean checkAccess(ContextEntry contextEntry, BusinessControl businessControl, Identity identity, Roles roles) {
 		ContextEntry ce = businessControl.popLauncherContextEntry();
@@ -115,7 +111,6 @@ public class GroupForumIndexer extends ForumIndexer{
 		boolean isMessageHidden = Status.getStatus(threadtop.getStatusCode()).isHidden(); 
 		//assumes that if is owner then is moderator so it is allowed to see the hidden forum threads
 		//here it is checked if the identity is owner of the forum tool but it has no way to find out whether is owner of the group that owns the forum tool
-		//TODO policy owner
 		if(isMessageHidden) {
 			return false;
 		}		

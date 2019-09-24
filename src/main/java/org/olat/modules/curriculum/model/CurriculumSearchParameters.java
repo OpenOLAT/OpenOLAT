@@ -38,6 +38,8 @@ public class CurriculumSearchParameters {
 	private Identity managerIdentity;
 	private Identity principalIdentity;
 	private List<? extends OrganisationRef> organisations;
+	
+	private boolean withDeleted = false;
 
 	public List<? extends OrganisationRef> getOrganisations() {
 		if(organisations == null) {
@@ -90,5 +92,13 @@ public class CurriculumSearchParameters {
 	 */
 	public void setElementOwner(Identity identity) {
 		elementOwner = identity;
+	}
+
+	public boolean isWithDeleted() {
+		return withDeleted;
+	}
+
+	public void setWithDeleted(boolean withDeleted) {
+		this.withDeleted = withDeleted;
 	}
 }

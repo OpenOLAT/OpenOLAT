@@ -43,6 +43,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
@@ -55,7 +56,6 @@ import org.olat.core.id.Organisation;
 import org.olat.core.id.User;
 import org.olat.core.id.UserConstants;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Formatter;
@@ -423,6 +423,8 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 	}
 	
 	public void deleteTemporaryKey(TemporaryKey key) {
+		if (key == null) return;
+		
 		TemporaryKeyImpl reloadedKey = dbInstance.getCurrentEntityManager()
 				.getReference(TemporaryKeyImpl.class, key.getKey());
 		dbInstance.getCurrentEntityManager().remove(reloadedKey);
@@ -659,4 +661,5 @@ public class RegistrationManager implements UserDataDeletable, UserDataExportabl
 		}
 		manifest.appendFile(disclaimerArchive.getName());
 	}
+	
 }

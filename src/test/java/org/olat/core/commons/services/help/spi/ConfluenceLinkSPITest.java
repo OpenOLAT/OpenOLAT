@@ -21,12 +21,9 @@ package org.olat.core.commons.services.help.spi;
 
 import java.util.Locale;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.helpers.SettingsTest;
-import org.olat.core.logging.Tracing;
 
 /**
  * 
@@ -35,9 +32,7 @@ import org.olat.core.logging.Tracing;
  *
  */
 public class ConfluenceLinkSPITest {
-	
-	private static final Logger log = Tracing.createLoggerFor(ConfluenceLinkSPITest.class);
-	
+
 	@Test
 	public void getUrl() {
 		// init settings to set version, required by ConfluenceLinkSPI
@@ -54,42 +49,5 @@ public class ConfluenceLinkSPITest {
 		String url2 = linkSPI.getURL(Locale.ENGLISH, "Data Management#qb_import");
 		Assert.assertNotNull(url2);
 		Assert.assertTrue(url2.endsWith("Data%20Management#DataManagement-qb_import"));
-	}
-	
-	@Test @Ignore
-	public void getTranslatedUrl() {
-		// init settings to set version, required by ConfluenceLinkSPI
-		SettingsTest.createHttpDefaultPortSettings();
-		
-		ConfluenceLinkSPI linkSPI = new ConfluenceLinkSPI();
-		// Standard Case in German - same as in english
-		String url = linkSPI.getURL(Locale.GERMAN, "Data Management");
-		Assert.assertNotNull(url);
-		Assert.assertTrue(url.endsWith("Data%20Management"));
-		
-		// Special handing for anchors in confluence
-		// Here some magic is needed since the CustomWare Redirection Plugin
-		// plugin we use in Confluence can not redirec links with anchors. The
-		// anchor is deleted.
-		// We have to translate this here
-		// First time it won't return the translated link as it does the translation asynchronously in a separate thread to not block the UI
-		String notTranslatedUrl = linkSPI.getURL(Locale.GERMAN, "Data Management#qb_import");
-		Assert.assertNotNull(notTranslatedUrl);
-		Assert.assertTrue(notTranslatedUrl.endsWith("Data%20Management#DataManagement-qb_import"));
-		// Wait 5secs and try it again, should be translated now
-		boolean found = false;
-		for(int i=0; i<100; i++) {
-			String translatedUrl = linkSPI.getURL(Locale.GERMAN, "Data Management#qb_import");
-			if(translatedUrl != null && translatedUrl.endsWith("Handhabung%20der%20Daten#HandhabungderDaten-qb_import")) {
-				found = true;
-			} else {
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					log.error("", e);
-				}
-			}
-		}
-		Assert.assertTrue("German translation cannot be found after 10s", found);
 	}
 }

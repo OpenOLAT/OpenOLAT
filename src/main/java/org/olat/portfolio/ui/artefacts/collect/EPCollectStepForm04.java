@@ -115,36 +115,9 @@ public class EPCollectStepForm04 extends StepFormBasicController {
 
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
-		if (source == mapsTreeController) {
-			//TODO jquery
-			/*
-			if (event instanceof TreeNodeClickedEvent) {
-				TreeNodeClickedEvent clickedEvent = (TreeNodeClickedEvent) event;
-				String selectedNodeID = clickedEvent.getNodeId();
-				if (!selectedNodeID.equals(ROOT_NODE_IDENTIFIER) && !selectedNodeID.equals(NO_MAP_CHOOSEN)) {
-					selectedPortfolioStructure = ePFMgr.loadPortfolioStructureByKey(new Long(selectedNodeID));
-				} else if (selectedNodeID.equals(NO_MAP_CHOOSEN)) {
-					selectedPortfolioStructure = null;
-				} else {
-				//TODO jquery mapsTreeController.selectPath(null);
-					selectedPortfolioStructure = null;
-					this.flc.setDirty(true);
-				}
-				
-				if (selectedPortfolioStructure != null && selectedPortfolioStructure instanceof EPAbstractMap) {
-					showWarning("map.not.choosable");
-				//TODO jquery mapsTreeController.selectPath(null);
-					selectedPortfolioStructure = null;
-					this.flc.setDirty(true);
-				}
-			}*/
-		}
 		super.event(ureq, source, event);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.StepFormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		PortfolioStructure selectedPortfolioStructure = preSelectedStructure;

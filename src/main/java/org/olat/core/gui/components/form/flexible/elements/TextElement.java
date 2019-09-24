@@ -28,11 +28,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.impl.elements.ItemValidatorProvider;
 import org.olat.core.util.filter.Filter;
 /**
- * 
- * Description:<br>
- * TODO: patrickb Class Description for TextElement
- * 
- * <P>
  * Initial Date: 02.02.2007 <br>
  * 
  * @author patrickb

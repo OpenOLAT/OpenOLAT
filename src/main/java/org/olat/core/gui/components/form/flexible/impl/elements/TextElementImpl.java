@@ -61,7 +61,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	private String htmlInputType = HTML_INPUT_TYPE_TEXT;
 	
 	public static final String HTML_INPUT_TYPE_TEXT = "text";
-	public static final String HTML_INPUT_TYPE_PASSWORD = "password";
+	public static final String HTML_INPUT_TYPE_CREDENTIAL = "password";
 	
 	//inline stuff
 	protected String transientValue;//last submitted value, which may be good or wrong
@@ -120,7 +120,7 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	public TextElementImpl(String id, String name, String predefinedValue, String htmlInputType, boolean asInlineEditingElement){
 		super(id, name, asInlineEditingElement);
 		setValue(predefinedValue);
-		if(HTML_INPUT_TYPE_TEXT.equals(htmlInputType) || HTML_INPUT_TYPE_PASSWORD.equals(htmlInputType)) {
+		if(HTML_INPUT_TYPE_TEXT.equals(htmlInputType) || HTML_INPUT_TYPE_CREDENTIAL.equals(htmlInputType)) {
 			this.htmlInputType = htmlInputType;
 		} else {
 			throw new AssertException(htmlInputType + " html input type not supported!");
@@ -322,8 +322,6 @@ public class TextElementImpl extends AbstractTextElement implements InlineTextEl
 	
 	/**
 	 * DO NOT USE THE ONCHANGE EVENT with TEXTFIELDS!
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormItemImpl#addActionListener(org.olat.core.gui.control.Controller, int)
-	 * TODO: add an onkeypress listener which will post do background instead, this could then also be used for an autocomplete textfield
 	 */
 	@Override
 	public void addActionListener(int action) {

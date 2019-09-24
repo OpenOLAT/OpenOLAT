@@ -30,10 +30,6 @@ import org.olat.core.configuration.ConfigOnOff;
 import org.olat.core.gui.UserRequest;
 
 /**
- * Description:<br>
- * TODO: Felix Class Description for Extension
- * 
- * <P>
  * Initial Date:  02.08.2005 <br>
  * @author Felix
  */

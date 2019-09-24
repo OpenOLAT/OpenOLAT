@@ -30,9 +30,7 @@ import java.util.List;
 
 import org.olat.core.gui.control.Disposable;
 /**
- * 
- * Description:<br>
- * TODO: guido Class Description for Portal
+ * @author guido
  */
 public interface Portal extends Disposable {
 

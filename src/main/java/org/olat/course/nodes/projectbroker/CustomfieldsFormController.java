@@ -80,11 +80,11 @@ public class CustomfieldsFormController extends FormBasicController {
 	public CustomfieldsFormController(UserRequest ureq, WindowControl wControl, ProjectBrokerModuleConfiguration config) {
 		super(ureq, wControl);
 		this.config = config;
-		customFieldNameElementList      = new ArrayList<TextElement>();
-		customFieldValueElementList     = new ArrayList<TextElement>();
-		customFieldTableFlagElementList = new ArrayList<MultipleSelectionElement>();
-		customFieldLinkElementList      = new ArrayList<FormLink>();
-		customFieldSpacerElementList    = new ArrayList<SpacerElement>();
+		customFieldNameElementList      = new ArrayList<>();
+		customFieldValueElementList     = new ArrayList<>();
+		customFieldTableFlagElementList = new ArrayList<>();
+		customFieldLinkElementList      = new ArrayList<>();
+		customFieldSpacerElementList    = new ArrayList<>();
 	  customFields = config.getCustomFields();
 		initForm(this.flc, this, ureq);
 	}

@@ -114,7 +114,7 @@ public class UserSessionController extends BasicController implements Breadcrumb
 	 */
 	public void reset() {
 		Collection<UserSession> authUserSessions = sessionManager.getAuthenticatedUserSessions();
-		List<UserSessionView> authUserSessionViews = new ArrayList<UserSessionView>(authUserSessions.size());
+		List<UserSessionView> authUserSessionViews = new ArrayList<>(authUserSessions.size());
 		for(UserSession authUserSession:authUserSessions) {
 			authUserSessionViews.add(new UserSessionView(authUserSession));
 		}

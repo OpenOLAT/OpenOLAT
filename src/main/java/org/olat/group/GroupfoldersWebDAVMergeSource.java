@@ -57,8 +57,8 @@ class GroupfoldersWebDAVMergeSource extends WebDAVMergeSource {
 	protected List<VFSContainer> loadMergedContainers() {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 
-		Set<Long> addedGroupKeys = new HashSet<Long>();
-		Set<String> addedGroupNames = new HashSet<String>();
+		Set<Long> addedGroupKeys = new HashSet<>();
+		Set<String> addedGroupNames = new HashSet<>();
 		List<VFSContainer> containers = new ArrayList<>();
 		
 		SearchBusinessGroupParams params = new SearchBusinessGroupParams(getIdentity(), true, false);

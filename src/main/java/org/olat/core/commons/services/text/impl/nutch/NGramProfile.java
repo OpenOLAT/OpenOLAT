@@ -108,7 +108,6 @@ public class NGramProfile {
    * @param maxlen is the max length of ngram sequences
    */
   public NGramProfile(String name, int minlen, int maxlen) {
-    // TODO: Compute the initial capacity using minlen and maxlen.
     this.ngrams = new HashMap<>(4000);
     this.minLength = minlen;
     this.maxLength = maxlen;
@@ -242,7 +241,7 @@ public class NGramProfile {
   public List<NGramEntry> getSorted() {
     // make sure sorting is done only once
     if (sorted == null) {
-      sorted = new ArrayList<NGramEntry>(ngrams.values());
+      sorted = new ArrayList<>(ngrams.values());
       Collections.sort(sorted);
 
       // trim at NGRAM_LENGTH entries

@@ -47,14 +47,10 @@ public class StaticExportWikiDataHandler implements DataHandler {
 		this.ores = ores;
 	}
 	
-	
-
-	/**
-	 * @see org.jamwiki.DataHandler#lookupTopic(java.lang.String, java.lang.String, boolean, java.lang.Object)
-	 */
+	@Override
 	public Topic lookupTopic(String virtualWiki, String topicName, boolean deleteOK, Object transactionObject) throws Exception {
 		Topic topic = new Topic();
-		if (topicName.startsWith("Image:")) { //TODO:gs:b now about the german "Bild"
+		if (topicName.startsWith("Image:")) {
 			String imageName = topicName.substring(NamespaceHandler.NAMESPACE_IMAGE.length() + 1);
 			topic.setName(imageName);
 			topic.setTopicType(Topic.TYPE_IMAGE);
@@ -64,11 +60,7 @@ public class StaticExportWikiDataHandler implements DataHandler {
 			return topic;
 	}
 
-
-
-	/**
-	 * @see org.jamwiki.DataHandler#lookupWikiFile(java.lang.String, java.lang.String)
-	 */
+	@Override
 	public WikiFile lookupWikiFile(String virtualWiki, String topicName) throws Exception {
 		WikiFile wikifile = new WikiFile();
 		if (topicName.startsWith("Image:")) {

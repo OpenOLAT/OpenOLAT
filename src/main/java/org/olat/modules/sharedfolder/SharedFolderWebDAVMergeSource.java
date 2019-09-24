@@ -125,7 +125,7 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 	
 	
 	private List<Long> getSharedKeys() {
-		List<Long> publiclyReadableFoldersKeys = new ArrayList<Long>();
+		List<Long> publiclyReadableFoldersKeys = new ArrayList<>();
 		for (String folder : publiclyReadableFolders) {
 			try {
 				Long repoKey = Long.parseLong(folder);

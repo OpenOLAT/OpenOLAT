@@ -48,7 +48,7 @@ public class SessionStatsManager implements Sampler {
 	
 	private SessionStatsSample currentSample;
 	private AtomicInteger concurrentCounter = new AtomicInteger(0);
-	private List<SessionStatsSample> sessionStatsSamples = new ArrayList<SessionStatsSample>();
+	private List<SessionStatsSample> sessionStatsSamples = new ArrayList<>();
 
 	public List<SessionStatsSample> getSessionViews() {
 		return sessionStatsSamples;

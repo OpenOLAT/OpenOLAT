@@ -5,7 +5,7 @@ QRCode.js has no dependencies.
 ## Basic Usages
 ```
 <div id="qrcode"></div>
-<script type="text/javascript">
+<script>
 new QRCode(document.getElementById("qrcode"), "http://jindo.dev.naver.com/collie");
 </script>
 ```
@@ -14,7 +14,7 @@ or with some options
 
 ```
 <div id="qrcode"></div>
-<script type="text/javascript">
+<script>
 var qrcode = new QRCode(document.getElementById("qrcode"), {
 	text: "http://jindo.dev.naver.com/collie",
 	width: 128,

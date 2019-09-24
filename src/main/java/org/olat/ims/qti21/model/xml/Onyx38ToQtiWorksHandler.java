@@ -250,7 +250,7 @@ public class Onyx38ToQtiWorksHandler extends DefaultHandler2 {
 		for(int i=0;i<numOfAttributes; i++) {
 			String attrQName = attributes.getQName(i);
 			String attrValue = attributes.getValue(i);
-			if("align".equals(attrQName)) {//TODO target??
+			if("align".equals(attrQName)) {
 				//ignore align
 			} else if("xmlns".equals(attrQName) && !StringHelper.containsNonWhitespace(attrValue)) {
 				//ignore empty schema

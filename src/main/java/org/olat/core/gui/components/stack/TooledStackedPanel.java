@@ -20,16 +20,20 @@
 package org.olat.core.gui.components.stack;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.olat.core.gui.UserRequest;
+import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.ComponentCollection;
 import org.olat.core.gui.components.ComponentEventListener;
 import org.olat.core.gui.components.ComponentRenderer;
-import org.olat.core.gui.components.link.Link;
-import org.olat.core.gui.components.panel.StackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 
 /**
  * 
@@ -39,9 +43,10 @@ import org.olat.core.gui.translator.Translator;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TooledStackedPanel extends BreadcrumbedStackedPanel implements StackedPanel, BreadcrumbPanel, ComponentEventListener {
+public class TooledStackedPanel extends BreadcrumbedStackedPanel {
 	
 	private static final ComponentRenderer RENDERER = new TooledStackedPanelRenderer();
+	private static final ComponentRenderer TOOLS_RENDERER = new ToolBarRenderer();
 	private boolean toolbarEnabled = true;
 	private boolean toolbarAutoEnabled = false;
 	private boolean breadcrumbEnabled = true;
@@ -49,6 +54,8 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	private String message;
 	private String messageCssClass;
 	private Component messageCmp;
+	private final ToolBar toolBar;
+	private final EnumMap<Align,ToolsSlot> toolsSlots;
 	
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener) {
 		this(name, translator, listener, null);
@@ -57,21 +64,25 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	public TooledStackedPanel(String name, Translator translator, ComponentEventListener listener, String cssClass) {
 		super(name, translator, listener, cssClass);
 		setDomReplacementWrapperRequired(false); // renders own div in Renderer
+		toolsSlots = new EnumMap<>(Align.class);
+		for(Align val:Align.values()) {
+			toolsSlots.put(val, new ToolsSlot(val));
+		}
+		toolBar = new ToolBar(getDispatchID().concat("_tbar"));
+	}
+	
+	public ToolBar getToolBar() {
+		return toolBar;
 	}
 
 	@Override
 	public Iterable<Component> getComponents() {
 		List<Component> cmps = new ArrayList<>();
-		cmps.add(getBackLink());
+		cmps.add(getBreadcrumbBar());
 		cmps.add(getContent());
+		cmps.add(toolBar);
 		if(messageCmp != null) {
 			cmps.add(messageCmp);
-		}
-		for(Link crumb:stack) {
-			cmps.add(crumb);
-		}
-		for(Tool tool:getTools()) {
-			cmps.add(tool.getComponent());
 		}
 		return cmps;
 	}
@@ -83,7 +94,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	
 	@Override
 	protected BreadCrumb createCrumb(Controller controller, Object uobject) {
-		return new TooledBreadCrumb(controller, uobject);
+		return new BreadCrumb(controller, uobject);
 	}
 
 	/**
@@ -122,7 +133,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	public void removeTool(Component toolComponent) {
 		if(toolComponent == null) return;
 		
-		TooledBreadCrumb breadCrumb = getCurrentCrumb();
+		BreadCrumb breadCrumb = getCurrentCrumb();
 		if(breadCrumb != null) {
 			removeTool(toolComponent, breadCrumb);
 		}
@@ -131,8 +142,8 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	public void removeTool(Component toolComponent, Controller controller) {
 		for(int i=0; i<stack.size(); i++) {
 			Object uo = stack.get(i).getUserObject();
-			if(uo instanceof TooledBreadCrumb) {
-				TooledBreadCrumb crumb = (TooledBreadCrumb)uo;
+			if(uo instanceof BreadCrumb) {
+				BreadCrumb crumb = (BreadCrumb)uo;
 				if (controller.equals(crumb.getController())) {
 					removeTool(toolComponent, crumb);
 				}
@@ -140,21 +151,21 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		}
 	}
 	
-	private void removeTool(Component toolComponent, TooledBreadCrumb breadCrumb) {
+	private void removeTool(Component toolComponent, BreadCrumb breadCrumb) {
 		for(Iterator<Tool> it=breadCrumb.getTools().iterator(); it.hasNext(); ) {
 			if(toolComponent == it.next().getComponent()) {
 				it.remove();
-				setDirty(true);
+				toolBar.setDirty(true);
 			}
 		}
 	}
 	
 	public void removeAllTools() {
-		TooledBreadCrumb breadCrumb = getCurrentCrumb();
+		BreadCrumb breadCrumb = getCurrentCrumb();
 		if(breadCrumb != null) {
 			breadCrumb.getTools().clear();
 		}
-		setDirty(true);
+		toolBar.setDirty(true);
 	}
 
 	/**
@@ -168,21 +179,22 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	public void addTool(Component toolComponent, Align align, boolean inherit, String css, Controller controller) {
 		if(toolComponent == null) return;
 		
+		align = align == null ? Align.center : align;
 		Tool tool = new Tool(toolComponent, align, inherit, css);
-		TooledBreadCrumb breadCrumb = controller == null
+		BreadCrumb breadCrumb = controller == null
 				? getCurrentCrumb()
 				: getBreadCrumb(controller);
 		if(breadCrumb != null) {
 			breadCrumb.addTool(tool);
 		}
-		setDirty(true);
+		toolBar.setDirty(true);
 	}
-	
-	private TooledBreadCrumb getBreadCrumb(Controller controller) {
+
+	private BreadCrumb getBreadCrumb(Controller controller) {
 		for(int i=0; i<stack.size(); i++) {
 			Object uo = stack.get(i).getUserObject();
-			if(uo instanceof TooledBreadCrumb) {
-				TooledBreadCrumb crumb = (TooledBreadCrumb)uo;
+			if(uo instanceof BreadCrumb) {
+				BreadCrumb crumb = (BreadCrumb)uo;
 				if (controller.equals(crumb.getController())) {
 					return crumb;
 				}
@@ -197,8 +209,8 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 		int lastStep = stack.size() - 1;
 		for(int i=0; i<lastStep; i++) {
 			Object uo = stack.get(i).getUserObject();
-			if(uo instanceof TooledBreadCrumb) {
-				TooledBreadCrumb crumb = (TooledBreadCrumb)uo;
+			if(uo instanceof BreadCrumb) {
+				BreadCrumb crumb = (BreadCrumb)uo;
 				List<Tool> tools = crumb.getTools();
 				for(Tool tool:tools) {
 					if(tool.isInherit()) {
@@ -208,18 +220,25 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 			}
 		}
 		
-		TooledBreadCrumb breadCrumb = getCurrentCrumb();
+		BreadCrumb breadCrumb = getCurrentCrumb();
 		if(breadCrumb != null) {
 			currentTools.addAll(breadCrumb.getTools());
 		}
 		return currentTools;
 	}
 	
-	private TooledBreadCrumb getCurrentCrumb() {
+	public List<Tool> getTools(Align alignement) {
+		List<Tool> tools = getTools();
+		return tools.stream()
+			.filter(tool -> alignement.equals(tool.getAlign()) && tool.getComponent().isVisible())
+			.collect(Collectors.toList());
+	}
+	
+	private BreadCrumb getCurrentCrumb() {
 		if(stack.isEmpty()) {
 			return null;
 		}
-		return (TooledBreadCrumb)stack.get(stack.size() - 1).getUserObject();
+		return (BreadCrumb)stack.get(stack.size() - 1).getUserObject();
 	}
 	
 	@Override
@@ -229,7 +248,7 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 
 	@Override
 	public void pushController(String displayName, String iconLeftCss, Controller controller) {
-		TooledBreadCrumb currentCrumb = getCurrentCrumb();
+		BreadCrumb currentCrumb = getCurrentCrumb();
 		if(currentCrumb == null || currentCrumb.getController() != controller) {
 			super.pushController(displayName, iconLeftCss, controller);
 			if(controller instanceof TooledController) {
@@ -279,6 +298,28 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 	public void setBreadcrumbEnabled(boolean breadcrumbEnabled) {
 		this.breadcrumbEnabled = breadcrumbEnabled;
 	}
+	
+	public void setToolsLimit(Align slot, int maxNumberOfTools, String dropdownI18nKey) {
+		setToolsLimit(slot, maxNumberOfTools, dropdownI18nKey, null);
+	}
+
+	/**
+	 * 
+	 * @param slot The slot to limit
+	 * @param maxNumberOfTools The maximum of tools visible in the toolbar
+	 * @param dropdownI18nKey The i18n key to label the dropdown
+	 * @param dropdownIconCss The CSS class to decorate the dropdown
+	 */
+	public void setToolsLimit(Align slot, int maxNumberOfTools, String dropdownI18nKey, String dropdownIconCss) {
+		ToolsSlot config = toolsSlots.get(slot);
+		config.setLimitOfTools(maxNumberOfTools);
+		config.setToolDropdownI18nKey(dropdownI18nKey);
+		if(StringHelper.containsNonWhitespace(dropdownIconCss)) {
+			config.setToolDropdownIconCss(dropdownIconCss);
+		} else {
+			config.setToolDropdownIconCss("o_icon o_icon_menuhandel");
+		}
+	}
 
 	public String getMessage() {
 		return message;
@@ -306,63 +347,113 @@ public class TooledStackedPanel extends BreadcrumbedStackedPanel implements Stac
 			setDirty(true);
 		}
 	}
-
-	public static class Tool {
-		private final  Align align;
-		private final boolean inherit;
-		private final Component component;
-		private String toolCss;
-		
-		public Tool(Component component, Align align, boolean inherit, String toolCss) {
-			this.align = align;
-			this.inherit = inherit;
-			this.component = component;
-			this.toolCss = toolCss;
-		}
-		
-		public boolean isInherit() {
-			return inherit;
-		}
-
-		public Align getAlign() {
-			return align;
-		}
-
-		public Component getComponent() {
-			return component;
-		}
-		
-		public String getToolCss() {
-			return toolCss;
-		}
-		
-	}
-	
-	public static class TooledBreadCrumb extends BreadCrumb {
-		private final List<Tool> tools = new ArrayList<>(5);
-
-		public TooledBreadCrumb(Controller controller, Object uobject) {
-			super(controller, uobject);
-		}
-		
-		public List<Tool> getTools() {
-			return tools;
-		}
-		
-		public void addTool(Tool tool) {
-			tools.add(tool);
-		}
-		
-		public void removeTool(Tool tool) {
-			tools.remove(tool);
-		}
-	}
 	
 	public enum Align {
-		left,
-		right,
-		rightEdge,
-		segment
+		left("o_tools_left"),
+		center("o_tools_center"),
+		right("o_tools_right"),
+		rightEdge("o_tools_right_edge"),
+		segment("o_tools_segments");
+		
+		private final String cssClass;
+		
+		private Align(String cssClass) {
+			this.cssClass = cssClass;
+		}
+		
+		public String cssClass() {
+			return cssClass;
+		}
 	}
 	
+	public class ToolsSlot {
+		
+		private final Align slot;
+		private int limitOfTools = 32;
+		private String toolDropdownI18nKey;
+		private String toolDropdownIconCss;
+		
+		public ToolsSlot(Align slot) {
+			this.slot = slot;
+		}
+
+		public int getLimitOfTools() {
+			return limitOfTools;
+		}
+
+		public void setLimitOfTools(int limitOfTools) {
+			this.limitOfTools = limitOfTools;
+		}
+
+		public Align getSlot() {
+			return slot;
+		}
+
+		public String getToolDropdownI18nKey() {
+			return toolDropdownI18nKey;
+		}
+
+		public void setToolDropdownI18nKey(String i18nKey) {
+			toolDropdownI18nKey = i18nKey;
+		}
+
+		public String getToolDropdownIconCss() {
+			return toolDropdownIconCss;
+		}
+
+		public void setToolDropdownIconCss(String toolDropdownIconCss) {
+			this.toolDropdownIconCss = toolDropdownIconCss;
+		}
+	}
+	
+	public class ToolBar extends AbstractComponent implements ComponentCollection {
+		
+		public ToolBar(String id) {
+			super(id, null, null);
+			setDomReplacementWrapperRequired(false);
+		}
+		
+		public TooledStackedPanel getPanel() {
+			return TooledStackedPanel.this;
+		}
+		
+		public ToolsSlot getSlot(Align align) {
+			return toolsSlots.get(align);
+		}
+		
+		@Override
+		public Translator getTranslator() {
+			return TooledStackedPanel.this.getTranslator();
+		}
+		
+		@Override
+		public Component getComponent(String name) {
+			for(Tool tool:getTools()) {
+				Component cmp = tool.getComponent();
+				if(cmp != null && cmp.getComponentName().equals(name)) {
+					return cmp;
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public Iterable<Component> getComponents() {
+			List<Component> cmps = new ArrayList<>();
+			for(Tool tool:getTools()) {
+				cmps.add(tool.getComponent());
+			}
+			return cmps;
+		}
+
+		@Override
+		protected void doDispatchRequest(UserRequest ureq) {
+			//
+		}
+
+		@Override
+		public ComponentRenderer getHTMLRendererSingleton() {
+			return TOOLS_RENDERER;
+		}
+	}
 }

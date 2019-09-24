@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public class DefaultStepsRunContext implements StepsRunContext {
 	
-	private final Map<String, Object> context = new HashMap<String, Object>();
+	private final Map<String, Object> context = new HashMap<>();
 
 	@Override
 	public void put(String key, Object value) {

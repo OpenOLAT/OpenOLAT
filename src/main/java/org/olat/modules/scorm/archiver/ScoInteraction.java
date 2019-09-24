@@ -37,7 +37,7 @@ public class ScoInteraction {
 	private String result;
 	private String studentResponse;
 	private String correctResponse;
-	private final List<String> objectiveIds = new ArrayList<String>(2);
+	private final List<String> objectiveIds = new ArrayList<>(2);
 	
 	public ScoInteraction(int position) {
 		this.position = position;

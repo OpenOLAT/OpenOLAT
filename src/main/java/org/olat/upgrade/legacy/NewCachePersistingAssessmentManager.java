@@ -102,9 +102,6 @@ import org.olat.util.logging.activity.LoggingResourceable;
  * a user in a course only needs its own data. only when a tutor enters the assessment functionality, all data of all users is needed ->
  * do a full load only then.
  * 
- * TODO: e.g. IQTEST.onDelete(..) cleans all data without going over the assessmentmanager here. meaning that the cache has stale data in it.
- * since coursenode.getIdent (partial key of this cache) is forever unique, then this doesn't really matter. - but it is rather unintended...
- * point is that a node can save lots of data that have nothing to do with assessments
  * 
  * 
  * @author Felix Jost
@@ -201,7 +198,7 @@ public class NewCachePersistingAssessmentManager {
 		int count = 0;
 		int batch = 200;
 
-		Map<Identity, List<Property>> map = new HashMap<Identity, List<Property>>(201); 
+		Map<Identity, List<Property>> map = new HashMap<>(201); 
 		do {
 			int toIndex = Math.min(count + batch, identities.size());
 			List<Identity> toLoad = identities.subList(count, toIndex);
@@ -218,7 +215,7 @@ public class NewCachePersistingAssessmentManager {
 			for(Identity id:toLoad) {
 				List<Property> props = map.get(id);
 				if(props == null) {
-					props = new ArrayList<Property>(1);
+					props = new ArrayList<>(1);
 				}
 				getOrLoadScorePassedAttemptsMap(id, props, false);
 			}
@@ -245,7 +242,7 @@ public class NewCachePersistingAssessmentManager {
 		if (m == null) {
 			// cache entry (=all data of the given identity in this course) has expired or has never been stored yet into the cache.
 			// or has been invalidated (in cluster mode when puts occurred from an other node for the same cache)
-			m = new HashMap<String, Serializable>();
+			m = new HashMap<>();
 			// load data
 			List<Property> loadedProperties = properties == null ? loadPropertiesFor(Collections.singletonList(identity)) : properties;
 			for (Property property:loadedProperties) {

@@ -226,7 +226,6 @@ public class GlossaryManagerImpl implements GlossaryManager {
 		return new RepositoryEntryImportExport(fImportBaseDirectory);
 	}
 	
-	//TODO:RH:gloss change courseconfig, to keep more than 1 single glossary as a list
 	/**
 	 * @param res glossary to be deleted
 	 */
@@ -238,9 +237,6 @@ public class GlossaryManagerImpl implements GlossaryManager {
 			Reference ref = iter.next();
 			if (ref.getUserdata().equals(GLOSSARY_REPO_REF_IDENTIFYER)) {
 				// remove the reference from the course configuration
-				// TODO:RH:improvement: this should use a callback method or send a general delete
-				// event so that the course can take care of this rather than having it
-				// here hardcoded
 				OLATResource courseResource = ref.getSource();
 				ICourse course = CourseFactory.openCourseEditSession(courseResource.getResourceableId());
 				CourseConfig cc = course.getCourseEnvironment().getCourseConfig();

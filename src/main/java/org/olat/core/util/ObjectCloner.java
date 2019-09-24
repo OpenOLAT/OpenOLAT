@@ -31,10 +31,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
+
 /**
  * @author Mike Stock Comment:
  */
 public class ObjectCloner {
+	
+	private static final Logger log = Tracing.createLoggerFor(ObjectCloner.class);
 
 	//so that nobody can accidentally create an ObjectCloner object
 	private ObjectCloner() {
@@ -62,7 +67,7 @@ public class ObjectCloner {
 			// return the new object
 			return ois.readObject();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			throw new RuntimeException("Exception in ObjectCloner = ", e);
 		} finally {
 			try {

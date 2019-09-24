@@ -64,7 +64,7 @@ public class RepositoryEntrySmallDetailsController extends BasicController {
 		mainVC.contextPut("description", entry.getDescription());
 		
 		List<Long> authorKeys = repositoryService.getAuthors(entry);
-		List<String> authorNames = new ArrayList<String>(authorKeys.size());
+		List<String> authorNames = new ArrayList<>(authorKeys.size());
 		int count = 0;
 		for(Long authorKey:authorKeys) {
 			String authorName = userManager.getUserDisplayName(authorKey);

@@ -1,4 +1,4 @@
-<script type="text/javascript">
+<script>
 	function hideSwitches() {
 		document.getElementById('hswitch').style.display = 'none';
 		document.getElementById('sswitch').style.display = 'none';
@@ -277,9 +277,9 @@
 		</div>
 	#end
 	#if ($assessment.isInheritControls() && !$isRestrictedEdit)
-		<script type="text/javascript">showSwitches();</script>
+		<script>showSwitches();</script>
 	#else
-		<script type="text/javascript">hideSwitches();</script>
+		<script>hideSwitches();</script>
 	#end
 #end 
 

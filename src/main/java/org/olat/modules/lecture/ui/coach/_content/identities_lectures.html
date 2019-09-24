@@ -1,0 +1,10 @@
+#if($r.available("back"))
+	$r.render("back")
+#end
+<h3>$r.translate("multi.rollcall.title") <small>$msg</small></h3>
+$r.render("table")
+#if($r.visible("close"))
+<div class="o_button_group">
+	$r.render("close")
+</div>
+#end

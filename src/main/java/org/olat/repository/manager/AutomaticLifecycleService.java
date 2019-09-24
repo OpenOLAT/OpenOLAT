@@ -58,7 +58,6 @@ public class AutomaticLifecycleService {
 	
 	public void manage() {
 		close();
-		//unpublish();
 		delete();
 	}
 	
@@ -85,12 +84,12 @@ public class AutomaticLifecycleService {
 	}
 	
 	public List<RepositoryEntry> getRepositoryEntriesToClose(Date date) {
-		QueryBuilder sb = new QueryBuilder(512);//TODO repo unit
+		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
 		  .append(" inner join fetch v.lifecycle as lifecycle")
-		  .append(" where lifecycle.validTo<:now and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());//TODO repo access
+		  .append(" where lifecycle.validTo<:now and v.status ").in(RepositoryEntryStatusEnum.preparationToPublished());
 		
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
@@ -130,7 +129,7 @@ public class AutomaticLifecycleService {
 		sb.append("select v from repositoryentry as v ")
 		  .append(" inner join fetch v.olatResource as ores")
 		  .append(" inner join fetch v.statistics as statistics")
-		  .append(" inner join fetch v.lifecycle as lifecycle")//TODO repo access
+		  .append(" inner join fetch v.lifecycle as lifecycle")
 		  .append(" where lifecycle.validTo<:now and v.status ").in(RepositoryEntryStatusEnum.preparationToClosed());
 		
 		Calendar cal = Calendar.getInstance();

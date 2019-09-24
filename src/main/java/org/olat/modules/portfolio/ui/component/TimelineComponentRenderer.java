@@ -44,7 +44,7 @@ public class TimelineComponentRenderer extends DefaultComponentRenderer {
 		TimelineComponent cmp = (TimelineComponent)source;
 		String dispatchId = cmp.getDispatchID();
 		sb.append("<div id='timeline_").append(dispatchId).append("'></div>");
-		sb.append("<script type='text/javascript'>\n")
+		sb.append("<script>\n")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
 		  .append("	jQuery('#timeline_").append(dispatchId).append("').timeline({")

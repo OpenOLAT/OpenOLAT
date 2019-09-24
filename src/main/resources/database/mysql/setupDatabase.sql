@@ -1140,6 +1140,31 @@ create table if not exists o_ac_paypal_transaction (
    primary key (transaction_id)
 );
 
+-- paypal checkout
+create table o_ac_checkout_transaction (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   p_success_uuid varchar(64) not null,
+   p_cancel_uuid varchar(64) not null,
+   p_order_nr varchar(64) not null,
+   p_order_id bigint not null,
+   p_order_part_id bigint not null,
+   p_method_id bigint not null,
+   p_amount_currency_code varchar(3) not null,
+   p_amount_amount decimal(12,4) not null,
+   p_status varchar(32) not null,
+   p_paypal_order_id varchar(64),
+   p_paypal_order_status varchar(64),
+   p_paypal_order_status_reason text,
+   p_paypal_authorization_id varchar(64),
+   p_paypal_capture_id varchar(64),
+   p_capture_currency_code varchar(3),
+   p_capture_amount decimal(12,4),
+   p_paypal_invoice_id varchar(64),
+   primary key (id)
+);
+
 -- openmeetings
 create table if not exists o_om_room_reference (
    id bigint not null,
@@ -1896,7 +1921,7 @@ create table o_pf_media (
    p_content mediumtext,
    p_signature bigint not null default 0,
    p_reference_id varchar(255) default null,
-   p_business_path varchar(255) not null,
+   p_business_path varchar(255) default null,
    p_creators varchar(1024) default null,
    p_place varchar(255) default null,
    p_publisher varchar(255) default null,
@@ -2419,6 +2444,33 @@ create table o_lecture_reason (
   primary key (id)
 );
 
+create table o_lecture_absence_category (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   l_title varchar(255),
+   l_descr mediumtext,
+   primary key (id)
+);
+
+create table o_lecture_absence_notice (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   lastmodified datetime not null,
+   l_type varchar(32),
+   l_absence_reason mediumtext,
+   l_absence_authorized bit default null,
+   l_start_date datetime not null,
+   l_end_date datetime not null,
+   l_target varchar(32) default 'allentries' not null,
+   l_attachments_dir varchar(255),
+   fk_identity bigint not null,
+   fk_notifier bigint,
+   fk_authorizer bigint,
+   fk_absence_category bigint,
+   primary key (id)
+);
+
 create table o_lecture_block (
   id bigint not null auto_increment,
   creationdate datetime not null,
@@ -2453,6 +2505,22 @@ create table o_lecture_block_to_group (
   primary key (id)
 );
 
+create table o_lecture_notice_to_block (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_lecture_block bigint not null,
+   fk_absence_notice bigint not null,
+   primary key (id)
+);
+
+create table o_lecture_notice_to_entry (
+   id bigint not null auto_increment,
+   creationdate datetime not null,
+   fk_entry bigint not null,
+   fk_absence_notice bigint not null,
+   primary key (id)
+);
+
 create table o_lecture_block_roll_call (
   id bigint not null auto_increment,
   creationdate datetime not null,
@@ -2462,6 +2530,7 @@ create table o_lecture_block_roll_call (
   l_lectures_absent varchar(128),
   l_lectures_attended_num bigint not null default 0,
   l_lectures_absent_num bigint not null default 0,
+  l_absence_notice_lectures varchar(128),
   l_absence_reason mediumtext,
   l_absence_authorized bit default null,
   l_absence_appeal_date datetime,
@@ -2471,6 +2540,8 @@ create table o_lecture_block_roll_call (
   l_appeal_status_reason mediumtext,
   fk_lecture_block bigint not null,
   fk_identity bigint not null,
+  fk_absence_category bigint,
+  fk_absence_notice bigint,
   primary key (id)
 );
 
@@ -2533,6 +2604,7 @@ create table o_lecture_block_audit_log (
   l_message mediumtext,
   fk_lecture_block bigint,
   fk_roll_call bigint,
+  fk_absence_notice bigint,
   fk_entry bigint,
   fk_identity bigint,
   fk_author bigint,
@@ -3197,6 +3269,10 @@ alter table o_sms_message_log ENGINE = InnoDB;
 alter table o_feed ENGINE = InnoDB;
 alter table o_feed_item ENGINE = InnoDB;
 alter table o_lecture_reason ENGINE = InnoDB;
+alter table o_lecture_absence_category ENGINE = InnoDB;
+alter table o_lecture_absence_notice ENGINE = InnoDB;
+alter table o_lecture_notice_to_block ENGINE = InnoDB;
+alter table o_lecture_notice_to_entry ENGINE = InnoDB;
 alter table o_lecture_block ENGINE = InnoDB;
 alter table o_lecture_block_to_group ENGINE = InnoDB;
 alter table o_lecture_block_roll_call ENGINE = InnoDB;
@@ -3693,9 +3769,7 @@ alter table o_vfs_metadata add constraint fmeta_to_author_idx foreign key (fk_lo
 alter table o_vfs_metadata add constraint fmeta_to_lockid_idx foreign key (fk_author) references o_bs_identity (id);
 alter table o_vfs_metadata add constraint fmeta_to_lic_type_idx foreign key (fk_license_type) references o_lic_license_type (id);
 alter table o_vfs_metadata add constraint fmeta_to_parent_idx foreign key (fk_parent) references o_vfs_metadata (id);
-create index f_m_path_keys_idx on o_vfs_metadata (f_m_path_keys(100));
 create index f_m_rel_path_idx on o_vfs_metadata (f_relative_path(255));
-create index f_m_filename_idx on o_vfs_metadata (f_filename(255));
 create index f_m_file_idx on o_vfs_metadata (f_relative_path(255),f_filename(255));
 create index f_m_uuid_idx on o_vfs_metadata (f_uuid);
 
@@ -3810,11 +3884,25 @@ alter table o_lecture_block add constraint lec_block_entry_idx foreign key (fk_e
 alter table o_lecture_block add constraint lec_block_gcoach_idx foreign key (fk_teacher_group) references o_bs_group (id);
 alter table o_lecture_block add constraint lec_block_reason_idx foreign key (fk_reason) references o_lecture_reason (id);
 
+alter table o_lecture_block_roll_call add constraint absence_category_idx foreign key (fk_absence_category) references o_lecture_absence_category (id);
+
+alter table o_lecture_absence_notice add constraint notice_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_lecture_absence_notice add constraint notice_notif_identity_idx foreign key (fk_notifier) references o_bs_identity (id);
+alter table o_lecture_absence_notice add constraint notice_auth_identity_idx foreign key (fk_authorizer) references o_bs_identity (id);
+alter table o_lecture_absence_notice add constraint notice_category_idx foreign key (fk_absence_category) references o_lecture_absence_category (id);
+
+alter table o_lecture_notice_to_block add constraint notice_to_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
+alter table o_lecture_notice_to_block add constraint notice_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
+
+alter table o_lecture_notice_to_entry add constraint notice_to_entry_idx foreign key (fk_entry) references o_repositoryentry (repositoryentry_id);
+alter table o_lecture_notice_to_entry add constraint rel_notice_e_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
+
 alter table o_lecture_block_to_group add constraint lec_block_to_block_idx foreign key (fk_group) references o_bs_group (id);
 alter table o_lecture_block_to_group add constraint lec_block_to_group_idx foreign key (fk_lecture_block) references o_lecture_block (id);
 
 alter table o_lecture_block_roll_call add constraint lec_call_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
 alter table o_lecture_block_roll_call add constraint lec_call_identity_idx foreign key (fk_identity) references o_bs_identity (id);
+alter table o_lecture_block_roll_call add constraint rollcall_to_notice_idx foreign key (fk_absence_notice) references o_lecture_absence_notice (id);
 
 alter table o_lecture_reminder add constraint lec_reminder_block_idx foreign key (fk_lecture_block) references o_lecture_block (id);
 alter table o_lecture_reminder add constraint lec_reminder_identity_idx foreign key (fk_identity) references o_bs_identity (id);

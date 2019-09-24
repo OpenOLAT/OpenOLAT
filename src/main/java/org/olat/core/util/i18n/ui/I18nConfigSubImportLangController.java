@@ -89,7 +89,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 		importFile.setMandatory(true, "configuration.management.package.import.file.error.mandatory");
 		// Limit to jar files and set upload limit to 50 MB
 		importFile.setMaxUploadSizeKB(50000, "configuration.management.package.import.file.error.size", null);
-		Set<String> mimeTypes = new HashSet<String>();
+		Set<String> mimeTypes = new HashSet<>();
 		mimeTypes.add("application/java-archive");
 		mimeTypes.add("application/x-jar");
 		mimeTypes.add("application/x-java-jar");
@@ -112,7 +112,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		if (importKeys.isVisible() && importKeys.getSelectedKeys().size() > 0) {
 			Collection<String> importLangKeys = importKeys.getSelectedKeys();			
-			Set<String> alreadyInstalledLangs = new HashSet<String>();
+			Set<String> alreadyInstalledLangs = new HashSet<>();
 			for (String langKey : importLangKeys) {
 				if (i18nModule.getAvailableLanguageKeys().contains(langKey)) {
 					alreadyInstalledLangs.add(langKey);
@@ -133,7 +133,7 @@ class I18nConfigSubImportLangController extends FormBasicController {
 					return;
 				}
 				// Ok, contains at least one language, copy to lang pack dir
-				importFile.moveUploadFileTo(I18nModule.LANG_PACKS_DIRECTORY);
+				importFile.moveUploadFileTo(i18nModule.getLangPacksDirectory());
 				logAudit("Uploaded language pack::" + importFile.getUploadFileName());
 				
 				if (alreadyInstalledLangs.size() > 0) {

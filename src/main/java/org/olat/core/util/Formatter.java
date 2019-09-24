@@ -32,10 +32,12 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.ZoneId;
+import java.time.format.TextStyle;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -125,6 +127,23 @@ public class Formatter {
 			localToFormatterMap.put(locale, formatter);
 		}
 		return formatter;
+	}
+	
+	public String dayOfWeek(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		DayOfWeek dayOfWeek;
+		switch(cal.get(Calendar.DAY_OF_WEEK)) {
+			case Calendar.MONDAY: dayOfWeek = DayOfWeek.MONDAY; break;
+			case Calendar.TUESDAY: dayOfWeek = DayOfWeek.TUESDAY; break;
+			case Calendar.WEDNESDAY: dayOfWeek = DayOfWeek.WEDNESDAY; break;
+			case Calendar.THURSDAY: dayOfWeek = DayOfWeek.THURSDAY; break;
+			case Calendar.FRIDAY: dayOfWeek = DayOfWeek.FRIDAY; break;
+			case Calendar.SATURDAY: dayOfWeek = DayOfWeek.SATURDAY; break;
+			case Calendar.SUNDAY: dayOfWeek = DayOfWeek.SUNDAY; break;
+			default: dayOfWeek = DayOfWeek.MONDAY;
+		}
+		return  dayOfWeek.getDisplayName(TextStyle.FULL_STANDALONE, locale);
 	}
 
 	/**
@@ -367,7 +386,7 @@ public class Formatter {
 	 * @return human readable formatted bytes
 	 */
 	public static String formatBytes(long bytes) {
-	    int unit = BYTE_UNIT;
+	    long unit = BYTE_UNIT;
 	    if (bytes < unit) return bytes + " B";
 	    int exp = (int) (Math.log(bytes) / Math.log(unit));
 	    String pre = "kMGTPE".charAt(exp-1) + "";
@@ -515,11 +534,12 @@ public class Formatter {
 	 */
 	public static String truncate(String source, int len, String delim) {
 		if (source == null) return null;
-		int start, stop;
+		int start;
+		int stop;
 		int alen = source.length();
 		if (len > 0) {
 			if (alen <= len) return source;
-			start = 0; //TODO effizienter
+			start = 0;
 			stop = (len > alen ? alen : len);
 			StringBuilder sb = new StringBuilder(source.substring(start, stop));
 			if (alen > len) sb.append(delim);
@@ -643,7 +663,7 @@ public class Formatter {
 	 */
 	public static String elementLatexFormattingScript(String domid) {
 		return String.format("%n"
-				+ "<script type='text/javascript'>%n"
+				+ "<script>%n"
 				+ "/* <![CDATA[ */%n"
 				+ " jQuery(function() {setTimeout(function() { BFormatter.formatLatexFormulas('%s');}, 100); }); %n"
 				+ "/* ]]> */%n"

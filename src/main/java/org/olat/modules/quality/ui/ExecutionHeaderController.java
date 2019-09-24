@@ -46,6 +46,7 @@ public class ExecutionHeaderController extends BasicController {
 		mainVC.contextPut("title", executorParticipation.getTitle());
 		UIContexts uiContexts = QualityUIContextsBuilder.builder(executorParticipation, getLocale())
 				.withAllAttributes()
+				.withCurriculumElementsHierarchy()
 				.withAlwaysEvenKeyValues()
 				.build();
 		mainVC.contextPut("contexts", uiContexts.getUiContexts());

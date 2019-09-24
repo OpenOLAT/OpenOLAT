@@ -124,7 +124,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		
 		VFSRevision revision0 = revisions.get(0);
 		//we don't set an author for the original file
-		Assert.assertEquals(id, revision0.getAuthor());//TODO remove the first author
+		Assert.assertEquals(id, revision0.getAuthor());
 		VFSRevision revision1 = revisions.get(1);
 		Assert.assertEquals(id, revision1.getAuthor());
 		VFSRevision revision2 = revisions.get(2);
@@ -227,7 +227,7 @@ public class VFSVersioningTest extends OlatTestCase {
 		//check if there is only one backup file
 		VFSContainer versionContainer = file.getParentContainer();
 		List<VFSItem> items = versionContainer.getItems(new VersionsFilter(filename));
-		Assert.assertEquals(1, items.size());// TODO metadata was 2 but 1 seems correcter
+		Assert.assertEquals(1, items.size());
 		
 		//check number of versions
 		VFSItem reloadFile = rootTest.resolve(filename);

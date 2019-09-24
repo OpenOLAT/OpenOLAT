@@ -52,6 +52,12 @@ public interface User extends CreateInfo, Persistable {
 	public String getEmail();
 	
 	public String getInstitutionalEmail();
+	
+	/**
+	 * 
+	 * @return The real value, don't show it on any user interface
+	 */
+	public String getSmsTelMobile();
 
 	/**
 	 * Get the users prefereces object

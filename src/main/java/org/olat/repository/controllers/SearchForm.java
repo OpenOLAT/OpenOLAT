@@ -160,7 +160,7 @@ public class SearchForm extends FormBasicController {
 	public Collection<String> getRestrictedTypes() {
 		
 		if (limitTypes != null && limitTypes.length > 0) {
-			return new HashSet<String>(Arrays.asList(limitTypes));
+			return new HashSet<>(Arrays.asList(limitTypes));
 		}
 		
 		return types.getSelectedKeys();
@@ -252,7 +252,7 @@ public class SearchForm extends FormBasicController {
 	}
 	
 	private String[] getTranslatedResources(List<String> resources) {
-		List<String> l = new ArrayList<String>();
+		List<String> l = new ArrayList<>();
 		for(String key: resources){
 			l.add(translate(key));
 		}
@@ -273,7 +273,7 @@ public class SearchForm extends FormBasicController {
 	}
 	
 	private List<String> getResources() {
-		List<String> resources = new ArrayList<String>();
+		List<String> resources = new ArrayList<>();
 		resources.add(CourseModule.getCourseTypeName());
 		resources.add(ImsCPFileResource.TYPE_NAME);
 		resources.add(ScormCPFileResource.TYPE_NAME);

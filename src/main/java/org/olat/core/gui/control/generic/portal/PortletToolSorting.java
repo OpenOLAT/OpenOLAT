@@ -30,11 +30,6 @@ import org.olat.core.gui.control.generic.portal.SortingCriteria;
 
 
 /**
- * 
- * Description:<br>
- * TODO: Lavinia Dumitrescu Class Description for PortletToolSorting
- * 
- * <P>
  * Initial Date:  21.11.2007 <br>
  * @author Lavinia Dumitrescu
  */
@@ -51,9 +46,5 @@ public interface PortletToolSorting  {
 	 * @return the SortingCriteria for automatical sorting.
 	 */
 	public SortingCriteria getSortingCriteria();
-  //public void setSortingCriteria(SortingCriteria sortingCriteria);
-  
-  //public List getManuallySorted();
-  //public void setManuallySorted(List manuallySortedItems);
-  
+
 }

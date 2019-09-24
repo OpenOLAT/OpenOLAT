@@ -46,7 +46,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
-import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.MSCourseNode;
@@ -97,7 +96,7 @@ public class MSConfigController extends FormBasicController {
 	private LayoutMain3ColsPreviewController previewCtr;
 	
 	private final ModuleConfiguration config;
-	private final OLATResourceable ores;
+	private final RepositoryEntry ores;
 	private final String nodeIdent;
 	private RepositoryEntry formEntry;
 	private MinMax formMinMax;

@@ -176,8 +176,6 @@ public class MediaUploadController extends FormBasicController implements PageEl
 				UploadMedia mObject = new UploadMedia(uploadedFile, uploadedFilename, fileEl.getUploadMimeType());
 				mediaReference = mediaHandler.createMedia(title, description, mObject, businessPath, getIdentity());
 			}
-		} else {
-			//TODO can we update an artefact?
 		}
 
 		List<String> updatedCategories = categoriesEl.getValueList();

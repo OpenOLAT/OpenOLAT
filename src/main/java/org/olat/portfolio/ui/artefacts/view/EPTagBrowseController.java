@@ -56,7 +56,7 @@ public class EPTagBrowseController extends BasicController {
 
 	@Autowired
 	private EPFrontendManager ePFMgr;
-	private final List<Link> tagLinks = new ArrayList<Link>();
+	private final List<Link> tagLinks = new ArrayList<>();
 	private List<AbstractArtefact> allUsersArtefacts;
 
 	public EPTagBrowseController(UserRequest ureq, WindowControl wControl) {
@@ -84,13 +84,13 @@ public class EPTagBrowseController extends BasicController {
 	// filter available tags for such of non-existing artefacts
 	private List<String> getRealArtefactTags(){
 		allUsersArtefacts = ePFMgr.getArtefactPoolForUser(getIdentity());
-		if (allUsersArtefacts == null) return new ArrayList<String>();
-		HashSet<String> realTags = new HashSet<String>();
+		if (allUsersArtefacts == null) return new ArrayList<>();
+		HashSet<String> realTags = new HashSet<>();
 		for (AbstractArtefact abstractArtefact : allUsersArtefacts) {
 			List<String> thisTags = ePFMgr.getArtefactTags(abstractArtefact);
 			realTags.addAll(thisTags);
 		}
-		List<String> res = new ArrayList<String>();
+		List<String> res = new ArrayList<>();
 		res.addAll(realTags);
 		return res;
 	}
@@ -177,7 +177,7 @@ public class EPTagBrowseController extends BasicController {
 	}
 	
 	private List<String> getSelectedTags() {
-		List<String> tags = new ArrayList<String>();
+		List<String> tags = new ArrayList<>();
 		for(Link tagLink:tagLinks) {
 			TagWrapper tagWrapper = (TagWrapper)tagLink.getUserObject();
 			if(TagState.selected.equals(tagWrapper.getState())) {

@@ -232,7 +232,8 @@ public class CheckListRunController extends FormBasicController implements Contr
 		}
 
 		UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-		layoutCont.contextPut("log", am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity()));
+		String userLog = am.getUserNodeLog(courseNode, userCourseEnv.getIdentityEnvironment().getIdentity());
+		layoutCont.contextPut("log", StringHelper.escapeHtml(userLog));
 	}
 	
 	private CheckboxWrapper forgeCheckboxWrapper(Checkbox checkbox, DBCheck check, boolean readOnly, FormItemContainer formLayout) {

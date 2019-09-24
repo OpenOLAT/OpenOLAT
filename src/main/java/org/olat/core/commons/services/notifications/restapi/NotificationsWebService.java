@@ -274,7 +274,7 @@ public class NotificationsWebService {
 	}
 	
 	private boolean isAdmin(HttpServletRequest request) {
-		try {//TODO roles, make it resource dependant
+		try {
 			Roles roles = RestSecurityHelper.getRoles(request);
 			return roles.isAdministrator();
 		} catch (Exception e) {

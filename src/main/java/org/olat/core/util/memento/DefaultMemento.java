@@ -27,10 +27,6 @@
 package org.olat.core.util.memento;
 
 /**
- * Description:<br>
- * TODO: patrick Class Description for DefaultMemento
- * 
- * <P>
  * Initial Date:  Nov 25, 2005 <br>
  *
  * @author patrick

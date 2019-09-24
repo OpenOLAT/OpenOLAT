@@ -140,7 +140,7 @@ public class CourseNodeOutcomeMapper extends OutcomeMapper {
 				}
 				score = Float.toString(scaledScore);
 			}
-			Map<String,Object> theMap = new TreeMap<String,Object>();
+			Map<String,Object> theMap = new TreeMap<>();
 			theMap.put("/readResultResponse/result/sourcedId", getSourcedId());
 			theMap.put("/readResultResponse/result/resultScore/textString", score);
 			theMap.put("/readResultResponse/result/resultScore/language", "en");

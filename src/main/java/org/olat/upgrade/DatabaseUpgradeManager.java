@@ -274,7 +274,7 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 		
 		boolean newInstance = !upgradesHistoriesFile.exists() && !stdUpgradesHistoriesFile.exists();
 		if(newInstance) {
-			upgradesHistories = new HashMap<String, UpgradeHistoryData>();
+			upgradesHistories = new HashMap<>();
 			// Fill the history
 			for(OLATUpgrade upgrade:upgrades) {
 				UpgradeHistoryData uhd = new UpgradeHistoryData();
@@ -291,7 +291,7 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 				upgradesHistories = (Map<String, UpgradeHistoryData>) XStreamHelper.readObject(upgradesXStream, upgradesHistoriesFile);
 			}
 			if (upgradesHistories == null) {
-				upgradesHistories = new HashMap<String, UpgradeHistoryData>();
+				upgradesHistories = new HashMap<>();
 			}
 			
 			if (stdUpgradesHistoriesFile.exists()) {

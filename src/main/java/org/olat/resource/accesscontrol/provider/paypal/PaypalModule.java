@@ -27,7 +27,6 @@ import org.olat.core.configuration.AbstractSpringModule;
 import org.olat.core.helpers.Settings;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
-import org.olat.core.util.event.GenericEventListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -43,10 +42,10 @@ import org.springframework.stereotype.Service;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 @Service
-public class PaypalModule extends AbstractSpringModule implements GenericEventListener {
+public class PaypalModule extends AbstractSpringModule {
 	
 	private static final String X_PAYPAL_SECURITY_USERID = "paypal.security.user.id";
-	private static final String X_PAYPAL_SECURITY_PASSWORD = "paypal.security.password";
+	private static final String X_PAYPAL_SECURITY_CREDENTIAL = "paypal.security.password";
 	private static final String X_PAYPAL_SECURITY_SIGNATURE = "paypal.security.signature";
 	private static final String X_PAYPAL_APPLICATION_ID = "paypal.application.id";
 	private static final String X_PAYPAL_SANDBOX_EMAIL_ADDRESS = "paypal.sandbox.email";
@@ -100,7 +99,7 @@ public class PaypalModule extends AbstractSpringModule implements GenericEventLi
 			paypalSecurityUserId = paypalSecurityUserIdProp;
 		}
 		
-		String paypalSecurityPasswordProp = getStringPropertyValue(X_PAYPAL_SECURITY_PASSWORD, true);
+		String paypalSecurityPasswordProp = getStringPropertyValue(X_PAYPAL_SECURITY_CREDENTIAL, true);
 		if(StringHelper.containsNonWhitespace(paypalSecurityPasswordProp)) {
 			paypalSecurityPassword = paypalSecurityPasswordProp;
 		}
@@ -181,7 +180,7 @@ public class PaypalModule extends AbstractSpringModule implements GenericEventLi
 	}
 
 	public void setPaypalSecurityPassword(String paypalSecurityPassword) {
-		setStringProperty(X_PAYPAL_SECURITY_PASSWORD, paypalSecurityPassword, true);
+		setStringProperty(X_PAYPAL_SECURITY_CREDENTIAL, paypalSecurityPassword, true);
 	}
 
 	public String getPaypalSecuritySignature() {

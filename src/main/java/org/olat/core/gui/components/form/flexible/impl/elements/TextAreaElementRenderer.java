@@ -45,14 +45,7 @@ import org.olat.core.util.StringHelper;
  */
 class TextAreaElementRenderer extends DefaultComponentRenderer {
 
-	/**
-	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder,
-	 *      org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
+
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
@@ -139,7 +132,7 @@ class TextAreaElementRenderer extends DefaultComponentRenderer {
 		// resize element to fit content
 		if (teC.isAutoHeightEnabled()) {
 			int minSize = Math.max(90, (Math.abs(rows) * 20));
-			sb.append("<script type='text/javascript'>\n")
+			sb.append("<script>\n")
 			  .append("/* <![CDATA[ */\n")
 			  .append("jQuery(function(){\n")
 			  .append(" jQuery('#").append(id).append("').each(function () {\n")

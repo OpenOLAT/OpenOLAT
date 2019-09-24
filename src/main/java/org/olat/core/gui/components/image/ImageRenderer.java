@@ -44,12 +44,6 @@ import org.olat.core.util.StringHelper;
  */
 public class ImageRenderer extends DefaultComponentRenderer {
 
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer,
-	 *      org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator,
-	 *      org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
@@ -101,7 +95,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 
 		}
 		sb.append("' class='o_video_wrapper'></div>")
-		  .append("<script type='text/javascript'>")
+		  .append("<script>")
 		  .append("/* <![CDATA[ */")
 		  .append("BPlayer.insertPlayer('").append(Settings.createServerURI()).append(mapperUrl);
 		sb.append("','").append(imgId).append("',").append(width).append(",").append(height).append(",'video'");
@@ -165,7 +159,7 @@ public class ImageRenderer extends DefaultComponentRenderer {
 			  .append("<input id='").append(imgId).append("_w' name='").append(imgId).append("_w' type='hidden' value='' />")
 			  .append("<input id='").append(imgId).append("_h' name='").append(imgId).append("_h' type='hidden' value='' />");
 			
-			sb.append("<script type='text/javascript'>\n")
+			sb.append("<script>\n")
 			  .append("/* <![CDATA[ */ \n")
 			  .append("jQuery(function() {\n")
 			  .append("  jQuery('#").append(imgId).append("').cropper({\n")

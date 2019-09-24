@@ -19,6 +19,7 @@
  */
 package org.olat.core.util.openxml;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -53,6 +54,7 @@ public class OpenXMLStyles {
 	private final Document createDocument() {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			// Turn on validation, and turn off namespaces
 			factory.setValidating(true);
 			factory.setNamespaceAware(true);

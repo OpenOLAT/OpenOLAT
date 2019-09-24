@@ -120,7 +120,7 @@ class I18nConfigSubDeletePackageController extends FormBasicController {
 			if (DialogBoxUIFactory.isYesEvent(event)) {
 				// Yes case, delete now
 				for (String deleteLangPack : deleteLangPackSelection.getSelectedKeys()) {
-					File file = new File(I18nModule.LANG_PACKS_DIRECTORY, deleteLangPack);
+					File file = new File(i18nModule.getLangPacksDirectory(), deleteLangPack);
 					if (file.exists()) file.delete();
 					logAudit("Deleted language pack::" + deleteLangPack);
 				}

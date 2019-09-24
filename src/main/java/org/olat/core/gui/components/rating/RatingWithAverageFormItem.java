@@ -83,7 +83,7 @@ public class RatingWithAverageFormItem extends FormItemImpl implements FormItemC
 
 	@Override
 	public Iterable<FormItem> getFormItems() {
-		List<FormItem> items = new ArrayList<FormItem>();
+		List<FormItem> items = new ArrayList<>();
 		items.add(userComponent);
 		items.add(averageComponent);
 		return items;

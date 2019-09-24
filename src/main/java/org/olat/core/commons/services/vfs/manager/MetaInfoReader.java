@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -63,7 +64,10 @@ public class MetaInfoReader {
 	private static SAXParser saxParser;
 	static {
 		try {
-			saxParser = SAXParserFactory.newInstance().newSAXParser();
+
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			saxParser = factory.newSAXParser();
 		} catch(Exception ex) {
 			log.error("", ex);
 		}

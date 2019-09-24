@@ -30,7 +30,6 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
-import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
@@ -73,20 +72,13 @@ public class CloneController extends BasicController{
 		putInitialPanel(mainVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == mainVC) {
 			if (event.getCommand().equals(CMD_CLONE)) { // clone request
-				//TODO:pb: -> link component add new method / rename setTarget() to setPopupeable()
-				// setPopup() -> deactivate AJAX on link
-				ControllerCreator cloneControllerCreator = new ControllerCreator() {
-					@SuppressWarnings("synthetic-access")
-					public Controller createController(UserRequest lureq, WindowControl lwControl) {
-						return readyToCloneC.cloneController(lureq, lwControl);
-					}					
+				ControllerCreator cloneControllerCreator = (lureq, lwControl) -> {
+					return readyToCloneC.cloneController(lureq, lwControl);					
 				};
 				
 				ControllerCreator newWindowContent;
@@ -99,14 +91,11 @@ public class CloneController extends BasicController{
 				}
 				//open in new window
 				openInNewBrowserWindow(ureq, newWindowContent);
-				return;
 			}
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
 		// delete the initial controller, but -not- the clones (they appear in a
 		// independent browser window)

@@ -35,10 +35,6 @@ import org.olat.core.gui.render.DomWrapperElement;
 import org.olat.core.util.ValidationStatus;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for StaticTextElementImpl
- * 
- * <P>
  * Initial Date:  02.02.2007 <br>
  * @author patrickb
  */

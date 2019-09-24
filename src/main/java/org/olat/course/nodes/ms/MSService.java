@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.olat.core.id.Identity;
-import org.olat.core.id.OLATResourceable;
 import org.olat.modules.forms.EvaluationFormSession;
 import org.olat.modules.forms.EvaluationFormSessionRef;
 import org.olat.modules.forms.EvaluationFormSessionStatus;
@@ -41,6 +40,8 @@ import org.olat.repository.RepositoryEntry;
  */
 public interface MSService {
 	
+	String SURVEY_ORES_TYPE_NAME = "course-ms";
+
 	EvaluationFormSession getOrCreateSession(RepositoryEntry formEntry, RepositoryEntry ores, String nodeIdent,
 			Identity assessedIdentity, AuditEnv auditEnv);
 
@@ -53,9 +54,9 @@ public interface MSService {
 
 	EvaluationFormSession reopenSession(EvaluationFormSession session, AuditEnv auditEnv);
 
-	boolean hasSessions(OLATResourceable ores, String nodeIdent);
+	boolean hasSessions(RepositoryEntry ores, String nodeIdent);
 	
-	List<EvaluationFormSession> getSessions(OLATResourceable ores, String nodeIdent);
+	List<EvaluationFormSession> getSessions(RepositoryEntry ores, String nodeIdent);
 	
 	void deleteSession(RepositoryEntry ores, String nodeIdent, Identity assessedIdentity, AuditEnv auditEnv);
 

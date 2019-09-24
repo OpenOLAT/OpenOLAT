@@ -105,7 +105,6 @@ public class ServletUtil {
 			if (lastModified != null) {
 				// give browser a chance to cache images
 				long ifModifiedSince = httpReq.getDateHeader("If-Modified-Since");
-				// TODO: if no such header, what is the return value
 				long lastMod = lastModified.longValue();
 				if (ifModifiedSince >= (lastMod / 1000L) * 1000L) {
 					httpResp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -332,7 +331,7 @@ public class ServletUtil {
 
 		// Vector which will contain all the ranges which are successfully
 		// parsed.
-		List<Range> result = new ArrayList<Range>();
+		List<Range> result = new ArrayList<>();
 		StringTokenizer commaTokenizer = new StringTokenizer(rangeHeader, ",");
 
 		// Parsing the range list

@@ -44,10 +44,10 @@ import org.olat.user.propertyhandlers.UserPropertyUsageContext;
  */
 public class UsrPropCfgObject {
 
-	private List<UserPropertyHandler> allHandlers = new ArrayList<UserPropertyHandler>();
-	private Set<UserPropertyHandler> activeHandlers = new HashSet<UserPropertyHandler>();
+	private List<UserPropertyHandler> allHandlers = new ArrayList<>();
+	private Set<UserPropertyHandler> activeHandlers = new HashSet<>();
 
-	private Map<String, UserPropertyUsageContext> allContexts = new HashMap<String, UserPropertyUsageContext>();
+	private Map<String, UserPropertyUsageContext> allContexts = new HashMap<>();
 
 	public UsrPropCfgObject(List<UserPropertyHandler> allHandlers, Map<String, UserPropertyUsageContext> allContexts) {
 		this.allHandlers = allHandlers;

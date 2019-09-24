@@ -242,7 +242,7 @@ public final class RequestUtil {
         if ((header == null) || (header.length() < 1))
             return (new Cookie[0]);
 
-        List<Cookie> cookies = new ArrayList<Cookie>();
+        List<Cookie> cookies = new ArrayList<>();
         while (header.length() > 0) {
             int semicolon = header.indexOf(';');
             if (semicolon < 0)

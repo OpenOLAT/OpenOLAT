@@ -481,6 +481,9 @@ public class CurriculumElementDAO {
 		  .append(" left join repositoryentry as v on (rel.entry.key=v.key)")
 		  .append(" left join v.olatResource as res");
 		
+		sb.and()
+		  .append(" curEl.status ").in(CurriculumElementStatus.notDeleted());
+		
 		// generic search
 		Long key = null;
 		String ref = null;

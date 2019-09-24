@@ -212,10 +212,6 @@ public class IQRunController extends BasicController implements GenericEventList
 	 * @return
 	 */
 	private StringBuilder createChangelogMsg(UserRequest ureq) {
-		/*
-		 * TODO:pb:is ImsRepositoryResolver the right place for getting the change log?
-		 */
-
 		//re could be null, but if we are here it should not be null!
 		Roles userRoles = ureq.getUserSession().getRoles();
 		boolean showAll = userRoles.isAuthor() || userRoles.isAdministrator() || userRoles.isLearnResourceManager();
@@ -683,8 +679,8 @@ public class IQRunController extends BasicController implements GenericEventList
     	}
     	
     	UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
-		myContent.contextPut("log", am.getUserNodeLog(courseNode, identity));
-						
+    	String userLog = am.getUserNodeLog(courseNode, identity);
+		myContent.contextPut("log", StringHelper.escapeHtml(userLog));
 		exposeResults(ureq);
 	}
 	

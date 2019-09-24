@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>14.0-SNAPSHOT</version>
+	<version>14.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>https://www.openolat.com</url>
@@ -62,16 +62,18 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.1.7.RELEASE</org.springframework.version>
-		<org.hibernate.version>5.4.3.Final</org.hibernate.version>
+		<org.springframework.version>5.1.8.RELEASE</org.springframework.version>
+		<org.hibernate.version>5.4.4.Final</org.hibernate.version>
 		<com.sun.jersey.version>1.19.4</com.sun.jersey.version>
 		<apache.cxf>3.3.2</apache.cxf>
-		<apache.pdfbox>2.0.15</apache.pdfbox>
+		<apache.pdfbox>2.0.16</apache.pdfbox>
 		<apache.poi>4.1.0</apache.poi>
-		<apache.log4j>2.11.2</apache.log4j>
+		<apache.log4j>2.12.0</apache.log4j>
+		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
+		<io.undertow>2.0.23.Final</io.undertow>
 		<jackson.version>2.9.9</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
-		<org.postgresql.version>42.2.5</org.postgresql.version>
+		<org.postgresql.version>42.2.6</org.postgresql.version>
 		<org.infinispan.version>9.2.3.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
@@ -432,7 +434,7 @@
 				<dependency>
 				    <groupId>org.webjars</groupId>
 				    <artifactId>swagger-ui</artifactId>
-				    <version>3.22.2</version>
+				    <version>3.23.2</version>
 				</dependency>
 				<dependency>
 				    <groupId>jakarta.xml.ws</groupId>
@@ -1916,7 +1918,7 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.12</version>
+			<version>1.13</version>
 		</dependency>
 		<dependency>
 			<!-- Used by at least commons-validator -->
@@ -2047,18 +2049,18 @@
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
-			<version>0.10.6</version>
+			<version>${io.jsonwebtoken}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-impl</artifactId>
-			<version>0.10.6</version>
+			<version>${io.jsonwebtoken}</version>
 			 <scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-jackson</artifactId>
-			<version>0.10.6</version>
+			<version>${io.jsonwebtoken}</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -2258,12 +2260,12 @@
 		<dependency>
 			<groupId>nu.validator</groupId>
 			<artifactId>htmlparser</artifactId>
-			<version>1.4.13</version>
+			<version>1.4.14</version>
 		</dependency>
 		<dependency>
 			<groupId>com.googlecode.owasp-java-html-sanitizer</groupId>
 			<artifactId>owasp-java-html-sanitizer</artifactId>
-			<version>20190503.1</version>
+			<version>20190610.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.w3c.css</groupId>
@@ -2314,7 +2316,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.8</version>
+			<version>4.5.9</version>
 			<exclusions>
 				<exclusion>
 					<groupId>commons-logging</groupId>
@@ -2325,7 +2327,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.5.8</version>
+			<version>4.5.9</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -2335,7 +2337,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-text</artifactId>
-			<version>1.6</version>
+			<version>1.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.opencsv</groupId>
@@ -2430,7 +2432,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20080701</version>
+			<version>20180813</version>
 		</dependency>
 		<dependency>
 			<groupId>jazzlib</groupId>
@@ -2441,11 +2443,19 @@
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
-			<version>2.2.3</version>
+			<version>2.3.1</version>
 			<exclusions>
 				<exclusion>
-					<groupId>c3p0</groupId>
+					<groupId>com.mchange</groupId>
 					<artifactId>c3p0</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.mchange</groupId>
+					<artifactId>mchange-commons-java</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.zaxxer</groupId>
+					<artifactId>HikariCP-java7</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -2573,7 +2583,7 @@
         <dependency>
         	<groupId>com.fasterxml.jackson.core</groupId>
         	<artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson.version}.2</version>
         </dependency>
         <dependency>
         	<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -2587,6 +2597,11 @@
 			<groupId>com.paypal.sdk</groupId>
 			<artifactId>adaptivepaymentssdk</artifactId>
 			<version>2.9.117</version>
+		</dependency>
+		<dependency>
+			<groupId>com.paypal.sdk</groupId>
+			<artifactId>checkout-sdk</artifactId>
+			<version>1.0.1</version>
 		</dependency>
 		<!-- end Paypal -->
 
@@ -2618,13 +2633,13 @@
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-core</artifactId>
-		    <version>2.0.21.Final</version>
+		    <version>${io.undertow}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 		    <groupId>io.undertow</groupId>
 		    <artifactId>undertow-servlet</artifactId>
-		    <version>2.0.21.Final</version>
+		    <version>${io.undertow}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

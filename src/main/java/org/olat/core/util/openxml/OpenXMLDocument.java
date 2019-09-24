@@ -40,6 +40,7 @@ import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -89,7 +90,7 @@ public class OpenXMLDocument {
 	private int currentNumberingId = 0;
 	private String documentHeader;
 	private Set<String> imageFilenames = new HashSet<>();
-	private Map<File, DocReference> fileToImagesMap = new HashMap<File, DocReference>();
+	private Map<File, DocReference> fileToImagesMap = new HashMap<>();
 	
 	private List<Node> cursorStack = new ArrayList<>();
 	private List<ListParagraph> numbering = new ArrayList<>();
@@ -195,7 +196,7 @@ public class OpenXMLDocument {
 
 	private Element createHeading(String text, PredefinedStyle style, String additionalText) {
 		Element textEl = createTextEl(text);
-		List<Element> runsEl = new ArrayList<Element>(2);
+		List<Element> runsEl = new ArrayList<>(2);
 		Element runEl = createRunEl(Collections.singletonList(textEl));
 		runsEl.add(runEl);
 		Element styleEl = createParagraphStyle(style);
@@ -227,7 +228,7 @@ public class OpenXMLDocument {
 	
 	public void appendSubtitle(String text) {
 		Element textEl = createTextEl(text);
-		List<Element> runsEl = new ArrayList<Element>(2);
+		List<Element> runsEl = new ArrayList<>(2);
 		Element runEl = createRunEl(Collections.singletonList(textEl), PredefinedStyle.subSubtleEmphasis);
 		runsEl.add(runEl);
 		Element styleEl = createParagraphStyle(PredefinedStyle.subSubtleEmphasis);
@@ -341,7 +342,7 @@ public class OpenXMLDocument {
 	public void appendText(String text, boolean newParagraph, Style... textStyles) {
 		if(!StringHelper.containsNonWhitespace(text)) return;
 		
-		List<Element> textEls = new ArrayList<Element>();
+		List<Element> textEls = new ArrayList<>();
 		for(StringTokenizer tokenizer = new StringTokenizer(text, "\n\r"); tokenizer.hasMoreTokens(); ) {
 			String token = tokenizer.nextToken();
 			Element textEl = createTextEl(token);
@@ -1015,7 +1016,7 @@ public class OpenXMLDocument {
 	}
 	
 	public List<Node> convertLaTeX(String latex) {
-		List<Node> mathEls = new ArrayList<Node>();
+		List<Node> mathEls = new ArrayList<>();
 		try {
 			//convert latex -> mathml
 			String mathml = ConvertFromLatexToMathML.convertToMathML(latex);
@@ -1034,6 +1035,7 @@ public class OpenXMLDocument {
 				if(name.endsWith("word/document.xml")) {
 					
 					DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+			        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 					factory.setValidating(false);
 					factory.setNamespaceAware(false);
 					DocumentBuilder builder = factory.newDocumentBuilder();
@@ -1367,7 +1369,7 @@ public class OpenXMLDocument {
 		anchorEl.setAttribute("distL", "0");
 		anchorEl.setAttribute("distR", "0");
 		anchorEl.setAttribute("simplePos", "0");
-		anchorEl.setAttribute("relativeHeight", "251663360");//TODO
+		anchorEl.setAttribute("relativeHeight", "251663360");
 		anchorEl.setAttribute("behindDoc", "0");
 		anchorEl.setAttribute("locked", "0");
 		anchorEl.setAttribute("layoutInCell", "1");
@@ -1425,7 +1427,7 @@ public class OpenXMLDocument {
 		Element wrapPolygonStartEl = (Element)wrapPolygonEl.appendChild(document.createElement("wp:start"));
 		wrapPolygonStartEl.setAttribute("x", "0");
 		wrapPolygonStartEl.setAttribute("y", "0");
-		appendLineTo(wrapPolygonEl, "0", "21396");//TODO
+		appendLineTo(wrapPolygonEl, "0", "21396");
 		appendLineTo(wrapPolygonEl, "21538", "21396");
 		appendLineTo(wrapPolygonEl, "21538", "0");
 		appendLineTo(wrapPolygonEl, "0", "0");

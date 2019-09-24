@@ -113,8 +113,7 @@ public class VFSMetadataDAO {
 		  .append(" left join fetch author.user as authorUser")
 		  .append(" left join fetch metadata.licenseType as licenseType")
 		  .append(" where metadata.uuid=:uuid");
-		  
-		  
+  
 		List<VFSMetadata> metadata = dbInstance.getCurrentEntityManager()
 			.createQuery(sb.toString(), VFSMetadata.class)
 			.setParameter("uuid", uuid)
@@ -276,6 +275,7 @@ public class VFSMetadataDAO {
 			.createQuery(updateQuery)
 			.setParameter("filename", filename)
 			.setParameter("relativePath", relativePath)
+			.setHint("javax.persistence.query.timeout", 1000)
 			.executeUpdate();
 	}
 	

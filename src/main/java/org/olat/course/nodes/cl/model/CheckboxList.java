@@ -53,7 +53,7 @@ public class CheckboxList implements Serializable {
 	
 	public void add(Checkbox checkbox) {
 		if(list == null) {
-			list = new ArrayList<Checkbox>();
+			list = new ArrayList<>();
 			list.add(checkbox);
 		} else if(!list.contains(checkbox)) {
 			list.add(checkbox);

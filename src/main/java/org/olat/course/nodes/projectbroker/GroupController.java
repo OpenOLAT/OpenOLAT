@@ -162,7 +162,7 @@ public class GroupController extends BasicController {
 	private final MailManager mailManager;
 	private final GroupDAO groupDao;
 	
-	public Object userObject;
+	private Object userObject;
 
 	/**
 	 * @param ureq
@@ -447,9 +447,6 @@ public class GroupController extends BasicController {
 				// before deleting, assure it is allowed
 				if (!mayModifyMembers) throw new AssertException("not allowed to remove member!");
 				// list is never null, but can be empty
-				// TODO: Theoretically it can happen that the table model here is not accurate!
-				// the 'keep at least one' should be handled by the security manager that should 
-				// synchronizes the method on the group
 				int size = identitiesTableModel.getObjects().size(); 
 				if (keepAtLeastOne && (size - toRemove.size() == 0)) {
 					showError("msg.atleastone");

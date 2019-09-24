@@ -103,7 +103,7 @@ public class QTIHelper {
 	private final static long month = 30 * day;
 
 	static {
-		booleanEvals = new HashMap<String,BooleanEvaluable>();
+		booleanEvals = new HashMap<>();
 		booleanEvals.put("and", new QTI_and());
 		booleanEvals.put("or", new QTI_or());
 		booleanEvals.put("not", new QTI_not());
@@ -116,14 +116,14 @@ public class QTIHelper {
 		booleanEvals.put("other", new QTI_other());
 
 		// section boolean evaluables
-		scoreBooleanEvals = new HashMap<String,ScoreBooleanEvaluable>();
+		scoreBooleanEvals = new HashMap<>();
 		scoreBooleanEvals.put("and_test", new QTI_and_test());
 		scoreBooleanEvals.put("or_test", new QTI_or_test());
 		scoreBooleanEvals.put("not_test", new QTI_not_test());
 		scoreBooleanEvals.put("variable_test", new QTI_variable_test());
 
 		// ims qti sao
-		expressionBuilders = new HashMap<String,ExpressionBuilder>();
+		expressionBuilders = new HashMap<>();
 		expressionBuilders.put("and_selection", new QTI_and_selection());
 		expressionBuilders.put("or_selection", new QTI_or_selection());
 		expressionBuilders.put("not_selection", new QTI_not_selection());

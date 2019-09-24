@@ -23,11 +23,6 @@ package org.olat.course.assessment.portfolio;
 import org.olat.portfolio.model.artefacts.AbstractArtefact;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for EvidenceArtefact
- * 
- * <P>
  * Initial Date:  7 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

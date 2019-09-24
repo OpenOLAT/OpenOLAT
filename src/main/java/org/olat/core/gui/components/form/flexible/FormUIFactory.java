@@ -629,7 +629,7 @@ public class FormUIFactory {
 	
 	public TextElement addPasswordElement(String id, String name, final String i18nLabel, final int maxLen, String initialValue,
 			FormItemContainer formLayout) {
-		TextElement te = new TextElementImpl(id, name, initialValue, TextElementImpl.HTML_INPUT_TYPE_PASSWORD);
+		TextElement te = new TextElementImpl(id, name, initialValue, TextElementImpl.HTML_INPUT_TYPE_CREDENTIAL);
 		te.setNotLongerThanCheck(maxLen, "text.element.error.notlongerthan");
 		setLabelIfNotNull(i18nLabel, te);
 		te.setMaxLength(maxLen);

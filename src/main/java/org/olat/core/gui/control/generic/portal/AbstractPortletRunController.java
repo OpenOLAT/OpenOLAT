@@ -56,7 +56,7 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 	protected PortletToolSortingControllerImpl<T> portletToolsController;
 	protected final Collator collator;
 	protected SortingCriteria sortingCriteria;
-	protected ArrayList<Integer> sortingTermsList = new ArrayList<Integer>();
+	protected ArrayList<Integer> sortingTermsList = new ArrayList<>();
 	private final String portletName;
 	protected final Preferences guiPreferences; 
 	private final int defaultMaxEntries;
@@ -106,7 +106,7 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 			Map<Long, Integer> storedPrefs = (Map<Long, Integer>) guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
 			if (storedPrefs != null) {
 		    //if auto sorting choosed, remove any manually sorting info
-		    List<PortletEntry<T>> sortedItems = new ArrayList<PortletEntry<T>>();
+		    List<PortletEntry<T>> sortedItems = new ArrayList<>();
 		    guiPreferences.putAndSave(Map.class, getPreferenceKey(SORTED_ITEMS_PREF), getSortedItemsMap(sortedItems));
 			}
 		}
@@ -158,7 +158,7 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 	 * @return a Map<Long,Integer> with the item persistableKey as key and with the item index as value.
 	 */
 	private Map<Long,Integer> getSortedItemsMap(List<PortletEntry<T>> sortedItems) {
-		Hashtable<Long,Integer> persistableMap = new Hashtable<Long,Integer>(); 
+		Hashtable<Long,Integer> persistableMap = new Hashtable<>(); 
 		Iterator<PortletEntry<T>> listIterator = sortedItems.iterator();
 		for(int i=0; listIterator.hasNext(); i++) {
 			persistableMap.put(listIterator.next().getKey(),new Integer(i)); 
@@ -175,7 +175,7 @@ public abstract class AbstractPortletRunController<T> extends BasicController {
 	 * @return the manually sorted persistable list
 	 */
   protected List<PortletEntry<T>> getPersistentManuallySortedItems(List<PortletEntry<T>> portletEntryList) {
-		List<PortletEntry<T>> selected = new ArrayList<PortletEntry<T>>();
+		List<PortletEntry<T>> selected = new ArrayList<>();
 		@SuppressWarnings("unchecked")
 		Map<Long, Integer> storedPrefs = (Map<Long, Integer>) guiPreferences.get(Map.class, getPreferenceKey(SORTED_ITEMS_PREF));
 		if (storedPrefs != null) {			

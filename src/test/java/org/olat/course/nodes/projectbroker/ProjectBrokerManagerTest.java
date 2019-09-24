@@ -258,7 +258,7 @@ public class ProjectBrokerManagerTest extends OlatTestCase {
 		Long idProjectBrokerD = projectBrokerD.getKey();
 		
 		Project testProjectA = createProject("thema A", id1, idProjectBrokerD, resourceableId );
-		List<Identity> projectManagerList = new ArrayList<Identity>();
+		List<Identity> projectManagerList = new ArrayList<>();
 		projectManagerList.add(id1);
 		Project testProjectB = createProject("thema B", id2, idProjectBrokerD, resourceableId );
 		// check project leader in ProjectA

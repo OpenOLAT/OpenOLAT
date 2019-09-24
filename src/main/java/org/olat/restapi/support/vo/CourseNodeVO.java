@@ -25,11 +25,6 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for CourseNodeVO
- * 
- * <P>
  * Initial Date:  20 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

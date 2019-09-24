@@ -36,11 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.portal.Portlet;
 import org.olat.core.gui.translator.Translator;
 
-/**
- * 
- * Description:<br>
- * TODO: guido Class Description for Portlet
- */
+
 public interface Portlet extends ConfigOnOff,Disposable{
 
 	/**

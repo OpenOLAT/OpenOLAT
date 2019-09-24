@@ -78,7 +78,6 @@ public class BGCopySingleGroupStep extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		BGCopySingleGroupStepController copyForm = new BGCopySingleGroupStepController(ureq, windowControl, form, stepsRunContext, groupToCopy);
-		return copyForm;
+		return new BGCopySingleGroupStepController(ureq, windowControl, form, stepsRunContext, groupToCopy);
 	}
 }

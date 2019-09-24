@@ -21,6 +21,8 @@ package org.olat.modules.lecture.ui;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.olat.basesecurity.BaseSecurityModule;
 import org.olat.core.gui.UserRequest;
@@ -28,6 +30,7 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DateFlexiCellRenderer;
@@ -36,10 +39,12 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColum
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.lecture.LectureBlockAppealStatus;
 import org.olat.modules.lecture.LectureBlockRollCall;
@@ -67,6 +72,7 @@ public class AppealListRepositoryController extends FormBasicController {
 	protected static final String USER_PROPS_ID = TeacherRollCallController.USER_PROPS_ID;
 	protected static final int USER_PROPS_OFFSET = 500;
 	
+	private FormLink batchUpdateButton;
 	private FlexiTableElement tableEl;
 	private AppealListRepositoryDataModel tableModel;
 	
@@ -77,9 +83,11 @@ public class AppealListRepositoryController extends FormBasicController {
 	private final boolean absenceDefaultAuthorized;
 	
 	private final RepositoryEntry entry;
+	private final Identity profiledIdentity;
 	private final LecturesSecurityCallback secCallback;
 	private final boolean isAdministrativeUser;
 	private List<UserPropertyHandler> userPropertyHandlers;
+	private LectureBlockRollCallSearchParameters searchParams = new LectureBlockRollCallSearchParameters();
 	
 	@Autowired
 	private UserManager userManager;
@@ -90,11 +98,28 @@ public class AppealListRepositoryController extends FormBasicController {
 	@Autowired
 	private BaseSecurityModule securityModule;
 	
+	public AppealListRepositoryController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
+		this(ureq, wControl, null, null, secCallback);
+	}
+	
 	public AppealListRepositoryController(UserRequest ureq, WindowControl wControl, RepositoryEntry entry,
 			LecturesSecurityCallback secCallback) {
+		this(ureq, wControl, entry, null, secCallback);
+		loadModel(true);
+	}
+	
+	public AppealListRepositoryController(UserRequest ureq, WindowControl wControl, Identity profiledIdentity,
+			LecturesSecurityCallback secCallback) {
+		this(ureq, wControl, null, profiledIdentity, secCallback);
+		loadModel(true);
+	}
+	
+	public AppealListRepositoryController(UserRequest ureq, WindowControl wControl,
+			RepositoryEntry entry, Identity profiledIdentity, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, "appeal_table");
 		this.entry = entry;
 		this.secCallback = secCallback;
+		this.profiledIdentity = profiledIdentity;
 		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -105,27 +130,28 @@ public class AppealListRepositoryController extends FormBasicController {
 		absenceDefaultAuthorized = lectureModule.isAbsenceDefaultAuthorized();
 		
 		initForm(ureq);
-		loadModel(true);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppealCols.username));
-		}
-		
-		int colPos = USER_PROPS_OFFSET;
-		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
-			if (userPropertyHandler == null) continue;
-
-			String propName = userPropertyHandler.getName();
-			boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
-
-			FlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName);
-			columnsModel.addFlexiColumnModel(col);
-			colPos++;
+		if(secCallback.viewAs() != LectureRoles.participant) {
+			if(isAdministrativeUser) {
+				columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppealCols.username));
+			}
+			
+			int colPos = USER_PROPS_OFFSET;
+			for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
+				if (userPropertyHandler == null) continue;
+	
+				String propName = userPropertyHandler.getName();
+				boolean visible = userManager.isMandatoryUserProperty(USER_PROPS_ID , userPropertyHandler);
+	
+				FlexiColumnModel col = new DefaultFlexiColumnModel(visible, userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos, true, propName);
+				columnsModel.addFlexiColumnModel(col);
+				colPos++;
+			}
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(AppealCols.lectureBlockDate, new DateFlexiCellRenderer(getLocale())));
@@ -153,6 +179,7 @@ public class AppealListRepositoryController extends FormBasicController {
 		tableModel = new AppealListRepositoryDataModel(columnsModel,authorizedAbsenceEnabled, absenceDefaultAuthorized, getLocale()); 
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", tableModel, 20, false, getTranslator(), formLayout);
 		tableEl.setCustomizeColumns(true);
+		
 
 		List<FlexiTableFilter> filters = new ArrayList<>(16);
 		filters.add(new FlexiTableFilter(translate("appeal.".concat(LectureBlockAppealStatus.pending.name())),
@@ -163,25 +190,48 @@ public class AppealListRepositoryController extends FormBasicController {
 				LectureBlockAppealStatus.rejected.name()));
 		tableEl.setFilters("filer", filters, true);
 		tableEl.setExportEnabled(true);
+		tableEl.setEmtpyTableMessageKey("empty.appeals.list");
 		tableEl.setAndLoadPersistedPreferences(ureq, "appeal-roll-call");
+
+		if(secCallback.canApproveAppeal()) {
+			tableEl.setMultiSelect(true);
+			batchUpdateButton = uifactory.addFormLink("appeal.batch.update", formLayout, Link.BUTTON);
+			batchUpdateButton.setVisible(false);
+		}
 	}
 	
-	private void loadModel(boolean reset) {
-		LectureBlockRollCallSearchParameters params = new LectureBlockRollCallSearchParameters();
-		params.setEntry(entry);
-		List<LectureBlockAppealStatus> status = new ArrayList<>();
-		status.add(LectureBlockAppealStatus.pending);
-		status.add(LectureBlockAppealStatus.approved);
-		status.add(LectureBlockAppealStatus.rejected);
-		params.setAppealStatus(status);
+	public void loadModel(LectureBlockRollCallSearchParameters params) {
+		this.searchParams = params;
+		loadModel(true);
+	}
+	
+	public void reloadModel() {
+		loadModel(false);
+	}
+	
+	protected void loadModel(boolean reset) {
+		searchParams.setEntry(entry);
+		searchParams.setCalledIdentity(profiledIdentity);
+		searchParams.setViewAs(getIdentity(), secCallback.viewAs());
 		
-		List<LectureBlockRollCallAndCoach> rollCallsWithCoach = lectureService.getLectureBlockAndRollCalls(params);
+		if(searchParams.getAppealStatus() == null) {
+			List<LectureBlockAppealStatus> status = new ArrayList<>();
+			status.add(LectureBlockAppealStatus.pending);
+			status.add(LectureBlockAppealStatus.approved);
+			status.add(LectureBlockAppealStatus.rejected);
+			searchParams.setAppealStatus(status);
+		}
+
+		List<LectureBlockRollCallAndCoach> rollCallsWithCoach = lectureService.getLectureBlockAndRollCalls(searchParams);
 		List<AppealRollCallRow> rows = new ArrayList<>(rollCallsWithCoach.size());
 		for(LectureBlockRollCallAndCoach rollCallWithCoach:rollCallsWithCoach) {
 			rows.add(new AppealRollCallRow(rollCallWithCoach, userPropertyHandlers, getLocale()));
 		}
 		tableModel.setObjects(rows);
 		tableEl.reset(reset, reset, true);
+		if(batchUpdateButton != null) {
+			batchUpdateButton.setVisible(tableModel.getRowCount() > 0);
+		}
 	}
 	
 	@Override
@@ -226,6 +276,11 @@ public class AppealListRepositoryController extends FormBasicController {
 					doEditAppeal(ureq, row.getRollCall());
 				}
 			}
+		} else if(batchUpdateButton == source) {
+			List<LectureBlockRollCall> rollCalls = tableEl.getMultiSelectedIndex().stream()
+				.map(index -> tableModel.getObject(index.intValue())).filter(Objects::nonNull)
+				.map(AppealRollCallRow::getRollCall).collect(Collectors.toList());
+			doEditAppeals(ureq, rollCalls);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -240,5 +295,21 @@ public class AppealListRepositoryController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), "close", appealCtrl.getInitialComponent(), true, title);
 		listenTo(cmc);
 		cmc.activate();
+	}
+	
+	private void doEditAppeals(UserRequest ureq, List<LectureBlockRollCall> rollCalls) {
+		if(appealCtrl != null || !secCallback.canApproveAppeal()) return;
+		
+		if(rollCalls.isEmpty()) {
+			showWarning("warning.choose.at.least.one.appeal");
+		} else {
+			appealCtrl = new EditAppealController(ureq, getWindowControl(), rollCalls);
+			listenTo(appealCtrl);
+			
+			String title = translate("appeals.update.title", new String[]{ Integer.toString(rollCalls.size()) });
+			cmc = new CloseableModalController(getWindowControl(), "close", appealCtrl.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		}
 	}
 }

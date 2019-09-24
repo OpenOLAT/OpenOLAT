@@ -49,14 +49,12 @@ import org.olat.core.util.StringHelper;
  * identites (<code>org.olat.core.id.Identity</code>). Further it is
  * possible to add all contacts from another ContactList.
  * <P>
- * TODO:pb:a remove dependency to <code>EmailPrioInstitutional</code> if a solution for core.id.user is found
  * Moreover one can specify to use the users institional e-mail first and use
  * the other e-mail as fall-back.
  * 
  * Initial Date: Sep 23, 2004
  * @author patrick
  */
-
 public class ContactList {
 	
 	private static final Logger log = Tracing.createLoggerFor(ContactList.class);

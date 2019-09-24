@@ -26,12 +26,18 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.persistence.DBFactory;
+import org.olat.core.commons.services.license.License;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.model.LicenseImpl;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
@@ -45,14 +51,13 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.Organisation;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.PathUtils;
 import org.olat.core.util.PathUtils.YesMatcher;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.coordinate.LockResult;
-import org.olat.course.assessment.AssessmentMode;
 import org.olat.course.assessment.manager.UserCourseInformationsManager;
 import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.fileresource.FileResourceManager;
@@ -70,12 +75,15 @@ import org.olat.ims.qti21.model.QTI21QuestionType;
 import org.olat.ims.qti21.model.xml.AssessmentItemFactory;
 import org.olat.ims.qti21.model.xml.AssessmentTestFactory;
 import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.pool.QTI21QPoolServiceProvider;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21AssessmentDetailsController;
 import org.olat.ims.qti21.ui.QTI21OverrideOptions;
 import org.olat.ims.qti21.ui.QTI21RuntimeController;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
+import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QItemList;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
@@ -85,15 +93,18 @@ import org.olat.repository.RepositoryService;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.FileHandler;
 import org.olat.repository.model.RepositoryEntrySecurity;
-import org.olat.repository.ui.RepositoryEntryRuntimeController.RuntimeControllerCreator;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
+import uk.ac.ed.ph.jqtiplus.node.test.AbstractPart;
+import uk.ac.ed.ph.jqtiplus.node.test.AssessmentItemRef;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentSection;
 import uk.ac.ed.ph.jqtiplus.node.test.AssessmentTest;
+import uk.ac.ed.ph.jqtiplus.node.test.TestPart;
+import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 import uk.ac.ed.ph.jqtiplus.serialization.QtiSerializer;
 
 /**
@@ -113,6 +124,10 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	private QTI21Module qtiModule;
 	@Autowired
 	private QTI21Service qtiService;
+	@Autowired
+	private QPoolService qpoolService;
+	@Autowired
+	private LicenseService licenseService;
 	@Autowired
 	private RepositoryService repositoryService;
 	@Autowired
@@ -145,7 +160,7 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 		RepositoryEntry re = repositoryService.create(initialAuthor, null, "", displayname, description,
 				resource, RepositoryEntryStatusEnum.preparation, organisation);
 		dbInstance.commit();
-		
+
 		File repositoryDir = new File(FileResourceManager.getInstance().getFileResourceRoot(re.getOlatResource()), FileResourceManager.ZIPDIR);
 		if(!repositoryDir.exists()) {
 			repositoryDir.mkdirs();
@@ -375,27 +390,23 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	@Override
 	public MainLayoutController createLaunchController(RepositoryEntry re, RepositoryEntrySecurity reSecurity,
 			UserRequest ureq, WindowControl wControl) {
-		return new QTI21RuntimeController(ureq, wControl, re, reSecurity,
-				new RuntimeControllerCreator() {
-					@Override
-					public Controller create(UserRequest uureq, WindowControl wwControl, TooledStackedPanel toolbarPanel,
-							RepositoryEntry entry, RepositoryEntrySecurity repoSecurity, AssessmentMode mode) {
-						QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(entry);
-						QTI21OverrideOptions overrideOptions = QTI21OverrideOptions.nothingOverriden();
-						if(!deliveryOptions.isAllowAnonym() && uureq.getUserSession().getRoles().isGuestOnly()) {
-							Translator translator = Util.createPackageTranslator(QTI21RuntimeController.class, uureq.getLocale());
-							Controller contentCtr = MessageUIFactory.createInfoMessage(uureq, wwControl,
-									translator.translate("anonym.not.allowed.title"),
-									translator.translate("anonym.not.allowed.descr"));
-							return new LayoutMain3ColsController(uureq, wwControl, contentCtr);
-						}
-						boolean authorMode = reSecurity.isEntryAdmin();
-						CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
-							.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
-						return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null,
-								deliveryOptions, overrideOptions, false, authorMode, false);
-					}
-				});
+		return new QTI21RuntimeController(ureq, wControl, re, reSecurity, (uureq, wwControl, toolbarPanel, entry, repoSecurity, mode) -> {
+			
+			QTI21DeliveryOptions deliveryOptions = qtiService.getDeliveryOptions(entry);
+			QTI21OverrideOptions overrideOptions = QTI21OverrideOptions.nothingOverriden();
+			if(!deliveryOptions.isAllowAnonym() && uureq.getUserSession().getRoles().isGuestOnly()) {
+				Translator translator = Util.createPackageTranslator(QTI21RuntimeController.class, uureq.getLocale());
+				Controller contentCtr = MessageUIFactory.createInfoMessage(uureq, wwControl,
+						translator.translate("anonym.not.allowed.title"),
+						translator.translate("anonym.not.allowed.descr"));
+				return new LayoutMain3ColsController(uureq, wwControl, contentCtr);
+			}
+			boolean authorMode = reSecurity.isEntryAdmin();
+			CoreSpringFactory.getImpl(UserCourseInformationsManager.class)
+				.updateUserCourseInformations(entry.getOlatResource(), uureq.getIdentity());
+			return new AssessmentTestDisplayController(uureq, wwControl, null, entry, entry, null,
+					deliveryOptions, overrideOptions, false, authorMode, false);
+		});
 	}
 
 	@Override
@@ -412,6 +423,69 @@ public class QTI21AssessmentTestHandler extends FileHandler {
 	@Override
 	public StepsMainRunController createWizardController(OLATResourceable res, UserRequest ureq, WindowControl wControl) {
 		return null;
+	}
+
+	@Override
+	public List<License> getElementsLicenses(RepositoryEntry entry) {
+		List<License> licenses = new ArrayList<>();
+		
+		try {
+			FileResourceManager frm = FileResourceManager.getInstance();
+			File unzippedDirRoot = frm.unzipFileResource(entry.getOlatResource());
+			ManifestBuilder manifestBuilder = ManifestBuilder.read(new File(unzippedDirRoot, "imsmanifest.xml"));
+			ResolvedAssessmentTest resolvedObject = qtiService.loadAndResolveAssessmentTest(unzippedDirRoot, false, true);
+			AssessmentTest assessmentTest = resolvedObject.getRootNodeLookup().extractIfSuccessful();
+			List<String> metadataLicenses = new ArrayList<>();
+			List<String> metadataIdentifiers = new ArrayList<>();
+			for(TestPart part:assessmentTest.getTestParts()) {
+				collectElementsLicensesRecursive(part, metadataLicenses, metadataIdentifiers, manifestBuilder);
+			}
+			
+			List<QuestionItemShort> items = qpoolService.loadItemsByIdentifier(metadataIdentifiers);
+			if(!items.isEmpty()) {
+				licenses.addAll(licenseService.loadLicenses(items));
+			}
+			if(!metadataLicenses.isEmpty()) {
+				for(String metadataLicense:metadataLicenses) {
+					License license = new LicenseImpl();
+					license.setFreetext(metadataLicense);
+					licenses.add(license);
+				}
+			}
+		} catch(Exception e) {
+			log.error("", e);
+		}
+
+		return licenses;
+	}
+	
+	private void collectElementsLicensesRecursive(AbstractPart part, List<String> licenses, List<String> metadataIdentifiers, ManifestBuilder manifestBuilder) {
+		if(part instanceof AssessmentItemRef) {
+			AssessmentItemRef itemRef = (AssessmentItemRef)part;
+			
+			ManifestMetadataBuilder metadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
+			if(metadata != null) {
+				if(metadata.getLom(false) != null) {
+					String license = metadata.getLicense();
+					if(StringHelper.containsNonWhitespace(license)) {
+						licenses.add(license);
+					}
+				}
+				
+				String metadataIdentifier = metadata.getOpenOLATMetadataIdentifier();
+				if(!StringHelper.containsNonWhitespace(metadataIdentifier)) {
+					metadataIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
+				}
+				if(StringHelper.containsNonWhitespace(metadataIdentifier)) {
+					metadataIdentifiers.add(metadataIdentifier);
+				}
+			}
+		}
+
+		List<? extends AbstractPart> childParts = part.getChildAbstractParts();
+		for(AbstractPart childPart:childParts) {
+			collectElementsLicensesRecursive(childPart, licenses, metadataIdentifiers, manifestBuilder);
+		}
 	}
 
 	@Override

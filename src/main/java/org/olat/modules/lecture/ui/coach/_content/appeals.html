@@ -1,0 +1,8 @@
+#if($r.isNotEmpty($pendingAlert))
+	<div class="o_error" role="alert">$pendingAlert</div>
+#end
+<fieldset>
+	<legend>$r.translate("appeals.title")</legend>
+	$r.render("search")
+	$r.render("appealsList")
+</fieldset>

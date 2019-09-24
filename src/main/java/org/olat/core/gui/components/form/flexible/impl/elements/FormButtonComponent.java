@@ -29,10 +29,6 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for FormSubmitComponent
- * 
- * <P>
  * Initial Date:  08.12.2006 <br>
  * @author patrickb
  */

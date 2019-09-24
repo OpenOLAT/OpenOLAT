@@ -23,6 +23,7 @@ package org.olat.core.commons.services.sms.manager;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.sms.MessageLog;
 import org.olat.core.commons.services.sms.MessagesSPI;
 import org.olat.core.commons.services.sms.SimpleMessageException;
@@ -35,8 +36,6 @@ import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.olat.core.id.UserConstants;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,7 +98,7 @@ public class SimpleMessageServiceImpl implements SimpleMessageService {
 
 	@Override
 	public void sendMessage(String text, Identity recipient) throws SimpleMessageException {
-		String telNumber = recipient.getUser().getProperty(UserConstants.SMSTELMOBILE, null);
+		String telNumber = recipient.getUser().getSmsTelMobile();
 		sendMessage(text, telNumber, recipient);
 	}
 

@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -66,7 +67,9 @@ public class QTI21IMSManifestExplorerVisitor extends SimpleFileVisitor<Path> {
 	private QTI21ExplorerHandler scanFile(Path inputFile) {
 		QTI21ExplorerHandler infosHandler = new QTI21ExplorerHandler();
 		try(InputStream in = Files.newInputStream(inputFile)) {
-			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			SAXParser saxParser = factory.newSAXParser();
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", infosHandler);
 			saxParser.parse(in, infosHandler);
 		} catch(Exception e1) {

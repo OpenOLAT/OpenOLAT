@@ -37,7 +37,6 @@ public class Rubric extends AbstractElement {
 
 	private SliderType sliderType;
 	private ScaleType scaleType;
-	private Integer weight;
 	private List<Slider> sliders = new ArrayList<>();
 	private List<StepLabel> stepLabels = new ArrayList<>();
 	
@@ -77,17 +76,6 @@ public class Rubric extends AbstractElement {
 
 	public void setScaleType(ScaleType scaleType) {
 		this.scaleType = scaleType;
-	}
-
-	public Integer getWeight() {
-		if (weight == null) {
-			weight = 1;
-		}
-		return weight;
-	}
-
-	public void setWeight(Integer scaleWeight) {
-		this.weight = scaleWeight;
 	}
 
 	public String getName() {

@@ -44,7 +44,7 @@ public class Checkpoint extends PersistentObject implements ModifiedInfo, Serial
 	private String mode;
 	private Date lastModified;
 	private Checklist checklist;
-	private List<CheckpointResult> results = new ArrayList<CheckpointResult>();
+	private List<CheckpointResult> results = new ArrayList<>();
 	
 	public Checkpoint() {
 		//

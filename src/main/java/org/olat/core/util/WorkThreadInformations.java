@@ -45,8 +45,8 @@ public class WorkThreadInformations {
 	
 	private static final Logger log = Tracing.createLoggerFor(WorkThreadInformations.class);
 	
-	private static final Map<String,String> works = new HashMap<String,String>();
-	private static final List<String> longRunningTasks = new ArrayList<String>();
+	private static final Map<String,String> works = new HashMap<>();
+	private static final List<String> longRunningTasks = new ArrayList<>();
 	
 	public synchronized static void setLongRunningTask(String taskDesc) {
 		longRunningTasks.add(taskDesc);
@@ -57,7 +57,7 @@ public class WorkThreadInformations {
 	}
 	
 	public synchronized static List<String> getLongRunningTasks() {
-		return new ArrayList<String>(longRunningTasks);
+		return new ArrayList<>(longRunningTasks);
 	}
 	
 	public synchronized static void set(String message) {

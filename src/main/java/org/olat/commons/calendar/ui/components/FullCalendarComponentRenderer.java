@@ -83,7 +83,7 @@ public class FullCalendarComponentRenderer extends DefaultComponentRenderer {
 		boolean ampm = amFormatted.contains("AM") || amFormatted.contains("PM");
 		String timeFormat = ampm ? "h(:mm) a" : "H.mm";
 		
-		sb.append("<script type='text/javascript'>\n")
+		sb.append("<script>\n")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
 		  .append(" var jCalendar = jQuery('#").append(id).append("');\n")

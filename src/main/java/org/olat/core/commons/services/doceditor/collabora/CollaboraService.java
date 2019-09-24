@@ -64,6 +64,8 @@ public interface CollaboraService {
 	boolean isLockNeeded(Mode mode);
 
 	boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity);
+	
+	boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity);
 
 	LockResult lock(VFSLeaf vfsLeaf, Identity identity);
 

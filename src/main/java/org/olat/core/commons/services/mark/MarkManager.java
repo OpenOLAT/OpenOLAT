@@ -28,11 +28,6 @@ import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for MarkManager
- * 
- * <P>
  * Initial Date:  9 mars 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

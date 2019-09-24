@@ -164,7 +164,7 @@ public class CourseLayoutHelper {
 	 * @return
 	 */
 	public static List<VFSItem> getCourseThemeTemplates(){  
-		List<VFSItem> courseThemes = new ArrayList<VFSItem>();
+		List<VFSItem> courseThemes = new ArrayList<>();
 
 		// 1. add the system-defaults
 		String staticAbsPath = WebappHelper.getContextRealPath("/static");

@@ -33,18 +33,10 @@ import java.util.Set;
 import org.olat.core.id.Persistable;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for PersistsEvent
- * 
- * <P>
  * Initial Date:  Sep 8, 2005 <br>
  * @author Felix Jost
  */
 public class PersistsEvent extends MultiUserEvent {
-	//public static final int MODE_AFFECTED = 1;
-	//public static final int MODE_ADDED = 2;
-	//public static final int MODE_REMOVED = 4;
-	//public static final int MODE_UPDATED = 8;
 
 	private static final long serialVersionUID = -1076949650098640208L;
 	private final Set<Long> keys;

@@ -80,7 +80,7 @@ public class PortletFactory {
 	
 	
 	private static void initPortlets() {
-		portlets = new HashMap<String, Portlet>();
+		portlets = new HashMap<>();
 		Map<String, Portlet> portletMap = CoreSpringFactory.getBeansOfType(Portlet.class);
 		Collection<Portlet> portletValues = portletMap.values();
 		for (Portlet portlet : portletValues) {

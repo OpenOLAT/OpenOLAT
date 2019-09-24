@@ -41,8 +41,8 @@ public class ScoDatas {
 	private String totalTime;
 	private Date lastModifiedDate;
 	
-	private List<ScoInteraction> interactions = new ArrayList<ScoInteraction>();
-	private List<ScoObjective> objectives = new ArrayList<ScoObjective>();
+	private List<ScoInteraction> interactions = new ArrayList<>();
+	private List<ScoObjective> objectives = new ArrayList<>();
 	
 	public ScoDatas(String itemId, String username) {
 		this.itemId = itemId;

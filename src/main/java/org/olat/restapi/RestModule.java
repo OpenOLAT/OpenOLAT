@@ -85,7 +85,7 @@ public class RestModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 	
 	public List<String> getIpsWithSystemAccess() {
-		List<String> ips = new ArrayList<String>();
+		List<String> ips = new ArrayList<>();
 		for(StringTokenizer tokenizer=new StringTokenizer(ipsByPass, ",;|"); tokenizer.hasMoreTokens(); ) {
 			String token = tokenizer.nextToken();
 			if(StringHelper.containsNonWhitespace(token)) {

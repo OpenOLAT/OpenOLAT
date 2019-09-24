@@ -135,7 +135,7 @@ public class MostRatedFilesController extends BasicController {
 				link.setIconLeftCSS("o_icon " + item.getCssClass());
 			}
 		} else {
-			links = new ArrayList<Link>(securedRatings.size());
+			links = new ArrayList<>(securedRatings.size());
 			for (ItemAndRating item : securedRatings) {
 				Link link = LinkFactory.createCustomLink("link" + links.size(), "cmd", "", Link.LINK_CUSTOM_CSS, mainVC, this);
 				link.setUserObject(item);

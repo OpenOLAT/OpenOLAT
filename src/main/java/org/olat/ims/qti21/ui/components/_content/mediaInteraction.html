@@ -5,7 +5,7 @@
 	<div class="prompt">$r.renderPrompt($interaction.getPrompt())</div>
 	#end
 	<p><span id="olatFlashMovieViewer_${responseIdentifier}" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:${interaction.object.width}px; height:${interaction.object.height}px;">
-		<script type="text/javascript" defer="defer">
+		<script defer="defer">
 		BPlayer.insertPlayer("${r.convertLinkAbsolut($interaction.object.data)}","olatFlashMovieViewer_${responseIdentifier}",${interaction.object.width},${interaction.object.height},0,0,"video",undefined,("${interaction.autostart}" == "true"),("${interaction.loop}" == "true"),true,undefined);
 		</script>
 	</span></p>

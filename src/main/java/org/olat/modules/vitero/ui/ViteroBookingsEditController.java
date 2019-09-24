@@ -61,7 +61,7 @@ public class ViteroBookingsEditController extends FormBasicController {
 
 	private FormLink newButton;
 	private FormLink occupiedRoomsLink;
-	private final List<BookingDisplay> bookingDisplays = new ArrayList<BookingDisplay>();
+	private final List<BookingDisplay> bookingDisplays = new ArrayList<>();
 
 	private CloseableModalController cmc;
 	private DialogBoxController dialogCtr;

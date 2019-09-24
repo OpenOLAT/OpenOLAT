@@ -37,7 +37,7 @@ import org.olat.core.gui.translator.Translator;
  * @author Felix Jost
  */
 public abstract class Container extends AbstractComponent implements ComponentCollection {
-	private Map<String, Component> components = new HashMap<String, Component>(5);
+	private Map<String, Component> components = new HashMap<>(5);
 
 	/**
 	 * @param name

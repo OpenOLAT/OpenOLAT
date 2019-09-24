@@ -22,7 +22,6 @@
 package org.olat.modules.lecture.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getRoles;
-import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +104,6 @@ public class LectureBlockRollCallWebService {
 		if(lectureBlockKey != null) {
 			searchParams.setLectureBlockKey(lectureBlockKey);
 		}
-		searchParams.setIdentity(getIdentity(httpRequest));
 		
 		List<LectureBlockRollCall> rollCalls = lectureService.getRollCalls(searchParams);
 		List<LectureBlockRollCallVO> voList = new ArrayList<>(rollCalls.size());

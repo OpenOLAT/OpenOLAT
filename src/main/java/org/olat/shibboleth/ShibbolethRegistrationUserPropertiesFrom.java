@@ -125,8 +125,6 @@ public class ShibbolethRegistrationUserPropertiesFrom extends FormBasicControlle
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-
+		//
 	}
-
 }

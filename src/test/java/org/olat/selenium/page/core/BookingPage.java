@@ -154,7 +154,7 @@ public class BookingPage {
 	 * @return
 	 */
 	public BookingPage assertFirstNameInListIsOk(UserVO user) {
-		By rowsBy = By.xpath("//div[contains(@class,'o_sel_order_list')]//table//tr[td/i[contains(@class,'o_ac_order_status_payed_icon')]]/td[contains(text(),'" + user.getLastName() + "')]");
+		By rowsBy = By.xpath("//div[contains(@class,'o_sel_order_list')]//table//tr[td/span[i[contains(@class,'o_ac_order_status_payed_icon')]]]/td[contains(text(),'" + user.getLastName() + "')]");
 		List<WebElement> rows = browser.findElements(rowsBy);
 		Assert.assertEquals(1, rows.size());
 		return this;

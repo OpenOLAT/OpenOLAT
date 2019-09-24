@@ -186,7 +186,7 @@ public class EPArtefactViewController extends FormBasicController {
 		if (viewOnlyMode || artefactInClosedMap) title.setEnabled(false);
 		// get tags and prepare textboxlist-component 
 		List<String> tagL = ePFMgr.getArtefactTags(artefact);	
-		Map<String, String> tagLM = new HashMap<String,String>();
+		Map<String, String> tagLM = new HashMap<>();
 		for (String tag : tagL) {
 			tagLM.put(tag, tag);
 		}	
@@ -201,7 +201,7 @@ public class EPArtefactViewController extends FormBasicController {
 		// get maps wherein this artefact is linked and create links to them
 		List<PortfolioStructure> linkedMaps = ePFMgr.getReferencedMapsForArtefact(artefact);
 		if (linkedMaps != null && linkedMaps.size() != 0) {
-			List<FormLink> selectMapNames = new ArrayList<FormLink>(linkedMaps.size());
+			List<FormLink> selectMapNames = new ArrayList<>(linkedMaps.size());
 			int count = 0;
 			for (PortfolioStructure ePMap : linkedMaps) {
 				String mapTitle = StringHelper.escapeHtml(ePMap.getTitle());

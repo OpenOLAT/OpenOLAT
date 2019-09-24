@@ -103,9 +103,8 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 		listenTo(highScoreNodeConfigController);
 		
 		// if there is already user data available, make for read only
-		//TODO:chg:a concurrency issues?
 		hasLogEntries = auditManager.hasUserNodeLogs(msNode);
-		configurationVC.contextPut("hasLogEntries", new Boolean(hasLogEntries));
+		configurationVC.contextPut("hasLogEntries", Boolean.valueOf(hasLogEntries));
 		if (hasLogEntries) {
 			configController.setDisplayOnly(true);
 		}
@@ -115,7 +114,7 @@ public class MSCourseNodeEditController extends ActivateableTabbableDefaultContr
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == editScoringConfigButton) {
 			configController.setDisplayOnly(false);
-			configurationVC.contextPut("isOverwriting", new Boolean(true));			
+			configurationVC.contextPut("isOverwriting", Boolean.TRUE);			
 		}
 	}
 

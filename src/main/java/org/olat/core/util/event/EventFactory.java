@@ -29,10 +29,6 @@ package org.olat.core.util.event;
 import java.util.Set;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for EventFactory
- * 
- * <P>
  * Initial Date:  Sep 8, 2005 <br>
  * @author Felix Jost
  */

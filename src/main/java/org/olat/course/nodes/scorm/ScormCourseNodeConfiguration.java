@@ -36,9 +36,6 @@ import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.ScormCourseNode;
 
 /**
- * Description:<br>
- * TODO: Class Description for ScormCourseNodeConfiguration
- * 
  * @author guido
  */
 public class ScormCourseNodeConfiguration extends AbstractCourseNodeConfiguration {

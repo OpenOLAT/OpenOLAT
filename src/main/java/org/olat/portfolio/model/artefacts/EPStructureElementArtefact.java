@@ -22,11 +22,6 @@ package org.olat.portfolio.model.artefacts;
 import org.olat.portfolio.model.structel.EPStructureElement;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for EPStructureElementArtefact
- * 
- * <P>
  * Initial Date:  6 déc. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http.//www.frentix.com
  */

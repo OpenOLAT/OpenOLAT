@@ -25,10 +25,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 
 /**
- * Description:<br>
- * TODO: bja Class Description for ChecklistMultiSelectColumnDescriptor
- * 
- * <P>
  * Initial Date:  11.08.2009 <br>
  * @author bja <bja@bps-system.de>
  */

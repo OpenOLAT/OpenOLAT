@@ -492,7 +492,7 @@ public class ACOrderDAO {
 	}
 
 	public Order loadOrderByNr(String orderNr) {
-		Long orderKey = new Long(orderNr);
+		Long orderKey = Long.valueOf(orderNr);
 		return loadOrderByKey(orderKey);
 	}
 }

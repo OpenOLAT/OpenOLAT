@@ -87,6 +87,13 @@ public class CalendarUtils {
 		return cal;
 	}
 	
+	public static Date startOfDay(Date date)  {
+		if(date == null) return null;
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		return getStartOfDay(cal).getTime();
+	}
+	
 	public static Calendar getStartOfDay(Calendar cal)  {
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
@@ -96,10 +103,10 @@ public class CalendarUtils {
 	}
 	
 	public static Date endOfDay(Date date) {
+		if(date == null) return null;
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
-		cal = getEndOfDay(cal);
-		return cal.getTime();
+		return getEndOfDay(cal).getTime();
 	}
 	
 	public static Calendar getEndOfDay(Calendar cal) {
@@ -121,7 +128,6 @@ public class CalendarUtils {
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTime();
 	}
-	
 	
 	public static String getRecurrence(String rule) {
 		if (rule != null) {
@@ -315,5 +321,23 @@ public class CalendarUtils {
 		cal.set(Calendar.SECOND, 0);  
 		cal.set(Calendar.MILLISECOND, 0);  
 		return cal.getTime();
+	}
+	
+	public static boolean isToday(Date date) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		Calendar now = Calendar.getInstance();
+		now.setTime(new Date());
+		return now.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
+				&& now.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR);
+	}
+	
+	public static boolean isSameDay(Date date, Date otherDate) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		Calendar otherCal = Calendar.getInstance();
+		otherCal.setTime(otherDate);
+		return otherCal.get(Calendar.YEAR) == cal.get(Calendar.YEAR)
+				&& otherCal.get(Calendar.DAY_OF_YEAR) == cal.get(Calendar.DAY_OF_YEAR);
 	}
 }

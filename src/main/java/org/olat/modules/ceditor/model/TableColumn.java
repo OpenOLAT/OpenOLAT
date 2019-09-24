@@ -27,7 +27,7 @@ package org.olat.modules.ceditor.model;
  */
 public class TableColumn {
 	
-	public String content;
+	private String content;
 
 	public String getContent() {
 		return content;

@@ -87,6 +87,8 @@ import org.olat.restapi.support.vo.AssessableResultsVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Description:<br>
@@ -96,6 +98,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/courses/{courseId}/assessments")
 public class CourseAssessmentWebService {
@@ -191,6 +194,7 @@ public class CourseAssessmentWebService {
 	 * @param request The REST request
 	 * @return
 	 */
+	
 	@GET
 	@Path("users/{identityKey}")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

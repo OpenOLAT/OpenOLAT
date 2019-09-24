@@ -75,11 +75,13 @@ import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionItemView.OrderBy;
 import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.modules.qpool.model.ItemWrapper;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.security.QPoolSecurityCallbackFactory;
 import org.olat.modules.qpool.ui.QuestionItemDataModel.Cols;
 import org.olat.modules.qpool.ui.events.QItemMarkedEvent;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
 import org.olat.modules.qpool.ui.metadata.ExtendedSearchController;
+import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -99,6 +101,7 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	private final String prefsKey;
 	protected final String restrictToFormat;
+	protected final List<QItemType> excludeTypes;
 	private ExtendedSearchController extendedSearchCtrl;
 	private QuestionItemPreviewController previewCtrl;
 	private QuickViewMetadataController quickViewMetadataCtrl;
@@ -122,21 +125,22 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
 			QuestionItemsSource source, String key, boolean searchAllTaxonomyLevels) {
-		this(ureq, wControl, securityCallback, source, null, key, searchAllTaxonomyLevels);
+		this(ureq, wControl, securityCallback, source, null, null, key, searchAllTaxonomyLevels);
 	}
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
 			QuestionItemsSource source, String key) {
-		this(ureq, wControl, securityCallback, source, null, key, false);
+		this(ureq, wControl, securityCallback, source, null, null, key, false);
 	}
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
-			QuestionItemsSource source, String restrictToFormat, String key) {
-		this(ureq, wControl, securityCallback, source, restrictToFormat, key, false);
+			QuestionItemsSource source, String restrictToFormat, List<QItemType> excludeTypes, String key) {
+		this(ureq, wControl, securityCallback, source, restrictToFormat, excludeTypes, key, false);
 	}
 	
 	public AbstractItemListController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback securityCallback,
-			QuestionItemsSource source, String restrictToFormat, String key, boolean searchAllTaxonomyLevels) {
+			QuestionItemsSource source, String restrictToFormat, List<QItemType> excludeTypes,
+			String key, boolean searchAllTaxonomyLevels) {
 		super(ureq, wControl, "item_list");
 
 		this.securityCallback = securityCallback;
@@ -144,12 +148,13 @@ public abstract class AbstractItemListController extends FormBasicController
 		this.itemsSource = source;
 		this.roles = ureq.getUserSession().getRoles();
 		this.restrictToFormat = restrictToFormat;
+		this.excludeTypes = excludeTypes;
 
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
 		eventBus.registerFor(this, getIdentity(), QuestionPoolMainEditorController.QITEM_MARKED);
 		
 		extendedSearchCtrl = new ExtendedSearchController(ureq, getWindowControl(), getSecurityCallback(), key,
-				mainForm, searchAllTaxonomyLevels);
+				mainForm, excludeTypes, searchAllTaxonomyLevels);
 		extendedSearchCtrl.setEnabled(false);
 		
 		initForm(ureq);
@@ -287,11 +292,14 @@ public abstract class AbstractItemListController extends FormBasicController
 		if(extendedSearchCtrl == source) {
 			if(event == Event.CANCELLED_EVENT) {
 				String quickSearch = itemsTable.getQuickSearchString();
+				itemsSource.setExtendedSearchParams(null);
 				if(StringHelper.containsNonWhitespace(quickSearch)) {
 					itemsTable.quickSearch(ureq, quickSearch);
 				} else {
 					itemsTable.resetSearch(ureq);
 				}
+			} else if(event instanceof QPoolSearchEvent) {
+				doSearch((QPoolSearchEvent)event);
 			}
 		}
 		super.event(ureq, source, event);
@@ -448,10 +456,15 @@ public abstract class AbstractItemListController extends FormBasicController
 			return true;
 		}
 	}
+	
+	private void doSearch(QPoolSearchEvent search) {
+		itemsSource.setExtendedSearchParams(search);
+		itemsTable.reset(true, true, true);
+	}
 
 	@Override
 	public int getRowCount() {
-		return itemsSource.getNumOfItems();
+		return itemsSource.getNumOfItems(true);
 	}
 
 	@Override
@@ -473,7 +486,7 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	@Override
 	public ResultInfos<ItemRow> getRows(String query, List<FlexiTableFilter> filters, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
-		ResultInfos<QuestionItemView> items = itemsSource.getItems(query, condQueries, firstResult, maxResults, orderBy);
+		ResultInfos<QuestionItemView> items = itemsSource.getItems(query, firstResult, maxResults, orderBy);
 		List<ItemRow> rows = new ArrayList<>(items.getObjects().size());
 		List<ResourceLicense> licenses = licenseService.loadLicenses(items.getObjects());
 		for(QuestionItemView item:items.getObjects()) {
@@ -485,9 +498,9 @@ public abstract class AbstractItemListController extends FormBasicController
 	
 	protected ItemRow forgeRow(QuestionItemView item, List<ResourceLicense> licenses) {
 		boolean marked = item.isMarked();
-		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
+		QuestionItemSecurityCallback itemSecCallback = qpoolSecurityCallbackFactory
 				.createQuestionItemSecurityCallback(item, getSource(), roles);
-		ItemRow row = new ItemRow(item, securityCallback);
+		ItemRow row = new ItemRow(item, itemSecCallback);
 		
 		// favorite
 		FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "&nbsp;", null, null, Link.NONTRANSLATED);

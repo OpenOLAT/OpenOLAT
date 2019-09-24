@@ -104,7 +104,7 @@ public class PortletToolSortingControllerImpl<T> extends BasicController
 		portletAutoSortingConfigurator = new PortletAutoSortingConfigurator(ureq, wControl, sortingCriteria);
 		portletAutoSortingConfigurator.addControllerListener(this);
 						
-		portletManualSortingConfigurator = new PortletManualSortingConfigurator<T>(ureq, wControl, callerTranslator, tableDataModel, sortedItems);
+		portletManualSortingConfigurator = new PortletManualSortingConfigurator<>(ureq, wControl, callerTranslator, tableDataModel, sortedItems);
 		portletManualSortingConfigurator.addControllerListener(this);
 		
 	}

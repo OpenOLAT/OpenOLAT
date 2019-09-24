@@ -58,7 +58,7 @@ import org.olat.course.run.scoring.ScoreCalculator;
 public class EditScoreCalculationEasyForm extends FormBasicController {
 
 	private MultipleSelectionElement hasScore, hasPassed;
-	private SingleSelection passedType, failedType;
+	private SingleSelection scoreType, passedType, failedType;
 	private MultipleSelectionElement scoreNodeIdents, passedNodeIdents;
 	private IntegerElement passedCutValue;
 	private ScoreCalculator sc;
@@ -90,6 +90,24 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		hasScore.addActionListener(FormEvent.ONCLICK);
 		hasScore.setElementCssClass("o_sel_has_score");
 		
+		String[] scoreTypeKeys = new String[] {
+				ScoreCalculator.SCORE_TYPE_SUM,
+				ScoreCalculator.SCORE_TYPE_AVG
+		};
+		String[] scoreTypeValues = new String[] {
+				translate("scform.scoretype.sum"),
+				translate("scform.scoretype.avg")
+		};
+			
+		scoreType = uifactory.addRadiosHorizontal("scoreType", null, formLayout, scoreTypeKeys, scoreTypeValues);
+		scoreType.setVisible(hasScore.isSelected(0));
+		if (sc != null && sc.getScoreType() != null && !sc.getScoreType().equals(ScoreCalculator.SCORE_TYPE_NONE)) {
+			scoreType.select(sc.getScoreType(), true);
+		} else {
+			scoreType.select(ScoreCalculator.SCORE_TYPE_SUM, true);
+		}
+		scoreType.addActionListener(FormEvent.ONCLICK);
+		
 		List<String> sumOfScoreNodes = (sc == null ? null : sc.getSumOfScoreNodes());
 		scoreNodeIdents = initNodeSelectionElement(formLayout, "scform.scoreNodeIndents", sc, sumOfScoreNodes, nodeIdentList);
 		scoreNodeIdents.setVisible(hasScore.isSelected(0));
@@ -117,7 +135,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 		} else {
 			passedType.select(ScoreCalculator.PASSED_TYPE_CUTVALUE, true);
 		}
-		passedType.addActionListener(FormEvent.ONCLICK); // Radios/Checkboxes need onclick because of IE bug OLAT-5753
+		passedType.addActionListener(FormEvent.ONCLICK);
 		
 		int cutinitval = 0;
 		if (sc != null) cutinitval = sc.getPassedCutValue();
@@ -248,7 +266,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 				scoreNodeIdents.setErrorKey("scform.deletedNode.error", null);
 				rv = false;
 			} else {
-					scoreNodeIdents.clearError();
+				scoreNodeIdents.clearError();
 			}
 		}
 		
@@ -274,6 +292,7 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 	}
 	
 	private void updateUI() {
+		scoreType.setVisible(hasScore.isSelected(0));
 		scoreNodeIdents.setVisible(hasScore.isSelected(0));
 		if (!scoreNodeIdents.isVisible()) {
 			scoreNodeIdents.clearError();
@@ -302,9 +321,14 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 
 		// 1) score configuration
 		if (hasScore.isSelected(0)) {
-			sc.setSumOfScoreNodes(new ArrayList<String>(scoreNodeIdents.getSelectedKeys()));
-		}else {
+			String scoreTypeSelection = scoreType.isOneSelected()
+					? scoreType.getSelectedKey()
+					: ScoreCalculator.SCORE_TYPE_SUM;
+			sc.setScoreType(scoreTypeSelection);
+			sc.setSumOfScoreNodes(new ArrayList<>(scoreNodeIdents.getSelectedKeys()));
+		} else {
 			//reset
+			sc.setScoreType(ScoreCalculator.SCORE_TYPE_NONE);
 			sc.setSumOfScoreNodes(null);
 		}
 		
@@ -341,8 +365,8 @@ public class EditScoreCalculationEasyForm extends FormBasicController {
 	 * 				("invalid" is a node that is not associated with a test resource)
 	 */
 	public List<String> getInvalidNodeDescriptions() {
-		List<String> testElemWithNoResource = new ArrayList<String>();
-		List<String> selectedNodesIds = new ArrayList<String>(scoreNodeIdents.getSelectedKeys());		
+		List<String> testElemWithNoResource = new ArrayList<>();
+		List<String> selectedNodesIds = new ArrayList<>(scoreNodeIdents.getSelectedKeys());		
 		for (Iterator<CourseNode> nodeIter = assessableNodesList.iterator(); nodeIter.hasNext();) {
 			CourseNode node = nodeIter.next();
 			if (selectedNodesIds.contains(node.getIdent())) {				

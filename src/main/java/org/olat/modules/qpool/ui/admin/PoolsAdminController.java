@@ -274,7 +274,7 @@ public class PoolsAdminController extends FormBasicController {
 		@Override
 		public void sort(SortKey orderBy) {
 			if(orderBy != null) {
-				List<Pool> views = new SortableFlexiTableModelDelegate<Pool>(orderBy, this, translator.getLocale()).sort();
+				List<Pool> views = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale()).sort();
 				super.setObjects(views);
 			}
 		}

@@ -28,10 +28,6 @@ package org.olat.core.gui.control.navigation;
 
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for TopNavElem
- * 
- * <P>
  * Initial Date:  12.07.2005 <br>
  *
  * @author Felix Jost

@@ -27,10 +27,6 @@
 package org.olat.core.util.vfs;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for VFSStatus
- * 
- * <P>
  * Initial Date:  24.06.2005 <br>
  *
  * @author Felix Jost

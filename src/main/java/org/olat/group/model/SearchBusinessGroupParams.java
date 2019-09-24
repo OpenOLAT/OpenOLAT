@@ -72,7 +72,7 @@ public class SearchBusinessGroupParams {
 	
 	public void addTools(String... toolsToAdd) {
 		if(this.tools == null) {
-			this.tools = new ArrayList<String>();
+			this.tools = new ArrayList<>();
 		}
 		for(String tool:toolsToAdd) {
 			this.tools.add(tool);

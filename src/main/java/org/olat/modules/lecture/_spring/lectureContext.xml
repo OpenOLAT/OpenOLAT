@@ -13,7 +13,7 @@
 		<property name="order" value="8207" />
 		<property name="actionController">	
 			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
-				<property name="className" value="org.olat.modules.lecture.ui.LectureAdminController"/>
+				<property name="className" value="org.olat.modules.lecture.ui.admin.LectureAdminController"/>
 			</bean>
 		</property>
 		<property name="navigationKey" value="lectures" />
@@ -124,10 +124,7 @@
 			Day-of-Week 	1-7 or SUN-SAT 	  	, - * ? / L C #
 			Year (Optional)	empty, 1970-2099 	, - * /    	
 	   	-->
-		<property name="cronExpression" value="15 */3 * * * ?" />
-		<!--  //TODO absence
 		<property name="cronExpression" value="15 34 */1 * * ?" />
-		-->
 		<property name="startDelay" value="60000" />
 	</bean>
 

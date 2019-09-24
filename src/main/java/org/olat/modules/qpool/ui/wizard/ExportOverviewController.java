@@ -91,7 +91,7 @@ public class ExportOverviewController extends StepFormBasicController {
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		List<QuestionItemShort> exportableItems = new ArrayList<QuestionItemShort>(itemsModel.getRowCount());
+		List<QuestionItemShort> exportableItems = new ArrayList<>(itemsModel.getRowCount());
 		for(int i=0; i<itemsModel.getRowCount(); i++) {
 			if(Boolean.TRUE.equals(itemsModel.getValueAt(i, Cols.exportable.ordinal()))) {
 				exportableItems.add(itemsModel.getObject(i));

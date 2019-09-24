@@ -37,10 +37,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 
 /**
- * Description:<br>
- * TODO: gnaegi Class Description for NotificationUIFactory
- * 
- * <P>
  * Initial Date: 22.12.2009 <br>
  * 
  * @author gnaegi

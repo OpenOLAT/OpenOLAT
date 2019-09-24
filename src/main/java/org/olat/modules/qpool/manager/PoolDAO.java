@@ -38,7 +38,6 @@ import org.olat.modules.qpool.QuestionItem2Pool;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.PoolImpl;
 import org.olat.modules.qpool.model.PoolToItem;
-import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -230,17 +229,9 @@ public class PoolDAO {
 				.createQuery(sb.toString(), Number.class)
 				.setParameter("poolKey", pool.getKey())
 				.setParameter("itemKey", item.getKey())
-				.getSingleResult().intValue();
+				.getSingleResult()
+				.intValue();
 		return count.intValue() > 0;
-	}
-	
-	public int countItemsInPool(SearchQuestionItemParams params) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(pool2item.item) from qpool2item pool2item where pool2item.pool.key=:poolKey");
-		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
-				.setParameter("poolKey", params.getPoolKey())
-				.getSingleResult().intValue();
 	}
 	
 	public List<QuestionItem2Pool> getQuestionItem2Pool(QuestionItemShort item) {

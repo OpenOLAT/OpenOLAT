@@ -64,16 +64,16 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 
 	private DelegatingComponent dc;
 
-	private List<String> curCssList = new ArrayList<String>();
-	private List<String> prevCssList = new ArrayList<String>();
-	private Collection<String> curCssForceSet = new ArrayList<String>(3);
-	private Collection<String> prevCssForceSet = new ArrayList<String>(3);
+	private List<String> curCssList = new ArrayList<>();
+	private List<String> prevCssList = new ArrayList<>();
+	private Collection<String> curCssForceSet = new ArrayList<>(3);
+	private Collection<String> prevCssForceSet = new ArrayList<>(3);
 
-	private Set<String> allCssKeepSet = new HashSet<String>();
-	private Set<String> allJsKeepSet = new HashSet<String>();
+	private Set<String> allCssKeepSet = new HashSet<>();
+	private Set<String> allJsKeepSet = new HashSet<>();
 	
-	private List<String> curJsList = new ArrayList<String>();
-	private List<String> prevJsList = new ArrayList<String>();
+	private List<String> curJsList = new ArrayList<>();
+	private List<String> prevJsList = new ArrayList<>();
 
 	
 	private Set<String> cssToAdd;  // the css to add for the next round
@@ -86,21 +86,21 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 	// FIXME:fj: make the rawset deprecated; all raw includes can be replaced by a css or js include; the js calls can be moved to the velocity files.
 	// for QTIEditormaincontroller / Displaycontroller -> Autocomplete files which need are dynamic files to be included -> 
 	// simplest sol would be: get the content of the file (in utf-8) and put it into <script> tags of the appropriate velocitycontainer.
-	private Collection<String> curRawSet = new ArrayList<String>(2);
-	private Collection<String> oldRawSet = new ArrayList<String>(2);
+	private Collection<String> curRawSet = new ArrayList<>(2);
+	private Collection<String> oldRawSet = new ArrayList<>(2);
 	
 	private static final int MINIMAL_REFRESHINTERVAL = 1000;//in [ms] 
 	private int refreshInterval = -1;
 	private final WindowBackOfficeImpl wboImpl;
 
-	private Map<String,String> jsPathToJsFileName = new HashMap<String, String>();
-	private Map<String,String> jsPathToEvalBeforeAJAXAddJsCode = new HashMap<String, String>();
-	private Map<String,String> jsPathToEvalFileEncoding = new HashMap<String, String>();
+	private Map<String,String> jsPathToJsFileName = new HashMap<>();
+	private Map<String,String> jsPathToEvalBeforeAJAXAddJsCode = new HashMap<>();
+	private Map<String,String> jsPathToEvalFileEncoding = new HashMap<>();
 	
 	private static final String ENCODING_DEFAULT = "utf-8";
 
-	private Map<String, String> cssPathToId = new HashMap<String, String>();
-	private Map<String, Integer> cssPathToIndex = new HashMap<String, Integer>();
+	private Map<String, String> cssPathToId = new HashMap<>();
+	private Map<String, Integer> cssPathToIndex = new HashMap<>();
 	private final Comparator<String> cssIndexComparator = new Comparator<String>(){
 		public int compare(String css1, String css2) {
 			int index1 = cssPathToIndex.get(css1);
@@ -211,8 +211,8 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		// ----- find out whether there are any freshly added or removed css classes. -----
 		// create new sets since we need to keep the original list untouched 
 		// (e.g. needed for rendering when doing a browser full page reload, or when in non-ajax-mode)
-		Set<String> curCss = new HashSet<String>(curCssList);
-		Set<String> prevCss = new HashSet<String>(prevCssList);
+		Set<String> curCss = new HashSet<>(curCssList);
+		Set<String> prevCss = new HashSet<>(prevCssList);
 		curCss.removeAll(prevCssList); // the current minus the previous ones = the new ones to be added
 		curCss.removeAll(allCssKeepSet); // but take those away which were used earlier and didn't need to be removed
 		prevCss.removeAll(curCssList); // the previous minus the current ones = the ones not needed anymore = to be deleted
@@ -222,7 +222,7 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		// ----- find out whether there are new js libs to be added. -----
 		// it doesn't make sense to require a removal of js libs (js libs should never interfere which each other by design) -
 		// therefore we only have to take care about new ones to be added.
-		List<String> curJs = new ArrayList<String>(curJsList);
+		List<String> curJs = new ArrayList<>(curJsList);
 		curJs.removeAll(allJsKeepSet); // the current minus the previously added ones = the new ones to be added
 		jsToAdd = curJs;
 
@@ -289,10 +289,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		return dc;
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.components.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
 			RenderResult renderResult, String[] args) {
@@ -307,19 +303,15 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		allCssKeepSet.clear();
 		allJsKeepSet.clear();
 		
-		//sb.append("<!-- css and js include test \n");
-		//sb.append("js-files:\n");
 		// JS scripts are rendered when in pre-theme rendering phase
 		if (!postThemeRendering) {
 			for (Iterator<String> it_js = jsToRender.iterator(); it_js.hasNext();) {
 				String jsExpr = it_js.next();
-				sb.append("<script type=\"text/javascript\" src=\"").append(jsExpr).append("\"></script>\n");
+				sb.append("<script src=\"").append(jsExpr).append("\"></script>\n");
 			}
 		}
 		
 		// sort css files
-			
-		//sb.append("css-files:\n");
 		for (Iterator<String> it_css = cssToRender.iterator(); it_css.hasNext();) {
 			String cssExpr = it_css.next();
 			// render post-theme css when in post-theme rendering phase and pre-theme
@@ -329,7 +321,7 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 					|| (!postThemeRendering && cssIndex < JSAndCSSAdder.CSS_INDEX_THEME)) {
 				String acssId = cssPathToId.get(cssExpr);
 				// use media=all to load always and use @media screen/print within the stylesheet
-				sb.append("<link id=\"").append(acssId).append("\" rel=\"StyleSheet\" href=\"").append(cssExpr).append("\" type=\"text/css\" media=\"all\" />\n");
+				sb.append("<link id=\"").append(acssId).append("\" rel=\"StyleSheet\" href=\"").append(cssExpr).append("\" media=\"all\" />\n");
 			}
 		}
 		
@@ -353,16 +345,12 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#addRequiredRawHeader(java.lang.Class)
-	 */
+	@Override
 	public void addRequiredRawHeader(Class<?> baseClass, String rawHeader) {
 		curRawSet.add(rawHeader);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.olat.core.gui.control.JSAndCSSAdder#setRequiredRefreshInterval(java.lang.Class, int)
-	 */
+	@Override
 	public void setRequiredRefreshInterval(Class<?> baseClass, int refreshIntervall) {
 		if(refreshIntervall < MINIMAL_REFRESHINTERVAL){
 			throw new AssertException("Poll refresh intervall is smaller then defined MINIMAL value " + MINIMAL_REFRESHINTERVAL);
@@ -370,7 +358,6 @@ public class JSAndCSSAdderImpl implements JSAndCSSAdder, ComponentRenderer {
 		// idea: baseClass for later de-prioritising by configuration
 		if (this.refreshInterval == -1 || refreshIntervall < this.refreshInterval) {
 			this.refreshInterval = refreshIntervall;
-			//System.out.println("setting new refresh intervall: "+this.refreshInterval);
 		} // else we already have a request that requires a higher frequency of updates, we will take that one
 	}
 	

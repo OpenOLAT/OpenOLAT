@@ -100,7 +100,7 @@ public abstract class GenericNode implements INode, Serializable {
 	 * @see org.olat.core.util.nodes.INode#getChildAt(int)
 	 */
 	public INode getChildAt(int childIndex) {
-		if (children == null) children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
+		if (children == null) children = new ArrayList<>(INITIAL_CHILD_SIZE);
 		return children.get(childIndex);
 	}
 
@@ -132,7 +132,7 @@ public abstract class GenericNode implements INode, Serializable {
 		newChild.removeFromParent();
 		newChild.setParent(this);
 		if (children == null) {
-			children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
+			children = new ArrayList<>(INITIAL_CHILD_SIZE);
 		}
 		if(index > children.size()) {
 			children.add(newChild);
@@ -169,7 +169,7 @@ public abstract class GenericNode implements INode, Serializable {
 	 */
 	@Override
 	public void addChild(INode newChild) {
-		if (children == null) children = new ArrayList<INode>(INITIAL_CHILD_SIZE);
+		if (children == null) children = new ArrayList<>(INITIAL_CHILD_SIZE);
 		insert(newChild, children.size());
 	}
 	

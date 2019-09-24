@@ -27,6 +27,7 @@ package org.olat.course.nodes.iq;
 
 import java.util.Locale;
 
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.course.nodes.AbstractCourseNodeConfiguration;
@@ -34,10 +35,9 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.IQSURVCourseNode;
+import org.olat.ims.qti.QTIModule;
 /**
- * 
- * Description:<br>
- * TODO: guido Class Description for IQSURVCourseNodeConfiguration
+ * @author guido
  */
 public class IQSURVCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 	
@@ -48,6 +48,11 @@ public class IQSURVCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 	@Override
 	public CourseNode getInstance() {
 		return new IQSURVCourseNode();
+	}
+
+	@Override
+	public boolean isDeprecated() {
+		return !CoreSpringFactory.getImpl(QTIModule.class).isCreateSurveyCourseNodesEnabled();
 	}
 
 	@Override

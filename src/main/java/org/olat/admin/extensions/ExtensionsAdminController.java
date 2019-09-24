@@ -47,7 +47,6 @@ import org.springframework.beans.factory.config.ConstructorArgumentValues;
 import org.springframework.beans.factory.config.ConstructorArgumentValues.ValueHolder;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.context.support.XmlWebApplicationContext;
 
 /**
@@ -85,7 +84,7 @@ public class ExtensionsAdminController extends BasicController {
 	private Map<String, GenericBeanDefinition> getBeanDefListFor(Class<?> clazz) {
 		boolean debug = log.isDebugEnabled();
 		
-		ApplicationContext applicationContext = WebApplicationContextUtils.getWebApplicationContext(CoreSpringFactory.servletContext);
+		ApplicationContext applicationContext = CoreSpringFactory.getWebApplicationContext();
 		XmlWebApplicationContext context = (XmlWebApplicationContext)applicationContext;
 		ConfigurableListableBeanFactory beanFactory = context.getBeanFactory();
 

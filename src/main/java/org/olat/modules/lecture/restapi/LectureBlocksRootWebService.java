@@ -47,12 +47,15 @@ import org.olat.modules.lecture.model.LecturesBlockSearchParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Initial date: 8 juin 2017<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Tag(name = "Repo")
 @Component
 @Path("repo/lectures")
 public class LectureBlocksRootWebService {

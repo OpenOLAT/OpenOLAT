@@ -28,6 +28,15 @@
 <div class="o_block">
 	$r.render("authorized.absence_LABEL", "authorized.absence")
 	$r.render("authorized.absence")
+	
+	#if($r.visible("absence.category"))
+		$r.render("absence.category_LABEL", "absence.category")
+		$r.render("absence.category")
+		#if($f.hasError("absence.category"))
+			$r.render("absence.category_ERROR")
+		#end
+	#end
+	
 	#if($r.visible("authorized.absence"))
 		$r.render("absence.reason_LABEL", "absence.reason")
 		$r.render("absence.reason")

@@ -33,6 +33,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel.Align;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureModule;
@@ -51,13 +52,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherOverviewController extends AbstractTeacherOverviewController implements TooledController {
+public class TeacherOverviewController extends AbstractTeacherOverviewController implements TooledController, Activateable2  {
 	
 	private Link assessmentToolButton;
 	private final TooledStackedPanel toolbarPanel;
 
 	private final RepositoryEntry entry;
 	private final RepositoryEntryLectureConfiguration entryConfig;
+	private final LecturesBlockSearchParameters searchParameters = new LecturesBlockSearchParameters();
 	
 	@Autowired
 	private UserManager userManager;
@@ -74,9 +76,8 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 		this.toolbarPanel = toolbarPanel;
 		toolbarPanel.addListener(this);
 		initTables(ureq, true, ConfigurationHelper.isAssessmentModeEnabled(entryConfig, lectureModule));
-		loadModel(null);
+		loadModel(searchParameters);
 		setBreadcrumbPanel(toolbarPanel);
-		
 	}
 
 	@Override
@@ -97,8 +98,10 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 	@Override
 	protected List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams) {
 		Identity filterByTeacher = ((Boolean)allTeachersSwitch.getUserObject()).booleanValue() ? null : getIdentity();
+		searchParams.setTeacher(filterByTeacher);
+		searchParams.setEntry(entry);
 		List<LectureBlockWithTeachers> blocksWithTeachers = lectureService
-				.getLectureBlocksWithTeachers(entry, filterByTeacher, searchParams);
+				.getLectureBlocksWithTeachers(searchParams);
 		
 		boolean assessmentMode = false;
 		// only show the start button if 
@@ -125,7 +128,7 @@ public class TeacherOverviewController extends AbstractTeacherOverviewController
 		assessmentToolButton.setVisible(assessmentMode);
 		return rows;
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if(source == assessmentToolButton) {

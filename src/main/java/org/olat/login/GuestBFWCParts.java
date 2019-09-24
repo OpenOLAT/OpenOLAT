@@ -40,10 +40,6 @@ import org.olat.core.gui.control.navigation.SiteInstance;
 import org.olat.gui.control.OlatFooterController;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for GuestBFWCParts
- * 
- * <P>
  * Initial Date:  30.01.2008 <br>
  * @author patrickb
  */
@@ -51,9 +47,6 @@ public class GuestBFWCParts implements BaseFullWebappControllerParts {
 	
 	private boolean showTopNav = true;
 
-	/**
-	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createFooterController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public LockableController createFooterController(UserRequest ureq, WindowControl wControl) {
 		Controller footerCtr = null;
@@ -67,9 +60,6 @@ public class GuestBFWCParts implements BaseFullWebappControllerParts {
 		return (LockableController)footerCtr;
 	}
 
-	/**
-	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createHeaderController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public Controller createHeaderController(UserRequest ureq, WindowControl wControl) {
 		Controller headerCtr = null;
@@ -81,9 +71,6 @@ public class GuestBFWCParts implements BaseFullWebappControllerParts {
 		return headerCtr;
 	}
 
-	/**
-	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#createTopNavController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public LockableController createTopNavController(UserRequest ureq, WindowControl wControl) {
 		if (showTopNav) {
@@ -103,13 +90,10 @@ public class GuestBFWCParts implements BaseFullWebappControllerParts {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.core.commons.fullWebApp.BaseFullWebappControllerParts#getSiteInstances(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl)
-	 */
 	@Override
 	public List<SiteInstance> getSiteInstances(UserRequest ureq, WindowControl wControl) {
 		SiteDefinitions sitedefs = CoreSpringFactory.getImpl(SiteDefinitions.class);
-		List<SiteInstance> sites = new ArrayList<SiteInstance>();
+		List<SiteInstance> sites = new ArrayList<>();
 		for (SiteDefinition sitedef : sitedefs.getSiteDefList()) {
 			SiteInstance site = sitedef.createSite(ureq, wControl);
 			if (site != null) {

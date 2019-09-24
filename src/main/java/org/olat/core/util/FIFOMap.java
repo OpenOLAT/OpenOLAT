@@ -48,7 +48,7 @@ public class FIFOMap<T,U> {
 	 */
 	public FIFOMap(int maxsize) {
 		this.maxsize = maxsize;
-		lhm = new LinkedHashMap<T,U>();
+		lhm = new LinkedHashMap<>();
 		//Map m = lhm;
 	}
 

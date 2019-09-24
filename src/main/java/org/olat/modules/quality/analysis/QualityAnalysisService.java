@@ -112,6 +112,20 @@ public interface QualityAnalysisService {
 	 */
 	public MultiTrendSeries<MultiKey> calculateTrends(AnalysisSearchParameter searchParams,
 			Set<Rubric> rubrics, MultiGroupBy groupBy, TemporalGroupBy temporalGroupBy);
+	
+	/**
+	 * Calculate the statistic for all sliders of all rubrics. Before using this method, make sure,
+	 * that all rubrics are identically configured to get accurate results (same
+	 * scale, number of steps, good end, ...)!
+	 *
+	 * @param statistics
+	 * @param rubrics
+	 * @return
+	 */
+	public HeatMapStatistic calculateRubricsTotal(List<? extends GroupedStatistic> statistics, Collection<Rubric> rubrics);
+	
+	public HeatMapStatistic calculateSliderTotal(List<? extends HeatMapStatistic> statistics, Rubric rubric);
 
 	public boolean isInsufficient(Rubric rubric, Double avg);
+
 }

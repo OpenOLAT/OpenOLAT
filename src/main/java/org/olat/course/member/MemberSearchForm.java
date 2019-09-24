@@ -88,7 +88,7 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 		login.setDisplaySize(28);
 
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(getClass().getCanonicalName(), false);
-		propFormItems = new HashMap<String,FormItem>();
+		propFormItems = new HashMap<>();
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 
@@ -190,7 +190,7 @@ public class MemberSearchForm extends FormBasicController implements ExtendedFle
 		}
 		
 		//user properties
-		Map<String, String> userPropertiesSearch = new HashMap<String, String>();				
+		Map<String, String> userPropertiesSearch = new HashMap<>();				
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
 			FormItem ui = propFormItems.get(userPropertyHandler.getName());

@@ -285,10 +285,6 @@ public class IFrameDeliveryMapper implements Mapper {
 	 *            to framework; false: don't do this check
 	 * @return
 	 */
-	/**
-	 * TODO:gs make more stable by only adding some js stuff to the end of the page. First check if document.height is ready
-	 * when puttings js to the end or menachism like ext.onReady is needed
-	 */
 	private String injectJavaScript(String page, String mimetype, boolean addCheckForInlineEvents, boolean anchorFirefoxWorkaround) {
 		//do not use parser and just check for css and script stuff myself and append just before body and head
 		SimpleHtmlParser parser = new SimpleHtmlParser(page);
@@ -345,7 +341,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 		
 		// Load some iframe.js helper code
-		sb.append("\n<script type=\"text/javascript\">\n/* <![CDATA[ */\n");
+		sb.append("\n<script>\n/* <![CDATA[ */\n");
 		// Set the iframe id. Important to set before iframe.js is loaded.
 		sb.append("b_iframeid=\"").append(frameId).append("\";");
 		sb.append("b_isInlineUri=").append(Boolean.toString(addCheckForInlineEvents)).append(";");
@@ -354,7 +350,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		sb.appendStaticJs("js/iframeResizer/iframeResizer.contentWindow.min.js");
 
 		if (parser.getHtmlContent().length() > 0) {
-			sb.append("\n<script type=\"text/javascript\">\n/* <![CDATA[ */\n");
+			sb.append("\n<script>\n/* <![CDATA[ */\n");
 			// register the tooltips enabling on document load event
 			sb.append("b_addOnloadEvent(b_hideExtMessageBox);");
 			if (addCheckForInlineEvents) {
@@ -577,7 +573,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 		
 		public void appendJsMath() {
-			append("<script type=\"text/javascript\">\n");
+			append("<script>\n");
 			append("window.MathJax = {\n");
 			append(" extensions: [\"jsMath2jax.js\"],\n");
 			append(" messageStyle: 'none',\n");
@@ -598,7 +594,7 @@ public class IFrameDeliveryMapper implements Mapper {
 			append(" }\n");
 			append("};");
 			append("</script>");
-			append("<script type=\"text/javascript\" src=\"");
+			append("<script src=\"");
 			append(WebappHelper.getMathJaxCdn());
 			append("MathJax.js?config=");
 			append(WebappHelper.getMathJaxConfig());
@@ -612,13 +608,13 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 
 		public void appendStaticJs(String javascript) {
-			append("<script type=\"text/javascript\" src=\"");
+			append("<script src=\"");
 			StaticMediaDispatcher.renderStaticURI(this, javascript);
 			append("\"></script>\n");
 		}
 		
 		public void appendStaticCss(String css, String id) {
-			append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"").append(id).append("\" href=\"");
+			append("\n<link rel=\"stylesheet\" id=\"").append(id).append("\" href=\"");
 		  StaticMediaDispatcher.renderStaticURI(this, css);
 		  append("\"");
 			if (docType != null && docType.indexOf("XHTML") > 0) append("/"); // close tag only when xhtml to validate
@@ -626,7 +622,7 @@ public class IFrameDeliveryMapper implements Mapper {
 		}
 		
 		public void appendCss(String css, String id) {
-			append("\n<link rel=\"stylesheet\" type=\"text/css\" id=\"").append(id).append("\" href=\"").append(css).append("\"");
+			append("\n<link rel=\"stylesheet\" id=\"").append(id).append("\" href=\"").append(css).append("\"");
 			if (docType != null && docType.indexOf("XHTML") > 0) append("/"); // close tag only when xhtml to validate
 			append(">\n");
 		}

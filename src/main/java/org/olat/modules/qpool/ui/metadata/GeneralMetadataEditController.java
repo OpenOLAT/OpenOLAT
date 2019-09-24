@@ -106,8 +106,8 @@ public class GeneralMetadataEditController extends FormBasicController {
 				contexts.getKeys(), contexts.getValues(), null);
 		contextEl.setAllowNoSelection(true);
 		contextEl.setEnabled(contexts.getKeys().length > 0);
-		if (StringHelper.containsNonWhitespace(item.getEducationalContextLevel())) {
-			contextEl.select(item.getEducationalContextLevel(), true);
+		if (item.getEducationalContext() != null) {
+			contextEl.select(item.getEducationalContext().getKey().toString(), true);
 		}
 		contextEl.setVisible(qPoolSecurityCallback.canUseEducationalContext());
 		
@@ -248,7 +248,7 @@ public class GeneralMetadataEditController extends FormBasicController {
 			}
 	
 			QEducationalContext context = contextEl.isOneSelected()
-					? qpoolService.getEducationlContextByLevel(contextEl.getSelectedKey())
+					? MetaUIFactory.getContextByKey(contextEl.getSelectedKey(), qpoolService)
 					: null;
 			itemImpl.setEducationalContext(context);
 			

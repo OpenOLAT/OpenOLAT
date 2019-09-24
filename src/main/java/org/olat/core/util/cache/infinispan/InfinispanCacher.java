@@ -65,7 +65,7 @@ public class InfinispanCacher implements Cacher {
 		}
 		
 		Cache<U, V> cache = cacheManager.getCache(cacheName);
-		return new InfinispanCacheWrapper<U,V>(cache);
+		return new InfinispanCacheWrapper<>(cache);
 	}
 	
 	private void createInfinispanConfiguration(String cacheName) {	

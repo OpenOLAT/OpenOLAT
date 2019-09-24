@@ -25,6 +25,7 @@
 
 package org.olat.course.condition.interpreter;
 
+import org.olat.course.condition.interpreter.score.GetAverageScoreFunction;
 import org.olat.course.condition.interpreter.score.GetPassedFunction;
 import org.olat.course.condition.interpreter.score.GetPassedWithCourseIdFunction;
 import org.olat.course.condition.interpreter.score.GetScoreFunction;
@@ -111,6 +112,7 @@ public class OnlyGroupConditionInterpreter extends ConditionInterpreter{
 		// functions to calculate score
 		env.addFunction(GetPassedFunction.name, new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(GetScoreFunction.name, new DummyDoubleFunction(userCourseEnv));
+		env.addFunction(GetAverageScoreFunction.NAME, new DummyDoubleFunction(userCourseEnv));
 		env.addFunction(GetPassedWithCourseIdFunction.name, new DummyBooleanFunction(userCourseEnv));
 		env.addFunction(GetScoreWithCourseIdFunction.name, new DummyDoubleFunction(userCourseEnv));
 
@@ -135,11 +137,13 @@ class DummyBooleanFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
+	@Override
 	public Object call(Object[] inStack) {		
 		// return allways true, because it is a dummy implementation without condition
 		return ConditionInterpreter.INT_TRUE;
 	}
 
+	@Override
 	protected Object defaultValue() {
 		return ConditionInterpreter.INT_TRUE;
 	}
@@ -152,11 +156,13 @@ class DummyDateFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
+	@Override
 	public Object call(Object[] inStack) {		
 		// return allways true, because it is a dummy implementation without condition
 		return new Double(0);
 	}
 
+	@Override
 	protected Object defaultValue() {
 		return new Double(0);
 	}
@@ -168,10 +174,12 @@ class DummyDoubleFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
+	@Override
 	public Object call(Object[] inStack) {		
 		return Double.MIN_VALUE;
 	}
 
+	@Override
 	protected Object defaultValue() {
 		return Double.MIN_VALUE;
 	}
@@ -183,10 +191,12 @@ class DummyIntegerFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
+	@Override
 	public Object call(Object[] inStack) {		
 		return Integer.MIN_VALUE;
 	}
 
+	@Override
 	protected Object defaultValue() {
 		return Integer.MIN_VALUE;
 	}
@@ -198,10 +208,12 @@ class DummyStringFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
+	@Override
 	public Object call(Object[] inStack) {		
 		return "";
 	}
 
+	@Override
 	protected Object defaultValue() {
 		return "";
 	}
@@ -222,6 +234,7 @@ class DummyVariable extends AbstractVariable {
 	/**
 	 * @see com.neemsoft.jmep.VariableCB#getValue()
 	 */
+	@Override
 	public Object getValue() {
 		return new Double(0);
 	}

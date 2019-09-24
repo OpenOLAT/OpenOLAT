@@ -85,6 +85,8 @@ import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 
 /**
  * Description:<br>
@@ -94,6 +96,7 @@ import org.springframework.stereotype.Component;
  * Initial Date:  23 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Groups")
 @Component
 @Path("groups")
 public class LearningGroupWebService {

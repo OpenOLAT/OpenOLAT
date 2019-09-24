@@ -95,7 +95,7 @@ public class WikiToZipUtils {
 		List<VFSItem> folders = rootContainer.getItems();
 		VFSLeaf indexLeaf =(VFSLeaf)rootContainer.resolve("index.html");
 		if(indexLeaf != null) indexLeaf.delete();
-		List<VFSItem> filesTozip = new ArrayList<VFSItem>();
+		List<VFSItem> filesTozip = new ArrayList<>();
 		for (Iterator <VFSItem>iter = folders.iterator(); iter.hasNext();) {
 			VFSItem item = iter.next();
 			if (item instanceof VFSContainer) {

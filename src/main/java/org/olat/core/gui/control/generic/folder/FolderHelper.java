@@ -51,7 +51,7 @@ public class FolderHelper {
 
 	static {
 		// initialize known filetypes for faster access
-		FolderHelper.knownFileTypes = new HashSet<String>();
+		FolderHelper.knownFileTypes = new HashSet<>();
 		StringTokenizer st = new StringTokenizer(FILETYPES, " ");
 		while (st.hasMoreElements()) {
 			FolderHelper.knownFileTypes.add(st.nextToken());

@@ -43,9 +43,12 @@ import org.olat.core.id.context.StateEntry;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.tree.TreeHelper;
-import org.olat.modules.coach.CoachingService;
+import org.olat.modules.coach.model.CoachingSecurity;
 import org.olat.modules.lecture.LectureModule;
-import org.olat.modules.lecture.ui.coach.LecturesSearchController;
+import org.olat.modules.lecture.ui.LectureRoles;
+import org.olat.modules.lecture.ui.LecturesSecurityCallback;
+import org.olat.modules.lecture.ui.LecturesSecurityCallbackFactory;
+import org.olat.modules.lecture.ui.coach.LecturesCoachingController;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -68,24 +71,22 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	private CourseListController courseListCtrl;
 	private StudentListController studentListCtrl;
 	private LayoutMain3ColsController columnLayoutCtr;
-	private LecturesSearchController lecturesSearchCtrl;
+	private LecturesCoachingController lecturesTeacherCtrl;
+	private LecturesCoachingController lecturesMasterCoachCtrl;
 	
-	private final boolean ownCourses;
-	private final boolean lecturesAllowed;
+
 	private final boolean userSearchAllowed;
+	private final CoachingSecurity coachingSec;
 	
 	@Autowired
 	private LectureModule lectureModule;
-	@Autowired
-	private CoachingService coachingService;
 	
-	public CoachMainController(UserRequest ureq, WindowControl control) {
+	public CoachMainController(UserRequest ureq, WindowControl control, CoachingSecurity coachingSec) {
 		super(ureq, control);
+		this.coachingSec = coachingSec;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		userSearchAllowed = roles.isAdministrator() || roles.isLearnResourceManager() || roles.isPrincipal();
-		ownCourses = coachingService.isCoach(getIdentity());
-		lecturesAllowed = lectureModule.isEnabled() && (roles.isAdministrator() || roles.isLectureManager() || roles.isPrincipal());
 
 		menu = new MenuTree(null, "coachMenu", this);
 		menu.setExpandSelectedNode(false);
@@ -136,14 +137,19 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 	}
 	
 	private String getDefaultMenuItem() {
-		if(ownCourses) {
+		if(lectureModule.isEnabled()) {
+			if(coachingSec.isTeacher()) {
+				return "Lectures";
+			}
+			if(coachingSec.isMasterCoachForLectures()) {
+				return "Classes";
+			}
+		}
+		if(coachingSec.isCoach()) {
 			return "Members";
 		}
 		if(userSearchAllowed) {
 			return "Search";
-		}
-		if(lecturesAllowed) {
-			return "Lectures";
 		}
 		return "Members";
 	}
@@ -177,15 +183,26 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				listenTo(courseListCtrl);
 			}
 			selectedCtrl = courseListCtrl;
-		} else if("lectures".equalsIgnoreCase(cmd) && lectureModule.isEnabled()) {
-			if(lecturesSearchCtrl == null) {
+		} else if("lectures".equalsIgnoreCase(cmd) && lectureModule.isEnabled() && coachingSec.isTeacher()) {
+			if(lecturesTeacherCtrl == null) {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Lectures", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				lecturesSearchCtrl = new LecturesSearchController(ureq, bwControl, content);
-				listenTo(lecturesSearchCtrl);
+				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(false, false, true, LectureRoles.teacher);
+				lecturesTeacherCtrl = new LecturesCoachingController(ureq, bwControl, content, secCallback);
+				listenTo(lecturesTeacherCtrl);
 			}
-			selectedCtrl = lecturesSearchCtrl;
+			selectedCtrl = lecturesTeacherCtrl;
+		} else if("classes".equalsIgnoreCase(cmd) && lectureModule.isEnabled() && coachingSec.isMasterCoachForLectures()) {
+			if(lecturesMasterCoachCtrl == null) {
+				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Classes", 0l);
+				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
+				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
+				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(false, true, false, LectureRoles.mastercoach);
+				lecturesMasterCoachCtrl = new LecturesCoachingController(ureq, bwControl, content, secCallback);
+				listenTo(lecturesMasterCoachCtrl);
+			}
+			selectedCtrl = lecturesMasterCoachCtrl;
 		} else if("search".equalsIgnoreCase(cmd) && userSearchAllowed) {
 			if(userSearchCtrl == null) {
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Search", 0l);
@@ -217,7 +234,24 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 		GenericTreeNode root = new GenericTreeNode();
 		gtm.setRootNode(root);
 		
-		if(ownCourses) {
+		if(lectureModule.isEnabled()) {
+			if(coachingSec.isTeacher()) {
+				GenericTreeNode lecturesAsTeacher = new GenericTreeNode();
+				lecturesAsTeacher.setUserObject("Lectures");
+				lecturesAsTeacher.setTitle(translate("lectures.teacher.menu.title"));
+				lecturesAsTeacher.setAltText(translate("lectures.teacher.menu.title.alt"));
+				root.addChild(lecturesAsTeacher);
+			}
+			if(coachingSec.isMasterCoachForLectures()) {
+				GenericTreeNode lecturesAsMastercoach = new GenericTreeNode();
+				lecturesAsMastercoach.setUserObject("Classes");
+				lecturesAsMastercoach.setTitle(translate("lectures.mastercoach.menu.title"));
+				lecturesAsMastercoach.setAltText(translate("lectures.mastercoach.menu.title.alt"));
+				root.addChild(lecturesAsMastercoach);
+			}
+		}
+		
+		if(coachingSec.isCoach()) {
 			GenericTreeNode students = new GenericTreeNode();
 			students.setUserObject("Members");
 			students.setTitle(translate("students.menu.title"));
@@ -236,15 +270,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 			courses.setAltText(translate("courses.menu.title.alt"));
 			root.addChild(courses);
 		}
-		
-		if(lecturesAllowed) {
-			GenericTreeNode lectures = new GenericTreeNode();
-			lectures.setUserObject("Lectures");
-			lectures.setTitle(translate("lectures.menu.title"));
-			lectures.setAltText(translate("courses.menu.title.alt"));
-			root.addChild(lectures);
-		}
-		
+
 		if(userSearchAllowed) {
 			GenericTreeNode search = new GenericTreeNode();
 			search.setUserObject("Search");

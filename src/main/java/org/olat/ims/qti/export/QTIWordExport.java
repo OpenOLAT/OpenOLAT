@@ -226,7 +226,7 @@ public class QTIWordExport implements MediaResource {
 		renderInstructions.put(RenderInstructions.KEY_RENDER_TITLE, Boolean.TRUE);
 		if(item.getQuestion() != null) {
 
-			Map<String,String> iinput = new HashMap<String,String>();
+			Map<String,String> iinput = new HashMap<>();
 			
 			String questionType = null;
 			String questionScore = null;

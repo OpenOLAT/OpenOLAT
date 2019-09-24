@@ -51,7 +51,7 @@ public class QItemTypeDAO implements ApplicationListener<ContextRefreshedEvent> 
 	
 	protected void createDefaultTypes() {
 		List<QItemType> types = getItemTypes();
-		Set<String> typeKeys = new HashSet<String>();
+		Set<String> typeKeys = new HashSet<>();
 		for(QItemType type:types) {
 			typeKeys.add(type.getType().toLowerCase());
 		}

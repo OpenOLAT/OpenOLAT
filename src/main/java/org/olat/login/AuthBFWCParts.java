@@ -97,7 +97,7 @@ public class AuthBFWCParts implements BaseFullWebappControllerParts {
 	@Override
 	public List<SiteInstance> getSiteInstances(UserRequest ureq, WindowControl wControl) {
 		SiteDefinitions sitedefs = CoreSpringFactory.getImpl(SiteDefinitions.class);
-		List<SiteInstance> sites = new ArrayList<SiteInstance>();
+		List<SiteInstance> sites = new ArrayList<>();
 		for (SiteDefinition sitedef : sitedefs.getSiteDefList()) {
 			SiteInstance site = sitedef.createSite(ureq, wControl);
 			if (site != null) {

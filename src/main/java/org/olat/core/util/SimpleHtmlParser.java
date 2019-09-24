@@ -129,9 +129,6 @@ public class SimpleHtmlParser {
 	 * @param lookForCharset
 	 */
 	private void parseContent(String cont) {
-		//TODO: measure time
-		//long t1 = System.currentTimeMillis();
-		
 		// check for doctype
 		int docTypePos = cont.indexOf("<!DOCTYPE");
 		if (docTypePos == -1) docTypePos = cont.indexOf("<doctype");
@@ -221,12 +218,6 @@ public class SimpleHtmlParser {
 				jsOnLoad = jsOnLoad + ";";
 			}
 		}
-		
-		// FIXME gs: add support for other body attributes as well, see 
-		// http://de.selfhtml.org/html/referenz/attribute.htm#body
-		// http://de.selfhtml.org/html/referenz/attribute.htm#universalattribute
-		// Maybe it's safer to reuse the whole body tag as it comes and only inject 
-		// the custom onload stuff or add the unload method if no such method is there
 
 		//look for class attribute of body tag
 		int endOfBodyTagPos = cont.indexOf(">", bodypos);

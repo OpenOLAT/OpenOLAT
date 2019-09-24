@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -52,10 +53,11 @@ public class OpenMeetingsLanguages extends DefaultHandler {
 		//
 	}
 	
-	
 	public void read() {
 		try(InputStream in = OpenMeetingsLanguages.class.getResourceAsStream("languages.xml")) {
-			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(in, this);
 		} catch (Exception e) {
 			log.error("", e);

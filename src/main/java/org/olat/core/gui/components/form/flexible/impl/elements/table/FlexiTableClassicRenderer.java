@@ -229,6 +229,7 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 
 			container.getHTMLRendererSingleton().render(renderer, target, container, ubu, translator, renderResult, null);
 			container.contextRemove("row");
+			container.setDirty(false);
 			
 			target.append("</td></tr>");
 		}
@@ -258,15 +259,16 @@ class FlexiTableClassicRenderer extends AbstractFlexiTableRenderer implements Co
 			}
 			ftE.addFormItem(formItem);
 			if(formItem.isVisible()) {
-				formItem.getComponent().getHTMLRendererSingleton().render(renderer, target, formItem.getComponent(),
-					ubu, translator, renderResult, null);
+				Component cmp = formItem.getComponent();
+				cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, null);
+				cmp.setDirty(false);
 			}
 		} else if(cellValue instanceof Component) {
 			Component cmp = (Component)cellValue;
 			cmp.setTranslator(translator);
 			if(cmp.isVisible()) {
-				cmp.getHTMLRendererSingleton().render(renderer, target, cmp,
-					ubu, translator, renderResult, null);
+				cmp.getHTMLRendererSingleton().render(renderer, target, cmp, ubu, translator, renderResult, null);
+				cmp.setDirty(false);
 			}
 		} else {
 			fcm.getCellRenderer().render(renderer, target, cellValue, row, ftC, ubu, translator);

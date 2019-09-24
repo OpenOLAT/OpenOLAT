@@ -31,8 +31,6 @@ import org.olat.core.gui.control.ControllerEventListener;
 import org.olat.core.logging.AssertException;
 
 /**
- * Description: <br>
- * TODO: Felix Jost Class Description for NodeConstructionResult
  * Initial Date: 19.01.2005 <br>
  * @author Felix Jost
  */

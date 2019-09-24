@@ -57,7 +57,7 @@ public class TableListProvider implements ListProvider {
 	@Override
 	public void getResult(String searchValue, ListReceiver receiver) {
 		Filter htmlFilter = FilterFactory.getHtmlTagsFilter();
-		Set<String> searchEntries = new TreeSet<String>();
+		Set<String> searchEntries = new TreeSet<>();
 		int entryCounter = 1;
 		// loop over whole data-model
 		

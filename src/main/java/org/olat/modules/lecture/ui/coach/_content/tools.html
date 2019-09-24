@@ -1,0 +1,11 @@
+<ul class="o_dropdown list-unstyled">
+	#if($r.available("export"))
+	<li>$r.render("export")</li>
+	#end
+	#if($r.available("attendance.list"))
+	<li>$r.render("attendance.list")</li>
+	#end
+	#if($r.available("attendance.list.to.sign"))
+	<li>$r.render("attendance.list.to.sign")</li>
+	#end
+</ul>

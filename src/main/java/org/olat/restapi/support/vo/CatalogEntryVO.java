@@ -49,7 +49,7 @@ public class CatalogEntryVO {
 	private Long parentKey;
 	
 	@XmlElement(name="link",nillable=true)
-	private List<LinkVO> link = new ArrayList<LinkVO>();
+	private List<LinkVO> link = new ArrayList<>();
 	
 	public CatalogEntryVO() {
 		//make JAXB happy

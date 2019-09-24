@@ -43,20 +43,28 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class TeacherToolOverviewController extends AbstractTeacherOverviewController {
+	
+	private final LecturesSecurityCallback secCallback;
 
 	@Autowired
 	private LectureService lectureService;
 	
-	public TeacherToolOverviewController(UserRequest ureq, WindowControl wControl) {
+	public TeacherToolOverviewController(UserRequest ureq, WindowControl wControl, LecturesSecurityCallback secCallback) {
 		super(ureq, wControl, false, "Lectures::UserTools", true, false);
+		this.secCallback = secCallback;
 		initTables(ureq, false, false);
 		loadModel(null);
 	}
 
 	@Override
 	protected List<LectureBlockRow> getRows(LecturesBlockSearchParameters searchParams) {
-		List<LectureBlock> blocks = lectureService.getLectureBlocks(getIdentity(), searchParams);
-		List<LectureBlockRef> assessedBlockRefs = lectureService.getAssessedLectureBlocks(getIdentity(), searchParams);
+		if(searchParams == null) {
+			searchParams = new LecturesBlockSearchParameters();
+		}
+		searchParams.setViewAs(getIdentity(), secCallback.viewAs());
+		
+		List<LectureBlock> blocks = lectureService.getLectureBlocks(searchParams);
+		List<LectureBlockRef> assessedBlockRefs = lectureService.getAssessedLectureBlocks(searchParams);
 		Set<Long> assessedBlockKeys = assessedBlockRefs.stream()
 				.map(LectureBlockRef::getKey).collect(Collectors.toSet());
 		List<LectureBlockRow> rows = new ArrayList<>(blocks.size());

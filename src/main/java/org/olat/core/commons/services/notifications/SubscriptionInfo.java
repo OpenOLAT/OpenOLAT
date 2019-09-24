@@ -60,7 +60,7 @@ public class SubscriptionInfo {
 		this.type = type;
 		this.title = title;
 		if (subsList == null){
-			subsList = new ArrayList<SubscriptionListItem>();
+			subsList = new ArrayList<>();
 		}
 		this.subsList = subsList;
 	}

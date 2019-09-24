@@ -151,15 +151,15 @@ public class BookmarksController extends BasicController {
 	}
 	
 	private  List<Bookmark> convertMarkToBookmark(List<Mark> items) {
-		List<Bookmark> convertedList = new ArrayList<Bookmark>();
+		List<Bookmark> convertedList = new ArrayList<>();
 		
-		List<Long> reKeys = new ArrayList<Long>();
+		List<Long> reKeys = new ArrayList<>();
 		for(Mark mark:items) {
 			reKeys.add(mark.getOLATResourceable().getResourceableId());
 		}
 		
 		List<RepositoryEntry> repositoryEntries = repositoryManager.lookupRepositoryEntries(reKeys);
-		Map<Long,RepositoryEntry> keyToRepositoryEntryMap = new HashMap<Long,RepositoryEntry>();
+		Map<Long,RepositoryEntry> keyToRepositoryEntryMap = new HashMap<>();
 		for(RepositoryEntry repositoryEntry:repositoryEntries) {
 			keyToRepositoryEntryMap.put(repositoryEntry.getKey(), repositoryEntry);
 		}

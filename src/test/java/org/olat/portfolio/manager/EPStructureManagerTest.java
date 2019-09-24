@@ -361,7 +361,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		//save parent and 20 children
 		PortfolioStructure parentEl = epFrontendManager.createAndPersistPortfolioStructureElement(null, "paged-parent-structure-el", "parent-structure-element");
 		
-		List<PortfolioStructure> children = new ArrayList<PortfolioStructure>();
+		List<PortfolioStructure> children = new ArrayList<>();
 		for(int i=0;i<20;i++) {
 			PortfolioStructure childEl = epFrontendManager.createAndPersistPortfolioStructureElement(parentEl, "paged-structure-el-" + i, "paged-child-structure-element");
 			children.add(childEl);
@@ -513,7 +513,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		//save parent and 5 children
 		PortfolioStructure parentEl = epFrontendManager.createAndPersistPortfolioStructureElement(null, "move-up-parent-structure-el-1", "move-up-structure-element");
 		
-		List<PortfolioStructure> children = new ArrayList<PortfolioStructure>();
+		List<PortfolioStructure> children = new ArrayList<>();
 		for(int i=0;i<5;i++) {
 			PortfolioStructure childEl = epFrontendManager.createAndPersistPortfolioStructureElement(parentEl, "paged-structure-el-" + i, "paged-child-structure-element");
 			children.add(childEl);
@@ -583,7 +583,7 @@ public class EPStructureManagerTest extends OlatTestCase {
 		//save parent and 5 children
 		PortfolioStructure parentEl = epFrontendManager.createAndPersistPortfolioStructureElement(null, "move-up-parent-structure-el-1", "move-up-structure-element");
 		
-		List<PortfolioStructure> children = new ArrayList<PortfolioStructure>();
+		List<PortfolioStructure> children = new ArrayList<>();
 		for(int i=0;i<5;i++) {
 			PortfolioStructure childEl = epFrontendManager.createAndPersistPortfolioStructureElement(parentEl, "paged-structure-el-" + i, "paged-child-structure-element");
 			children.add(childEl);

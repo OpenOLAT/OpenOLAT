@@ -56,7 +56,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 	public static final String PANE_TAB_GRADING = "pane.tab.grading";
 	public static final String PANE_TAB_SOLUTIONS = "pane.tab.solutions";
 	public static final String PANE_TAB_HIGHSCORE = "pane.tab.highscore";
-	public static final String[] paneKeys = {
+	private static final String[] paneKeys = {
 		PANE_TAB_ACCESSIBILITY, PANE_TAB_WORKLOW, PANE_TAB_ASSIGNMENT,
 		PANE_TAB_SUBMISSION, PANE_TAB_REVIEW_AND_CORRECTIONS, PANE_TAB_GRADING,
 		PANE_TAB_SOLUTIONS

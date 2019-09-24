@@ -95,11 +95,6 @@ public class GetInitialEnrollmentDateFunction extends AbstractFunction {
 		 * the real function evaluation which is used during run time
 		 */
 		CourseNode node = getUserCourseEnv().getCourseEnvironment().getRunStructure().getNode(nodeId);
-		// invalid node id's return still a valid double
-		// TODO fg: check with editor tree model DONE: the above checks ensure only
-		// valid node references
-		// if (node == null) return new Double(Double.NEGATIVE_INFINITY);
-
 		CoursePropertyManager pm = getUserCourseEnv().getCourseEnvironment().getCoursePropertyManager();
 		Identity identity = getUserCourseEnv().getIdentityEnvironment().getIdentity();
 

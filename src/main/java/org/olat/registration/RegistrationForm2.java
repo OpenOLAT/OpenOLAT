@@ -44,6 +44,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -52,6 +53,7 @@ import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
+import org.olat.user.propertyhandlers.EmailProperty;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -74,6 +76,7 @@ public class RegistrationForm2 extends FormBasicController {
 	private TextElement newpass2; // confirm
 	
 	private final String proposedUsername;
+	private final String email;
 	private final boolean userInUse;
 	private final boolean usernameReadonly;
 	private final SyntaxValidator passwordSyntaxValidator;
@@ -85,11 +88,15 @@ public class RegistrationForm2 extends FormBasicController {
 	private UserManager userManager;
 	@Autowired
 	private OLATAuthManager olatAuthManager;
-	
-	public RegistrationForm2(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername, boolean userInUse, boolean usernameReadonly) {
+	@Autowired
+	private RegistrationManager registrationManager;
+
+	public RegistrationForm2(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername,
+			String email, boolean userInUse, boolean usernameReadonly) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		this.languageKey = languageKey;
 		this.proposedUsername = proposedUsername;
+		this.email = email;
 		this.userInUse = userInUse;
 		this.usernameReadonly = usernameReadonly;
 		this.passwordSyntaxValidator = olatAuthManager.createPasswordSytaxValidator();
@@ -108,13 +115,19 @@ public class RegistrationForm2 extends FormBasicController {
 	}
 	
 	protected String getFirstName() {
-		FormItem fi = propFormItems.get("firstName");
+		FormItem fi = propFormItems.get(UserConstants.FIRSTNAME);
 		TextElement fn = (TextElement) fi;
 		return fn.getValue().trim();
 	}
 	
 	protected String getLastName() {
-		FormItem fi = propFormItems.get("lastName");
+		FormItem fi = propFormItems.get(UserConstants.LASTNAME);
+		TextElement fn = (TextElement) fi;
+		return fn.getValue().trim();
+	}
+	
+	protected String getEmail() {
+		FormItem fi = propFormItems.get(UserConstants.EMAIL);
 		TextElement fn = (TextElement) fi;
 		return fn.getValue().trim();
 	}
@@ -155,6 +168,7 @@ public class RegistrationForm2 extends FormBasicController {
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("title.register");
+		formLayout.setElementCssClass("o_sel_registration_2_form");
 		// first the configured user properties
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
 		
@@ -166,8 +180,15 @@ public class RegistrationForm2 extends FormBasicController {
 			
 			FormItem fi = userPropertyHandler
 					.addFormItem(getLocale(), null, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout);
+			fi.setElementCssClass("o_sel_registration_" + userPropertyHandler.getName());
 			fi.setTranslator(tr);
 			propFormItems.put(userPropertyHandler.getName(), fi);
+			
+			if (UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
+				if (fi instanceof TextElement) {
+					((TextElement)fi).setValue(email);
+				}
+			}
 		}
 		
 		uifactory.addSpacerElement("lang", formLayout, true);
@@ -186,6 +207,7 @@ public class RegistrationForm2 extends FormBasicController {
 		} else {
 			uifactory.addStaticTextElement("form.username.rules", null, translate("form.username.rules"), formLayout);
 			usernameEl = uifactory.addTextElement("username",  "user.login", 128, "", formLayout);
+			usernameEl.setElementCssClass("o_sel_registration_login");
 			usernameEl.setMandatory(true);
 		}
 		
@@ -200,9 +222,11 @@ public class RegistrationForm2 extends FormBasicController {
 		uifactory.addStaticTextElement("form.password.rules", null,
 				translate("form.password.rules", new String[] { descriptions }), formLayout);
 		newpass1 = uifactory.addPasswordElement("newpass1",  "form.password.new1", 5000, "", formLayout);
+		newpass1.setElementCssClass("o_sel_registration_cred1");
 		newpass1.setMandatory(true);
 		newpass1.setAutocomplete("new-password");
 		newpass2 = uifactory.addPasswordElement("newpass2",  "form.password.new2", 5000, "", formLayout);
+		newpass2.setElementCssClass("o_sel_registration_cred2");
 		newpass2.setMandatory(true);
 		newpass2.setAutocomplete("new-password");
 	
@@ -221,8 +245,11 @@ public class RegistrationForm2 extends FormBasicController {
 		// validate each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
-			if (!userPropertyHandler.isValid(null, fi, null)) {
-				allOk &= false;
+			if (fi.isEnabled() && !userPropertyHandler.isValid(null, fi, null)) {
+				if (userPropertyHandler instanceof EmailProperty)
+					allOk &= registrationManager.isEmailReserved(getEmail());
+				else
+					allOk &= false;
 			}
 		}
 		

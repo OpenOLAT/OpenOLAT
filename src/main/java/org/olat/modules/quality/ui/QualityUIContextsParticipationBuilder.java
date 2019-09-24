@@ -26,12 +26,16 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumElementType;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.quality.QualityContext;
 import org.olat.modules.quality.QualityContextRole;
 import org.olat.modules.quality.QualityContextToCurriculumElement;
@@ -55,6 +59,8 @@ public class QualityUIContextsParticipationBuilder extends QualityUIContextsBuil
 	
 	@Autowired
 	private QualityService qualityService;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	QualityUIContextsParticipationBuilder(QualityExecutorParticipation participation, Locale locale) {
 		this.qualityParticipation = participation;
@@ -99,7 +105,9 @@ public class QualityUIContextsParticipationBuilder extends QualityUIContextsBuil
 		case COURSE:
 			return toList(createRepositoryEntryValues(context));
 		case CURRICULUM_ELEMENTS:
-			return createCurriculumElementValues(context);
+			return curriculumElementsHierarchy
+					? createCurriculumElementValuesHierarchical(context)
+					: createCurriculumElementValues(context);
 		case TAXONOMY_LEVELS:
 			return createTaxonomyLevels(context);
 		default:
@@ -179,6 +187,57 @@ public class QualityUIContextsParticipationBuilder extends QualityUIContextsBuil
 		return keyValues;
 	}
 
+	private List<KeyValue> createCurriculumElementValuesHierarchical(QualityContext context) {
+		// Get a list of all curriculum elements and its parents.
+		List<CurriculumElement> elements = context.getContextToCurriculumElement().stream()
+				.map(QualityContextToCurriculumElement::getCurriculumElement)
+				.distinct()
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
+		
+		// reload to fetch the parents
+		elements = curriculumService.getCurriculumElements(elements);
+		List<CurriculumElement> elementsHierarchical = new ArrayList<>();
+		for (CurriculumElement element: elements) {
+			addParents(elementsHierarchical, element);
+		}
+		// reverse, so that the top most element is the first element
+		List<CurriculumElement> invertedList = new ArrayList<>();
+		for (int i = elementsHierarchical.size() - 1; i >= 0; i--) {
+			invertedList.add(elementsHierarchical.get(i));
+		}
+		elementsHierarchical = invertedList;
+		
+		List<KeyValue> keyValues = new ArrayList<>(elementsHierarchical.size());
+		for (CurriculumElement element : elementsHierarchical) {
+			KeyValue keyValue = new KeyValue(getTypeName(element), getName(element));
+			keyValues.add(keyValue);
+		}
+		return keyValues;
+	}
+
+	private void addParents(List<CurriculumElement> elementsHierarchical, CurriculumElement element) {
+		elementsHierarchical.add(element);
+		if (element.getParent() != null) {
+			addParents(elementsHierarchical, element.getParent());
+		}
+	}
+	
+	private String getName(CurriculumElement element) {
+		StringBuilder sb = new StringBuilder(element.getDisplayName());
+		if (StringHelper.containsNonWhitespace(element.getIdentifier())) {
+			sb.append(" (").append(element.getIdentifier()).append(")");
+		}
+		return sb.toString();
+	}
+
+	private String getTypeName(CurriculumElement element) {
+		CurriculumElementType curriculumElementType = element.getType();
+		return curriculumElementType != null
+				? curriculumElementType.getDisplayName()
+				: translator.translate("executor.participation.curriculum.element");
+	}
+	
 	private List<KeyValue> createTaxonomyLevels(QualityContext context) {
 		List<KeyValue> keyValues = new ArrayList<>();
 		for (QualityContextToTaxonomyLevel contextToTaxonomyLevel: context.getContextToTaxonomyLevel()) {

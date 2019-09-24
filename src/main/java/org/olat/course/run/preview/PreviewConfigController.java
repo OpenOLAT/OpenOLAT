@@ -162,7 +162,7 @@ public class PreviewConfigController extends MainLayoutBasicController {
 		}
 		
 		final RepositoryEntry courseResource = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		final CourseGroupManager cgm = new PreviewCourseGroupManager(courseResource, new ArrayList<BusinessGroup>(groups), new ArrayList<>(areas), isCoach, isCourseAdmin);
+		final CourseGroupManager cgm = new PreviewCourseGroupManager(courseResource, new ArrayList<>(groups), new ArrayList<>(areas), isCoach, isCourseAdmin);
 		final UserNodeAuditManager auditman = new PreviewAuditManager();
 		final AssessmentManager am = new PreviewAssessmentManager();
 		final CoursePropertyManager cpm = new PreviewCoursePropertyManager();

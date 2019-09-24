@@ -35,6 +35,7 @@ public class GroupByRow {
 	private final MultiKey multiKey;
 	private final List<String> groupNames;
 	private final List<? extends GroupedStatistic> statistics;
+	private Object total;
 	
 	public GroupByRow(MultiKey multiKey, List<String> groupNames, List<? extends GroupedStatistic> statistics) {
 		this.multiKey = multiKey;
@@ -64,6 +65,18 @@ public class GroupByRow {
 
 	public GroupedStatistic getStatistic(int index) {
 		return statistics.get(index);
+	}
+	
+	List<? extends GroupedStatistic> getStatistics() {
+		return statistics;
+	}
+
+	public void setTotal(Object total) {
+		this.total = total;
+	}
+
+	public Object getTotal() {
+		return total;
 	}
 
 }

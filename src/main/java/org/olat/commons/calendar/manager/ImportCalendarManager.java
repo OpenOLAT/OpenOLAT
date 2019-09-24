@@ -89,6 +89,7 @@ public class ImportCalendarManager {
 		try(InputStream in = new URL(url).openStream()) {
 			Files.copy(in, tmpFile.toPath());
 		} catch(IOException e) {
+			log.error("Cannot copy {}", tmpFile, e);
 			throw e;
 		}
 		
@@ -149,7 +150,7 @@ public class ImportCalendarManager {
 	public List<KalendarRenderWrapper> getImportedCalendarsForIdentity(Identity identity, boolean reload) {
 		// initialize the calendars list
 
-		List<KalendarRenderWrapper> calendars = new ArrayList<KalendarRenderWrapper>();
+		List<KalendarRenderWrapper> calendars = new ArrayList<>();
 		if(calendarModule.isEnabled() && calendarModule.isEnablePersonalCalendar()) {
 			long timestamp = System.currentTimeMillis();
 
@@ -181,7 +182,7 @@ public class ImportCalendarManager {
 	}
 	
 	public List<CalendarFileInfos> getImportedCalendarInfosForIdentity(Identity identity, boolean reload) {
-		List<CalendarFileInfos> calendars = new ArrayList<CalendarFileInfos>();
+		List<CalendarFileInfos> calendars = new ArrayList<>();
 		if(calendarModule.isEnabled() && calendarModule.isEnablePersonalCalendar()) {
 			long timestamp = System.currentTimeMillis();
 
@@ -233,7 +234,7 @@ public class ImportCalendarManager {
 			}
 			calendarManager.persistCalendar(kalendar);
 		} catch (Exception e) {
-		  	log.error("Could not reload calendar from url=" + importUrl, e);
+		  	log.info("Could not reload calendar from url={}", importUrl, e);
 		}
 	}
 	
@@ -274,7 +275,7 @@ public class ImportCalendarManager {
 		
 		public KalendarEventFilter(Identity identity, List<ImportedCalendar> importedCalendars) {
 			id = "-" + CalendarManager.TYPE_USER + "-" + identity.getName() + "-";
-			if(importedCalendars != null && importedCalendars.size() > 0) {
+			if(importedCalendars != null && !importedCalendars.isEmpty()) {
 				for(ImportedCalendar importedCalendar:importedCalendars) {
 					String calendarId = CalendarManager.TYPE_USER + "-" + importedCalendar.getCalendarId();
 					calendarIds.add(calendarId);

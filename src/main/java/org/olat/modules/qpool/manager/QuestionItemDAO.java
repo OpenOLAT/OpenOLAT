@@ -36,7 +36,6 @@ import org.olat.basesecurity.manager.SecurityGroupDAO;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
-import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItem2Resource;
@@ -314,11 +313,11 @@ public class QuestionItemDAO {
 	 * the taxonomy level, license, item type and
 	 * educational context.
 	 * 
-	 * @param key The identifier of the item as defined in its metadata
+	 * @param identifier The identifier of the item as defined in its metadata
 	 * @return The question items with the corresponding identifier
 	 */
 	public List<QuestionItem> loadByIdentifier(String identifier) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select item from questionitem item")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.license license")
@@ -330,9 +329,25 @@ public class QuestionItemDAO {
 				.setParameter("identifier", identifier)
 				.getResultList();
 	}
+
+	/**
+	 * The method loads the question items.
+	 * 
+	 * @param identifiers A list of identifiers as defined in metadata's items
+	 * @return The question items with the corresponding identifier
+	 */
+	public List<QuestionItemShort> loadShortItemsByIdentifier(List<String> identifiers) {
+		if(identifiers == null || identifiers.isEmpty()) return new ArrayList<>();
+	
+		String q ="select item from questionitem item where item.identifier in (:identifiers)";
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(q, QuestionItemShort.class)
+				.setParameter("identifiers", identifiers)
+				.getResultList();
+	}
 	
 	public List<QuestionItemFull> loadByIds(Collection<Long> key) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(256);
 		sb.append("select item from questionitem item")
 		  .append(" left join fetch item.taxonomyLevel taxonomyLevel")
 		  .append(" left join fetch item.license license")
@@ -426,26 +441,6 @@ public class QuestionItemDAO {
 				.setParameter("itemKey", item.getKey())
 				.getSingleResult();
 		return count.intValue() > 0;
-	}
-	
-	public int countSharedItemByResource(OLATResource resource, String format) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select count(item.key) from qshareitem share")
-		  .append(" inner join share.item item")
-		  .append(" where share.resource.key=:resourceKey");
-		if(StringHelper.containsNonWhitespace(format)) {
-			sb.append(" and item.format=:format");
-		}
-
-		TypedQuery<Number> countQuery = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), Number.class)
-				.setParameter("resourceKey", resource.getKey());
-		if(StringHelper.containsNonWhitespace(format)) {
-			countQuery.setParameter("format", format);
-		}
-		
-		Number count = countQuery.getSingleResult();
-		return count.intValue();
 	}
 	
 	public List<BusinessGroup> getResourcesWithSharedItems(Identity identity) {

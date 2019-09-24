@@ -21,11 +21,17 @@ package org.olat.modules.lecture.manager;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
+import org.olat.modules.lecture.AbsenceCategory;
+import org.olat.modules.lecture.AbsenceNotice;
+import org.olat.modules.lecture.AbsenceNoticeTarget;
+import org.olat.modules.lecture.AbsenceNoticeType;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockAuditLog;
 import org.olat.repository.RepositoryEntry;
@@ -45,6 +51,10 @@ public class LectureBlockAuditLogDAOTest extends OlatTestCase {
 	private DB dbInstance;
 	@Autowired
 	private LectureBlockDAO lectureBlockDao;
+	@Autowired
+	private AbsenceNoticeDAO absenceNoticeDao;
+	@Autowired
+	private AbsenceCategoryDAO absenceCategoryDao;
 	@Autowired
 	private LectureBlockAuditLogDAO lectureBlockAuditLogDao;
 	
@@ -137,6 +147,29 @@ public class LectureBlockAuditLogDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		String xml = lectureBlockAuditLogDao.toXml(lectureBlock);
+		Assert.assertNotNull(xml);
+	}
+	
+	@Test
+	public void xmlAuditLog_absenceNotice() {
+		String title = UUID.randomUUID().toString();
+		String description = "Long absence";
+		AbsenceCategory absenceCategory = absenceCategoryDao.createAbsenceCategory(title, description);
+		dbInstance.commitAndCloseSession();
+		
+		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("absent-1");
+		Identity notifier = JunitTestHelper.createAndPersistIdentityAsRndUser("notifier-1");
+		Identity authorizer = JunitTestHelper.createAndPersistIdentityAsRndUser("authorizer-1");
+		
+		Date start = CalendarUtils.startOfDay(new Date());
+		Date end = CalendarUtils.endOfDay(new Date());
+
+		AbsenceNotice notice = absenceNoticeDao.createAbsenceNotice(identity, AbsenceNoticeType.absence, AbsenceNoticeTarget.lectureblocks,
+				start, end, absenceCategory, "A very good reason", Boolean.TRUE, authorizer, notifier);
+		dbInstance.commitAndCloseSession();
+
+		String xml = lectureBlockAuditLogDao.toXml(notice);
+		System.out.println(xml);
 		Assert.assertNotNull(xml);
 	}
 }

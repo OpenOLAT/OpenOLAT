@@ -37,7 +37,7 @@
 	<xsl:output method="html" indent="yes" encoding="iso-8859-1" standalone="yes"/>
 
 	<xsl:template match="/">
-		<style type="text/css"><![CDATA[
+		<style><![CDATA[
 <!--
 .o_disabled_input {
 	padding: 0px;

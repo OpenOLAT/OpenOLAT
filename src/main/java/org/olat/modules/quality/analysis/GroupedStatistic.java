@@ -19,22 +19,16 @@
  */
 package org.olat.modules.quality.analysis;
 
-import org.olat.modules.forms.RubricRating;
-
 /**
  * 
  * Initial date: 11.09.2018<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface GroupedStatistic extends RawGroupedStatistic {
+public interface GroupedStatistic extends RawGroupedStatistic, HeatMapStatistic {
 	
 	public int getSteps();
 	
 	public boolean isRawAvgMaxGood();
-
-	public Double getAvg();
-	
-	public RubricRating getRating();
 	
 }

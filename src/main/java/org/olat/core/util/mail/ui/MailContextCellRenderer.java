@@ -71,6 +71,7 @@ public class MailContextCellRenderer implements CustomCellRenderer {
 				URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
 				RenderResult renderResult = new RenderResult();
 				link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
+				link.setDirty(false);
 			}
 		}
 	}

@@ -77,6 +77,7 @@ public class SectionNode extends GenericQtiNode {
 	 * Set's the node's title and alt text (truncates title)
 	 * @param title
 	 */
+	@Override
 	public void setMenuTitleAndAlt(String title) {
 		super.setMenuTitleAndAlt(title);
 		section.setTitle(title);
@@ -127,13 +128,12 @@ public class SectionNode extends GenericQtiNode {
 		return items.get(position);
 	}
 
-	/**
-	 * @see org.olat.ims.qti.editor.tree.IQtiNode#getUnderlyingQTIObject()
-	 */
+	@Override
 	public QTIObject getUnderlyingQTIObject() {
 		return section;
 	}
 
+	@Override
 	public Memento createMemento() {
 		//so far only TITLE and OBJECTIVES are stored in the memento
 		QtiNodeMemento qnm = new  QtiNodeMemento();
@@ -145,9 +145,9 @@ public class SectionNode extends GenericQtiNode {
 		return qnm;
 	}
 
+	@Override
 	public void setMemento(Memento state) {
-		// TODO Auto-generated method stub
-		
+		//
 	}
 
 	public String createChangeMessage(Memento mem) {

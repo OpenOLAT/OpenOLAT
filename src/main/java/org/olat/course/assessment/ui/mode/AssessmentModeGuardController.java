@@ -137,7 +137,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	}
 	
 	private void syncAssessmentModes(UserRequest ureq) {
-		List<ResourceGuard> modeWrappers = new ArrayList<ResourceGuard>();
+		List<ResourceGuard> modeWrappers = new ArrayList<>();
 		for(TransientAssessmentMode mode:modes) {
 			if(mode != null) {
 				ResourceGuard wrapper = syncAssessmentMode(ureq, mode);
@@ -325,7 +325,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 
 			boolean update = false;
 			TransientAssessmentMode mode = event.getAssessementMode();
-			List<TransientAssessmentMode> updatedModes = new ArrayList<TransientAssessmentMode>();
+			List<TransientAssessmentMode> updatedModes = new ArrayList<>();
 			for(TransientAssessmentMode currentMode:modes) {
 				if(currentMode.getModeKey().equals(mode.getModeKey())) {
 					updatedModes.add(mode);
@@ -356,7 +356,7 @@ public class AssessmentModeGuardController extends BasicController implements Ge
 	}
 	
 	private void continueAfterAssessmentMode(UserRequest ureq, ResourceGuard selectedGuard) {
-		List<ResourceGuard> lastGuards = new ArrayList<ResourceGuard>();
+		List<ResourceGuard> lastGuards = new ArrayList<>();
 		for(ResourceGuard currentGuard:guards.getList()) {
 			if(currentGuard != selectedGuard) {
 				lastGuards.add(currentGuard);

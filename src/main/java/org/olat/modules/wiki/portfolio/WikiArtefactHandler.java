@@ -37,11 +37,6 @@ import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for WikiArtefactHandler
- * 
- * <P>
  * Initial Date:  7 oct. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

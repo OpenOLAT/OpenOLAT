@@ -48,7 +48,7 @@ implements SortableFlexiTableDataModel<DeletedFileRow> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<DeletedFileRow> rows = new SortableFlexiTableModelDelegate<DeletedFileRow>(orderBy, this, translator.getLocale()).sort();
+			List<DeletedFileRow> rows = new SortableFlexiTableModelDelegate<>(orderBy, this, translator.getLocale()).sort();
 			super.setObjects(rows);
 		}
 	}

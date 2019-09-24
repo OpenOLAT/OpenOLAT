@@ -37,7 +37,6 @@ import org.olat.core.gui.control.controller.BasicController;
  * 
  * @author Roman Haag, roman.haag@frentix.com, www.frentix.com
  */
-// TODO: RH: gloss: should once be changed to a flexi and then use normal tiny-component over uifactory!
 public class GlossaryDefinitionController extends BasicController {
 
 	private GlossaryItem glossaryItem;

@@ -219,7 +219,7 @@ public class PoolDAOTest extends OlatTestCase {
 		params.setPoolKey(pool.getKey());
 		
 		//check
-		int numOfItems = poolDao.countItemsInPool(params);
+		int numOfItems = qItemQueriesDao.countItems(params);
 		Assert.assertEquals(1, numOfItems);
 		
 		//remove
@@ -227,7 +227,7 @@ public class PoolDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//check empty pool
-		int numOfStayingItems = poolDao.countItemsInPool(params);
+		int numOfStayingItems = qItemQueriesDao.countItems(params);
 		Assert.assertEquals(0, numOfStayingItems);
 		
 		//but item exists
@@ -259,9 +259,9 @@ public class PoolDAOTest extends OlatTestCase {
 		params2.setPoolKey(pool2.getKey());
 		
 		//check
-		int numOfItems_1 = poolDao.countItemsInPool(params1);
+		int numOfItems_1 = qItemQueriesDao.countItems(params1);
 		Assert.assertEquals(2, numOfItems_1);
-		int numOfItems_2 = poolDao.countItemsInPool(params2);
+		int numOfItems_2 = qItemQueriesDao.countItems(params2);
 		Assert.assertEquals(2, numOfItems_2);
 		
 		//remove
@@ -269,15 +269,15 @@ public class PoolDAOTest extends OlatTestCase {
 		dbInstance.commit();
 		
 		//check empty pool
-		int numOfStayingItems_1 = poolDao.countItemsInPool(params1);
+		int numOfStayingItems_1 = qItemQueriesDao.countItems(params1);
 		Assert.assertEquals(2, numOfStayingItems_1);
-		int numOfStayingItems_2 = poolDao.countItemsInPool(params2);
+		int numOfStayingItems_2 = qItemQueriesDao.countItems(params2);
 		Assert.assertEquals(1, numOfStayingItems_2);
 		
 		//check content
-		List<QuestionItemView> items_1 = qItemQueriesDao.getItemsOfPool(params1, null, 0, -1);
+		List<QuestionItemView> items_1 = qItemQueriesDao.getItems(params1, 0, -1);
 		Assert.assertEquals(2, items_1.size());
-		List<QuestionItemView> items_2 = qItemQueriesDao.getItemsOfPool(params2, null, 0, -1);
+		List<QuestionItemView> items_2 = qItemQueriesDao.getItems(params2, 0, -1);
 		Assert.assertEquals(1, items_2.size());
 		Assert.assertEquals(item2.getKey(), items_2.get(0).getKey());
 		
@@ -294,7 +294,7 @@ public class PoolDAOTest extends OlatTestCase {
 		Pool pool2 = poolDao.createPool(null, poolName, true);
 		QItemType mcType = qItemTypeDao.loadByType(QuestionType.MC.name());
 		QuestionItem item = questionItemDao.createAndPersist(null, "Galaxy", QTIConstants.QTI_12_FORMAT, Locale.ENGLISH.getLanguage(), null, null, null, mcType);
-		List<Pool> pools = new ArrayList<Pool>(2);
+		List<Pool> pools = new ArrayList<>(2);
 		pools.add(pool1);
 		pools.add(pool2);
 		poolDao.addItemToPool(item, pools, false);
@@ -342,7 +342,7 @@ public class PoolDAOTest extends OlatTestCase {
 		params.setPoolKey(pool.getKey());
 		
 		//check the pool and remove the items
-		List<QuestionItemView> items = qItemQueriesDao.getItemsOfPool(params, null, 0 , -1);
+		List<QuestionItemView> items = qItemQueriesDao.getItems(params, 0 , -1);
 		Assert.assertEquals(1, items.size());
 		List<QuestionItemShort> toDelete = Collections.<QuestionItemShort>singletonList(items.get(0));
 		int count = poolDao.removeFromPools(toDelete);
@@ -350,7 +350,7 @@ public class PoolDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//check if the pool is empty
-		List<QuestionItemView> emptyItems = qItemQueriesDao.getItemsOfPool(params, null, 0 , -1);
+		List<QuestionItemView> emptyItems = qItemQueriesDao.getItems(params, 0 , -1);
 		Assert.assertTrue(emptyItems.isEmpty());
 	}
 }

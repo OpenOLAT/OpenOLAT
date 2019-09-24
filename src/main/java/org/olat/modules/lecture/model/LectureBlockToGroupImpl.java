@@ -72,6 +72,7 @@ public class LectureBlockToGroupImpl implements Persistable, LectureBlockToGroup
 		this.lectureBlock = lectureBlock;
 	}
 
+	@Override
 	public Group getGroup() {
 		return group;
 	}

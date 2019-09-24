@@ -115,6 +115,7 @@ public class StatisticUpdater implements IStatisticUpdater {
 	}
 
 	@Override
+	@SuppressWarnings("squid:S2077")// SQL is defined in the configuration and cannot be changed
 	public final void updateStatistic(boolean fullRecalculation, Date from, Date until, StatisticUpdateManager statisticUpdateManager) {
 		log_.info("updateStatistic<"+loggingName_+">: START");
 		final long startTime = System.currentTimeMillis();

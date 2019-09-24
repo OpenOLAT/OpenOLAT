@@ -1161,9 +1161,6 @@ public class RepositoryManager {
 	 */
 	public List<RepositoryEntry> queryResourcesLimitType(Identity identity, Roles roles, boolean organisationWildCard,
 			List<String> resourceTypes, String displayName, String author, String desc, boolean checkCanReference, boolean checkCanCopy) {
-		if(!checkCanReference && !checkCanCopy) {
-			return Collections.emptyList();
-		}
 		if(!roles.isAuthor() && !roles.isLearnResourceManager() && !roles.isAdministrator() && !roles.isQualityManager()) {
 			return Collections.emptyList();
 		}

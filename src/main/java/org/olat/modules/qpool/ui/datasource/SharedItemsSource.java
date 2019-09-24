@@ -40,8 +40,10 @@ import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionItemView;
 import org.olat.modules.qpool.QuestionStatus;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.model.SearchQuestionItemParams;
 import org.olat.modules.qpool.ui.QuestionItemsSource;
+import org.olat.modules.qpool.ui.metadata.QPoolSearchEvent;
 
 /**
  * 
@@ -57,9 +59,12 @@ public class SharedItemsSource implements QuestionItemsSource {
 	private final Identity identity;
 	private final BusinessGroup group;
 	private final QPoolService qpoolService;
-
-	private String restrictToFormat;
 	
+	private String searchString;
+	private String restrictToFormat;
+	private List<QItemType> excludedItemTypes;
+	private QPoolSearchEvent extendedSearchParameters;
+
 	public SharedItemsSource(BusinessGroup group, Identity identity, Roles roles, Locale locale, boolean admin) {
 		this.admin = admin;
 		this.roles = roles;
@@ -75,6 +80,15 @@ public class SharedItemsSource implements QuestionItemsSource {
 
 	public void setRestrictToFormat(String restrictToFormat) {
 		this.restrictToFormat = restrictToFormat;
+	}
+	
+	public void setExcludedItemTypes(List<QItemType> excludedItemTypes) {
+		this.excludedItemTypes = excludedItemTypes;
+	}
+	
+	@Override
+	public void setExtendedSearchParams(QPoolSearchEvent parameters) {
+		extendedSearchParameters = parameters;
 	}
 
 	@Override
@@ -180,12 +194,9 @@ public class SharedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public int getNumOfItems() {
-		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles, locale);
-		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
-			params.setFormat(restrictToFormat);
-		}
-		return qpoolService.countSharedItemByResource(group.getResource(), params);
+	public int getNumOfItems(boolean withExtendedSearchParams) {
+		SearchQuestionItemParams params = getSearchParams(withExtendedSearchParams);
+		return qpoolService.countItems(params);
 	}
 
 	@Override
@@ -195,7 +206,8 @@ public class SharedItemsSource implements QuestionItemsSource {
 		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
 			params.setFormat(restrictToFormat);
 		}
-		ResultInfos<QuestionItemView> items = qpoolService.getSharedItemByResource(group.getResource(), params, 0, -1);
+		params.setExcludedItemTypes(excludedItemTypes);
+		ResultInfos<QuestionItemView> items = qpoolService.getItems(params, 0, -1);
 		return items.getObjects();
 	}
 
@@ -206,13 +218,26 @@ public class SharedItemsSource implements QuestionItemsSource {
 	}
 
 	@Override
-	public ResultInfos<QuestionItemView> getItems(String query, List<String> condQueries, int firstResult, int maxResults, SortKey... orderBy) {
+	public ResultInfos<QuestionItemView> getItems(String query, int firstResult, int maxResults, SortKey... orderBy) {
+		this.searchString = query;
+		
+		SearchQuestionItemParams params = getSearchParams(true);
+		return qpoolService.getItems(params, firstResult, maxResults, orderBy);
+	}
+	
+	private SearchQuestionItemParams getSearchParams(boolean withExtendedSearchParams) {
 		SearchQuestionItemParams params = new SearchQuestionItemParams(identity, roles, locale);
-		params.setSearchString(query);
-		params.setCondQueries(condQueries);
+		if(withExtendedSearchParams) {
+			params.setSearchString(searchString);
+			if(extendedSearchParameters != null && extendedSearchParameters.getSearchParams() != null) {
+				extendedSearchParameters.getSearchParams().enrich(params);
+			}
+		}
 		if(StringHelper.containsNonWhitespace(restrictToFormat)) {
 			params.setFormat(restrictToFormat);
 		}
-		return qpoolService.getSharedItemByResource(group.getResource(), params, firstResult, maxResults, orderBy);
+		params.setExcludedItemTypes(excludedItemTypes);
+		params.setResource(group.getResource());
+		return params;
 	}
 }

@@ -130,7 +130,7 @@ public class TextInputController extends FormBasicController implements Evaluati
 
 	@Override
 	public boolean hasResponse() {
-		return response != null && StringHelper.containsNonWhitespace(response.getStringuifiedResponse());
+		return true;
 	}
 
 	@Override

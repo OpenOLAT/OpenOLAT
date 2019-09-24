@@ -131,7 +131,7 @@ var BLoader = {
 					// create the new stylesheet and convince the browser to load the url using @import with protocol 'data'
 					//var styles = '@import url("'+cssURL+'");';
 					//var newSt = new Element('link', {rel : 'stylesheet', id : linkid, href : 'data:text/css,'+escape(styles) });
-					var newSt = jQuery('<link id="' + linkid + '" rel="stylesheet" type="text/css" href="' + cssURL+ '">');
+					var newSt = jQuery('<link id="' + linkid + '" rel="stylesheet" href="' + cssURL+ '">');
 					if (loadAfterTheme) {
 						newSt.insertBefore(jQuery('#o_fontSize_css'));
 					} else {
@@ -769,7 +769,6 @@ function setFormDirty(formId) {
 	// fetch the form and the forms submit button is identified via the olat 
 	// form submit name
 	var myForm = document.getElementById(formId);
-	//TODO:gs:a why not directly accessing the submit button by an id. name="olat_fosm" send additional parameter which is unused. OLAT-1363
 	if (myForm != null) {
 		var mySubmit = myForm.olat_fosm_0;
 		if(mySubmit == null){

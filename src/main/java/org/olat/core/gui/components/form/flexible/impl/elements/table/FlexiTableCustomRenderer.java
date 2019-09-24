@@ -167,6 +167,7 @@ class FlexiTableCustomRenderer extends AbstractFlexiTableRenderer implements Com
 		container.contextRemove("isOpen");
 		container.contextRemove("row");
 		container.contextRemove("f");
+		container.setDirty(false);
 
 		sb.append("</div>");
 	}

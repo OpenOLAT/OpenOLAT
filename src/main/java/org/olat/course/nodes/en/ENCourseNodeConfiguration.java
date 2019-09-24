@@ -36,8 +36,7 @@ import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.ENCourseNode;
 
 /**
- * Description:<br>
- * TODO: guido Class Description for ENCourseNodeConfiguration
+ * @author guido
  */
 public class ENCourseNodeConfiguration extends AbstractCourseNodeConfiguration {
 

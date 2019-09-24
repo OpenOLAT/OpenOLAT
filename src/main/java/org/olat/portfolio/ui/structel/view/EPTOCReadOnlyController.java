@@ -95,7 +95,7 @@ public class EPTOCReadOnlyController extends BasicController {
 	public void refreshTOC(UserRequest ureq) {
 		// do recursively
 		int level = 0;
-		List<TOCElement> tocList = new ArrayList<TOCElement>();
+		List<TOCElement> tocList = new ArrayList<>();
 		buildTOCModel(map, tocList, level);
 
 		vC.contextPut("tocList", tocList);
@@ -177,7 +177,7 @@ public class EPTOCReadOnlyController extends BasicController {
 				}
 
 				// prefetch children to keep reference on them
-				List<TOCElement> tocChildList = new ArrayList<TOCElement>();
+				List<TOCElement> tocChildList = new ArrayList<>();
 				buildTOCModel(portfolioStructure, tocChildList, level);
 				TOCElement actualTOCEl = new TOCElement(level, type, titleLink, iconLink, commentLink, tocChildList);
 				tocList.add(actualTOCEl);

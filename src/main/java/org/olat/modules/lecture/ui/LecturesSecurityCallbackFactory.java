@@ -19,6 +19,9 @@
  */
 package org.olat.modules.lecture.ui;
 
+import org.olat.core.CoreSpringFactory;
+import org.olat.modules.lecture.LectureModule;
+
 /**
  * 
  * Initial date: 20 juil. 2018<br>
@@ -27,36 +30,151 @@ package org.olat.modules.lecture.ui;
  */
 public class LecturesSecurityCallbackFactory {
 	
-	public static LecturesSecurityCallback getSecurityCallback(boolean canModify) {
-		return new LecturesSecurityCallbackImpl(canModify);
+	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole) {
+		LectureRoles viewAs;
+		if(adminRole) {
+			viewAs = LectureRoles.lecturemanager;
+		} else if(masterCoachRole) {
+			viewAs = LectureRoles.mastercoach;
+		} else if(teacherRole) {
+			viewAs = LectureRoles.teacher;
+		} else {
+			viewAs = LectureRoles.participant;
+		}
+		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs);
+	}
+	
+	public static LecturesSecurityCallback getSecurityCallback(boolean adminRole, boolean masterCoachRole, boolean teacherRole, LectureRoles viewAs) {
+		return new LecturesSecurityCallbackImpl(adminRole, masterCoachRole, teacherRole, viewAs);
 	}
 	
 	private static class LecturesSecurityCallbackImpl implements LecturesSecurityCallback {
 		
-		private final boolean canModify;
+		private final boolean adminRole;
+		private final boolean masterCoachRole;
+		private final boolean teacherRole;
 		
-		public LecturesSecurityCallbackImpl(boolean canModify) {
-			this.canModify = canModify;
+		private final LectureRoles viewAs;
+		private LectureModule lectureModule;
+		
+		public LecturesSecurityCallbackImpl(boolean adminRole, boolean masterCoachRole, boolean teacherRole, LectureRoles viewAs) {
+			this.adminRole = adminRole;
+			this.masterCoachRole = masterCoachRole;
+			this.teacherRole = teacherRole;
+			this.viewAs = viewAs;
+			lectureModule = CoreSpringFactory.getImpl(LectureModule.class);
 		}
 
 		@Override
 		public boolean canNewLectureBlock() {
-			return canModify;
+			return adminRole;
 		}
 
 		@Override
 		public boolean canChangeRates() {
-			return canModify;
+			return adminRole;
+		}
+
+		@Override
+		public boolean canSeeAppeals() {
+			if(!lectureModule.isAbsenceAppealEnabled()) {
+				return false;
+			}
+			
+			if(viewAs == LectureRoles.teacher) {
+				return teacherRole && lectureModule.isTeacherCanSeeAppeal();
+			}
+			if(viewAs == LectureRoles.mastercoach) {
+				return masterCoachRole && lectureModule.isMasterCoachCanSeeAppeal();
+			}
+			if(viewAs == LectureRoles.lecturemanager) {
+				return adminRole && lectureModule.isAbsenceAppealEnabled();
+			}
+			return false;
 		}
 
 		@Override
 		public boolean canApproveAppeal() {
-			return canModify;
+			if(adminRole) {
+				return true;
+			}
+			
+			if(viewAs == LectureRoles.teacher) {
+				return teacherRole && lectureModule.isTeacherCanAuthorizedAppeal();
+			}
+			if(viewAs == LectureRoles.mastercoach) {
+				return masterCoachRole && lectureModule.isMasterCoachCanAuthorizedAppeal();
+			}
+			return false;
 		}
 
 		@Override
 		public boolean canEditConfiguration() {
-			return canModify;
+			return adminRole;
+		}
+
+		@Override
+		public boolean canAuthorizeAbsence() {
+			if(adminRole) {
+				return true;
+			}
+			return (masterCoachRole && lectureModule.isMasterCoachCanAuthorizedAbsence())
+					|| (teacherRole && lectureModule.isTeacherCanAuthorizedAbsence());
+		}
+		
+		@Override
+		public boolean canAddAbsences() {
+			if(!lectureModule.isAbsenceNoticeEnabled()) {
+				return false;
+			}
+			
+			// same permissions as dispensations
+			if(viewAs == LectureRoles.participant) {
+				return false;
+			} else if(teacherRole || adminRole) {
+				return true;
+			} else if(masterCoachRole) {
+				return lectureModule.isMasterCoachCanRecordNotice();
+			}
+			return false;
+		}
+		
+		@Override
+		public boolean canAddDispensations() {
+			return canAddAbsences();
+		}
+
+		@Override
+		public boolean canAddNoticeOfAbsences() {
+			if(!lectureModule.isAbsenceNoticeEnabled()) {
+				return false;
+			}
+			
+			if(viewAs == LectureRoles.participant) {
+				return lectureModule.isParticipantCanNotice();
+			}
+			
+			if(teacherRole || adminRole) {
+				return true;
+			} else if(masterCoachRole) {
+				return lectureModule.isMasterCoachCanRecordNotice();
+			}
+			return false;
+		}
+
+		@Override
+		public boolean canEditAbsenceNotices() {
+			return viewAs == LectureRoles.teacher || viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
+		}
+
+		@Override
+		public boolean canDeleteAbsenceNotices() {
+			return viewAs == LectureRoles.lecturemanager || viewAs == LectureRoles.mastercoach;
+		}
+
+		@Override
+		public LectureRoles viewAs() {
+			return viewAs;
 		}
 	}
 }

@@ -31,8 +31,8 @@ import java.util.List;
  */
 public class KeyValues {
 	
-	private static Comparator<String> nullSafeStringComparator = Comparator.nullsLast(String::compareToIgnoreCase);
-	public static Comparator<KeyValue> VALUE_ASC = Comparator.comparing(KeyValue::getValue, nullSafeStringComparator);
+	private static final Comparator<String> nullSafeStringComparator = Comparator.nullsLast(String::compareToIgnoreCase);
+	public static final Comparator<KeyValue> VALUE_ASC = Comparator.comparing(KeyValue::getValue, nullSafeStringComparator);
 	
 	private List<KeyValue> keyValues = new ArrayList<>();
 	

@@ -33,7 +33,7 @@ public class ConcurrentDateFormat {
     private final String format;
     private final Locale locale;
     private final TimeZone timezone;
-    private final Queue<SimpleDateFormat> queue = new ConcurrentLinkedQueue<SimpleDateFormat>();
+    private final Queue<SimpleDateFormat> queue = new ConcurrentLinkedQueue<>();
 
     public static final String RFC1123_DATE = "EEE, dd MMM yyyy HH:mm:ss zzz";
     public static final TimeZone GMT = TimeZone.getTimeZone("GMT");

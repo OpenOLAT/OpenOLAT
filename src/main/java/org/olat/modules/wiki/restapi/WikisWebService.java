@@ -44,6 +44,8 @@ import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * The Wikis Webservice.<br />
@@ -52,6 +54,7 @@ import org.springframework.stereotype.Component;
  * @author strentini, sergio.trentini@frentix.com, http://www.frentix.com
  * 
  */
+@Tag(name = "Repo")
 @Path("repo/wikis")
 @Component
 public class WikisWebService {

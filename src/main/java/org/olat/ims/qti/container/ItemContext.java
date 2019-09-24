@@ -62,9 +62,6 @@ public class ItemContext implements Serializable {
 
 	private AssessmentInstance assessInstance;
 
-	// TODO: no, complicated, since in several objectbanks.... readonly ref!: the
-	// ref to the el_item; transient since it we don't want to serialize it (too
-	// long) and can reattach it later
 	private Element el_shuffled_item;
 
 	// Internal representation of an item.

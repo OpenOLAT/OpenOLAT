@@ -33,10 +33,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for Trans
- * 
- * <P>
  * Initial Date: 10.03.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */

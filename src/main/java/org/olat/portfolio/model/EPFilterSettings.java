@@ -41,11 +41,11 @@ import java.util.UUID;
 public class EPFilterSettings {
 	
 
-	private List<String> tagFilter = new ArrayList<String>();
-	private List<String> typeFilter = new ArrayList<String>();
+	private List<String> tagFilter = new ArrayList<>();
+	private List<String> typeFilter = new ArrayList<>();
 	private String textFilter = "";
-	private List<Date> dateFilter = new ArrayList<Date>();
-	private List<Object> filterList = new ArrayList<Object>();
+	private List<Date> dateFilter = new ArrayList<>();
+	private List<Object> filterList = new ArrayList<>();
 	private String filterName;
 	private String filterId = "";
 	private boolean noTagFilterSet = false;
@@ -112,7 +112,7 @@ public class EPFilterSettings {
 	
 	// use this to set tag filter to "none" to filter resources without a tag!
 	public void setNoTagFilter() {
-		this.tagFilter = new ArrayList<String>();
+		this.tagFilter = new ArrayList<>();
 		noTagFilterSet = true;
 	}
 	
@@ -172,13 +172,13 @@ public class EPFilterSettings {
 	public EPFilterSettings cloneAfterFullText() {
 		EPFilterSettings clone = new EPFilterSettings();
 		if(tagFilter != null) {
-			clone.tagFilter = new ArrayList<String>(tagFilter);
+			clone.tagFilter = new ArrayList<>(tagFilter);
 		}
 		if(typeFilter != null) {
-			clone.typeFilter = new ArrayList<String>(typeFilter);
+			clone.typeFilter = new ArrayList<>(typeFilter);
 		}
 		if(dateFilter != null) {
-			clone.dateFilter = new ArrayList<Date>(dateFilter);
+			clone.dateFilter = new ArrayList<>(dateFilter);
 		}
 		clone.filterName = filterName;
 		clone.filterId = filterId;

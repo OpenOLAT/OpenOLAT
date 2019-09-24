@@ -4,10 +4,8 @@
 	<img src="$mediaUrl/$filename" />
 #elseif($movie)
 	<p><span id="olatFlashMovieViewer1" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:${width}px; height:${height}px;">
-		<script type="text/javascript">
-		// <![CDATA[
+		<script>
 		    BPlayer.insertPlayer('$mediaUrl/$filename','olatFlashMovieViewer1',$width,$height,0,0,'video',undefined,false,true,false);
-		// ]]>
 		</script>
 	</span></p>
 #elseif($r.available("content"))

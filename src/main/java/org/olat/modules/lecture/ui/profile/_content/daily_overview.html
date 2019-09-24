@@ -1,0 +1,14 @@
+<fieldset class="o_lectures_daily_overview">
+	<div class="o_header_with_buttons">
+	<h3>$r.translate("cockpit.day.overview") <small>$date</small></h3>
+		<div class="o_day_chooser">$r.render("day.chooser")</div>
+	</div>
+	<div class="clearfix">
+		<h4>$r.translate("cockpit.lectures")</h4>
+		$r.render("lectureBlocks")
+	</div>
+	<div class="clearfix">
+		<h4>$r.translate("cockpit.absences")</h4>
+		$r.render("absences")
+	</div>
+</fieldset>

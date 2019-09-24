@@ -36,7 +36,8 @@ public class SearchLecturesBlockEvent extends Event {
 	public static final String SEARCH_EVENT = "search-lectures-block-event";
 	
 	private final String searchString;
-	private final Date startDate, endDate;
+	private final Date startDate;
+	private final Date endDate;
 	
 	public SearchLecturesBlockEvent(String searchString, Date startDate, Date endDate) {
 		super(SEARCH_EVENT);

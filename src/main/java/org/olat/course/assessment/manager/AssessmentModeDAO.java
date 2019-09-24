@@ -279,7 +279,7 @@ public class AssessmentModeDAO {
 				.setParameter("modeKeys", modeKeys)
 				.getResultList();
 		//quicker than distinct
-		return new ArrayList<>(new HashSet<AssessmentMode>(modeList));
+		return new ArrayList<>(new HashSet<>(modeList));
 	}
 	
 	public boolean isNodeInUse(RepositoryEntryRef entry, CourseNode node) {

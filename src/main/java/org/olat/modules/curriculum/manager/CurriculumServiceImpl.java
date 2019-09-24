@@ -78,6 +78,7 @@ import org.olat.modules.curriculum.model.CurriculumMember;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.curriculum.model.CurriculumSearchParameters;
 import org.olat.modules.curriculum.model.SearchMemberParameters;
+import org.olat.modules.lecture.manager.LectureBlockToGroupDAO;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
 import org.olat.repository.RepositoryEntry;
@@ -110,6 +111,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	private CurriculumDAO curriculumDao;
 	@Autowired
 	private CurriculumMemberQueries memberQueries;
+	@Autowired
+	private LectureBlockToGroupDAO lectureBlockToGroupDao;
 	@Autowired
 	private RepositoryEntryMyCourseQueries myCourseQueries;
 	@Autowired
@@ -145,12 +148,18 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	@Override
 	public void deleteCurriculum(CurriculumRef curriculumRef) {
 		CurriculumImpl curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
+		boolean deleted = true;
 		for(CurriculumElement rootElement:curriculum.getRootElements()) {
-			deleteCurriculumElement(rootElement);
+			deleted &= deleteCurriculumElement(rootElement);
 		}
 		dbInstance.commit();
 		curriculum = (CurriculumImpl)getCurriculum(curriculumRef);
-		curriculumDao.delete(curriculum);
+		if(deleted) {
+			curriculumDao.delete(curriculum);
+		} else {
+			curriculumDao.flagAsDelete(curriculum);
+		}
+		
 		dbInstance.commit();
 	}
 
@@ -373,7 +382,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	}
 
 	@Override
-	public void deleteCurriculumElement(CurriculumElementRef element) {
+	public boolean deleteCurriculumElement(CurriculumElementRef element) {
 		List<CurriculumElement> children = curriculumElementDao.getChildren(element);
 		for(CurriculumElement child:children) {
 			deleteCurriculumElement(child);
@@ -390,6 +399,8 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 		}
 		// remove relations to taxonomy
 		curriculumElementToTaxonomyLevelDao.deleteRelation(reloadedElement);
+		// remove relations to lecture blocks
+		lectureBlockToGroupDao.deleteLectureBlockToGroup(reloadedElement.getGroup());
 		
 		boolean delete = true;
 		Map<String,CurriculumDataDeletable> deleteDelegates = CoreSpringFactory.getBeansOfType(CurriculumDataDeletable.class);
@@ -408,6 +419,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 			reloadedElement.setElementStatus(CurriculumElementStatus.deleted);
 			curriculumElementDao.update(reloadedElement);
 		}
+		return delete;
 	}
 
 	@Override
@@ -873,6 +885,7 @@ public class CurriculumServiceImpl implements CurriculumService, OrganisationDat
 	public boolean deleteOrganisationData(Organisation organisation, Organisation replacementOrganisation) {
 		CurriculumSearchParameters searchParams = new CurriculumSearchParameters();
 		searchParams.setOrganisations(Collections.singletonList(organisation));
+		searchParams.setWithDeleted(true);
 		List<Curriculum> curriculums = curriculumDao.search(searchParams);
 		for(Curriculum curriculum:curriculums) {
 			curriculum.setOrganisation(replacementOrganisation);

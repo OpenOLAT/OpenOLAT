@@ -70,7 +70,7 @@ public class EPArtefactTypeSelectionController extends FormBasicController {
 		String[] values = new String[] { translate("filter.type.enabled") };
 
 		List<EPArtefactHandler<?>> handlers = portfolioModule.getAllAvailableArtefactHandlers();
-		typeCmpList = new ArrayList<MultipleSelectionElement>();
+		typeCmpList = new ArrayList<>();
 		for (EPArtefactHandler<?> handler : handlers) {
 			Translator handlerTrans = handler.getHandlerTranslator(getTranslator());
 			this.flc.setTranslator(handlerTrans);
@@ -106,7 +106,7 @@ public class EPArtefactTypeSelectionController extends FormBasicController {
 	}
 	
 	protected void updateSelectedTypeList(){
-		if (selectedTypeList == null) selectedTypeList = new ArrayList<String>();
+		if (selectedTypeList == null) selectedTypeList = new ArrayList<>();
 		for (MultipleSelectionElement typeCmp : typeCmpList) {
 			String selType = (String) typeCmp.getUserObject();
 			if (typeCmp.isSelected(0) && !selectedTypeList.contains(selType)) {

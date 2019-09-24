@@ -328,9 +328,9 @@ public class FormJSHelper {
 	 * @return
 	 */
 	public static StringOutput appendFlexiFormDirtyOn(StringOutput sb, Form form, String events, String formDispatchId) {
-		sb.append(" <script>\n /* <![CDATA[ */ \n")
+		sb.append(" <script>\n")
 		  .append("(function() { jQuery('#").append(formDispatchId).append("').on('").append(events).append("', {formId:\"").append(form.getDispatchFieldId()).append("\", hideMessage:").append(form.isHideDirtyMarkingMessage()).append("}, setFlexiFormDirtyByListener);")
-		  .append("})();\n /* ]]> */ \n</script>");
+		  .append("})();\n</script>");
 		return sb;
 	}
 	
@@ -343,9 +343,9 @@ public class FormJSHelper {
 	 * @return
 	 */
 	public static StringOutput setFlexiFormDirtyOnLoad(StringOutput sb, Form form) {
-		sb.append("<script>\n /* <![CDATA[ */ \n")
+		sb.append("<script>\n")
 		  .append(" setTimeout(function(){ setFlexiFormDirty(\"").append(form.getDispatchFieldId()).append("\",").append(form.isHideDirtyMarkingMessage()).append(");}, 500);")
-		  .append("\n/* ]]> */ \n</script>");
+		  .append("\n</script>");
 		return sb;
 	}
 	
@@ -367,7 +367,7 @@ public class FormJSHelper {
 	 * creates the JS fragment needed for the {@link #getInlineEditOkCancelHTML(StringOutput, String, String, String)} HTML fragment.
 	 * @param sb where to append
 	 * @param id formItemId of the InlineEdit FormItem
-	 * @param oldHtmlValue escaped HTML value TODO:2009-09-26:pb: escaped values appear as &apos; and are not escaped back.
+	 * @param oldHtmlValue escaped HTML value
 	 * @param rootForm to extract the ID of the Form where to submit to.
 	 */
 	public static void getInlineEditOkCancelJS(StringOutput sb, String id, String oldHtmlValue, Form rootForm) {

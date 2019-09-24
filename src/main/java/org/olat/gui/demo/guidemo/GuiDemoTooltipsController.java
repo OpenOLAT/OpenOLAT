@@ -38,10 +38,6 @@ import org.olat.core.gui.dev.controller.SourceViewController;
 
 
 /**
- * Description:<br>
- * TODO: guido Class Description for GuiDemoTooltipsController
- * 
- * <P>
  * Initial Date:  19.06.2007 <br>
  * @author guido
  */
@@ -90,25 +86,17 @@ public class GuiDemoTooltipsController extends BasicController {
 		putInitialPanel(content);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(source == link4) {
 			getWindowControl().setInfo("You clicked a link rendered in a tooltip!");
 			link4.setDirty(true);
 		}
-
 	}
 
 }

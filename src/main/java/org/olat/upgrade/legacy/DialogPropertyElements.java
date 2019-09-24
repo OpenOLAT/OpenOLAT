@@ -29,16 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Description:<br>
- * TODO: guido Class Description for DialogPropertyElements
- * 
- * <P>
  * Initial Date:  15.11.2005 <br>
  *
  * @author guido
  */
 public class DialogPropertyElements {
-	private List<DialogElement> dialogPropertyElements = new ArrayList<DialogElement>();
+	private List<DialogElement> dialogPropertyElements = new ArrayList<>();
 	private transient String propertyCategory;
 	private int version = 1;
 	//there is a feature in the admin console you can search properties by propertyName

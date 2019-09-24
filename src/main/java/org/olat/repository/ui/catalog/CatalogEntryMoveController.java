@@ -126,7 +126,7 @@ public class CatalogEntryMoveController extends BasicController {
 	 * @return
 	 */
 	private List<CatalogEntry> fetchChildren(List<CatalogEntry> parents) {
-		List<CatalogEntry> tmp = new ArrayList<CatalogEntry>();
+		List<CatalogEntry> tmp = new ArrayList<>();
 		for (CatalogEntry child : parents) {
 			tmp.add(child);
 			if (child.getType() == CatalogEntry.TYPE_NODE) {

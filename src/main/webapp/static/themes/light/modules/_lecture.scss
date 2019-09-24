@@ -42,6 +42,11 @@
 	}
 }
 
+.o_header_with_buttons .o_day_chooser {
+	position: relative;
+	float: right;
+}
+
 .o_lectures_rollcall {
 	legend {
 		margin-bottom: 10px;
@@ -53,6 +58,7 @@
 	}
 	
 }
+
 .o_lectures_print {
 	
 }

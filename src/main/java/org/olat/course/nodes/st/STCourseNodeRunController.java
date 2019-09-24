@@ -113,12 +113,12 @@ public class STCourseNodeRunController extends BasicController {
 		String displayType = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_DISPLAY_TYPE, STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW);
 
 		// Build list of child nodes and peek views if necessary
-		List<CourseNode> children = new ArrayList<CourseNode>();
+		List<CourseNode> children = new ArrayList<>();
 
 		// Build up a overview of all visible children (direct children only, no
 		// grandchildren)
 		String peekviewChildNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, null);
-		List<String> peekviewChildNodes =  (peekviewChildNodesConfig == null ? new ArrayList<String>() : Arrays.asList(peekviewChildNodesConfig.split(",")));
+		List<String> peekviewChildNodes =  (peekviewChildNodesConfig == null ? new ArrayList<>() : Arrays.asList(peekviewChildNodesConfig.split(",")));
 		int chdCnt = ne.getChildCount();
 		for (int i = 0; i < chdCnt; i++) {
 			NodeEvaluation neChd = ne.getNodeEvaluationChildAt(i);

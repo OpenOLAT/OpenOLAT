@@ -99,7 +99,7 @@ public class FinishCallback implements StepRunnerCallback {
 			bundle.setContext(context);
 			Identity sender = (Identity)runContext.get(SendMailStepForm.SENDER);
 			bundle.setFromId(sender != null ? sender : ureq.getIdentity());
-			bundle.setContactLists(new ArrayList<ContactList>(Arrays.asList(contacts)));
+			bundle.setContactLists(new ArrayList<>(Arrays.asList(contacts)));
 			MailTemplate mailTemplate = (MailTemplate)runContext.get(SendMailStepForm.MAIL_TEMPLATE);
 			bundle.setContent(mailTemplate.getSubjectTemplate(), mailTemplate.getBodyTemplate());
 

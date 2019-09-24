@@ -84,7 +84,7 @@ class TableSortRenderer extends DefaultComponentRenderer {
 		}
 
 		sb.append("</ul></div></div>")
-		  .append("<script type='text/javascript'>\n")
+		  .append("<script>\n")
 		  .append("/* <![CDATA[ */\n")
 		  .append("jQuery(function() { o_popover('table-button-sorters-").append(id).append("','table-sorters-").append(id).append("'); });\n")
 		  .append("/* ]]> */\n")

@@ -67,11 +67,11 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		businessGroupService = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		
 		List<ResourceReservation> resourceReservations = acService.getReservations(getIdentity());
-		reservations = new ArrayList<ReservationWrapper>(resourceReservations.size());
+		reservations = new ArrayList<>(resourceReservations.size());
 
 		if(!resourceReservations.isEmpty()) {
-			List<Long> groupKeys = new ArrayList<Long>();
-			List<OLATResource> resources = new ArrayList<OLATResource>();
+			List<Long> groupKeys = new ArrayList<>();
+			List<OLATResource> resources = new ArrayList<>();
 			for(ResourceReservation reservation: resourceReservations) {
 				OLATResource resource = reservation.getResource();
 				if("BusinessGroup".equals(resource.getResourceableTypeName())) {
@@ -97,7 +97,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 				}
 	
 				if("BusinessGroup".equals(resource.getResourceableTypeName()) && !relations.isEmpty()) {
-					List<String> courseNames = new ArrayList<String>();
+					List<String> courseNames = new ArrayList<>();
 					
 					for(BGRepositoryEntryRelation relation:relations) {
 						String courseName = relation.getRepositoryEntryDisplayName();
@@ -229,7 +229,7 @@ public class PendingEnrollmentController extends FormBasicController implements 
 		
 		public List<String> getCourses() {
 			if(courses == null) {
-				courses = new ArrayList<String>(1);
+				courses = new ArrayList<>(1);
 			}
 			return courses;
 		}

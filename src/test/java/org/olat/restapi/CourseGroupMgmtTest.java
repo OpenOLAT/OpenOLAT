@@ -158,7 +158,7 @@ public class CourseGroupMgmtTest extends OlatRestTestCase {
 		assertNotNull(vos);
 		assertEquals(4, vos.size());//g1, g2, g3, g4
 		
-		List<Long> voKeys = new ArrayList<Long>(4);
+		List<Long> voKeys = new ArrayList<>(4);
 		for(GroupVO vo:vos) {
 			voKeys.add(vo.getKey());
 		}

@@ -27,8 +27,10 @@ import org.olat.core.gui.components.form.flexible.elements.MultipleSelectionElem
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.id.Identity;
+import org.olat.modules.lecture.AbsenceNotice;
 import org.olat.modules.lecture.LectureBlockRollCall;
 import org.olat.modules.lecture.ui.component.LectureBlockRollCallStatusItem;
+import org.olat.modules.lecture.ui.component.RollCallItem;
 import org.olat.user.UserPropertiesRow;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 
@@ -38,28 +40,39 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherRollCallRow extends UserPropertiesRow {
+public class TeacherRollCallRow extends UserPropertiesRow implements RollCallRow, RollCallItem {
 	
-	private Identity identity;
+	private final Identity identity;
+	private final AbsenceNotice absenceNotice;
+	private LectureBlockRollCall rollCall;
+	
 	private FormLink allLink;
 	private FormLink reasonLink;
+	private FormLink noticeLink;
 	private TextElement commentEl;
-	private LectureBlockRollCall rollCall;
 	private MultipleSelectionElement[] checks;
 	private MultipleSelectionElement authorizedAbsence;
 	private LectureBlockRollCallStatusItem rollCallStatusEl;
 	private FormLayoutContainer authorizedAbsenceCont;
 	
-	public TeacherRollCallRow(LectureBlockRollCall rollCall, Identity identity, List<UserPropertyHandler> propertyHandlers, Locale locale) {
+	public TeacherRollCallRow(LectureBlockRollCall rollCall, Identity identity, AbsenceNotice absenceNotice,
+			List<UserPropertyHandler> propertyHandlers, Locale locale) {
 		super(identity, propertyHandlers, locale);
 		this.identity = identity;
 		this.rollCall = rollCall;
+		this.absenceNotice = absenceNotice;
 	}
 	
 	public Identity getIdentity() {
 		return identity;
 	}
 	
+	@Override
+	public AbsenceNotice getAbsenceNotice() {
+		return absenceNotice;
+	}
+	
+	@Override
 	public LectureBlockRollCall getRollCall() {
 		return rollCall;
 	}
@@ -67,7 +80,25 @@ public class TeacherRollCallRow extends UserPropertiesRow {
 	public void setRollCall(LectureBlockRollCall rollCall) {
 		this.rollCall = rollCall;
 	}
+	
+	@Override
+	public int getPlannedLecturesNumber() {
+		return getChecks().length;
+	}
+	
+	@Override
+	public int getLecturesAttendedNumber() {
+		int numOfChecks = getChecks().length;
+		int absence = 0;
+		for(int j=0; j<numOfChecks; j++) {
+			if(getCheck(j).isAtLeastSelected(1)) {
+				absence++;
+			}
+		}
+		return numOfChecks - absence;
+	}
 
+	@Override
 	public MultipleSelectionElement[] getChecks() {
 		return checks;
 	}
@@ -76,6 +107,7 @@ public class TeacherRollCallRow extends UserPropertiesRow {
 		this.checks = checks;
 	}
 	
+	@Override
 	public MultipleSelectionElement getCheck(int pos) {
 		if(checks != null && pos >= 0 && pos < checks.length) {
 			return checks[pos];
@@ -94,6 +126,7 @@ public class TeacherRollCallRow extends UserPropertiesRow {
 		return -1;
 	}
 	
+	@Override
 	public MultipleSelectionElement getAuthorizedAbsence() {
 		return authorizedAbsence;
 	}
@@ -116,6 +149,14 @@ public class TeacherRollCallRow extends UserPropertiesRow {
 
 	public void setReasonLink(FormLink reasonLink) {
 		this.reasonLink = reasonLink;
+	}
+
+	public FormLink getNoticeLink() {
+		return noticeLink;
+	}
+
+	public void setNoticeLink(FormLink noticeLink) {
+		this.noticeLink = noticeLink;
 	}
 
 	public FormLayoutContainer getAuthorizedAbsenceCont() {

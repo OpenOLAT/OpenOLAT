@@ -74,7 +74,7 @@ public class ProjectBrokerPeekViewRunController extends BasicController implemen
 			myProjects = projectBrokerManager.getProjectsOf(ureq.getIdentity(), projectBrokerId);
 		} else {
 			// when projectBrokerId is null, created empty project list (course-preview)
-			myProjects = new ArrayList<Project>();
+			myProjects = new ArrayList<>();
 		}
 		// check nbr of projects and limit it
 		if (myProjects.size() > MAX_NBR_PROJECTS) {
@@ -96,7 +96,7 @@ public class ProjectBrokerPeekViewRunController extends BasicController implemen
 			myCoachedProjects = projectBrokerManager.getCoachedProjectsOf(ureq.getIdentity(), projectBrokerId);
 		} else {
 			// when projectBrokerId is null, created empty project list (course-preview)
-			myCoachedProjects = new ArrayList<Project>();
+			myCoachedProjects = new ArrayList<>();
 		}
 		// check nbr of projects and limit it
 		if (myCoachedProjects.size() > MAX_NBR_PROJECTS) {

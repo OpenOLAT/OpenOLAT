@@ -76,6 +76,7 @@ public class MailFromCellRenderer implements CustomCellRenderer {
 				URLBuilder ubu = renderer.getUrlBuilder().createCopyFor(link);
 				RenderResult renderResult = new RenderResult();
 				link.getHTMLRendererSingleton().render(renderer, sb, link, ubu, translator, renderResult, null);
+				link.setDirty(false);
 			}
 		} else if (val instanceof String) {
 			sb.append("<span>").appendHtmlEscaped((String)val).append("</span>");

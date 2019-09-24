@@ -304,6 +304,11 @@ public class Office365ServiceImpl implements Office365Service, GenericEventListe
 	public boolean isLockedForMe(VFSLeaf vfsLeaf, Identity identity) {
 		return lockManager.isLockedForMe(vfsLeaf, identity, VFSLockApplicationType.collaboration, LOCK_APP);
 	}
+	
+	@Override
+	public boolean isLockedForMe(VFSLeaf vfsLeaf, VFSMetadata metadata, Identity identity) {
+		return lockManager.isLockedForMe(vfsLeaf, metadata, identity, VFSLockApplicationType.collaboration, LOCK_APP);
+	}
 
 	@Override
 	public String getLockToken(VFSLeaf vfsLeaf) {

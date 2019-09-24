@@ -39,10 +39,6 @@ import org.olat.core.gui.control.generic.wizard.StepsEvent;
 import org.olat.core.gui.control.generic.wizard.StepsRunContext;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for PublishStep00a
- * 
- * <P>
  * Initial Date:  24.01.2008 <br>
  * @author patrickb
  */
@@ -54,17 +50,11 @@ class PublishStep00a extends BasicStep implements Step {
 		setNextStep(new PublishStepUpdate(ureq, true));
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.BasicStep#getInitialPrevNextFinishConfig()
-	 */
 	@Override
 	public PrevNextFinishConfig getInitialPrevNextFinishConfig() {
 		return PrevNextFinishConfig.BACK_NEXT_FINISH;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.wizard.BasicStep#getStepController(org.olat.core.gui.UserRequest, org.olat.core.gui.control.WindowControl, org.olat.core.gui.control.generic.wizard.StepsRunContext, org.olat.core.gui.components.form.flexible.impl.Form)
-	 */
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
 		return new PublishStep00aForm(ureq, windowControl, form, stepsRunContext);

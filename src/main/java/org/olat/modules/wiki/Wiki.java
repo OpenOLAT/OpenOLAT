@@ -237,8 +237,6 @@ public class Wiki implements WikiContainer, Serializable {
 			for (Iterator<VFSItem> iter = leafs.iterator(); iter.hasNext();) {
 				VFSLeaf leaf = (VFSLeaf)iter.next();
 				String filename = leaf.getName();
-				// TODO:gs:a needs better filtering only for pagename.properties-xy 
-				// try this: List leafs = wikiCont.getItems(new VFSItemSuffixFilter(new String[]{WikiManager.WIKI_PROPERTIES_SUFFIX}));
 				if (filename.indexOf(WikiManager.WIKI_PROPERTIES_SUFFIX) != -1 && filename.startsWith(page.getPageId())) {
 					versions.add(assignPropertiesToPage(leaf));
 				}
@@ -313,7 +311,7 @@ public class Wiki implements WikiContainer, Serializable {
 		List<VFSItem> mediaFilesOnly = new ArrayList<>();
 		for (Iterator<VFSItem> iter = allFiles.iterator(); iter.hasNext();) {
 			VFSItem element = iter.next();
-			if(!element.getName().endsWith(WikiMainController.METADATA_SUFFIX)) {//TODO 
+			if(!element.getName().endsWith(WikiMainController.METADATA_SUFFIX)) { 
 				mediaFilesOnly.add(element);
 			}
 		}
@@ -393,7 +391,7 @@ public class Wiki implements WikiContainer, Serializable {
 	 * @return a List of all pages in a wiki ordered by date
 	 */
 	protected List<WikiPage> getPagesByDate() {
-		ArrayList<WikiPage> pages = new ArrayList<WikiPage>(wikiPages.values());
+		ArrayList<WikiPage> pages = new ArrayList<>(wikiPages.values());
 		Collections.sort(pages, WikiPageSort.MODTIME_ORDER);
 		return pages;
 	}
@@ -402,8 +400,8 @@ public class Wiki implements WikiContainer, Serializable {
 	 * @return a List containing all pages names of the wiki sorted alphabetically
 	 */
 	protected List<String> getListOfAllPageNames() {
-		ArrayList<WikiPage> pages = new ArrayList<WikiPage>(wikiPages.values());
-		ArrayList<String> pageNames = new ArrayList<String>(pages.size());
+		ArrayList<WikiPage> pages = new ArrayList<>(wikiPages.values());
+		ArrayList<String> pageNames = new ArrayList<>(pages.size());
 		Collections.sort(pages, WikiPageSort.PAGENAME_ORDER);
 		for (Iterator<WikiPage> iter = pages.iterator(); iter.hasNext();) {
 			WikiPage page = iter.next();
@@ -423,7 +421,7 @@ public class Wiki implements WikiContainer, Serializable {
 		}
 		
 		public List<WikiPage> getAllPagesWithContent(boolean includeSpecialPages) {
-			ArrayList<WikiPage> pages = new ArrayList<WikiPage>();
+			ArrayList<WikiPage> pages = new ArrayList<>();
 			for (Iterator<String> keyes = wikiPages.keySet().iterator(); keyes.hasNext();) {
 				String pageId = keyes.next();
 				WikiPage wikiPage = getPage(pageId);

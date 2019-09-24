@@ -36,7 +36,7 @@ import org.olat.core.util.StringHelper;
  * @author Mike Stock Comment:
  */
 public class Condition implements Serializable, Cloneable {
-	transient private String conditionId = null;
+	private transient String conditionId = null;
 	private String condition = null;
 	private boolean expertMode = false;
 
@@ -60,6 +60,8 @@ public class Condition implements Serializable, Cloneable {
 	
 	// true: only in assessment mode
 	private boolean assessmentMode;
+	private boolean assessmentModeViewResults;
+	private String easyModeAssessmentModeNodeId;
 
 	// This is the MapList in which the extended easy mode conditions are stored
 	private List<ExtendedCondition> attributeConditions = null;
@@ -231,13 +233,13 @@ public class Condition implements Serializable, Cloneable {
 	private final List<Long> getAccessIdList(String ids) {
 		if(StringHelper.containsNonWhitespace(ids)) {
 			String[] longStrArr = ids.split(",");
-			List<Long> keys = new ArrayList<Long>(longStrArr.length);
+			List<Long> keys = new ArrayList<>(longStrArr.length);
 			for(String longStr:longStrArr) {
-				keys.add(new Long(longStr.trim()));
+				keys.add(Long.valueOf(longStr.trim()));
 			}
 			return keys;
 		}
-		return new ArrayList<Long>();
+		return new ArrayList<>();
 	}
 
 	/**
@@ -260,6 +262,22 @@ public class Condition implements Serializable, Cloneable {
 
 	public void setAssessmentMode(boolean assessmentMode) {
 		this.assessmentMode = assessmentMode;
+	}
+
+	public boolean isAssessmentModeViewResults() {
+		return assessmentModeViewResults;
+	}
+
+	public void setAssessmentModeViewResults(boolean viewResults) {
+		this.assessmentModeViewResults = viewResults;
+	}
+
+	public String getEasyModeAssessmentModeNodeId() {
+		return easyModeAssessmentModeNodeId;
+	}
+
+	public void setEasyModeAssessmentModeNodeId(String nodeId) {
+		this.easyModeAssessmentModeNodeId = nodeId;
 	}
 
 	/**
@@ -311,7 +329,7 @@ public class Condition implements Serializable, Cloneable {
 	 */
 	public String getConditionFromEasyModeConfiguration() {
 		boolean needsAmpersand = false;
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(512);
 
 		sb.append("( "); // BEGIN all enclosing bracket
 
@@ -391,7 +409,12 @@ public class Condition implements Serializable, Cloneable {
 		}
 		if(isAssessmentMode()) {
 			if (needsAmpersand) sb.append(" & ");
-			sb.append(" isAssessmentMode(0)");
+			
+			if(isAssessmentModeViewResults()) {
+				sb.append(" isAssessmentMode(\"").append(getEasyModeAssessmentModeNodeId()).append("\",true)");
+			} else {
+				sb.append(" isAssessmentMode(0)");
+			}
 			needsAmpersand = true;
 		}
 		if (isEasyModeCoachesAndAdmins()) {
@@ -448,7 +471,7 @@ public class Condition implements Serializable, Cloneable {
 
 	public void clearEasyConfig() {
 		// do not clear this.condition = null; as this will be set during a save in easy mode
-		// do not clear this.conditionId = null;
+		// do not clear the conditionId
 		this.easyModeAlwaysAllowCoachesAndAdmins = false;
 		this.easyModeBeginDate = null;
 		this.easyModeCoachesAndAdmins = false;
@@ -461,7 +484,8 @@ public class Condition implements Serializable, Cloneable {
 		this.easyModeNodePassedId = null;
 		this.attributeConditions = null;
 		this.assessmentMode = false;
-		// do not clear this.expertMode = false;
+		this.assessmentModeViewResults = false;
+		this.easyModeAssessmentModeNodeId = null;
 	}
 
 	/**
@@ -487,6 +511,8 @@ public class Condition implements Serializable, Cloneable {
 		retVal.attributeConditions = this.attributeConditions;
 		retVal.attributeconditionsConnectorIsAND = this.attributeconditionsConnectorIsAND;
 		retVal.assessmentMode = this.assessmentMode;
+		retVal.assessmentModeViewResults = this.assessmentModeViewResults;
+		retVal.easyModeAssessmentModeNodeId = this.easyModeAssessmentModeNodeId;
 		return retVal;
 	}
 	/**

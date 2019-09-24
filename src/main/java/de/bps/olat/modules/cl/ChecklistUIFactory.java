@@ -35,12 +35,12 @@ import org.olat.course.ICourse;
 public class ChecklistUIFactory {
 	
 	
-	public static CheckpointComparator comparatorTitleAsc = new CheckpointComparator(1, true);
-	public static CheckpointComparator comparatorTitleDesc = new CheckpointComparator(1, false);
-	public static CheckpointComparator comparatorDescriptionAsc = new CheckpointComparator(2, true);
-	public static CheckpointComparator comparatorDescriptionDesc = new CheckpointComparator(2, false);
-	public static CheckpointComparator comparatorModeAsc = new CheckpointComparator(3, true);
-	public static CheckpointComparator comparatorModeDesc = new CheckpointComparator(3, false);
+	public static final CheckpointComparator comparatorTitleAsc = new CheckpointComparator(1, true);
+	public static final CheckpointComparator comparatorTitleDesc = new CheckpointComparator(1, false);
+	public static final CheckpointComparator comparatorDescriptionAsc = new CheckpointComparator(2, true);
+	public static final CheckpointComparator comparatorDescriptionDesc = new CheckpointComparator(2, false);
+	public static final CheckpointComparator comparatorModeAsc = new CheckpointComparator(3, true);
+	public static final CheckpointComparator comparatorModeDesc = new CheckpointComparator(3, false);
 	
 	/** singleton */
 	private static ChecklistUIFactory INSTANCE = new ChecklistUIFactory();

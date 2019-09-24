@@ -42,6 +42,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.collaboration.CollaborationManager;
@@ -56,7 +57,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.core.util.tree.Visitor;
@@ -81,12 +81,21 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@Tag(name = "Users")
 @Component
-@Path("users/{identityKey}/calendars")
+@Path("/users/{identityKey}/calendars")
 public class UserCalendarWebService {
 	
 	private static final Logger log = Tracing.createLoggerFor(UserCalendarWebService.class);
@@ -106,6 +115,17 @@ public class UserCalendarWebService {
 	
 	
 	@GET
+	@Tag(name = "Calendar")
+	@Operation(summary = "List calendars of a specific user.", description = "Returns list of calendars of a specific user. Will always return the administrator's calendars for administrators.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Request was successful.",
+			content = {
+				@Content(mediaType = "application/json", schema = @Schema(implementation = CalendarVO.class)),
+				@Content(mediaType = "application/xml", schema = @Schema(implementation = CalendarVO.class))
+			}, links = {}),
+		@ApiResponse(responseCode = "401", description = "Not authorized."),
+		@ApiResponse(responseCode = "404", description = "Not found.")}
+		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getCalendars(@PathParam("identityKey") Long identityKey, @Context HttpServletRequest httpRequest) {
 		UserRequest ureq = getUserRequest(httpRequest);
@@ -153,10 +173,21 @@ public class UserCalendarWebService {
 
 	@GET
 	@Path("events")
+	@Operation(summary = "List all events.", description = "Returns list of all events in for a specific user.")
+	@ApiResponses({
+		@ApiResponse(responseCode = "200", description = "Request was successful.",
+			content = {
+				@Content(mediaType = "application/json", schema = @Schema(implementation = EventVO[].class)),
+				@Content(mediaType = "application/xml", schema = @Schema(implementation = EventVO[].class))
+			} 
+		),
+		@ApiResponse(responseCode = "401", description = "Not authorized."),
+		@ApiResponse(responseCode = "404", description = "Not found.")}
+)	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getEvents(@PathParam("identityKey") Long identityKey,
-			@QueryParam("start") @DefaultValue("0") Integer start,
-			@QueryParam("limit") @DefaultValue("25") Integer limit,
+			@QueryParam("start")  @Parameter(description = "Set the date for the earliest event.")@DefaultValue("0") Integer start,
+			@QueryParam("limit")  @Parameter(description = "Limit the amount of events to be returned.") @DefaultValue("25") Integer limit,
 			@QueryParam("onlyFuture") @DefaultValue("false") Boolean onlyFuture,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		

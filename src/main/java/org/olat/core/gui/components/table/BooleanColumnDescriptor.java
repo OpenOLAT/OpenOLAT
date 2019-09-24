@@ -31,10 +31,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.util.StringHelper;
 
 /**
- * Description: <BR>
- * TODO: Class Description for
- * <P>
- * 
  * @author Felix Jost
  */
 public class BooleanColumnDescriptor extends DefaultColumnDescriptor {

@@ -22,8 +22,8 @@
         <presentation>
           <material>
             <mattext texttype="text/html"><![CDATA[Neue Frage<br /><br /><span id="olatFlashMovieViewer549242" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
-<script src="/raw/fx-111111x11/movie/player.js" type="text/javascript"></script>
-<script type="text/javascript" defer="defer">
+<script src="/raw/fx-111111x11/movie/player.js"></script>
+<script defer="defer">
 BPlayer.insertPlayer("media/demo-video.mp4","olatFlashMovieViewer549242",320,240,0,0,"video",undefined,false,false,true,undefined);
 </script>
 </span>]]></mattext>
@@ -34,8 +34,8 @@ BPlayer.insertPlayer("media/demo-video.mp4","olatFlashMovieViewer549242",320,240
                 <response_label ident="8000138063" rshuffle="Yes">
                   <material>
                     <mattext texttype="text/html"><![CDATA[Richtige Antwort<br /><br /><span id="olatFlashMovieViewer656727" class="olatFlashMovieViewer" style="display:block;border:solid 1px #000; width:320px; height:240px;">
-<script src="/raw/fx-111111x11/movie/player.js" type="text/javascript"></script>
-<script type="text/javascript" defer="defer">
+<script src="/raw/fx-111111x11/movie/player.js"></script>
+<script defer="defer">
 BPlayer.insertPlayer("media/demo-video.mp4","olatFlashMovieViewer656727",320,240,0,0,"video",undefined,false,false,true,undefined);
 </script>
 </span>]]></mattext>

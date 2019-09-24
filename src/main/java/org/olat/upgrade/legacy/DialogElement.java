@@ -28,10 +28,6 @@ package org.olat.upgrade.legacy;
 import java.util.Date;
 
 /**
- * Description:<br>
- * TODO: guido Class Description for DialogElementsTableEntry
- * 
- * <P>
  * Initial Date:  08.11.2005 <br>
  *
  * @author guido

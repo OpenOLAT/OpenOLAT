@@ -52,7 +52,7 @@
 	<div id="sketch_${responseIdentifier}" class="sketch" style="border:1px solid black; width:${widthWithBorder}px; height:${heightWithBorder}px;" draggable="false" ondragstart="return false;">
 		<canvas id="paint_${responseIdentifier}" width="${interaction.object.width}" height="${interaction.object.height}" style="background:url('${r.convertLinkFull($interaction.object.data)}') !important;" draggable="false" ondragstart="return false;"></canvas>
 	</div>
-	<script type='text/javascript'>
+	<script>
 	jQuery(function() {
 		var itemOpen = $isItemSessionOpen; 
 		if(itemOpen) {

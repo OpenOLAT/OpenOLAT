@@ -46,7 +46,7 @@ public final class PreviewIdentity implements Identity, User {
 
 	private static final long serialVersionUID = 6582855975941440446L;
 	
-	private final Map<String, String> data = new HashMap<String, String>();
+	private final Map<String, String> data = new HashMap<>();
 	private final Long key;
 	private Map<String, String> envAttrs;
 	{
@@ -60,7 +60,7 @@ public final class PreviewIdentity implements Identity, User {
 	}
 
 	/**
-	 * @see org.olat.core.commons.persistence.Persistable#getKey()
+	 * @see org.olat.core.commons.persistence.Persistable#getSelectedMessageKey()
 	 */
 	@Override
 	public Long getKey() {
@@ -100,9 +100,11 @@ public final class PreviewIdentity implements Identity, User {
 		return data.get(UserConstants.LASTNAME);
 	}
 
-	/**
-	 * @see org.olat.core.id.Identity#getUser()
-	 */
+	@Override
+	public String getSmsTelMobile() {
+		return data.get(UserConstants.SMSTELMOBILE);
+	}
+
 	@Override
 	public User getUser() {
 		return this;
@@ -143,9 +145,6 @@ public final class PreviewIdentity implements Identity, User {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.commons.persistence.Auditable#getCreationDate()
-	 */
 	@Override
 	public Date getCreationDate() {
 		return new Date();
@@ -160,10 +159,7 @@ public final class PreviewIdentity implements Identity, User {
 	public Integer getStatus() {
 		return Identity.STATUS_ACTIV;
 	}
-	
-	/**
-	 * @see org.olat.core.commons.persistence.Persistable#equalsByPersistableKey(org.olat.core.commons.persistence.Persistable)
-	 */
+
 	@Override
 	public boolean equalsByPersistableKey(Persistable persistable) {
 		return equals(persistable);

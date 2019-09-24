@@ -32,8 +32,6 @@ import org.olat.core.id.UserConstants;
 import org.olat.ims.qti.QTIResult;
 
 /**
- * Description: TODO
- * 
  * @author Alexander Schneider
  */
 public class QTIExportSet {

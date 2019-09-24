@@ -44,7 +44,7 @@ public class TransientIdentity implements Identity, User {
 	private String password;
 	private String language;
 	
-	private Map<String, String> properties = new HashMap<String,String>();
+	private Map<String, String> properties = new HashMap<>();
 
 	@Override
 	public Date getCreationDate() {
@@ -88,6 +88,11 @@ public class TransientIdentity implements Identity, User {
 	@Override
 	public String getInstitutionalEmail() {
 		return properties.get(UserConstants.INSTITUTIONALEMAIL);
+	}
+
+	@Override
+	public String getSmsTelMobile() {
+		return properties.get(UserConstants.SMSTELMOBILE);
 	}
 
 	public String getPassword() {

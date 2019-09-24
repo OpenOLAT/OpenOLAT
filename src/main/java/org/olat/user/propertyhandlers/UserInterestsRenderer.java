@@ -57,6 +57,7 @@ class UserInterestsRenderer extends DefaultComponentRenderer {
 			if(editLink != null && editLink.isVisible()) {
 				Component cmp = editLink.getComponent();
 				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+				cmp.setDirty(false);
 			}
 		}
 	}

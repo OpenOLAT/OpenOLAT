@@ -582,7 +582,7 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 	 * @see org.olat.course.nodes.CourseNode#getConditionExpressions()
 	 */
 	public List<ConditionExpression> getConditionExpressions() {
-		ArrayList<ConditionExpression> retVal = new ArrayList<ConditionExpression>();
+		ArrayList<ConditionExpression> retVal = new ArrayList<>();
 		String coS = getPreConditionVisibility().getConditionExpression();
 		if (coS != null && !coS.equals("")) {
 			// an active condition is defined
@@ -628,8 +628,8 @@ public abstract class GenericCourseNode extends GenericNode implements CourseNod
 			ConditionErrorMessage[] cems = cev.validateConditionExpression(ce);
 			if (cems != null && cems.length > 0) {
 				for (int j = 0; j < cems.length; j++) {
-					StatusDescription sd = new StatusDescription(StatusDescription.WARNING, cems[j].errorKey, cems[j].solutionMsgKey,
-							cems[j].errorKeyParams, translatorStr);
+					StatusDescription sd = new StatusDescription(StatusDescription.WARNING, cems[j].getErrorKey(), cems[j].getSolutionMsgKey(),
+							cems[j].getErrorKeyParams(), translatorStr);
 					sd.setDescriptionForUnit(getIdent());
 					condExprsStatusDescs.add(sd);
 				}

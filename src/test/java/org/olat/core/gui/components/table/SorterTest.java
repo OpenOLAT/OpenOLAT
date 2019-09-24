@@ -50,7 +50,7 @@ public class SorterTest {
 		};
 		
 		//make a list of timestamps and dates
-		List<Date> dates = new ArrayList<Date>();
+		List<Date> dates = new ArrayList<>();
 		Calendar cal = Calendar.getInstance();
 		for(int i=0; i<100; i++) {
 			cal.add(Calendar.MINUTE, 2);

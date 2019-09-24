@@ -45,7 +45,7 @@ public class ComponentHelper {
 	
 	
 	public static List<Component> findAncestorsOrSelfByID(Component startFrom, Component target) {
-		List<Component> ancestors = new ArrayList<Component>();
+		List<Component> ancestors = new ArrayList<>();
 		dofindAncestors(startFrom, target, ancestors);
 		return ancestors;
 	}
@@ -142,12 +142,13 @@ public class ComponentHelper {
 	}
 	static class MyVisitor implements ComponentVisitor {
 		private Component compToFind;
-		public Component f = null;
+		private Component f = null;
 
 		public MyVisitor(Component compToFind) {
 			this.compToFind = compToFind;
 		}
 
+		@Override
 		public boolean visit(Component comp, UserRequest ureq) {
 			if (comp == compToFind) {
 				f = comp;
@@ -156,7 +157,4 @@ public class ComponentHelper {
 			return true;
 		}
 	}
-	
-	
-
 }

@@ -45,6 +45,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -221,7 +222,7 @@ public class WebDAVDispatcherImpl
      * Default depth in spec is infinite. Limit depth to 3 by default as
      * infinite depth makes operations very expensive.
      */
-    public static int maxDepth = 3;
+    public static final int maxDepth = 3;
 
 
     /**
@@ -255,6 +256,7 @@ public class WebDAVDispatcherImpl
         DocumentBuilderFactory documentBuilderFactory = null;
         try {
             documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
             documentBuilderFactory.setNamespaceAware(true);
             documentBuilderFactory.setExpandEntityReferences(false);
             documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -356,7 +358,6 @@ public class WebDAVDispatcherImpl
         if (!super.checkIfHeaders(request, response, resource))
             return false;
 
-        // TODO : Checking the WebDAV If header
         return true;
     }
 
@@ -600,11 +601,11 @@ public class WebDAVDispatcherImpl
                             properties);
         } else {
             // The stack always contains the object of the current level
-            Stack<String> stack = new Stack<String>();
+            Stack<String> stack = new Stack<>();
             stack.push(path);
 
             // Stack of the objects one level below
-            Stack<String> stackBelow = new Stack<String>();
+            Stack<String> stackBelow = new Stack<>();
 
             while ((!stack.isEmpty()) && (depth >= 0)) {
 
@@ -742,9 +743,7 @@ public class WebDAVDispatcherImpl
         if (req.getContentLength() > 0) {
             DocumentBuilder documentBuilder = getDocumentBuilder(req);
             try {
-                // Document document =
                 documentBuilder.parse(new InputSource(req.getInputStream()));
-                // TODO : Process this request body
                 resp.setStatus(WebdavStatus.SC_NOT_IMPLEMENTED);
                 return;
 

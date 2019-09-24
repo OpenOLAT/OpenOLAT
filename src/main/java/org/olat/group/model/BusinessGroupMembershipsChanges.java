@@ -31,11 +31,11 @@ import org.olat.core.id.Identity;
 public class BusinessGroupMembershipsChanges {
 	
 
-	public List<Identity> addTutors = new ArrayList<Identity>();
-	public List<Identity> removeTutors = new ArrayList<Identity>();
-	public List<Identity> addParticipants = new ArrayList<Identity>();
-	public List<Identity> removeParticipants = new ArrayList<Identity>();
-	public List<Identity> addToWaitingList = new ArrayList<Identity>();
-	public List<Identity> removeFromWaitingList = new ArrayList<Identity>();
+	public List<Identity> addTutors = new ArrayList<>();
+	public List<Identity> removeTutors = new ArrayList<>();
+	public List<Identity> addParticipants = new ArrayList<>();
+	public List<Identity> removeParticipants = new ArrayList<>();
+	public List<Identity> addToWaitingList = new ArrayList<>();
+	public List<Identity> removeFromWaitingList = new ArrayList<>();
 
 }

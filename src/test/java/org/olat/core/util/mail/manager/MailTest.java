@@ -196,7 +196,7 @@ public class MailTest extends OlatTestCase {
 		};
 
 		// some recipients data
-		List<Identity> recipients = new ArrayList<Identity>();
+		List<Identity> recipients = new ArrayList<>();
 		recipients.add(id1);
 		recipients.add(id2);
 		recipients.add(id3);
@@ -237,7 +237,7 @@ public class MailTest extends OlatTestCase {
 		};
 
 		// some recipients data
-		List<Identity> recipients = new ArrayList<Identity>();
+		List<Identity> recipients = new ArrayList<>();
 		recipients.add(id1);
 		recipients.add(id2);
 		recipients.add(id3);
@@ -268,10 +268,6 @@ public class MailTest extends OlatTestCase {
 			System.out.println("MailTest.testMailAttachments Url1=" + MailTest.class.getResource("MailTest.class") );
 			file1 = new File(MailTest.class.getResource("MailTest.class").toURI());
 			attachments[0] = file1;
-// TODO: cg Properties file is in olat_core.jar and not be lookup as resource (jar:file:...)
-//			System.out.println("MailTest.testMailAttachments Url2=" + MailTest.class.getResource("_i18n/LocalStrings_de.properties") );	
-//			file2 = new File(MailTest.class.getResource("_i18n/LocalStrings_de.properties").toURI());
-//			attachments[1] = file2;
 		} catch (URISyntaxException e) {
 			fail("ups, can't get testfiles from local path: MailTest.class and _i18n/LocalStrings_de.properties");
 		}
@@ -287,7 +283,7 @@ public class MailTest extends OlatTestCase {
 		};
 
 		// some recipients data
-		List<Identity> recipients = new ArrayList<Identity>();
+		List<Identity> recipients = new ArrayList<>();
 		recipients.add(id1);
 
 		MailerResult result = new MailerResult();
@@ -316,7 +312,7 @@ public class MailTest extends OlatTestCase {
 		};
 
 		// some recipients data
-		List<Identity> recipients = new ArrayList<Identity>();
+		List<Identity> recipients = new ArrayList<>();
 		recipients.add(id1);
 
 		MailerResult result = new MailerResult();
@@ -348,7 +344,7 @@ public class MailTest extends OlatTestCase {
 		
 		DBFactory.getInstance().intermediateCommit();
 
-		List<Identity> recipients = new ArrayList<Identity>();
+		List<Identity> recipients = new ArrayList<>();
 
 
 		recipients.add(illegal1);
@@ -360,13 +356,13 @@ public class MailTest extends OlatTestCase {
 		// this test is not very good, depends on smtp settings!
 		//assertEquals(MailerResult.OK, result.getReturnCode());
 
-		recipients = new ArrayList<Identity>();
+		recipients = new ArrayList<>();
 		recipients.add(illegal2);
 		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
 		// mail will bounce back since address does not exist, but sent to local MTA
 		assertEquals(MailerResult.OK, result.getReturnCode());
 
-		recipients = new ArrayList<Identity>();
+		recipients = new ArrayList<>();
 		recipients.add(illegal3);
 		result = sendMailAsSeparateMails(null, recipients, null, template, id6, null);
 		assertEquals(MailerResult.RECIPIENT_ADDRESS_ERROR, result.getReturnCode());
@@ -379,13 +375,13 @@ public class MailTest extends OlatTestCase {
 		assertEquals(1, result.getFailedIdentites().size());
 
 		// valid recipient but invalid sender
-		recipients = new ArrayList<Identity>();
+		recipients = new ArrayList<>();
 		recipients.add(id1);
 		result = sendMailAsSeparateMails(null, recipients, null, template, illegal3, null);
 		assertEquals(MailerResult.SENDER_ADDRESS_ERROR, result.getReturnCode());
 
 		// invalid cc and bcc but valid to, mus count up the invalid accounts
-		recipients = new ArrayList<Identity>();
+		recipients = new ArrayList<>();
 		recipients.add(id1);
 		recipients.add(illegal3); // first
 		Identity recipientCC = illegal3; // second

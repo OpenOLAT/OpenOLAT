@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -102,8 +103,10 @@ public class OnyxToQtiWorksAssessementItemsTest {
 				Writer out = Files.newBufferedWriter(outputFile.toPath(), Charset.forName("UTF-8"))) {
 			XMLOutputFactory xof = XMLOutputFactory.newInstance();
 	        XMLStreamWriter xtw = xof.createXMLStreamWriter(out);
-	
-			SAXParser saxParser = SAXParserFactory.newInstance().newSAXParser();
+
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			SAXParser saxParser = factory.newSAXParser();
 			DefaultHandler2 myHandler = new OnyxToQtiWorksHandler(xtw, infos);
 			saxParser.setProperty("http://xml.org/sax/properties/lexical-handler", myHandler);
 			saxParser.parse(in, myHandler);

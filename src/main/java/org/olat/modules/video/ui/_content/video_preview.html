@@ -4,8 +4,7 @@
 	    	<source type="video/mp4" src="$mediaUrl/$filename" />
 		</video>
 
-		<script type="text/javascript">
-		// <![CDATA[
+		<script>
 		## using jQuery
 		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
 		jQuery('#$r.getId("o_vid")').mediaelementplayer({
@@ -22,7 +21,6 @@
 			## Special here is tracks and sourcechooser which are not available in player.js
 			features: ['playpause','current','volume','progress','duration','fullscreen']
 		});
-		// ]]>
 		</script>
 	</div>
 </div>

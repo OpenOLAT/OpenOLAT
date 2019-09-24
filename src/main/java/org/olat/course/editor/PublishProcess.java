@@ -419,18 +419,7 @@ public class PublishProcess {
 		beforePublish.setState(PublishEvent.PRE_PUBLISH);
 		// old course structure accessible
 		orec.fireEventToListenersOf(beforePublish, course);
-		/*
-		 * TODO:pb: discuss with fj: listeners could add information to
-		 * beforePublish event such as a right to veto or add identities who is
-		 * currently in the course, thus stopping the publishing author from
-		 * publishing! i.e. if people are in a test or something like this.... we
-		 * could the ask here beforePublish.accepted() and proceed only in this
-		 * case.
-		 */
-		//
-		/*
-		 * remove new nodes which were marked as delete and deletion is published.
-		 */		
+		// remove new nodes which were marked as delete and deletion is published.	
 		UserManager um = UserManager.getInstance();
 		String charset = um.getUserCharset(identity);
 		if (!editorModelDeletedNodes.isEmpty()) {

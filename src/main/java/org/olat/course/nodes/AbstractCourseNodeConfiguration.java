@@ -78,7 +78,7 @@ public abstract class AbstractCourseNodeConfiguration extends AbstractConfigOnOf
 		if(alternatives == null || alternatives.isEmpty()) {
 			this.alternatives = null;
 		} else {
-			this.alternatives = new ArrayList<String>(alternatives);
+			this.alternatives = new ArrayList<>(alternatives);
 		}
 	}
 }

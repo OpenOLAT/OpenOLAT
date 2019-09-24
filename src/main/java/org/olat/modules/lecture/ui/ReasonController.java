@@ -19,13 +19,21 @@
  */
 package org.olat.modules.lecture.ui;
 
+import java.util.List;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
+import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.StringHelper;
+import org.olat.modules.lecture.AbsenceCategory;
+import org.olat.modules.lecture.LectureService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -36,23 +44,48 @@ import org.olat.core.gui.control.WindowControl;
 public class ReasonController extends FormBasicController {
 	
 	private TextElement reasonEl;
+	private SingleSelection absenceCategoriesEl;
 	
 	private final boolean editable;
-	private TeacherRollCallRow row;
+	private RollCallRow row;
+	private final List<AbsenceCategory> absenceCategories;
+	
+	@Autowired
+	private LectureService lectureService;
 
-	public ReasonController(UserRequest ureq, WindowControl wControl, TeacherRollCallRow row, boolean editable) {
+	public ReasonController(UserRequest ureq, WindowControl wControl, RollCallRow row, boolean editable) {
 		super(ureq, wControl, "reason");
 		this.row = row;
 		this.editable = editable;
+		absenceCategories = lectureService.getAllAbsencesCategories();
 		initForm(ureq);
 	}
 	
-	public TeacherRollCallRow getTeacherRollCallRow() {
+	public RollCallRow getRollCallRow() {
 		return row;
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+
+		KeyValues absenceKeyValues = new KeyValues();
+		for(AbsenceCategory absenceCategory: absenceCategories) {
+			absenceKeyValues.add(KeyValues.entry(absenceCategory.getKey().toString(), absenceCategory.getTitle()));
+		}
+
+		absenceCategoriesEl = uifactory.addDropdownSingleselect("absence.category", null, formLayout, absenceKeyValues.keys(), absenceKeyValues.values());
+		absenceCategoriesEl.setDomReplacementWrapperRequired(false);
+		absenceCategoriesEl.setVisible(!absenceCategories.isEmpty());
+		absenceCategoriesEl.setMandatory(true);
+		AbsenceCategory currentCategory = row.getRollCall() == null ? null : row.getRollCall().getAbsenceCategory();
+		if(currentCategory != null) {
+			for(AbsenceCategory absenceCategory: absenceCategories) {
+				if(absenceCategory.equals(currentCategory)) {
+					absenceCategoriesEl.select(absenceCategory.getKey().toString(), true);
+				}
+			}
+		}
+
 		String currentReason = row.getRollCall() == null ? "" : row.getRollCall().getAbsenceReason();
 		reasonEl = uifactory.addTextAreaElement("reason", "reason", 2048, 4, 36, false, false, currentReason, formLayout);
 		reasonEl.setEnabled(editable);
@@ -69,6 +102,34 @@ public class ReasonController extends FormBasicController {
 	
 	public String getReason() {
 		return reasonEl.getValue();
+	}
+	
+	public AbsenceCategory getAbsenceCategory() {
+		if(!absenceCategoriesEl.isVisible() || !absenceCategoriesEl.isOneSelected()) return null;
+		
+		String selectedKey = absenceCategoriesEl.getSelectedKey();
+		if(StringHelper.isLong(selectedKey)) {
+			Long categoryKey = Long.valueOf(selectedKey);
+			for(AbsenceCategory absenceCategory:absenceCategories) {
+				if(absenceCategory.getKey().equals(categoryKey)) {
+					return absenceCategory;
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = super.validateFormLogic(ureq);
+		
+		absenceCategoriesEl.clearError();
+		if(absenceCategoriesEl.isVisible() && !absenceCategoriesEl.isOneSelected()) {
+			absenceCategoriesEl.setErrorKey("form.legende.mandatory", null);
+			allOk &= false;
+		}
+		
+		return allOk;
 	}
 
 	@Override

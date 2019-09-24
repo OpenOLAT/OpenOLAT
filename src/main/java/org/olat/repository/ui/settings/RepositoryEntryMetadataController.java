@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
+import org.olat.core.commons.services.license.License;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.license.LicenseType;
@@ -67,6 +68,8 @@ import org.olat.repository.RepositoryModule;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
+import org.olat.repository.handlers.RepositoryHandler;
+import org.olat.repository.handlers.RepositoryHandlerFactory;
 import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.resource.OLATResource;
 import org.olat.user.UserManager;
@@ -102,6 +105,8 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 	private RepositoryService repositoryService;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private RepositoryHandlerFactory repositoryHandlerFactory;
 	@Autowired
 	private LicenseModule licenseModule;
 	@Autowired
@@ -203,6 +208,15 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 			String freetext = licenseService.isFreetext(license.getLicenseType()) ? license.getFreetext() : "";
 			licenseFreetextEl = uifactory.addTextAreaElement("cif.freetext", 4, 72, freetext, formLayout);
 			LicenseUIFactory.updateVisibility(licenseEl, licensorEl, licenseFreetextEl);
+
+			RepositoryHandler repositoryHandler = repositoryHandlerFactory.getRepositoryHandler(repositoryEntry);
+			List<License> elementsLicenses = repositoryHandler.getElementsLicenses(repositoryEntry);
+			if(!elementsLicenses.isEmpty()) {
+				StringBuilder sb = new StringBuilder();
+				buildLicensesList(sb, elementsLicenses);
+				String licensesText = translate("cif.license.elements.content", new String[] { sb.toString(), typeDisplay });
+				uifactory.addStaticTextElement("cif.license.elements", "cif.license.elements", licensesText, formLayout);
+			}
 		}
 
 		boolean managed = RepositoryEntryManagedFlag.isManaged(repositoryEntry, RepositoryEntryManagedFlag.details);
@@ -213,6 +227,23 @@ public class RepositoryEntryMetadataController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonContainer, ureq, getWindowControl());
 		FormSubmit submit = uifactory.addFormSubmitButton("submit", buttonContainer);
 		submit.setVisible(!managed);
+	}
+	
+	private void buildLicensesList(StringBuilder sb, List<License> elementsLicenses) {
+		Set<String> deduplicates = new HashSet<>();
+		sb.append("<ul>");
+		for(License elementLicense:elementsLicenses) {
+			String text = elementLicense.getFreetext();
+			if(!StringHelper.containsNonWhitespace(text) && elementLicense.getLicenseType() != null) {
+				LicenseType licenseType = elementLicense.getLicenseType();
+				text = LicenseUIFactory.translate(licenseType, getLocale());
+			}
+			if(StringHelper.containsNonWhitespace(text) && !deduplicates.contains(text)) {
+				sb.append("<li>").append(StringHelper.escapeHtml(text)).append("</li>");
+				deduplicates.add(text);
+			}	
+		}
+		sb.append("</ul>");
 	}
 
 	private void initFormTaxonomy(FormItemContainer formLayout, TaxonomyRef taxonomyRef) {

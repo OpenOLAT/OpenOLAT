@@ -21,8 +21,13 @@ package org.olat.ims.qti21.ui.editor.overview;
 
 import java.util.List;
 
+import org.olat.core.util.StringHelper;
 import org.olat.ims.qti21.model.QTI21QuestionType;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
+import org.olat.ims.qti21.model.xml.ManifestMetadataBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
+import org.olat.modules.qpool.manager.MetadataConverterHelper;
+import org.olat.modules.qpool.model.LOMDuration;
 
 import uk.ac.ed.ph.jqtiplus.node.QtiNode;
 import uk.ac.ed.ph.jqtiplus.node.item.AssessmentItem;
@@ -46,6 +51,9 @@ public class ControlObjectRow {
 	private final String iconCssClass;
 	private final ControlObject<?> part;
 	
+	private String license;
+	private String metadataIdentifier;
+	
 	private Double maxScore;
 	private Boolean feedbacks;
 	private QTI21QuestionType type;
@@ -55,6 +63,8 @@ public class ControlObjectRow {
 	private OptionAndInheritance skipping;
 	private OptionAndInheritance solution;
 	private MaxAttemptOption attemptOption;
+	
+	private Long typicalLearningTime;
 	
 	public ControlObjectRow(String title, ControlObject<?> part, String iconCssClass) {
 		this.part = part;
@@ -93,7 +103,7 @@ public class ControlObjectRow {
 		return new ControlObjectRow("ERROR", itemRef, "o_icon_error");
 	}
 	
-	public static ControlObjectRow valueOf(AssessmentItemRef itemRef, AssessmentItem assessmentItem) {
+	public static ControlObjectRow valueOf(AssessmentItemRef itemRef, AssessmentItem assessmentItem, ManifestBuilder manifestBuilder) {
 		String itemCssClass;
 		QTI21QuestionType type = QTI21QuestionType.getType(assessmentItem);
 		if(type != null) {
@@ -107,6 +117,25 @@ public class ControlObjectRow {
 		boolean hasFeedbacks = !assessmentItem.getModalFeedbacks().isEmpty();
 		row.feedbacks = Boolean.valueOf(hasFeedbacks);
 		configuration(row, itemRef);
+
+		ManifestMetadataBuilder metadata = manifestBuilder.getResourceBuilderByHref(itemRef.getHref().toString());
+		if(metadata != null) {
+			if(metadata.getLom(false) != null) {
+				String learningTime = metadata.getEducationalLearningTime();
+				if(StringHelper.containsNonWhitespace(learningTime)) {
+					LOMDuration duration = MetadataConverterHelper.convertDuration(learningTime);
+					row.typicalLearningTime = Long.valueOf(MetadataConverterHelper.convertToSeconds(duration));
+				}
+				
+				row.license = metadata.getLicense();
+			}
+			
+			row.metadataIdentifier = metadata.getOpenOLATMetadataIdentifier();
+			if(!StringHelper.containsNonWhitespace(row.metadataIdentifier)) {
+				row.metadataIdentifier = metadata.getOpenOLATMetadataMasterIdentifier();
+			}
+		}
+		
 		return row;
 	}
 	
@@ -232,6 +261,9 @@ public class ControlObjectRow {
 		return OptionEnum.no;
 	}
 	
+	
+	
+	
 	public String getTitle() {
 		return title;
 	}
@@ -260,6 +292,18 @@ public class ControlObjectRow {
 		return type;
 	}
 	
+	public String getMetadataIdentifier() {
+		return metadataIdentifier;
+	}
+	
+	public String getLicense() {
+		return license;
+	}
+	
+	public void setLicense(String license) {
+		this.license = license;
+	}
+	
 	public Boolean getFeedbacks() {
 		return feedbacks;
 	}
@@ -282,6 +326,14 @@ public class ControlObjectRow {
 	
 	public MaxAttemptOption getAttemptOption() {
 		return attemptOption;
+	}
+	
+	public Long getLearningTime() {
+		return typicalLearningTime;
+	}
+	
+	public void setLearningTime(Long learningTime) {
+		this.typicalLearningTime = learningTime;
 	}
 	
 	public int getDepth() {

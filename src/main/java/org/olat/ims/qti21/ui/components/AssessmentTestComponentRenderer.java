@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -259,6 +260,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		if(component.isItemSessionOpen(itemSessionState, options.isSolutionMode())) {
 			Component submit = component.getQtiItem().getSubmitButton().getComponent();
 			submit.getHTMLRendererSingleton().render(renderer.getRenderer(), sb, submit, ubu, translator, new RenderResult(), null);
+			submit.setDirty(false);
 		}
 		//advanceTestItemAllowed /* && testSessionState.getCurrentItemKey() != null && testSessionController.mayAdvanceItemLinear() */
 		if(options.isAdvanceTestItemAllowed() ) {//TODO need to find if there is a next question
@@ -384,7 +386,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 		  .append("</span></a>")
 		  .append("</div></div>");
 		// script to show/hide the rubrics with the translated linked
-		sb.append("<script type=\"text/javascript\">\n")
+		sb.append("<script>\n")
 		  .append("/* <![CDATA[ */ \n")
 		  .append("jQuery(function() {\n")
 		  .append(" jQuery('#").append(linkKey).append(", #h").append(linkKey).append("').on('click', function(linkIndex, linkEl) {\n")
@@ -820,6 +822,7 @@ public class AssessmentTestComponentRenderer extends AssessmentObjectComponentRe
 	public static void printDocument(Element doc, OutputStream out) {
 		try {
 			TransformerFactory tf = TransformerFactory.newInstance();
+			tf.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer transformer = tf.newTransformer();
 			transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
 			transformer.setOutputProperty(OutputKeys.METHOD, "xml");

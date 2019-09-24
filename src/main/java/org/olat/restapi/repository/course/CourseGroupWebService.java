@@ -65,6 +65,8 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.olat.restapi.support.ObjectFactory;
 import org.olat.restapi.support.vo.GroupVO;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Description:<br>
@@ -74,6 +76,7 @@ import org.olat.restapi.support.vo.GroupVO;
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */
+@Tag(name = "Groups")
 public class CourseGroupWebService {
 	
 	private static final String VERSION = "1.0";

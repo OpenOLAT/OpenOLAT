@@ -29,10 +29,6 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.creator.ControllerCreator;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for PopupBrowserWindowControllerCreator
- * 
- * <P>
  * Initial Date:  26.07.2007 <br>
  * @author patrickb
  */

@@ -112,9 +112,9 @@ public class MarkController extends FormBasicController {
 			Integer countI = stat.getCount();
 			if (mark!=null && mark.getCreator().equalsByPersistableKey(getIdentity())){
 				if (countI == 1) {
-					tooltip = getTranslator().translate("mark.stat.self.only");					
+					tooltip = getTranslator().translate("mark.stat.self.only");
 				} else {
-					tooltip = getTranslator().translate("mark.stat.self", new String[]{ new Integer(countI-1).toString() });			
+					tooltip = getTranslator().translate("mark.stat.self", new String[]{ new Integer(countI-1).toString() });
 				}
 			} else {
 				tooltip = getTranslator().translate("mark.stat", new String[]{ countI.toString() });
@@ -141,12 +141,15 @@ public class MarkController extends FormBasicController {
 			if(marked) {
 				if(mark == null) {
 					markingService.getMarkManager().removeMark(ores, ureq.getIdentity(), subPath);
+					fireEvent(ureq, new UnmarkedEvent(ores, subPath));
 				} else {
 					markingService.getMarkManager().removeMark(mark);
+					fireEvent(ureq, new UnmarkedEvent(mark.getOLATResourceable(), mark.getResSubPath()));
 					mark = null;
 				}
 			} else {
 				mark = markingService.getMarkManager().setMark(ores, identity, subPath, businessPath);
+				fireEvent(ureq, new MarkedEvent(mark));
 			}
 			marked = !marked;
 			markLink.setIconLeftCSS(marked ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);

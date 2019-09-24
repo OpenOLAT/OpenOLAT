@@ -239,13 +239,11 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 				uifactory.addStaticTextElement("customField_label" + customFieldIndex, null, customField.getName(), formLayout);//null > no label
 				TextElement textElement = uifactory.addTextElement("customField_" + customFieldIndex, "", 150, project.getCustomFieldValue(customFieldIndex), formLayout);
 				textElement.setDisplaySize(60);
-				//				textElement.setTranslator(null);
-				//				textElement.setLabel(customField.getName(), null);
 				textElement.showLabel(false);
 				customfieldElementList.add(textElement);
 			} else {
 				// values define => dropdown selection
-				List<String> valueList = new ArrayList<String>();
+				List<String> valueList = new ArrayList<>();
 				while (tok.hasMoreTokens()) {
 					String value = tok.nextToken();
 					valueList.add(value);
@@ -315,7 +313,7 @@ public class ProjectEditDetailsFormController extends FormBasicController {
 		formLayout.add(buttonGroupLayout);
 		uifactory.addFormSubmitButton("save", buttonGroupLayout);
 		if (this.enableCancel) {
-			uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());//TODO: Frage an PB: Warum flc hier noetig ???
+			uifactory.addFormCancelButton("cancel", buttonGroupLayout, ureq, getWindowControl());
 		}
 	}
 

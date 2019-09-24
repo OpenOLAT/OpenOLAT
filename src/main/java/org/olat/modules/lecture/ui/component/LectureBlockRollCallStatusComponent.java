@@ -23,7 +23,6 @@ import org.olat.core.gui.components.ComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.modules.lecture.LectureBlockRollCall;
-import org.olat.modules.lecture.ui.TeacherRollCallRow;
 
 /**
  * 
@@ -36,9 +35,11 @@ public class LectureBlockRollCallStatusComponent extends FormBaseComponentImpl {
 	private static final ComponentRenderer RENDERER = new LectureBlockRollCallStatusComponentRenderer();
 	private final LectureBlockRollCallStatusItem element;
 	
-	private TeacherRollCallRow rollCall;
+	private RollCallItem rollCall;
 	private boolean authorizedAbsenceEnabled;
 	private boolean absenceDefaultAuthorized;
+	
+	private boolean withNumOfLectures = false;
 	
 	public LectureBlockRollCallStatusComponent(String id, LectureBlockRollCallStatusItem element, Translator translator) {
 		super(id, element.getName());
@@ -46,16 +47,24 @@ public class LectureBlockRollCallStatusComponent extends FormBaseComponentImpl {
 		setTranslator(translator);
 	}
 	
-	public TeacherRollCallRow getRollCall() {
+	public RollCallItem getRollCall() {
 		return rollCall;
 	}
 
-	public void setRollCall(TeacherRollCallRow rollCall) {
+	public void setRollCall(RollCallItem rollCall) {
 		this.rollCall = rollCall;
 	}
 
+	public boolean isWithNumOfLectures() {
+		return withNumOfLectures;
+	}
+
+	public void setWithNumOfLectures(boolean withNumOfLectures) {
+		this.withNumOfLectures = withNumOfLectures;
+	}
+
 	public int getPlannedLecturesNumber() {
-		return rollCall.getChecks().length;
+		return rollCall.getPlannedLecturesNumber();
 	}
 
 	public boolean isAuthorizedAbsenceEnabled() {
@@ -75,23 +84,12 @@ public class LectureBlockRollCallStatusComponent extends FormBaseComponentImpl {
 	}
 	
 	public boolean isLecturesAuthorizedAbsent() {
-		if(rollCall.getAuthorizedAbsence() != null) {
-			rollCall.getAuthorizedAbsence().isAtLeastSelected(1);
-		}
 		LectureBlockRollCall call = rollCall.getRollCall();
-		return call == null || call.getAbsenceAuthorized() == null
-				? false : call.getAbsenceAuthorized().booleanValue(); 
+		return call != null && call.getAbsenceAuthorized() != null && call.getAbsenceAuthorized().booleanValue(); 
 	}
 	
 	public int getLecturesAttendedNumber() {
-		int numOfChecks = rollCall.getChecks().length;
-		int absence = 0;
-		for(int j=0; j<numOfChecks; j++) {
-			if(rollCall.getCheck(j).isAtLeastSelected(1)) {
-				absence++;
-			}
-		}
-		return numOfChecks - absence;
+		return rollCall.getLecturesAttendedNumber();
 	}
 
 	public LectureBlockRollCallStatusItem getLectureBlockRollCallStatusItem() {

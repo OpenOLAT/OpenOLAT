@@ -116,7 +116,7 @@ public class InfoGroupRunController extends BasicController {
 		if (url.startsWith("ROOT")) {
 			url = url.substring(4, url.length());
 		}
-		List<String> tokens = new ArrayList<String>();
+		List<String> tokens = new ArrayList<>();
 		for(StringTokenizer tokenizer = new StringTokenizer(url, "[]"); tokenizer.hasMoreTokens(); ) {
 			String token = tokenizer.nextToken();
 			if(token.startsWith("Identity")) {

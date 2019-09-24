@@ -89,7 +89,7 @@ public class CourseCalendarPeekViewController extends BasicController {
 			if (refDate == null) refDate = new Date();
 		}
 
-		List<KalendarEvent> nextEvents = new ArrayList<KalendarEvent>();
+		List<KalendarEvent> nextEvents = new ArrayList<>();
 		for (KalendarRenderWrapper calendar : myCal.getCalendars()) {
 			Kalendar cal = calendar.getKalendar();
 			Collection<KalendarEvent> events = cal.getEvents();

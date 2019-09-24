@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AssessableResultsVOes {
 	
 	@XmlElement(name="assessableResultsVO")
-	private List<AssessableResultsVO> results = new ArrayList<AssessableResultsVO>();
+	private List<AssessableResultsVO> results = new ArrayList<>();
 
 	public AssessableResultsVOes() {
 	//make jaxb happy

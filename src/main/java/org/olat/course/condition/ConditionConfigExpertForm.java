@@ -86,10 +86,10 @@ public class ConditionConfigExpertForm extends FormBasicController {
 		 */
 		if (cerrmsg != null && cerrmsg.length >0) {
 			//the error messOLAT - Demo Course_1264602504362age
-			tprecond.setErrorKey(cerrmsg[0].errorKey, cerrmsg[0].errorKeyParams);
-			if (cerrmsg[0].solutionMsgKey != null && !"".equals(cerrmsg[0].solutionMsgKey)) {
+			tprecond.setErrorKey(cerrmsg[0].getErrorKey(), cerrmsg[0].getErrorKeyParams());
+			if (cerrmsg[0].getSolutionMsgKey() != null && !"".equals(cerrmsg[0].getSolutionMsgKey())) {
 				//and a hint or example to clarify the error message
-				tprecond.setExampleKey(cerrmsg[0].solutionMsgKey, cerrmsg[0].errorKeyParams);
+				tprecond.setExampleKey(cerrmsg[0].getSolutionMsgKey(), cerrmsg[0].getErrorKeyParams());
 			}
 			return false;
 		}

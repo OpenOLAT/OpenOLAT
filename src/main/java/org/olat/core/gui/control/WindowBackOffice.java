@@ -39,10 +39,6 @@ import org.olat.core.gui.control.winmgr.Command;
 import org.olat.core.util.event.GenericEventListener;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for Trans
- * 
- * <P>
  * Initial Date: 10.02.2007 <br>
  * @author Felix Jost, http://www.goodsolutions.ch
  */

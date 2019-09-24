@@ -417,11 +417,12 @@ public class BaseSecurityManager implements BaseSecurity, UserDataDeletable {
 	 * @return
 	 */
 	@Override
-	public Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername, User newUser) {
+	public Identity createAndPersistIdentityAndUserWithUserGroup(String loginName, String externalId, String provider, String authusername,
+			User newUser, Organisation organisation) {
 		Identity ident = createAndPersistIdentityAndUser(loginName, externalId, newUser, provider, authusername, null);
 		log.info(Tracing.M_AUDIT, "Create an identity with " + provider + " authentication (login=" + loginName + ",authusername=" + authusername + ")");
 		// Add user to the default organization as user
-		organisationService.addMember(ident, OrganisationRoles.user);
+		organisationService.addMember(organisation, ident, OrganisationRoles.user);
 		return ident;
 	}
 	

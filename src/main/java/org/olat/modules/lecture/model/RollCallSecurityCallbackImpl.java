@@ -19,6 +19,8 @@
  */
 package org.olat.modules.lecture.model;
 
+import java.util.List;
+
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockStatus;
 import org.olat.modules.lecture.LectureModule;
@@ -54,6 +56,21 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 	public boolean canEdit() {
 		if(isClosed() || isCancelled()) return false;
 		return (repoAdmin || teacher) && isBlockEditable();
+	}
+
+	@Override
+	public boolean canClose(List<LectureBlock> blocks) {
+		if(blocks == null || blocks.isEmpty()) return false;
+		
+		boolean allOk = true;
+		if(repoAdmin || teacher) {
+			for(LectureBlock block:blocks) {
+				if(isClosed(block) || isCancelled(block) || !isBlockEditable(block)) {
+					allOk &= false;
+				} 
+			}
+		}
+		return allOk;
 	}
 
 	@Override
@@ -93,16 +110,28 @@ public class RollCallSecurityCallbackImpl implements RollCallSecurityCallback {
 	}
 
 	private boolean isBlockEditable() {
-		return lectureBlock.getRollCallStatus() == LectureRollCallStatus.open
-			|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.reopen;
+		return isBlockEditable(lectureBlock);
+	}
+	
+	private boolean isBlockEditable(LectureBlock block) {
+		return block.getRollCallStatus() == LectureRollCallStatus.open
+			|| block.getRollCallStatus() == LectureRollCallStatus.reopen;
 	}
 	
 	private boolean isCancelled() {
-		return lectureBlock.getStatus() == LectureBlockStatus.cancelled;
+		return isCancelled(lectureBlock);
+	}
+	
+	private boolean isCancelled(LectureBlock block) {
+		return block.getStatus() == LectureBlockStatus.cancelled;
 	}
 	
 	private boolean isClosed() {
-		return lectureBlock.getRollCallStatus() == LectureRollCallStatus.closed
-			|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.autoclosed;
+		return isClosed(lectureBlock);
+	}
+	
+	private boolean isClosed(LectureBlock block) {
+		return block.getRollCallStatus() == LectureRollCallStatus.closed
+			|| block.getRollCallStatus() == LectureRollCallStatus.autoclosed;
 	}
 }

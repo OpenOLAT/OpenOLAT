@@ -22,9 +22,11 @@ package org.olat.repository.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.IdentityRef;
@@ -34,8 +36,8 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.LectureModule;
@@ -110,11 +112,14 @@ public class RepositoryEntryAuthorQueries {
 			Number numOfReferences = (Number)object[3];
 			int references = numOfReferences == null ? 0 : numOfReferences.intValue();
 			
+			Number numOfBinders = (Number)object[4];
+			references += numOfBinders == null ? 0 : numOfBinders.intValue();
+
 			boolean lectureEnabled = false;
 			boolean rollCallEnabled = false;
-			if(object.length > 4) {
-				lectureEnabled = PersistenceHelper.extractBoolean(object, 4, false);
-				rollCallEnabled = PersistenceHelper.extractBoolean(object, 5, false);
+			if(object.length > 5) {
+				lectureEnabled = PersistenceHelper.extractBoolean(object, 5, false);
+				rollCallEnabled = PersistenceHelper.extractBoolean(object, 6, false);
 			}
 			
 			String deletedByName = null;
@@ -159,7 +164,15 @@ public class RepositoryEntryAuthorQueries {
 			  .append(" ) as offers,")
 			  .append(" (select count(ref.key) from references as ref ")
 			  .append("   where ref.target.key=res.key")
-			  .append(" ) as references");
+			  .append(" ) as references,");
+			if(params.includeResourceType("BinderTemplate")) {
+				sb.append(" (select count(binder.key) from pfbinder as binder")
+				  .append("   inner join binder.template as template")
+				  .append("   where res.resName='BinderTemplate' and res.key=template.olatResource.key")
+				  .append(" ) as binders");
+			} else {
+				sb.append(" 0 as binders");
+			}
 			if(lectureModule.isEnabled()) {
 				sb.append(", lectureConfig.lectureEnabled")
 				  .append(", case when lectureConfig.rollCallEnabled=true then true else ").append(lectureModule.isRollCallDefaultEnabled()).append(" end as rollCallEnabled");
@@ -203,6 +216,10 @@ public class RepositoryEntryAuthorQueries {
 			sb.append(" select license.key from license as license");
 			sb.append("  where license.resId=res.resId and license.resName=res.resName");
 			sb.append("    and license.licenseType.key in (:licenseTypeKeys))");
+		}
+		if (params.isEntryOrganisationsDefined()) {
+			sb.append(" and exists (select reToOrg.key from repoentrytoorganisation as reToOrg")
+			  .append("  where reToOrg.entry.key=v.key and reToOrg.organisation.key in (:organisationKeys))");
 		}
 		
 		String author = null;
@@ -322,6 +339,11 @@ public class RepositoryEntryAuthorQueries {
 		}
 		if (params.isLicenseTypeDefined()) {
 			dbQuery.setParameter("licenseTypeKeys", params.getLicenseTypeKeys());
+		}
+		if(params.isEntryOrganisationsDefined()) {
+			List<Long> organisationKeys = params.getEntryOrganisation().stream()
+					.map(OrganisationRef::getKey).collect(Collectors.toList());
+			dbQuery.setParameter("organisationKeys", organisationKeys);
 		}
 		return dbQuery;
 	}

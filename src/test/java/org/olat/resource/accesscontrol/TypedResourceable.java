@@ -24,11 +24,6 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.CodeHelper;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for TypedResourceable
- * 
- * <P>
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

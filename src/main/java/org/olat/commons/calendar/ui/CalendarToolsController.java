@@ -19,7 +19,12 @@
  */
 package org.olat.commons.calendar.ui;
 
+import java.util.List;
+
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.manager.ImportToCalendarManager;
+import org.olat.commons.calendar.model.ImportedToCalendar;
+import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.commons.calendar.ui.events.CalendarGUIEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -31,6 +36,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -40,9 +46,17 @@ import org.olat.core.util.Util;
  */
 public class CalendarToolsController extends BasicController {
 	
-	private Link injectFileLink, injectSynchronizedUrlLink, deleteTokenLink, deleteCalendarLink;
+	private Link injectFileLink;
+	private Link deleteTokenLink;
+	private Link resetCalendarLink;
+	private Link deleteCalendarLink;
+	private Link injectSynchronizedUrlLink;
+	private Link deleteImportedToCalendarLink;
 	
 	private final CalendarPersonalConfigurationRow row;
+	
+	@Autowired
+	private ImportToCalendarManager importToCalendarManager;
 	
 	public CalendarToolsController(UserRequest ureq, WindowControl wControl, CalendarPersonalConfigurationRow row) {
 		super(ureq, wControl);
@@ -50,20 +64,31 @@ public class CalendarToolsController extends BasicController {
 		setTranslator(Util.createPackageTranslator(CalendarManager.class, getLocale(), getTranslator()));
 		
 		VelocityContainer mainVC = createVelocityContainer("tools");
-		if(row.getAccess() == 0 && !row.isImported()) {
+		if(row.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE && !row.isImported()) {
 			injectFileLink = LinkFactory.createLink("cal.import.type.file", mainVC, this);
 			injectFileLink.setIconLeftCSS("o_icon o_icon_import");
 			injectSynchronizedUrlLink = LinkFactory.createLink("cal.synchronize.type.url", mainVC, this);
 			injectSynchronizedUrlLink.setIconLeftCSS("o_icon o_icon_calendar_sync");
+			
+			List<ImportedToCalendar> importedToCalendars = importToCalendarManager
+					.getImportedCalendarsIn(row.getWrapper().getKalendar());
+			if(!importedToCalendars.isEmpty()) {
+				deleteImportedToCalendarLink = LinkFactory.createLink("cal.delete.imported.to.calendar", mainVC, this);
+				deleteImportedToCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
+			}
 		}
 		
 		if(StringHelper.containsNonWhitespace(row.getToken())) {
 			deleteTokenLink = LinkFactory.createLink("cal.icalfeed.subscribe.remove", mainVC, this);
 			deleteTokenLink.setIconLeftCSS("o_icon o_icon_delete");
 		}
-		if(row.isImported()) {
+		
+		if(row.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY && row.isImported()) {
 			deleteCalendarLink = LinkFactory.createLink("cal.delete.imported.calendar", mainVC, this);
-			deleteCalendarLink.setIconLeftCSS("o_icon o_icon_remove");
+			deleteCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
+		} else if(row.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE && !row.isImported()) {
+			resetCalendarLink = LinkFactory.createLink("cal.reset.calendar", mainVC, this);
+			resetCalendarLink.setIconLeftCSS("o_icon o_icon_delete_item");
 		}
 		
 		putInitialPanel(mainVC);
@@ -83,6 +108,10 @@ public class CalendarToolsController extends BasicController {
 			fireEvent(ureq, new CalendarGUIEvent(CalendarGUIEvent.DELETE_TOKEN));
 		} else if(deleteCalendarLink == source) {
 			fireEvent(ureq, new CalendarGUIEvent(CalendarGUIEvent.DELETE_CALENDAR));
+		} else if(resetCalendarLink == source) {
+			fireEvent(ureq, new CalendarGUIEvent(CalendarGUIEvent.RESET_CALENDAR));
+		} else if(deleteImportedToCalendarLink == source) {
+			fireEvent(ureq, new CalendarGUIEvent(CalendarGUIEvent.DELETE_IMPORTED_TO));
 		}
 	}
 

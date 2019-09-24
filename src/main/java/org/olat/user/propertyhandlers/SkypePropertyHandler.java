@@ -47,7 +47,7 @@ public class SkypePropertyHandler extends Generic127CharTextPropertyHandler {
 			skypeid = StringHelper.escapeHtml(skypeid);
 			StringBuilder sb = new StringBuilder();
 			sb.append("<div id=\"SkypeButton_Call_").append(skypeid).append("_1\" class=\"o_skype_button\">")
-			  .append("<script type=\"text/javascript\">\n")
+			  .append("<script>\n")
 			  .append("try{ jQuery.getScript('https://secure.skypeassets.com/i/scom/js/skype-uri.js', function() {\n")
 			  .append("Skype.ui({\n")
 			  .append(" \"name\": \"dropdown\",")

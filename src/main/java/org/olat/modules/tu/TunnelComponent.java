@@ -292,7 +292,7 @@ public class TunnelComponent extends AbstractComponent implements AsyncMediaResp
 			} else if (method.equals("POST")) {
 				Map<String,String[]> params = tuReq.getParameterMap();
 				HttpPost pmeth = new HttpPost(builder.build());
-				List<BasicNameValuePair> pairs = new ArrayList<BasicNameValuePair>();
+				List<BasicNameValuePair> pairs = new ArrayList<>();
 				for (String key: params.keySet()) {
 					String vals[] = params.get(key);
 					for(String val:vals) {

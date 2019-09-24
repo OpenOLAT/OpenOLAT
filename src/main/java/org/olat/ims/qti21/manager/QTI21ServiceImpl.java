@@ -228,7 +228,7 @@ public class QTI21ServiceImpl implements QTI21Service, UserDataDeletable, Initia
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-    	final List<JqtiExtensionPackage<?>> extensionPackages = new ArrayList<JqtiExtensionPackage<?>>();
+    	final List<JqtiExtensionPackage<?>> extensionPackages = new ArrayList<>();
 
         /* Enable MathAssess extensions if requested */
         if (qtiModule.isMathAssessExtensionEnabled()) {

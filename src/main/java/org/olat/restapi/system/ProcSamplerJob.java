@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Random;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -133,6 +134,7 @@ public class ProcSamplerJob extends QuartzJobBean {
 		// Use a Transformer for output
 		try(OutputStream out = new FileOutputStream(xmlFile)) {
 			TransformerFactory tFactory = TransformerFactory.newInstance();
+			tFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			Transformer transformer = tFactory.newTransformer();
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.transform(new DOMSource(doc), new StreamResult(out));
@@ -144,6 +146,7 @@ public class ProcSamplerJob extends QuartzJobBean {
 	private Document loadDocument(File xmlFile) {
 		try {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+	        dbFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = null;
 			if(xmlFile.exists()) {

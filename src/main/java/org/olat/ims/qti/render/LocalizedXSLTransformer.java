@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.Source;
 import javax.xml.transform.Templates;
 import javax.xml.transform.TransformerConfigurationException;
@@ -183,6 +184,7 @@ public class LocalizedXSLTransformer {
 		XMLReader reader;
 		try {
 			reader = XMLReaderFactory.createXMLReader();
+			reader.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 			reader.setEntityResolver(er);
 			Source xsltsource = new SAXSource(reader, new InputSource(new StringReader(replacedOutput)));
 			templates = tfactory.newTemplates(xsltsource);
@@ -204,9 +206,16 @@ public class LocalizedXSLTransformer {
 		TransformerFactory tfactory = null;
 		try {
 			tfactory = TransformerFactory.newInstance("com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl", null);
-		} catch (TransformerFactoryConfigurationError e) {
+			tfactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+
+		} catch (TransformerFactoryConfigurationError | TransformerConfigurationException e) {
 			log.error("", e);
-			tfactory = TransformerFactory.newInstance();
+			try {
+				tfactory = TransformerFactory.newInstance();
+				tfactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			} catch (TransformerConfigurationException | TransformerFactoryConfigurationError e1) {
+				log.error("", e);
+			}
 		}
 		return tfactory;
 	}

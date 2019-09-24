@@ -28,12 +28,15 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.resource.OresHelper;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Initial date: 06.07.2015<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@Tag(name = "Vitero")
 @Path("vitero")
 @Component
 public class ViteroWebService {

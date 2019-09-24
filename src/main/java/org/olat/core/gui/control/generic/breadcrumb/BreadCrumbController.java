@@ -65,7 +65,7 @@ public class BreadCrumbController extends BasicController {
 	public BreadCrumbController(UserRequest ureq, WindowControl control) {
 		super(ureq, control);
 		breadCrumbVC = createVelocityContainer("breadCrumb");
-		breadCrumbLinks = new ArrayList<Link>();
+		breadCrumbLinks = new ArrayList<>();
 		breadCrumbVC.contextPut("breadCrumbs", breadCrumbLinks);
 		putInitialPanel(breadCrumbVC);
 	}

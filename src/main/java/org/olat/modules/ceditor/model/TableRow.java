@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class TableRow {
 	
-	public List<TableColumn> columns;
+	private List<TableColumn> columns;
 
 	public List<TableColumn> getColumns() {
 		if(columns == null) {

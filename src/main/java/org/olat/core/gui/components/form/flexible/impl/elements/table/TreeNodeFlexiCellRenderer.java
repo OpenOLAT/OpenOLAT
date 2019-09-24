@@ -21,6 +21,7 @@ package org.olat.core.gui.components.form.flexible.impl.elements.table;
 
 import java.util.List;
 
+import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
@@ -42,6 +43,7 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	private FlexiCellRenderer labelDelegate = new TextFlexiCellRenderer();
 	
 	private boolean flatBySearchAndFilter;
+	private boolean flatBySort;
 	private final String action;
 	
 	public TreeNodeFlexiCellRenderer() {
@@ -51,6 +53,11 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	public TreeNodeFlexiCellRenderer(String action) {
 		this.action = action;
 	}
+	
+	public TreeNodeFlexiCellRenderer(FlexiCellRenderer labelDelegate) {
+		this.labelDelegate = labelDelegate;
+		this.action = null;
+	}
 
 	public boolean isFlatBySearchAndFilter() {
 		return flatBySearchAndFilter;
@@ -58,6 +65,14 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 
 	public void setFlatBySearchAndFilter(boolean flatBySearchAndFilter) {
 		this.flatBySearchAndFilter = flatBySearchAndFilter;
+	}
+
+	public boolean isFlatBySort() {
+		return flatBySort;
+	}
+
+	public void setFlatBySort(boolean flatBySort) {
+		this.flatBySort = flatBySort;
 	}
 
 	@Override
@@ -77,10 +92,23 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 	}
 	
 	private boolean isFlat(FlexiTableElementImpl ftE) {
+		return isFlatSearchAndFilter(ftE) || isFlatSort(ftE) ;
+	}
+
+	private boolean isFlatSearchAndFilter(FlexiTableElementImpl ftE) {
 		return flatBySearchAndFilter
 				&& (StringHelper.containsNonWhitespace(ftE.getQuickSearchString()) || isFiltered(ftE.getSelectedFilters()));
 	}
 	
+	private boolean isFlatSort(FlexiTableElementImpl ftE) {
+		return flatBySort && isSorted(ftE);
+	}
+
+	private boolean isSorted(FlexiTableElementImpl ftE) {
+		SortKey[] keys = ftE.getOrderBy();
+		return keys != null && keys.length > 0 && keys[0] != null && !"natural".equals(keys[0].getKey());
+	}
+
 	private boolean isFiltered(List<FlexiTableFilter> filters) {
 		if(filters == null || filters.isEmpty()) return false;
 		
@@ -124,11 +152,15 @@ public class TreeNodeFlexiCellRenderer implements FlexiCellRenderer {
 			}
 			target.append("'> </i></a> ");
 		}
-
-		NameValuePair pair = new NameValuePair(action, Integer.toString(row));
-		String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
-		target.append("<a href=\"javascript:").append(jsCode).append(";\">");
-		labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
-		target.append("</a></div>");
+		
+		if(action == null) {
+			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+		} else {
+			NameValuePair pair = new NameValuePair(action, Integer.toString(row));
+			String jsCode = FormJSHelper.getXHRFnCallFor(rootForm, id, 1, false, false, pair);
+			target.append("<a href=\"javascript:").append(jsCode).append(";\">");
+			labelDelegate.render(renderer, target, cellValue, row, source, ubu, translator);
+			target.append("</a></div>");
+		}
 	}
 }

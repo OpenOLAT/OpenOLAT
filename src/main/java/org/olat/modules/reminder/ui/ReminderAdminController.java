@@ -146,7 +146,7 @@ public class ReminderAdminController extends FormBasicController {
 		for(int i=timezoneKeys.length; i-->0; ) {
 			timezoneValues[i] = timezoneKeys[i] + " (" + TimeZone.getTimeZone(timezoneKeys[i]).getDisplayName(true, TimeZone.LONG, getLocale()) + ")";
 		}
-		timezoneEl = uifactory.addDropdownSingleselect("timezone", timeLayout, timezoneKeys, timezoneValues, null);
+		timezoneEl = uifactory.addDropdownSingleselect("timezone", null, timeLayout, timezoneKeys, timezoneValues, null);
 		timezoneEl.setEnabled(false);
 		((AbstractComponent)timezoneEl.getComponent()).setDomReplacementWrapperRequired(false);
 		TimeZone defaultTimeZone = reminderModule.getDefaultSendTimeZone();

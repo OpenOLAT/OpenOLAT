@@ -166,8 +166,8 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 		flc.contextPut("referenceLanguageKey", referenceLocale.toString());
 		flc.contextPut("referenceLanguage", i18nMgr.getLanguageTranslated(referenceLocale.toString(), false));
 		// Add bundles and keys selection
-		List<String> bundlesList = new ArrayList<String>();
-		List<String> keysList = new ArrayList<String>();
+		List<String> bundlesList = new ArrayList<>();
+		List<String> keysList = new ArrayList<>();
 		for (I18nItem item : i18nItems) {
 			if (!bundlesList.contains(item.getBundleName())) {
 				bundlesList.add(item.getBundleName());
@@ -331,7 +331,7 @@ public class TranslationToolI18nItemEditCrumbController extends CrumbFormBasicCo
 	}
 
 	private void updateKeysSelectionAndProgress() {
-		List<String> keysList = new ArrayList<String>();
+		List<String> keysList = new ArrayList<>();
 		for (I18nItem item : i18nItems) {
 			if (currentItem.getBundleName().equals(item.getBundleName())) {
 				keysList.add(item.getKey());

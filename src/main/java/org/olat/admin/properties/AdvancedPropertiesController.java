@@ -71,9 +71,7 @@ public class AdvancedPropertiesController extends BasicController {
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = CoreSpringFactory.getImpl(BaseSecurityModule.class).isUserAllowedAdminProps(roles);
-		
-		//TODO: make special security check as soon as this controller can also modify polices (at the moment: read only)
-		
+
 		myPanel = new Panel("myPanel");
 		myPanel.addListener(this);
 		

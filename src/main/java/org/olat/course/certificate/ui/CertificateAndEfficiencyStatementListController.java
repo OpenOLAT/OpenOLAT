@@ -208,9 +208,9 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		//artefact
 		if(assessedIdentity.equals(getIdentity())) {
 			if(portfolioV2Module.isEnabled()) {
-				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.artefact",
-						Cols.efficiencyStatement.ordinal(), CMD_MEDIA,
-						new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer())));
+				DefaultFlexiColumnModel portfolioColumn = new DefaultFlexiColumnModel( Cols.artefact, CMD_MEDIA,
+						new BooleanCellRenderer(new StaticFlexiCellRenderer(CMD_MEDIA, new AsArtefactCellRenderer()), null));
+				tableColumnModel.addFlexiColumnModel(portfolioColumn);
 			} else {
 				EPArtefactHandler<?> artHandler = portfolioModule.getArtefactHandler(EfficiencyStatementArtefact.ARTEFACT_TYPE);
 				if(portfolioModule.isEnabled() && artHandler != null && artHandler.isEnabled() && assessedIdentity.equals(getIdentity())) {
@@ -399,7 +399,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		if(collectorCtrl != null) return;
 		
 		EfficiencyStatement fullStatement = esm.getUserEfficiencyStatementByKey(efficiencyStatementKey);
-		collectorCtrl = new CollectArtefactController(ureq, getWindowControl(), fullStatement, mediaHandler, "");
+		collectorCtrl = new CollectArtefactController(ureq, getWindowControl(), fullStatement, mediaHandler, null);
 		listenTo(collectorCtrl);
 		
 		cmc = new CloseableModalController(getWindowControl(), null, collectorCtrl.getInitialComponent(), true, title, true);

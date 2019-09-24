@@ -48,6 +48,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.ldap.LDAPLoginManager;
 import org.olat.ldap.LDAPLoginModule;
+import org.olat.registration.RegistrationModule;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -102,6 +103,8 @@ public class UserModule extends AbstractSpringModule {
 	
 	@Autowired
 	private UserPropertiesConfig userPropertiesConfig;
+	@Autowired
+	private RegistrationModule registrationModule;
 
 	@Autowired
 	public UserModule(CoordinatorManager coordinatorManager) {
@@ -155,6 +158,8 @@ public class UserModule extends AbstractSpringModule {
 		if(StringHelper.containsNonWhitespace(userEmailOptionalValue)) {
 			isEmailMandatory = "true".equalsIgnoreCase(userEmailOptionalValue);
 		}
+		registrationModule.resetEmailUserProperty();
+		
 		String userEmailUniquenessOptionalValue = getStringPropertyValue(USER_EMAIL_UNIQUE, false);
 		if(StringHelper.containsNonWhitespace(userEmailUniquenessOptionalValue)) {
 			isEmailUnique = "true".equalsIgnoreCase(userEmailUniquenessOptionalValue);
@@ -284,6 +289,7 @@ public class UserModule extends AbstractSpringModule {
 		this.isEmailMandatory = isEmailMandatory;
 		String isEmailMandatoryStr = isEmailMandatory ? "true" : "false";
 		setStringProperty(USER_EMAIL_MANDATORY, isEmailMandatoryStr, true);
+		registrationModule.resetEmailUserProperty();
 	}
 
 	public boolean isEmailUnique() {

@@ -33,9 +33,6 @@ import java.util.List;
 import org.olat.course.editor.StatusDescription;
 
 /**
- * Description:<br>
- * TODO: patrick Class Description for StatusDescriptionHelper
- * <P>
  * Initial Date: Aug 11, 2005 <br>
  * 
  * @author patrick

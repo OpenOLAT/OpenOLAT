@@ -179,7 +179,6 @@ public class SectionContext implements Serializable {
 				// resolve the entity first
 				String linkRefId = el_item.attributeValue("linkrefid");
 				el_item = (Element) el_section.selectSingleNode("//item[@ident='" + linkRefId + "']");
-				// if item == null -> TODO Error
 			}
 			el_items.add(el_item);
 		}
@@ -216,8 +215,6 @@ public class SectionContext implements Serializable {
 				Element el_selection = (Element) it_selection.next();
 				Element el_sourcebankref = (Element) el_selection.selectSingleNode("sourcebank_ref");
 				if (el_sourcebankref == null) {
-					// no reference to sourcebank, -> take internal one, but dtd disallows
-					// it!?? TODO
 					/*
 					 * 2:27 PM] <felix.jost> aus ims qti sao: [2:27 PM] <felix.jost> 3.2.1
 					 * <sourcebank_ref> Description: Identifies the objectbank to which
@@ -295,7 +292,7 @@ public class SectionContext implements Serializable {
 		}
 
 		// now wrap all item contexts
-		itemContexts = new ArrayList<ItemContext>(10);
+		itemContexts = new ArrayList<>(10);
 		for (Iterator<Element> iter = el_items.iterator(); iter.hasNext();) {
 			Element item = iter.next();
 			item.detach();

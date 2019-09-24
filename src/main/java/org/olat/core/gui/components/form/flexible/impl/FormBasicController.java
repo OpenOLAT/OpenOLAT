@@ -579,7 +579,8 @@ public abstract class FormBasicController extends BasicController {
 		if (i18nKey == null) {
 			flc.contextRemove("off_warn");
 		} else {
-			flc.contextPut("off_warn", getTranslator().translate(i18nKey));
+			String val = getTranslator().translate(i18nKey);
+			flc.contextPut("off_warn", val);
 		}
 	}
 	

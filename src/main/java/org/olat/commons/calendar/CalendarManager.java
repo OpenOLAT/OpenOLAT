@@ -304,6 +304,8 @@ public interface CalendarManager {
 	 */
 	public boolean removeEventFrom(Kalendar cal, KalendarEvent kalendarEvent);
 	
+	public boolean removeEventsFrom(Kalendar cal, List<KalendarEvent> kalendarEvents);
+	
 	/**
 	 * Remove an occurence of a recurring event.
 	 * 

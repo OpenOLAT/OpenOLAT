@@ -213,10 +213,10 @@ public class IQDisplayController extends DefaultController implements GenericEve
 		if (autcompResolver != null && autcompResolver.hasAutocompleteFiles()) {
 			// Add Autocomplte JS and CSS file to header
 			StringBuilder sb = new StringBuilder();
-			// must be like <script type="text/javascript" src="/olat/secstatic/qti/74579818809617/_unzipped_/fibautocompl.js"></script>
-			sb.append("<script type=\"text/javascript\" src=\"").append(autcompResolver.getStaticsBaseURI()).append("/").append(ImsRepositoryResolver.QTI_FIB_AUTOCOMPLETE_JS_FILE).append("\"></script>\n");
-			// must be like <link rel="StyleSheet" href="/olat/secstatic/qti/74579818809617/_unzipped_/fibautocompl.css" type="text/css" media="screen, print">
-			sb.append("<link rel=\"StyleSheet\" href=\"").append(autcompResolver.getStaticsBaseURI()).append("/").append(ImsRepositoryResolver.QTI_FIB_AUTOCOMPLETE_CSS_FILE).append("\" type=\"text/css\" media=\"screen\" >\n");
+			// must be like <script src="/olat/secstatic/qti/74579818809617/_unzipped_/fibautocompl.js"></script>
+			sb.append("<script src=\"").append(autcompResolver.getStaticsBaseURI()).append("/").append(ImsRepositoryResolver.QTI_FIB_AUTOCOMPLETE_JS_FILE).append("\"></script>\n");
+			// must be like <link rel="StyleSheet" href="/olat/secstatic/qti/74579818809617/_unzipped_/fibautocompl.css" media="screen, print">
+			sb.append("<link rel=\"StyleSheet\" href=\"").append(autcompResolver.getStaticsBaseURI()).append("/").append(ImsRepositoryResolver.QTI_FIB_AUTOCOMPLETE_CSS_FILE).append("\" media=\"screen\" >\n");
 			JSAndCSSComponent autoCompleteJsCss = new JSAndCSSComponent("auto_complete_js_css", this.getClass(), true, sb.toString());
 			myContent.put("autoCompleteJsCss", autoCompleteJsCss);
 		}

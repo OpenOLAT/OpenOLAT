@@ -142,7 +142,7 @@ public class OutcomeMapper implements Mapper, Serializable {
 		if(REPLACE_RESULT_REQUEST.equals(lti_message_type)) {
 			String scoreString = body.get("/resultRecord/result/resultScore/textString");
 			if(doUpdateResult(Float.parseFloat(scoreString))) {
-				Map<String,Object> theMap = new TreeMap<String,Object>();
+				Map<String,Object> theMap = new TreeMap<>();
 				theMap.put("/replaceResultRequest", "");
 				String theXml = XMLMap.getXMLFragment(theMap, true);
 				if (log.isDebugEnabled()) {
@@ -157,7 +157,7 @@ public class OutcomeMapper implements Mapper, Serializable {
 			}
 		} else if(DELETE_RESULT_REQUEST.equals(lti_message_type)) {
 			if(doDeleteResult()) {
-				Map<String,Object> theMap = new TreeMap<String,Object>();
+				Map<String,Object> theMap = new TreeMap<>();
 				theMap.put("/deleteResultRequest", "");
 				String theXml = XMLMap.getXMLFragment(theMap, true);
 				if (log.isDebugEnabled()) {

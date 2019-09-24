@@ -98,6 +98,7 @@ public class TeacherRollCallPage {
 		By confirmCloseBy = By.cssSelector("fieldset.o_sel_lecture_confirm_close_form button.btn-primary");
 		browser.findElement(confirmCloseBy).click();
 		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
 		return this;
 	}
 }

@@ -79,7 +79,7 @@ public class DevelopmentController extends BasicController {
 	private Link web20Link;
 	private Link showComponentTree;
 	
-	private List<Link> modes = new ArrayList<Link>();
+	private List<Link> modes = new ArrayList<>();
 	
 	private Link chosenMode;
 	private WindowManagerImpl winMgrImpl;
@@ -280,7 +280,7 @@ public class DevelopmentController extends BasicController {
 		int size = DefaultController.getControllerCount();
 		target.append("<strong>Component Tree:</strong> count: " + cnt + "&nbsp;&nbsp;|&nbsp;&nbsp;Controllers (global: active and not disposed): <strong>"+size+"</strong>");
 		target.append("</div><div>");
-		Map<Controller, List<Component>> controllerInfos = new HashMap<Controller, List<Component>>(); 
+		Map<Controller, List<Component>> controllerInfos = new HashMap<>(); 
 		dumpTree(target, root, 0, controllerInfos);
 		target.append("</div>");
 		// now dump the controller info
@@ -324,7 +324,7 @@ public class DevelopmentController extends BasicController {
 			List<Component> lcomps = controllerInfos.get(lController);
 			if (lcomps == null) {
 				// first entry
-				lcomps = new ArrayList<Component>();
+				lcomps = new ArrayList<>();
 				controllerInfos.put(lController, lcomps);
 			}
 			lcomps.add(current);

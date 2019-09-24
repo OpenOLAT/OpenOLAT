@@ -279,11 +279,6 @@ public class InfoMessageFrontendManagerTest extends OlatTestCase {
 	}
 
 	@Test
-	public void sendInfoMessage() {
-		// TODO
-	}
-
-	@Test
 	public void getInfoSubscribers() {
 		Identity id1 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-1");
 		Identity id2 = JunitTestHelper.createAndPersistIdentityAsRndUser("info-2");

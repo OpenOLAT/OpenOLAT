@@ -40,9 +40,6 @@ import org.olat.modules.wiki.WikiPage;
 import org.olat.user.UserManager;
 
 /**
- * Description:<br>
- * TODO: guido Class Description for HistoryTableDateModel
- * <P>
  * Initial Date: May 30, 2006 <br>
  * 
  * @author guido
@@ -60,16 +57,12 @@ public class HistoryTableDateModel extends DefaultTableDataModel<WikiPage> imple
 
 	private static final int COLUMN_COUNT = 3;
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getColumnCount()
-	 */
+	@Override
 	public int getColumnCount() {
 		return COLUMN_COUNT;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.table.TableDataModel#getValueAt(int, int)
-	 */
+	@Override
 	public Object getValueAt(int row, int col) {
 		WikiPage page = getObject(row);
 		switch (col) {

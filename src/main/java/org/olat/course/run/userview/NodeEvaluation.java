@@ -56,7 +56,7 @@ public class NodeEvaluation extends GenericNode {
 	private final CourseNode courseNode;
 	private GenericTreeNode gtn;
 
-	private final Map<String, Boolean> accesses = new HashMap<String, Boolean>(4);
+	private final Map<String, Boolean> accesses = new HashMap<>(4);
 
 	private boolean visible = false;
 	private boolean atLeastOneAccessible = false;

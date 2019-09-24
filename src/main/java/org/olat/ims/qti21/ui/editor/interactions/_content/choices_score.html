@@ -1,3 +1,6 @@
+#if($r.isTrue($scoreWarning))
+	<div class="o_warning" role="alert">$r.translate("warning.correct.answer.score")</div>
+#end
 <table class="table o_sel_choices_scores">
 	<thead><tr>
 		<th>$r.translate("form.score.answer.correct")</th>

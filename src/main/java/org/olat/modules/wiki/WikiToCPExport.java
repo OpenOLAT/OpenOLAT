@@ -207,7 +207,7 @@ public class WikiToCPExport {
 		// isvisible="true">
 		// <title>Einleitung</title>
 		// </item>
-		List<WikiPage> topLevelPages = new ArrayList<WikiPage>();
+		List<WikiPage> topLevelPages = new ArrayList<>();
 		topLevelPages.add(wiki.getPage(WikiPage.WIKI_INDEX_PAGE));
 		WikiPage pageAtoZ = wiki.getPage(WikiPage.WIKI_A2Z_PAGE);
 		pageAtoZ.setContent(wiki.getAllPageNamesSorted());
@@ -287,11 +287,11 @@ public class WikiToCPExport {
 		sb.append("<html>");
 		sb.append("<head>\n");
 		sb.append("<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">\n");
-		sb.append("<style type=\"text/css\">img {float:right;padding:10px;}</style>\n");
-		//sb.append("<script type=\"text/javascript\" src=\"cp_offline_menu_mat/jsMath/easy/load.js\"></script>\n");
-		sb.append("<script type=\"text/javascript\" src=\"cp_offline_menu_mat/wiki.js\"></script>\n");
-		sb.append("<script type=\"text/javascript\" src=\"mapping.js\"></script>\n");
-		sb.append("<link rel=\"StyleSheet\" href=\"cp_offline_menu_mat/wiki.css\" type=\"text/css\" media=\"screen, print\">\n");
+		sb.append("<style>img {float:right;padding:10px;}</style>\n");
+		//sb.append("<script src=\"cp_offline_menu_mat/jsMath/easy/load.js\"></script>\n");
+		sb.append("<script src=\"cp_offline_menu_mat/wiki.js\"></script>\n");
+		sb.append("<script src=\"mapping.js\"></script>\n");
+		sb.append("<link rel=\"StyleSheet\" href=\"cp_offline_menu_mat/wiki.css\" media=\"screen, print\">\n");
 
 		sb.append("</head>\n");
 		sb.append("<body>\n");

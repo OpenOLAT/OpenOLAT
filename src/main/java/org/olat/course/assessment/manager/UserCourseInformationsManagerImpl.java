@@ -293,7 +293,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	@Override
 	public Map<Long,Date> getInitialLaunchDates(OLATResource resource, List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) {
-			return new HashMap<Long,Date>();
+			return new HashMap<>();
 		}
 		try {
 			List<Long> identityKeys = PersistenceHelper.toKeys(identities);
@@ -306,7 +306,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			Set<Long> identityKeySet = null;
 			if(identityKeys.size() < 100) {
 				sb.append(" and infos.identity.key in (:identityKeys)");
-				identityKeySet = new HashSet<Long>(identityKeys);
+				identityKeySet = new HashSet<>(identityKeys);
 			}
 
 			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager()
@@ -317,7 +317,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			}
 
 			List<Object[]> infoList = query.getResultList();
-			Map<Long,Date> dateMap = new HashMap<Long,Date>();
+			Map<Long,Date> dateMap = new HashMap<>();
 			for(Object[] infos:infoList) {
 				Long identityKey = (Long)infos[0];
 				if(identityKeySet == null || identityKeySet.contains(identityKey)) {
@@ -350,7 +350,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 					.setParameter("resId", courseResourceId);
 
 			List<Object[]> infoList = query.getResultList();
-			Map<Long,Date> dateMap = new HashMap<Long,Date>();
+			Map<Long,Date> dateMap = new HashMap<>();
 			for(Object[] infos:infoList) {
 				Long identityKey = (Long)infos[0];
 				Date initialLaunch = (Date)infos[1];
@@ -377,7 +377,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 					.setParameter("resourceKey", resource.getKey());
 
 			List<Object[]> infoList = query.getResultList();
-			Map<Long,Date> dateMap = new HashMap<Long,Date>();
+			Map<Long,Date> dateMap = new HashMap<>();
 			for(Object[] infos:infoList) {
 				Long identityKey = (Long)infos[0];
 				Date initialLaunch = (Date)infos[1];
@@ -425,7 +425,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 	@Override
 	public Map<Long,Date> getRecentLaunchDates(OLATResource resource, List<Identity> identities) {
 		if(identities == null || identities.isEmpty()) {
-			return new HashMap<Long,Date>();
+			return new HashMap<>();
 		}
 		try {
 			List<Long> identityKeys = PersistenceHelper.toKeys(identities);
@@ -438,7 +438,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			Set<Long> identityKeySet = null;
 			if(identityKeys.size() < 100) {
 				sb.append(" and infos.identity.key in (:identityKeys)");
-				identityKeySet = new HashSet<Long>(identityKeys);
+				identityKeySet = new HashSet<>(identityKeys);
 			}
 
 			TypedQuery<Object[]> query = dbInstance.getCurrentEntityManager().createQuery(sb.toString(), Object[].class)
@@ -448,7 +448,7 @@ public class UserCourseInformationsManagerImpl implements UserCourseInformations
 			}
 
 			List<Object[]> infoList = query.getResultList();
-			Map<Long,Date> dateMap = new HashMap<Long,Date>();
+			Map<Long,Date> dateMap = new HashMap<>();
 			for(Object[] infos:infoList) {
 				Long identityKey = (Long)infos[0];
 				if(identityKeySet == null || identityKeySet.contains(identityKey)) {

@@ -71,7 +71,8 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private TextElement minScoreEl;
 	private TextElement maxScoreEl;
 	private SingleSelection assessmentModeEl;
-	private SingleSelection maxChoicesEl, minChoicesEl;
+	private SingleSelection minChoicesEl;
+	private SingleSelection maxChoicesEl;
 	private FormLayoutContainer scoreCont;
 	private final List<ChoiceWrapper> wrappers = new ArrayList<>();
 	
@@ -81,27 +82,26 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 	private final ChoiceAssessmentItemBuilder itemBuilder;
 	
 	private int counter = 0;
-	private final String contextHelpUrl;
 	
 	public ChoiceScoreController(UserRequest ureq, WindowControl wControl,
 			ChoiceAssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef, File itemFileRef,
-			boolean restrictedEdit, boolean readOnly, String contextHelpUrl) {
+			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, itemRef, restrictedEdit, readOnly);
 		setTranslator(Util.createPackageTranslator(AssessmentTestEditorController.class, getLocale()));
 		this.itemBuilder = itemBuilder;
 		this.itemFileRef = itemFileRef;
-		this.contextHelpUrl = contextHelpUrl;
 		
 		URI assessmentObjectUri = itemFileRef.toURI();
 		mapperUri = registerCacheableMapper(null, "ChoiceScoreController::" + CodeHelper.getRAMUniqueID(),
 				new ResourcesMapper(assessmentObjectUri));
 		
 		initForm(ureq);
+		validateScoreOfCorrectAnswer();
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp(contextHelpUrl);
+		setFormContextHelp("Configure test questions#_tab_score");
 		super.initForm(formLayout, listener, ureq);
 		
 		ScoreBuilder minScore = itemBuilder.getMinScoreBuilder();
@@ -229,6 +229,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			
 			updateMinMaxChoices();
 		}
+		validateScoreOfCorrectAnswer();
 	}
 	
 	private ChoiceWrapper createChoiceWrapper(Choice choice) {
@@ -256,7 +257,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		allOk &= validateMinMaxScores(minScoreEl, maxScoreEl);
 
 		if(assessmentModeEl.isOneSelected() && assessmentModeEl.isSelected(1)) {
@@ -264,8 +265,22 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 				allOk &= validateDouble(wrapper.getPointsEl());
 			}
 		}
-		
-		return allOk & super.validateFormLogic(ureq);
+
+		validateScoreOfCorrectAnswer();// only a warning
+		return allOk;
+	}
+	
+	private void validateScoreOfCorrectAnswer() {
+		try {
+			Boolean warning = (Boolean)scoreCont.contextGet("scoreWarning");
+			Boolean newWarning = Boolean.valueOf(itemBuilder.scoreOfCorrectAnswerWarning());
+			if(warning == null || !warning.equals(newWarning)) {
+				scoreCont.contextPut("scoreWarning", newWarning);
+			}
+		} catch (Exception e) {
+			// not a critical feature, don't produce red screen
+			logError("", e);
+		}
 	}
 
 	@Override
@@ -301,7 +316,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 			itemBuilder.clearMapping();
 			for(ChoiceWrapper wrapper:wrappers) {
 				String pointsStr = wrapper.getPointsEl().getValue();
-				Double points = new Double(pointsStr);
+				Double points = Double.valueOf(pointsStr);
 				itemBuilder.setMapping(wrapper.getChoice().getIdentifier(), points);
 			}
 		} else {
@@ -310,6 +325,7 @@ public class ChoiceScoreController extends AssessmentItemRefEditorController imp
 		}
 
 		fireEvent(ureq, new AssessmentItemEvent(AssessmentItemEvent.ASSESSMENT_ITEM_CHANGED, itemBuilder.getAssessmentItem(), null));
+		validateScoreOfCorrectAnswer();
 	}
 
 	@Override

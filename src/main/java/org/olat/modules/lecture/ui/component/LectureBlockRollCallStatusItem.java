@@ -22,7 +22,6 @@ package org.olat.modules.lecture.ui.component;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
 import org.olat.core.gui.translator.Translator;
-import org.olat.modules.lecture.ui.TeacherRollCallRow;
 
 /**
  * 
@@ -34,7 +33,7 @@ public class LectureBlockRollCallStatusItem extends FormItemImpl {
 	
 	private final LectureBlockRollCallStatusComponent component;
 	
-	public LectureBlockRollCallStatusItem(String name, TeacherRollCallRow rollCall,
+	public LectureBlockRollCallStatusItem(String name, RollCallItem rollCall,
 			boolean authorizedAbsenceEnabled, boolean absenceDefaultAuthorized, Translator translator) {
 		super(name);
 		component = new LectureBlockRollCallStatusComponent(null, this, translator);
@@ -45,7 +44,7 @@ public class LectureBlockRollCallStatusItem extends FormItemImpl {
 		setTranslator(translator);
 	}
 
-	public TeacherRollCallRow getRollCall() {
+	public RollCallItem getRollCall() {
 		return component.getRollCall();
 	}
 
@@ -59,6 +58,14 @@ public class LectureBlockRollCallStatusItem extends FormItemImpl {
 
 	public boolean isAbsenceDefaultAuthorized() {
 		return component.isAbsenceDefaultAuthorized();
+	}
+	
+	public boolean isWithNumOfLectures() {
+		return component.isWithNumOfLectures();
+	}
+
+	public void setWithNumOfLectures(boolean withNumOfLectures) {
+		component.setWithNumOfLectures(withNumOfLectures);
 	}
 
 	@Override

@@ -161,7 +161,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 		}
 		
 		List<RepositoryEntry> repositoryEntries = repositoryManager.lookupRepositoryEntries(reKeys);
-		Map<Long,RepositoryEntry> keyToRepositoryEntryMap = new HashMap<Long,RepositoryEntry>();
+		Map<Long,RepositoryEntry> keyToRepositoryEntryMap = new HashMap<>();
 		for(RepositoryEntry repositoryEntry:repositoryEntries) {
 			keyToRepositoryEntryMap.put(repositoryEntry.getKey(), repositoryEntry);
 		}
@@ -265,7 +265,7 @@ public class BookmarksPortletRunController extends AbstractPortletRunController<
 			
 			List<PortletEntry<Bookmark>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl<Bookmark>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			listenTo(portletToolsController);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);

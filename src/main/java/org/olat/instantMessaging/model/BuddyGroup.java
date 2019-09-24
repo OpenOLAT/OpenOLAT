@@ -39,13 +39,13 @@ public class BuddyGroup implements Serializable {
 	private List<Buddy> buddyList;
 	
 	public BuddyGroup() {
-		buddyList = new ArrayList<Buddy>();
+		buddyList = new ArrayList<>();
 	}
 	
 	public BuddyGroup(Long groupKey, String groupName) {
 		this.groupKey = groupKey;
 		this.groupName = groupName;
-		buddyList = new ArrayList<Buddy>();
+		buddyList = new ArrayList<>();
 	}
 	
 	public int size() {

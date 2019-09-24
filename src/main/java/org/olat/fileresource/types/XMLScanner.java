@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -49,7 +50,9 @@ class XMLScanner extends DefaultHandler {
 	private static SAXParser saxParser;
 	static {
 		try {
-			saxParser = SAXParserFactory.newInstance().newSAXParser();
+			SAXParserFactory factory = SAXParserFactory.newInstance();
+			factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+			saxParser = factory.newSAXParser();
 		} catch(Exception ex) {
 	  		log.error("", ex);
 		}

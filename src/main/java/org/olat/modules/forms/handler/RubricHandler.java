@@ -52,9 +52,11 @@ import org.olat.modules.forms.ui.model.ExecutionIdentity;
 public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPageElementHandler {
 	
 	private final boolean restrictedEdit;
+	private final boolean restrictedEditWheight;
 	
-	public RubricHandler(boolean restrictedEdit) {
+	public RubricHandler(boolean restrictedEdit, boolean restrictedEditWheight) {
 		this.restrictedEdit = restrictedEdit;
+		this.restrictedEditWheight = restrictedEditWheight;
 	}
 
 	@Override
@@ -84,7 +86,7 @@ public class RubricHandler implements EvaluationFormElementHandler, SimpleAddPag
 	@Override
 	public Controller getEditor(UserRequest ureq, WindowControl wControl, PageElement element) {
 		if(element instanceof Rubric) {
-			return new RubricEditorController(ureq, wControl, (Rubric)element, restrictedEdit);
+			return new RubricEditorController(ureq, wControl, (Rubric)element, restrictedEdit, restrictedEditWheight);
 		}
 		return null;
 	}

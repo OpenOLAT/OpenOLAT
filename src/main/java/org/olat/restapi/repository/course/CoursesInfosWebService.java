@@ -156,8 +156,8 @@ public class CoursesInfosWebService {
 		Roles roles = getRoles(httpRequest);
 		Identity identity = getIdentity(httpRequest);
 		if(identity != null && roles != null) {
-			Set<Long> forumNotified = new HashSet<Long>();
-			Map<Long,Set<String>> courseNotified = new HashMap<Long,Set<String>>();
+			Set<Long> forumNotified = new HashSet<>();
+			Map<Long,Set<String>> courseNotified = new HashMap<>();
 			collectSubscriptions(identity, forumNotified, courseNotified);
 			
 			ICourse course = CourseFactory.loadCourse(courseId);
@@ -173,7 +173,7 @@ public class CoursesInfosWebService {
 	private void collectSubscriptions(Identity identity, Set<Long> forumNotified, Map<Long,Set<String>> courseNotified) {
 		NotificationsManager man = NotificationsManager.getInstance();
 		{//collect subscriptions
-			List<String> notiTypes = new ArrayList<String>();
+			List<String> notiTypes = new ArrayList<>();
 			notiTypes.add("FolderModule");
 			notiTypes.add("Forum");
 			List<Subscriber> subs = man.getSubscribers(identity, notiTypes);

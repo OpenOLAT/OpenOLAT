@@ -1,6 +1,6 @@
 #if(!$referenceLinks.isEmpty())
 	$r.translate("details.referenceinfo.txt")
-	<ul class="o_dropdown list-unstyled">
+	<ul class="list-unstyled">
 	#foreach($referenceLink in $referenceLinks)
 		<li>$r.render($referenceLink)</li>
 	#end
@@ -11,3 +11,9 @@
 		$qualityDataCollections
 	#end
 </div>
+<div class="o_block_small_top">
+	#if($r.isNotNull($binderTemplateUsage))
+		$binderTemplateUsage
+	#end
+</div>
+

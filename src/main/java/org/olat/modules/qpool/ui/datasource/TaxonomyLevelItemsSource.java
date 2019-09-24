@@ -26,7 +26,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.modules.qpool.QuestionItem;
-import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.model.QuestionItemImpl;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 
@@ -73,7 +72,7 @@ public abstract class TaxonomyLevelItemsSource extends DefaultItemsSource {
 	@Override
 	public int postImport(List<QuestionItem> items, boolean editable) {
 		if(items == null || items.isEmpty()) return 0;
-		for(QuestionItemShort item : items) {
+		for(QuestionItem item : items) {
 			if(item instanceof QuestionItemImpl) {
 				QuestionItemImpl itemImpl = (QuestionItemImpl) item;
 				itemImpl.setTaxonomyLevel(taxonomyLevel);

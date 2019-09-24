@@ -147,10 +147,6 @@ public class BusinessGroupFormController extends FormBasicController {
 		initForm(ureq); // depends on bulkMode flag
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		// Create the business group name input text element
@@ -266,7 +262,7 @@ public class BusinessGroupFormController extends FormBasicController {
 				if (flags.length() > 0) {
 					// use translator from REST admin package to import managed flags context help strings
 					Translator managedTrans = Util.createPackageTranslator(RestapiAdminController.class, ureq.getLocale());
-					StringBuffer flagList = new StringBuffer();
+					StringBuilder flagList = new StringBuilder();
 					flagList.append("<p class=\"o_important\">");
 					flagList.append(translate("create.form.managedflags.intro"));
 					flagList.append("</div>");
@@ -300,9 +296,6 @@ public class BusinessGroupFormController extends FormBasicController {
 		enableWaitingList.setEnabled(allowWaitingList && !managed);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#validateFormLogic(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	public boolean validateFormLogic(UserRequest ureq) {
 		// 1) Check valid group names
@@ -316,8 +309,8 @@ public class BusinessGroupFormController extends FormBasicController {
 			// e.g. find "," | " , " | ",,," errors => no group entered
 			String selectionAsCsvStr = businessGroupName.getValue();
 			String[] activeSelection = selectionAsCsvStr != null ? selectionAsCsvStr.split(",") : new String[] {};
-			validNames = new HashSet<String>();
-			Set<String> wrongNames = new HashSet<String>();
+			validNames = new HashSet<>();
+			Set<String> wrongNames = new HashSet<>();
 			boolean nameTooLong = false;
 			for (int i = 0; i < activeSelection.length; i++) {
 				String currentName = activeSelection[i].trim();
@@ -497,7 +490,7 @@ public class BusinessGroupFormController extends FormBasicController {
 	 * @return
 	 */
 	public boolean isWaitingListEnabled() {
-		return enableWaitingList.isEnabled() && enableWaitingList.getSelectedKeys().size() != 0;
+		return enableWaitingList.isEnabled() && !enableWaitingList.getSelectedKeys().isEmpty();
 	}
 
 	/**
@@ -516,33 +509,24 @@ public class BusinessGroupFormController extends FormBasicController {
 		return businessGroup;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-	// Nothing to dispose
+		// Nothing to dispose
+		if(embbeded) {
+			mainForm.removeSubFormListener(this);
+		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formCancelled(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formNOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formNOK(UserRequest ureq) {
 		fireEvent(ureq, Event.FAILED_EVENT);

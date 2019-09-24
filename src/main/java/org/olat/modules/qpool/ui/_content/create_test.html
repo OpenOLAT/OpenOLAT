@@ -1,0 +1,9 @@
+#if($r.isTrue($licenseWarning))
+	<div class="o_warning"><h5>$r.translate("warning.different.licenses.title")</h5>
+	$r.translate("warning.different.licenses")</div>
+#end
+$r.render("shares")
+<div class="o_button_group">
+	$r.render("cancel")
+	$r.render("create.test")
+</div>

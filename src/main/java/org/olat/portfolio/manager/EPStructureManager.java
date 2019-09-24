@@ -684,7 +684,6 @@ public class EPStructureManager {
 				return false;
 			}
 			//save eventual changes
-			//TODO update the changes before dbInstance.updateObject(structureEl);
 			//reconnect to the session
 			structureEl = (EPStructureElement)dbInstance.loadObject(structureEl);
 
@@ -705,7 +704,7 @@ public class EPStructureManager {
 		if(restrictions == null || restrictions.isEmpty()) return true;
 
 		boolean allOk = true;
-		List<String> artefactTypeAllowed = new ArrayList<String>();
+		List<String> artefactTypeAllowed = new ArrayList<>();
 		List<AbstractArtefact> artefacts = getArtefacts(structureEl);
 		artefacts.add(newArtefact);
 		
@@ -777,7 +776,7 @@ public class EPStructureManager {
 			if(restrictions == null || restrictions.isEmpty()) return true;
 
 			boolean allOk = true;
-			List<String> artefactTypeAllowed = new ArrayList<String>();
+			List<String> artefactTypeAllowed = new ArrayList<>();
 			List<AbstractArtefact> artefacts = getArtefacts(structureEl);
 			for(CollectRestriction restriction:restrictions) {
 				int count = countRestrictionType(artefacts, restriction);
@@ -1215,8 +1214,8 @@ public class EPStructureManager {
 	 * @param withArtefacts
 	 */
 	private void syncEPStructureElementRecursively(EPStructureElement sourceEl, EPStructureElement targetEl, boolean withArtefacts) {		
-		List<EPStructureToStructureLink> sourceRefLinks = new ArrayList<EPStructureToStructureLink>(sourceEl.getInternalChildren());
-		List<EPStructureToStructureLink> targetRefLinks = new ArrayList<EPStructureToStructureLink>(targetEl.getInternalChildren());
+		List<EPStructureToStructureLink> sourceRefLinks = new ArrayList<>(sourceEl.getInternalChildren());
+		List<EPStructureToStructureLink> targetRefLinks = new ArrayList<>(targetEl.getInternalChildren());
 
 		Comparator<EPStructureToStructureLink> COMPARATOR = new KeyStructureToStructureLinkComparator();
 

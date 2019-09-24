@@ -126,7 +126,7 @@ public class OlatTopNavController extends BasicController implements LockableCon
 	}
 	
 	private void loadPersonalTools(UserRequest ureq) {
-		List<Tool> toolSetLinksName = new ArrayList<Tool>();
+		List<Tool> toolSetLinksName = new ArrayList<>();
 		
 		Preferences prefs = ureq.getUserSession().getGuiPreferences();
 		String selectedTools = userToolsModule.getUserTools(prefs);

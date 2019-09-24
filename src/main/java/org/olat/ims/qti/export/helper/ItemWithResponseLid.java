@@ -53,9 +53,9 @@ public class ItemWithResponseLid implements QTIItemObject {
 	// CELFI#107 END
 
 	private String positionsOfResponses	= null;
-	private List<String> responseColumnHeaders = new ArrayList<String>(5);
-	private List<String> responseLabelIdents = new ArrayList<String>(5);
-	private List<String> responseLabelMaterials = new ArrayList<String>(5);
+	private List<String> responseColumnHeaders = new ArrayList<>(5);
+	private List<String> responseLabelIdents = new ArrayList<>(5);
+	private List<String> responseLabelMaterials = new ArrayList<>(5);
 
 	/**
 	 * Constructor for ItemWithResponseLid.
@@ -150,7 +150,7 @@ public class ItemWithResponseLid implements QTIItemObject {
 	 * @see org.olat.ims.qti.export.helper.QTIItemObject#getResponseColumns(org.olat.ims.qti.QTIResult)
 	 */
 	public List<String> getResponseColumns(QTIResult qtiresult) {
-		List<String> responseColumns = new ArrayList<String>();
+		List<String> responseColumns = new ArrayList<>();
 		positionsOfResponses = null;
 		if (qtiresult == null) {
 			// item has not been choosen

@@ -42,10 +42,7 @@ import org.olat.core.util.StringHelper;
  */
 public class TabbedPaneRenderer implements ComponentRenderer {
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
+
 	@Override
 	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderResult renderResult, String[] args) {
 		TabbedPane tb = (TabbedPane)source;
@@ -91,10 +88,6 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 		sb.append("</div></div>");
 	}
 	
-	/**
-	 * 
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderHeaderIncludes(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component, org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator)
-	 */
 	@Override
 	public void renderHeaderIncludes(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator, RenderingState rstate) {
 		TabbedPane tp = (TabbedPane)source;
@@ -108,10 +101,6 @@ public class TabbedPaneRenderer implements ComponentRenderer {
 		}
 	}
 
-	/**
-	 * 
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#renderBodyOnLoadJSFunctionCall(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component)
-	 */
 	@Override
 	public void renderBodyOnLoadJSFunctionCall(Renderer renderer, StringOutput sb, Component source, RenderingState rstate) {
 		TabbedPane tp = (TabbedPane)source;

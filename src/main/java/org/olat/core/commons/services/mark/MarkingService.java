@@ -26,11 +26,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.OLATResourceable;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for MarkingService
- * 
- * <P>
  * Initial Date:  9 mar. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

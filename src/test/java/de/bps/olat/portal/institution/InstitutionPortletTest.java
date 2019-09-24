@@ -48,8 +48,8 @@ public class InstitutionPortletTest {
 		InputStream input = InstitutionPortletTest.class.getResourceAsStream("olat_portals_institution.xml");
 		InstitutionConfiguration obj = (InstitutionConfiguration)xstream.fromXML(input);
 
-		assertEquals("Test-Uni", obj.institution.get(0).shortname);
-		assertEquals("360448",  obj.institution.get(0).polymorphlink.get(0).defaultId);
+		assertEquals("Test-Uni", obj.getInstitution().get(0).getShortname());
+		assertEquals("360448",  obj.getInstitution().get(0).getPolymorphlink().get(0).getDefaultId());
 	}
 
 }

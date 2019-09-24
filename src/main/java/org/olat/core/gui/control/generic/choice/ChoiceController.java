@@ -97,27 +97,16 @@ public class ChoiceController extends FormBasicController {
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
@@ -151,7 +140,7 @@ public class ChoiceController extends FormBasicController {
 	 * @return a not null selected keys List.
 	 */
 	public List<String> getSelectedEntries() {
-		List<String> selected = new ArrayList<String>();
+		List<String> selected = new ArrayList<>();
 		if (entrySelector instanceof MultipleSelectionElement) {
 			//sort the selected keys according with the keysIn order 
 			Collection<String> selectedKeys = ((MultipleSelectionElement) entrySelector).getSelectedKeys(); 			
@@ -167,6 +156,4 @@ public class ChoiceController extends FormBasicController {
 		}
 		return selected;
 	}
-
-
 }

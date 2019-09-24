@@ -26,8 +26,10 @@
 
 package org.olat.core.gui.components.table;
 
+import java.io.IOException;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -37,7 +39,6 @@ import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 
@@ -52,10 +53,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 	
 	private static final Logger log = Tracing.createLoggerFor(TableRenderer.class);
 
-	/**
-	 * @see org.olat.core.gui.render.ui.ComponentRenderer#render(org.olat.core.gui.render.Renderer, org.olat.core.gui.render.StringOutput, org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.render.URLBuilder, org.olat.core.gui.translator.Translator, org.olat.core.gui.render.RenderResult, java.lang.String[])
-	 */
+
 	@Override
 	public void render(final Renderer renderer, final StringOutput target, final Component source, final URLBuilder ubu, final Translator translator, final RenderResult renderResult,
 			final String[] args) {
@@ -123,7 +121,7 @@ public class TableRenderer extends DefaultComponentRenderer {
 		// entries after the 1023 entry or even the entire table unreadable.
 		// Comment CDATA section to make it work with prototype's stripScripts method !
 		if (!usePageing && rows > 1000) {
-			target.append("<script type=\"text/javascript\">/* <![CDATA[ */\n ")
+			target.append("<script>/* <![CDATA[ */\n ")
 			      .append("jQuery(function() { jQuery('#o_table_wrapper").append(source.hashCode()).append("').height(o_viewportHeight()/3*2);});")
 			      .append("/* ]]> */\n</script>");
 		}
@@ -281,9 +279,12 @@ public class TableRenderer extends DefaultComponentRenderer {
 			target.append("\">");
 			String action = cd.getAction(i);
 			if (action != null) {
-				StringOutput so = new StringOutput(100);
-				cd.renderValue(so, i, renderer);
-				appendSingleDataRowActionColumn(target, ubu, table, iframePostEnabled, i, currentPosInModel, j, cd, action, so.toString());
+				try(StringOutput so = new StringOutput(100)) {
+					cd.renderValue(so, i, renderer);
+					appendSingleDataRowActionColumn(target, ubu, table, iframePostEnabled, i, currentPosInModel, j, cd, action, so.toString());
+				} catch(IOException e) {
+					log.error("", e);
+				}
 			} else {
 				cd.renderValue(target, i, renderer);
 			}

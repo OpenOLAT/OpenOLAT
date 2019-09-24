@@ -43,8 +43,7 @@ public class GuiDemoIconsController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		// TODO Auto-generated method stub
-
+		//
 	}
 
 }

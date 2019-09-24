@@ -22,11 +22,6 @@ package org.olat.portfolio.model.structel;
 import org.olat.core.commons.persistence.PersistentObject;
 
 /**
- * 
- * Description:<br>
- * TODO: Class Description for EPStructureToStructureLink
- * 
- * <P>
  * Initial Date:  11.06.2010 <br>
  * @author rhaag, roman.haag@frentix.com, http://www.frentix.com
  */

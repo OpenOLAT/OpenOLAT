@@ -78,8 +78,8 @@ public class Statistics {
     
 
     public List<Double> mode() {
-    	final List<Double> modes = new ArrayList<Double>();
-        final Map<Double, Integer> countMap = new HashMap<Double, Integer>();
+    	final List<Double> modes = new ArrayList<>();
+        final Map<Double, Integer> countMap = new HashMap<>();
 
         int max = -1;
 

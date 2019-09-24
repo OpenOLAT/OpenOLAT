@@ -48,7 +48,7 @@ public class Windows implements Disposable, Serializable {
 	private static final long serialVersionUID = -106724331637750672L;
 	private static final String SESSIONID_NAME_FOR_WINDOWS = Windows.class.getName();
 
-	private transient FIFOMap<UriPrefixIdPair,Window> windows = new FIFOMap<UriPrefixIdPair,Window>(100); // one user may at most save 100
+	private transient FIFOMap<UriPrefixIdPair,Window> windows = new FIFOMap<>(100); // one user may at most save 100
 	// windows in a session
 	private int windowId = 1;
 	private Boolean fullScreen;

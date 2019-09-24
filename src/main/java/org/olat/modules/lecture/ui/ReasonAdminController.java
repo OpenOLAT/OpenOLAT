@@ -88,6 +88,8 @@ public class ReasonAdminController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_lecture_reasons");
+		
 		addReasonButton = uifactory.addFormLink("add.reason", formLayout, Link.BUTTON);
 		addReasonButton.setIconLeftCSS("o_icon o_icon_add_item");
 		

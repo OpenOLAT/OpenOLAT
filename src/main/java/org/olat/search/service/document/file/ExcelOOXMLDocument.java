@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import javax.xml.XMLConstants;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.olat.core.gui.util.CSSHelper;
@@ -132,6 +134,8 @@ public class ExcelOOXMLDocument extends FileDocument {
 			parser.setContentHandler(handler);
 			parser.setEntityResolver(handler);
 			try {
+				parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+				parser.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 				parser.setFeature("http://xml.org/sax/features/validation", false);
 			} catch(Exception e) {
 				log.error("Cannot deactivate validation", e);
@@ -201,7 +205,7 @@ public class ExcelOOXMLDocument extends FileDocument {
 	private class SharedStringsHandler extends DefaultHandler {
 		private int position = 0;
 		private StringBuilder sb;
-		private Map<String,String> strings = new HashMap<String,String>();
+		private Map<String,String> strings = new HashMap<>();
 
 		public Map<String,String> getMap() {
 			return strings;

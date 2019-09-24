@@ -130,6 +130,10 @@ public class QueryBuilder implements Appendable {
 		return this;
 	}
 	
+	public QueryBuilder where() {
+		return and();
+	}
+	
 	public QueryBuilder and() {
 		if(and) {
 			sb.append(" and ");

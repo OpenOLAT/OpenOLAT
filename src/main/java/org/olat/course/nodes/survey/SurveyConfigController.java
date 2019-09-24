@@ -71,7 +71,7 @@ public class SurveyConfigController extends FormBasicController {
 	public static final String EXECUTION_BY_COACH = "edit.execution.by.coach";
 	public static final String EXECUTION_BY_PARTICIPANT = "edit.execution.by.participant";
 	public static final String EXECUTION_BY_GUEST = "edit.execution.by.guest";
-	public static final String[] EXECUTION_KEYS = new String[] {
+	private static final String[] EXECUTION_KEYS = new String[] {
 			EXECUTION_BY_OWNER,
 			EXECUTION_BY_COACH,
 			EXECUTION_BY_PARTICIPANT,
@@ -81,7 +81,7 @@ public class SurveyConfigController extends FormBasicController {
 	public static final String REPORT_FOR_COACH = "edit.report.for.coach";
 	public static final String REPORT_FOR_PARTICIPANT = "edit.report.for.participant";
 	public static final String REPORT_FOR_GUEST = "edit.report.for.guest";
-	public static final String[] REPORT_KEYS = new String[] {
+	private static final String[] REPORT_KEYS = new String[] {
 			REPORT_FOR_OWNER,
 			REPORT_FOR_COACH,
 			REPORT_FOR_PARTICIPANT,

@@ -42,7 +42,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 public class AuthenticationVOes {
 	
 	@XmlElement(name="authenticationVO")
-	private List<AuthenticationVO> authentications = new ArrayList<AuthenticationVO>();
+	private List<AuthenticationVO> authentications = new ArrayList<>();
 
 	public List<AuthenticationVO> getAuthentications() {
 		return authentications;

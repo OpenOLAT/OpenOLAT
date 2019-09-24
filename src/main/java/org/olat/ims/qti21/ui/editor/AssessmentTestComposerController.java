@@ -1371,7 +1371,7 @@ public class AssessmentTestComposerController extends MainLayoutBasicController 
 		removeAsListenerAndDispose(overviewConfigCtrl);
 		
 		overviewConfigCtrl = new AssessmentTestOverviewConfigurationController(ureq, getWindowControl(), toolbar,
-				testEntry, resolvedAssessmentTest);
+				testEntry, resolvedAssessmentTest, manifestBuilder);
 		listenTo(overviewConfigCtrl);
 		toolbar.pushController(translate("configuration.overview"), overviewConfigCtrl);
 	}

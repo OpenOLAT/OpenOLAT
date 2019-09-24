@@ -42,7 +42,7 @@ public class Material implements QTIObject, MatElement {
 	
 	private String id;
 	private String lable = null;
-	private List<QTIObject> elements = new ArrayList<QTIObject>();
+	private List<QTIObject> elements = new ArrayList<>();
 	
 	public Material() {
 		id = "" + CodeHelper.getRAMUniqueID();

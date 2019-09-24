@@ -23,11 +23,6 @@ package org.olat.registration;
 import java.util.Map;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for UserNameCreationInterceptor
- * 
- * <P>
  * Initial Date:  5 mars 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

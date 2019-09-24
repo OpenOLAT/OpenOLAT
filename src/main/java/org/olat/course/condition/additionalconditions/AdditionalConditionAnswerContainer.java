@@ -30,7 +30,7 @@ public class AdditionalConditionAnswerContainer {
 
 	public final static String RESOURCE_NAME = "AnswerContainer";
 	
-	private final Map<String, Object> container = new HashMap<String, Object>();
+	private final Map<String, Object> container = new HashMap<>();
 	
 	public Object getAnswers(String nodeKey, Long courseId){
 		return container.get(generateMapKey(nodeKey, courseId));

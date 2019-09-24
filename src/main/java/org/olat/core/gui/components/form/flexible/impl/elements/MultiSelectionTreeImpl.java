@@ -38,10 +38,6 @@ import org.olat.core.util.tree.INodeFilter;
 import org.olat.core.util.tree.TreeHelper;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for SelectionTree
- * 
- * <P>
  * Initial Date: 21.01.2008 <br>
  * 
  * @author patrickb
@@ -60,7 +56,7 @@ public class MultiSelectionTreeImpl extends MultipleSelectionElementImpl impleme
 	}
 
 	private void initKeyValuePairsFromTreeModel() {
-		List<TreeNode> flatModel = new ArrayList<TreeNode>();
+		List<TreeNode> flatModel = new ArrayList<>();
 		TreeHelper.makeTreeFlat(treemodel.getRootNode(), flatModel);
 		keys = new String[flatModel.size()];
 		values = new String[keys.length];
@@ -84,7 +80,7 @@ public class MultiSelectionTreeImpl extends MultipleSelectionElementImpl impleme
 		}
 		// keys,values initialized
 		// create and add radio elements
-		Map<String, CheckboxElement> checkboxitems = new HashMap<String, CheckboxElement>(); 
+		Map<String, CheckboxElement> checkboxitems = new HashMap<>(); 
 		for (int i = 0; i < keys.length; i++) {
 			TreeNode tn = treemodel.getNodeById(keys[i]);
 			if(selectableFilter.isVisible(tn)) {

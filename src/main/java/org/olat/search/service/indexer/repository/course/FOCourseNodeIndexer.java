@@ -95,7 +95,6 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 			}
 			boolean isMessageHidden = Status.getStatus(threadtop.getStatusCode()).isHidden(); 
 			//assumes that if is owner then is moderator so it is allowed to see the hidden forum threads
-			// TODO policy owner: (LD) fix this!!! - the contextEntry is not the right context for this check
 			if(isMessageHidden) {
 				return false;
 			}

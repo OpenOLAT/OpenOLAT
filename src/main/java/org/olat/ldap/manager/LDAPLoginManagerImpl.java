@@ -1503,7 +1503,6 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		String userDN = ldapDao.searchUserDNByUid(ident.getName(), ctx);
 
 		final List<Attributes> ldapUserList = new ArrayList<>();
-		// TODO: use userDN instead of filter to get users attribs
 		ldapDao.searchInLdap(new LDAPVisitor() {
 			@Override
 			public void visit(SearchResult result) {

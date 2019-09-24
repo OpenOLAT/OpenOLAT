@@ -81,7 +81,7 @@ public class FIBQuestion extends Question implements QTIObject {
 				fibresponse.setSizeFromColumns(render_fib.attribute("columns"));
 				fibresponse.setMaxLengthFromMaxChar(render_fib.attribute("maxchars"));
 				List el_varequals = el_resprocessing.selectNodes(".//varequal[@respident='" + ident + "']");
-				List<String> processedSolutions = new ArrayList<String>(); // list of already process strings
+				List<String> processedSolutions = new ArrayList<>(); // list of already process strings
 				if (el_varequals != null) {
 					String correctBlank = "";
 					String correctBlankCaseAttribute = "No";

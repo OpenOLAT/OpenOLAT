@@ -380,7 +380,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		Assert.assertEquals(1, typedSubscribers.size());
 
 		//get subscribers with 2 types
-		List<String> allTypes = new ArrayList<String>(2);
+		List<String> allTypes = new ArrayList<>(2);
 		allTypes.add(publisher1.getType());
 		allTypes.add(publisher2.getType());
 		List<Subscriber> allSubscribers = notificationManager.getSubscribers(id, allTypes);
@@ -513,7 +513,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		final CountDownLatch finishCount = new CountDownLatch(NUM_OF_THREADS);
 		List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
-		List<SubscribeThread> threads = new ArrayList<SubscribeThread>();
+		List<SubscribeThread> threads = new ArrayList<>();
 		for(int i=0; i<NUM_OF_THREADS; i++) {
 			SubscribeThread thread = new SubscribeThread(sc, pd, id, exceptionHolder, statusList, finishCount);
 			threads.add(thread);
@@ -553,7 +553,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		final CountDownLatch finishCount = new CountDownLatch(NUM_OF_THREADS);
 		List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
-		List<MPSubscriberThread> threads = new ArrayList<MPSubscriberThread>();
+		List<MPSubscriberThread> threads = new ArrayList<>();
 		for(int i=0; i<NUM_OF_THREADS; i++) {
 			MPSubscriberThread thread = new MPSubscriberThread(sc, pd, id, exceptionHolder, statusList, finishCount);
 			threads.add(thread);
@@ -642,7 +642,7 @@ public class NotificationsManagerTest extends OlatTestCase {
 		final CountDownLatch finishCount = new CountDownLatch(NUM_OF_THREADS);
 		List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
 		List<Boolean> statusList = Collections.synchronizedList(new ArrayList<Boolean>(1));
-		List<SubscribeThread> threads = new ArrayList<SubscribeThread>();
+		List<SubscribeThread> threads = new ArrayList<>();
 		for(int i=0; i<NUM_OF_THREADS; i++) {
 			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("fci-" + i + "-" + UUID.randomUUID().toString());
 			SubscribeThread thread = new SubscribeThread(sc, pd, id, exceptionHolder, statusList, finishCount);

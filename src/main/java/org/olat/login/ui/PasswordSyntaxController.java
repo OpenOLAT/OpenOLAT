@@ -335,13 +335,13 @@ public class PasswordSyntaxController extends FormBasicController {
 				: DISABLED;
 		builder.withPasswordLetters(passwordLetters);
 		
-		String passwordLettersUppercase = VALIDATE_SEPARATELY.equals(passwordLetters)
+		String passwordLettersUppercase = VALIDATE_SEPARATELY.equals(passwordLetters)//NOSONAR
 										&& lettersUppercaseEl.isOneSelected()
 				? lettersUppercaseEl.getSelectedKey()
 				: DISABLED;
 		builder.withPasswordLettersUppercase(passwordLettersUppercase);
 		
-		String passwordLettersLowercase = VALIDATE_SEPARATELY.equals(passwordLetters)
+		String passwordLettersLowercase = VALIDATE_SEPARATELY.equals(passwordLetters)//NOSONAR
 										&& lettersLowercaseEl.isOneSelected()
 				? lettersLowercaseEl.getSelectedKey()
 				: DISABLED;
@@ -352,7 +352,7 @@ public class PasswordSyntaxController extends FormBasicController {
 				: DISABLED;
 		builder.withPasswordDigitsAndSpecialSigns(passwordDigitsAndSpecialSigns);
 		
-		String passwordDigits = VALIDATE_SEPARATELY.equals(passwordDigitsAndSpecialSigns)
+		String passwordDigits = VALIDATE_SEPARATELY.equals(passwordDigitsAndSpecialSigns)//NOSONAR
 							&& digitsEl.isOneSelected()
 				? digitsEl.getSelectedKey()
 				: DISABLED;

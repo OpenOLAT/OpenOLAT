@@ -106,7 +106,7 @@ public abstract class DefaultTableDataModel<U> implements TableDataModel<U> {
 	 * @return
 	 */
 	public List<U> getObjects(final BitSet objectMarkers) {
-		List<U> results = new ArrayList<U>();
+		List<U> results = new ArrayList<>();
 		for(int i=objectMarkers.nextSetBit(0); i >= 0; i=objectMarkers.nextSetBit(i+1)) {
 			results.add(getObject(i));
 		}

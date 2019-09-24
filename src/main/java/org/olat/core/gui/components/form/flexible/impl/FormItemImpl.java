@@ -54,7 +54,7 @@ import org.olat.core.util.ValidationStatus;
  * 
  * @author patrickb
  */
-public abstract class FormItemImpl implements FormItem, InlineElement {
+public abstract class FormItemImpl implements InlineElement {
 	private static final String PREFIX = "PANEL_";
 	private boolean componentIsMandatory;
 	private String errorKey;
@@ -436,16 +436,13 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		return retVal;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#setErrorController(org.olat.core.gui.control.Controller)
-	 */
 	@Override
 	public void setErrorComponent(FormItem errorFormItem, FormItemContainer container) {
 		if(errorFormItem == null){
 			throw new AssertException("do not clear error by setting null, instead use showError(false).");
 		}
 		//initialize root form of form item
-		FormLayoutContainer flc = (FormLayoutContainer)container;//TODO:pb: fix this hierarchy mismatch
+		FormLayoutContainer flc = (FormLayoutContainer)container;
 		flc.register(errorFormItem);//errorFormItem must be part of the composite chain, that it gets dispatched
 		
 		hasError = true;
@@ -453,9 +450,6 @@ public abstract class FormItemImpl implements FormItem, InlineElement {
 		errorPanel.setContent(errorComponent);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.FormComponent#getErrorController()
-	 */
 	@Override
 	public Component getErrorC() {
 		return errorPanel;

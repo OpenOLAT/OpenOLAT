@@ -1,0 +1,11 @@
+#if ($r.available("unauthorized.filter"))
+	<div class="o_button_group o_button_group_right">
+		<div class="o_table_filter">$r.render("unauthorized.filter_LABEL") $r.render("unauthorized.filter")</div>
+	</div>
+#end
+$r.render("table")
+#if($r.available("absences.batch.authorize"))
+<div class="o_button_group">
+	$r.render("absences.batch.authorize")
+</div>
+#end

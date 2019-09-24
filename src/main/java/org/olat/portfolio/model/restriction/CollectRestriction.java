@@ -23,9 +23,6 @@ import org.olat.core.commons.persistence.PersistentObject;
 import org.olat.core.util.StringHelper;
 
 /** 
- * Description:<br>
- * TODO: rhaag Class Description for CollectRestriction
- * <P>
  * Initial Date:  08.06.2010 <br>
  * @author rhaag
  */

@@ -575,7 +575,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				String oldTitle = toolbarPanel.getBreadCrumbs().get(0).getCustomDisplayText();
 				if (!newTitle.equals(oldTitle)) {						
 					// 1: update breadcrumb in toolbar
-					toolbarPanel.getBreadCrumbs().get(0).setCustomDisplayText(newTitle);
+					toolbarPanel.getBreadCrumbs().get(0).setCustomDisplayText(StringHelper.escapeHtml(newTitle));
 					// 2: update dynamic tab in topnav
 					OLATResourceable reOres = OresHelper.clone(entry);
 					getWindowControl().getWindowBackOffice().getWindow().getDTabs().updateDTabTitle(reOres, newTitle);

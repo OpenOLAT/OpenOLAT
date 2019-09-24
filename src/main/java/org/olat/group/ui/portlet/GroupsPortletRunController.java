@@ -134,7 +134,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	}
 	
 	private List<PortletEntry<BusinessGroupEntry>> convertBusinessGroupToPortletEntryList(List<BusinessGroup> groups, boolean withDescription) {
-		List<PortletEntry<BusinessGroupEntry>> convertedList = new ArrayList<PortletEntry<BusinessGroupEntry>>();
+		List<PortletEntry<BusinessGroupEntry>> convertedList = new ArrayList<>();
 		for(BusinessGroup group:groups) {
 			GroupPortletEntry entry = new GroupPortletEntry(group);
 			if(withDescription) {
@@ -146,7 +146,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 	}
 	
 	private List<PortletEntry<BusinessGroupEntry>> convertShortBusinessGroupToPortletEntryList(List<BusinessGroup> groups, boolean withDescription) {
-		List<PortletEntry<BusinessGroupEntry>> convertedList = new ArrayList<PortletEntry<BusinessGroupEntry>>();
+		List<PortletEntry<BusinessGroupEntry>> convertedList = new ArrayList<>();
 		for(BusinessGroup group:groups) {
 			GroupPortletEntry entry = new GroupPortletEntry(group);
 			if(withDescription) {
@@ -169,7 +169,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 			
 			int maxEntries = sortCriteria.getMaxEntries();
 			List<BusinessGroup> groupList = businessGroupService.findBusinessGroups(getIdentity(), maxEntries * 2, order);
-			Set<BusinessGroup> removeDuplicates = new HashSet<BusinessGroup>(maxEntries);
+			Set<BusinessGroup> removeDuplicates = new HashSet<>(maxEntries);
 			for(Iterator<BusinessGroup> it=groupList.iterator(); it.hasNext(); ) {
 				BusinessGroup group = it.next();
 				if(removeDuplicates.contains(group)) {
@@ -266,7 +266,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 			GroupsManualSortingTableDataModel tableDataModel = new GroupsManualSortingTableDataModel(portletEntryList);
 			List<PortletEntry<BusinessGroupEntry>> sortedItems = getPersistentManuallySortedItems();
 			
-			portletToolsController = new PortletToolSortingControllerImpl<BusinessGroupEntry>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);
@@ -290,7 +290,7 @@ public class GroupsPortletRunController extends AbstractPortletRunController<Bus
 			List<BusinessGroup> groups = businessGroupService.findBusinessGroups(params, null, 0, -1);
 			portletEntryList = convertBusinessGroupToPortletEntryList(groups, false);
 		} else {
-			List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+			List<BusinessGroup> groups = new ArrayList<>();
 			portletEntryList = convertShortBusinessGroupToPortletEntryList(groups, false);
 		}
 		return getPersistentManuallySortedItems(portletEntryList);

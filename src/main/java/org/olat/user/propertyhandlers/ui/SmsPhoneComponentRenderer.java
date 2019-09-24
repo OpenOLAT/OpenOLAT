@@ -68,6 +68,7 @@ public class SmsPhoneComponentRenderer extends DefaultComponentRenderer {
 			if(editLink != null && editLink.isVisible()) {
 				Component cmp = editLink.getComponent();
 				cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+				cmp.setDirty(false);
 			}
 	
 			if(StringHelper.containsNonWhitespace(phoneNumber)) {
@@ -76,6 +77,7 @@ public class SmsPhoneComponentRenderer extends DefaultComponentRenderer {
 				if(removeLink != null && removeLink.isVisible()) {
 					Component cmp = removeLink.getComponent();
 					cmp.getHTMLRendererSingleton().render(renderer, sb, cmp, ubu, translator, renderResult, args);
+					cmp.setDirty(false);
 				}
 			}
 			sb.append("</div>");

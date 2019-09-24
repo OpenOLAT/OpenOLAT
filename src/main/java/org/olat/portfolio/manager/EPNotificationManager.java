@@ -50,7 +50,7 @@ public class EPNotificationManager {
 
 	public List<SubscriptionListItem> getPageSubscriptionListItem(Long mapKey, String rootBusinessPath, Date compareDate, Translator translator) {
 		List<EPStructureElementNotification> notifications = getPageNotifications(mapKey, compareDate);
-		List<SubscriptionListItem> items = new ArrayList<SubscriptionListItem>();
+		List<SubscriptionListItem> items = new ArrayList<>();
 		for (EPNotification notification : notifications) {
 			SubscriptionListItem item = null;	
 			String[] title = new String[] { StringHelper.escapeHtml(notification.getTitle()) };
@@ -77,7 +77,7 @@ public class EPNotificationManager {
 	
 	public List<SubscriptionListItem> getArtefactNotifications(List<Long> mapKey, String rootBusinessPath, Date compareDate, Translator translator) {
 		List<EPArtefactNotification> links = getArtefactNotifications(mapKey, compareDate);
-		List<SubscriptionListItem> items = new ArrayList<SubscriptionListItem>();
+		List<SubscriptionListItem> items = new ArrayList<>();
 		for (EPArtefactNotification link : links) {
 			Long pageKey =  link.getPageKey();
 			String targetTitle= link.getStructureTitle();
@@ -98,7 +98,7 @@ public class EPNotificationManager {
 	
 	public List<SubscriptionListItem> getRatingNotifications(List<Long> mapKey, String rootBusinessPath, Date compareDate, Translator translator) {
 		List<EPRatingNotification> ratings = getRatingNotifications(mapKey, compareDate);
-		List<SubscriptionListItem> items = new ArrayList<SubscriptionListItem>();
+		List<SubscriptionListItem> items = new ArrayList<>();
 
 		for (EPRatingNotification rating : ratings) {
 			if(rating.getPageKey() == null) {
@@ -129,7 +129,7 @@ public class EPNotificationManager {
 	
 	public List<SubscriptionListItem> getCommentNotifications(List<Long> mapKey, String rootBusinessPath, Date compareDate, Translator translator) {
 		List<EPCommentNotification> comments = getCommentNotifications(mapKey, compareDate);
-		List<SubscriptionListItem> items = new ArrayList<SubscriptionListItem>();
+		List<SubscriptionListItem> items = new ArrayList<>();
 
 		for (EPCommentNotification comment : comments) {
 			SubscriptionListItem item;

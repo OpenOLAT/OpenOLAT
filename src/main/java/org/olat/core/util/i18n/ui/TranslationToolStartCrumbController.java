@@ -671,11 +671,11 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	 * @return
 	 */
 	private String[] buildBundleArrayKeys(List<String> bundleNames, boolean prioritySort) {
-		List<String> bundlesListKeys = new ArrayList<String>();
+		List<String> bundlesListKeys = new ArrayList<>();
 		bundlesListKeys.add(ALL_BUNDLES_IDENTIFYER);
 		if (prioritySort) {
 			// clone list, don't sort original list, shared by other users
-			List<String> copy = new ArrayList<String>(bundleNames.size());
+			List<String> copy = new ArrayList<>(bundleNames.size());
 			for (String bundle : bundleNames) {
 				copy.add(bundle);
 			}
@@ -696,11 +696,11 @@ class TranslationToolStartCrumbController extends CrumbFormBasicController {
 	 * @return
 	 */
 	private String[] buildBundleArrayValues(List<String> bundleNames, boolean prioritySort) {
-		List<String> bundlesListValues = new ArrayList<String>();
+		List<String> bundlesListValues = new ArrayList<>();
 		bundlesListValues.add(translate("generic.limit.bundles.all"));
 		if (prioritySort) {
 			// clone list, don't sort original list, shared by other users
-			List<String> copy = new ArrayList<String>(bundleNames.size());
+			List<String> copy = new ArrayList<>(bundleNames.size());
 			for (String bundle : bundleNames) {
 				copy.add(bundle);
 			}

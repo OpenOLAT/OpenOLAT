@@ -46,7 +46,7 @@
   					<li><a href="#" onclick="javascript:insertTags('[[',']]','$link')">$link</a></li>
 				#end
   			</ul></div>
-  			<script type='text/javascript'>
+  			<script>
 			/* <![CDATA[ */
 			jQuery(function() { o_popover('wiki-button-link-insert','wiki-list-link-insert'); });
 			/* ]]> */
@@ -61,7 +61,7 @@
   					<li><a href="#" onclick="javascript:insertMediaTag('$r.escapeHtml($file.getName())')">$r.escapeHtml($file.getName())</a></li>
 				#end
   			</ul></div>
-  			<script type='text/javascript'>
+  			<script>
 			/* <![CDATA[ */
 			jQuery(function() { o_popover('wiki-button-media-insert','wiki-list-media-insert'); });
 			/* ]]> */
@@ -78,7 +78,7 @@
 #if (!$r.available("versionDisplay"))
 	## set the form dirty if the user closed the preview button
 	#if($isDirty)
-	<script type="text/javascript">
+	<script>
 	/* <![CDATA[ */
 	setFormDirty('${editformid}');
 	/* ]]> */

@@ -86,7 +86,7 @@
 		<h4>$r.translate("cat.externalLink")</h4>
 		#if($extLink)
 			<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_extlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a><input type="text" value="$extLink" onclick="this.select()"/>
-				<script type="text/javascript">
+				<script>
 				/* <![CDATA[ */
 					jQuery(function() {
 						o_QRCodePopup('o_extlink', '$extLink', 'right');
@@ -97,7 +97,7 @@
 		#end
 		#if($guestExtLink)
 			<div class="o_copy_code o_nowrap"><a href="javascript:;" id="o_guestextlink"><i class="o_icon o_icon-lg o_icon-fw o_icon_qrcode">&nbsp;</i></a><input type="text" value="$guestExtLink" onclick="this.select()"/>
-				<script type="text/javascript">
+				<script>
 				/* <![CDATA[ */
 					jQuery(function() {
 						o_QRCodePopup('o_guestextlink', '$guestExtLink', 'right');

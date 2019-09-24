@@ -35,10 +35,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for GuiDemoFlexiFormCustomlayout
- * 
- * <P>
  * Initial Date:  10.09.2007 <br>
  * @author patrickb
  */
@@ -79,18 +75,11 @@ public class GuiDemoFlexiFormCustomlayout extends FormBasicController{
 		// but typically initForm(..) is the last call in the constructor.
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		// this method is called if the form has validated
@@ -111,9 +100,6 @@ public class GuiDemoFlexiFormCustomlayout extends FormBasicController{
 		initialPanel.pushContent(confirm);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#initForm(org.olat.core.gui.components.form.flexible.FormItemContainer, org.olat.core.gui.control.Controller, org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		/*

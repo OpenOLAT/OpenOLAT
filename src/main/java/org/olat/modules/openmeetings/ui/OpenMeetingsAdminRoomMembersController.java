@@ -124,7 +124,7 @@ public class OpenMeetingsAdminRoomMembersController extends BasicController {
 				}
 			} else if(event instanceof TableMultiSelectEvent) {
 				TableMultiSelectEvent e = (TableMultiSelectEvent)event;
-				List<OpenMeetingsUser> identities = new ArrayList<OpenMeetingsUser>();
+				List<OpenMeetingsUser> identities = new ArrayList<>();
 				for (int i = e.getSelection().nextSetBit(0); i >= 0; i = e.getSelection().nextSetBit(i + 1)) {
 					OpenMeetingsUser identity = (OpenMeetingsUser)tableCtr.getTableDataModel().getObject(i);
 					identities.add(identity);

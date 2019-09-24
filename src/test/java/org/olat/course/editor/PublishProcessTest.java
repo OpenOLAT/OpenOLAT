@@ -339,7 +339,6 @@ public class PublishProcessTest extends OlatTestCase {
 		// ok, continue import
 		re.setSoftkey(softKey);
 		// set access configuration
-		//TODO repo was only 1
 		re.setEntryStatus(RepositoryEntryStatusEnum.preparation);
 		// save the repository entry
 		re = repositoryService.update(re);

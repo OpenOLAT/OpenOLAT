@@ -115,7 +115,7 @@ public class EPMultiplePageController extends BasicController implements Activat
 			changelogLink.setUserObject(PAGENUM_CL);
 
 			int i = 1;
-			List<Link> pageLinkList = new ArrayList<Link>();
+			List<Link> pageLinkList = new ArrayList<>();
 			for (PageTab page : pageList) {
 				String pageTitle =StringHelper.escapeHtml(page.getTitle());
 				String shortPageTitle = Formatter.truncate(pageTitle, 20);

@@ -113,7 +113,7 @@ public class SelectCourseNodeStepForm extends StepFormBasicController {
 	
 	private List<Node> addManualTaskNodesAndParentsToList(int recursionLevel, CourseNode courseNode) {
 		// 1) Get list of children data using recursion of this method
-		List<Node> childrenData = new ArrayList<Node>();
+		List<Node> childrenData = new ArrayList<>();
 		for (int i = 0; i < courseNode.getChildCount(); i++) {
 			CourseNode child = (CourseNode)courseNode.getChildAt(i);
 			List<Node> childData = addManualTaskNodesAndParentsToList( (recursionLevel + 1),  child);

@@ -194,6 +194,7 @@ public class ShibbolethAuthenticationController extends AuthenticationController
 		Cookie cookie = null;
 		try {
 			cookie = new Cookie(IDP_HOMESITE_COOKIE, URLEncoder.encode(homeSite, "utf-8"));
+			cookie.setHttpOnly(true);
 		} catch (UnsupportedEncodingException e) {/* utf-8 is always present */}
 		cookie.setMaxAge(100 * 24 * 60 * 60); // 100 days lifetime
 		cookie.setPath(WebappHelper.getServletContextPath());

@@ -36,6 +36,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QuestionItemCollection;
 import org.olat.modules.qpool.QuestionItemView;
+import org.olat.modules.qpool.model.QItemType;
 import org.olat.modules.qpool.ui.datasource.CollectionOfItemsSource;
 import org.olat.modules.qpool.ui.datasource.EmptyItemsSource;
 import org.olat.modules.qpool.ui.events.QItemViewEvent;
@@ -53,8 +54,9 @@ public class ItemListMyListsController extends AbstractItemListController {
     
 	private List<QuestionItemCollection> myCollections;
 
-	public ItemListMyListsController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback, String restrictToFormat) {
-		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, "qti-select");
+	public ItemListMyListsController(UserRequest ureq, WindowControl wControl, QPoolSecurityCallback secCallback,
+			String restrictToFormat, List<QItemType> excludeTypes) {
+		super(ureq, wControl, secCallback, new EmptyItemsSource(), restrictToFormat, excludeTypes, "qti-select");
 	}
 	
 	@Override
@@ -92,6 +94,7 @@ public class ItemListMyListsController extends AbstractItemListController {
             QuestionItemCollection firstCollection = myCollections.get(0);
             CollectionOfItemsSource source = new CollectionOfItemsSource(firstCollection, getIdentity(), ureq.getUserSession().getRoles(), getLocale());
             source.setRestrictToFormat(restrictToFormat);
+			source.setExcludedItemTypes(excludeTypes);
             updateSource(source);
         } else {
 			myListEl.setEnabled(false);
@@ -134,6 +137,7 @@ public class ItemListMyListsController extends AbstractItemListController {
 		} else {
 			CollectionOfItemsSource source = new CollectionOfItemsSource(myCollection, getIdentity(), ureq.getUserSession().getRoles(), getLocale());
 			source.setRestrictToFormat(restrictToFormat);
+			source.setExcludedItemTypes(excludeTypes);
 			updateSource(source);
 		}
 	}

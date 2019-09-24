@@ -32,10 +32,6 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 
 /**
- * Description:<br>
- * TODO: Felix Jost Class Description for Site
- * 
- * <P>
  * Initial Date:  12.07.2005 <br>
  *
  * @author Felix Jost

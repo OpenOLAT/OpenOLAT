@@ -427,7 +427,7 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 		log.debug("Start deleting projectBrokerId=" + projectBrokerId );
 		ProjectBroker projectBroker = getOrLoadProjectBoker(projectBrokerId);
 		// delete all projects of a project-broker
-		List<Project> deleteProjectList = new ArrayList<Project>();
+		List<Project> deleteProjectList = new ArrayList<>();
 		deleteProjectList.addAll(projectBroker.getProjects());
 		for (Iterator<Project> iterator = deleteProjectList.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
@@ -636,7 +636,6 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	public List<Project> getProjectsOf(Identity identity, Long projectBrokerId) {
 		List<Project> myProjects = new ArrayList<>();
 		List<Project> allProjects = getProjectListBy(projectBrokerId);
-		//TODO: for better performance should be done with sql query instead of a loop
 		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
 			if (businessGroupService.hasRoles(identity, project.getProjectGroup(), GroupRoles.participant.name()) ) {
@@ -655,7 +654,6 @@ public class ProjectBrokerManagerImpl implements ProjectBrokerManager {
 	public List<Project> getCoachedProjectsOf(Identity identity, Long projectBrokerId) {
 		List<Project> myProjects = new ArrayList<>();
 		List<Project> allProjects = getProjectListBy(projectBrokerId);
-		//TODO: for better performance should be done with sql query instead of a loop
 		for (Iterator<Project> iterator = allProjects.iterator(); iterator.hasNext();) {
 			Project project = iterator.next();
 			if (businessGroupService

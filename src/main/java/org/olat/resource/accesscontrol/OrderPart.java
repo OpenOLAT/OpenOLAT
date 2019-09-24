@@ -23,11 +23,6 @@ package org.olat.resource.accesscontrol;
 import java.util.List;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for OrderPart
- * 
- * <P>
  * Initial Date:  19 avr. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */

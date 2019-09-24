@@ -45,7 +45,7 @@ public class CatalogTreeModel extends GenericTreeModel implements InsertionTreeM
 
 	private static final long serialVersionUID = 2893877155919419400L;
 	
-	private final Map<Long, GenericTreeNode> entryMap = new HashMap<Long, GenericTreeNode>();
+	private final Map<Long, GenericTreeNode> entryMap = new HashMap<>();
 	private final CatalogEntry entryToMove;
 	private final List<CatalogEntry> ownedEntries;
 

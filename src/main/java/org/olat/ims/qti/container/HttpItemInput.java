@@ -49,14 +49,14 @@ public class HttpItemInput implements ItemInput, Serializable {
 	 * Constructor
 	 */
 	public HttpItemInput(String itemIdent) {
-		m = new HashMap<String,List<String>>();
+		m = new HashMap<>();
 		ident = itemIdent;
 	}
 	
 	public void addTestVariableVal(String varName) {
 		List<String> li = m.get(varName);
 		if (li == null) {
-			li = new ArrayList<String>();
+			li = new ArrayList<>();
 			m.put(varName,li);
 		}
 		li.add("1.23456"); // a value which satisfies all compares
@@ -65,7 +65,7 @@ public class HttpItemInput implements ItemInput, Serializable {
 	public Object putSingle(String key, String value) {
 		List<String> l = getAsList(key);
 		if (l == null) {
-			l = new ArrayList<String>();
+			l = new ArrayList<>();
 		}
 		l.add(value.trim());
 		return m.put(key, l);

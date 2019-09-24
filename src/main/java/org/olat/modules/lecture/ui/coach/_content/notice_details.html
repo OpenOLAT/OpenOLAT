@@ -1,0 +1,48 @@
+<fieldset class="o_form form">
+#if($r.isNotEmpty($category))
+	<div class="form-group">
+		<label for="o_sel_notice_category">$r.translate("noticed.category")</label>
+		<span id="o_sel_notice_category">$category</span>
+	</div>
+#end
+#if($r.isNotEmpty($reason))
+	<div class="form-group">
+		<label for="o_sel_notice_reason">$r.translate("noticed.reason")</label>
+		<span id="o_sel_notice_reason">$reason</span>
+	</div>
+#end
+
+#if($r.isNotEmpty($lectureBlocks))
+	<div class="form-group">
+		<label for="o_sel_notice_lectures">$r.translate("noticed.lectures")</label>
+		<ul id="o_sel_notice_lectures" class="list-unstyled">
+		#foreach($lectureBlock in $lectureBlocks)
+			<li><i class="o_icon o_icon-fw o_icon_lecture"> </i> $lectureBlock</li>
+		#end
+		</ul>
+	</div>
+#end
+
+#if($r.isNotEmpty($entries))
+	<div class="form-group">
+		<label for="o_sel_notice_entries">$r.translate("noticed.entries")</label>
+		<ul id="o_sel_notice_entries" class="list-unstyled">
+		#foreach($entry in $entries)
+			<li><i class="o_icon o_icon-fw o_CourseModule_icon"> </i> $entry</li>
+		#end
+		</ul>
+	</div>
+#end
+
+#if($r.isNotEmpty($teachers))
+	<div class="form-group">
+		<label for="o_sel_notice_teachers">$r.translate("noticed.teachers")</label>
+		<ul id="o_sel_notice_teachers" class="list-unstyled">
+		#foreach($teacher in $teachers)
+			<li><i class="o_icon o_icon-fw o_icon_user"> </i> $teacher</li>
+		#end
+		</ul>
+	</div>
+#end
+</fieldset>
+

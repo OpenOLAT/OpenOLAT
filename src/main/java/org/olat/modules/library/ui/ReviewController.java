@@ -54,9 +54,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  * 
  * @author twuersch, gwassmann, www.frentix.com
  */
-
-// TODO:tw: wizard: fire done event upon succesful completion (propagate to ReviewController?)
-
 public class ReviewController extends BasicController {
 	private static final String CMD_DOWNLOAD = "download";
 	private static final String CMD_REJECT = "reject";
@@ -109,26 +106,21 @@ public class ReviewController extends BasicController {
 		
 		mainVC = createVelocityContainer("review");
 		mainVC.put("documents", documentListTableController.getInitialComponent());
-		mainVC.contextPut("numOfDocuments", new Integer(documentsInVFS.size()));
+		mainVC.contextPut("numOfDocuments", Integer.valueOf(documentsInVFS.size()));
 		putInitialPanel(mainVC);
 	}
 
 	@Override
 	protected void doDispose() {
-	// all subcontrollers are registered
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if (source == documentListTableController && event instanceof TableEvent) {
 			TableEvent e = (TableEvent) event;
 			
 			VFSLeaf file = (VFSLeaf) documentListModel.getValueAt(e.getRowId(), ReviewTableDataModel.Columns.accept.ordinal());
-			// TODO:GW How to dispatch the file?
 			if (CMD_REJECT.equals(e.getActionId())) {
 				rejectController = new RejectController(ureq, getWindowControl(), file);
 				listenTo(rejectController);
@@ -174,7 +166,7 @@ public class ReviewController extends BasicController {
 		List<VFSItem> documentsInVFS = libraryManager.getUploadFolder().getItems();
 		documentListModel = new ReviewTableDataModel(documentsInVFS, ureq.getLocale());
 		documentListTableController.setTableDataModel(documentListModel);
-		mainVC.contextPut("numOfDocuments", new Integer(documentsInVFS.size()));
+		mainVC.contextPut("numOfDocuments", Integer.valueOf(documentsInVFS.size()));
 	}
 
 	@Override

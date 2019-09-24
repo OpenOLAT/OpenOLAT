@@ -123,11 +123,11 @@ public class ViteroConfigurationController extends FormBasicController {
 			urlEl.setDisplaySize(60);
 			String login = viteroModule.getAdminLogin();
 			loginEl = uifactory.addTextElement("vitero-login", "option.adminlogin", 32, login, moduleFlc);
-			String password = viteroModule.getAdminPassword();
-			if(StringHelper.containsNonWhitespace(password)) {
-				password = PLACEHOLDER;
+			String credential = viteroModule.getAdminPassword();
+			if(StringHelper.containsNonWhitespace(credential)) {
+				credential = PLACEHOLDER;
 			}
-			passwordEl = uifactory.addPasswordElement("vitero-password", "option.adminpassword", 32, password, moduleFlc);
+			passwordEl = uifactory.addPasswordElement("vitero-password", "option.adminpassword", 32, credential, moduleFlc);
 			passwordEl.setAutocomplete("new-password");
 			int customerId = viteroModule.getCustomerId();
 			String customer = customerId > 0 ? Integer.toString(customerId) : null;
@@ -156,9 +156,9 @@ public class ViteroConfigurationController extends FormBasicController {
 			String login = loginEl.getValue();
 			viteroModule.setAdminLogin(login);
 			
-			String password = passwordEl.getValue();
-			if(!PLACEHOLDER.equals(password)) {
-				viteroModule.setAdminPassword(password);
+			String credential = passwordEl.getValue();
+			if(!PLACEHOLDER.equals(credential)) {
+				viteroModule.setAdminPassword(credential);
 			}
 			String customerId = customerEl.getValue();
 			viteroModule.setCustomerId(Integer.parseInt(customerId));
@@ -198,11 +198,11 @@ public class ViteroConfigurationController extends FormBasicController {
 				
 				if(customerId > 0) {
 					try {
-						String password = passwordEl.getValue();
-						if(PLACEHOLDER.equals(password)) {
-							password = viteroModule.getAdminPassword();
+						String credential = passwordEl.getValue();
+						if(PLACEHOLDER.equals(credential)) {
+							credential = viteroModule.getAdminPassword();
 						}
-						boolean ok = viteroManager.checkConnection(urlEl.getValue(), loginEl.getValue(), password, customerId);
+						boolean ok = viteroManager.checkConnection(urlEl.getValue(), loginEl.getValue(), credential, customerId);
 						if(!ok) {
 							customerEl.setErrorKey("error.customerDoesntExist", null);
 							allOk = false;
@@ -290,15 +290,15 @@ public class ViteroConfigurationController extends FormBasicController {
 	protected boolean checkConnection() {
 		String url = urlEl.getValue();
 		String login = loginEl.getValue();
-		String password = passwordEl.getValue();
-		if(PLACEHOLDER.equals(password)) {
-			password = viteroModule.getAdminPassword();
+		String credential = passwordEl.getValue();
+		if(PLACEHOLDER.equals(credential)) {
+			credential = viteroModule.getAdminPassword();
 		}
 		String customerIdObj = customerEl.getValue();
 
 		try {
 			int customerId = Integer.parseInt(customerIdObj);
-			boolean ok = viteroManager.checkConnection(url, login, password, customerId);
+			boolean ok = viteroManager.checkConnection(url, login, credential, customerId);
 			if(ok) {
 				showInfo("check.ok");
 			} else {

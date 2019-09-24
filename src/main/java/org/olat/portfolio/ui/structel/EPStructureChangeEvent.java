@@ -23,10 +23,6 @@ import org.olat.core.gui.control.Event;
 import org.olat.portfolio.model.structel.PortfolioStructure;
 
 /**
- * Description:<br>
- * TODO: rhaag Class Description for EPStructureChangeEvent
- * 
- * <P>
  * Initial Date:  25.08.2010 <br>
  * @author Roman Haag, roman.haag@frentix.com, http://www.frentix.com
  */

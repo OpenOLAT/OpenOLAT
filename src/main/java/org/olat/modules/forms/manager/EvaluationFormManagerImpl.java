@@ -38,6 +38,7 @@ import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.id.Identity;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.course.nodes.ms.MSService;
 import org.olat.fileresource.FileResourceManager;
 import org.olat.modules.ceditor.DataStorage;
 import org.olat.modules.forms.EvaluationFormManager;
@@ -453,6 +454,12 @@ public class EvaluationFormManagerImpl implements EvaluationFormManager {
 		return evaluationFormSessionDao.hasSessions(formEntry);
 	}
 
+	@Override
+	public boolean isEvaluationFormWeightActivelyUsed(RepositoryEntryRef formEntry) {
+		// Improve this by declaring and implementing providers
+		return evaluationFormSurveyDao.hasSurvey(formEntry, MSService.SURVEY_ORES_TYPE_NAME);
+	}
+	
 	@Override
 	public EvaluationFormStatistic getSessionsStatistic(SessionFilter filter) {
 		EvaluationFormStatistic statistic = new EvaluationFormStatistic();

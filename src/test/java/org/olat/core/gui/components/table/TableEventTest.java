@@ -58,14 +58,11 @@ public class TableEventTest {
 	
 	@Test
 	public void testEqualsCodeContract() {
-		assertFalse("Wrong equals implementation, different types are recognized as equals ",one.equals(new Integer(1)));
+		assertFalse("Wrong equals implementation, different types are recognized as equals ",one.equals(Integer.valueOf(1)));
 		assertFalse("Wrong equals implementation, different objects are recognized as equals ",one.equals(two));
 		assertFalse("Wrong equals implementation, null value is recognized as equals ",one.equals(null));
 		assertTrue("Wrong equals implementation, same objects are NOT recognized as equals ",one.equals(sameRefAsOne));
 		assertTrue("Wrong equals implementation, same objecst are NOT recognized as equals ",one.equals(sameAsOne));
-		
-		//super type equals with Event is not checked for coupling reasons: TODO:pb:2010-11-23:discuss equal implementation strategy
-		
 	}
 	
 	@Test

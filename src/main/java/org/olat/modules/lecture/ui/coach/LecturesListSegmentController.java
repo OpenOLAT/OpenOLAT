@@ -53,7 +53,9 @@ public class LecturesListSegmentController extends BasicController {
 	
 	private final VelocityContainer mainVC;
 	private SegmentViewComponent segmentView;
-	private Link exportLink, aggregatedListLink, detailledListLink;
+	private Link exportLink;
+	private Link aggregatedListLink;
+	private Link detailledListLink;
 	
 	private LecturesListController detailledListCtrl;
 	private LecturesListController aggregatedListCtrl;

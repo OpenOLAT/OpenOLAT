@@ -118,8 +118,8 @@ public class BGAreaFormController extends FormBasicController {
 			// e.g. find "," | "   , " | ",,," errors => no group entered
 			String selectionAsCsvStr = name.getValue();
 			String[] activeSelection = selectionAsCsvStr != null ? selectionAsCsvStr.split(",") : new String[] {};
-			validNames = new HashSet<String>();
-			Set<String> wrongNames = new HashSet<String>();
+			validNames = new HashSet<>();
+			Set<String> wrongNames = new HashSet<>();
 			for (int i = 0; i < activeSelection.length; i++) {
 				if ((activeSelection[i].trim()).matches(BGArea.VALID_AREANAME_REGEXP)) {
 					validNames.add(activeSelection[i].trim());

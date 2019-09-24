@@ -231,7 +231,7 @@ public class AssessmentHelper {
 					return true;
 				}
 			} else if (node instanceof ProjectBrokerCourseNode) {
-				return false;// TODO:cg 28.01.2010 ProjectBroker : no assessment-tool in V1.0 return always false
+				return false;//no assessment-tool in V1.0 return always false
 			} else {
 				return true;
 			}
@@ -287,7 +287,7 @@ public class AssessmentHelper {
 	 */
 	public static List<CourseNode> getAssessableNodes(final CourseEditorTreeModel editorModel, final CourseNode excludeNode) {
 		CourseEditorTreeNode rootNode = (CourseEditorTreeNode) editorModel.getRootNode();
-		final List<CourseNode> nodes = new ArrayList<CourseNode>();
+		final List<CourseNode> nodes = new ArrayList<>();
 		// visitor class: takes all assessable nodes if not the exclude node and
 		// puts
 		// them into the nodes list
@@ -367,7 +367,7 @@ public class AssessmentHelper {
 		gtm.setRootNode(node);
 		
 		List<GenericTreeNode> children = addAssessableNodesToList(rootNode);
-		children.forEach((child) -> node.addChild(child));
+		children.forEach(child -> node.addChild(child));
 		return gtm;
 	}
 	
@@ -384,7 +384,7 @@ public class AssessmentHelper {
 				CourseNodeConfiguration nodeconfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
 				node.setIconCssClass(nodeconfig.getIconCSSClass());
 				result.add(node);
-				assessableChildren.forEach((child) -> node.addChild(child));
+				assessableChildren.forEach(child -> node.addChild(child));
 			}
 		}
 		return result;
@@ -436,7 +436,7 @@ public class AssessmentHelper {
 	public static List<AssessmentNodeData> getAssessmentNodeDataList(UserCourseEnvironment userCourseEnv,
 			AssessmentNodesLastModified lastModifications,
 			boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments) {
-		List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
+		List<AssessmentNodeData> data = new ArrayList<>(50);
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll();
 		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
@@ -456,7 +456,7 @@ public class AssessmentHelper {
 	 */
 	public static List<AssessmentNodeData> getAssessmentNodeDataList(ScoreAccounting evaluatedScoreAccounting, UserCourseEnvironment userCourseEnv,
 			boolean followUserVisibility, boolean discardEmptyNodes, boolean discardComments) {
-		List<AssessmentNodeData> data = new ArrayList<AssessmentNodeData>(50);
+		List<AssessmentNodeData> data = new ArrayList<>(50);
 		getAssessmentNodeDataList(0, userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode(),
 				evaluatedScoreAccounting, userCourseEnv, followUserVisibility, discardEmptyNodes, discardComments, data, null);
 		return data;

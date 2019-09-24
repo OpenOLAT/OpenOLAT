@@ -58,7 +58,7 @@ public class EPSecurityCallbackImpl implements EPSecurityCallback {
 		this.canCommentAndRate = canView;
 		this.canSubmitAssess = false;
 		this.restrictionsEnabled = false;
-		this.isOwner = false;//TODO
+		this.isOwner = false;
 	}
 	
 	protected EPSecurityCallbackImpl(boolean canEditStructure, boolean canEditReflexion, boolean canEditTags, boolean canShare, boolean canAddArtefact, boolean canRemoveArtefactFromStruct, boolean canAddStructure, boolean canAddPage,

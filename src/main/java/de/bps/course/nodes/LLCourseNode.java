@@ -76,7 +76,7 @@ public class LLCourseNode extends AbstractAccessableCourseNode {
 		ModuleConfiguration config = getModuleConfiguration();
 		// add an empty link entry as default if none existent
 		if (config.get(CONF_LINKLIST) == null) {
-			List<LLModel> initialList = new ArrayList<LLModel>(1);
+			List<LLModel> initialList = new ArrayList<>(1);
 			initialList.add(new LLModel());
 			config.set(CONF_LINKLIST, initialList);
 		}

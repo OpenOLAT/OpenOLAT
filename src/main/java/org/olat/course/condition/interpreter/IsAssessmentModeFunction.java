@@ -47,9 +47,6 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 		super(userCourseEnv);
 	}
 
-	/**
-	 * @see com.neemsoft.jmep.FunctionCB#call(java.lang.Object[])
-	 */
 	@Override
 	public Object call(Object[] inStack) {
 		/*
@@ -57,6 +54,19 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 		 */
 		CourseEditorEnv cev = getUserCourseEnv().getCourseEditorEnv();
 		if (cev != null) {
+			if(inStack != null && inStack.length == 2) {
+				if (!(inStack[0] instanceof String)) {
+					return handleException(new ArgumentParseException(ArgumentParseException.WRONG_ARGUMENT_FORMAT, name, "",
+							"error.argtype.coursnodeidexpeted", "solution.example.node.infunction"));
+				}
+				
+				String nodeId = (String) inStack[0];
+				if (!cev.existsNode(nodeId)) {
+					return handleException( new ArgumentParseException(ArgumentParseException.REFERENCE_NOT_FOUND, name, nodeId,
+						"error.notfound.coursenodeid", "solution.copypastenodeid"));
+				}
+			}
+
 			// return a valid value to continue with condition evaluation test
 			return defaultValue();
 		}
@@ -70,19 +80,26 @@ public class IsAssessmentModeFunction extends AbstractFunction {
 			return ConditionInterpreter.INT_FALSE;
 		}
 		OLATResourceable lockedResource = chiefController.getLockResource();
-		if(lockedResource == null) {
-			return ConditionInterpreter.INT_FALSE;
+
+		boolean open = false;
+		if(inStack != null && inStack.length == 2) {
+			String nodeId = (String) inStack[0];
+			open = isAssessmentModeActive(lockedResource) ||
+					getUserCourseEnv().getScoreAccounting().evalUserVisibleOfCourseNode(nodeId);
+		} else {
+			open = isAssessmentModeActive(lockedResource);
 		}
-		
+		return open ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
+	}
+	
+	private boolean isAssessmentModeActive(OLATResourceable lockedResource) {
 		Long resourceableId = getUserCourseEnv().getCourseEnvironment().getCourseResourceableId();
-		if(lockedResource.getResourceableId().equals(resourceableId)) {
+		if(lockedResource != null && lockedResource.getResourceableId().equals(resourceableId)) {
 			RepositoryEntry entry = getUserCourseEnv().getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			AssessmentModeManager assessmentModeMgr = CoreSpringFactory.getImpl(AssessmentModeManager.class);
-			boolean inAssessment = assessmentModeMgr.isInAssessmentMode(entry, new Date());
-			return inAssessment ? ConditionInterpreter.INT_TRUE: ConditionInterpreter.INT_FALSE;
-		} else {
-			return ConditionInterpreter.INT_FALSE;
+			return assessmentModeMgr.isInAssessmentMode(entry, new Date());
 		}
+		return false;
 	}
 
 	@Override

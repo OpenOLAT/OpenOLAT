@@ -19,9 +19,10 @@
  */
 package org.olat.modules.lecture.ui;
 
-import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -31,7 +32,14 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.dtabs.Activateable2;
+import org.olat.core.id.context.ContextEntry;
+import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.lecture.ui.event.SearchLecturesBlockEvent;
+import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -39,12 +47,15 @@ import org.olat.modules.lecture.ui.event.SearchLecturesBlockEvent;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TeacherOverviewSearchController extends FormBasicController {
+public class TeacherOverviewSearchController extends FormBasicController implements Activateable2 {
 	
 	private TextElement searchEl;
 	private DateChooser startEl, endEl;
 	
 	private final boolean withSearchString;
+	
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	public TeacherOverviewSearchController(UserRequest ureq, WindowControl wControl, boolean withSearchString) {
 		super(ureq, wControl, FormBasicController.LAYOUT_VERTICAL);
@@ -68,6 +79,10 @@ public class TeacherOverviewSearchController extends FormBasicController {
 		uifactory.addFormCancelButton("cancel", buttonsCont, ureq, getWindowControl());
 		uifactory.addFormSubmitButton("search", buttonsCont);
 	}
+	
+	public void setSearch(String text) {
+		searchEl.setValue(text);
+	}
 
 	@Override
 	protected void doDispose() {
@@ -75,19 +90,27 @@ public class TeacherOverviewSearchController extends FormBasicController {
 	}
 
 	@Override
-	protected void formOK(UserRequest ureq) {
-		String searchString = searchEl.getValue();
-		Date startDate = startEl.getDate();
-		Date endDate = endEl.getDate();
-		if(endDate != null) {
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(endDate);
-			cal.set(Calendar.HOUR_OF_DAY, 23);
-			cal.set(Calendar.MINUTE, 59);
-			endDate = cal.getTime();//end of day
+	public void activate(UserRequest ureq, List<ContextEntry> entries, StateEntry state) {
+		if(entries == null || entries.isEmpty()) return;
+		
+		String name = entries.get(0).getOLATResourceable().getResourceableTypeName();
+		if("RepositoryEntry".equals(name)) {
+			Long id = entries.get(0).getOLATResourceable().getResourceableId();
+			RepositoryEntry entry = repositoryService.loadByKey(id);
+			if(entry != null) {
+				if(StringHelper.containsNonWhitespace(entry.getExternalRef())) {
+					searchEl.setValue(entry.getExternalRef());
+				} else {
+					searchEl.setValue(entry.getDisplayname());
+				}
+				doSearch(ureq);
+			}
 		}
-		SearchLecturesBlockEvent searchEvent = new SearchLecturesBlockEvent(searchString, startDate, endDate);
-		fireEvent(ureq, searchEvent);
+	}
+
+	@Override
+	protected void formOK(UserRequest ureq) {
+		doSearch(ureq);
 	}
 
 	@Override
@@ -96,5 +119,16 @@ public class TeacherOverviewSearchController extends FormBasicController {
 		startEl.setDate(null);
 		endEl.setDate(null);
 		fireEvent(ureq, Event.CANCELLED_EVENT);
+	}
+	
+	private void doSearch(UserRequest ureq) {
+		String searchString = searchEl.getValue();
+		Date startDate = startEl.getDate();
+		Date endDate = endEl.getDate();
+		if(endDate != null) {
+			endDate = CalendarUtils.endOfDay(endDate);
+		}
+		SearchLecturesBlockEvent searchEvent = new SearchLecturesBlockEvent(searchString, startDate, endDate);
+		fireEvent(ureq, searchEvent);
 	}
 }

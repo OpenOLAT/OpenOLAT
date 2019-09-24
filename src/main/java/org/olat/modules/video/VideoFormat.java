@@ -77,20 +77,22 @@ public enum VideoFormat {
 	}
 	
 	public static VideoFormat valueOfUrl(String url) {
-		try {
-			URL urlObj = new URL(url);
-			String host = urlObj.getHost();
-			if(host.endsWith("youtu.be") || host.endsWith("youtube.be") || host.endsWith("youtube.com")) {
-				return VideoFormat.youtube;
-			} else if(host.endsWith("vimeo.com")) {
-				return VideoFormat.vimeo;
-			} else if(url.indexOf("/Panopto/") > 0) {
-				return VideoFormat.panopto;
-			} else if(url.endsWith(".mp4")) {
-				return VideoFormat.mp4;
+		if(StringHelper.containsNonWhitespace(url)) {
+			try {
+				URL urlObj = new URL(url);
+				String host = urlObj.getHost();
+				if(host.endsWith("youtu.be") || host.endsWith("youtube.be") || host.endsWith("youtube.com")) {
+					return VideoFormat.youtube;
+				} else if(host.endsWith("vimeo.com")) {
+					return VideoFormat.vimeo;
+				} else if(url.indexOf("/Panopto/") > 0) {
+					return VideoFormat.panopto;
+				} else if(url.endsWith(".mp4")) {
+					return VideoFormat.mp4;
+				}
+			} catch (MalformedURLException e) {
+				log.warn("Cannot read url: " + url, e);
 			}
-		} catch (MalformedURLException e) {
-			log.warn("Cannot read url: " + url, e);
 		}
 		return null;
 	}

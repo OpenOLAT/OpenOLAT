@@ -56,7 +56,7 @@ public class QLicenseDAO implements ApplicationListener<ContextRefreshedEvent> {
 	
 	protected void createDefaultLicenses() {
 		List<QLicense> licenses = getLicenses();
-		Set<String> licenseKeys = new HashSet<String>();
+		Set<String> licenseKeys = new HashSet<>();
 		for(QLicense license:licenses) {
 			licenseKeys.add(license.getLicenseKey());
 		}

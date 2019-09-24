@@ -112,7 +112,7 @@ public class QTI21ContentPackage {
 
 		public Iterator<String> getPrefixes(String namespaceURI)
 		{
-			Collection<String> collection = new ArrayList<String>();
+			Collection<String> collection = new ArrayList<>();
 			collection.add(getPrefix(namespaceURI));
 
 			return collection.iterator();
@@ -166,7 +166,7 @@ public class QTI21ContentPackage {
 	}
 
 	public Path[] getItems() {
-		List<NodeList> list = new ArrayList<NodeList>();
+		List<NodeList> list = new ArrayList<>();
 		int length=0;
 		for (String s : ITEM_EXPRESSION) {
 			NodeList l = getNodeList(s);

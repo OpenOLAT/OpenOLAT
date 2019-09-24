@@ -78,7 +78,7 @@ public class DENEditTableDataModel extends DefaultTableDataModel<KalendarEvent> 
 	}
 	
 	public void removeEntries(BitSet choosenEntries) {
-		Collection<Object> delList = new ArrayList<Object>();
+		Collection<Object> delList = new ArrayList<>();
 		for (int i = 0; i < objects.size(); i++) {
 			if(choosenEntries.get(i))
 				delList.add(objects.get(i));

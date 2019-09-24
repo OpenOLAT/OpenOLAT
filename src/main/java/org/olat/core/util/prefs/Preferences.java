@@ -29,11 +29,6 @@ package org.olat.core.util.prefs;
 import java.util.List;
 
 /**
-
- * Description:<br>
- * TODO: Felix Class Description for Preferences
- * 
- * <P>
  * Initial Date:  05.08.2005 <br>
  * @author Felix
  */

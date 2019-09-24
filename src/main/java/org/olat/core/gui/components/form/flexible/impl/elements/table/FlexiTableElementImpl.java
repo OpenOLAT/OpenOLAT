@@ -1042,6 +1042,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		}
 		
 		if(dataModel instanceof SortableFlexiTableDataModel) {
+			if(dataModel instanceof FlexiTreeTableDataModel && (sortOptions != null && sortOptions.isOpenAllBySort())) {
+				doOpenAll();
+			}
 			((SortableFlexiTableDataModel<?>)dataModel).sort(key);
 		} else if(dataSource != null) {
 			currentPage = 0;
@@ -1064,6 +1067,9 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		orderBy = new SortKey[]{ sortKey };
 		
 		if(dataModel instanceof SortableFlexiTableDataModel) {
+			if(dataModel instanceof FlexiTreeTableDataModel && (sortOptions != null && sortOptions.isOpenAllBySort())) {
+				doOpenAll();
+			}
 			((SortableFlexiTableDataModel<?>)dataModel).sort(sortKey);
 		} else if(dataSource != null) {
 			currentPage = 0;

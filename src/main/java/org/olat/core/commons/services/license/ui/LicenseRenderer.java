@@ -95,7 +95,7 @@ public class LicenseRenderer implements FlexiCellRenderer {
 		sb.append("</div>");
 		
 		// JavaScript to pup up the popup
-		sb.append("<script type='text/javascript'>")
+		sb.append("<script>")
 	      .append("/* <![CDATA[ */")
 		  .append("jQuery(function() {\n")
 		  .append("  o_popover('o_lic_").append(id).append("','o_lic_pop_").append(id).append("','top');\n")

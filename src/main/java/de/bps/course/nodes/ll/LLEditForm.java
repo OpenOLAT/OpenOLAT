@@ -88,21 +88,21 @@ public class LLEditForm extends FormBasicController {
 		super(ureq, wControl, "editForm");
 		this.moduleConfig = moduleConfig;
 		// read existing links from config
-		linkList = new ArrayList<LLModel>(moduleConfig.getList(LLCourseNode.CONF_LINKLIST, LLModel.class));
+		linkList = new ArrayList<>(moduleConfig.getList(LLCourseNode.CONF_LINKLIST, LLModel.class));
 		// list of all link target text fields
-		lTargetInputList = new ArrayList<TextElement>(linkList.size());
+		lTargetInputList = new ArrayList<>(linkList.size());
 		// list of all link html target text fields
-		lHtmlTargetInputList = new ArrayList<SingleSelection>(linkList.size());
+		lHtmlTargetInputList = new ArrayList<>(linkList.size());
 		// list of all link description text fields
-		lDescriptionInputList = new ArrayList<TextElement>(linkList.size());
+		lDescriptionInputList = new ArrayList<>(linkList.size());
 		// list of all link comment text fields
-		lCommentInputList = new ArrayList<TextElement>(linkList.size());
+		lCommentInputList = new ArrayList<>(linkList.size());
 		// list of all link add action buttons
-		lAddButtonList = new ArrayList<FormLink>(linkList.size());
+		lAddButtonList = new ArrayList<>(linkList.size());
 		// list of all link deletion action buttons
-		lDelButtonList = new ArrayList<FormLink>(linkList.size());
+		lDelButtonList = new ArrayList<>(linkList.size());
 		//list of all custom media buttons
-		lCustomMediaButtonList = new ArrayList<FormLink>(linkList.size());
+		lCustomMediaButtonList = new ArrayList<>(linkList.size());
 		
 		this.courseEnv = courseEnv;
 

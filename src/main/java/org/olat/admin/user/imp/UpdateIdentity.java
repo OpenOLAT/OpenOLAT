@@ -138,7 +138,7 @@ public class UpdateIdentity implements Identity {
 		private static final long serialVersionUID = -7755595504039649174L;
 		
 		private final User user;
-		private Map<String,String> updatedProperties = new HashMap<String,String>();
+		private Map<String,String> updatedProperties = new HashMap<>();
 		
 		public UpdateUser(User user) {
 			this.user = user;
@@ -171,6 +171,11 @@ public class UpdateIdentity implements Identity {
 		@Override
 		public String getInstitutionalEmail() {
 			return updatedProperties.get(UserConstants.INSTITUTIONALEMAIL);
+		}
+
+		@Override
+		public String getSmsTelMobile() {
+			return updatedProperties.get(UserConstants.SMSTELMOBILE);
 		}
 
 		@Override

@@ -174,7 +174,7 @@ public class QTI12ResultsExportMediaResource implements MediaResource {
 		Long resid = courseNode.getReferencedRepositoryEntry().getKey();
 		List<QTIResultSet> resultSets = qtiResultManager.getResultSets(resourceId, resourceDetail, resid, identity);		
 							
-		List<ResultDetail> assessments = new ArrayList<ResultDetail>();
+		List<ResultDetail> assessments = new ArrayList<>();
 		
 		for (QTIResultSet qtiResultSet : resultSets) {
 			

@@ -355,7 +355,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));
 		
-		Set<Long> duplicates = new HashSet<Long>();
+		Set<Long> duplicates = new HashSet<>();
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(!entry.equals(re)) {
@@ -459,7 +459,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertFalse(entries.isEmpty());
 		
 		boolean found = false;
-		Set<Long> duplicates = new HashSet<Long>();
+		Set<Long> duplicates = new HashSet<>();
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(entry.getKey().equals(re.getKey())) {
@@ -531,7 +531,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertFalse(entries.isEmpty());
 		
 		boolean found = false;
-		Set<Long> duplicates = new HashSet<Long>();
+		Set<Long> duplicates = new HashSet<>();
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			
@@ -555,7 +555,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));
 		
-		Set<Long> duplicates = new HashSet<Long>();
+		Set<Long> duplicates = new HashSet<>();
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(!entry.equals(re)) {
@@ -578,7 +578,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		Assert.assertFalse(entries.isEmpty());
 		Assert.assertTrue(entries.contains(re));
 		
-		Set<Long> duplicates = new HashSet<Long>();
+		Set<Long> duplicates = new HashSet<>();
 		for(RepositoryEntry entry:entries) {
 			Assert.assertTrue(duplicates.add(entry.getKey()));
 			if(!entry.equals(re)) {
@@ -759,7 +759,7 @@ public class RepositoryManagerTest extends OlatTestCase {
 		
 		dbInstance.commitAndCloseSession();
 		
-		Set<Long> identityKeys = new HashSet<Long>();
+		Set<Long> identityKeys = new HashSet<>();
 		identityKeys.add(id1.getKey());
 		identityKeys.add(id2.getKey());
 		identityKeys.add(id3.getKey());

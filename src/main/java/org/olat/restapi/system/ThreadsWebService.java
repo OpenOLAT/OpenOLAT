@@ -68,7 +68,7 @@ public class ThreadsWebService implements Sampler {
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public synchronized Response getThreadsCpu() {
 		List<ThreadView> threadViews = CoreSpringFactory.getImpl(ThreadInfosManager.class).getThreadViews();
-		List<ThreadVO> threads = new ArrayList<ThreadVO>(threadViews.size());
+		List<ThreadVO> threads = new ArrayList<>(threadViews.size());
 		for(ThreadView view: threadViews) {
 			threads.add(new ThreadVO(view));
 		}

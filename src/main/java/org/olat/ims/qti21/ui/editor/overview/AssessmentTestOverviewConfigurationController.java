@@ -19,10 +19,16 @@
  */
 package org.olat.ims.qti21.ui.editor.overview;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.DoubleAdder;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -49,13 +55,18 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.ims.qti21.model.xml.ManifestBuilder;
 import org.olat.ims.qti21.model.xml.QtiNodesExtractor;
 import org.olat.ims.qti21.ui.assessment.components.QuestionTypeFlexiCellRenderer;
 import org.olat.ims.qti21.ui.editor.AssessmentTestComposerController;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent;
 import org.olat.ims.qti21.ui.editor.events.SelectEvent.SelectionTarget;
 import org.olat.ims.qti21.ui.editor.overview.AssessmentTestOverviewDataModel.PartCols;
+import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItemShort;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.manager.RepositoryEntryLicenseHandler;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -82,18 +93,33 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 	private AssessmentTestOverviewDataModel tableModel;
 	private final TooledStackedPanel toolbar;
 	
+	private final boolean withLicenses;
 	private final RepositoryEntry testEntry;
+	private final ManifestBuilder manifestBuilder;
 	private final ResolvedAssessmentTest resolvedAssessmentTest;
 	
 	@Autowired
 	private UserManager userManager;
+	@Autowired
+	private QPoolService qpoolService;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private QuestionPoolLicenseHandler poolLicenseHandler;
+	@Autowired
+	private RepositoryEntryLicenseHandler repositoryEntryLicenseHandler;
+	
 	
 	public AssessmentTestOverviewConfigurationController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbar,
-			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest) {
+			RepositoryEntry testEntry, ResolvedAssessmentTest resolvedAssessmentTest, ManifestBuilder manifestBuilder) {
 		super(ureq, wControl, "overview", Util.createPackageTranslator(AssessmentTestComposerController.class, ureq.getLocale()));
 		this.testEntry = testEntry;
+		this.manifestBuilder = manifestBuilder;
 		this.resolvedAssessmentTest = resolvedAssessmentTest;
 		this.toolbar = toolbar;
+		withLicenses = licenseModule.isEnabled(poolLicenseHandler) || licenseModule.isEnabled(repositoryEntryLicenseHandler);
 		initForm(ureq);
 		initialPanel.setCssClass("o_edit_mode");
 		loadModel();
@@ -174,6 +200,8 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		DefaultFlexiColumnModel scoreCol = new DefaultFlexiColumnModel(PartCols.maxScore, SelectionTarget.maxpoints.name());
 		scoreCol.setCellRenderer(new AssessmentSectionScoreCellRenderer(SelectionTarget.maxpoints.name()));
 		tableColumnModel.addFlexiColumnModel(scoreCol);
+		// typical learning time
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.learningTime, new DurationFlexiCellRenderer(getTranslator())));
 		// max attempts
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(PartCols.attempts,
 				SelectionTarget.attempts.name(), new MaxAttemptsCellRenderer(getTranslator())));
@@ -199,6 +227,9 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		DefaultFlexiColumnModel feedbackCol = new DefaultFlexiColumnModel(PartCols.feedback, SelectionTarget.feedback.name(), new YesNoCellRenderer(getTranslator()));
 		feedbackCol.setDefaultVisible(false);
 		tableColumnModel.addFlexiColumnModel(feedbackCol);
+		if(withLicenses) {
+			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, PartCols.license));
+		}
 
 		tableModel = new AssessmentTestOverviewDataModel(tableColumnModel);
 		
@@ -217,74 +248,120 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 		List<ControlObjectRow> rows = new ArrayList<>();
 		
 		AssessmentTest test = resolvedAssessmentTest.getTestLookup().getRootNodeHolder().getRootNode();
-		rows.add(ControlObjectRow.valueOf(test));
-		
+		ControlObjectRow testRow = ControlObjectRow.valueOf(test);
+		rows.add(testRow);
+
+		AggregatedValues aggregatedValues = new AggregatedValues();
 		List<TestPart> parts = test.getTestParts();
 		if(parts.size() == 1) {
 			List<AssessmentSection> sections = parts.get(0).getAssessmentSections();
 			for(AssessmentSection section:sections) {
-				loadModel(section, rows);
+				AggregatedValues values = loadModel(section, rows);
+				aggregatedValues.add(values);
 			}
 		} else {
 			for(int i=0; i<parts.size(); i++) {
-				loadModel(parts.get(i), (i+1), rows);
+				AggregatedValues values = loadModel(parts.get(i), (i+1), rows);
+				aggregatedValues.add(values);
 			}
 		}
 
+		if(aggregatedValues.getLearningTime() != null) {
+			testRow.setLearningTime(aggregatedValues.getLearningTime());
+		}
+		if(withLicenses) {
+			loadLicenses(rows);
+		}
+		
 		tableModel.setObjects(rows);
 		tableEl.reset(true, true, true);
 	}
 	
-	private void loadModel(TestPart part, int pos, List<ControlObjectRow> rows) {
+	private void loadLicenses(List<ControlObjectRow> rows) {
+		List<String> metadataIdentifiers = new ArrayList<>();
+		for(ControlObjectRow row:rows) {
+			if(StringHelper.containsNonWhitespace(row.getMetadataIdentifier())) {
+				metadataIdentifiers.add(row.getMetadataIdentifier());
+			}
+		}
+		
+		if(!metadataIdentifiers.isEmpty()) {
+			List<QuestionItemShort> items = qpoolService.loadItemsByIdentifier(metadataIdentifiers);
+			List<ResourceLicense> resourceLicenses = licenseService.loadLicenses(items);
+			Map<Long,ResourceLicense> resourceIdToLicenses = resourceLicenses.stream()
+					.collect(Collectors.toMap(ResourceLicense::getResId, l -> l, (u, v) -> u));
+			Map<String,Long> identifierToKey = items.stream()
+					.collect(Collectors.toMap(QuestionItemShort::getIdentifier, QuestionItemShort::getKey));
+			
+			for(ControlObjectRow row:rows) {
+				if(StringHelper.containsNonWhitespace(row.getMetadataIdentifier())) {
+					Long itemKey = identifierToKey.get(row.getMetadataIdentifier());
+					if(itemKey != null) {
+						ResourceLicense license = resourceIdToLicenses.get(itemKey);
+						if(license != null && license.getLicenseType() != null) {
+							String translatedLicense = LicenseUIFactory.translate(license.getLicenseType(), getLocale());
+							row.setLicense(translatedLicense);
+						} else if(license != null && StringHelper.containsNonWhitespace(license.getFreetext())) {
+							row.setLicense(license.getFreetext());
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	private AggregatedValues loadModel(TestPart part, int pos, List<ControlObjectRow> rows) {
 		ControlObjectRow partRow = ControlObjectRow.valueOf(part, pos);
 		rows.add(partRow);
 
-		boolean someMaxScore = false;
-		DoubleAdder atomicMaxScore = new DoubleAdder();
+		AggregatedValues aggregatedValues = new AggregatedValues();
 		
 		List<AssessmentSection> sections = part.getAssessmentSections();
 		for(AssessmentSection section:sections) {
-			Double maxScore = loadModel(section, rows);
-			if(maxScore != null) {
-				someMaxScore = true;
-				atomicMaxScore.add(maxScore.doubleValue());
-			}
+			AggregatedValues values = loadModel(section, rows);
+			aggregatedValues.add(values);
 		}
 		
-		if(someMaxScore) {
-			partRow.setMaxScore(Double.valueOf(atomicMaxScore.sum()));
+		if(aggregatedValues.getMaxScore() != null) {
+			partRow.setMaxScore(aggregatedValues.getMaxScore());
 		}
+		if(aggregatedValues.getLearningTime() != null) {
+			partRow.setLearningTime(aggregatedValues.getLearningTime());
+		}
+		return aggregatedValues;
 	}
 	
-	private Double loadModel(AssessmentSection section, List<ControlObjectRow> rows) {
+	private AggregatedValues loadModel(AssessmentSection section, List<ControlObjectRow> rows) {
 		ControlObjectRow sectionRow = ControlObjectRow.valueOf(section);
 		rows.add(sectionRow);
-		
-		boolean someMaxScore = false;
-		DoubleAdder atomicMaxScore = new DoubleAdder();
+
+		AggregatedValues aggregatedValues = new AggregatedValues();
 		for(SectionPart part: section.getSectionParts()) {
 			
-			Double maxScore = null;
+			AggregatedValues values = null;
 			if(part instanceof AssessmentItemRef) {
-				maxScore = loadModel((AssessmentItemRef)part, rows);
+				values = loadModel((AssessmentItemRef)part, rows);
 			} else if(part instanceof AssessmentSection) {
-				maxScore = loadModel((AssessmentSection) part, rows);
+				values = loadModel((AssessmentSection) part, rows);
 			}
 			
-			if(maxScore != null) {
-				someMaxScore = true;
-				atomicMaxScore.add(maxScore.doubleValue());
+			if(values != null) {
+				aggregatedValues.add(values);
 			}
 		}
 		
-		if(someMaxScore) {
-			sectionRow.setMaxScore(Double.valueOf(atomicMaxScore.sum()));
+		if(aggregatedValues.getMaxScore() != null) {
+			sectionRow.setMaxScore(aggregatedValues.getMaxScore());
 		}
-		return sectionRow.getMaxScore();
+		if(aggregatedValues.getLearningTime() != null) {
+			sectionRow.setLearningTime(aggregatedValues.getLearningTime());
+		}
+		return new AggregatedValues(sectionRow.getMaxScore(), sectionRow.getLearningTime());
 	}
 	
-	private Double loadModel(AssessmentItemRef itemRef, List<ControlObjectRow> rows) {
+	private AggregatedValues loadModel(AssessmentItemRef itemRef, List<ControlObjectRow> rows) {
 		Double maxScore = null;
+		Long learningTime = null;
 		ResolvedAssessmentItem resolvedAssessmentItem = resolvedAssessmentTest.getResolvedAssessmentItem(itemRef);
 		if(resolvedAssessmentItem == null || resolvedAssessmentItem.getItemLookup() == null
 				|| resolvedAssessmentItem.getItemLookup().getRootNodeHolder() == null) {
@@ -295,13 +372,13 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 				rows.add(ControlObjectRow.errorOf(itemRef));
 			} else {
 				AssessmentItem assessmentItem = resolvedAssessmentItem.getItemLookup().getRootNodeHolder().getRootNode();
-				ControlObjectRow row = ControlObjectRow.valueOf(itemRef, assessmentItem);
+				ControlObjectRow row = ControlObjectRow.valueOf(itemRef, assessmentItem, manifestBuilder);
 				maxScore = row.getMaxScore();
+				learningTime = row.getLearningTime();
 				rows.add(row);
-				
 			}
 		}
-		return maxScore;
+		return new AggregatedValues(maxScore, learningTime);
 	}
 
 	@Override
@@ -322,6 +399,45 @@ public class AssessmentTestOverviewConfigurationController extends FormBasicCont
 	@Override
 	protected void formOK(UserRequest ureq) {
 		//
+	}
+	
+	private static class AggregatedValues {
+		
+		private BigDecimal maxScore = null;
+		private Long learningTime = null;
+		
+		public AggregatedValues() {
+			//
+		}
+		
+		public AggregatedValues(Double maxScore, Long learningTime) {
+			this.maxScore = maxScore == null ? null : BigDecimal.valueOf(maxScore.doubleValue());
+			this.learningTime = learningTime;
+		}
+
+		public Double getMaxScore() {
+			return maxScore == null ? null : Double.valueOf(maxScore.doubleValue());
+		}
+
+		public Long getLearningTime() {
+			return learningTime;
+		}
+		
+		public void add(AggregatedValues values) {
+			if(values != null) {
+				if(maxScore == null) {
+					maxScore = values.maxScore;
+				} else if(values.getMaxScore() != null) {
+					maxScore = maxScore.add(values.maxScore);
+				}
+				
+				if(learningTime == null) {
+					learningTime = values.getLearningTime();
+				} else if(values.getLearningTime() != null) {
+					learningTime += values.getLearningTime();
+				}
+			}
+		}
 	}
 	
 	private static class TestAndSectionCellRenderer implements FlexiCellRenderer {

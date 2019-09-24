@@ -24,6 +24,7 @@ import static org.olat.core.gui.components.util.KeyValues.entry;
 import java.util.List;
 
 import org.olat.core.commons.modules.bc.meta.MetaInfoFormController;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.doceditor.DocTemplate;
 import org.olat.core.commons.services.doceditor.DocTemplates;
 import org.olat.core.commons.services.vfs.VFSMetadata;
@@ -165,8 +166,13 @@ public class CreateDocumentController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		String docName = getFileName();
 		createFile(docName);
-		createContent();
 		createMetadata();
+		createContent();
+		
+		// Commit now to have the same data if a second process like a REST call from
+		// ONLYOFFICE accesses the metadata of the file before the OpenOlat GUI thread
+		// has committed the data.
+		DBFactory.getInstance().commitAndCloseSession();
 		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}

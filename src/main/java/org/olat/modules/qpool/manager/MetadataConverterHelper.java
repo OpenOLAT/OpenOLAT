@@ -134,6 +134,16 @@ public class MetadataConverterHelper {
 		}
 	}
 	
+	public static long convertToSeconds(LOMDuration duration) {
+		long time = duration.getSeconds();
+		time += (duration.getMinute() * 60);
+		time += (duration.getHour() * (60 * 60));
+		time += (duration.getDay() * (60 * 60 * 24));
+		time += (duration.getMonth() * (60 * 60 * 24 * 30));
+		time += (duration.getYear() * (60 * 60 * 24 * 30 * 365));
+		return time;
+	}
+	
 	private static void convertDurationT(String durationStr, LOMDuration duration) {
 		int indexH = durationStr.indexOf('H');
 		if(indexH >= 0) {
@@ -158,131 +168,4 @@ public class MetadataConverterHelper {
 		String intVal = durationStr.substring(0, index);
 		return Integer.parseInt(intVal);
 	}
-	/*
-	protected void toLom(QuestionItemImpl item, OutputStream out) {
-		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setValidating(false);
-			factory.setNamespaceAware(false);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document document = builder.newDocument();
-
-			Element lomEl = (Element)document.appendChild(document.createElement("lom"));
-
-			generalToLom(item, lomEl, document);
-
-			DOMSource domSource = new DOMSource(document);
-			StreamResult streamResult = new StreamResult(out); 
-			Transformer serializer = TransformerFactory.newInstance().newTransformer();
-			serializer.transform(domSource, streamResult);
-		} catch (Exception e) {
-			log.error("", e);
-		}
-	}
-	
-	protected void generalToLom(QuestionItemImpl item, Node lomEl, Document doc) {
-		Node generalEl = lomEl.appendChild(doc.createElement("general"));
-		
-		//identifier
-		
-		//master identifier
-		
-		//title
-		Node titleEl = generalEl.appendChild(doc.createElement("title"));
-		stringToLom(item, item.getTitle(), titleEl, doc);
-		//description
-		Node descEl = generalEl.appendChild(doc.createElement("description"));
-		stringToLom(item, item.getDescription(), descEl, doc);
-		//keywords
-		
-		//coverage
-		
-		//additional information
-		
-		//language
-		Element languageEl = (Element)generalEl.appendChild(doc.createElement("language"));
-		languageEl.setAttribute("value", item.getLanguage());
-	}
-	
-	protected void taxonomyToLom(QuestionItemImpl item, Node lomEl, Document doc) {
-		Node generalEl = lomEl.appendChild(doc.createElement("classification"));
-		
-	}
-	
-	protected void educationalToLom(QuestionItemImpl item, Node lomEl, Document doc) {
-		Node generalEl = lomEl.appendChild(doc.createElement("educational"));
-		
-	}
-	
-	protected void lifecycleToLom(QuestionItemImpl item, Node lomEl, Document doc) {
-		Node generalEl = lomEl.appendChild(doc.createElement("lifecycle"));
-		
-		//version
-		//status
-		//urheber / contribute
-		
-	}
-	
-	protected void rightsToLom(QuestionItemImpl item, Node lomEl, Document doc) {
-		Node generalEl = lomEl.appendChild(doc.createElement("rights"));
-		
-		//copyright
-		//description
-		
-	}
-	
-	protected void stringToLom(QuestionItemImpl item, String value, Node el, Document doc) {
-		Element stringEl = (Element)el.appendChild(doc.createElement("string"));
-		stringEl.setAttribute("value", value);
-		stringEl.setAttribute("language", item.getLanguage());
-	}
-
-	protected void toItem(QuestionItemImpl item, InputStream in) {
-		try {
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setValidating(false);
-			factory.setNamespaceAware(false);
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document document = builder.parse(new InputSource(in));
-
-			for(Node child=document.getDocumentElement().getFirstChild(); child != null; child=child.getNextSibling()) {
-				if(Node.ELEMENT_NODE != child.getNodeType()) continue;
-
-				String name = child.getNodeName().toLowerCase();
-				if("educational".equals(name)) {
-					
-				} else if("general".equals(name)) {
-					generalToItem(item, (Element)child);
-				}
-			}
-		} catch (Exception e) {
-			log.error("", e);
-		}
-	}
-	
-	private void generalToItem(QuestionItemImpl item, Element generalEl) {
-		for(Node child=generalEl.getFirstChild(); child != null; child=child.getNextSibling()) {
-			if(Node.ELEMENT_NODE != child.getNodeType()) continue;
-			
-			String name = child.getNodeName().toLowerCase();
-			if("title".equals(name)) {
-				item.setTitle(getString((Element)child));
-			} else if("description".equals(name)) {
-				item.setDescription(getString((Element)child));	
-			}
-		}
-	}
-	
-	private String getString(Element el) {
-		String val = null;
-		for(Node child=el.getFirstChild(); child != null; child=child.getNextSibling()) {
-			if(Node.ELEMENT_NODE != child.getNodeType()) continue;
-			
-			String name = child.getNodeName().toLowerCase();
-			if("string".equals(name)) {
-				val = ((Element)child).getAttribute("value");
-			}
-		}
-		return val;
-	}*/
 }

@@ -219,7 +219,7 @@ public class SecurityGroupDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//remove the first one
-		List<Identity> ids = new ArrayList<Identity>();
+		List<Identity> ids = new ArrayList<>();
 		ids.add(id1);
 		ids.add(id2);
 		securityGroupDao.removeIdentityFromSecurityGroups(ids, Collections.singletonList(secGroup));

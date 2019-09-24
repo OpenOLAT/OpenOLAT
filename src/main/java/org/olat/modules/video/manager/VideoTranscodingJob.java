@@ -52,7 +52,7 @@ import org.quartz.JobExecutionException;
  *
  */
 public class VideoTranscodingJob extends JobWithDB {
-	private ArrayList<String> resolutionsWithProfile = new ArrayList<String>(Arrays.asList("1080", "720", "480"));
+	private ArrayList<String> resolutionsWithProfile = new ArrayList<>(Arrays.asList("1080", "720", "480"));
 
 	/**
 	 * 

@@ -127,7 +127,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//search institutional name with *zh2
-		Map<String, String> userProperties = new HashMap<String, String>();
+		Map<String, String> userProperties = new HashMap<>();
 		userProperties.put(UserConstants.INSTITUTIONALNAME, "*zh2");
 		List<Identity> zh2Results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertFalse("Wrong search result 'UserConstants.INSTITUTIONALNAME='*zh2'", zh2Results.contains(ident));
@@ -140,7 +140,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertFalse("Wrong search result for visible 'UserConstants.INSTITUTIONALNAME='*zh2'", zh2VisibleResults.contains(deletedIdent));
 		
 		//search institutional not found (identifier)
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.INSTITUTIONALNAME, "un");
 		userProperties.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, "678"); // per default the % is only attached at the end of the query. 
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
@@ -149,7 +149,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertTrue(results.isEmpty());
 
 		//search institutional name and user identifier
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.INSTITUTIONALNAME, "un");
 		userProperties.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, "%678");
 		List<Identity> results_678 = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
@@ -165,7 +165,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertFalse(visible_678_results.contains(deletedIdent));
 
 		//search institutional name and user identifier 12-345-678*
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.INSTITUTIONALNAME, "un");
 		userProperties.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, "12-345-678");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
@@ -181,7 +181,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertFalse(results.contains(deletedIdent));
 
 		//search institutional name and user identifier 888 (nothing to find)
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.INSTITUTIONALNAME, "un");
 		userProperties.put(UserConstants.INSTITUTIONALUSERIDENTIFIER, "888");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
@@ -190,7 +190,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertTrue(results.isEmpty());
 
 		//search institutional name
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.INSTITUTIONALNAME, "un");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertFalse(results.contains(ident));
@@ -457,20 +457,20 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertNotNull(twoPropIdentity);
 		dbInstance.commitAndCloseSession();
 
-		HashMap<String, String> userProperties = new HashMap<String, String>();
+		HashMap<String, String> userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "one");
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertTrue(results.contains(onePropIdentity));
 
 		// no intersection - all properties optional
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "one");
 		userProperties.put(UserConstants.LASTNAME, "somewrongvalue");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertTrue(results.isEmpty());
 
 		// no intersection - all properties optional
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "one");
 		userProperties.put(UserConstants.LASTNAME, "somewrongvalue");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null);
@@ -478,27 +478,27 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertFalse(results.contains(twoPropIdentity));
 
 		// find second
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "two");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertFalse(results.contains(onePropIdentity));
 		Assert.assertTrue(results.contains(twoPropIdentity));
 		
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "two");
 		userProperties.put(UserConstants.LASTNAME, "somewrongvalue");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertTrue(results.isEmpty());
 
 		// no intersection - all properties optional
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "two");
 		userProperties.put(UserConstants.LASTNAME, "somewrongvalue");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null);
 		Assert.assertFalse(results.contains(onePropIdentity));
 		Assert.assertTrue(results.contains(twoPropIdentity));
 
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "two");
 		userProperties.put(UserConstants.LASTNAME, "prop");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
@@ -511,11 +511,11 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertFalse(results.isEmpty()); 
 		int numberOfAllUsers = results.size();
 		
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertEquals("Wrong search result 'empty userProperties'", numberOfAllUsers, results.size());
 		
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, false, null, null, null, null, null, null, null);
 		Assert.assertEquals("Wrong search result 'empty userProperties and intersection=false'", numberOfAllUsers, results.size());
 	}
@@ -539,7 +539,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		// commit
 		dbInstance.commitAndCloseSession();
 
-		HashMap<String, String> userProperties = new HashMap<String, String>();
+		HashMap<String, String> userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "multi");
 		List<Identity> results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		sysoutResults(results);
@@ -548,20 +548,20 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		long countResults = baseSecurityManager.countIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertEquals(results.size(), countResults);
 
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "multi");
 		userProperties.put(UserConstants.LASTNAME, "prop");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertTrue(results.contains(identity));
 
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "multi");
 		userProperties.put(UserConstants.LASTNAME, "prop");
 		userProperties.put(UserConstants.INSTITUTIONALNAME, "multiinst");
 		results = baseSecurityManager.getIdentitiesByPowerSearch(null, userProperties, true, null, null, null, null, null, null, null);
 		Assert.assertTrue(results.contains(identity));  
 
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "multi");
 		userProperties.put(UserConstants.LASTNAME, "prop");
 		userProperties.put(UserConstants.INSTITUTIONALNAME, "multiinst");
@@ -570,7 +570,7 @@ public class GetIdentitiesByPowerSearchTest extends OlatTestCase {
 		Assert.assertEquals(1, results.size());
 		Assert.assertTrue(results.contains(identity));
 
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "multi");
 		userProperties.put(UserConstants.LASTNAME, "prop");
 		userProperties.put(UserConstants.INSTITUTIONALNAME, "multiinst");

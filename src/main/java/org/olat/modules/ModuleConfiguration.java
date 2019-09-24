@@ -60,7 +60,7 @@ public class ModuleConfiguration implements Serializable {
 	 * Default constructor.
 	 */
 	public ModuleConfiguration() {
-		config = new HashMap<String,Object>();
+		config = new HashMap<>();
 	}
 
 	/**

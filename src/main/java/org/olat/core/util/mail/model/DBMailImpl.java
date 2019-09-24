@@ -97,7 +97,7 @@ public class DBMailImpl extends PersistentObject implements DBMail {
 
 	public List<DBMailRecipient> getRecipients() {
 		if(recipients == null) {
-			recipients = new ArrayList<DBMailRecipient>();
+			recipients = new ArrayList<>();
 		}
 		return recipients;
 	}

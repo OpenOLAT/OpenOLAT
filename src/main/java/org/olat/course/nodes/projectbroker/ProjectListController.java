@@ -282,7 +282,7 @@ public class ProjectListController extends BasicController implements GenericEve
 			activateUserController(selectedProject, urequest, te);
 		} else if ( te.getActionId().equals(TABLE_ACTION_SELECT)) {
 			if(!projectGroupManager.isDeselectionAllowed(selectedProject)){
-				List<String> warningButtons = new ArrayList<String>();
+				List<String> warningButtons = new ArrayList<>();
 				warningButtons.add(translate("info.projectbroker.no.deselect.select"));
 				warningButtons.add(translate("info.projectbroker.no.deselect.cancel"));
 				String message = translate("info.projectbroker.deselect.confirmation",selectedProject.getTitle())+"<br/><div class=\"o_important\">"+translate("info.projectbroker.no.deselect")+"</div>";
@@ -332,7 +332,7 @@ public class ProjectListController extends BasicController implements GenericEve
 	}
 
 	private void updateProjectListModelOf(TableController tableCtrl, Identity identity) {
-		List<Project> projects = new ArrayList<Project>(projectBrokerManager.getProjectListBy(projectBrokerId));
+		List<Project> projects = new ArrayList<>(projectBrokerManager.getProjectListBy(projectBrokerId));
 		nbrSelectedProjects = projectBrokerManager.getNbrSelectedProjects(identity, projects);
 		isParticipantInAnyProject = projectBrokerManager.isParticipantInAnyProject( identity,  projects);
 		projectListTableModel = new ProjectListTableModel(projects, identity, getTranslator(), moduleConfig, numberOfCustomFieldInTable, numberOfEventInTable, nbrSelectedProjects, isParticipantInAnyProject);
@@ -345,7 +345,7 @@ public class ProjectListController extends BasicController implements GenericEve
 		} else if (projectAt.getProjectLeaders().size() > 1) {
 			VelocityContainer identityVC = createVelocityContainer("identityCallout");
 			List<Identity> allIdents = projectAt.getProjectLeaders();
-			ArrayList<Link> identLinks = new ArrayList<Link>(allIdents.size());
+			ArrayList<Link> identLinks = new ArrayList<>(allIdents.size());
 			for (Identity identity : allIdents) {
 				String last = identity.getUser().getProperty(UserConstants.LASTNAME, getLocale());
 				String first = identity.getUser().getProperty(UserConstants.FIRSTNAME, getLocale());

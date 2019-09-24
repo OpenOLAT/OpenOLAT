@@ -57,20 +57,12 @@ public class CalendarWSHelper {
 	}
 	
 	static boolean hasReadAccess(KalendarRenderWrapper wrapper) {
-		if(wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY) {
-			return true;
-		}
-		if(wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE) {
-			return true;
-		}
-		return false;
+		return wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_ONLY
+				|| wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE;
 	}
 	
 	protected static boolean hasWriteAccess(KalendarRenderWrapper wrapper) {
-		if(wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE) {
-			return true;
-		}
-		return false;
+		return wrapper.getAccess() == KalendarRenderWrapper.ACCESS_READ_WRITE;
 	}
 	
 	protected static Response processEvents(List<EventVO> events, Boolean onlyFuture, int firstResult, int maxReturns,

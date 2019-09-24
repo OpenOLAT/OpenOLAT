@@ -37,6 +37,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.zip.ZipOutputStream;
 
+import javax.xml.XMLConstants;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
@@ -194,6 +196,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 				QTI21SAXHandler handler = new QTI21SAXHandler();
 				try(InputStream is = leaf.getInputStream()) {
 					XMLReader parser = XMLReaderFactory.createXMLReader();
+					parser.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
 					parser.setContentHandler(handler);
 					parser.setEntityResolver(new IMSEntityResolver());
 					parser.setFeature("http://xml.org/sax/features/validation", false);

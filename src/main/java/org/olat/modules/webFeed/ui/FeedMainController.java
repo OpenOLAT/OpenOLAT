@@ -271,9 +271,7 @@ public class FeedMainController extends BasicController implements Activateable2
 						feed = feedManager.deleteFeedImage(feed);
 					} else {
 						// set the image
-						FileElement image = null;
-						// TODO hier wird image null!!!
-						image = feedFormCtr.getFile();
+						FileElement image = feedFormCtr.getFile();
 						feed = feedManager.replaceFeedImage(feed, image);
 					}
 

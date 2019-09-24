@@ -226,7 +226,7 @@ public class BusinessControlFactory {
 	public WindowControl createBusinessWindowControl(WindowControl origWControl, OLATResourceable... ores) {
 		List<ContextEntry> ces;
 		if(ores != null && ores.length > 0) {
-			ces = new ArrayList<ContextEntry>(ores.length);
+			ces = new ArrayList<>(ores.length);
 			for(OLATResourceable o:ores) {
 				ces.add(createContextEntry(o));
 			}
@@ -328,7 +328,7 @@ public class BusinessControlFactory {
 	}
 	
 	public List<ContextEntry> createCEListFromString(OLATResourceable... resources) {
-		List<ContextEntry> entries = new ArrayList<ContextEntry>();
+		List<ContextEntry> entries = new ArrayList<>();
 		if(resources != null && resources.length > 0) {
 			for(OLATResourceable resource:resources) {
 				entries.add(createContextEntry(resource));
@@ -338,7 +338,7 @@ public class BusinessControlFactory {
 	}
 	
 	public List<ContextEntry> createCEListFromResourceable(OLATResourceable resource, StateEntry stateEntry) {
-		List<ContextEntry> entries = new ArrayList<ContextEntry>();
+		List<ContextEntry> entries = new ArrayList<>();
 		ContextEntry entry = createContextEntry(resource);
 		entry.setTransientState(stateEntry);
 		entries.add(entry);
@@ -466,7 +466,6 @@ public class BusinessControlFactory {
 			if(ceStr.startsWith("[path")) {
 				//the %2F make a problem on browsers.
 				//make the change only for path which is generally used
-				//TODO: find a better method or a better separator as |
 				ceStr = ceStr.replace("%2F", "~~");
 			}
 			ceStr = ceStr.replace(':', '/');

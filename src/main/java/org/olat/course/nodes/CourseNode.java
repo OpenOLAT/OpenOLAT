@@ -435,8 +435,8 @@ public interface CourseNode extends INode, ShortName {
 	 * to ensure a valid configration of the depending module. This is only done in
 	 * RAM. If the user clicks on that node in course editor and publishes the course
 	 * after that, then the updated config will be persisted to disk. Otherwise
-	 * everything what is done here has to be done once at every course start.
-	 * // TODO: Every click is too much. Only call this method on course start since changed config will be cached.
+	 * everything what is done here has to be done once at every course start.<br>
+	 * Every click is too much. Only call this method on course start since changed config will be cached.
 	 * If you cache something in course nodes be aware to set such a variable TRANSIENT, 
 	 * otherwise the editortree.xml and runstructure.xml of old courses would no longer be compatible. 
 	 *  

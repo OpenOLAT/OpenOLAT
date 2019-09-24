@@ -86,7 +86,7 @@ public class PaypalIPNFilter implements Filter {
 			// read post from PayPal system and add 'cmd'	
 			StringBuilder sb = new StringBuilder();
 			sb.append("cmd=_notify-validate");
-			Map<String,String> values = new HashMap<String,String>();
+			Map<String,String> values = new HashMap<>();
 			for(Enumeration<String> en = request.getParameterNames(); en.hasMoreElements(); ){
 				String paramName = en.nextElement();
 				String paramValue = request.getParameter(paramName);

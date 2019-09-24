@@ -97,10 +97,11 @@ public class HotspotEditorController extends FormBasicController {
 	private RichTextElement textEl;
 	private FileElement backgroundEl;
 	private SingleSelection resizeEl;
+	private FormLink newRectButton;
+	private FormLink newCircleButton;
 	private SingleSelection cardinalityEl;
 	private FormLayoutContainer hotspotsCont;
 	private MultipleSelectionElement responsiveEl;
-	private FormLink newCircleButton, newRectButton;
 	private MultipleSelectionElement correctHotspotsEl;
 	private SingleSelection layoutEl;
 	private MultipleSelectionElement shadowEl;
@@ -143,7 +144,7 @@ public class HotspotEditorController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_fragetypen_hotspot");
+		setFormContextHelp("Configure test questions");
 		
 		titleEl = uifactory.addTextElement("title", "form.imd.title", -1, itemBuilder.getTitle(), formLayout);
 		titleEl.setElementCssClass("o_sel_assessment_item_title");
@@ -303,7 +304,7 @@ public class HotspotEditorController extends FormBasicController {
 
 		correctHotspotsEl.clearError();
 		if(!restrictedEdit && !readOnly) {
-			if(correctHotspotsEl.getSelectedKeys().size() == 0) {
+			if(correctHotspotsEl.getSelectedKeys().isEmpty()) {
 				correctHotspotsEl.setErrorKey("error.need.correct.answer", null);
 				allOk &= false;
 			}
@@ -345,7 +346,7 @@ public class HotspotEditorController extends FormBasicController {
 			createHotspotChoice(Shape.RECT, "50,50,100,100");
 			updateHotspots(ureq);
 		} else if(backgroundEl == source) {
-			//upload in itemDirectory;
+			// upload in item directory;
 			if(FileElementEvent.DELETE.equals(event.getCommand())) {
 				if(backgroundEl.getUploadFile() != null && backgroundEl.getUploadFile() != backgroundEl.getInitialFile()) {
 					backgroundEl.reset();
@@ -570,6 +571,8 @@ public class HotspotEditorController extends FormBasicController {
 	}
 	
 	private void optimizeResizeEl(Size size, boolean selectSize) {
+		if(size == null) return;
+		
 		List<String> keys = new ArrayList<>();
 		List<String> values = new ArrayList<>();
 

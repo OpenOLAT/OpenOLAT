@@ -21,9 +21,12 @@ package org.olat.modules.quality.analysis.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.olat.test.JunitTestHelper.random;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,11 +38,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.olat.modules.forms.EvaluationFormManager;
+import org.olat.modules.forms.RubricRating;
 import org.olat.modules.forms.model.xml.Rubric;
 import org.olat.modules.forms.model.xml.ScaleType;
 import org.olat.modules.forms.model.xml.Slider;
 import org.olat.modules.quality.analysis.GroupedStatistic;
 import org.olat.modules.quality.analysis.GroupedStatistics;
+import org.olat.modules.quality.analysis.HeatMapStatistic;
 import org.olat.modules.quality.analysis.MultiKey;
 import org.olat.modules.quality.analysis.MultiTrendSeries;
 import org.olat.modules.quality.analysis.RawGroupedStatistic;
@@ -49,6 +54,7 @@ import org.olat.modules.quality.analysis.Trend;
 import org.olat.modules.quality.analysis.Trend.DIRECTION;
 import org.olat.modules.quality.analysis.TrendSeries;
 import org.olat.modules.quality.analysis.model.GroupedStatisticImpl;
+import org.olat.modules.quality.analysis.model.HeatMapStatisticImpl;
 import org.olat.modules.quality.analysis.model.RawGroupedStatisticImpl;
 
 /**
@@ -341,6 +347,10 @@ public class StatisticsCalculatorTest {
 		slider21.setId(random());
 		slider21.setWeight(3);
 		sliders2.add(slider21);
+		Slider slider22 = new Slider();
+		slider22.setId(random());
+		slider22.setWeight(0);
+		sliders2.add(slider22);
 		Rubric rubric2 = new Rubric();
 		rubric2.setId(random());
 		rubric2.setSliders(sliders2);
@@ -356,13 +366,16 @@ public class StatisticsCalculatorTest {
 		statisticsList.add(new RawGroupedStatisticImpl(slider11.getId(), multiKey1, temporalKey1, 1l, 1.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey1, temporalKey1, 1l, 1.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider21.getId(), multiKey1, temporalKey1, 1l, 1.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider22.getId(), multiKey1, temporalKey1, 1l, 1.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider11.getId(), multiKey1, temporalKey2, 2l, 1.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey1, temporalKey2, 2l, 2.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider21.getId(), multiKey1, temporalKey2, 2l, 3.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider22.getId(), multiKey1, temporalKey2, 2l, 3.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey2, temporalKey1, 100l, 20.2));
 		statisticsList.add(new RawGroupedStatisticImpl(slider11.getId(), multiKey2, temporalKey2, 3l, 3.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider12.getId(), multiKey2, temporalKey2, 2l, 2.0));
 		statisticsList.add(new RawGroupedStatisticImpl(slider21.getId(), multiKey2, temporalKey2, 1l, 1.0));
+		statisticsList.add(new RawGroupedStatisticImpl(slider22.getId(), multiKey2, temporalKey2, 2l, 2.0));
 		
 		List<RawGroupedStatistic> reducedStatistics = sut.reduceIdentifier(statisticsList, rubrics);
 		
@@ -385,6 +398,65 @@ public class StatisticsCalculatorTest {
 		}
 		softly.fail("No statistic for %s, %s", multiKey, temporalKey);
 	}
+	
+	@Test
+	public void shouldCalculateRubricsTotal() {
+		when(evaluationFormManagerMock.getRubricRating(any(), any())).thenReturn(RubricRating.NEUTRAL);
+		
+		List<Slider> sliders1 = new ArrayList<>();
+		Slider slider11 = new Slider();
+		String slider11Id = random();
+		slider11.setId(slider11Id);
+		sliders1.add(slider11);
+		Slider slider12 = new Slider();
+		String slider12Id = random();
+		slider12.setId(slider12Id);
+		sliders1.add(slider12);
+		Rubric rubric1 = new Rubric();
+		rubric1.setSliders(sliders1);
+		Rubric rubric2 = new Rubric();
+		List<Slider> sliders2 = new ArrayList<>();
+		Slider slider21 = new Slider();
+		String slider21Id = random();
+		slider21.setId(slider21Id);
+		slider21.setWeight(2);
+		sliders2.add(slider21);
+		rubric2.setSliders(sliders2);
+		List<Rubric> rubrics = Arrays.asList(rubric1, rubric2);
+		
+		List<GroupedStatistic> statistics = new ArrayList<>();
+		statistics.add(new GroupedStatisticImpl(slider11Id, null, null, 1l, null, true, 1.0, null, 0));
+		statistics.add(new GroupedStatisticImpl(slider12Id, null, null, 1l, null, true, 2.0, null, 0));
+		statistics.add(new GroupedStatisticImpl(slider21Id, null, null, 2l, null, true, 3.0, null, 0));
+		
+		HeatMapStatistic total = sut.calculateRubricsTotal(statistics , rubrics);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(total.getCount()).isEqualTo(4);
+		softly.assertThat(total.getAvg()).isEqualTo(2.5, offset(0.001));
+		softly.assertThat(total.getRating()).isEqualTo(RubricRating.NEUTRAL);
+		softly.assertAll();
+	}
 
+
+	@Test
+	public void shouldCalculateSliderTotal() {
+		when(evaluationFormManagerMock.getRubricRating(any(), any())).thenReturn(RubricRating.NEUTRAL);
+		
+		Rubric rubric = new Rubric();
+		List<HeatMapStatistic> statistic = new ArrayList<>();
+		statistic.add(new HeatMapStatisticImpl(2l, 3.0, null));
+		statistic.add(new HeatMapStatisticImpl(1l, 1.5, null));
+		statistic.add(new HeatMapStatisticImpl(3l, 5.0, null));
+		statistic.add(new HeatMapStatisticImpl(null, null, null));
+		
+		HeatMapStatistic total = sut.calculateSliderTotal(statistic, rubric);
+		
+		SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(total.getCount()).isEqualTo(6);
+		softly.assertThat(total.getAvg()).isEqualTo(3.75, offset(0.001));
+		softly.assertThat(total.getRating()).isEqualTo(RubricRating.NEUTRAL);
+		softly.assertAll();
+	}
 
 }

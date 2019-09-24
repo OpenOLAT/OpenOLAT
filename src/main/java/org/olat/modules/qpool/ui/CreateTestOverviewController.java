@@ -20,27 +20,42 @@
 package org.olat.modules.qpool.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.services.license.LicenseModule;
+import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
+import org.olat.core.commons.services.license.ui.LicenseUIFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
-import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.BooleanCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.CSSIconFlexiCellRenderer;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.Formatter;
+import org.olat.core.util.StringHelper;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QuestionItemShort;
 import org.olat.modules.qpool.QuestionPoolModule;
+import org.olat.modules.qpool.manager.QuestionPoolLicenseHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -50,15 +65,27 @@ import org.olat.modules.qpool.QuestionPoolModule;
  */
 public class CreateTestOverviewController extends FormBasicController {
 
+	private final boolean withLicenses;
 	private final ExportFormatOptions format;
 	private QItemDataModel itemsModel;
+	
+	
+	
+	@Autowired
+	private LicenseModule licenseModule;
+	@Autowired
+	private LicenseService licenseService;
+	@Autowired
+	private QuestionPoolLicenseHandler licenseHandler;
+	
 
 	public CreateTestOverviewController(UserRequest ureq, WindowControl wControl, List<QuestionItemShort> items,
 			ExportFormatOptions format) {
-		super(ureq, wControl, LAYOUT_VERTICAL);
+		super(ureq, wControl, "create_test");
 		this.format = format;
+		withLicenses = licenseModule.isEnabled(licenseHandler);
 		initForm(ureq);
-		itemsModel.setObjects(items);
+		loadModel(items);
 	}
 
 	@Override
@@ -70,23 +97,58 @@ public class CreateTestOverviewController extends FormBasicController {
 						new CSSIconFlexiCellRenderer("o_icon_accept"),
 						new CSSIconFlexiCellRenderer("o_icon_failed"))
 		));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("general.title", Cols.title.ordinal()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("technical.format", Cols.format.ordinal()));
-		itemsModel = new QItemDataModel(columnsModel, format);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format));
+		if(withLicenses) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.license));
+		}
+		itemsModel = new QItemDataModel(columnsModel, format, getLocale());
 		uifactory.addTableElement(getWindowControl(), "shares", itemsModel, getTranslator(), formLayout);
 		
-		FormLayoutContainer buttonLayout = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
-		formLayout.add("buttons", buttonLayout);
-		uifactory.addFormSubmitButton("create.test", buttonLayout);
-		uifactory.addFormCancelButton("cancel", buttonLayout, ureq, getWindowControl());
+		uifactory.addFormSubmitButton("create.test", formLayout);
+		uifactory.addFormCancelButton("cancel", formLayout, ureq, getWindowControl());
+	}
+	
+	private void loadModel(List<QuestionItemShort> items) {
+		List<ResourceLicense> resourceLicenses = licenseService.loadLicenses(items);
+		Map<Long,ResourceLicense> resourceLicensesMap = resourceLicenses.stream()
+			.collect(Collectors.toMap(ResourceLicense::getResId, l -> l, (u, v) -> u));
+		List<QuestionRow> rows = items.stream()
+				.map(item -> new QuestionRow(item, resourceLicensesMap.get(item.getKey())))
+				.collect(Collectors.toList());
+		itemsModel.setObjects(rows);
+		if(withLicenses) {
+			Set<LicenseType> licenseTypes = resourceLicenses.stream()
+					.map(ResourceLicense::getLicenseType)
+					.collect(Collectors.toSet());
+			if(licenseTypes.size() > 1) {
+				flc.contextPut("licenseWarning", Boolean.TRUE);
+			}
+		}
 	}
 	
 	public String getResourceTypeFormat() {
 		return format.getResourceTypeFormat();
 	}
+	
+	public LicenseType getLicenseType() {
+		List<QuestionRow> items = getExportableQuestionRows();
+		List<LicenseType> licenseTypes = items.stream()
+				.filter(item -> item.getLicense() != null)
+				.map(QuestionRow::getLicense)
+				.map(ResourceLicense::getLicenseType)
+				.collect(Collectors.toList());
+		Collections.sort(licenseTypes, new LicenseRestrictionComparator());
+		return licenseTypes.isEmpty() ? null : licenseTypes.get(0);
+	}
 
 	public List<QuestionItemShort> getExportableQuestionItems() {
-		List<QuestionItemShort> exportableItems = new ArrayList<>(itemsModel.getRowCount());
+		List<QuestionRow> rows =getExportableQuestionRows();
+		return rows.stream().map(QuestionRow::getQuestion).collect(Collectors.toList());
+	}
+	
+	public List<QuestionRow> getExportableQuestionRows() {
+		List<QuestionRow> exportableItems = new ArrayList<>(itemsModel.getRowCount());
 		for(int i=0; i<itemsModel.getRowCount(); i++) {
 			if(Boolean.TRUE.equals(itemsModel.getValueAt(i, Cols.accept.ordinal()))) {
 				exportableItems.add(itemsModel.getObject(i));
@@ -109,25 +171,86 @@ public class CreateTestOverviewController extends FormBasicController {
 	protected void doDispose() {
 		//
 	}
+	
+	private static class LicenseRestrictionComparator implements Comparator<LicenseType> {
+		
+		@Override
+		public int compare(LicenseType o1, LicenseType o2) {
+			int s1 = getLicenseScore(o1);
+			int s2 = getLicenseScore(o2);
+			return Integer.compare(s2, s1);// descendant
+		}
+	
+		private int getLicenseScore(LicenseType type) {
+			int score = 0;
+			if(type != null && type.getName() != null) {
+				if(!type.isPredefined()) {
+					score = 2000;
+				} else if("all rights reserved".equals(type.getName())) {
+					score = 1800;
+				} else if("freetext".equals(type.getName())) {
+					score = 1700;
+				} else if(type.getName().startsWith("CC")) {
+					score =  type.getName().length() * 100;
+				} else if("public domain".equals(type.getName())) {
+					score = 100;
+				} else if("no.license".equals(type.getName())) {
+					score = 100;
+				} else {
+					score = 50;
+				}	
+			}
+			return score;
+		}
+	}
+	
+	private static class QuestionRow {
+		
+		private final QuestionItemShort question;
+		private final ResourceLicense license;
+		
+		public QuestionRow(QuestionItemShort question, ResourceLicense license) {
+			this.question = question;
+			this.license = license;
+		}
+		
+		public String getTitle() {
+			return question.getTitle();
+		}
+		
+		public String getFormat() {
+			return question.getFormat();
+		}
+		
+		public ResourceLicense getLicense() {
+			return license;
+		}
+	
+		public QuestionItemShort getQuestion() {
+			return question;
+		}
+	}
 
-	private static class QItemDataModel extends DefaultFlexiTableDataModel<QuestionItemShort> {
+	private static class QItemDataModel extends DefaultFlexiTableDataModel<QuestionRow> {
+		private final Locale locale;
 		private final ExportFormatOptions format;
 		private final QuestionPoolModule qpoolModule;
 
-		public QItemDataModel(FlexiTableColumnModel columnModel, ExportFormatOptions format) {
+		public QItemDataModel(FlexiTableColumnModel columnModel, ExportFormatOptions format, Locale locale) {
 			super(columnModel);
+			this.locale = locale;
 			this.format = format;
 			qpoolModule = CoreSpringFactory.getImpl(QuestionPoolModule.class);
 		}
 
 		@Override
 		public QItemDataModel createCopyWithEmptyList() {
-			return new QItemDataModel(getTableColumnModel(), format);
+			return new QItemDataModel(getTableColumnModel(), format, locale);
 		}
 
 		@Override
 		public Object getValueAt(int row, int col) {
-			QuestionItemShort share = getObject(row);
+			QuestionRow share = getObject(row);
 			switch(Cols.values()[col]) {
 				case accept:{
 					String itemFormat = share.getFormat();
@@ -139,16 +262,45 @@ public class CreateTestOverviewController extends FormBasicController {
 				} 
 				case title: return share.getTitle();
 				case format: return share.getFormat();
-				default : {
-					return share;
+				case license: return shortenedLicense(share);
+				default : return share;
+			}
+		}
+		
+		private String shortenedLicense(QuestionRow share) {
+			String text = null;
+			ResourceLicense license = share.getLicense();
+			if(license != null) {
+				if(license.getLicenseType() != null) {
+					text = LicenseUIFactory.translate(license.getLicenseType(), locale);
+				}
+				if(StringHelper.containsNonWhitespace(license.getFreetext())) {
+					text = license.getFreetext();
 				}
 			}
+			
+			if(text != null && text.length() > 32) {
+				text = Formatter.truncate(text, 32);
+			}
+			return text;
 		}
 	}
 	
-	private enum Cols {
-		accept,
-		title,
-		format
+	private enum Cols implements FlexiColumnDef {
+		accept("export.overview.accept"),
+		title("general.title"),
+		format("technical.format"),
+		license("rights.license");
+		
+		private final String i18nKey;
+		
+		private Cols(String i18nKey) {
+			this.i18nKey = i18nKey;
+		}
+
+		@Override
+		public String i18nHeaderKey() {
+			return i18nKey;
+		}
 	}
 }

@@ -156,7 +156,7 @@ public class ChecklistManager {
 		clCopy.setTitle(cl.getTitle());
 		clCopy.setDescription(cl.getDescription());
 		List<Checkpoint> checkpoints = cl.getCheckpoints();
-		List<Checkpoint> checkpointsCopy = new ArrayList<Checkpoint>();
+		List<Checkpoint> checkpointsCopy = new ArrayList<>();
 		for(Checkpoint cp : checkpoints) {
 			Checkpoint cpCopy = new Checkpoint();
 			cpCopy.setChecklist(clCopy);

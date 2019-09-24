@@ -229,7 +229,7 @@ public class RepositoryPortletRunController extends AbstractPortletRunController
 			PortletDefaultTableDataModel<RepositoryEntry> tableDataModel = new RepositoryPortletTableDataModel(entries, ureq.getLocale());
 			List<PortletEntry<RepositoryEntry>> sortedItems = getPersistentManuallySortedItems(); 
 			
-			portletToolsController = new PortletToolSortingControllerImpl<RepositoryEntry>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
+			portletToolsController = new PortletToolSortingControllerImpl<>(ureq, wControl, getTranslator(), sortingCriteria, tableDataModel, sortedItems);
 			portletToolsController.setConfigManualSorting(true);
 			portletToolsController.setConfigAutoSorting(true);
 			portletToolsController.addControllerListener(this);

@@ -27,11 +27,6 @@ import org.olat.core.id.Identity;
 import org.olat.course.db.CourseDBEntry;
 
 /**
- * 
- * Description:<br>
- * TODO: srosse Class Description for CourseDBEntryImpl
- * 
- * <P>
  * Initial Date:  7 avr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
  */

@@ -53,7 +53,7 @@ public class BarChartComponentRenderer extends DefaultComponentRenderer {
 		String cmpId = chartCmp.getDispatchID();
 		
 		sb.append("<div id='d").append(cmpId).append("d3holder' class='d3chart' style='width:600px;height:300px'></div>\n")
-		  .append("<script type='text/javascript'>\n")
+		  .append("<script>\n")
 		  .append("/* <![CDATA[ */ ")
 		  .append("jQuery(function () {\n")
 		  .append("var placeholderheight = jQuery('#d").append(cmpId).append("d3holder').height();\n")

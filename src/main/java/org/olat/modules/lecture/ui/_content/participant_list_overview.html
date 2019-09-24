@@ -1,6 +1,6 @@
 <div class="o_button_group o_button_group_right">
 #if($r.isNotNull($withPrint) && $withPrint)
-<script type="text/javascript">
+<script>
 /* <![CDATA[ */ 
 function print() {
 	try {
@@ -20,7 +20,7 @@ function print() {
 $r.render("table")
 </div>
 #if($r.isTrue($printCommand))
-<script type="text/javascript">
+<script>
 /* <![CDATA[ */ 
 	// execute after radial score rendering
 	setTimeout(function() {

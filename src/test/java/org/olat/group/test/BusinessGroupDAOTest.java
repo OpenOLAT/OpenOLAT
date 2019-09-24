@@ -46,7 +46,6 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupMembershipViewImpl;
 import org.olat.group.model.BusinessGroupQueryParams;
-import org.olat.group.model.BusinessGroupRow;
 import org.olat.group.model.OpenBusinessGroupRow;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.model.StatisticsBusinessGroupRow;
@@ -226,7 +225,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertEquals(group1, groups2.get(0));
 
 		//check load 2 groups
-		List<Long> groupKeys = new ArrayList<Long>(2);
+		List<Long> groupKeys = new ArrayList<>(2);
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		List<BusinessGroup> groups3 = businessGroupDao.load(groupKeys);
@@ -255,13 +254,13 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertEquals(group1.getName(), groups2.get(0).getName());
 
 		//check load 2 groups
-		List<Long> groupKeys = new ArrayList<Long>(2);
+		List<Long> groupKeys = new ArrayList<>(2);
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		List<BusinessGroupShort> groups3 = businessGroupDao.loadShort(groupKeys);
 		Assert.assertNotNull(groups3);
 		Assert.assertEquals(2, groups3.size());
-		List<Long> groupShortKeys3 = new ArrayList<Long>(3);
+		List<Long> groupShortKeys3 = new ArrayList<>(3);
 		for(BusinessGroupShort group:groups3) {
 			groupShortKeys3.add(group.getKey());
 		}
@@ -426,7 +425,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertTrue(groups.contains(group2));
 
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
 		Assert.assertNotNull(groupViews);
 		Assert.assertTrue(groupViews.size() >= 2);
 		Assert.assertTrue(contains(groupViews, group1));
@@ -481,7 +480,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check the same with the views
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setName(marker);
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(3, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
@@ -511,7 +510,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check the same with the views
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setName("*" + marker + "*");
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(3, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
@@ -541,7 +540,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check find business group
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setDescription(marker);
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(2, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
@@ -571,7 +570,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setDescription("*" + marker + "*");
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(3, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
@@ -600,7 +599,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check the same search with the views
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setNameOrDesc(marker);
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(2, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
@@ -629,7 +628,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check the same search with the views
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setNameOrDesc("*" + marker + "*");
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, identity);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(3, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
@@ -655,7 +654,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check the same with the views
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setOwnerName(marker);
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, id1);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, id1);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(3, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
@@ -679,7 +678,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check the same with the views
 		BusinessGroupQueryParams searchParams = new BusinessGroupQueryParams();
 		searchParams.setOwnerName("*" + marker + "*");
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, id1);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(searchParams, id1);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(3, groupViews.size() );
 		Assert.assertTrue(contains(groupViews, group1));
@@ -707,7 +706,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		Assert.assertNotNull(groups);
 		Assert.assertEquals(2, groups.size());
 
-		Set<Long> retrievedGroupkey = new HashSet<Long>();
+		Set<Long> retrievedGroupkey = new HashSet<>();
 		for(StatisticsBusinessGroupRow group:groups) {
 			retrievedGroupkey.add(group.getKey());
 		}
@@ -772,7 +771,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check owner on views
 		BusinessGroupQueryParams queryParamsOwner = new BusinessGroupQueryParams();
 		queryParamsOwner.setOwner(true);
-		List<BusinessGroupRow> ownedGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsOwner, id);
+		List<StatisticsBusinessGroupRow> ownedGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsOwner, id);
 		Assert.assertNotNull(ownedGroupViews);
 		Assert.assertEquals(1, ownedGroupViews.size());
 		Assert.assertTrue(contains(ownedGroupViews, group1));
@@ -780,7 +779,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check attendee on views
 		BusinessGroupQueryParams queryParamsAttendee = new BusinessGroupQueryParams();
 		queryParamsAttendee.setAttendee(true);
-		List<BusinessGroupRow> attendeeGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsAttendee, id);
+		List<StatisticsBusinessGroupRow> attendeeGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsAttendee, id);
 		Assert.assertNotNull(attendeeGroupViews);
 		Assert.assertEquals(1, attendeeGroupViews.size());
 		Assert.assertTrue(contains(attendeeGroupViews, group2));
@@ -788,7 +787,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check waiting on views
 		BusinessGroupQueryParams queryParamsWaiting = new BusinessGroupQueryParams();
 		queryParamsWaiting.setWaiting(true);
-		List<BusinessGroupRow> waitingGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsWaiting, id);
+		List<StatisticsBusinessGroupRow> waitingGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsWaiting, id);
 		Assert.assertNotNull(waitingGroupViews);
 		Assert.assertEquals(1, waitingGroupViews.size());
 		Assert.assertTrue(contains(waitingGroupViews, group3));
@@ -798,7 +797,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		queryParamsAll.setOwner(true);
 		queryParamsAll.setAttendee(true);
 		queryParamsAll.setWaiting(true);
-		List<BusinessGroupRow> allGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsAll, id);
+		List<StatisticsBusinessGroupRow> allGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsAll, id);
 		Assert.assertNotNull(allGroupViews);
 		Assert.assertEquals(3, allGroupViews.size());
 		Assert.assertTrue(contains(allGroupViews, group1));
@@ -822,7 +821,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		params.setAttendee(true);
 		params.setWaiting(true);
 		params.setRepositoryEntry(re);
-		List<BusinessGroupRow> groupViews =  businessGroupDao.searchBusinessGroupsWithMemberships(params, id);
+		List<StatisticsBusinessGroupRow> groupViews =  businessGroupDao.searchBusinessGroupsWithMemberships(params, id);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(1, groupViews.size());
 		Assert.assertEquals(group.getKey(), groupViews.get(0).getKey());
@@ -845,7 +844,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		params.setAttendee(true);
 		params.setWaiting(true);
 		params.setCourseTitle(re.getDisplayname());
-		List<BusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(params, id);
+		List<StatisticsBusinessGroupRow> groupViews = businessGroupDao.searchBusinessGroupsWithMemberships(params, id);
 		Assert.assertNotNull(groupViews);
 		Assert.assertEquals(1, groupViews.size());
 		Assert.assertEquals(group.getKey(), groupViews.get(0).getKey());
@@ -976,7 +975,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//retrieve the offer
 		BusinessGroupQueryParams paramsAll = new BusinessGroupQueryParams();
 		paramsAll.setPublicGroups(Boolean.TRUE);
-		List<BusinessGroupRow> accessGroups = businessGroupDao.searchBusinessGroupsWithMemberships(paramsAll, id);
+		List<StatisticsBusinessGroupRow> accessGroups = businessGroupDao.searchBusinessGroupsWithMemberships(paramsAll, id);
 		Assert.assertNotNull(accessGroups);
 		Assert.assertTrue(accessGroups.size() >= 1);
 		Assert.assertTrue(contains(accessGroups, groupVisible));
@@ -998,7 +997,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check the search function with resources
 		BusinessGroupQueryParams queryWithParams = new BusinessGroupQueryParams();
 		queryWithParams.setResources(Boolean.TRUE);
-		List<BusinessGroupRow> groupViewWith = businessGroupDao.searchBusinessGroupsWithMemberships(queryWithParams, id);
+		List<StatisticsBusinessGroupRow> groupViewWith = businessGroupDao.searchBusinessGroupsWithMemberships(queryWithParams, id);
 		Assert.assertNotNull(groupViewWith);
 		Assert.assertFalse(groupViewWith.isEmpty());
 		Assert.assertTrue(contains(groupViewWith, group1));
@@ -1006,7 +1005,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check the search function without resources
 		BusinessGroupQueryParams queryWithoutParams = new BusinessGroupQueryParams();
 		queryWithoutParams.setResources(Boolean.FALSE);
-		List<BusinessGroupRow> groupViewWithout = businessGroupDao.searchBusinessGroupsWithMemberships(queryWithoutParams, id);
+		List<StatisticsBusinessGroupRow> groupViewWithout = businessGroupDao.searchBusinessGroupsWithMemberships(queryWithoutParams, id);
 		Assert.assertNotNull(groupViewWithout);
 		Assert.assertFalse(groupViewWithout.isEmpty());
 		Assert.assertTrue(contains(groupViewWithout, group2));
@@ -1026,7 +1025,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		BusinessGroupQueryParams queryMarkedParams = new BusinessGroupQueryParams();
 		queryMarkedParams.setOwner(true);
 		queryMarkedParams.setMarked(true);
-		List<BusinessGroupRow> markedGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryMarkedParams, marker);
+		List<StatisticsBusinessGroupRow> markedGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryMarkedParams, marker);
 		Assert.assertNotNull(markedGroupViews);
 		Assert.assertEquals(1, markedGroupViews.size());
 		Assert.assertTrue(contains(markedGroupViews, group1));
@@ -1048,7 +1047,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check marked
 		BusinessGroupQueryParams queryParamsMarker1 = new BusinessGroupQueryParams();
 		queryParamsMarker1.setMarked(true);
-		List<BusinessGroupRow> markedGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsMarker1, marker1);
+		List<StatisticsBusinessGroupRow> markedGroupViews = businessGroupDao.searchBusinessGroupsWithMemberships(queryParamsMarker1, marker1);
 		Assert.assertNotNull(markedGroupViews);
 		Assert.assertEquals(1, markedGroupViews.size());
 		Assert.assertTrue(contains(markedGroupViews, group1));
@@ -1064,7 +1063,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		//check marked
 		BusinessGroupQueryParams headlessParams = new BusinessGroupQueryParams();
 		headlessParams.setHeadless(true);
-		List<BusinessGroupRow> groups = businessGroupDao.searchBusinessGroupsWithMemberships(headlessParams, owner);
+		List<StatisticsBusinessGroupRow> groups = businessGroupDao.searchBusinessGroupsWithMemberships(headlessParams, owner);
 		Assert.assertNotNull(groups);
 		Assert.assertFalse(groups.isEmpty());
 		Assert.assertTrue(contains(groups, headlessGroup));
@@ -1104,7 +1103,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id, group3, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		List<BusinessGroup> groups = new ArrayList<>();
 		groups.add(group1);
 		groups.add(group2);
 		groups.add(group3);
@@ -1141,7 +1140,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id, group3, GroupRoles.waiting.name());
 		dbInstance.commitAndCloseSession();
 
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		groupKeys.add(group3.getKey());
@@ -1186,11 +1185,11 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id2, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
-		List<BusinessGroup> groups = new ArrayList<BusinessGroup>();
+		List<BusinessGroup> groups = new ArrayList<>();
 		groups.add(group1);
 		groups.add(group2);
 		groups.add(group3);
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		groupKeys.add(group3.getKey());
@@ -1248,7 +1247,7 @@ public class BusinessGroupDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(id3, group3, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 
-		List<Long> groupKeys = new ArrayList<Long>();
+		List<Long> groupKeys = new ArrayList<>();
 		groupKeys.add(group1.getKey());
 		groupKeys.add(group2.getKey());
 		groupKeys.add(group3.getKey());

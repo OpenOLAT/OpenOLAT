@@ -57,6 +57,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.model.IdentityRefImpl;
@@ -64,7 +65,6 @@ import org.olat.core.commons.services.vfs.restapi.VFSStreamingOutput;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -85,6 +85,9 @@ import org.olat.restapi.support.vo.File64VO;
 import org.olat.restapi.support.vo.FileVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 /**
  * 
  * Description:<br>
@@ -94,6 +97,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Initial Date:  20 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+
+@Tag (name =  "Repo")
 public class ForumWebService {
 	
 	private static final Logger log = Tracing.createLoggerFor(ForumWebService.class);
@@ -154,6 +159,8 @@ public class ForumWebService {
 	 */
 	@GET
 	@Path("threads")
+	@Operation(summary = "Get threads",
+	description = "Retrieves the threads in the forum.")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getThreads(@QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit,  @QueryParam("orderBy") @DefaultValue("creationDate") String orderBy,
@@ -197,6 +204,8 @@ public class ForumWebService {
 	 */
 	@POST
 	@Path("threads")
+	@Operation(summary = "Post threads",
+	description = "Creates a new thread in the forum of the course node.")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response newThreadToForumPost(@FormParam("title") String title,
@@ -221,6 +230,8 @@ public class ForumWebService {
 	 */
 	@PUT
 	@Path("threads")
+	@Operation(summary = "Put threads",
+	description = "Creates a new thread in the forum of the course node.")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response newThreadToForum(@QueryParam("title") String title,
 			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
@@ -258,6 +269,8 @@ public class ForumWebService {
 	 */
 	@GET
 	@Path("posts/{threadKey}")
+	@Operation(summary = "Get posts",
+	description = "Retrieves the messages in the thread.")
 	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @DefaultValue("0") Integer start,
 			@QueryParam("limit") @DefaultValue("25") Integer limit, @QueryParam("orderBy") @DefaultValue("creationDate") String orderBy,
 			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
@@ -302,6 +315,8 @@ public class ForumWebService {
 	 */
 	@POST
 	@Path("posts/{messageKey}")
+	@Operation(summary = "Post posts",
+	description = "Creates a new reply in the forum of the course node.")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPostPost(@PathParam("messageKey") Long messageKey, @FormParam("title") String title,
@@ -328,6 +343,8 @@ public class ForumWebService {
 	 */
 	@PUT
 	@Path("posts/{messageKey}")
+	@Operation(summary = "Put posts",
+	description = "Creates a new reply in the forum of the course node.")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") String title,
@@ -352,6 +369,8 @@ public class ForumWebService {
 	 */
 	@PUT
 	@Path("posts/{messageKey}")
+	@Operation(summary = "Put posts",
+	description = "Creates a new reply in the forum of the course node.")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response replyToPost(@PathParam("messageKey") Long messageKey, ReplyVO reply,
@@ -416,6 +435,8 @@ public class ForumWebService {
 	 */
 	@GET
 	@Path("posts/{messageKey}/attachments")
+	@Operation(summary = "Get attachments",
+	description = "Retrieves the attachments of the message.")
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response getAttachments(@PathParam("messageKey") Long messageKey, @Context UriInfo uriInfo) {
 		//load message
@@ -442,6 +463,8 @@ public class ForumWebService {
 	 * @return The attachment
 	 */
 	@GET
+	@Operation(summary = "Get attachment",
+	description = "Retrieves the attachment of the message.")
 	@Path("posts/{messageKey}/attachments/{filename}")
 	@Produces({"*/*", MediaType.APPLICATION_OCTET_STREAM})
 	public Response getAttachment(@PathParam("messageKey") Long messageKey, @PathParam("filename") String filename, 
@@ -495,6 +518,8 @@ public class ForumWebService {
 	 * @return Ok
 	 */
 	@POST
+	@Operation(summary = "Post attachment",
+	description = "Upload the attachment of a message, as parameter.")
 	@Path("posts/{messageKey}/attachments")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -528,6 +553,8 @@ public class ForumWebService {
 	 * @return Ok
 	 */
 	@POST
+	@Operation(summary = "Post attachment",
+	description = "Upload the attachment of a message.")
 	@Path("posts/{messageKey}/attachments")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -539,6 +566,8 @@ public class ForumWebService {
 	}
 	
 	@PUT
+	@Operation(summary = "Put attachment",
+	description = "Upload the attachment of a message.")
 	@Path("posts/{messageKey}/attachments")
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

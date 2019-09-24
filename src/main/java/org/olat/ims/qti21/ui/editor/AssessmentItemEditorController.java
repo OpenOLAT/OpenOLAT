@@ -302,8 +302,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new SingleChoiceEditorController(ureq, getWindowControl(), scItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, itemFile, restrictedEdit, readOnly,
-				"Test editor QTI 2.1 in detail#details_testeditor_score");
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), scItemBuilder, itemRef, itemFile, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), scItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -321,8 +320,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new MultipleChoiceEditorController(ureq, getWindowControl(), mcItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, itemFile, restrictedEdit, readOnly,
-				"Test editor QTI 2.1 in detail#details_testeditor_score");
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), mcItemBuilder, itemRef, itemFile, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), mcItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -340,8 +338,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new KPrimEditorController(ureq, getWindowControl(), kprimItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit, readOnly,
-				"Test editor QTI 2.1 in detail#details_testeditor_score");
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), kprimItemBuilder, itemRef, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), kprimItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),
@@ -454,8 +451,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new EssayEditorController(ureq, getWindowControl(), essayItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef, restrictedEdit, readOnly,
-				"Test editor QTI 2.1 in detail#details_testeditor_score");
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), essayItemBuilder, itemRef, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), essayItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.lobFeedbacks(),
@@ -473,8 +469,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new UploadEditorController(ureq, getWindowControl(), uploadItemBuilder,
 				rootDirectory, rootContainer, itemFile, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit, readOnly,
-				"Test editor QTI 2.1 in detail#details_testeditor_score");
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), uploadItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.lobFeedbacks(),
@@ -492,8 +487,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new DrawingEditorController(ureq, getWindowControl(), uploadItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit, readOnly,
-				"Test and Questionnaire Editor in Detail#details_testeditor_fragetypen_ft");
+		scoreEditor = new MinimalScoreController(ureq, getWindowControl(), uploadItemBuilder, itemRef, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), uploadItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.lobFeedbacks(),
@@ -511,8 +505,7 @@ public class AssessmentItemEditorController extends BasicController implements A
 		itemEditor = new HottextEditorController(ureq, getWindowControl(), hottextItemBuilder,
 				rootDirectory, rootContainer, itemFile, restrictedEdit, readOnly);
 		listenTo(itemEditor);
-		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), hottextItemBuilder, itemRef, itemFile, restrictedEdit, readOnly,
-				"Test editor QTI 2.1 in detail#details_testeditor_score");
+		scoreEditor = new ChoiceScoreController(ureq, getWindowControl(), hottextItemBuilder, itemRef, itemFile, restrictedEdit, readOnly);
 		listenTo(scoreEditor);
 		feedbackEditor = new FeedbacksEditorController(ureq, getWindowControl(), hottextItemBuilder,
 				rootDirectory, rootContainer, itemFile, FeedbacksEnabler.standardFeedbacks(),

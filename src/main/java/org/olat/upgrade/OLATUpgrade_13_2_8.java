@@ -44,7 +44,7 @@ public class OLATUpgrade_13_2_8 extends OLATUpgrade {
 	private static final Logger log = Tracing.createLoggerFor(OLATUpgrade_13_2_8.class);
 	
 	private static final String VERSION = "OLAT_13.2.8";
-	private static final String GUEST_COURSE_NODES_PASSWORDS = "GUEST COURSE NODES PASSWORDS";
+	private static final String GUEST_COURSE_NODES_PASSWORDS = "GUEST COURSE NODES PASSWORDS";//NOSONAR
 	
 	@Autowired
 	private DB dbInstance;

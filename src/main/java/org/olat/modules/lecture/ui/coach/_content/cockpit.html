@@ -1,0 +1,40 @@
+#if($r.available("rollcall"))
+	$r.render("rollcall")
+#else
+
+<fieldset class="o_lectures_cockpit">
+	<div class="o_header_with_buttons">
+	<h3>$r.translate("cockpit.day.overview") <small>$date</small></h3>
+		<div class="o_day_chooser">$r.render("day.chooser")</div>
+	</div>
+	#if($r.available("lectureBlocks") || $r.isNotEmpty($pendingDays))
+	<div class="clearfix">
+		<h4>$r.translate("cockpit.lectures")</h4>
+		#if($r.isNotEmpty($pendingDays))
+		<div class="o_error" role="alert">
+			#if(${pendingDays.size()} == 1)
+				$r.translate("cockpit.pending.days")
+			#else
+				$r.translate("cockpit.pending.days.plural")
+			#end
+			<ul class="list-unstyled">
+			#foreach($pendingDay in $pendingDays)
+				<li>$r.render($pendingDay)</li>
+			#end
+			</ul>
+		</div>
+		#end
+		#if($r.available("lectureBlocks"))
+			$r.render("lectureBlocks")
+		#end
+	</div>
+	#end
+	#if($r.visible("absences"))
+	<div class="clearfix">
+		<h4>$r.translate("cockpit.absences")</h4>
+		$r.render("absences")
+	</div>
+	#end
+</fieldset>
+
+#end

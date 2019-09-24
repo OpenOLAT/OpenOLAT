@@ -38,7 +38,7 @@ import org.olat.core.util.FileVisitor;
 class I18nDirectoriesVisitor implements FileVisitor {
 	private static final Logger log = Tracing.createLoggerFor(I18nDirectoriesVisitor.class);
 	private String basePath;
-	private List<String> bundles = new LinkedList<String>();
+	private List<String> bundles = new LinkedList<>();
 	private final List<String> referenceLangKeys;
 
 	/**

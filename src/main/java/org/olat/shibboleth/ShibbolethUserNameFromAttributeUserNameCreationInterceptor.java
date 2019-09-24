@@ -82,7 +82,7 @@ public class ShibbolethUserNameFromAttributeUserNameCreationInterceptor extends 
 		
 		if(regexp != null && !regexp.isEmpty()) {
 			if(regexpPatterns == null) {
-				regexpPatterns = new ArrayList<Pattern>();
+				regexpPatterns = new ArrayList<>();
 				for(String regex:regexp) {
 					regexpPatterns.add(Pattern.compile(regex));
 				}

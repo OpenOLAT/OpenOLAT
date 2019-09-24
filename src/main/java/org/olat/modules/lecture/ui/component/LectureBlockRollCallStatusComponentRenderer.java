@@ -45,9 +45,20 @@ public class LectureBlockRollCallStatusComponentRenderer extends DefaultComponen
 		String iconCssClass;
 		String title;
 		int numOfLectures = cmp.getPlannedLecturesNumber();
-		if(cmp.getLecturesAttendedNumber() >= numOfLectures) {
+		if(cmp.getRollCall().getAbsenceNotice() != null) {
+			iconCssClass = "o_lectures_rollcall_notice";
+			switch(cmp.getRollCall().getAbsenceNotice().getNoticeType()) {
+				case notified: title = cmp.getTranslator().translate("rollcall.absence.notice"); break;
+				case dispensation: title = cmp.getTranslator().translate("rollcall.dispensation"); break;
+				case absence:
+				default: title = cmp.getTranslator().translate("rollcall.absence"); break;
+			}	
+		} else if(cmp.getLecturesAttendedNumber() >= numOfLectures) {
 			iconCssClass = "o_lectures_rollcall_ok";
 			title = cmp.getTranslator().translate("rollcall.tooltip.ok");
+		} else if(cmp.getRollCall() == null || cmp.getRollCall().getRollCall() == null) {
+			iconCssClass = "o_lectures_rollcall_pending";
+			title = cmp.getTranslator().translate("rollcall.tooltip.pending");
 		} else if(cmp.isAuthorizedAbsenceEnabled()) {
 			if(cmp.isAbsenceDefaultAuthorized()) {
 				if(cmp.isLecturesAuthorizedAbsent() || cmp.getRollCall().getRollCall().getAbsenceAuthorized() == null) {
@@ -71,6 +82,12 @@ public class LectureBlockRollCallStatusComponentRenderer extends DefaultComponen
 		
 		sb.append("<span id='").append(fId).append("' title='")
 			.append(title).append("'><i class='o_icon o_icon-lg ")
-			.append(iconCssClass).append("'> </i></span>");
+			.append(iconCssClass).append("'> </i>");
+		if(cmp.isWithNumOfLectures()) {
+			sb.append(" ").append(cmp.getLecturesAttendedNumber())
+			  .append(" / ")
+			  .append(numOfLectures);
+		}
+		sb.append("</span>");
 	}
 }

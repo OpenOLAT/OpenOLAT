@@ -39,7 +39,7 @@ public class QTIEditorResolver implements Resolver {
 
 	private Document doc;
 	private String staticsBaseURI;
-	private boolean isSurvey = false; // FIXME:ms:??
+	private boolean isSurvey = false;
 	
 	/**
 	 * @param qtiPackage
@@ -75,15 +75,13 @@ public class QTIEditorResolver implements Resolver {
 	 * @param ident
 	 * @return Item
 	 */
+	@Override
 	public Element getItem(String ident) {
 		// ident of item must be "globally unique"(qti...), unique within a qti document
-		Element el_item = (Element) doc.selectSingleNode("//item[@ident='"+ident+"']");
-		return el_item;
+		return (Element) doc.selectSingleNode("//item[@ident='"+ident+"']");
 	}
 
-	/**
-	 * @see org.olat.ims.qti.process.Resolver#getStaticsBaseURI()
-	 */
+	@Override
 	public String getStaticsBaseURI() { return staticsBaseURI; }
 
 	/**
@@ -93,10 +91,8 @@ public class QTIEditorResolver implements Resolver {
 		return isSurvey;
 	}
 
-	/**
-	 * @see org.olat.ims.qti.process.Resolver#hasAutocompleteFiles()
-	 */
+	@Override
 	public boolean hasAutocompleteFiles() {
-		return false; // TODO:chg: no autocomplete feature for editor ?
+		return false;
 	}
 }

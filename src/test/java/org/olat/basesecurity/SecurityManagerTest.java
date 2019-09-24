@@ -88,7 +88,7 @@ public class SecurityManagerTest extends OlatTestCase {
 	
 	@Test
 	public void testGetIdentitiesByPowerSearchWithuserProperties() {
-		Map<String, String> userProperties = new HashMap<String, String>();
+		Map<String, String> userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, "first"+ testLogin);
 		userProperties.put(UserConstants.LASTNAME, "last"+ testLogin);
 		// test using visibility search
@@ -106,7 +106,7 @@ public class SecurityManagerTest extends OlatTestCase {
 	@Test
 	public void testGetIdentitiesByPowerSearchWithConjunctionFlag() {
 		// 1) two fields that match to two different users
-		Map<String, String> userProperties = new HashMap<String, String>();
+		Map<String, String> userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		userProperties.put(UserConstants.LASTNAME, s2.getUser().getProperty(UserConstants.LASTNAME, null));
 		// with AND search (conjunction) no identity is found
@@ -117,7 +117,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		Assert.assertEquals(2, userList.size());
 
 		// 2) two fields wheras only one matches to one single user
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		userProperties.put(UserConstants.LASTNAME, "some nonexisting value");
 		// with AND search (conjunction) no identity is found
@@ -147,7 +147,7 @@ public class SecurityManagerTest extends OlatTestCase {
 	  	Assert.assertEquals(0,userList.size());
 		
 		// 2) two fields wheras only one matches to one single user
-		Map<String, String> userProperties = new HashMap<String, String>();
+		Map<String, String> userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		userProperties.put(UserConstants.LASTNAME, "some nonexisting value");
 		// with AND search (conjunction) no identity is found
@@ -163,7 +163,7 @@ public class SecurityManagerTest extends OlatTestCase {
 		for (int i = 0; i < myProviders.length; i++) {
 			Assert.assertTrue("Provider name.length must be <= 8", myProviders[i].length() <= 8);
 		}
-		userProperties = new HashMap<String, String>();
+		userProperties = new HashMap<>();
 		userProperties.put(UserConstants.FIRSTNAME, s1.getUser().getProperty(UserConstants.FIRSTNAME, null));
 		userProperties.put(UserConstants.LASTNAME, "some nonexisting value");
 		// with AND search (conjunction) no identity is found

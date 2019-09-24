@@ -22,22 +22,28 @@ package org.olat.selenium;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.UUID;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.drone.api.annotation.Drone;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.olat.core.util.CodeHelper;
 import org.olat.selenium.page.LoginPage;
 import org.olat.selenium.page.NavigationPage;
 import org.olat.selenium.page.Participant;
 import org.olat.selenium.page.Student;
 import org.olat.selenium.page.core.AdministrationMessagesPage;
+import org.olat.selenium.page.user.RegistrationPage;
 import org.olat.test.rest.UserRestClient;
 import org.olat.user.restapi.UserVO;
 import org.openqa.selenium.WebDriver;
+
+import com.dumbster.smtp.SmtpMessage;
 
 /**
  * 
@@ -59,7 +65,7 @@ public class LoginTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void loadIndex(LoginPage loginPage) {
+	public void loadIndex() {
 		//check that the login page, or dmz is loaded
 		LoginPage.load(browser, deploymentUrl)
 			.assertOnLoginPage();
@@ -122,8 +128,7 @@ public class LoginTest extends Deployments {
 	 */
 	@Test
 	@RunAsClient
-	public void maintenanceMessage( 
-			@Drone @Participant WebDriver reiBrowser,
+	public void maintenanceMessage(@Drone @Participant WebDriver reiBrowser,
 			@Drone @Student WebDriver kanuBrowser)
 	throws IOException, URISyntaxException {
 		
@@ -164,5 +169,41 @@ public class LoginTest extends Deployments {
 		//we wait it disappears
 		kanuLogin
 			.waitOnMaintenanceMessageCleared();
+	}
+	
+	/**
+	 * Someone wants to register.
+	 * 
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	public void registration()
+	throws IOException, URISyntaxException {
+		String email = UUID.randomUUID() + "@openolat.com";
+		//login
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.assertOnLoginPage();
+		RegistrationPage registration = RegistrationPage.getPage(browser)
+			.signIn()
+			.nextToDisclaimer()
+			.acknowledgeDisclaimer()
+			.register(email);
+		
+		List<SmtpMessage> messages = getSmtpServer().getReceivedEmails();
+		Assert.assertEquals(1, messages.size());
+
+		String registrationLink = registration.extractRegistrationLink(messages.get(0));
+		Assert.assertNotNull(registrationLink);
+		
+		String login = "md_" + CodeHelper.getForeverUniqueID();
+		String password = "VerySecret#01";
+		registration
+			.loadRegistrationLink(registrationLink)
+			.finalizeRegistration("Arisu", "Iwakura", login, password);
+
+		loginPage
+			.assertLoggedInByLastName("Iwakura");
 	}
 }

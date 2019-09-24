@@ -124,8 +124,6 @@ public class CollectArtefactController extends FormBasicController {
 			String title = titleEl.getValue();
 			String description = descriptionEl.getValue();
 			mediaReference = handler.createMedia(title, description, mediaObject, businessPath, getIdentity());
-		} else {
-			//TODO
 		}
 
 		if(mediaReference != null) {

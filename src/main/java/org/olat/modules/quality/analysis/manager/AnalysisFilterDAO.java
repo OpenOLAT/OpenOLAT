@@ -92,7 +92,7 @@ public class AnalysisFilterDAO {
 				.createQuery(sb.toString(), AvailableAttributes.class);
 		appendParameters(query, searchParams);
 		return query.getResultList().get(0);
-	};
+	}
 
 	AnlaysisFigures loadAnalyticFigures(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
@@ -136,26 +136,26 @@ public class AnalysisFilterDAO {
 	}
 
 	List<Curriculum> loadContextCurriculums(AnalysisSearchParameter searchParams) {
-		String statement = dbInstance.isOracle()
+		QueryBuilder sb = dbInstance.isOracle()
 				? getContextCurriculumsOraQuery(searchParams)
 				: getContextCurriculumsQuery(searchParams);
 		
 		TypedQuery<Curriculum> query = dbInstance.getCurrentEntityManager()
-				.createQuery(statement, Curriculum.class);
+				.createQuery(sb.toString(), Curriculum.class);
 		appendParameters(query, searchParams);
 		return query.getResultList();
 	}
 
-	private String getContextCurriculumsQuery(AnalysisSearchParameter searchParams) {
+	private QueryBuilder getContextCurriculumsQuery(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select distinct contextCurriculum");
 		appendFrom(sb, searchParams);
 		appendWhere(sb, searchParams);
 		sb.and().append("contextCurriculum.key is not null");
-		return sb.toString();
+		return sb;
 	}
 
-	private String getContextCurriculumsOraQuery(AnalysisSearchParameter searchParams) {
+	private QueryBuilder getContextCurriculumsOraQuery(AnalysisSearchParameter searchParams) {
 		QueryBuilder sb = new QueryBuilder();
 		sb.append("select dCurriculum from curriculum as dCurriculum where dCurriculum.key in (");
 		sb.append("select distinct contextCurriculum.key");
@@ -163,7 +163,7 @@ public class AnalysisFilterDAO {
 		appendWhere(sb, searchParams);
 		sb.and().append("contextCurriculum.key is not null");
 		sb.append(")");
-		return sb.toString();
+		return sb;
 	}
 	
 	List<CurriculumElement> loadContextCurriculumElements(AnalysisSearchParameter searchParams) {
@@ -393,7 +393,7 @@ public class AnalysisFilterDAO {
 		sb.append(groupByIdentifier? " response.responseIdentifier": " cast(null as string)");
 		appendGroupBys(sb, multiGroupBy, true);
 		appendTemporalGroupBy(sb, temporalGroupBy, true);
-		sb.append("     , count(response)");
+		sb.append("     , count(distinct response.key)");
 		sb.append("     , avg(response.numericalResponse)");
 		sb.append("       )");
 		appendFrom(sb, searchParams);

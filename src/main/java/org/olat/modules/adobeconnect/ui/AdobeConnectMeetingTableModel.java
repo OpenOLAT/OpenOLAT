@@ -49,7 +49,7 @@ implements SortableFlexiTableDataModel<AdobeConnectMeeting> {
 	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
-			List<AdobeConnectMeeting> views = new SortableFlexiTableModelDelegate<AdobeConnectMeeting>(orderBy, this, locale).sort();
+			List<AdobeConnectMeeting> views = new SortableFlexiTableModelDelegate<>(orderBy, this, locale).sort();
 			super.setObjects(views);
 		}
 	}

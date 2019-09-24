@@ -60,8 +60,11 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		return getValueAt(wrapped, col);
 	}
 		
+	@Override
 	public Object getValueAt(BGTableItem wrapped, int col) {
 		switch (Cols.values()[col]) {
+			case createionDate:
+				return wrapped.getCreationDate();
 			case name:
 				return wrapped;
 			case description:
@@ -149,6 +152,7 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 		}
 	}
 	
+	@Override
 	public void sort(SortKey orderBy) {
 		if(orderBy != null) {
 			List<BGTableItem> views = new BusinessGroupFlexiTableModelSort(orderBy, this, locale).sort();
@@ -186,6 +190,7 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 	}
 	
 	public enum Cols {
+		createionDate("table.header.createionDate"),
 		name("table.header.bgname"),
 		description("table.header.description"),
 		groupType(""),

@@ -40,7 +40,7 @@ public class LifecycleDataModel implements FlexiTableDataModel<RepositoryEntryLi
 	
 	public LifecycleDataModel(FlexiTableColumnModel columnModel) {
 		this.columnModel = columnModel;
-		this.lifecycles = new ArrayList<RepositoryEntryLifecycle>();
+		this.lifecycles = new ArrayList<>();
 	}
 	
 	@Override
@@ -65,7 +65,7 @@ public class LifecycleDataModel implements FlexiTableDataModel<RepositoryEntryLi
 
 	@Override
 	public void setObjects(List<RepositoryEntryLifecycle> objects) {
-		lifecycles = new ArrayList<RepositoryEntryLifecycle>(objects);
+		lifecycles = new ArrayList<>(objects);
 	}
 
 	@Override

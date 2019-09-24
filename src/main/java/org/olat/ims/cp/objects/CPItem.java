@@ -117,7 +117,6 @@ public class CPItem extends DefaultElement implements CPNode {
 			} else if (child.getName().equals(CPCore.TITLE)) {
 				title = child.getText();
 			} else if (child.getName().equals(CPCore.METADATA)) {
-				// TODO: implement LOM METADATA
 				metadata = new CPMetadata(child);
 				metadata.setParentElement(this);
 			}
@@ -284,8 +283,6 @@ public class CPItem extends DefaultElement implements CPNode {
 			item = it.next();
 			if (item.getIdentifier().equals(id)) { return item; }
 		}
-		// TODO: should it throw an exception, if no element with the given
-		// identifier is found ???
 		return null;
 	}
 

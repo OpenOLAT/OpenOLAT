@@ -220,7 +220,7 @@ public class SendMailStepForm extends StepFormBasicController {
 		// inform children
 		forumManager.collectThreadMembersRecursively(startMessage, threadMemberSet, pseudonymes);
 		
-		return new ArrayList<Identity>(threadMemberSet);
+		return new ArrayList<>(threadMemberSet);
 	}
 	
 	private String displayThreadMembers() {

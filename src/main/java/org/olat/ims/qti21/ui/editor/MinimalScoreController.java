@@ -46,20 +46,18 @@ public class MinimalScoreController extends AssessmentItemRefEditorController {
 	private TextElement maxScoreEl;
 	
 	private AssessmentItemBuilder itemBuilder;
-	private final String contextHelpUrl;
 	
 	public MinimalScoreController(UserRequest ureq, WindowControl wControl,
 			AssessmentItemBuilder itemBuilder, AssessmentItemRef itemRef,
-			boolean restrictedEdit, boolean readOnly, String contextHelpUrl) {
+			boolean restrictedEdit, boolean readOnly) {
 		super(ureq, wControl, itemRef, restrictedEdit, readOnly);
 		this.itemBuilder = itemBuilder;
-		this.contextHelpUrl = contextHelpUrl;
 		initForm(ureq);
 	}
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp(contextHelpUrl);
+		setFormContextHelp("Configure test questions#_tab_score");
 		super.initForm(formLayout, listener, ureq);
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setElementCssClass("o_sel_assessment_item_min_score");

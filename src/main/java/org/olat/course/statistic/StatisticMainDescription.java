@@ -32,10 +32,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for StatisticMainDescription
- * 
- * <P>
  * Initial Date: 22.12.2009 <br>
  * 
  * @author patrickb
@@ -48,24 +44,13 @@ public class StatisticMainDescription extends BasicController {
 		putInitialPanel(vc);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose()
-	 */
 	@Override
 	protected void doDispose() {
-	// TODO Auto-generated method stub
-
+		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	protected void event(UserRequest ureq, Component source, Event event) {
-	// TODO Auto-generated method stub
-
+		//
 	}
-
 }

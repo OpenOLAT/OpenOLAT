@@ -39,7 +39,7 @@ public class DefaultResultInfos<U> implements ResultInfos<U> {
 	public DefaultResultInfos() {
 		nextFirstResult = 0;
 		correctedRowCount = 0;
-		objects = new ArrayList<U>();
+		objects = new ArrayList<>();
 	}
 	
 	public DefaultResultInfos(int nextFirstResult, int correctedRowCount, List<U> objects) {

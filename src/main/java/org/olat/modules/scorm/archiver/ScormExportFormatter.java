@@ -38,10 +38,10 @@ import org.olat.core.gui.translator.Translator;
  */
 public class ScormExportFormatter implements ScormExportVisitor {
 	private final Translator translator;
-	private final List<ScoDatas> datas = new ArrayList<ScoDatas>();
+	private final List<ScoDatas> datas = new ArrayList<>();
 	
-	private final Map<String,CmiColumn> interactionColsMap = new HashMap<String,CmiColumn>();
-	private final Map<String,CmiColumn> objectivesColsMap = new HashMap<String,CmiColumn>();
+	private final Map<String,CmiColumn> interactionColsMap = new HashMap<>();
+	private final Map<String,CmiColumn> objectivesColsMap = new HashMap<>();
 	
 	public ScormExportFormatter(Translator translator) {
 		this.translator = translator;
@@ -80,10 +80,10 @@ public class ScormExportFormatter implements ScormExportVisitor {
 	public String export() {
 		StringBuilder sb = new StringBuilder();
 		
-		List<CmiColumn> interactionsCols = new ArrayList<CmiColumn>(interactionColsMap.values());
+		List<CmiColumn> interactionsCols = new ArrayList<>(interactionColsMap.values());
 		Collections.sort(interactionsCols);
 		
-		List<CmiColumn> objectivesCols = new ArrayList<CmiColumn>(objectivesColsMap.values());
+		List<CmiColumn> objectivesCols = new ArrayList<>(objectivesColsMap.values());
 		Collections.sort(objectivesCols);
 
 		// header

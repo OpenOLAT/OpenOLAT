@@ -2,13 +2,13 @@
 	## on Mozilla the return value from the scorm RTE engine gets written into this dvi element
 	<div id="apiReturnHandler" style="position:absolute; top: 0; left: -1000px; visibility:hidden;"></div>
 	## load SCORM API functions and XmlRequestObject stuff
-	<script type="text/javascript">
+	<script>
 		var olatCommandUri = "$scormCallbackUri";
 		var frameId = "$frameId";
 		var blancURL = "$r.staticLink("blanc.html")";
 		var lastRequest = new Date().getTime();
 	</script>
-	<script type="text/javascript">
+	<script>
 		var jsHttpRequest = new scormApiRequest(olatCommandUri);
 		//todo:gs:c On some sco's the first attempt to call the RTE fails, sending a dummy call is a workaroud for this
 		passApiCall("initcall","empty","empty");

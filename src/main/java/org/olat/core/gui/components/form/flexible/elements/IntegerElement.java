@@ -26,10 +26,6 @@
 package org.olat.core.gui.components.form.flexible.elements;
 
 /**
- * Description:<br>
- * TODO: patrickb Class Description for IntegerElement
- * 
- * <P>
  * Initial Date:  22.06.2007 <br>
  * @author patrickb
  */

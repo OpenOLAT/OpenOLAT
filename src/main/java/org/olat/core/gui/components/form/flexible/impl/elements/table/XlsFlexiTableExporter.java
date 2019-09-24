@@ -24,6 +24,7 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.render.EmptyURLBuilder;
@@ -31,7 +32,6 @@ import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.StringOutputPool;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -66,6 +66,9 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 					OpenXMLWorksheet sheet = workbook.nextWorksheet();
 					createHeader(columns, translator, sheet, workbook);
 					createData(ftC, columns, translator, sheet, workbook);
+					if(ftC.getFlexiTableElement().getTableDataModel() instanceof FlexiTableFooterModel) {
+						createFooter(ftC, columns, translator, sheet, workbook);
+					}
 				} catch (IOException e) {
 					log.error("", e);
 				}
@@ -101,6 +104,28 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 		}
 	}
 	
+	protected void createFooter(FlexiTableComponent ftC, List<FlexiColumnModel> columns, Translator translator,
+			OpenXMLWorksheet sheet, OpenXMLWorkbook workbook) {
+		
+		boolean footerHeader = false;
+		int numOfCols = columns.size();
+		FlexiTableFooterModel footerDataModel = (FlexiTableFooterModel)ftC.getFlexiTableElement().getTableDataModel(); 
+
+		Row dataRow = sheet.newRow();
+		for (int j = 0; j<numOfCols; j++) {
+			FlexiColumnModel cd = columns.get(j);
+			int columnIndex = cd.getColumnIndex();
+			Object cellValue = columnIndex >= 0 ? footerDataModel.getFooterValueAt(columnIndex) : null;
+			if(cellValue == null && !footerHeader) {
+				dataRow.addCell(j, footerDataModel.getFooterHeader(), workbook.getStyles().getHeaderStyle());
+				footerHeader = true;
+			} else {
+				Object value = footerDataModel.getFooterValueAt(columnIndex);
+				renderValue(ftC, cd.getFooterCellRenderer(), dataRow, value, -1, j, translator, workbook);
+			}
+		}
+	}
+	
 	protected void createCell(FlexiTableComponent ftC, FlexiColumnModel cd, Row dataRow, int row, int col, Translator translator,
 			OpenXMLWorkbook workbook) {
 		FlexiTableDataModel<?> dataModel = ftC.getFlexiTableElement().getTableDataModel();
@@ -109,26 +134,38 @@ public class XlsFlexiTableExporter implements FlexiTableExporter {
 			int colIndex = cd.getColumnIndex();
 			if(colIndex >= 0) {
 				Object value = dataModel.getValueAt(row, colIndex);
-				if(value instanceof Date) {
-					dataRow.addCell(col, (Date)value, workbook.getStyles().getDateStyle());
-				} else if(value instanceof Number) {
-					dataRow.addCell(col, (Number)value, null);
-				} else if(value instanceof FormItem) {
-					// do nothing
-				} else {
-					StringOutput so = StringOutputPool.allocStringBuilder(1000);
-					cd.getCellRenderer().render(null, so, value, row, ftC, ubu, translator);
-					String cellValue = StringOutputPool.freePop(so);
-					
-					cellValue = StringHelper.stripLineBreaks(cellValue);
-					cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
-					if(StringHelper.containsNonWhitespace(cellValue)) {
-						cellValue = StringHelper.unescapeHtml(cellValue);
-					}
-					dataRow.addCell(col, cellValue, null);
-				}
+				renderValue(ftC, cd.getCellRenderer(), dataRow, value, row, col, translator, workbook);
 			}
 		} catch (Exception e) {
+			log.error("", e);
+		}
+	}
+	
+	protected void renderValue(FlexiTableComponent ftC, FlexiCellRenderer cellRenderer, Row dataRow, Object value,
+			int row, int col, Translator translator, OpenXMLWorkbook workbook) {
+		if(value instanceof Date) {
+			dataRow.addCell(col, (Date)value, workbook.getStyles().getDateStyle());
+		} else if(value instanceof Number) {
+			dataRow.addCell(col, (Number)value, null);
+		} else if(value instanceof FormItem) {
+			// do nothing
+		} else {
+			renderCell(ftC, cellRenderer, dataRow, value, row, col, translator);
+		}
+	}
+	
+	protected void renderCell(FlexiTableComponent ftC, FlexiCellRenderer renderer, Row dataRow, Object value, int row, int col, Translator translator) {
+		try(StringOutput so = StringOutputPool.allocStringBuilder(1000)) {
+			renderer.render(null, so, value, row, ftC, ubu, translator);
+			String cellValue = StringOutputPool.freePop(so);
+			
+			cellValue = StringHelper.stripLineBreaks(cellValue);
+			cellValue = FilterFactory.getHtmlTagsFilter().filter(cellValue);
+			if(StringHelper.containsNonWhitespace(cellValue)) {
+				cellValue = StringHelper.unescapeHtml(cellValue);
+			}
+			dataRow.addCell(col, cellValue, null);
+		} catch(IOException e) {
 			log.error("", e);
 		}
 	}

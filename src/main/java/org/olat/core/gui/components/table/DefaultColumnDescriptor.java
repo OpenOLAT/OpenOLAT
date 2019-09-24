@@ -303,8 +303,6 @@ public class DefaultColumnDescriptor implements ColumnDescriptor {
 	}
 
 	/**
-	 * TODO:fj:b replace with PopupObject which is easily configurable
-	 * 
 	 * Optional action link configuration
 	 * @param popUpWindowAction true: action link will open in new window, false: action opens in current window
 	 * @param popUpWindowAttributes javascript window.open attributes or null if default values are used

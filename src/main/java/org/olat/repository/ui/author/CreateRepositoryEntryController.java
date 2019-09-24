@@ -29,6 +29,8 @@ import org.olat.basesecurity.OrganisationService;
 import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.commons.services.license.LicenseModule;
 import org.olat.core.commons.services.license.LicenseService;
+import org.olat.core.commons.services.license.LicenseType;
+import org.olat.core.commons.services.license.ResourceLicense;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -79,6 +81,7 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	private final List<Organisation> manageableOrganisations;
 	
 	private Object userObject;
+	private LicenseType licenseType;
 	
 	@Autowired
 	private RepositoryManager repositoryManager;
@@ -121,7 +124,12 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 	public void setCreateObject(Object userObject) {
 		this.userObject = userObject;
 	}
-	
+
+	@Override
+	public void setLicenseType(LicenseType licenseType) {
+		this.licenseType = licenseType;
+	}
+
 	public void setDisplayname(String displayname) {
 		displaynameEl.setValue(displayname);
 	}
@@ -243,7 +251,13 @@ public class CreateRepositoryEntryController extends FormBasicController impleme
 		
 		addedEntry = handler.createResource(getIdentity(), displayname, "", getCreateObject(), organisation, getLocale());
 		if (licenseModule.isEnabled(licenseHandler)) {
-			licenseService.createDefaultLicense(addedEntry.getOlatResource(), licenseHandler, getIdentity());
+			if(licenseType != null) {
+				ResourceLicense license = licenseService.loadOrCreateLicense(addedEntry.getOlatResource());
+				license.setLicenseType(licenseType);
+				licenseService.update(license);
+			} else {
+				licenseService.createDefaultLicense(addedEntry.getOlatResource(), licenseHandler, getIdentity());
+			}
 		}
 
 		repositoryManager.triggerIndexer(addedEntry);

@@ -61,8 +61,8 @@ public class AlternativeCourseNodeController extends FormBasicController {
 		CourseNodeConfiguration config
 			= CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(courseNode.getType());
 
-		List<String> alternativeKeyList = new ArrayList<String>(4);
-		List<String> alternativeValueList = new ArrayList<String>(4);
+		List<String> alternativeKeyList = new ArrayList<>(4);
+		List<String> alternativeValueList = new ArrayList<>(4);
 		for(String alt:config.getAlternativeCourseNodes()) {
 			CourseNodeConfiguration altConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(alt);
 			if(altConfig.isEnabled()) {

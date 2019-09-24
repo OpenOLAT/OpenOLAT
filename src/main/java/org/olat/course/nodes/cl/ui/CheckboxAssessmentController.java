@@ -184,7 +184,7 @@ public class CheckboxAssessmentController extends FormBasicController {
 		Checkbox box = checkboxList.getList().get(currentCheckboxIndex);
 		boolean hasPoints = box.getPoints() != null && box.getPoints().floatValue() > 0f;
 		
-		List<CheckboxAssessmentRow> boxRows = new ArrayList<CheckboxAssessmentRow>(initialRows.size());
+		List<CheckboxAssessmentRow> boxRows = new ArrayList<>(initialRows.size());
 		for(CheckListAssessmentRow initialRow: initialRows) {
 			Boolean[] checked = new Boolean[numOfCheckbox];
 			if(initialRow.getChecked() != null) {

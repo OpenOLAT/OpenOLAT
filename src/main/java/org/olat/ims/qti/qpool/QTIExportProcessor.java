@@ -407,9 +407,9 @@ public class QTIExportProcessor {
 	}
 	
 	private static final class ItemsAndMaterials {
-		private final Set<String> paths = new HashSet<String>();
-		private final List<Element> itemEls = new ArrayList<Element>();
-		private final List<ItemMaterial> materials = new ArrayList<ItemMaterial>();
+		private final Set<String> paths = new HashSet<>();
+		private final List<Element> itemEls = new ArrayList<>();
+		private final List<ItemMaterial> materials = new ArrayList<>();
 		
 		public Set<String> getPaths() {
 			return paths;
