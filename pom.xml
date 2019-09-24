@@ -70,7 +70,7 @@
 		<apache.log4j>2.12.1</apache.log4j>
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
 		<io.undertow>2.0.26.Final</io.undertow>
-		<jackson.version>2.9.9</jackson.version>
+		<jackson.version>2.9.10</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.6</org.postgresql.version>
 		<org.infinispan.version>9.2.3.Final</org.infinispan.version>
@@ -2246,7 +2246,7 @@
         <dependency>
         	<groupId>com.fasterxml.jackson.core</groupId>
         	<artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
         	<groupId>com.fasterxml.jackson.dataformat</groupId>

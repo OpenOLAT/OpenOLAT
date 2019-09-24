@@ -171,7 +171,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private AssessmentResultController resultCtrl;
 	private TestSessionController testSessionController;
 
-	private DialogBoxController advanceTestPartDialog, endTestPartDialog;
+	private DialogBoxController endTestPartDialog;
+	private DialogBoxController advanceTestPartDialog;
 	private DialogBoxController confirmCancelDialog;
 	private DialogBoxController confirmSuspendDialog;
 	
@@ -431,6 +432,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	@Override
 	public AssessmentTestSession getCandidateSession() {
 		return candidateSession;
+	}
+	
+	protected AssessmentTestSession getCandidateSession(boolean reload) {
+		if(reload) {
+			candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
+		}
+		return getCandidateSession();
 	}
 	
 	@Override
@@ -2195,14 +2203,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					&& deliveryOptions.getAssessmentResultsOptions() != null
 					&& !deliveryOptions.getAssessmentResultsOptions().none()) {
 				removeAsListenerAndDispose(resultCtrl);
-				// show results in anonym mode to hide the user info table - user knows who he is (same as on test start page)
-				AssessmentTestSession candidateSession = AssessmentTestDisplayController.this.getCandidateSession();
+				// show results in anonymous mode to hide the user info table - user knows who he is (same as on test start page)
+				AssessmentTestSession cSession = AssessmentTestDisplayController.this.getCandidateSession(true);
 				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, true,
-						candidateSession, fUnzippedDirRoot, mapperUri, null,
+						cSession, fUnzippedDirRoot, mapperUri, null,
 						deliveryOptions.getAssessmentResultsOptions(), false, true, true);
 				listenTo(resultCtrl);
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
-				if(candidateSession.isAuthorMode()) {
+				if(cSession.isAuthorMode()) {
 					restartTest.setVisible(true);
 				}
 				resultsVisible = true;

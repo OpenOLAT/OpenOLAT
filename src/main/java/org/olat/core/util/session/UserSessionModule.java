@@ -43,6 +43,8 @@ public class UserSessionModule extends AbstractSpringModule {
 	private int sessionTimeout;
 	@Value("${session.timeout.authenticated}")
 	private int sessionTimeoutAuthenticated;
+	@Value("${session.timeout.extended.for}")
+	private String sessionTimeoutExtendedFor;
 	
 	@Autowired
 	public UserSessionModule(CoordinatorManager coordinatorManager) {
@@ -81,5 +83,16 @@ public class UserSessionModule extends AbstractSpringModule {
 
 	public void setSessionTimeoutAuthenticated(int timeout) {
 		setStringProperty(SESSION_TIMEOUT_AUTH, Integer.toString(timeout), true);
+	}
+
+	public String[] getSessionTimeoutExtendedFor() {
+		if(StringHelper.containsNonWhitespace(sessionTimeoutExtendedFor)) {
+			return sessionTimeoutExtendedFor.split("[,]");
+		}
+		return new String[0];
+	}
+
+	public void setSessionTimeoutExtendedFor(String sessionTimeoutExtendedFor) {
+		this.sessionTimeoutExtendedFor = sessionTimeoutExtendedFor;
 	}
 }
