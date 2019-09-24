@@ -32,6 +32,7 @@ import org.olat.course.learningpath.ui.LearningPathNodeConfigController.Learning
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.nodes.survey.ui.SurveyRunController;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
 /**
@@ -59,13 +60,14 @@ public class SurveyLearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	@Override
-	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			CourseNode courseNode) {
 		Translator translator = Util.createPackageTranslator(SurveyRunController.class, ureq.getLocale());
 		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
 				.enableNodeVisited()
 				.enableStatusDone(translator.translate("done.trigger.status.done"))
 				.build();
-		return new LearningPathNodeConfigController(ureq, wControl, courseNode.getModuleConfiguration(), ctrlConfig);
+		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
 	}
 
 }

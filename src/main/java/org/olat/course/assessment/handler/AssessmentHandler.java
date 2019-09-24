@@ -25,7 +25,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
-import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeProvider;
 import org.olat.course.run.scoring.AccountingEvaluators;
@@ -64,10 +64,10 @@ public interface AssessmentHandler extends CourseNodeProvider {
 	 * Provides some evaluators to calculate some values automatically.
 	 *
 	 * @param courseNode
-	 * @param nodeAccessType
+	 * @param courseConfig
 	 * @return
 	 */
-	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType);
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig);
 
 	/**
 	 * This method has to be implemented if the AssessmentConfig.isEvaluationCalculated() return true.

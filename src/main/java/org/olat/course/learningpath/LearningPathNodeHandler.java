@@ -24,6 +24,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeProvider;
+import org.olat.repository.RepositoryEntry;
 
 /**
  * 
@@ -37,6 +38,7 @@ public interface LearningPathNodeHandler extends CourseNodeProvider {
 	
 	public LearningPathConfigs getConfigs(CourseNode courseNode);
 	
-	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode);
+	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			CourseNode courseNode);
 
 }

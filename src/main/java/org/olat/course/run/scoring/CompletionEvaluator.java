@@ -19,7 +19,6 @@
  */
 package org.olat.course.run.scoring;
 
-import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 
 /**
@@ -31,6 +30,6 @@ import org.olat.course.nodes.CourseNode;
 public interface CompletionEvaluator {
 
 	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			CourseConfig courseConfig, ScoreAccounting scoreAccounting);
+			ScoreAccounting scoreAccounting);
 
 }

@@ -40,7 +40,7 @@ import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
-import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.scoring.AccountingEvaluators;
@@ -103,8 +103,8 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	}
 
 	@Override
-	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType) {
-		return getAssessmentHandler(courseNode).getEvaluators(courseNode, nodeAccessType);
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig) {
+		return getAssessmentHandler(courseNode).getEvaluators(courseNode, courseConfig);
 	}
 
 	@Override

@@ -34,7 +34,7 @@ import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -54,7 +54,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private static final Logger log = Tracing.createLoggerFor(AssessmentAccounting.class);
 	
 	private final UserCourseEnvironment userCourseEnvironment;
-	private final NodeAccessType nodeAccessType;
+	private final CourseConfig courseConfig;
 	private Map<String, AssessmentEntry> identToEntry = new HashMap<>();
 	private final Map<CourseNode, AssessmentEvaluation> courseNodeToEval = new HashMap<>();
 	private AssessmentEvaluation previosEvaluation;
@@ -64,7 +64,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 
 	public AssessmentAccounting(UserCourseEnvironment userCourseEnvironment) {
 		this.userCourseEnvironment = userCourseEnvironment;
-		this.nodeAccessType = NodeAccessType.of(userCourseEnvironment);
+		this.courseConfig = userCourseEnvironment.getCourseEnvironment().getCourseConfig();
 		CoreSpringFactory.autowireObject(this);
 	}
 
@@ -145,7 +145,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		AssessmentEvaluation currentEvaluation = courseNodeToEval.get(courseNode);
 		AccountingResult result = new AccountingResult(currentEvaluation);
 		
-		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, nodeAccessType);
+		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, courseConfig);
 		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
 		AssessmentObligation obligation = obligationEvaluator.getObligation(courseNode);
@@ -194,9 +194,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setLastCoachModified(lastModifications.getLastCoachModified());
 		
 		CompletionEvaluator completionEvaluator = evaluators.getCompletionEvaluator();
-		Double completion = completionEvaluator.getCompletion(result, courseNode,
-				userCourseEnvironment.getCourseEnvironment().getCourseConfig(),
-				this);
+		Double completion = completionEvaluator.getCompletion(result, courseNode, this);
 		result.setCompletion(completion);
 		
 		status = statusEvaluator.getStatus(result, children);

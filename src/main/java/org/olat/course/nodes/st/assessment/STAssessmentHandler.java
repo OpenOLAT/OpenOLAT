@@ -19,6 +19,9 @@
  */
 package org.olat.course.nodes.st.assessment;
 
+import static org.olat.course.nodes.st.assessment.AverageCompletionEvaluator.DURATION_WEIGHTED;
+import static org.olat.course.nodes.st.assessment.AverageCompletionEvaluator.UNWEIGHTED;
+
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
@@ -31,14 +34,16 @@ import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.handler.NonAssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.config.CompletionType;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
-import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.st.STIdentityListCourseNodeController;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.CompletionEvaluator;
 import org.olat.course.run.scoring.FullyAssessedEvaluator;
 import org.olat.course.run.scoring.LastModificationsEvaluator;
 import org.olat.course.run.scoring.PassedEvaluator;
@@ -51,7 +56,6 @@ import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -77,9 +81,6 @@ public class STAssessmentHandler implements AssessmentHandler {
 			.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
 			.build();
 	
-	@Autowired
-	private NumberOfNodesCompletionEvaluator numberOfNodesCompletionEvaluator;
-	
 	@Override
 	public String acceptCourseNodeType() {
 		return STCourseNode.TYPE;
@@ -102,17 +103,20 @@ public class STAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
-	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType) {
-		if (LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
-			return AccountingEvaluatorsBuilder.builder()
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig) {
+		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
+			AccountingEvaluatorsBuilder builder = AccountingEvaluatorsBuilder.builder()
 					.withDurationEvaluator(CUMULATION_DURATION_EVALUATOR)
 					.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
 					.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
-					.withCompletionEvaluator(numberOfNodesCompletionEvaluator)
 					.withStatusEvaluator(STATUS_LEARNING_PATH_STATUS_EVALUATOR)
 					.withFullyAssessedEvaluator(FULLY_ASSESSED_EVALUATOR)
-					.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
-					.build();
+					.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR);
+			CompletionEvaluator completionEvaluator = CompletionType.duration.equals(courseConfig.getCompletionType())
+					? new AverageCompletionEvaluator(DURATION_WEIGHTED)
+					: new AverageCompletionEvaluator(UNWEIGHTED);
+			builder.withCompletionEvaluator(completionEvaluator);
+			return builder.build();
 		}
 		return CONVENTIONAL_EVALUATORS;
 	}

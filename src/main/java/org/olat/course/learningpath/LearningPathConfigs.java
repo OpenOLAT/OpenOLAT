@@ -32,6 +32,8 @@ public interface LearningPathConfigs {
 	
 	public Integer getDuration();
 	
+	public void setDuration(Integer duration);
+
 	public AssessmentObligation getObligation();
 	
 	public FullyAssessedResult isFullyAssessedOnNodeVisited();

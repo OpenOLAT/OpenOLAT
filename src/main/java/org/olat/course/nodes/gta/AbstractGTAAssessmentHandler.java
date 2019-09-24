@@ -30,9 +30,9 @@ import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentHandler;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.learningpath.evaluation.LearningPathEvaluatorBuilder;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
-import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.ui.GTAAssessmentDetailsController;
@@ -69,8 +69,8 @@ public abstract class AbstractGTAAssessmentHandler implements AssessmentHandler 
 	}
 	
 	@Override
-	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType) {
-		if (LearningPathNodeAccessProvider.TYPE.equals(nodeAccessType.getType())) {
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig) {
+		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
 			return LearningPathEvaluatorBuilder.buildDefault();
 		}
 		return AccountingEvaluatorsBuilder.defaultConventional();

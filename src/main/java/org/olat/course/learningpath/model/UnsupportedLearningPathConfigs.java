@@ -37,6 +37,11 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public void setDuration(Integer duration) {
+		//
+	}
+
+	@Override
 	public AssessmentObligation getObligation() {
 		return AssessmentObligation.optional;
 	}

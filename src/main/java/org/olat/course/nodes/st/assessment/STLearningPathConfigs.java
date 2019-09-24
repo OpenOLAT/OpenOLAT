@@ -37,6 +37,11 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public void setDuration(Integer duration) {
+		// Duration is calculated. You can not set it in the course node.
+	}
+
+	@Override
 	public AssessmentObligation getObligation() {
 		return null;
 	}

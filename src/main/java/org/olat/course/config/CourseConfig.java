@@ -74,7 +74,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 17;
+	private static final transient int CURRENTVERSION = 18;
 	
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
@@ -113,6 +113,8 @@ public class CourseConfig implements Serializable, Cloneable {
 
 	public static final transient String KEY_SHAREDFOLDER_SOFTKEY = "SHAREDFOLDER_SOFTKEY";
 	public static final transient String KEY_SHAREDFOLDER_READONLY = "SHAREDFOLDER_RO";
+	
+	private static final transient String KEY_COMPLETION_TYPE = "COMPLETION_TYPE";
 
 	/**
 	 * current key set
@@ -175,6 +177,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(DOCUMENTS_ENABLED, Boolean.FALSE);
 		
 		configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
+		configuration.put(KEY_COMPLETION_TYPE, CompletionType.numberOfNodes.name());
 
 		this.version = CURRENTVERSION;
 	}
@@ -288,7 +291,14 @@ public class CourseConfig implements Serializable, Cloneable {
 				
 				this.version = 17;
 			}
-
+			
+			if (version == 17) {
+				if (!configuration.containsKey(KEY_COMPLETION_TYPE)) {
+					configuration.put(KEY_COMPLETION_TYPE, CompletionType.numberOfNodes.name());
+				}
+				
+				this.version = 18;
+			}
 			
 			/*
 			 * after resolving the issues, the version number is merged to the
@@ -325,6 +335,18 @@ public class CourseConfig implements Serializable, Cloneable {
 
 	public NodeAccessType getNodeAccessType() {
 		return NodeAccessType.of((String) configuration.get(NODE_ACCESS_TYPE));
+	}
+	
+	public CompletionType getCompletionType() {
+		String completionEvaluationStr = (String) configuration.get(KEY_COMPLETION_TYPE);
+		return CompletionType.valueOf(completionEvaluationStr);
+	}
+	
+	public void setCompletionType(CompletionType completionType) {
+		String completionTypeStr = completionType != null
+				? completionType.name()
+				: CompletionType.none.name();
+		configuration.put(KEY_COMPLETION_TYPE, completionTypeStr);
 	}
 
 	public boolean isChatEnabled() {

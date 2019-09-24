@@ -17,21 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
-
-import org.olat.course.learningpath.evaluation.AccessEvaluator;
-import org.olat.course.nodes.CourseNode;
+package org.olat.course.config;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 23 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
-
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
+public enum CompletionType {
 	
-	public AccessEvaluator getAccessEvaluator();
+	none,
+	numberOfNodes,
+	duration
 
 }

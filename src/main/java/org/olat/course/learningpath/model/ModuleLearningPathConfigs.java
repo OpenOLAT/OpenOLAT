@@ -53,6 +53,11 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 		return integerOrNull(duration);
 	}
 
+	@Override
+	public void setDuration(Integer duration) {
+		moduleConfiguration.setStringValue(CONFIG_KEY_DURATION, duration.toString());
+	}
+
 	private Integer integerOrNull(String value) {
 		if (StringHelper.containsNonWhitespace(value)) {
 			try {

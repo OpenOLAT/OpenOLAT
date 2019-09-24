@@ -101,6 +101,7 @@ public enum ActionObject {
 	bulkassessment,
 	lectures,
 	lecturesRollcall,
-	assessmentdocument;
+	assessmentdocument,
+	completionType;
 
 }

@@ -19,22 +19,20 @@
  */
 package org.olat.course.nodes.st.assessment;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.function.Function;
 
-import org.olat.core.util.nodes.INode;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.util.tree.TreeVisitor;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
-import org.olat.course.config.CourseConfig;
+import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.CompletionEvaluator;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 /**
  * 
@@ -42,53 +40,63 @@ import org.springframework.stereotype.Component;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-@Component
-public class NumberOfNodesCompletionEvaluator implements CompletionEvaluator {
+public class AverageCompletionEvaluator implements CompletionEvaluator {
 	
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
+	final static Function<AssessmentEvaluation, Integer> UNWEIGHTED = (ae) -> 1;
+	final static Function<AssessmentEvaluation, Integer> DURATION_WEIGHTED = 
+			(ae) -> ae.getDuration() != null? ae.getDuration(): Integer.valueOf(1);
+	
+	private final CourseAssessmentService courseAssessmentService;
+	private final Function<AssessmentEvaluation, Integer> weightFunction;
+	
+	public AverageCompletionEvaluator(Function<AssessmentEvaluation, Integer> weightFunction) {
+		this(CoreSpringFactory.getImpl(CourseAssessmentService.class), weightFunction);
+	}
+	
+	public AverageCompletionEvaluator(CourseAssessmentService courseAssessmentService,
+			Function<AssessmentEvaluation, Integer> weightFunction) {
+		this.courseAssessmentService = courseAssessmentService;
+		this.weightFunction = weightFunction;
+	}
 	
 	@Override
 	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-			CourseConfig courseConfig, ScoreAccounting scoreAccounting) {
+			ScoreAccounting scoreAccounting) {
 		
-		List<CourseNode> children = new ArrayList<>();
-		collectChildren(children, courseNode);
+		CollectingVisitor visitor = CollectingVisitor.testing(cn -> true);
+		TreeVisitor tv = new TreeVisitor(visitor, courseNode, true);
+		tv.visitAll();
 		
 		int count = 0;
 		double completion = 0.0;
-		for (CourseNode child: children) {
+		for (CourseNode child: visitor.getCourseNodes()) {
 			AssessmentEvaluation assessmentEvaluation = scoreAccounting.evalCourseNode(child);
 			if (isMandatory(assessmentEvaluation)) {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(child);
+				int nodeCount = 0;
+				double nodeCompletion = 0.0;
 				if (Mode.setByNode.equals(assessmentConfig.getCompletionMode())) {
-					count++;
-					completion += assessmentEvaluation.getCompletion() != null
+					nodeCount = 1;
+					nodeCompletion = assessmentEvaluation.getCompletion() != null
 							? assessmentEvaluation.getCompletion().doubleValue()
 							: 0.0;
 				} else if (Mode.none.equals(assessmentConfig.getCompletionMode())) {
-					count++;
+					nodeCount = 1;
 					completion += getCompletion(assessmentEvaluation);
 				}
+				int weight = weightFunction.apply(assessmentEvaluation).intValue();
+				count += weight * nodeCount;
+				completion += weight * nodeCompletion;
 			}
 		}
 		
 		return count > 0? completion / count: null;
 	}
 
-	private void collectChildren(List<CourseNode> children, CourseNode courseNode) {
-		for (int i = 0; i < courseNode.getChildCount(); i++) {
-			INode child = courseNode.getChildAt(i);
-			if (child instanceof CourseNode) {
-				CourseNode childCourseNode = (CourseNode) child;
-				children.add(childCourseNode);
-				collectChildren(children, childCourseNode);
-			}
-		}
-	}
-
 	private boolean isMandatory(AssessmentEvaluation evaluation) {
-		return evaluation.getObligation() != null && AssessmentObligation.mandatory.equals(evaluation.getObligation());
+		return evaluation != null
+				&& evaluation.getObligation() != null
+				&& AssessmentObligation.mandatory.equals(evaluation.getObligation());
 	}
 
 	private double getCompletion(AssessmentEvaluation evaluation) {

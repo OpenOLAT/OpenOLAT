@@ -26,6 +26,7 @@ import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.model.UnsupportedLearningPathConfigs;
 import org.olat.course.nodes.CourseNode;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
 /**
@@ -57,7 +58,8 @@ public class UnsupportedLearningPathNodeHandler implements LearningPathNodeHandl
 	}
 
 	@Override
-	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			CourseNode courseNode) {
 		return null;
 	}
 

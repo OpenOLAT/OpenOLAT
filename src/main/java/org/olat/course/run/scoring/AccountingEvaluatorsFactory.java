@@ -22,7 +22,6 @@ package org.olat.course.run.scoring;
 import java.util.List;
 
 import org.olat.course.condition.interpreter.ConditionInterpreter;
-import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -136,7 +135,7 @@ class AccountingEvaluatorsFactory {
 
 		@Override
 		public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
-				CourseConfig courseConfig, ScoreAccounting scoureAccounting) {
+				ScoreAccounting scoureAccounting) {
 			return currentEvaluation.getCompletion();
 		}
 		

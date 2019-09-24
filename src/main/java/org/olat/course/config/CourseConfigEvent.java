@@ -66,6 +66,7 @@ public class CourseConfigEvent extends MultiUserEvent {
 		forum,
 		chat,
 		glossary,
-		layout
+		layout,
+		completionType
 	}
 }

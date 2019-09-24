@@ -30,6 +30,7 @@ import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.STCourseNode;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
 /**
@@ -59,7 +60,8 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	@Override
-	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			CourseNode courseNode) {
 		Translator translator = Util.createPackageTranslator(TabbableLeaningPathNodeConfigController.class, ureq.getLocale());
 		return MessageUIFactory.createInfoMessage(ureq, wControl, null, translator.translate("no.configurations"));
 	}

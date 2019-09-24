@@ -1989,6 +1989,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				//don't restart for that
 				break;
 			}
+			case completionType: {
+				doDisposeAfterEvent();
+				break;
+			}
 		}
 	}
 	

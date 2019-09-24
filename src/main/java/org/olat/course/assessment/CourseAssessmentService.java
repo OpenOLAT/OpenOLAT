@@ -30,7 +30,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
-import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
@@ -57,7 +57,7 @@ public interface CourseAssessmentService {
 	
 	public AssessmentConfig getAssessmentConfig(CourseNode courseNode);
 	
-	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType);
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig);
 
 	
 	/**
@@ -317,6 +317,5 @@ public interface CourseAssessmentService {
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback);
-
 
 }

@@ -29,6 +29,7 @@ import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.LearningPathNodeConfigController.LearningPathControllerConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.VideoCourseNode;
+import org.olat.repository.RepositoryEntry;
 import org.springframework.stereotype.Service;
 
 /**
@@ -56,11 +57,12 @@ public class VideoLearningPathNodeHandler implements LearningPathNodeHandler {
 	}
 
 	@Override
-	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode) {
+	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
+			CourseNode courseNode) {
 		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
 				.enableNodeVisited()
 				.build();
-		return new LearningPathNodeConfigController(ureq, wControl, courseNode.getModuleConfiguration(), ctrlConfig);
+		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
 	}
 
 }

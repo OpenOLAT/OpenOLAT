@@ -25,7 +25,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
-import org.olat.course.nodeaccess.NodeAccessType;
+import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
@@ -66,7 +66,7 @@ public class NonAssessmentHandler implements AssessmentHandler {
 	}
 
 	@Override
-	public AccountingEvaluators getEvaluators(CourseNode courseNode, NodeAccessType nodeAccessType) {
+	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig) {
 		return AccountingEvaluatorsBuilder.defaultConventional();
 	}
 
