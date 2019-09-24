@@ -21,7 +21,9 @@ package org.olat.repository.ui.list;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
@@ -54,7 +56,7 @@ import org.olat.resource.accesscontrol.ui.PriceFormat;
  */
 public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDelegate<RepositoryEntryRow> {
 
-	private final RepositoryEntryDataSourceUIFactory uifactory;
+	private final RepositoryEntryRowsFactory repositoryEntryRowsFactory;
 	private final SearchMyRepositoryEntryViewParams searchParams;
 
 	private final ACService acService;
@@ -65,8 +67,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private Integer count;
 	
 	public DefaultRepositoryEntryDataSource(SearchMyRepositoryEntryViewParams searchParams,
-											RepositoryEntryDataSourceUIFactory uifactory) {
-		this.uifactory = uifactory;
+											RepositoryEntryRowsFactory repositoryEntryRowsFactory) {
+		this.repositoryEntryRowsFactory = repositoryEntryRowsFactory;
 		this.searchParams = searchParams;
 
 		acService = CoreSpringFactory.getImpl(ACService.class);
@@ -141,18 +143,15 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<Long> repoKeys = new ArrayList<>(repoEntries.size());
 		List<OLATResource> resourcesWithAC = new ArrayList<>(repoEntries.size());
 		for(RepositoryEntryMyView entry:repoEntries) {
-			if (entry.getKey() != null) {
-				repoKeys.add(entry.getKey());
-			}
+			repoKeys.add(entry.getKey());
 			if(entry.isValidOfferAvailable()) {
 				resourcesWithAC.add(entry.getOlatResource());
 			}
 		}
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
 		repositoryService.filterMembership(searchParams.getIdentity(), repoKeys);
+		RepositoryEntryDataSourceUIFactory uifactory =	repositoryEntryRowsFactory.getUiFactory();
 
-		/*
-<<<<<<< HEAD
 		LinkedHashMap<RepositoryEntryMyView, RepositoryEntryRow> mapOfRepositoryEntryViewsAndRepositoryEntryRows =
 				repositoryEntryRowsFactory.create(repoEntries);
 
@@ -162,19 +161,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			RepositoryEntryMyView entry = mapEntry.getKey();
 			RepositoryEntryRow row = mapEntry.getValue();
 
-			List<PriceMethod> types = new ArrayList<PriceMethod>();
-			if (entry.isMembersOnly()) {
-				// members only always show lock icon
-				types.add(new PriceMethod("", "o_ac_membersonly_icon",
-						repositoryEntryRowsFactory.getUiFactory()
-								.getTranslator()
-								.translate("cif.access.membersonly.short")));
-			} else {
-======= */
-		List<RepositoryEntryRow> items = new ArrayList<>();
-		for(RepositoryEntryMyView entry:repoEntries) {
-			RepositoryEntryRow row = new RepositoryEntryRow(entry);
-
 			VFSLeaf image = repositoryManager.getImage(entry.getKey(), entry.getOlatResource());
 			if(image != null) {
 				row.setThumbnailRelPath(uifactory.getMapperThumbnailUrl() + "/" + image.getName());
@@ -182,7 +168,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 
 			List<PriceMethod> types = new ArrayList<>(3);
 			if(entry.isBookable()) {
-// >>>>>>> OpenOLAT_14.0.2
 				// collect access control method icons
 				OLATResource resource = entry.getOlatResource();
 				for(OLATResourceAccess resourceAccess:resourcesWithOffer) {
@@ -199,16 +184,24 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 			} else if (!entry.isAllUsers() && !entry.isGuests()) {
 				// members only always show lock icon
 				types.add(new PriceMethod("", "o_ac_membersonly_icon", uifactory.getTranslator().translate("cif.access.membersonly.short")));
-			} 
-			
+			}
+
 			row.setMember(repoKeys.contains(entry.getKey()));
 
 			if(!types.isEmpty()) {
 				row.setAccessTypes(types);
 			}
 
+			uifactory.forgeMarkLink(row);
+			uifactory.forgeSelectLink(row);
+			uifactory.forgeStartLink(row);
+			uifactory.forgeDetails(row);
+			uifactory.forgeRatings(row);
+			uifactory.forgeComments(row);
+
 			items.add(row);
 		}
 		return items;
 	}
+
 }

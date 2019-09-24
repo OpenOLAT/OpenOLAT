@@ -377,7 +377,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	public OLATResourceable getRepositoryEntryResourceable() {
 		return OresHelper.createOLATResourceableInstance("RepositoryEntry", getKey());
 	}
-	
+
 	/**
 	 * This is a clone of the repositoryEntry.getOLATResource();
 	 * @return

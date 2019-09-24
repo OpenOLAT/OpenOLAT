@@ -25,7 +25,6 @@ import org.olat.core.commons.services.commentAndRating.CommentAndRatingDefaultSe
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingSecurityCallback;
 import org.olat.core.commons.services.commentAndRating.manager.UserRatingsDAO;
 import org.olat.core.commons.services.commentAndRating.ui.UserCommentsController;
-import org.olat.core.commons.services.mark.Mark;
 import org.olat.core.commons.services.mark.MarkManager;
 import org.olat.core.dispatcher.mapper.MapperService;
 import org.olat.core.dispatcher.mapper.manager.MapperKey;
@@ -52,7 +51,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.rating.RatingFormEvent;
-import org.olat.core.gui.components.rating.RatingFormItem;
 import org.olat.core.gui.components.rating.RatingWithAverageFormItem;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -99,7 +97,7 @@ import java.util.List;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class RepositoryEntryListController extends FormBasicController
-	implements Activateable2, RepositoryEntryDataSourceUIFactory, FlexiTableComponentDelegate {
+	implements Activateable2, FlexiTableComponentDelegate {
 
 	/**
 	 * In order the event listener array is never null, one listener must
@@ -146,6 +144,7 @@ public class RepositoryEntryListController extends FormBasicController
 	@Autowired
 	private RepositoryEntryListControllerFormInnerEventListener[] formInnerEventListerners;
 
+	private final RepositoryEntryRowsFactory repositoryEntryRowsFactory;
 	private final boolean guestOnly;
 	
 	public RepositoryEntryListController(UserRequest ureq, WindowControl wControl,
@@ -157,24 +156,17 @@ public class RepositoryEntryListController extends FormBasicController
 		this.name = name;
 		this.stackPanel = stackPanel;
 		this.withSearch = withSearch;
+		repositoryEntryRowsFactory = (RepositoryEntryRowsFactory)
+				applicationContext.getBean("repositoryEntryRowFactory", ureq);
 		guestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 
 		OLATResourceable ores = OresHelper.createOLATResourceableType("MyCoursesSite");
 		ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 		
 		this.searchParams = searchParams;
-		/**
-		 * SEV:
-		 * Why "this"? A inner class would be more readable!
-		 */
-		dataSource = new DefaultRepositoryEntryDataSource(searchParams, this);
+		dataSource = new DefaultRepositoryEntryDataSource(searchParams, repositoryEntryRowsFactory);
 		initForm(ureq);
 
-		/**
-		 * SEV:
-		 * This method is the place to provide the data source i.e. where the
-		 * controller put the view together with the model.
-		 */
 		if(load) {
 			tableEl.reloadData();
 		}
@@ -250,8 +242,8 @@ public class RepositoryEntryListController extends FormBasicController
 		tableEl.setCustomizeColumns(true);
 		tableEl.setElementCssClass("o_coursetable");
 		tableEl.setEmtpyTableMessageKey("table.sEmptyTable");
-		// VelocityContainer row1 = (VelocityContainer)applicationContext.getBean("row_1", this);
-		// tableEl.setRowRenderer(row1, this);
+		VelocityContainer row1 = (VelocityContainer)applicationContext.getBean("row_1", this);
+		tableEl.setRowRenderer(row1, this);
 
 		initFilters(tableEl);
 		initSorters(tableEl);
@@ -324,12 +316,12 @@ public class RepositoryEntryListController extends FormBasicController
 		.putAndSave(RepositoryEntryListController.class, "rev-filters-".concat(name),
 				FilterPreferences.valueOf(filters));
 	}
-
+/*
 	@Override
 	public String getMapperThumbnailUrl() {
 		return mapperThumbnailKey.getUrl();
 	}
-
+*/
 
 	@Override
 	protected void doDispose() {
@@ -626,91 +618,6 @@ public class RepositoryEntryListController extends FormBasicController
 			EntryChangedEvent e = new EntryChangedEvent(row, getIdentity(), Change.addBookmark, name);
 			ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
 			return true;
-		}
-	}
-
-	@Override
-	public void forgeMarkLink(RepositoryEntryRow row) {
-		if(!guestOnly) {
-			FormLink markLink = uifactory.addFormLink("mark_" + row.getKey(), "mark", "", null, null, Link.NONTRANSLATED);
-			markLink.setIconLeftCSS(row.isMarked() ? Mark.MARK_CSS_LARGE : Mark.MARK_ADD_CSS_LARGE);
-			markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
-			markLink.setUserObject(row);
-			row.setMarkLink(markLink);
-		}
-	}
-
-	@Override
-	public void forgeSelectLink(RepositoryEntryRow row) {
-		String displayName = StringHelper.escapeHtml(row.getDisplayName());
-		FormLink selectLink = uifactory.addFormLink("select_" + row.getKey(), "select", displayName, null, null, Link.NONTRANSLATED);
-		if(row.isClosed()) {
-			selectLink.setIconLeftCSS("o_icon o_CourseModule_icon_closed");
-		}
-		selectLink.setUserObject(row);
-		row.setSelectLink(selectLink);
-	}
-
-	@Override
-	public void forgeStartLink(RepositoryEntryRow row) {
-		String label;
-		String iconCss;
-		if(row.isBookable() && row.getAccessTypes() != null && !row.getAccessTypes().isEmpty() && !row.isMember()) {
-			label = "book";
-			iconCss = "o_book btn-block";
-		} else {
-			label = "start";
-			iconCss = "o_start btn-block";
-		}
-		FormLink startLink = uifactory.addFormLink("start_" + row.getKey(), "start", label, null, null, Link.LINK);
-		startLink.setUserObject(row);
-		startLink.setCustomEnabledLinkCSS(iconCss);
-		startLink.setIconRightCSS("o_icon o_icon_start");
-		row.setStartLink(startLink);
-	}
-
-	@Override
-	public void forgeDetails(RepositoryEntryRow row) {
-		FormLink detailsLink = uifactory.addFormLink("details_" + row.getKey(), "details", "details", null, null, Link.LINK);
-		detailsLink.setCustomEnabledLinkCSS("o_details");
-		detailsLink.setUserObject(row);
-		row.setDetailsLink(detailsLink);
-	}
-
-	@Override
-	public void forgeRatings(RepositoryEntryRow row) {
-		if(repositoryModule.isRatingEnabled()) {
-			if(guestOnly) {
-				Double averageRating = row.getAverageRating();
-				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingFormItem ratingCmp = uifactory.addRatingItem("rat_" + row.getKey(), null,  averageRatingValue, 5, false, null);
-				row.setRatingFormItem(ratingCmp);
-				ratingCmp.setUserObject(row);
-			} else {
-				Integer myRating = row.getMyRating();
-				Double averageRating = row.getAverageRating();
-				long numOfRatings = row.getNumOfRatings();
-
-				float ratingValue = myRating == null ? 0f : myRating.floatValue();
-				float averageRatingValue = averageRating == null ? 0f : averageRating.floatValue();
-				RatingWithAverageFormItem ratingCmp
-						= new RatingWithAverageFormItem("rat_" + row.getKey(), ratingValue, averageRatingValue, 5, numOfRatings);
-				row.setRatingFormItem(ratingCmp);
-				ratingCmp.setUserObject(row);
-			}
-		}
-	}
-	@Override
-	public void forgeComments(RepositoryEntryRow row) {
-		if(repositoryModule.isCommentEnabled()) {
-			long numOfComments = row.getNumOfComments();
-			String title = "(" + numOfComments + ")";
-			FormLink commentsLink = uifactory.addFormLink("comments_" + row.getKey(), "comments", title, null, null, Link.NONTRANSLATED);
-			commentsLink.setUserObject(row);
-			String css = numOfComments > 0 ? "o_icon o_icon_comments o_icon-lg" : "o_icon o_icon_comments_none o_icon-lg";
-			commentsLink.setCustomEnabledLinkCSS("o_comments");
-			commentsLink.setIconLeftCSS(css);
-			row.setCommentsLink(commentsLink);
 		}
 	}
 
