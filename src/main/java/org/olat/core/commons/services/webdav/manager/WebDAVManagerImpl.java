@@ -41,6 +41,7 @@ import org.olat.core.commons.services.webdav.WebDAVManager;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.commons.services.webdav.WebDAVProvider;
 import org.olat.core.commons.services.webdav.servlets.WebResourceRoot;
+import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
@@ -192,6 +193,8 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 			StringTokenizer st = new StringTokenizer(authHeader);
 			if (st.hasMoreTokens()) {
 				String basic = st.nextToken();
+				
+				log.debug("Do authentication: {} for session {}", basic, getHttpSessionId(request));
 
 				// We only handle HTTP Basic authentication
 				if (basic.equalsIgnoreCase("Basic")) {
@@ -242,9 +245,11 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 		// prompt you again.
 
 		if(proposeBasicAuthentication(request)) {
+			log.debug("Add basic authentication: {} {}", getHttpSessionId(request), ServletUtil.getUserAgent(request));
 			response.addHeader("WWW-Authenticate", "Basic realm=\"" + BASIC_AUTH_REALM + "\"");
 		}
 		if(webdavModule.isDigestAuthenticationEnabled()) {
+			log.debug("Add digest authentication: {}", getHttpSessionId(request));
 			String nonce = UUID.randomUUID().toString().replace("-", "");
 			response.addHeader("WWW-Authenticate", "Digest realm=\"" + BASIC_AUTH_REALM + "\", qop=\"auth\", nonce=\"" + nonce + "\"");
 		}
@@ -263,11 +268,11 @@ public class WebDAVManagerImpl implements WebDAVManager, InitializingBean {
 	}
 	
 	private boolean proposeBasicAuthentication(HttpServletRequest request) {
-		if(StringHelper.containsNonWhitespace(request.getHeader("User-Agent"))) {
-			String userAgent = request.getHeader("User-Agent");
+		String userAgent = ServletUtil.getUserAgent(request);
+		if(StringHelper.containsNonWhitespace(userAgent)) {
 			String[] blackList = webdavModule.getBasicAuthenticationBlackList();
 			for(String blackListedAgent:blackList) {
-				if(userAgent.contains(blackListedAgent)) {
+				if(userAgent.contains(blackListedAgent) && webdavModule.isDigestAuthenticationEnabled()) {
 					return false;
 				}
 			}

@@ -103,9 +103,9 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 					String verity = Encoder.md5hash(ver);
 					if(verity.equals(response)) {
 						return authentication.getIdentity();
-					} else if(log.isDebugEnabled()) {
+					} else if(log.isInfoEnabled()) {
 						// don't log as error, happens all the time with certain clients, e.g. Microsoft-WebDAV-MiniRedir
-						log.debug("Verity: {} doesn't equals response: {}", verity, response);
+						log.info("Verity: {} doesn't equals response: {}", verity, response);
 					}
 				}
 			}
