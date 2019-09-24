@@ -148,15 +148,15 @@ public class CertificatePDFFormWorker {
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getAllUserPropertyHandlers();
 		for (UserPropertyHandler handler : userPropertyHandlers) {
 			String propertyName = handler.getName();
-			String value = handler.getUserProperty(user, null);
+			String value = handler.getUserProperty(user, locale);
 			fillField(propertyName, value, acroForm);
 		}
 		
 		String fullName = userManager.getUserDisplayName(identity);
 		fillField("fullName", fullName, acroForm);
 		
-		String firstName = user.getProperty(UserConstants.FIRSTNAME, null);
-		String lastName = user.getProperty(UserConstants.LASTNAME, null);
+		String firstName = user.getProperty(UserConstants.FIRSTNAME, locale);
+		String lastName = user.getProperty(UserConstants.LASTNAME, locale);
 		
 		StringBuilder firstNameLastName = new StringBuilder();
 		StringBuilder lastNameFirstName = new StringBuilder();

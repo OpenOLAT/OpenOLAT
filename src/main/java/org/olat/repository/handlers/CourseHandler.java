@@ -471,6 +471,8 @@ public class CourseHandler implements RepositoryHandler {
 		course = CourseFactory.loadCourse(cgm.getCourseResource());
 		course.postCopy(envMapper, sourceCourse);
 		
+		FileUtils.deleteDirsAndFiles(fExportDir, true, true);
+		
 		cloneReminders(author, envMapper, source, target);
 		cloneLectureConfig(source, target);
 		

@@ -2167,11 +2167,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		private void doSaveMenuWidth(UserRequest ureq, String newMenuWidth) {
 			this.menuWidth = newMenuWidth;
 			if(StringHelper.containsNonWhitespace(newMenuWidth)) {
-				flc.contextPut("menuWidth", newMenuWidth);
+				flc.getFormItemComponent().getContext().put("menuWidth", newMenuWidth);
 				if(testEntry != null) {
 					UserSession usess = ureq.getUserSession();
 					if (usess.isAuthenticated() && !usess.getRoles().isGuestOnly()) {
-						usess.getGuiPreferences().putAndSave(this.getClass(), getMenuPrefsKey(), newMenuWidth);
+						usess.getGuiPreferences().commit(this.getClass(), getMenuPrefsKey(), newMenuWidth);
 					}
 				}
 			}

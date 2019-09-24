@@ -37,7 +37,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
-import org.olat.core.util.prefs.Preferences;
 import org.olat.social.SocialModule;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -98,9 +97,7 @@ public class ShareLinkController extends BasicController {
 					landingPage = landingPage.substring(start + 4);
 				}
 				// update user prefs
-				Preferences prefs = usess.getGuiPreferences();
-				prefs.put(WindowManager.class, "landing-page", landingPage);				
-				prefs.save();
+				usess.getGuiPreferences().putAndSave(WindowManager.class, "landing-page", landingPage);				
 				getWindowControl().getWindowBackOffice().sendCommandTo(new JSCommand("showInfoBox(\"" + translate("info.header") + "\",\"" + translate("landingpage.set.message") + "\");"));
 			}
 		}

@@ -99,7 +99,9 @@ public class DialogElementsEditController extends BasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		if(fileUplCtr != null && fileUplCtr.getUploadContainer() != null) {
+			fileUplCtr.getUploadContainer().deleteSilently();
+		}
 	}
 
 	@Override
@@ -126,8 +128,8 @@ public class DialogElementsEditController extends BasicController {
 	}
 	
 	private void cleanUp() {
-		if(fileUplCtr != null && fileUplCtr.getUploadedFile() != null) {
-			fileUplCtr.getUploadedFile().getParentContainer().deleteSilently();
+		if(fileUplCtr != null && fileUplCtr.getUploadContainer() != null) {
+			fileUplCtr.getUploadContainer().deleteSilently();
 		}
 		removeAsListenerAndDispose(fileUplCtr);
 		removeAsListenerAndDispose(cmc);
