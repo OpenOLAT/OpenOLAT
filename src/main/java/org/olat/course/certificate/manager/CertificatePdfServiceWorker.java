@@ -211,15 +211,15 @@ public class CertificatePdfServiceWorker {
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getAllUserPropertyHandlers();
 		for (UserPropertyHandler handler : userPropertyHandlers) {
 			String propertyName = handler.getName();
-			String value = handler.getUserProperty(user, null);
+			String value = handler.getUserProperty(user, locale);
 			context.put(propertyName, value);
 		}
 		
 		String fullName = userManager.getUserDisplayName(identity);
 		context.put("fullName", fullName);
 		
-		String firstName = user.getProperty(UserConstants.FIRSTNAME, null);
-		String lastName = user.getProperty(UserConstants.LASTNAME, null);
+		String firstName = user.getProperty(UserConstants.FIRSTNAME, locale);
+		String lastName = user.getProperty(UserConstants.LASTNAME, locale);
 		
 		StringBuilder firstNameLastName = new StringBuilder();
 		StringBuilder lastNameFirstName = new StringBuilder();

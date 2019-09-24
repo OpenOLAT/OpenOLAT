@@ -297,7 +297,9 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 		Translator trans = Util.createPackageTranslator(this.getClass(), locale);
 		if (isMultiSelect()) {
 			for (String value : val.split(KEY_DELIMITER)) {
-				htmlValue.append(trans.translate(value)).append(" ");
+				if(StringHelper.containsNonWhitespace(value)) {
+					htmlValue.append(trans.translate(value)).append(" ");
+				}
 			}
 		} else if(val != null && locale != null) {
 			htmlValue.append(trans.translate(val));
