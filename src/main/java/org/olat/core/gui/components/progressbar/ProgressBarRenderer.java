@@ -26,6 +26,9 @@
 
 package org.olat.core.gui.components.progressbar;
 
+import static org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment.middle;
+import static org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment.right;
+
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.render.RenderResult;
@@ -58,7 +61,13 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		if (percent > 100) {
 			percent = 100;
 		}
-		target.append("<div class='progress").append(" o_progress_label_right", ubar.isRenderLabelRights()).append("' style=\"width:")
+		target.append("<div class='progress")
+			.append(" o_progress_label_right", right.equals(ubar.getLabelAlignment()));
+		if (StringHelper.containsNonWhitespace(ubar.getCssClass())) {
+			target.append(" ").append(ubar.getCssClass());
+		}
+		target.append(" ")
+			.append("' style=\"width:")
 			.append(ubar.getWidth())
 			.append("%", "px", ubar.isWidthInPercent())
 			.append(";\"><div class='progress-bar' style=\"width:")
@@ -72,7 +81,7 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 				target.append("%");
 				
 			}
-			if(!ubar.isRenderLabelRights()) {
+			if(middle.equals(ubar.getLabelAlignment())) {
 				target.append(" (", ubar.isPercentagesEnabled());
 				renderLabel(target, ubar);
 				target.append(")", ubar.isPercentagesEnabled());
@@ -80,23 +89,28 @@ public class ProgressBarRenderer extends DefaultComponentRenderer {
 		}
 		String info = ubar.getInfo();
 		if(StringHelper.containsNonWhitespace(info)) {
-			target.append(info);
+			target.append(" ").append(info);
 		}
 		target.append("</div></div>");
 		
-		if (ubar.isRenderLabelRights()) {
+		if (right.equals(ubar.getLabelAlignment())) {
 			target.append("<div class='o_progress_label'>");
 			renderLabel(target, ubar);
-			target.append("</div>");			
+			target.append("</div>");
 		}
 	}
 	
 	private void renderLabel(StringOutput target, ProgressBar ubar) {
 		target.append(Math.round(ubar.getActual()));
 		target.append("/");
-		if (ubar.getIsNoMax()) target.append("-");
-		else target.append(Math.round(ubar.getMax()));
-		target.append(" ");
-		target.append(ubar.getUnitLabel());
+		if (ubar.getIsNoMax()) {
+			target.append("-");
+		} else {
+			target.append(Math.round(ubar.getMax()));
+		}
+		if (StringHelper.containsNonWhitespace(ubar.getUnitLabel())) {
+			target.append(" ");
+			target.append(ubar.getUnitLabel());
+		}
 	}
 }

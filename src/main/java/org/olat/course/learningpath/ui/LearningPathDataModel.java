@@ -63,7 +63,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 			case dateDone: return row.getDateDone();
 			case obligation: return row.getObligation();
 			case duration: return row.getDuration();
-			case progress: return row.getProgress();
+			case progress: return row.getProgressBar();
 			default: return null;
 		}
 	}

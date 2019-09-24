@@ -31,6 +31,8 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
@@ -117,7 +119,14 @@ public class LearningPathListController extends FormBasicController {
 	}
 
 	private LearningPathRow forgeRow(LearningPathTreeNode treeNode, LearningPathRow parent) {
-		LearningPathRow row = new LearningPathRow(treeNode);
+		ProgressBar progressBar = new ProgressBar("progress-" + treeNode.getIdent());
+		float actual = treeNode.getProgress() != null? treeNode.getProgress().floatValue(): 0.0f;
+		progressBar.setActual(actual);
+		progressBar.setMax(1.0f);
+		progressBar.setWidthInPercent(true);
+		progressBar.setPercentagesEnabled(true);
+		progressBar.setLabelAlignment(LabelAlignment.none);
+		LearningPathRow row = new LearningPathRow(treeNode, progressBar);
 		row.setParent(parent);
 		return row;
 	}

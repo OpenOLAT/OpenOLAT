@@ -22,6 +22,7 @@ package org.olat.core.gui.components.progressbar;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.FormItemImpl;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 
 /**
  * 
@@ -60,14 +61,12 @@ public class ProgressBarItem extends FormItemImpl {
 		component.setWidthInPercent(widthInPercent);
 	}
 
-	/**
-	 * The labels are rendered at the right of the progress bar (but the
-	 * percent still within if configured).
-	 * 
-	 * @param renderLabelRights true to render the labels at the right of the progress bar
-	 */
-	public void setRenderLabelRights(boolean renderLabelRights) {
-		component.setRenderLabelRights(renderLabelRights);
+	public void setLabelAlignment(LabelAlignment labelAlignment) {
+		component.setLabelAlignment(labelAlignment);
+	}
+	
+	public void setCssClass(String cssClass) {
+		component.setCssClass(cssClass);
 	}
 
 	@Override

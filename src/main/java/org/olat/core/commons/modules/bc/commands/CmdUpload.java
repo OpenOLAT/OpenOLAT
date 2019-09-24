@@ -36,6 +36,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.FileElementImpl;
 import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
@@ -112,7 +113,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		ubar = new ProgressBar("ubar");
 		ubar.setWidth(200);
 		ubar.setUnitLabel("MB");
-		ubar.setRenderLabelRights(true);
+		ubar.setLabelAlignment(LabelAlignment.right);
 		mainVC.put(ubar.getComponentName(), ubar);
 
 		// Calculate quota and limits
@@ -211,10 +212,12 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		return translate("ul");
 	}
 
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		// no events to catch
 	}
 	
+	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if (source == fileUploadCtr) {
 			// catch upload event
@@ -265,6 +268,7 @@ public class CmdUpload extends BasicController implements FolderCommand {
 		return overwritten;
 	}
 	
+	@Override
 	protected void doDispose() {
 		// nothing to dispose
 	}

@@ -37,6 +37,8 @@ import org.olat.core.gui.components.ComponentRenderer;
  */
 public class ProgressBar extends AbstractComponent {
 	private static final ComponentRenderer RENDERER = new ProgressBarRenderer();
+	
+	public enum LabelAlignment {none, middle, right};
 
 	private static final int DEFAULT_WIDTH = 200;
 
@@ -45,27 +47,16 @@ public class ProgressBar extends AbstractComponent {
 	private float actual;
 	private float max;
 	private boolean isNoMax = false;
-	private boolean renderLabelRights = false;
+	private LabelAlignment labelAlignment = LabelAlignment.middle;
 	private String unitLabel;
 	private boolean percentagesEnabled = true; // default
 	private String info;
+	private String cssClass;
 	
-	
-
-	/**
-	 * @param name
-	 */
 	public ProgressBar(String name) {
 		super(name);
 	}
 
-	/**
-	 * @param name
-	 * @param width
-	 * @param actual
-	 * @param max
-	 * @param unitLabel
-	 */
 	public ProgressBar(String name, int width, float actual, float max, String unitLabel) {
 		super(name);
 		this.width = width;
@@ -74,17 +65,11 @@ public class ProgressBar extends AbstractComponent {
 		this.unitLabel = unitLabel == null ? "" : unitLabel;
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.Component#dispatchRequest(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void doDispatchRequest(UserRequest ureq) {
 		//
 	}
 
-	/**
-	 * @param i
-	 */
 	public void setActual(float i) {
 		setDirty(true);
 		actual = i;
@@ -95,9 +80,6 @@ public class ProgressBar extends AbstractComponent {
 		setDirty(true);
 	}
 
-	/**
-	 * @param i
-	 */
 	public void setMax(float i) {
 		setDirty(true);
 		max = i;
@@ -113,24 +95,15 @@ public class ProgressBar extends AbstractComponent {
 		this.isNoMax = isNoMax;
 	}
 
-	/**
-	 * @param string
-	 */
 	public void setUnitLabel(String string) {
 		setDirty(true);
 		unitLabel = string;
 	}
 
-	/**
-	 * @return
-	 */
 	public int getWidth() {
 		return width;
 	}
 
-	/**
-	 * @param i
-	 */
 	public void setWidth(int width) {
 		this.width = width;
 	}
@@ -146,23 +119,20 @@ public class ProgressBar extends AbstractComponent {
 		this.widthInPercent = widthInPercent;
 	}
 
-	public boolean isRenderLabelRights() {
-		return renderLabelRights;
-	}
-	
-	/**
-	 * The labels are rendered at the right of the progress bar (but the
-	 * percent still within if configured).
-	 * 
-	 * @param renderLabelRights true to render the labels at the right of the progress bar
-	 */
-	public void setRenderLabelRights(boolean renderLabelRights) {
-		this.renderLabelRights = renderLabelRights;
+	public LabelAlignment getLabelAlignment() {
+		return labelAlignment;
 	}
 
 	/**
-	 * @return
+	 * Defines where the label is rendered (but the percent still within if
+	 * configured).
+	 * 
+	 * @param labelAlignment
 	 */
+	public void setLabelAlignment(LabelAlignment labelAlignment) {
+		this.labelAlignment = labelAlignment;
+	}
+
 	public float getActual() {
 		return actual;
 	}
@@ -171,9 +141,6 @@ public class ProgressBar extends AbstractComponent {
 		return info;
 	}
 
-	/**
-	 * @return
-	 */
 	public float getMax() {
 		return max;
 	}
@@ -182,9 +149,6 @@ public class ProgressBar extends AbstractComponent {
 		return isNoMax;
 	}
 
-	/**
-	 * @return
-	 */
 	public String getUnitLabel() {
 		return unitLabel;
 	}
@@ -201,6 +165,15 @@ public class ProgressBar extends AbstractComponent {
 	 */
 	public void setPercentagesEnabled(boolean percentagesEnabled) {
 		this.percentagesEnabled = percentagesEnabled;
+	}
+	
+	public String getCssClass() {
+		return cssClass;
+	}
+
+	public void setCssClass(String cssClass) {
+		this.cssClass = cssClass;
+		this.setDirty(true);
 	}
 
 	@Override
