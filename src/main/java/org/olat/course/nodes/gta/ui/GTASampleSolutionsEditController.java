@@ -113,7 +113,6 @@ public class GTASampleSolutionsEditController extends FormBasicController implem
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-
 		addSolutionLink = uifactory.addFormLink("add.solution", formLayout, Link.BUTTON);
 		addSolutionLink.setElementCssClass("o_sel_course_gta_add_solution");
 		addSolutionLink.setIconLeftCSS("o_icon o_icon_upload");

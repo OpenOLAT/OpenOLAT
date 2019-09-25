@@ -185,16 +185,14 @@ public class CPEditController extends ActivateableTabbableDefaultController impl
 		listenTo(accessibilityCondContr);
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CPEditController.CONFIG_DELIVERYOPTIONS);
-		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, "Knowledge Transfer#_cp_layout", parentConfig);
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions,
+				"In Five Steps to Your Content Package#_cp_layout", parentConfig);
 		listenTo(deliveryOptionsCtrl);
 
 		main.setContent(cpConfigurationVc);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == chooseCPButton || source == changeCPButton) {
 			removeAsListenerAndDispose(searchController);
