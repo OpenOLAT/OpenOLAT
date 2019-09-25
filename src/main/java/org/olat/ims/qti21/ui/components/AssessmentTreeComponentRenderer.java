@@ -21,6 +21,7 @@ package org.olat.ims.qti21.ui.components;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.impl.Form;
 import org.olat.core.gui.components.form.flexible.impl.FormJSHelper;
 import org.olat.core.gui.components.form.flexible.impl.NameValuePair;
@@ -245,10 +246,14 @@ public class AssessmentTreeComponentRenderer extends AssessmentObjectComponentRe
 		
 		sb.append("<a href='javascript:;' onclick=\"")
 		  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
-				new NameValuePair("cid", Event.mark.name()), new NameValuePair("item", key)))
+				new NameValuePair("cid", Event.mark.name()),
+				new NameValuePair("item", key),
+				new NameValuePair(Window.NO_RESPONSE_PARAMETER_MARKER, Window.NO_RESPONSE_VALUE_MARKER)))
 		  .append("; o_toggleMark(this); return false;\" onkeydown=\"if(event.which == 13 || event.keyCode == 13) {")
 		  .append(FormJSHelper.getXHRNFFnCallFor(form, dispatchId, 1,
-					new NameValuePair("cid", Event.mark.name()), new NameValuePair("item", key)))
+					new NameValuePair("cid", Event.mark.name()),
+					new NameValuePair("item", key),
+					new NameValuePair(Window.NO_RESPONSE_PARAMETER_MARKER, Window.NO_RESPONSE_VALUE_MARKER)))
 		  .append("; o_toggleMark(this); return false; }\" ")
 		  .append(" class='o_assessmentitem_marks'><i class='o_icon ")
 		  .append("o_icon_bookmark", "o_icon_bookmark_add", mark)

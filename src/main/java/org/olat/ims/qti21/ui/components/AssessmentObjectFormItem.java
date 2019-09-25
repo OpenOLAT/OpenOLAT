@@ -23,6 +23,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,11 +64,18 @@ public abstract class AssessmentObjectFormItem extends FormItemImpl implements F
 	
 	@Override
 	public Iterable<FormItem> getFormItems() {
-		return new ArrayList<>(components.values());
+		List<FormItem> items = new ArrayList<>(components.values());
+		if(submitButton != null) {
+			items.add(submitButton);
+		}
+		return items;
 	}
 
 	@Override
 	public FormItem getFormComponent(String name) {
+		if(submitButton != null && submitButton.getName().equals(name)) {
+			return submitButton;
+		}
 		return components.get(name);
 	}
 	

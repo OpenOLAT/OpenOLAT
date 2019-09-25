@@ -22,13 +22,15 @@ package org.olat.ims.qti21.ui.components;
 import static org.olat.ims.qti21.ui.components.AssessmentRenderFunctions.valueContains;
 
 import java.net.URI;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.velocity.context.Context;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.AbstractComponent;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.control.JSAndCSSAdder;
 import org.olat.core.gui.render.ValidationResult;
 import org.olat.core.gui.render.velocity.VelocityComponent;
@@ -188,16 +190,30 @@ public abstract class AssessmentObjectComponent extends AbstractComponent implem
 		return (identifierMatch && feedbackElement.getVisibilityMode() == VisibilityMode.SHOW_IF_MATCH)
 				|| (!identifierMatch && feedbackElement.getVisibilityMode() == VisibilityMode.HIDE_IF_MATCH);
 	}
-	
 
 	@Override
 	public Component getComponent(String name) {
+		AssessmentObjectFormItem assessmentItem = getQtiItem();
+		if(assessmentItem != null) {
+			for(FormItem item:assessmentItem.getFormItems()) {
+				if(item.getComponent().getComponentName().equals(name)) {
+					return item.getComponent();
+				}
+			}
+		}
 		return null;
 	}
 
 	@Override
 	public Iterable<Component> getComponents() {
-		return Collections.emptyList();
+		List<Component> cmps = new ArrayList<>();
+		AssessmentObjectFormItem assessmentItem = getQtiItem();
+		if(assessmentItem != null) {
+			for(FormItem item:assessmentItem.getFormItems()) {
+				cmps.add(item.getComponent());
+			}
+		}
+		return cmps;
 	}
 
 	@Override
