@@ -27,7 +27,6 @@
 		</video>
 
 		<script>
-		// <![CDATA[
 		## using jQuery
 		var mediaElementBaseUrl = BPlayer._mediaElementBaseUrl();
 		jQuery('#$r.getId("o_vid")').mediaelementplayer({
@@ -77,13 +76,22 @@
 					}
 		        }, false);
 		        
-		        #if($r.isTrue($listenTimeUpdate))
+		        
 		        mediaElement.addEventListener('timeupdate', function(e) {
+		        	#if($r.isTrue($listenTimeUpdate))
 		        	if (!o_info.linkbusy) {
 						$r.openNoResponseJavaScriptCommand("timeupdate"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
 					}
+		        	#end
+		        	if(jQuery('#$r.getId("o_vid")').length == 0) {
+		        		## // try a second time to prevent destroying after a reload
+		        		setTimeout(function() {
+		        			if(jQuery('#$r.getId("o_vid")').length == 0) {
+		        				player.remove();
+		        			}
+		        		}, 500);
+		        	}
 		        }, false);
-		        #end
 		        
 		        ## listen to end events, fired when movie is finished
 		        mediaElement.addEventListener('ended', function(e) {
@@ -116,7 +124,6 @@
 		        }, false);
 			}
 		});
-		// ]]>
 		</script>
 	</div>
 	
