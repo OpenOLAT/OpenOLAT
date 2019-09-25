@@ -155,7 +155,8 @@ public class SPEditController extends ActivateableTabbableDefaultController impl
 
 		// Delivery options form
 		DeliveryOptions deliveryOptions = (DeliveryOptions)moduleConfiguration.get(CONFIG_KEY_DELIVERYOPTIONS);
-		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, "Knowledge Transfer#_splayout");
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions,
+				"Course Element: Single Page#_splayout");
 		listenTo(deliveryOptionsCtrl);
 	}
 

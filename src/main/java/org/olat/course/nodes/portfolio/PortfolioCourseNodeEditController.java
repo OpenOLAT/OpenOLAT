@@ -79,7 +79,7 @@ public class PortfolioCourseNodeEditController extends ActivateableTabbableDefau
 		
 		configForm = new PortfolioConfigForm(ureq, wControl, stackPanel, course, node);
 		listenTo(configForm);
-		scoringController = new MSEditFormController(ureq, wControl, config);
+		scoringController = new MSEditFormController(ureq, wControl, config, translate("pane.tab.portfolio_scoring"), "Creating Portfolio Tasks");
 		scoringContent = scoringController.getInitialComponent();
 		listenTo(scoringController);
 		textForm = new PortfolioTextForm(ureq, wControl, course, node);
