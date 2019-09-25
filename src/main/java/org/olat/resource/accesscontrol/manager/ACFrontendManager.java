@@ -256,7 +256,10 @@ public class ACFrontendManager implements ACService, UserDataExportable {
 
 	@Override
 	public void deleteOffer(Offer offer) {
-		accessManager.deleteOffer(offer);
+		if(offer != null && offer.getKey() != null) {
+			// only delete persisted offers
+			accessManager.deleteOffer(offer);
+		}
 	}
 
 	@Override
