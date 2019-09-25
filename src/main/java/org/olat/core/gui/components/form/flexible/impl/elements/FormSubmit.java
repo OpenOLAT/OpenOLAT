@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.Window;
 import org.olat.core.gui.components.form.flexible.elements.Submit;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.logging.AssertException;
@@ -74,6 +75,10 @@ public class FormSubmit extends FormButton implements Submit{
 
 	@Override
 	public void evalFormRequest(UserRequest ureq) {
+		if(Window.NO_RESPONSE_VALUE_MARKER.equals(ureq.getParameter(Window.NO_RESPONSE_PARAMETER_MARKER))) {
+			return; // ignore background request
+		}
+
 		// no values with submit to be evaluated
 		getComponent().setDirty(true);
 	}

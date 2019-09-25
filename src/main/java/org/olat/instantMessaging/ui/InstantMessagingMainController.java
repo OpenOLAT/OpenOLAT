@@ -37,6 +37,7 @@ import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
 import org.olat.core.gui.components.panel.Panel;
 import org.olat.core.gui.components.velocity.VelocityContainer;
+import org.olat.core.gui.control.ChiefController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
@@ -161,9 +162,6 @@ public class InstantMessagingMainController extends BasicController implements G
 		putInitialPanel(main);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		imService.unlistenChat(getIdentity(), getPrivatListenToResourceable(), this);
@@ -244,10 +242,20 @@ public class InstantMessagingMainController extends BasicController implements G
 	}
 	
 	private void updateBuddyStats() {
-		if(onlineOfflineCount != null) {
+		if(allowToUpdateBuddyStats()) {
 			BuddyStats stats = imService.getBuddyStats(getIdentity());
 			onlineOfflineCount.setCustomDisplayText(translate("im.roster.launch", new String[]{stats.getOnlineBuddies() + "", stats.getOfflineBuddies() + ""}));
 		}
+	}
+	
+	private boolean allowToUpdateBuddyStats() {
+		if(onlineOfflineCount == null) {
+			return false;
+		}
+		ChiefController chiefController = getWindowControl().getWindowBackOffice().getChiefController();
+		return (chiefController != null &&
+				(chiefController.getScreenMode() == null
+				|| !(chiefController.getScreenMode().isFullScreen() || chiefController.getScreenMode().isWishFullScreen())));
 	}
 	
 	private void loadNotifications() {

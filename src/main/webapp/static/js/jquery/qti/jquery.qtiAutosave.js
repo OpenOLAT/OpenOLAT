@@ -22,6 +22,7 @@
 	    			data['tmpResponse'] =  'qtiworks_presented_' + settings.responseUniqueId;
 	    			data['qtiworks_presented_' + settings.responseUniqueId] = '1';
 	    			data['qtiworks_response_' + settings.responseUniqueId] = jQuery('#oo_' + settings.responseUniqueId).val();
+	    			data['no-response'] = 'oo-no-response';
 
 	    			var targetUrl = jQuery('#' + settings.formName).attr("action");
 	    			jQuery.ajax(targetUrl,{

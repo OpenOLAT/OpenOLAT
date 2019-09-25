@@ -75,6 +75,7 @@ public class AssessmentTestComponent extends AssessmentObjectComponent  {
 		this.qtiItem = qtiItem;
 	}
 
+	@Override
 	public AssessmentTestFormItem getQtiItem() {
 		return qtiItem;
 	}
