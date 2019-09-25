@@ -65,6 +65,7 @@ public class ViteroConfigurationController extends FormBasicController {
 	private TextElement passwordEl;
 	private TextElement customerEl;
 	private MultipleSelectionElement viteroEnabled;
+	private MultipleSelectionElement inspireEnabled;
 	private SingleSelection timeZoneEl;
 
 	private static final String[] enabledKeys = new String[]{"on"};
@@ -116,6 +117,11 @@ public class ViteroConfigurationController extends FormBasicController {
 			timeZoneEl = uifactory.addDropdownSingleselect("option.olatTimeZone", moduleFlc, timeZoneKeys, timeZoneValues, null);
 			timeZoneEl.select(viteroModule.getTimeZoneId(), true);
 			
+			inspireEnabled = uifactory.addCheckboxesHorizontal("option.inspire", moduleFlc, enabledKeys, enabledValues);
+			if(viteroModule.isInspire()) {
+				inspireEnabled.select(enabledKeys[0], true);
+			}
+			
 			//account configuration
 			String vmsUri = viteroModule.getVmsURI().toString();
 			urlEl = uifactory.addTextElement("vitero-url", "option.baseurl", 255, vmsUri, moduleFlc);
@@ -166,6 +172,9 @@ public class ViteroConfigurationController extends FormBasicController {
 				String timeZoneId = timeZoneEl.getSelectedKey();
 				viteroModule.setTimeZoneId(timeZoneId);
 			}
+			
+			viteroModule.setInspire(inspireEnabled.isAtLeastSelected(1));
+			
 		} catch (URISyntaxException e) {
 			logError("", e);
 			urlEl.setErrorKey("error.url.invalid", null);

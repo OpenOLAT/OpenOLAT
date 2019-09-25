@@ -125,6 +125,9 @@ public class LearningGroupWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "Retrieves the version of the Group Web Service", description = "Retrieves the version of the Group Web Service")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The version of this specific Web Service")})	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -435,6 +438,11 @@ public class LearningGroupWebService {
 	
 	@POST
 	@Path("{groupKey}/configuration")
+	@Operation(summary = "Post configuration", description = "Post configuration")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Configuration posted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Group not found") })	
 	public Response postGroupConfiguration(@PathParam("groupKey") Long groupKey, final GroupConfigurationVO group, @Context HttpServletRequest request) {
 		if(!isGroupManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

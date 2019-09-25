@@ -125,6 +125,7 @@ public class BCPeekviewController extends BasicController implements Controller 
 	private void fileMetadata(List<DownloadComponent> links, VFSMetadata metadata, int itemsToDisplay) {
 		List<VFSMetadata> newestData = vfsRepositoryService.getNewest(metadata, itemsToDisplay);
 		for(VFSMetadata newData:newestData) {
+			if (newData.isDeleted()) continue;
 			String name = "nodeLinkDL_"+ (count++);
 			VFSMetadataMediaResource media = new VFSMetadataMediaResource(newData);
 			media.setDownloadable(forceDownload);

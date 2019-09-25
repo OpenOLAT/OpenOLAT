@@ -35,6 +35,7 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.ICourse;
 import org.olat.course.certificate.model.CertificateConfig;
 import org.olat.course.certificate.model.CertificateInfos;
+import org.olat.course.certificate.model.PreviewCertificate;
 import org.olat.group.BusinessGroup;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -162,7 +163,7 @@ public interface CertificatesManager {
 	 */
 	public Date getDateNextRecertification(Certificate certificate, RepositoryEntry entry);
 	
-	public File previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1, String custom2, String custom3);
+	public PreviewCertificate previewCertificate(CertificateTemplate template, RepositoryEntry entry, Locale locale, String custom1, String custom2, String custom3);
 
 	public Certificate uploadCertificate(Identity identity, Date creationDate, OLATResource resource, File certificateFile);
 	

@@ -674,8 +674,8 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 		File uploadedImage = fileUpload.getUploadFile();
 		if(uploadedImage != null && uploadedImage.exists()) {
 			VFSContainer tmpHome = new LocalFolderImpl(new File(WebappHelper.getTmpDir()));
-			VFSContainer container = tmpHome.createChildContainer(UUID.randomUUID().toString());
-			VFSLeaf newFile = fileUpload.moveUploadFileTo(container);//give it it's real name and extension
+			VFSContainer tmpContainer = tmpHome.createChildContainer(UUID.randomUUID().toString());
+			VFSLeaf newFile = fileUpload.moveUploadFileTo(tmpContainer);//give it it's real name and extension
 			boolean ok = repositoryManager.setImage(newFile, repositoryEntry);
 			if (!ok) {
 				showWarning("cif.error.image");
@@ -685,7 +685,7 @@ public class RepositoryEditDescriptionController extends FormBasicController {
 					fileUpload.setInitialFile(((LocalFileImpl)image).getBasefile());
 				}
 			}
-			container.delete();
+			tmpContainer.deleteSilently();
 		}
 
 		File uploadedMovie = movieUpload.getUploadFile();

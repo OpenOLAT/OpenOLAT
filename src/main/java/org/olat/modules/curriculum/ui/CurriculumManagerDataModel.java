@@ -93,6 +93,7 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 			case displayName: return row.getDisplayName();
 			case identifier: return row.getIdentifier();
 			case externalId: return row.getExternalId();
+			case organisation: return row.getOrganisation();
 			case numOfElements: return row.getNumOfElements();
 			case edit: return row.canManage();
 			case tools: return row.getTools();
@@ -119,7 +120,8 @@ implements SortableFlexiTableDataModel<CurriculumRow>, FilterableFlexiTableModel
 		externalId("table.header.external.id"),
 		numOfElements("table.header.num.elements"),
 		edit("edit.icon"),
-		tools("table.header.tools");
+		tools("table.header.tools"),
+		organisation("table.header.organisation");
 		
 		private final String i18nHeaderKey;
 		

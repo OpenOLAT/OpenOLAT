@@ -52,6 +52,12 @@ import org.olat.core.util.vfs.lock.LockResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * Initial date: 12. Apr 2019<br>
@@ -73,6 +79,13 @@ public class OnlyOfficeWebService {
 	
 	@POST
 	@Path("/callback")
+	@Operation(summary = "Post Callback", description = "Post Callback")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The contents", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = CallbackResponseVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = CallbackResponseVO.class)) }),
+			@ApiResponse(responseCode = "403", description = "Forbidden"),
+			@ApiResponse(responseCode = "404", description = "File not found") })		
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response postCallback(
 			@PathParam("fileId") String fileId,
@@ -201,6 +214,10 @@ public class OnlyOfficeWebService {
 	
 	@GET
 	@Path("/contents")
+	@Operation(summary = "Retrieve content", description = "Retrieve the content of a file")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "ONLYOFFICE REST get file contents request for File ID"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient") })	
 	public Response getFile(
 			@PathParam("fileId") String fileId,
 			@Context HttpHeaders httpHeaders) {

@@ -108,6 +108,15 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 			log.info("Auto upgrade of the database is disabled. Make sure you do it manually by applying the " +
 					"alter*.sql scripts and adding an entry to system/installed_upgrades.xml file.");
 		}
+		
+		// ensure the installation complete flag is coherent
+		for(Map.Entry<String, UpgradeHistoryData> entry:upgradesHistories.entrySet()) {
+			UpgradeHistoryData uhd = entry.getValue();
+			if(uhd.getBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE) && !uhd.isInstallationComplete()) {
+				uhd.setInstallationComplete(true);
+				setUpgradesHistory(uhd, entry.getKey());
+			}
+		}
 	}
 	
 	private void runSetupDbStatements() {
@@ -172,8 +181,12 @@ public class DatabaseUpgradeManager extends UpgradeManagerImpl {
 					if (!uhd.getBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE)) {
 						loadAndExecuteSqlStatements(statement, alterDbStatementsFilename, dialect);
 						uhd.setBooleanDataValue(OLATUpgrade.TASK_DP_UPGRADE, true);
+						uhd.setInstallationComplete(true);
 						setUpgradesHistory(uhd, upgrade.getVersion());
 						log.info(Tracing.M_AUDIT, "Successfully executed alter DB statements for Version::" + upgrade.getVersion());
+					} else if(!uhd.isInstallationComplete()) {
+						uhd.setInstallationComplete(true);
+						setUpgradesHistory(uhd, upgrade.getVersion());
 					}
 				}
 			}

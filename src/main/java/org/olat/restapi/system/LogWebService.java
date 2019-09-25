@@ -38,6 +38,10 @@ import org.apache.commons.lang.StringUtils;
 import org.olat.core.logging.LogFileParser;
 import org.olat.core.util.vfs.VFSLeaf;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * Description:<br>
  * This web service returns logFiles
@@ -66,6 +70,9 @@ public class LogWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "The version of the Log Web Service", description = "The version of the Log Web Service")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Return the version number") })	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -73,6 +80,9 @@ public class LogWebService {
 
 	@GET
 	@Path("{date}")
+	@Operation(summary = "Get old version", description = "Get the version from a specific date")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Return the version number") })	
 	@Produces({ "text/plain", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getLogFileByDate(@PathParam("date") String dateString) {
 		VFSLeaf logFile;
@@ -93,6 +103,20 @@ public class LogWebService {
 	}
 	
 	@GET
+	@Operation(summary = "Returns the correct LogFile as VFSLeaf or null", description = "Returns the correct LogFile as VFSLeaf or null.<br />\n" + 
+			"	  \n" + 
+			"	  dateString can be: <br />\n" + 
+			"	  <ul>\n" + 
+			"	  <li>\"today\" : will return the current Logfile if it exists</li>\n" + 
+			"	  <li>a two digit number, representing a day of the month : will return the\n" + 
+			"	  logFile of the given day (of the current month)</li>\n" + 
+			"	  <li>A Date-String of the form :  yyyy-MM-dd</li>\n" + 
+			"	  </ul>\n" + 
+			"	  \n" + 
+			"	  will return null if the given String is not valid or the resulting\n" + 
+			"	  logfile is not found")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "the requested LogFile as VFSLeaf or null") })	
 	@Produces({ "text/plain", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getCurrentLogFile() {
 		return getLogFileByDate(null);

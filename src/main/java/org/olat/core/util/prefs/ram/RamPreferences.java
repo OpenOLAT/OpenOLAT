@@ -40,11 +40,7 @@ import org.olat.core.util.prefs.Preferences;
  */
 public class RamPreferences implements Preferences {
 	private Map<String, Object> store = new HashMap<>();
-	
-	
-	/**
-	 * @see org.olat.core.util.prefs.Preferences#get(java.lang.Class, java.lang.String)
-	 */
+
 	@Override
 	public Object get(Class<?> attributedClass, String key) {
 		return store.get(getCompoundKey(attributedClass, key));
@@ -61,25 +57,18 @@ public class RamPreferences implements Preferences {
 		return (List<U>)store.get(attributedClass + ":" + key);
 	}
 
-	/**
-	 * @see org.olat.core.util.prefs.Preferences#get(java.lang.Class, java.lang.String, java.lang.Object)
-	 */
+	@Override
 	public Object get(Class<?> attributedClass, String key, Object defaultValue) {
 		Object value = get(attributedClass, key);
 		if (value == null) return defaultValue;
 		return value;
 	}
 
-	/**
-	 * @see org.olat.core.util.prefs.Preferences#put(java.lang.Class, java.lang.String, java.lang.Object)
-	 */
+	@Override
 	public void put(Class<?> attributedClass, String key, Object value) {
 		store.put(getCompoundKey(attributedClass, key), value);
 	}
 
-	/**
-	 * @see org.olat.core.util.prefs.Preferences#putAndSave(java.lang.Class, java.lang.String, java.lang.Object)
-	 */
 	@Override
 	public void putAndSave(Class<?> attributedClass, String key, Object value) {
 		put(attributedClass, key, value);
@@ -92,12 +81,19 @@ public class RamPreferences implements Preferences {
 		save();
 	}
 
-	/**
-	 * @see org.olat.core.util.prefs.Preferences#save()
-	 */
+	@Override
+	public void commit(Class<?> attributedClass, String key, Object value) {
+		putAndSave(attributedClass, key, value);
+	}
+	
+	@Override
+	public void commit(String attributedClass, String key, Object value) {
+		putAndSave(attributedClass, key, value);
+	}
+
+	@Override
 	public void save() {
 		// nothing to do for ram
-
 	}
 	
 	private String getCompoundKey(Class<?> attributedClass, String key) {
@@ -111,8 +107,4 @@ public class RamPreferences implements Preferences {
 		}
 		return null;
 	}
-
-
-	
-
 }

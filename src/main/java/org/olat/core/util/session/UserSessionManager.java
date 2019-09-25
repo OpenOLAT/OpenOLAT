@@ -54,6 +54,7 @@ import org.olat.core.logging.activity.ThreadLocalUserActivityLoggerInstaller;
 import org.olat.core.logging.activity.UserActivityLoggerImpl;
 import org.olat.core.util.SessionInfo;
 import org.olat.core.util.SignOnOffEvent;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -108,7 +109,7 @@ public class UserSessionManager implements GenericEventListener {
 	 * @param session
 	 * @return associated user session
 	 */
-	public UserSession getUserSession(HttpSession session) {
+	public UserSession getUserSession(HttpServletRequest hreq, HttpSession session) {
 		UserSession us = (UserSession) session.getAttribute(USERSESSIONKEY);
 		if(us == null) {
 			synchronized (session) {//o_clusterOK by:fj
@@ -122,7 +123,7 @@ public class UserSessionManager implements GenericEventListener {
 			}
 		}
 		//set a possible changed session timeout interval
-		setHttpSessionTimeout(session, us);
+		setHttpSessionTimeout(hreq, session, us);
 		return us;
 	}
 
@@ -133,7 +134,7 @@ public class UserSessionManager implements GenericEventListener {
 	public UserSession getUserSession(HttpServletRequest hreq) {
 		// get existing or create new session
 		HttpSession httpSession = hreq.getSession(true);
-		return getUserSession(httpSession);
+		return getUserSession(hreq, httpSession);
 	}
 	
 	/**
@@ -148,17 +149,21 @@ public class UserSessionManager implements GenericEventListener {
 		}
 
 		UserSession us = (UserSession) session.getAttribute(USERSESSIONKEY);
-		setHttpSessionTimeout(session, us);
+		setHttpSessionTimeout(hreq, session, us);
 		return us;
 	}
-	
-	private void setHttpSessionTimeout(HttpSession session, UserSession us) {
+
+	private void setHttpSessionTimeout(HttpServletRequest hreq, HttpSession session, UserSession us) {
 		if(us == null || session == null) return;
 		
 		int interval;
 		if(us.isAuthenticated()) {
 			if(us.getSessionInfo() != null && (us.getSessionInfo().isREST() || us.getSessionInfo().isWebDAV())) {
-				interval = 300;
+				if(extendedSessionTimeout(hreq)) {
+					interval = sessionModule.getSessionTimeoutAuthenticated();
+				} else {
+					interval = 600;
+				}
 			} else {
 				interval = sessionModule.getSessionTimeoutAuthenticated();
 			}
@@ -169,12 +174,29 @@ public class UserSessionManager implements GenericEventListener {
 			session.setMaxInactiveInterval(interval);
 		}
 	}
+	
+	/**
+	 * @param hreq The HTTP servlet request
+	 * @return true if the user agent allow to extend the session timeout
+	 */
+	private boolean extendedSessionTimeout(HttpServletRequest hreq) {
+		if(hreq != null && StringHelper.containsNonWhitespace(hreq.getHeader("User-Agent"))) {
+			String userAgent = hreq.getHeader("User-Agent");
+			String[] userAgentsWithExtendedTimeout = sessionModule.getSessionTimeoutExtendedFor();
+			for(String userAgentWithExtendedTimeout:userAgentsWithExtendedTimeout) {
+				if(userAgent.contains(userAgentWithExtendedTimeout)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
-  /**
- * @param userName
- * @return the identity or null if no user with userName is currently logged
- *         on
- */
+	/**
+     * @param identityKey The identity primary key
+	 * @return true if the user with the specified key is currently logged
+	 *         on
+	 */
 	public boolean isSignedOnIdentity(Long identityKey) {
 		return userNameToIdentity.contains(identityKey);
 	}

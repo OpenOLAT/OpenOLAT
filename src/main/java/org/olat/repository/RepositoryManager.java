@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
 import org.apache.logging.log4j.Logger;
@@ -1043,6 +1044,7 @@ public class RepositoryManager {
 		List<Number> count = dbInstance.getCurrentEntityManager()
 				.createQuery(query.toString(), Number.class)
 				.setParameter("restrictedType", restrictedType)
+				.setFlushMode(FlushModeType.COMMIT)
 				.getResultList();
 		return count == null || count.isEmpty() || count.get(0) == null ? null : count.get(0).intValue();
 	}

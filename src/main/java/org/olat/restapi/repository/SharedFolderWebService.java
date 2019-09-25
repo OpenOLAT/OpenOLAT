@@ -56,6 +56,12 @@ import org.olat.restapi.support.vo.LinkVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -89,6 +95,9 @@ public class SharedFolderWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "Retrieves the version of the Catalog Web Service", description = "Retrieves the version of the Catalog Web Service")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Return the version number") })	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -107,6 +116,13 @@ public class SharedFolderWebService {
 	 */
 	@GET
 	@Path("{repoEntryKey}")
+	@Operation(summary = "This retrieves the files in the shared folder", description = "This retrieves the files in the shared folder")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The files", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The shared folder is not found")})	
 	public Response getSharedFiles(@PathParam("repoEntryKey") Long repoEntryKey, @Context UriInfo uriInfo,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		return getFiles(repoEntryKey, Collections.<PathSegment>emptyList(), uriInfo, httpRequest, request);
@@ -124,6 +140,14 @@ public class SharedFolderWebService {
 	 * @return 
 	 */
 	@Path("{repoEntryKey}/files")
+	@Operation(summary = "This retrieves the files in the shared folder", description = "This retrieves the files in the shared folder and give full access to\n" + 
+			"	  the folder, read, write, delete.")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The files", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = LinkVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The shared folder is not found")})	
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.TEXT_HTML, MediaType.APPLICATION_OCTET_STREAM})
 	public VFSWebservice getVFSWebservice(@PathParam("repoEntryKey") Long repoEntryKey, @Context HttpServletRequest httpRequest) {
 		RepositoryEntry re = repositoryManager.lookupRepositoryEntry(repoEntryKey);

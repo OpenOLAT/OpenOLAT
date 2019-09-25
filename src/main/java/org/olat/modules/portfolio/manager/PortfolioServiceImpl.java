@@ -1093,6 +1093,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Override
 	public Page removePage(Page page) {
+		// will take care of the assignments
 		return pageDao.removePage(page);
 	}	
 

@@ -385,6 +385,8 @@ public class LectureBlocksWebService {
 
 	@POST
 	@Path("healmoved/{originEntryKey}")
+	@Operation(summary = "Post Entry", description = "Post Entry")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "Entry has been posted")})
 	public Response healMoved(@PathParam("originEntryKey") Long originEntryKey) {
 		//check the lecture summary
 		

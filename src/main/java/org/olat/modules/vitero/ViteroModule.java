@@ -57,19 +57,19 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	private static final Logger log = Tracing.createLoggerFor(ViteroModule.class);
 	
-	private static final String ENABLED = "vc.vitero.enabled";
-	private static final String PROTOCOL = "protocol";
-	private static final String PORT = "port";
-	private static final String BASE_URL = "baseUrl";
-	private static final String CONTEXT_PATH = "contextPath";
-	private static final String ADMIN_LOGIN = "adminLogin";
-	private static final String ADMIN_CREDENTIAL = "adminPassword";
-	private static final String CUSTOMER_ID = "customerId";
-	private static final String OLAT_TIMEZONE_ID = "olatTimeZoneId";
+	private static final String PROP_ENABLED = "vc.vitero.enabled";
+	private static final String PROP_PROTOCOL = "protocol";
+	private static final String PROP_PORT = "port";
+	private static final String PROP_BASE_URL = "baseUrl";
+	private static final String PROP_CONTEXT_PATH = "contextPath";
+	private static final String PROP_ADMIN_LOGIN = "adminLogin";
+	private static final String PROP_ADMIN_CREDENTIAL = "adminPassword";
+	private static final String PROP_CUSTOMER_ID = "customerId";
+	private static final String PROP_OLAT_TIMEZONE_ID = "olatTimeZoneId";
+	private static final String PROP_INSPIRE = "inspire";
 	
 	@Value("${vc.vitero.enabled}")
 	private boolean enabled;
-	private String displayName;
 	@Value("${vc.vitero.protocol}")
 	private String protocol;
 	@Value("${vc.vitero.port}")
@@ -90,6 +90,8 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	private String cronExpression;
 	@Value("${vc.vitero.deleteVmsUserOnUserDelete}")
 	private boolean deleteVmsUserOnUserDelete;
+	@Value("${vc.vitero.inspire:true}")
+	private boolean inspire;
 	
 	private final Scheduler scheduler;
 	
@@ -101,42 +103,47 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	
 	@Override
 	public void init() {
-		String enabledObj = getStringPropertyValue(ENABLED, true);
+		String enabledObj = getStringPropertyValue(PROP_ENABLED, true);
 		if(StringHelper.containsNonWhitespace(enabledObj)) {
 			enabled = "true".equals(enabledObj);
 		}
 		
-		String protocolObj = getStringPropertyValue(PROTOCOL, true);
+		String protocolObj = getStringPropertyValue(PROP_PROTOCOL, true);
 		if(StringHelper.containsNonWhitespace(protocolObj)) {
 			protocol = protocolObj;
 		}
-		String portObj = getStringPropertyValue(PORT, true);
+		String portObj = getStringPropertyValue(PROP_PORT, true);
 		if(StringHelper.containsNonWhitespace(portObj)) {
 			port = Integer.parseInt(portObj);
 		}
-		String baseUrlObj = getStringPropertyValue(BASE_URL, true);
+		String baseUrlObj = getStringPropertyValue(PROP_BASE_URL, true);
 		if(StringHelper.containsNonWhitespace(baseUrlObj)) {
 			baseUrl = baseUrlObj;
 		}
-		String contextPathObj = getStringPropertyValue(CONTEXT_PATH, true);
+		String contextPathObj = getStringPropertyValue(PROP_CONTEXT_PATH, true);
 		if(StringHelper.containsNonWhitespace(contextPathObj)) {
 			contextPath = contextPathObj;
 		}
-		String adminLoginObj = getStringPropertyValue(ADMIN_LOGIN, true);
+		String adminLoginObj = getStringPropertyValue(PROP_ADMIN_LOGIN, true);
 		if(StringHelper.containsNonWhitespace(adminLoginObj)) {
 			adminLogin = adminLoginObj;
 		}
-		String adminPasswordObj = getStringPropertyValue(ADMIN_CREDENTIAL, true);
+		String adminPasswordObj = getStringPropertyValue(PROP_ADMIN_CREDENTIAL, true);
 		if(StringHelper.containsNonWhitespace(adminPasswordObj)) {
 			adminPassword = adminPasswordObj;
 		}
-		String customerIdObj = getStringPropertyValue(CUSTOMER_ID, true);
+		String customerIdObj = getStringPropertyValue(PROP_CUSTOMER_ID, true);
 		if(StringHelper.containsNonWhitespace(customerIdObj)) {
 			customerId = Integer.parseInt(customerIdObj);
 		}
-		String olatTimeZoneIdObj = getStringPropertyValue(OLAT_TIMEZONE_ID, true);
+		String olatTimeZoneIdObj = getStringPropertyValue(PROP_OLAT_TIMEZONE_ID, true);
 		if(StringHelper.containsNonWhitespace(olatTimeZoneIdObj)) {
 			olatTimeZoneId = olatTimeZoneIdObj;
+		}
+		
+		String inspireObj = getStringPropertyValue(PROP_INSPIRE, true);
+		if(StringHelper.containsNonWhitespace(inspireObj)) {
+			inspire = "true".equals(inspireObj);
 		}
 		
 		initCronJob();
@@ -222,7 +229,8 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setEnabled(boolean enabled) {
-		setBooleanProperty(ENABLED, enabled, true);
+		this.enabled = enabled;
+		setBooleanProperty(PROP_ENABLED, enabled, true);
 	}
 	
 	/**
@@ -234,7 +242,8 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 	
 	public void setTimeZoneId(String timeZoneId) {
-		setStringProperty(OLAT_TIMEZONE_ID, timeZoneId, true);
+		this.olatTimeZoneId = timeZoneId;
+		setStringProperty(PROP_OLAT_TIMEZONE_ID, timeZoneId, true);
 	}
 
 	public String getProtocol() {
@@ -242,7 +251,8 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setProtocol(String protocol) {
-		setStringProperty(PROTOCOL, protocol == null ? "" : protocol, true);
+		this.protocol = protocol;
+		setStringProperty(PROP_PROTOCOL, protocol == null ? "" : protocol, true);
 	}
 
 	public int getPort() {
@@ -250,7 +260,8 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setPort(int port) {
-		setStringProperty(PORT, Integer.toString(port), true);
+		this.port = port;
+		setStringProperty(PROP_PORT, Integer.toString(port), true);
 	}
 
 	public String getBaseUrl() {
@@ -258,7 +269,8 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setBaseUrl(String baseUrl) {
-		setStringProperty(BASE_URL, baseUrl == null ? "" : baseUrl, true);
+		this.baseUrl = baseUrl;
+		setStringProperty(PROP_BASE_URL, baseUrl == null ? "" : baseUrl, true);
 	}
 	
 	public String getContextPath() {
@@ -266,15 +278,8 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setContextPath(String contextPath) {
-		setStringProperty(CONTEXT_PATH, contextPath == null ? "" : contextPath, true);
-	}
-
-	public String getDisplayName() {
-		return displayName;
-	}
-
-	public void setDisplayName(String displayName) {
-		this.displayName = displayName;
+		this.contextPath = contextPath;
+		setStringProperty(PROP_CONTEXT_PATH, contextPath == null ? "" : contextPath, true);
 	}
 
 	public String getAdminLogin() {
@@ -282,7 +287,8 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setAdminLogin(String adminLogin) {
-		setStringProperty(ADMIN_LOGIN, adminLogin, true);
+		this.adminLogin = adminLogin;
+		setStringProperty(PROP_ADMIN_LOGIN, adminLogin, true);
 	}
 
 	public String getAdminPassword() {
@@ -290,7 +296,8 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setAdminPassword(String adminPassword) {
-		setStringProperty(ADMIN_CREDENTIAL, adminPassword, true);
+		this.adminPassword = adminPassword;
+		setStringProperty(PROP_ADMIN_CREDENTIAL, adminPassword, true);
 	}
 
 	public int getCustomerId() {
@@ -298,6 +305,18 @@ public class ViteroModule extends AbstractSpringModule implements ConfigOnOff {
 	}
 
 	public void setCustomerId(int customerId) {
-		setStringProperty(CUSTOMER_ID, Integer.toString(customerId), true);
+		this.customerId = customerId;
+		setStringProperty(PROP_CUSTOMER_ID, Integer.toString(customerId), true);
 	}
+
+	public boolean isInspire() {
+		return inspire;
+	}
+
+	public void setInspire(boolean enableInspire) {
+		inspire = enableInspire;
+		setStringProperty(PROP_INSPIRE, Boolean.toString(enableInspire), true);
+	}
+	
+	
 }

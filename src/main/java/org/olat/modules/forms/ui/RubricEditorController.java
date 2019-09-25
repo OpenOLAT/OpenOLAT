@@ -647,13 +647,15 @@ public class RubricEditorController extends FormBasicController implements PageE
 	
 	private void swapSliders(int i, int j) {
 		List<Slider> rubricSliders = rubric.getSliders();
-		Slider tempRubricSlider = rubricSliders.get(i);
-		rubricSliders.set(i, rubricSliders.get(j));
-		rubricSliders.set(j, tempRubricSlider);
-		
-		SliderRow tempSlider = sliders.get(i);
-		sliders.set(i, sliders.get(j));
-		sliders.set(j, tempSlider);
+		if(i >= 0 && j >= 0 && i < rubricSliders.size() && j < rubricSliders.size()) {
+			Slider tempRubricSlider = rubricSliders.get(i);
+			rubricSliders.set(i, rubricSliders.get(j));
+			rubricSliders.set(j, tempRubricSlider);
+			
+			SliderRow tempSlider = sliders.get(i);
+			sliders.set(i, sliders.get(j));
+			sliders.set(j, tempSlider);
+		}
 	}
 
 	private void doRemoveSlider(SliderRow row) {

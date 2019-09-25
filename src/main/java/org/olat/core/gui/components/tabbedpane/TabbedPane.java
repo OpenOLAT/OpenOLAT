@@ -61,8 +61,8 @@ public class TabbedPane extends Container implements Activateable2 {
 	 */
 	protected static final String PARAM_PANE_ID = "taid";
 
-
 	private int selectedPane = -1;
+	private boolean hideDisabledTab = false;
 	private final List<TabPane> tabPanes = new ArrayList<>(5);
 	private Translator compTrans;
 	
@@ -73,6 +73,14 @@ public class TabbedPane extends Container implements Activateable2 {
 		super(name);
 		compTrans = Util.createPackageTranslator(this.getClass(), locale);		
 		setDomReplacementWrapperRequired(false);// we provide our own DOM replacement ID
+	}
+
+	public boolean isHideDisabledTab() {
+		return hideDisabledTab;
+	}
+
+	public void setHideDisabledTab(boolean hideDisabledTab) {
+		this.hideDisabledTab = hideDisabledTab;
 	}
 
 	/**

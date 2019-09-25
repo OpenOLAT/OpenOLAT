@@ -17,7 +17,6 @@
 				<a id='h${sectionRubric.identifier}' href='javascript:;' class='o_toogle_rubrics o_hide'><span>$r.translate("hide.rubric.short")</span></a>
 			</div>
 			<script>
-			/* <![CDATA[ */ 
 			jQuery(function() {
 				jQuery('#${sectionRubric.identifier}, #h${sectionRubric.identifier}').on('click', function(linkIndex, linkEl) {
 					jQuery('#d${sectionRubric.identifier}').each(function(index, el) {
@@ -34,17 +33,16 @@
 					});
 				});
 			});
-			/* ]]> */
 			</script>
 		</div>
 	#end
 	</div>
 #end
-<div class="o_qti_item_body clearfix">$r.render("answer")</div>
+<div id="o_c${f.getFormItem("answer").getComponent().getDispatchID()}" class="o_qti_item_body clearfix">$r.render("answer")</div>
 
 #if($r.visible("solution"))
 	<div class="o_assessmentitem_control_view_solution">$r.render("view.solution")</div>
-	<div class="o_qti_item_body clearfix">$r.render("solution")</div>
+	<div id="o_c${f.getFormItem("solution").getComponent().getDispatchID()}" class="o_qti_item_body clearfix">$r.render("solution")</div>
 	#if(!$r.visible("view.correct.solution"))
 	<div class="o_assessmentitem_controls"> </div>
 	#end

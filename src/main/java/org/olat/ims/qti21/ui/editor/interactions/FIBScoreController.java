@@ -81,7 +81,7 @@ public class FIBScoreController extends AssessmentItemRefEditorController implem
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_score");
+		setFormContextHelp("Configure test questions#_tab_score");
 		super.initForm(formLayout, listener, ureq);
 		minScoreEl = uifactory.addTextElement("min.score", "min.score", 8, "0.0", formLayout);
 		minScoreEl.setElementCssClass("o_sel_assessment_item_min_score");

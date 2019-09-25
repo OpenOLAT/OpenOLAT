@@ -292,6 +292,8 @@ public class SystemRegistrationManager implements InitializingBean {
 			String email = registrationModule.getEmail();
 			msgProperties.put("email", email);
 		}
+
+		database.commitAndCloseSession();
 		return msgProperties;
 	}
 

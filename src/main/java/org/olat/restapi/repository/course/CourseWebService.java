@@ -45,6 +45,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.admin.securitygroup.gui.IdentitiesAddEvent;
@@ -274,6 +275,13 @@ public class CourseWebService {
 	 */
 	@POST
 	@Path("publish")
+	@Operation(summary = "Publish the course", description = "Publish the course")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response publishCourse(@QueryParam("locale") Locale locale,
 			@QueryParam("access") Integer access, @QueryParam("membersOnly") Boolean membersOnly,
@@ -317,6 +325,13 @@ public class CourseWebService {
 	 */
 	@GET
 	@Path("access")
+	@Operation(summary = "Get the access configuration of the course by id", description = "Get the access configuration of the course by id")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The access configuration of the course", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = RepositoryEntryAccessVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = RepositoryEntryAccessVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getAccess(@Context HttpServletRequest request) {
 		if(!isAuthor(request) && !isManager(request)) {
@@ -339,6 +354,13 @@ public class CourseWebService {
 	 * @return It returns the <code>CourseVO</code> object representing the course.
 	 */
 	@GET
+	@Operation(summary = "Get the metadatas of the course by id", description = "Get the metadatas of the course by id")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response findById(@Context HttpServletRequest request) {
 		if (!isCourseAccessible(course, request)) {
@@ -363,6 +385,13 @@ public class CourseWebService {
 	 */
 	@GET
 	@Path("resource")
+	@Operation(summary = "Get the OLAT resource of the course specified by its id", description = "Get the OLAT resource of the course specified by its id")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The OLAT resource of the course", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = OlatResourceVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = OlatResourceVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getOlatResource(@Context HttpServletRequest request) {
 		if(!isManager(request)) {
@@ -383,6 +412,11 @@ public class CourseWebService {
 	 */
 	@GET
 	@Path("file")
+	@Operation(summary = "Export the course", description = "Export the course")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The course as a ZIP file"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})	
 	@Produces({ "application/zip", MediaType.APPLICATION_OCTET_STREAM })
 	public Response getRepoFileById(@Context HttpServletRequest request) {
 		RepositoryEntry re = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -419,7 +453,12 @@ public class CourseWebService {
 				MediaResource mr = typeToDownload.getAsMediaResource(ores);
 				if (mr != null) {
 					repositoryService.incrementDownloadCounter(re);
-					return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
+					if(mr instanceof StreamingOutput) {
+						return Response.ok(mr).cacheControl(cc).build(); // success
+					} else {
+					
+						return Response.ok(mr.getInputStream()).cacheControl(cc).build(); // success
+					}
 				} else {
 					return Response.serverError().status(Status.NO_CONTENT).build();
 				}
@@ -444,6 +483,11 @@ public class CourseWebService {
 	 *         object representing the course.
 	 */
 	@DELETE
+	@Operation(summary = "Delete a course by id", description = "Delete a course by id")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The metadatas of the deleted course"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response deleteCourse(@Context HttpServletRequest request) {
 		if(!isManager(request)) {
@@ -481,6 +525,19 @@ public class CourseWebService {
 	@POST
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Path("status")
+	@Operation(summary = "Change the status of a course by id", description = "Change the status of a course by id. The possible status are:\n" + 
+			"	  <ul>\n" + 
+			"	  	<li>closed</li>\n" + 
+			"	  	<li>unclosed</li>\n" + 
+			"	  	<li>unpublished</li>\n" + 
+			"	  	<li>deleted</li>\n" + 
+			"	  	<li>restored</li>\n" + 
+			"	  </ul>\n" + 
+			"	 ")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The metadatas of the deleted course"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})	
 	public Response deleteCoursePermanently(@FormParam("newStatus") String newStatus, @Context HttpServletRequest request) {
 		if(!isManager(request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -526,6 +583,13 @@ public class CourseWebService {
 	 */
 	@GET
 	@Path("configuration")
+	@Operation(summary = "Get the configuration of the course", description = "Get the configuration of the course")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The configuration of the course", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseConfigVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseConfigVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getConfiguration(@Context HttpServletRequest request) {
 		if(!isManager(request)) {
@@ -556,6 +620,13 @@ public class CourseWebService {
 	 */
 	@POST
 	@Path("configuration")
+	@Operation(summary = "Update the course configuration", description = "Update the course configuration")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The metadatas of the created course", content = {
+					@Content(mediaType = "application/json", schema = @Schema(implementation = CourseConfigVO.class)),
+					@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseConfigVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found")})	
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response updateConfiguration(@PathParam("courseId") Long courseId,
@@ -609,6 +680,11 @@ public class CourseWebService {
 	 */
 	@GET
 	@Path("runstructure")
+	@Operation(summary = "Get the runstructure", description = "Get the runstructure of the course by id")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The run structure of the course"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })
 	@Produces(MediaType.APPLICATION_XML)
 	public Response findRunStructureById(@Context HttpServletRequest httpRequest, @Context Request request) {
 		if (!isManager(httpRequest)) {
@@ -637,6 +713,11 @@ public class CourseWebService {
 	 */
 	@GET
 	@Path("editortreemodel")
+	@Operation(summary = "Get the editor tree model", description = "Get the editor tree model of the course by id")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The editor tree model of the course"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course not found") })
 	@Produces(MediaType.APPLICATION_XML)
 	public Response findEditorTreeModelById(@Context HttpServletRequest httpRequest, @Context Request request) {
 		if (!isManager(httpRequest)) {
@@ -654,6 +735,13 @@ public class CourseWebService {
 
 	@GET
 	@Path("organisations")
+	@Operation(summary = "Get all organisations", description = "Get all organisations")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The array of organisations", content = {
+					@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))),
+					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = OrganisationVO.class))) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Not found") })	
 	public Response getOrganisations(@Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -670,6 +758,11 @@ public class CourseWebService {
 	
 	@PUT
 	@Path("organisations/{organisationKey}")
+	@Operation(summary = "Put Organisation", description = "Put Organisation")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Organisation was put successfully"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Organisation not found") })
 	public Response addOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
@@ -692,6 +785,11 @@ public class CourseWebService {
 	
 	@DELETE
 	@Path("organisations/{organisationKey}")
+	@Operation(summary = "Delete Organisation", description = "Delete Organisation")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Organisation Deleted"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "Organisation not found") })	
 	public Response removeOrganisation(@PathParam("organisationKey") Long organisationKey, @Context HttpServletRequest httpRequest) {
 		if (!isManager(httpRequest)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();

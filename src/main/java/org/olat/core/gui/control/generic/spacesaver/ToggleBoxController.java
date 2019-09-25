@@ -112,7 +112,7 @@ public class ToggleBoxController extends BasicController {
 	protected void event(UserRequest ureq, Component source, Event event) {
 		if (source == toggleButton) {
 			Preferences prefs = ureq.getUserSession().getGuiPreferences();
-			toggleStatus = new Boolean(!toggleStatus.booleanValue());
+			toggleStatus = Boolean.valueOf(!toggleStatus.booleanValue());
 			prefs.putAndSave(this.getClass(), key, toggleStatus);
 			updateUI();
 		} else if (source == hideButton) {
@@ -120,13 +120,6 @@ public class ToggleBoxController extends BasicController {
 			toggleStatus = Boolean.FALSE;
 			prefs.putAndSave(this.getClass(), key, toggleStatus);
 			updateUI();
-		} else if (source == mainVC) {
-			if ("hide".equals(event.getCommand())) {
-				Preferences prefs = ureq.getUserSession().getGuiPreferences();
-				toggleStatus = Boolean.FALSE;
-				prefs.putAndSave(this.getClass(), key, toggleStatus);
-				updateUI();
-			}
 		}
 	}
 }

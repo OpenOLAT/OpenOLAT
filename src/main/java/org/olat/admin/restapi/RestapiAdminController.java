@@ -93,8 +93,6 @@ public class RestapiAdminController extends FormBasicController {
 			layoutContainer.add(docLinkFlc);
 			docLinkFlc.setVisible(restEnabled);
 			
-			String link = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/api/doc";
-			docLinkFlc.contextPut("docLink", link);
 			String openApiLink = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/openapi.json";
 			docLinkFlc.contextPut("openApiLink", openApiLink);
 			String swaggerUiLink = Settings.getServerContextPathURI() + RestSecurityHelper.SUB_CONTEXT + "/api-docs/?url="

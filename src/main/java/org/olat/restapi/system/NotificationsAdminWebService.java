@@ -38,6 +38,10 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
@@ -57,6 +61,10 @@ public class NotificationsAdminWebService {
 	 */
 	@GET
 	@Path("status")
+	@Operation(summary = "Return the status", description = "Return the status of the notifications job: running, stopped")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The status of the notifications job"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response getStatus() {
 		return Response.ok(new NotificationsStatus(getJobStatus())).build();
@@ -71,6 +79,10 @@ public class NotificationsAdminWebService {
 	 */
 	@GET
 	@Path("status")
+	@Operation(summary = "Return the status", description = "Return the status of the notifications job: running, stopped")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The status of the notifications job"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
 	@Produces({MediaType.TEXT_PLAIN})
 	public Response getPlainTextStatus() {
 		return Response.ok(getJobStatus()).build();
@@ -101,6 +113,10 @@ public class NotificationsAdminWebService {
 	 */
 	@POST
 	@Path("status")
+	@Operation(summary = "Update the status", description = "Update the status of the notifications job: running, stopped. Running start the indexer, stopped, stop it")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The status of the notifications job"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient")})	
 	public Response setStatus(@FormParam("status") String status) {
 		if("running".equals(status)) {
 			try {

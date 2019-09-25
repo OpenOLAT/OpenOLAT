@@ -129,7 +129,7 @@ public class UserFoldersWebService {
 	 * @param request The REST request
 	 * @return The files
 	 */
-	@Path("group/{groupKey}")
+	@Path("group/{groupKey}") 
 	@Operation(summary = "Retrieve the folder of a group", description = "Retrieves the folder of a group")
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", description = "The files", content = {

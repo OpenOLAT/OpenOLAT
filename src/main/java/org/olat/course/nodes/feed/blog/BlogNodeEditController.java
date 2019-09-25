@@ -38,17 +38,9 @@ import org.olat.modules.webFeed.ui.blog.BlogUIFactory;
  */
 public class BlogNodeEditController extends FeedNodeEditController {
 
-	/**
-	 * Constructor
-	 * 
-	 * @param courseNode
-	 * @param course
-	 * @param uce
-	 * @param ureq
-	 * @param control
-	 */
-	public BlogNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce, UserRequest ureq,
-			WindowControl control) {
-		super(courseNode, course, uce, BlogUIFactory.getInstance(ureq.getLocale()), BlogFileResource.TYPE_NAME, ureq, control);
+	public BlogNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce,
+			UserRequest ureq, WindowControl control) {
+		super(ureq, control, courseNode, course, uce, BlogUIFactory.getInstance(ureq.getLocale()),
+				BlogFileResource.TYPE_NAME, "Knowledge Transfer#_blog");
 	}
 }

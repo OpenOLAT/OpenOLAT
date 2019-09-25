@@ -97,18 +97,18 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 	/**
 	 * Constructor. The uiFactory is needed for preview controller and the
 	 * resourceTypeName for the repository search.
-	 * 
+	 * @param ureq
+	 * @param wControl
 	 * @param courseNode
 	 * @param course
 	 * @param uce
 	 * @param uiFactory
 	 * @param resourceTypeName
-	 * @param ureq
-	 * @param control
+	 * @param contentHelpUrl 
 	 */
-	public FeedNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce, FeedUIFactory uiFactory,
-			String resourceTypeName, UserRequest ureq, WindowControl control) {
-		super(ureq, control);
+	public FeedNodeEditController(UserRequest ureq, WindowControl wControl, AbstractFeedCourseNode courseNode, ICourse course,
+			UserCourseEnvironment uce, FeedUIFactory uiFactory, String resourceTypeName, String contentHelpUrl) {
+		super(ureq, wControl);
 		this.course = course;
 		this.node = courseNode;
 		this.config = courseNode.getModuleConfiguration();
@@ -146,6 +146,7 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 		// building block
 		learningResource = new Panel("learning_resource_panel");
 		contentVC = new VelocityContainer("accessVC", FeedNodeEditController.class, "edit", getTranslator(), this);
+		contentVC.contextPut("helpUrl", contentHelpUrl);
 		changeButton = LinkFactory.createButtonSmall(BUTTON_CHANGE_FEED, contentVC, this);
 		changeButton.setElementCssClass("o_sel_feed_change_repofile");
 		chooseButton = LinkFactory.createButtonSmall(BUTTON_CREATE_FEED, contentVC, this);
@@ -305,6 +306,7 @@ public abstract class FeedNodeEditController extends ActivateableTabbableDefault
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableController#addTabs(org.olat.core.gui.components.tabbedpane.TabbedPane)
 	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		this.tabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESS), accessVC);

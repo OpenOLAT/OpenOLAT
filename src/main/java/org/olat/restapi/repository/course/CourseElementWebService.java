@@ -1186,6 +1186,12 @@ public class CourseElementWebService extends AbstractCourseNodeWebService {
 	 */
 	@POST
 	@Path("blog")
+	@Operation(summary = "Attaches an blog building block", description = "Attaches an blog building block")
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "The course node metadatas", content = {
+			@Content(mediaType = "application/json", schema = @Schema(implementation = CourseNodeVO.class)),
+			@Content(mediaType = "application/xml", schema = @Schema(implementation = CourseNodeVO.class)) }),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The course or parentNode not found") })
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response attachBlogPost(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,

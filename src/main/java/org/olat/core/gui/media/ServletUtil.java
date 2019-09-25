@@ -68,21 +68,21 @@ public class ServletUtil {
 	public static final long CACHE_ONE_DAY = 24l * 60l * 60l;
 	
 	
-	public static void printOutRequestParameters(HttpServletRequest request) {
+	public static final void printOutRequestParameters(HttpServletRequest request) {
 		for(Enumeration<String> names=request.getParameterNames(); names.hasMoreElements(); ) {
 			String name = names.nextElement();
 			log.info(name + " :: " + request.getParameter(name));
 		}
 	}
 	
-	public static void printOutRequestHeaders(HttpServletRequest request) {
+	public static final void printOutRequestHeaders(HttpServletRequest request) {
 		for(Enumeration<String> headers=request.getHeaderNames(); headers.hasMoreElements(); ) {
 			String header = headers.nextElement();
 			log.info(header + " :: " + request.getHeader(header));
 		}
 	}
 	
-	public static boolean acceptJson(HttpServletRequest request) {
+	public static final boolean acceptJson(HttpServletRequest request) {
 		boolean acceptJson = false;
 		for(Enumeration<String> headers=request.getHeaders("Accept"); headers.hasMoreElements(); ) {
 			String accept = headers.nextElement();
@@ -91,6 +91,10 @@ public class ServletUtil {
 			}
 		}
 		return acceptJson;
+	}
+	
+	public static final String getUserAgent(HttpServletRequest request) {
+		return request == null ? null : request.getHeader("User-Agent");
 	}
 	
 	/**

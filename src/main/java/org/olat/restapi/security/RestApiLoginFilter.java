@@ -317,7 +317,7 @@ public class RestApiLoginFilter implements Filter {
 		UserSessionManager sessionManager = CoreSpringFactory.getImpl(UserSessionManager.class);
 		UserSession usess = sessionManager.getUserSessionIfAlreadySet(request);
 		if(usess == null) {
-			usess = sessionManager.getUserSession(request.getSession(true));
+			usess = sessionManager.getUserSession(request, request.getSession(true));
 		}
 		if(usess.getIdentity() == null) {
 			usess.setRoles(Roles.userRoles());
@@ -353,7 +353,7 @@ public class RestApiLoginFilter implements Filter {
 	throws IOException, ServletException {
 		HttpSession session = request.getSession(true);
 		session.setMaxInactiveInterval(TOKEN_BASED_SESSION_TIMEOUT);
-		UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(session);
+		UserSession uress = CoreSpringFactory.getImpl(UserSessionManager.class).getUserSession(request, session);
 		if(uress != null) {
 			UserRequest ureq = null;
 			try{

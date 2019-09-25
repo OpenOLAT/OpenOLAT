@@ -98,8 +98,7 @@ public class UserToolsModule extends AbstractSpringModule {
 						selectedToolSb.append(newPreset);
 					}
 				}
-				prefs.put(WindowManager.class, "user-tools-v2", selectedToolSb.toString());
-				prefs.save();
+				prefs.putAndSave(WindowManager.class, "user-tools-v2", selectedToolSb.toString());
 				selectedToolV2s = selectedToolSb.toString();
 			}
 		}
@@ -107,8 +106,7 @@ public class UserToolsModule extends AbstractSpringModule {
 	}
 	
 	public void setUserTools(Preferences prefs, String settings) {
-		prefs.put(WindowManager.class, "user-tools-v2", settings);
-		prefs.save();
+		prefs.putAndSave(WindowManager.class, "user-tools-v2", settings);
 	}
 	
 	public List<UserToolExtension> getUserToolExtensions(UserRequest ureq) {

@@ -27,6 +27,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -53,6 +56,9 @@ public class Ping {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "The version of the Ping Web Service", description = "The version of the Ping Web Service")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Return the version number") })	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -66,6 +72,9 @@ public class Ping {
 	 * @return
 	 */
 	@GET
+	@Operation(summary = "Return a string", description = "Return a string")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Ping") })	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response ping() {
 		return Response.ok("Ping").build();
@@ -82,6 +91,9 @@ public class Ping {
 	 */
 	@POST
 	@Path("{name}")
+	@Operation(summary = "Return a concatenation of the string as parameter and Ping", description = "Return a concatenation of the string as parameter and Ping")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Return a small string") })	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response ping(@PathParam("name") String name) {
 		return Response.ok("Ping " + name).build();

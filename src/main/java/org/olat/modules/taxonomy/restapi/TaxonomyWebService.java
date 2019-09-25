@@ -690,6 +690,11 @@ public class TaxonomyWebService {
 	 */
 	@PUT
 	@Path("types/{typeKey}/allowedSubTypes/{subTypeKey}")
+	@Operation(summary = "Add a sub-type", description = "Add a sub-type to a specified taxonomy level's type")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "The sub type was added to the allowed sub types"),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "404", description = "The taxonomy level type was not found")})
 	@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 	public Response allowSubTaxonomyLevelType(@PathParam("typeKey") Long typeKey, @PathParam("subTypeKey") Long subTypeKey) {
 		TaxonomyLevelType type = taxonomyService.getTaxonomyLevelType(new TaxonomyLevelTypeRefImpl(typeKey));

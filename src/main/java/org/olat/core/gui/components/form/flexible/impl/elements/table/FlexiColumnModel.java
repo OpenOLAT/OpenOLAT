@@ -71,6 +71,17 @@ public interface FlexiColumnModel {
 	public int getAlignment();
 
 	public void setAlignment(int alignment);
+	
+	public boolean isSelectAll();
+	
+	/**
+	 * Enable/disable select all / deselect all links under a column.
+	 * If checkbox are used, they need to be ajax only to not loose
+	 * their state in the process.
+	 * 
+	 * @param selectAll true to enable select all / deselect all links
+	 */
+	public void setSelectAll(boolean selectAll);
 
 	public FlexiCellRenderer getCellRenderer();
 

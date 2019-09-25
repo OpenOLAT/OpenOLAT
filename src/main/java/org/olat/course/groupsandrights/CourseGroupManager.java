@@ -263,7 +263,7 @@ public interface CourseGroupManager {
 	 * 
 	 * @param fExportDirectory
 	 */
-	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env, boolean runtimeDatas);
+	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper env);
 	
 	public CourseEnvironmentMapper getBusinessGroupEnvironment();
 

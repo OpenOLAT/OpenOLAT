@@ -80,6 +80,13 @@ public class CurriculumRow implements CurriculumRef {
 		return curriculum.getExternalId();
 	}
 	
+	public String getOrganisation() {
+		if(curriculum.getOrganisation() != null) {
+			return curriculum.getOrganisation().getDisplayName();
+		}
+		return null;
+	}
+	
 	public long getNumOfElements() {
 		return numOfElements;
 	}

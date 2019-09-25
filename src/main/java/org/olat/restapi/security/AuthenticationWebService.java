@@ -41,6 +41,10 @@ import org.olat.login.auth.OLATAuthManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * 
  * Description:<br>
@@ -74,6 +78,9 @@ public class AuthenticationWebService {
 	 */
 	@GET
 	@Path("version")
+	@Operation(summary = "Retrieves the version of the User Authentication Web Service",
+	description = "Retrieves the version of the User Authentication Web Service")
+	@ApiResponse(responseCode = "200", description = "Retrieves the version of the User Authentication Web Service")	
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response getVersion() {
 		return Response.ok(VERSION).build();
@@ -109,6 +116,24 @@ public class AuthenticationWebService {
 	 */
 	@GET
 	@Path("{username}")
+	@Operation(summary = "Authenticates against OLAT Provider", description = "Authenticates against OLAT Provider and provides a security token if\n" + 
+			"	  authentication is successful. The security token is returned as a header\n" + 
+			"	  named X-OLAT-TOKEN. Given that the password is sent in clear text and not\n" + 
+			"	  encrypted, it is not advisable to use this service over a none secure\n" + 
+			"	  connection (https).\n" + 
+			"	  \n" + 
+			"	  This authentication method should only be used if basic authentication is\n" + 
+			"	  not possible.\n" + 
+			"	  \n" + 
+			"	  When using the REST API, best-practice is to use basic authentication and\n" + 
+			"	  activate cookies in your HTTP client for automatic session management.")
+	@ApiResponses({
+			@ApiResponse(responseCode = "200", description = "Say hello to the authenticated user, and\n" + 
+					"	 *                                  give it a security\n" + 
+					"	 *                                  token @response.representation.200.example\n" + 
+					"	 *                                  &lt;hello&gt;Hello john&lt;/hello&gt;"),
+			@ApiResponse(responseCode = "401", description = "The authentication has failed"),
+			@ApiResponse(responseCode = "404", description = "The identity not found") })	
 	@Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_XML})
 	public Response login(@PathParam("username") String username,
 			@QueryParam("password") String password,

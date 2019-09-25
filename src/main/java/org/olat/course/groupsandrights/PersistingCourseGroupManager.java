@@ -367,7 +367,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 	}
 
 	@Override
-	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper courseEnv, boolean runtimeDatas) {
+	public void exportCourseBusinessGroups(File fExportDirectory, CourseEnvironmentMapper courseEnv) {
 		File fExportFile = new File(fExportDirectory, LEARNINGGROUPEXPORT_XML);
 		List<BGArea> areas = getAllAreas();
 		List<BusinessGroup> groups = getAllBusinessGroups();
@@ -375,7 +375,7 @@ public class PersistingCourseGroupManager implements CourseGroupManager {
 		BusinessGroupEnvironment bgEnv = new BusinessGroupEnvironment();
 		bgEnv.getGroups().addAll(courseEnv.getGroups());
 		bgEnv.getAreas().addAll(courseEnv.getAreas());
-		businessGroupService.exportGroups(groups, areas, fExportFile, runtimeDatas);
+		businessGroupService.exportGroups(groups, areas, fExportFile, false);
 	}
 	
 	/**

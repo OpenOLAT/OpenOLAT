@@ -134,7 +134,7 @@ public class RestApiLoginFilterTest extends OlatRestTestCase {
 		
 		//path is not protected
 		RestConnection c3 = new RestConnection();
-		URI uri3 = UriBuilder.fromUri(getContextURI()).path("/api/copyright").build();
+		URI uri3 = UriBuilder.fromUri(getContextURI()).path("/ping").build();
 		HttpGet method3 = c3.createGet(uri3, MediaType.TEXT_PLAIN, false);
 		method3.setHeader(RestSecurityHelper.SEC_TOKEN, securityToken);
 		HttpResponse r3 = c3.execute(method3);

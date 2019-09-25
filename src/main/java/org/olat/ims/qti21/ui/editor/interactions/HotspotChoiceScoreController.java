@@ -103,7 +103,7 @@ public class HotspotChoiceScoreController extends AssessmentItemRefEditorControl
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		super.initForm(formLayout, listener, ureq);
-		setFormContextHelp("Test editor QTI 2.1 in detail#details_testeditor_score");
+		setFormContextHelp("Configure test questions#_tab_score");
 
 		ScoreBuilder minScore = itemBuilder.getMinScoreBuilder();
 		String minValue = minScore == null ? "" : (minScore.getScore() == null ? "" : minScore.getScore().toString());

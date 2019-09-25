@@ -317,7 +317,13 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	@Override
 	public void setAndLoadPersistedPreferences(UserRequest ureq, String id) {
 		persistentId = id;
-		loadCustomSettings(ureq);
+		loadCustomSettings(ureq.getUserSession().getGuiPreferences());
+	}
+	
+	@Override
+	public void setAndLoadPersistedPreferences(Preferences preferences, String id) {
+		persistentId = id;
+		loadCustomSettings(preferences);
 	}
 
 	@Override
@@ -860,6 +866,8 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 		String treeTableClose = form.getRequestParameter("tt-close");
 		String crumb = form.getRequestParameter("tt-crumb");
 		String openCloseAll = form.getRequestParameter("tt-openclose");
+		String selectAllColumn = form.getRequestParameter("cc-selectall");
+		String deselectAllColumn = form.getRequestParameter("cc-deselectall");
 		if("undefined".equals(dispatchuri)) {
 			evalSearchRequest(ureq);
 		} else if(StringHelper.containsNonWhitespace(checkbox)) {
@@ -927,6 +935,10 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			selectPage();
 		} else if(dispatchuri != null && select != null && select.equals("uncheckall")) {
 			doUnSelectAll();
+		} else if(dispatchuri != null && StringHelper.isLong(selectAllColumn)) {
+			doSelectAllColumn(ureq, Integer.parseInt(selectAllColumn));
+		} else if(dispatchuri != null && StringHelper.isLong(deselectAllColumn)) {
+			doUnSelectAllColumn(ureq, Integer.parseInt(deselectAllColumn));
 		} else if(customButton != null
 				&& customButton.getFormDispatchId().equals(dispatchuri)) {
 			//snap the request
@@ -959,6 +971,21 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 					doSelect(ureq, col.getAction(), Integer.parseInt(selectedRowIndex));
 					select = true;
 					break;
+				}
+			}
+			
+			if(col.getCellRenderer() instanceof ActionDelegateCellRenderer) {
+				ActionDelegateCellRenderer delegateRenderer = (ActionDelegateCellRenderer)col.getCellRenderer();
+				List<String> rendererActions = delegateRenderer.getActions();
+				if(rendererActions != null && !rendererActions.isEmpty()) {
+					for(String rendererAction:rendererActions) {
+						String selectedRowIndex = getRootForm().getRequestParameter(rendererAction);
+						if(StringHelper.containsNonWhitespace(selectedRowIndex)) {
+							doSelect(ureq, rendererAction, Integer.parseInt(selectedRowIndex));
+							select = true;
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -1421,14 +1448,12 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 			FlexiTablePreferences tablePrefs =
 					new FlexiTablePreferences(getPageSize(), sortedColKey, sortDirection,
 							convertColumnIndexToKeys(enabledColumnIndex), rendererType);
-			prefs.put(FlexiTableElement.class, persistentId, tablePrefs);
-			prefs.save();
+			prefs.putAndSave(FlexiTableElement.class, persistentId, tablePrefs);
 		}
 	}
 	
-	private void loadCustomSettings(UserRequest ureq) {
+	private void loadCustomSettings(Preferences prefs) {
 		if(StringHelper.containsNonWhitespace(persistentId)) {
-			Preferences prefs = ureq.getUserSession().getGuiPreferences();
 			FlexiTablePreferences tablePrefs = (FlexiTablePreferences)prefs.get(FlexiTableElement.class, persistentId);
 			if(tablePrefs != null) {
 				if(tablePrefs.getPageSize() != getDefaultPageSize() && tablePrefs.getPageSize() != 0) {
@@ -1620,8 +1645,15 @@ public class FlexiTableElementImpl extends FormItemImpl implements FlexiTableEle
 	protected void doSelect(UserRequest ureq, String selectAction, int index) {
 		getRootForm().fireFormEvent(ureq, new SelectionEvent(selectAction, index, this, FormEvent.ONCLICK));
 	}
-
 	
+	protected void doSelectAllColumn(UserRequest ureq, int columnIndex) {
+		getRootForm().fireFormEvent(ureq, new SelectAllColumnEvent(columnIndex, this));
+	}
+	
+	protected void doUnSelectAllColumn(UserRequest ureq, int columnIndex) {
+		getRootForm().fireFormEvent(ureq, new UnselectAllColumnEvent(columnIndex, this));
+	}
+
 	private void doSearch(UserRequest ureq, String eventCmd, String search, List<String> condQueries) {
 		if(condQueries == null || condQueries.isEmpty()) {
 			conditionalQueries = null;

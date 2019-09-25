@@ -171,7 +171,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	private AssessmentResultController resultCtrl;
 	private TestSessionController testSessionController;
 
-	private DialogBoxController advanceTestPartDialog, endTestPartDialog;
+	private DialogBoxController endTestPartDialog;
+	private DialogBoxController advanceTestPartDialog;
 	private DialogBoxController confirmCancelDialog;
 	private DialogBoxController confirmSuspendDialog;
 	
@@ -431,6 +432,13 @@ public class AssessmentTestDisplayController extends BasicController implements 
 	@Override
 	public AssessmentTestSession getCandidateSession() {
 		return candidateSession;
+	}
+	
+	protected AssessmentTestSession getCandidateSession(boolean reload) {
+		if(reload) {
+			candidateSession = qtiService.reloadAssessmentTestSession(candidateSession);
+		}
+		return getCandidateSession();
 	}
 	
 	@Override
@@ -2159,11 +2167,11 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		private void doSaveMenuWidth(UserRequest ureq, String newMenuWidth) {
 			this.menuWidth = newMenuWidth;
 			if(StringHelper.containsNonWhitespace(newMenuWidth)) {
-				flc.contextPut("menuWidth", newMenuWidth);
+				flc.getFormItemComponent().getContext().put("menuWidth", newMenuWidth);
 				if(testEntry != null) {
 					UserSession usess = ureq.getUserSession();
 					if (usess.isAuthenticated() && !usess.getRoles().isGuestOnly()) {
-						usess.getGuiPreferences().putAndSave(this.getClass(), getMenuPrefsKey(), newMenuWidth);
+						usess.getGuiPreferences().commit(this.getClass(), getMenuPrefsKey(), newMenuWidth);
 					}
 				}
 			}
@@ -2195,14 +2203,14 @@ public class AssessmentTestDisplayController extends BasicController implements 
 					&& deliveryOptions.getAssessmentResultsOptions() != null
 					&& !deliveryOptions.getAssessmentResultsOptions().none()) {
 				removeAsListenerAndDispose(resultCtrl);
-				// show results in anonym mode to hide the user info table - user knows who he is (same as on test start page)
-				AssessmentTestSession candidateSession = AssessmentTestDisplayController.this.getCandidateSession();
+				// show results in anonymous mode to hide the user info table - user knows who he is (same as on test start page)
+				AssessmentTestSession cSession = AssessmentTestDisplayController.this.getCandidateSession(true);
 				resultCtrl = new AssessmentResultController(ureq, getWindowControl(), assessedIdentity, true,
-						candidateSession, fUnzippedDirRoot, mapperUri, null,
+						cSession, fUnzippedDirRoot, mapperUri, null,
 						deliveryOptions.getAssessmentResultsOptions(), false, true, true);
 				listenTo(resultCtrl);
 				flc.add("qtiResults", resultCtrl.getInitialFormItem());
-				if(candidateSession.isAuthorMode()) {
+				if(cSession.isAuthorMode()) {
 					restartTest.setVisible(true);
 				}
 				resultsVisible = true;

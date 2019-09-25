@@ -67,7 +67,6 @@ import org.olat.core.gui.control.generic.closablewrapper.CloseableModalControlle
 import org.olat.core.gui.control.generic.modal.ButtonClickedEvent;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
-import org.olat.core.id.Roles;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.activity.CoreLoggingResourceable;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
@@ -485,7 +484,6 @@ public class FileUploadController extends FormBasicController {
 	private void doFinishComment(UserRequest ureq) {
 		String comment = commentVersionCtr.getComment();
 		
-		Roles roles = ureq.getUserSession().getRoles();
 		boolean locked = vfsLockManager.isLocked(existingVFSItem, VFSLockApplicationType.vfs, null);
 		if(locked && !commentVersionCtr.keepLocked()) {
 			vfsLockManager.unlock(existingVFSItem, VFSLockApplicationType.vfs);
@@ -840,6 +838,10 @@ public class FileUploadController extends FormBasicController {
 
 	public String getNewFileName() {
 		return (this.newFile != null) ? this.newFile.getName() : null; 
+	}
+	
+	public VFSContainer getUploadContainer() {
+		return uploadVFSContainer;
 	}
 
 	@Override

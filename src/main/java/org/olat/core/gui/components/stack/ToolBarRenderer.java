@@ -67,7 +67,7 @@ public class ToolBarRenderer extends DefaultComponentRenderer {
 			sb.append("</div>"); // container-fluid,
 			
 			if(!segmentsTools.isEmpty()) {
-				boolean segmentAlone = leftTools.isEmpty() && rightTools.isEmpty() && centerTools.isEmpty();
+				boolean segmentAlone = leftTools.isEmpty() && rightTools.isEmpty() && centerTools.isEmpty() && rightEdgeTools.isEmpty();
 				sb.append("<ul class='o_tools o_tools_segments list-inline")
 				  .append(" o_tools_segments_alone", segmentAlone).append("'>");
 				
