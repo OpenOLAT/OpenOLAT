@@ -38,17 +38,9 @@ import org.olat.modules.webFeed.ui.podcast.PodcastUIFactory;
  */
 public class PodcastNodeEditController extends FeedNodeEditController {
 
-	/**
-	 * Constructor
-	 * 
-	 * @param courseNode
-	 * @param course
-	 * @param uce
-	 * @param ureq
-	 * @param control
-	 */
-	public PodcastNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce, UserRequest ureq,
-			WindowControl control) {
-		super(courseNode, course, uce, PodcastUIFactory.getInstance(ureq.getLocale()), PodcastFileResource.TYPE_NAME, ureq, control);
+	public PodcastNodeEditController(AbstractFeedCourseNode courseNode, ICourse course, UserCourseEnvironment uce,
+			UserRequest ureq, WindowControl control) {
+		super(ureq, control, courseNode, course, uce, PodcastUIFactory.getInstance(ureq.getLocale()),
+				PodcastFileResource.TYPE_NAME, "Knowledge Transfer#_podcast");
 	}
 }
