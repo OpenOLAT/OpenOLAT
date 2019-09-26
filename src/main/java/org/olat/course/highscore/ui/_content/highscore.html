@@ -9,9 +9,11 @@
 		<div class="panel-body">
 			<div class="container-fluid o_highscore o_block_large_bottom">
 			<div class="row clearfix">
-			#if ($position) 
+			#if ($position)
 				<div class="o_position o_block_bottom">
-					<h2>$r.translate("highscore.position.congratulation")</h2>
+					#if($r.isFalse($failed))
+						<h2>$r.translate("highscore.position.congratulation")</h2>
+					#end
 					$position
 					#if($relposition)					
 					<span class="o_position_relative">
@@ -38,7 +40,7 @@
 							<div class="o_score">$score1 $r.translate("graph.axis.points")</div>
 						#end
 						<div class="o_name">
-						#if ($first != "")$first<br />#end
+						#if ($first != "")$first<br>#end
 						#if ($r.available("link1")) 
 							$r.render("link1") 
 						#elseif ($further1)
@@ -63,7 +65,7 @@
 							<div class="o_score">$score2 $r.translate("graph.axis.points")</div>
 						#end
 						<div class="o_name">
-						#if ($second != "")$second<br /> #end
+						#if ($second != "")$second<br>#end
 						#if ($r.available("link2")) 
 							$r.render("link2") 
 						#elseif ($further2)
@@ -88,7 +90,7 @@
 							<div class="o_score">$score3 $r.translate("graph.axis.points")</div>
 						#end
 						<div class="o_name">
-						#if ($third != "")$third<br />#end
+						#if ($third != "")$third<br>#end
 						#if ($r.available("link3")) 
 							$r.render("link3")	
 						#elseif ($further3)
@@ -118,12 +120,12 @@
 		</div>
 	</div>
 </div>
-<script>/* <![CDATA[ */
-		jQuery('#o_collapseHighscore').on('hide.bs.collapse', function () {
-			jQuery('#o_collapseHighscoreToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-	  		$r.backgroundCommand("hide")
-		}).on('show.bs.collapse', function () {
-			jQuery('#o_collapseHighscoreToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-			$r.backgroundCommand("show")
-		})
-	/* ]]> */</script>
+<script>
+jQuery('#o_collapseHighscore').on('hide.bs.collapse', function () {
+	jQuery('#o_collapseHighscoreToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+ 		$r.backgroundCommand("hide")
+}).on('show.bs.collapse', function () {
+	jQuery('#o_collapseHighscoreToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+	$r.backgroundCommand("show")
+})
+</script>
