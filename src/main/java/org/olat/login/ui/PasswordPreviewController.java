@@ -31,6 +31,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Util;
 import org.olat.login.LoginModule;
@@ -76,7 +77,7 @@ public class PasswordPreviewController extends FormBasicController {
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == closeLink) {
-			fireEvent(ureq, FormEvent.DONE_EVENT);
+			fireEvent(ureq, Event.DONE_EVENT);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
