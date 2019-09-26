@@ -50,6 +50,7 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableCalloutWindowController;
 import org.olat.core.id.Identity;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.prefs.Preferences;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.highscore.manager.HighScoreManager;
@@ -185,6 +186,9 @@ public class HighScoreRunController extends FormBasicController{
 		
 		allScores = highscoreDataModel.getScores();
 
+		boolean failed = (ownEntry != null && ownEntry.getPassed() != null && !ownEntry.getPassed().booleanValue());
+		flc.contextPut("failed", Boolean.valueOf(failed));
+
 		// init showConfig from user Prefs
 		doLoadShowConfig(ureq);
 		
@@ -197,7 +201,7 @@ public class HighScoreRunController extends FormBasicController{
 	 */
 	private void doLoadShowConfig(UserRequest ureq) {
 		// add as listener to form layout for later dispatchinf of gui prefs changes
-		this.flc.getFormItemComponent().addListener(this);
+		flc.getFormItemComponent().addListener(this);
 		// init showConfig from user prefs
 		Boolean showConfig = Boolean.TRUE;
 		if (ureq != null) {
@@ -208,7 +212,7 @@ public class HighScoreRunController extends FormBasicController{
 			}
 		}
 		// expose initial value to velocity
-		this.flc.contextPut("showConfig", Boolean.valueOf(showConfig));
+		flc.contextPut("showConfig", showConfig);
 	}
 	
 	private void doUpdateShowConfig(UserRequest ureq, boolean newValue) {
@@ -223,7 +227,7 @@ public class HighScoreRunController extends FormBasicController{
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		
-		VelocityContainer mainVC = this.flc.getFormItemComponent();
+		VelocityContainer mainVC = flc.getFormItemComponent();
 		mainVC.put("loadd3js", new StatisticsComponent("d3loader"));
 		
 		if (viewHistogram) {
@@ -234,7 +238,7 @@ public class HighScoreRunController extends FormBasicController{
 			scoreHistogramVC.contextPut("datas", BarSeries.datasToString(allScores));
 			//histogram marker for own position
 			scoreHistogramVC.contextPut("cutValue",
-					ownIdIndices.size() > 0 ? highScoreManager.calculateHistogramCutvalue(
+					!ownIdIndices.isEmpty() ? highScoreManager.calculateHistogramCutvalue(
 							allMembers.get(ownIdIndices.get(0)).getScore(), modifiedData.getClasswidth(),
 							modifiedData.getMin()) : -1000);
 			//classwidth to correctly display the histogram
@@ -256,12 +260,12 @@ public class HighScoreRunController extends FormBasicController{
 					&& allPodium.get(1).size() <= maxPerson && allPodium.get(2).size() <= maxPerson;
 			for (int i = 0; i < localizer.length; i++) {
 				int sizePerPos = allPodium.get(i).size();
-				StringBuilder sb = new StringBuilder();
+				StringBuilder sb = new StringBuilder(64);
 				if (sizePerPos > 2){
 					int reduce = 0;
 					//create link if podium has more than 2 entries per rank, entries can be displayed as anonymous
 					if (allPodium.get(i).get(0).getIdentity().equals(ownIdentity)) {
-						sb.append(userManager.getUserDisplayName(ownIdentity));
+						sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(ownIdentity)));
 						++reduce;
 					}
 
@@ -277,8 +281,8 @@ public class HighScoreRunController extends FormBasicController{
 				} else {
 					for (HighScoreTableEntry te : allPodium.get(i)) {
 						if (!anonymous || te.getIdentity().equals(ownIdentity)) {
-							sb.append(userManager.getUserDisplayName(te.getIdentity()));
-							sb.append("<br/>");
+							sb.append(StringHelper.escapeHtml(userManager.getUserDisplayName(te.getIdentity())));
+							sb.append("<br>");
 						}						
 					}							
 				}
