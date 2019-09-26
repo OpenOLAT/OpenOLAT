@@ -1271,7 +1271,7 @@ function o_ffEvent(formNam, dispIdField, dispId, eventIdField, eventInt){
 	if (formValid) {
 		var enctype = form.attr('enctype');
 		if(enctype && enctype.indexOf("multipart") == 0) {
-			o_XHRSubmitMultipart(formNam);
+			form.submit(); // jQuery send onsubmit events
 		} else if (document.forms[formNam].onsubmit()) {
 			document.forms[formNam].submit();
 		}
@@ -1351,16 +1351,6 @@ function o_XHRSubmit(formNam) {
 		});
 		return false;
 	}
-}
-
-function o_XHRSubmitMultipart(formNam) {
-	var form = jQuery('#' + formNam);
-	var iframeName = "openolat-submit-" + ("" + Math.random()).substr(2);
-	var iframe = o_createIFrame(iframeName);
-	document.body.appendChild(iframe);
-	form.attr('target', iframe.name);
-	form.submit();
-	form.attr('target','');
 }
 
 function o_createIFrame(iframeName) {
