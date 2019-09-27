@@ -43,7 +43,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
-import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibleTreeFilter;
@@ -133,7 +132,7 @@ public class CourseTemplateSearchController extends FormBasicController {
 		if(courseNode instanceof PortfolioCourseNode) {
 			PortfolioCourseNode pNode = (PortfolioCourseNode)courseNode;
 			TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(uce)
-					.build(new TreeEvaluation(), new VisibleTreeFilter())
+					.build(new VisibleTreeFilter())
 					.getNodeById(pNode.getIdent());
 			if (treeNode != null && treeNode.isAccessible()) {
 				RepositoryEntry refEntry = pNode.getReferencedRepositoryEntry();

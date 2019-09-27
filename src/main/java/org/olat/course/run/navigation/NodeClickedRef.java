@@ -25,7 +25,7 @@
 
 package org.olat.course.run.navigation;
 
-import java.util.List;
+import java.util.Collection;
 
 import org.olat.core.gui.components.tree.TreeModel;
 import org.olat.core.gui.control.Controller;
@@ -57,7 +57,7 @@ public class NodeClickedRef {
 	// (which can only be the case if even the root course node is not visible)
 	private String selectedNodeId;
 	
-	private List<String> openNodeIds;
+	private Collection<String> openNodeIds;
 
 	// the coursenode which was called when clicking the treenode (used only to
 	// update scoring on that coursenode).
@@ -79,7 +79,7 @@ public class NodeClickedRef {
 	 * @param nodeConstructionResult null means that no new node controller has
 	 *          been created, but is was handled by the subtreemodellistener
 	 */
-	NodeClickedRef(TreeModel treeModel, boolean visible, String selectedNodeId, List<String> openNodeIds, CourseNode calledCourseNode,
+	NodeClickedRef(TreeModel treeModel, boolean visible, String selectedNodeId, Collection<String> openNodeIds, CourseNode calledCourseNode,
 			NodeRunConstructionResult nodeConstructionResult, boolean handledBySubTreeModelListener) {
 		this.treeModel = treeModel;
 		this.visible = visible;
@@ -121,7 +121,7 @@ public class NodeClickedRef {
 		}
 	}
 	
-	public List<String> getOpenNodeIds() {
+	public Collection<String> getOpenNodeIds() {
 		return openNodeIds;
 	}
 

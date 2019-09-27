@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
@@ -44,8 +45,6 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.CourseTreeNode;
-import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibleTreeFilter;
@@ -188,27 +187,23 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		CourseNode courseNode = course.getRunStructure().getNode(nodeIdS);
 		if (log.isDebugEnabled()) log.debug("courseNode=" + courseNode );
 		
-		TreeEvaluation treeEval = new TreeEvaluation();
-		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-				.build(treeEval, new VisibleTreeFilter())
-				.getRootNode();
-
-		CourseTreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);
-		if (newCalledTreeNode == null) {
+		TreeNode treeNode = CoreSpringFactory.getImpl(NodeAccessService.class)
+				.getCourseTreeModelBuilder(userCourseEnv)
+				.build(new VisibleTreeFilter())
+				.getNodeById(courseNode.getIdent());
+		if (treeNode == null) {
 			// TreeNode no longer visible
 			return false;
 		}
 
-		if (log.isDebugEnabled()) log.debug("call accessible=" + newCalledTreeNode.isAccessible() );
-		if (newCalledTreeNode.isAccessible()) {
+		if (log.isDebugEnabled()) log.debug("call accessible=" + treeNode.isAccessible() );
+		if (treeNode.isAccessible()) {
 			CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(courseNode);
 			bcContextEntry.setTransientState(new CourseNodeEntry(courseNode));
 			return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)
 					&& super.checkAccess(bcContextEntry, businessControl, identity, roles);		
-		} else {
-			return false;
 		}
+		return false;
 	}
 	
 	private CourseNodeIndexer getCourseNodeIndexer(CourseNode node) {

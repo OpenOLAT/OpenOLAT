@@ -41,7 +41,6 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.IndentedNodeRenderer;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
-import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.VisibleTreeFilter;
 
@@ -89,7 +88,7 @@ public class LearningPathListController extends FormBasicController {
 
 	void loadModel() {
 		LearningPathCourseTreeModelBuilder learningPathCourseTreeModelBuilder = new LearningPathCourseTreeModelBuilder(userCourseEnv);
-		GenericTreeModel learningPathTreeModel = learningPathCourseTreeModelBuilder.build(new TreeEvaluation(), new VisibleTreeFilter());
+		GenericTreeModel learningPathTreeModel = learningPathCourseTreeModelBuilder.build(new VisibleTreeFilter());
 		List<LearningPathRow> rows = forgeRows(learningPathTreeModel);
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);

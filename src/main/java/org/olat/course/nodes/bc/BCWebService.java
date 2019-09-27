@@ -65,7 +65,6 @@ import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.ModuleConfiguration;
@@ -482,7 +481,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(uce)
-				.build(new TreeEvaluation(), new VisibleTreeFilter())
+				.build(new VisibleTreeFilter())
 				.getNodeById(node.getIdent());
 		NodeEvaluation nodeEvaluation = courseTreeNode.getNodeEvaluation();
 

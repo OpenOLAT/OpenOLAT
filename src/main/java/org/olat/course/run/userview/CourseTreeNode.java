@@ -25,6 +25,7 @@ import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
 
 /**
+ * Wrapper around a CourseNode. The CourseTreeNode has always the same ident as the corresponding CourseNode
  * 
  * Initial date: 6 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com

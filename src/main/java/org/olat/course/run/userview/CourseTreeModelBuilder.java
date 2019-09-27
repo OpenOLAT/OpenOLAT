@@ -36,28 +36,27 @@ public abstract class CourseTreeModelBuilder {
 		this.userCourseEnv = userCourseEnv;
 	}
 	
-	public GenericTreeModel build(TreeEvaluation treeEval, TreeFilter filter) {
+	public GenericTreeModel build(TreeFilter filter) {
 		CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 		int treeLevel = 0;
-		CourseTreeNode rootTreeNode = getCourseTreeNode(rootNode, treeEval, filter, treeLevel);
+		CourseTreeNode rootTreeNode = getCourseTreeNode(rootNode, filter, treeLevel);
 		GenericTreeModel treeModel = new GenericTreeModel();
 		treeModel.setRootNode(rootTreeNode);
 		return treeModel;
 	}
 	
-	private CourseTreeNode getCourseTreeNode(CourseNode courseNode, TreeEvaluation treeEval, TreeFilter filter, int treeLevel) {
+	private CourseTreeNode getCourseTreeNode(CourseNode courseNode, TreeFilter filter, int treeLevel) {
 		CourseTreeNode treeNode = createCourseTreeNode(courseNode, treeLevel);
 		if(filter != null && !filter.isVisible(courseNode)) {
 			treeNode.setVisible(false);
 		}
 		
-		treeEval.cacheCourseToTreeNode(courseNode, treeNode);
 		if (treeNode.isVisible()) {
 			int childLevel = treeLevel + 1;
 			int childCount = courseNode.getChildCount();
 			for (int i = 0; i < childCount; i++) {
 				CourseNode cn = (CourseNode) courseNode.getChildAt(i);
-				CourseTreeNode child = getCourseTreeNode(cn, treeEval, filter, childLevel);
+				CourseTreeNode child = getCourseTreeNode(cn, filter, childLevel);
 				if (child.isVisible()) {
 					// if the parent is not accessible the child is not accessible as well!
 					if (!treeNode.isAccessible()) {

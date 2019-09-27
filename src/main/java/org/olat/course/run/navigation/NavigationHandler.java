@@ -25,8 +25,6 @@
 
 package org.olat.course.run.navigation;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -71,7 +69,6 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.cp.CPRunController;
 import org.olat.course.run.userview.CourseTreeNode;
-import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -91,7 +88,6 @@ public class NavigationHandler implements Disposable {
 	private String selectedCourseNodeId;
 	private TreeFilter filter;
 	private Set<String> openCourseNodeIds = new HashSet<>();
-	private List<String> openTreeNodeIds = new ArrayList<>();
 	private Map<String,SubTree> externalTreeModels = new HashMap<>();
 	
 	@Autowired
@@ -256,23 +252,15 @@ public class NavigationHandler implements Disposable {
 				String sObject = (String)userObject;
 				if(MenuTree.COMMAND_TREENODE_CLICKED.equals(treeEvent.getCommand()) && treeEvent.getSubCommand() == null) {
 					openCourseNodeIds.add(sObject);
-					if(!openTreeNodeIds.contains(sObject)) {
-						openTreeNodeIds.add(sObject);
-					}
 					selectedNodeId = selTN.getIdent();
 				} else if(TreeEvent.COMMAND_TREENODE_OPEN.equals(treeEvent.getSubCommand())) {
 					openCourseNodeIds.add(sObject);
-					if(!openTreeNodeIds.contains(sObject)) {
-						openTreeNodeIds.add(sObject);
-					}
 					selectedNodeId = selTN.getIdent();
 					dispatch = false;
 				} else if(TreeEvent.COMMAND_TREENODE_CLOSE.equals(treeEvent.getSubCommand())) {
 					removeChildrenFromOpenNodes(selTN);
 					openCourseNodeIds.remove(sObject);
-					openTreeNodeIds.remove(sObject);
 					openCourseNodeIds.remove(selTN.getIdent());
-					openTreeNodeIds.remove(selTN.getIdent());
 					dispatch = false;
 				}
 			}
@@ -282,37 +270,32 @@ public class NavigationHandler implements Disposable {
 				subtreemodelListener.dispatchEvent(ureq, null, treeEvent);
 				// no node construction result indicates handled
 			}
-			ncr = new NodeClickedRef(treeModel, true, selectedNodeId, openTreeNodeIds, internCourseNode, nrcr, true);
+			ncr = new NodeClickedRef(treeModel, true, selectedNodeId, openCourseNodeIds, internCourseNode, nrcr, true);
 		}
 		return ncr;
 	}
 	
 	public NodeClickedRef reloadTreeAfterChanges(CourseNode courseNode) {
-		
-		TreeEvaluation treeEval = new TreeEvaluation();
-		GenericTreeModel treeModel = createTreeModel(treeEval);
-		
-		CourseTreeNode courseTreeNode = treeEval.getCorrespondingTreeNode(courseNode.getIdent());
-		NodeClickedRef nclr;
-		if(courseTreeNode == null) {
-			nclr = null;
-		} else {
+		GenericTreeModel treeModel = createTreeModel();
+		TreeNode treeNode = treeModel.getNodeById(courseNode.getIdent());
+		NodeClickedRef nclr = null;
+		if (treeNode instanceof CourseTreeNode) {
+			CourseTreeNode courseTreeNode = (CourseTreeNode) treeNode;
 			ControllerEventListener subtreemodelListener = null;
 			if(externalTreeModels.containsKey(courseNode.getIdent())) {
 				SubTree subTree = externalTreeModels.get(courseNode.getIdent());
 				subtreemodelListener = subTree.getTreeModelListener();
-				reattachExternalTreeModels(treeEval);
+				reattachExternalTreeModels(treeModel);
 			}
 			
-			openTreeNodeIds = convertToTreeNodeIds(treeEval, openCourseNodeIds);
 			selectedCourseNodeId = courseTreeNode.getCourseNode().getIdent();
 			
 			if(subtreemodelListener == null) {
-				nclr = new NodeClickedRef(treeModel, true, selectedCourseNodeId, openTreeNodeIds, courseTreeNode.getCourseNode(), null, false);
+				nclr = new NodeClickedRef(treeModel, true, selectedCourseNodeId, openCourseNodeIds, courseTreeNode.getCourseNode(), null, false);
 			} else {
-				nclr = new NodeClickedRef(treeModel, true, selectedCourseNodeId, openTreeNodeIds, courseTreeNode.getCourseNode(), null, true);
+				nclr = new NodeClickedRef(treeModel, true, selectedCourseNodeId, openCourseNodeIds, courseTreeNode.getCourseNode(), null, true);
 			}
-	}
+		}
 		return nclr;
 	}
 
@@ -323,21 +306,13 @@ public class NavigationHandler implements Disposable {
 			log.debug("evaluateJumpTo courseNode = " + courseNode.getIdent() + ", " + courseNode.getShortName());
 		}
 
-		TreeEvaluation treeEval = new TreeEvaluation();
-		GenericTreeModel treeModel = createTreeModel(treeEval);
+		GenericTreeModel treeModel = createTreeModel();
 
 		// find the treenode that corresponds to the node (!= selectedTreeNode since
-		// we built the TreeModel anew in the meantime
-		CourseTreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);
-		if (newCalledTreeNode == null) {
-			// the clicked node is not visible anymore!
-			// if the new calculated model does not contain the selected node anymore
-			// (because of visibility changes of at least one of the ancestors
-			// -> issue an user infomative msg
-			// nclr: the new treemodel, not visible, no selected nodeid, no
-			// calledcoursenode, no nodeconstructionresult
-			nclr = new NodeClickedRef(treeModel, false, null, null, null, null, false);
-		} else {
+		// we built the TreeModel anew in the meantime)
+		TreeNode newCalledNode = treeModel.getNodeById(courseNode.getIdent());
+		if (newCalledNode instanceof CourseTreeNode) {
+			CourseTreeNode newCalledTreeNode = (CourseTreeNode) newCalledNode;
 			// calculate the NodeClickedRef
 			// 1. get the correct (new) courseTreeNodes
 			if (newCalledTreeNode.getCourseNode() != null && !newCalledTreeNode.getCourseNode().equals(courseNode)) {
@@ -451,10 +426,10 @@ public class NavigationHandler implements Disposable {
 				
 				if(TreeEvent.COMMAND_TREENODE_OPEN.equals(nodeSubCmd)) {
 					openCourseNodeIds.add(courseNode.getIdent());
-					newSelectedNodeId = convertToTreeNodeId(treeEval, selectedCourseNodeId);
+					newSelectedNodeId = selectedCourseNodeId;
 				} else if(TreeEvent.COMMAND_TREENODE_CLOSE.equals(nodeSubCmd)) {
 					removeChildrenFromOpenNodes(courseNode);
-					newSelectedNodeId = convertToTreeNodeId(treeEval, selectedCourseNodeId);
+					newSelectedNodeId = selectedCourseNodeId;
 					if(!isInParentLine(courseNode)) {
 						selectedCourseNodeId = courseNode.getIdent();
 					} else {
@@ -473,8 +448,7 @@ public class NavigationHandler implements Disposable {
 					}
 				}
 				
-				openTreeNodeIds = convertToTreeNodeIds(treeEval, openCourseNodeIds);
-				reattachExternalTreeModels(treeEval);
+				reattachExternalTreeModels(treeModel);
 				
 				boolean evaluateTree = false;
 				for (NodeVisitedListener nodeVisitedListener : nodeVisitedListeners) {
@@ -484,31 +458,39 @@ public class NavigationHandler implements Disposable {
 					}
 				}
 				if (evaluateTree) {
-					treeModel = createTreeModel(treeEval);;
+					treeModel = createTreeModel();;
 				}
 				
 				if((TreeEvent.COMMAND_TREENODE_OPEN.equals(nodeSubCmd) || TreeEvent.COMMAND_TREENODE_CLOSE.equals(nodeSubCmd)) &&
 						currentNodeController != null && !currentNodeController.isDisposed()) {
-					nclr = new NodeClickedRef(treeModel, true, null, openTreeNodeIds, null, null, false);
+					nclr = new NodeClickedRef(treeModel, true, null, openCourseNodeIds, null, null, false);
 				} else {
 					// nclr: the new treemodel, visible, selected nodeid, calledcoursenode,
 					// nodeconstructionresult
-					nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, openTreeNodeIds, courseNode, ncr, false);
+					nclr = new NodeClickedRef(treeModel, true, newSelectedNodeId, openCourseNodeIds, courseNode, ncr, false);
 					// attach listener; we know we have a runcontroller here
 					if (listeningController != null) {
 						nclr.getRunController().addControllerListener(listeningController);
 					}
 				}
 			}
+		} else {
+			// the clicked node is not visible anymore!
+			// if the new calculated model does not contain the selected node anymore
+			// (because of visibility changes of at least one of the ancestors
+			// -> issue an user infomative msg
+			// nclr: the new treemodel, not visible, no selected nodeid, no
+			// calledcoursenode, no nodeconstructionresult
+			nclr = new NodeClickedRef(treeModel, false, null, null, null, null, false);
 		}
 		return nclr;
 	}
 
-	private GenericTreeModel createTreeModel(TreeEvaluation treeEval) {
-		return nodeAccessService.getCourseTreeModelBuilder(userCourseEnv).build(treeEval, filter);
+	private GenericTreeModel createTreeModel() {
+		return nodeAccessService.getCourseTreeModelBuilder(userCourseEnv).build(filter);
 	}
 	
-	private void reattachExternalTreeModels(TreeEvaluation treeEval) {
+	private void reattachExternalTreeModels(GenericTreeModel courseTreeModel) {
 		if(externalTreeModels == null || externalTreeModels.isEmpty()) return;
 		
 		for(Map.Entry<String, SubTree> entry:externalTreeModels.entrySet()) {
@@ -516,8 +498,7 @@ public class NavigationHandler implements Disposable {
 			SubTree subTree = entry.getValue();
 			TreeModel treeModel = subTree.getTreeModel();
 			
-			CourseNode courseNode = userCourseEnv.getCourseEnvironment().getRunStructure().getNode(courseNodeId);
-			TreeNode treeNode = treeEval.getCorrespondingTreeNode(courseNode);
+			TreeNode treeNode = courseTreeModel.getNodeById(courseNodeId);
 			if(treeNode != null) {
 				addSubTreeModel(treeNode, treeModel);
 			}
@@ -584,28 +565,6 @@ public class NavigationHandler implements Disposable {
 		}
 	}
 	
-	private List<String> convertToTreeNodeIds(TreeEvaluation treeEval, Collection<String> courseNodeIds) {
-		if(courseNodeIds == null || courseNodeIds.isEmpty()) return new ArrayList<>();
-
-		List<String> convertedIds = new ArrayList<>(courseNodeIds.size());
-		for(String courseNodeId:courseNodeIds) {
-			convertedIds.add(convertToTreeNodeId(treeEval, courseNodeId));
-		}
-		return convertedIds;
-	}
-	
-	private String convertToTreeNodeId(TreeEvaluation treeEval, String courseNodeId) {
-		if(courseNodeId == null) return null;
-		
-		CourseNode courseNode = userCourseEnv.getCourseEnvironment().getRunStructure().getNode(courseNodeId);
-		TreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);
-		if(newCalledTreeNode == null) {
-			return courseNodeId;
-		} else {
-			return newCalledTreeNode.getIdent();
-		}
-	}
-
 	private void addSubTreeModel(TreeNode parent, TreeModel modelToAppend) {
 		// ignore root and directly add children.
 		// need to clone children so that are not detached from their original

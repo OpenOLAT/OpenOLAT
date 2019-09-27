@@ -55,7 +55,6 @@ import org.olat.course.nodes.bc.BCCourseNodeEditController;
 import org.olat.course.nodes.bc.FolderNodeCallback;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.NodeEvaluation;
-import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.course.run.userview.VisibleTreeFilter;
@@ -98,12 +97,11 @@ public class MergedCourseElementDataContainer extends MergeSource {
 				}
 			}, course.getRunStructure().getRootNode(), true).visitAll();
 		} else if(course instanceof PersistingCourseImpl) {
-			TreeEvaluation treeEval = new TreeEvaluation();
 			PersistingCourseImpl persistingCourse = (PersistingCourseImpl)course;
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 			CourseTreeNode rootTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-					.build(treeEval, new VisibleTreeFilter())
+					.build(new VisibleTreeFilter())
 					.getRootNode();
 	
 			new TreeVisitor(node -> {
@@ -151,11 +149,10 @@ public class MergedCourseElementDataContainer extends MergeSource {
 			CourseNode rootNode = persistingCourse.getRunStructure().getRootNode();
 			addFoldersForAdmin(persistingCourse, this, rootNode);
 		} else {
-			TreeEvaluation treeEval = new TreeEvaluation();
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 			CourseTreeNode treeRoot = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-					.build(treeEval, new VisibleTreeFilter())
+					.build(new VisibleTreeFilter())
 					.getRootNode();
 			addFolders(persistingCourse, this, treeRoot);
 		}

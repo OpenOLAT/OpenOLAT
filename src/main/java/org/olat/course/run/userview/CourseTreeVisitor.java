@@ -60,16 +60,15 @@ public class CourseTreeVisitor {
 	public boolean isAccessible(CourseNode node, TreeFilter filter) {
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(uce)
-				.build(new TreeEvaluation(), filter)
+				.build(filter)
 				.getNodeById(node.getIdent());
 		return treeNode != null? treeNode.isAccessible(): false;
 	}
 	
 	public void visit(Visitor visitor, TreeFilter filter) {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		TreeEvaluation treeEval = new TreeEvaluation();
 		TreeNode rootTreeNode = nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-				.build(treeEval, filter)
+				.build(filter)
 				.getRootNode();
 		visit(visitor, rootTreeNode);
 	}
