@@ -43,8 +43,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PortfolioCourseNode;
-import org.olat.course.run.navigation.NavigationHandler;
-import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -137,16 +135,14 @@ public class CourseTemplateSearchController extends FormBasicController {
 			TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(uce)
 					.build(new TreeEvaluation(), new VisibleTreeFilter())
 					.getNodeById(pNode.getIdent());
-			if (treeNode instanceof CourseTreeNode) {
-				if(NavigationHandler.mayAccessWholeTreeUp((CourseTreeNode)treeNode)) {
-					RepositoryEntry refEntry = pNode.getReferencedRepositoryEntry();
-					if("BinderTemplate".equals(refEntry.getOlatResource().getResourceableTypeName())) {
-						RepositoryEntry courseEntry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-						
-						CurrentBinder binderKey = new CurrentBinder(courseEntry.getKey(), pNode.getIdent());
-						if(!currentSet.contains(binderKey)) {
-							rows.add(new CourseTemplateRow(courseEntry, pNode, refEntry));
-						}
+			if (treeNode != null && treeNode.isAccessible()) {
+				RepositoryEntry refEntry = pNode.getReferencedRepositoryEntry();
+				if("BinderTemplate".equals(refEntry.getOlatResource().getResourceableTypeName())) {
+					RepositoryEntry courseEntry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+					
+					CurrentBinder binderKey = new CurrentBinder(courseEntry.getKey(), pNode.getIdent());
+					if(!currentSet.contains(binderKey)) {
+						rows.add(new CourseTemplateRow(courseEntry, pNode, refEntry));
 					}
 				}
 			}

@@ -56,7 +56,6 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.STCourseNode;
-import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.TreeEvaluation;
@@ -137,7 +136,7 @@ public class STCourseNodeRunController extends BasicController {
 					CourseNode child = childCourseTreeNode.getCourseNode();
 					Controller childViewController = null;
 					Controller childPeekViewController = null;
-					boolean accessible = NavigationHandler.mayAccessWholeTreeUp(childCourseTreeNode);
+					boolean accessible = childCourseTreeNode.isAccessible();
 					if (displayType.equals(STCourseNodeEditController.CONFIG_VALUE_DISPLAY_PEEKVIEW)) {
 						if (peekviewChildNodes.size() == 0) {
 							// Special case: no child nodes configured. This is the case when

@@ -346,10 +346,6 @@ public class NavigationHandler implements Disposable {
 			if (!newCalledTreeNode.isVisible()) {
 				throw new AssertException("node eval not visible!!");
 			}
-			// 2. start with the current NodeEvaluation, evaluate overall accessiblity
-			// per node bottom-up to see if all ancestors still grant access to the
-			// desired node
-			boolean mayAccessWholeTreeUp = mayAccessWholeTreeUp(newCalledTreeNode);
 			String newSelectedNodeId = newCalledTreeNode.getIdent();
 			Controller controller;
 			AdditionalConditionManager addMan = null;
@@ -359,7 +355,7 @@ public class NavigationHandler implements Disposable {
 				addMan = new AdditionalConditionManager((AbstractAccessableCourseNode)courseNode, courseId, identityEnv);
 			}
 			
-			if (!mayAccessWholeTreeUp|| (addMan != null && !addMan.evaluateConditions())) {
+			if (!newCalledTreeNode.isAccessible() || (addMan != null && !addMan.evaluateConditions())) {
 				// we cannot access the node anymore (since e.g. a time constraint
 				// changed), so give a (per-node-configured) explanation why and what
 				// the access conditions would be (a free form text, should be
@@ -642,17 +638,6 @@ public class NavigationHandler implements Disposable {
 			INode guiChild = guiNode.getChildAt(i);
 			copyIdent((TreeNode)guiChild, (TreeNode)originalChild);
 		}
-	}
-	
-	public static boolean mayAccessWholeTreeUp(CourseTreeNode courseTreeNode) {
-		CourseTreeNode curTreeNode = courseTreeNode;
-		boolean mayAccess;
-		do {
-			mayAccess = curTreeNode.isAccessible();
-			curTreeNode = (CourseTreeNode) curTreeNode.getParent();
-		} while (curTreeNode != null && mayAccess);
-		// top reached or may not access node
-		return mayAccess;
 	}
 	
 	private static class SubTree {

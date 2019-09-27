@@ -59,6 +59,10 @@ public abstract class CourseTreeModelBuilder {
 				CourseNode cn = (CourseNode) courseNode.getChildAt(i);
 				CourseTreeNode child = getCourseTreeNode(cn, treeEval, filter, childLevel);
 				if (child.isVisible()) {
+					// if the parent is not accessible the child is not accessible as well!
+					if (!treeNode.isAccessible()) {
+						child.setAccessible(false);
+					}
 					treeNode.addChild(child);
 				}
 			}

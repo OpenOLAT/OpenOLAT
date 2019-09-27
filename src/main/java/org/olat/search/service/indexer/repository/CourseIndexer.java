@@ -35,7 +35,6 @@ import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
-import org.olat.core.logging.AssertException;
 import org.olat.core.logging.StartupException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.nodes.INode;
@@ -45,7 +44,6 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -202,12 +200,8 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 			return false;
 		}
 
-		if (!newCalledTreeNode.isVisible()) throw new AssertException("node eval not visible!!");
-		if (log.isDebugEnabled()) log.debug("call mayAccessWholeTreeUp..." );
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(courseTreeNode);
-		if (log.isDebugEnabled()) log.debug("call mayAccessWholeTreeUp=" + mayAccessWholeTreeUp );
-		
-		if (mayAccessWholeTreeUp) {
+		if (log.isDebugEnabled()) log.debug("call accessible=" + newCalledTreeNode.isAccessible() );
+		if (newCalledTreeNode.isAccessible()) {
 			CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(courseNode);
 			bcContextEntry.setTransientState(new CourseNodeEntry(courseNode));
 			return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)

@@ -37,7 +37,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
-import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -112,8 +111,7 @@ public class CourseSite extends AbstractSiteInstance {
 				CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(uce)
 						.build(new TreeEvaluation(), new VisibleTreeFilter())
 						.getRootNode();
-				boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(courseTreeNode);
-				hasAccess = mayAccessWholeTreeUp && courseTreeNode.isVisible();
+				hasAccess = courseTreeNode.isVisible() && courseTreeNode.isAccessible();
 			}
 		}
 		

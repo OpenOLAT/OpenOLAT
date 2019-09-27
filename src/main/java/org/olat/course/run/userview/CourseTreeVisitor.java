@@ -27,7 +27,6 @@ import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.navigation.NavigationHandler;
 
 /**
  * 
@@ -63,33 +62,25 @@ public class CourseTreeVisitor {
 		TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(uce)
 				.build(new TreeEvaluation(), filter)
 				.getNodeById(node.getIdent());
-		if (treeNode instanceof CourseTreeNode) {
-			boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp((CourseTreeNode)treeNode);
-			if(mayAccessWholeTreeUp) {
-				return true;
-			}
-		}
-
-		return false;
+		return treeNode != null? treeNode.isAccessible(): false;
 	}
 	
 	public void visit(Visitor visitor, TreeFilter filter) {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		TreeEvaluation treeEval = new TreeEvaluation();
-		CourseTreeNode rootTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+		TreeNode rootTreeNode = nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
 				.build(treeEval, filter)
 				.getRootNode();
-		visit(visitor, rootTreeNode, userCourseEnv, treeEval, filter);
+		visit(visitor, rootTreeNode);
 	}
 	
-	private void visit(Visitor visitor, CourseTreeNode node, UserCourseEnvironment userCourseEnv, TreeEvaluation treeEval, TreeFilter filter) {
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(node);
-		if(mayAccessWholeTreeUp) {
+	private void visit(Visitor visitor, TreeNode node) {
+		if(node.isAccessible()) {
 			visitor.visit(node);
 			for(int i=0; i<node.getChildCount(); i++) {
-				CourseTreeNode childNode = (CourseTreeNode)node.getChildAt(i);
-				visit(visitor, childNode, userCourseEnv, treeEval, filter);
-			}	
+				TreeNode childNode = (TreeNode)node.getChildAt(i);
+				visit(visitor, childNode);
+			}
 		}
 	}
 }
