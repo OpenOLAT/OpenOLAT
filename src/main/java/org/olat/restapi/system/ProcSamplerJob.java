@@ -43,6 +43,7 @@ import org.olat.restapi.system.MonitoringService.Statistics;
 import org.olat.restapi.system.vo.SessionsVO;
 import org.olat.search.SearchServiceStatus;
 import org.olat.search.service.SearchServiceFactory;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.w3c.dom.Document;
@@ -58,6 +59,7 @@ import net.fortuna.ical4j.util.TimeZones;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@DisallowConcurrentExecution
 public class ProcSamplerJob extends QuartzJobBean {
 
 	private static final Logger log = Tracing.createLoggerFor(ProcSamplerJob.class);

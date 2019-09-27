@@ -28,12 +28,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.ObjectDeletedException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -54,7 +56,9 @@ import org.quartz.JobExecutionException;
  */
 @DisallowConcurrentExecution
 public class VideoTranscodingJob extends JobWithDB {
-	private ArrayList<String> resolutionsWithProfile = new ArrayList<>(Arrays.asList("1080", "720", "480"));
+	
+	private static final Logger log = Tracing.createLoggerFor(VideoTranscodingJob.class);
+	private final List<String> resolutionsWithProfile = new ArrayList<>(Arrays.asList("1080", "720", "480"));
 
 	@Override
 	public void executeWithDB(JobExecutionContext context) throws JobExecutionException {

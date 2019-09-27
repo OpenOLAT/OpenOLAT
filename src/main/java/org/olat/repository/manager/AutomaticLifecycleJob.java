@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.logging.Tracing;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -32,6 +33,7 @@ import org.quartz.JobExecutionException;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@DisallowConcurrentExecution
 public class AutomaticLifecycleJob extends JobWithDB {
 	
 	private static final Logger logger = Tracing.createLoggerFor(AutomaticLifecycleJob.class);

@@ -26,6 +26,7 @@ package org.olat.core.commons.services.notifications.manager;
 
 import org.olat.core.commons.services.notifications.NotificationsManager;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -37,6 +38,7 @@ import org.quartz.JobExecutionException;
  * Initial Date:  09.09.2008 <br>
  * @author guido
  */
+@DisallowConcurrentExecution
 public class EmailNotificationJob extends JobWithDB {
 
 	

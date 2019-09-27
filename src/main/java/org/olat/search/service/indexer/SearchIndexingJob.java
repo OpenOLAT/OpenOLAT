@@ -24,10 +24,13 @@
 */
 package org.olat.search.service.indexer;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
 import org.olat.search.SearchService;
 import org.olat.search.service.SearchServiceFactory;
 import org.olat.search.service.SearchServiceImpl;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -41,12 +44,11 @@ import org.quartz.UnableToInterruptJobException;
  * Initial Date:  09.09.2008 <br>
  * @author Christian Guretzki
  */
+@DisallowConcurrentExecution
 public class SearchIndexingJob extends JobWithDB implements InterruptableJob {
 
-	/**
-	 * 
-	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
-	 */
+	private static final Logger log = Tracing.createLoggerFor(SearchIndexingJob.class);
+
 	@Override
 	public void executeWithDB(JobExecutionContext arg0) throws JobExecutionException {
 		log.info("Search indexer started via cronjob.");

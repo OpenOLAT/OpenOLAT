@@ -22,6 +22,7 @@ package org.olat.core.commons.services.csp.manager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.csp.CSPManager;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -31,6 +32,7 @@ import org.quartz.JobExecutionException;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@DisallowConcurrentExecution
 public class CSPLogCleanup extends JobWithDB {
 
 	@Override

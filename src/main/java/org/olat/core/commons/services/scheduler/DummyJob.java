@@ -24,6 +24,9 @@
 */
 package org.olat.core.commons.services.scheduler;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -36,11 +39,11 @@ import org.quartz.JobExecutionException;
  * Initial Date:  09.09.2008 <br>
  * @author guido
  */
+@DisallowConcurrentExecution
 public class DummyJob extends JobWithDB {
+	
+	private static final Logger log = Tracing.createLoggerFor(DummyJob.class);
 
-	/**
-	 * @see org.springframework.scheduling.quartz.QuartzJobBean#executeInternal(org.quartz.JobExecutionContext)
-	 */
 	@Override
 	public void executeWithDB(JobExecutionContext arg0)
 	throws JobExecutionException {

@@ -22,6 +22,7 @@ package org.olat.modules.vitero.manager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.modules.vitero.ViteroModule;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 
 /**
@@ -36,6 +37,7 @@ import org.quartz.JobExecutionContext;
  *
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@DisallowConcurrentExecution
 public class ViteroZombieSlayerJob extends JobWithDB  {
 
 	@Override

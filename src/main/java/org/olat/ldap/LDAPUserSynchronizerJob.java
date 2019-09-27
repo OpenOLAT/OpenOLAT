@@ -19,8 +19,11 @@
  */
 package org.olat.ldap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -33,11 +36,12 @@ import org.quartz.JobExecutionException;
  * 
  * @author gnaegi
  */
+@DisallowConcurrentExecution
 public class LDAPUserSynchronizerJob extends JobWithDB {
 
-	/**
-	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
-	 */
+	private static final Logger log = Tracing.createLoggerFor(LDAPUserSynchronizerJob.class);
+
+	@Override
 	public void executeWithDB(JobExecutionContext arg0)
 	throws JobExecutionException {
 		try {

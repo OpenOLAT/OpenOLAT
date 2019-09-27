@@ -26,6 +26,7 @@ package org.olat.admin.registration;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -39,6 +40,7 @@ import org.quartz.JobExecutionException;
  * 
  * @author gnaegi
  */
+@DisallowConcurrentExecution
 public class SystemRegistrationJob extends JobWithDB {
 
 	/**
