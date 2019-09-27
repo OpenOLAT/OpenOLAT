@@ -1291,8 +1291,8 @@
 						<configuration>
 							<target>
 								<mkdir dir="${project.build.directory}/downloads" />
-								<get src="https://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/8.0.24/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
-								<unzip src="${project.build.directory}/downloads/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/arq-apache-tomcat-8.0.24" />
+								<get src="https://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/8.5.45/apache-tomcat-arq-8.5.45.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
+								<unzip src="${project.build.directory}/downloads/apache-tomcat-arq-8.5.45.zip" dest="${project.build.directory}/arq-apache-tomcat-8.5.45" />
 							</target>
 						</configuration>
 					</execution> 

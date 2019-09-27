@@ -190,6 +190,7 @@ public class ViteroBookingWebService {
 			vBooking.setEndBuffer(booking.getEndBuffer());
 			vBooking.setRoomSize(booking.getRoomSize());
 			vBooking.setAutoSignIn(booking.isAutoSignIn());
+			vBooking.setInspire(booking.isInspire());
 			vBooking.setTimeZoneId(viteroModule.getTimeZoneId());
 			
 			ViteroStatus status;
