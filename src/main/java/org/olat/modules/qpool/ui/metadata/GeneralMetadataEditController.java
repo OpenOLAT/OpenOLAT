@@ -95,15 +95,18 @@ public class GeneralMetadataEditController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		String topic = item.getTopic();
 		topicEl = uifactory.addTextElement("general.topic", "general.topic", 1000, topic, formLayout);
+		topicEl.setElementCssClass("o_sel_qpool_metadata_topic");
 		
 		taxonomyLevelEl = uifactory.addDropdownSingleselect("general.taxonomy.level", formLayout, new String[0],
 				new String[0]);
+		taxonomyLevelEl.setElementCssClass("o_sel_qpool_metadata_taxonomy");
 		buildTaxonomyLevelEl();
 		taxonomyLevelEl.setVisible(qPoolSecurityCallback.canUseTaxonomy());
 		
 		KeyValues contexts = MetaUIFactory.getContextKeyValues(getTranslator(), qpoolService);
 		contextEl = uifactory.addDropdownSingleselect("educational.context", "educational.context", formLayout,
 				contexts.getKeys(), contexts.getValues(), null);
+		contextEl.setElementCssClass("o_sel_qpool_metadata_context");
 		contextEl.setAllowNoSelection(true);
 		contextEl.setEnabled(contexts.getKeys().length > 0);
 		if (item.getEducationalContext() != null) {
@@ -113,26 +116,32 @@ public class GeneralMetadataEditController extends FormBasicController {
 		
 		String keywords = item.getKeywords();
 		keywordsEl = uifactory.addTextElement("general.keywords", "general.keywords", 1000, keywords, formLayout);
+		keywordsEl.setElementCssClass("o_sel_qpool_metadata_keywords");
 		
 		String addInfos = item.getAdditionalInformations();
 		addInfosEl = uifactory.addTextElement("general.additional.informations", "general.additional.informations", 256,
 				addInfos, formLayout);
+		addInfosEl.setElementCssClass("o_sel_qpool_metadata_add_infos");
 		
 		String coverage = item.getCoverage();
 		coverageEl = uifactory.addTextElement("general.coverage", "general.coverage", 1000, coverage, formLayout);
+		coverageEl.setElementCssClass("o_sel_qpool_metadata_coverage");
 
 		String language = item.getLanguage();
 		languageEl = uifactory.addTextElement("general.language", "general.language", 10, language, formLayout);
+		languageEl.setElementCssClass("o_sel_qpool_metadata_language");
 		
 		KeyValues types = MetaUIFactory.getAssessmentTypes(getTranslator());
 		assessmentTypeEl = uifactory.addDropdownSingleselect("question.assessmentType", "question.assessmentType",
 				formLayout, types.getKeys(), types.getValues(), null);
+		assessmentTypeEl.setElementCssClass("o_sel_qpool_metadata_assessment_type");
 		assessmentTypeEl.setAllowNoSelection(true);
 		if(StringHelper.containsNonWhitespace(item.getAssessmentType())) {
 			assessmentTypeEl.select(item.getAssessmentType(), true);
 		}
 		
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setElementCssClass("o_sel_qpool_metadata_buttons");
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);

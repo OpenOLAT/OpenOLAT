@@ -149,9 +149,10 @@ public class CourseElementTest extends Deployments {
 		//check that the default title of CP (Lorem Ipsum) is visible in the iframe
 		By iframe = By.cssSelector("div.o_iframedisplay>iframe");
 		OOGraphene.waitElement(iframe, browser);
+		OOGraphene.waitingALittleBit();
 		WebElement cpIframe = browser.findElement(iframe);
 		browser.switchTo().frame(cpIframe);
-		browser.findElement(By.xpath("//h2[text()='Lorem Ipsum']"));
+		OOGraphene.waitElement(By.xpath("//h2[text()='Lorem Ipsum']"), browser);
 	}
 	
 	/**

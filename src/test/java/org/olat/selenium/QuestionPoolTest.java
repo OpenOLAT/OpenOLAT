@@ -172,5 +172,78 @@ public class QuestionPoolTest extends Deployments {
 			.selectMyQuestions()
 			.assertFinalQuestionInList(questionTitle);
 	}
+	
+	/**
+	 * An author create a QTI 2.1 question, a multiple choice,
+	 * and fill the general metadata. Go back in list and check
+	 * the metadata are there.
+	 * 
+	 * @param loginPage
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	@Test
+	@RunAsClient
+	public void questionPoolGeneralMetadata()
+	throws IOException, URISyntaxException {
+		// prepare taxonomy
+		LoginPage loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs("administrator", "openolat")
+			.resume();
+		AdministrationPage administration = NavigationPage.load(browser)
+			.openAdministration();
+		// add a level
+		administration
+			.openQuestionPool()
+			.selectLevels()
+			.addLevel("Primary School")
+			.assertLevelInList("Primary School");
+		// configure the taxonomy
+		administration
+			.openTaxonomy()
+			.selectTaxonomy("QPOOL")
+			.assertOnMetadata()
+			.selectTaxonomyTree()
+			.atLeastOneLevel("one-fore-question-pool", "One for question pool");
+		
+		new UserToolsPage(browser).logout();
+		
+		// The author create a new question with metadata
+		UserVO author = new UserRestClient(deploymentUrl).createAuthor("Lili");
+
+		loginPage = LoginPage.load(browser, deploymentUrl);
+		loginPage
+			.loginAs(author.getLogin(), author.getPassword())
+			.resume();
+		
+		String questionTitle = "MetaMC-" + UUID.randomUUID();
+		NavigationPage navBar = NavigationPage.load(browser);
+		QuestionPoolPage questionPool = navBar.assertOnNavigationPage()
+			.openQuestionPool();
+		questionPool
+			.selectMyQuestions()
+			.newQuestion(questionTitle, QTI21QuestionType.mc)
+			.metadata().openGeneral()
+			.setGeneralMetadata("New topic", "One for question pool", "Primary School",
+					"Interessant", "Add. infos", "Wide coverage", "formative")
+			.saveGeneralMetadata();
+		
+		questionPool	
+			.clickToolbarBack()
+			.assertQuestionInList(questionTitle, QTI21QuestionType.mc.name())
+			.openQuickView(questionTitle)
+			.metadata()
+			.openGeneral()
+			.assertTopic("New topic")
+			.assertTaxonomy("One for question pool")
+			.assertLevel("Primary School")
+			.assertKeywords("Interessant")
+			.assertAdditionalInfos("Add. infos")
+			.assertCoverage("Wide coverage")
+			.assertAssessmentType("formative");
+		
+		// open quick view
+	}
 
 }

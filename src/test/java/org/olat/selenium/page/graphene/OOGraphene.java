@@ -21,6 +21,7 @@ package org.olat.selenium.page.graphene;
 
 import java.io.File;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.Calendar;
 import java.util.Date;
@@ -31,11 +32,13 @@ import java.util.function.Predicate;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementNotVisibleException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -745,5 +748,21 @@ public class OOGraphene {
 		} catch (Exception e) {
 			//e.printStackTrace();
 		}
+	}
+	
+	public static void takeScreenshot(String test, WebDriver browser) {
+		TakesScreenshot scrShot = ((TakesScreenshot)browser);
+		File screenFile = scrShot.getScreenshotAs(org.openqa.selenium.OutputType.FILE);
+		
+		SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
+		String filename = test + "" + format.format(new Date()) + ".jpg";
+		File path = new File("screenshots");
+		if(!path.exists() && !path.mkdirs()) {
+			path = new File(System.getProperty("java.io.tmpdir"), "screenshots");
+			path.mkdirs();
+		}
+		File screenshotFile = new File(path, filename);
+		log.error("Write screenshot: {} {}", test, screenshotFile);
+		FileUtils.copyFileToFile(screenFile, screenshotFile, true);
 	}
 }

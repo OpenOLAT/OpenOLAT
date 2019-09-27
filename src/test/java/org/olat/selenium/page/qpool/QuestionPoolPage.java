@@ -131,6 +131,13 @@ public class QuestionPoolPage {
 	}
 	
 	/**
+	 * @return Access to the metadata panel
+	 */
+	public QuestionMetadataPage metadata() {
+		return QuestionMetadataPage.getPage(browser);
+	}
+	
+	/**
 	 * Start the process, confirm with the first taxonomy level found.
 	 * 
 	 * @return Itself
@@ -153,6 +160,16 @@ public class QuestionPoolPage {
 	public QuestionPoolPage assertQuestionInList(String title, String type) {
 		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()='" + type + "']]/td[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(rowBy, browser);
+		return this;
+	}
+	
+	public QuestionPoolPage openQuickView(String title) {
+		By quickViewBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + title + "')]]]/td/a[contains(@href,'quick-view')]");
+		OOGraphene.waitElement(quickViewBy, browser);
+		browser.findElement(quickViewBy).click();
+		
+		By viewBy = By.cssSelector("tr.o_table_row_details>td #o_qti_container");
+		OOGraphene.waitElement(viewBy, browser);
 		return this;
 	}
 	

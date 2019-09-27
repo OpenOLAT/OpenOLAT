@@ -63,8 +63,14 @@ public class QEducationalContextEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		formLayout.setElementCssClass("o_sel_edit_level_form");
+		
 		String name = itemLevel == null ? "" : itemLevel.getLevel();
 		nameEl = uifactory.addTextElement("level.level", "level.level", 128, name, formLayout);
+		nameEl.setElementCssClass("o_sel_level_name");
+		if(!StringHelper.containsNonWhitespace(name)) {
+			nameEl.setFocus(true);
+		}
 
 		FormLayoutContainer buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
 		buttonsCont.setRootForm(mainForm);
