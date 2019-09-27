@@ -19,8 +19,8 @@
  */
 package org.olat.course.learningpath.evaluation;
 
-import org.olat.course.learningpath.LearningPathRoles;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * 
@@ -30,6 +30,6 @@ import org.olat.course.learningpath.ui.LearningPathTreeNode;
  */
 public interface AccessEvaluator {
 
-	public boolean isAccessible(LearningPathTreeNode currentNode, LearningPathRoles roles);
+	public boolean isAccessible(LearningPathTreeNode currentNode, UserCourseEnvironment userCourseEnv);
 
 }

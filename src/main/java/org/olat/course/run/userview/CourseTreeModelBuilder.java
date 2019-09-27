@@ -19,33 +19,45 @@
  */
 package org.olat.course.run.userview;
 
+import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.course.nodes.CourseNode;
 
 /**
  * 
- * Initial date: 2 Sep 2019<br>
+ * Initial date: 25 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public abstract class CourseTreeNodeBuilder {
+public abstract class CourseTreeModelBuilder {
 	
-	public CourseTreeNode build(CourseNode courseNode, TreeEvaluation treeEval,
-			TreeFilter filter) {
-		return getCourseTreeNode(courseNode, treeEval, filter);
-	}
+	protected UserCourseEnvironment userCourseEnv;
 
-	private CourseTreeNode getCourseTreeNode(CourseNode courseNode, TreeEvaluation treeEval, TreeFilter filter) {
-		CourseTreeNode treeNode = createCourseTreeNode(courseNode);
+	protected CourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
+		this.userCourseEnv = userCourseEnv;
+	}
+	
+	public GenericTreeModel build(TreeEvaluation treeEval, TreeFilter filter) {
+		CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+		int treeLevel = 0;
+		CourseTreeNode rootTreeNode = getCourseTreeNode(rootNode, treeEval, filter, treeLevel);
+		GenericTreeModel treeModel = new GenericTreeModel();
+		treeModel.setRootNode(rootTreeNode);
+		return treeModel;
+	}
+	
+	private CourseTreeNode getCourseTreeNode(CourseNode courseNode, TreeEvaluation treeEval, TreeFilter filter, int treeLevel) {
+		CourseTreeNode treeNode = createCourseTreeNode(courseNode, treeLevel);
 		if(filter != null && !filter.isVisible(courseNode)) {
 			treeNode.setVisible(false);
 		}
 		
 		treeEval.cacheCourseToTreeNode(courseNode, treeNode);
 		if (treeNode.isVisible()) {
-			int childcnt = courseNode.getChildCount();
-			for (int i = 0; i < childcnt; i++) {
+			int childLevel = treeLevel + 1;
+			int childCount = courseNode.getChildCount();
+			for (int i = 0; i < childCount; i++) {
 				CourseNode cn = (CourseNode) courseNode.getChildAt(i);
-				CourseTreeNode child = getCourseTreeNode(cn, treeEval, filter);
+				CourseTreeNode child = getCourseTreeNode(cn, treeEval, filter, childLevel);
 				if (child.isVisible()) {
 					treeNode.addChild(child);
 				}
@@ -54,6 +66,6 @@ public abstract class CourseTreeNodeBuilder {
 		return treeNode;
 	}
 
-	protected abstract CourseTreeNode createCourseTreeNode(CourseNode courseNode);
+	protected abstract CourseTreeNode createCourseTreeNode(CourseNode courseNode, int treeLevel);
 
 }

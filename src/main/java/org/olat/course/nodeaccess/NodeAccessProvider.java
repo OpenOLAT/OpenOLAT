@@ -23,7 +23,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.CourseTreeNodeBuilder;
+import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.assessment.Role;
@@ -42,7 +42,7 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel);
 
-	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment);
+	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
 
 	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
 			Double completion, AssessmentEntryStatus status, Role by);

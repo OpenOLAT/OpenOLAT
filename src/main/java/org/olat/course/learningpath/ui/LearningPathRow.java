@@ -47,7 +47,7 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 
 	@Override
 	public int getRecursionLevel() {
-		return learningPathNode.getRecursionLevel();
+		return learningPathNode.getTreeLevel();
 	}
 
 	@Override
@@ -66,11 +66,11 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	}
 
 	public AssessmentEntryStatus getStatus() {
-		return learningPathNode.getStatus();
+		return learningPathNode.getAssessmentStatus();
 	}
 
 	public Date getDateDone() {
-		return learningPathNode.getDateDone();
+		return learningPathNode.getAssessmentDone();
 	}
 
 	public AssessmentObligation getObligation() {
@@ -79,10 +79,6 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 
 	public Integer getDuration() {
 		return learningPathNode.getDuration();
-	}
-
-	public Double getProgress() {
-		return learningPathNode.getProgress();
 	}
 
 	public Component getProgressBar() {

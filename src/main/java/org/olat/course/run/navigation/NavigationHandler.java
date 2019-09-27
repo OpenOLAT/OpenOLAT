@@ -290,8 +290,7 @@ public class NavigationHandler implements Disposable {
 	public NodeClickedRef reloadTreeAfterChanges(CourseNode courseNode) {
 		
 		TreeEvaluation treeEval = new TreeEvaluation();
-		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-		GenericTreeModel treeModel = createTreeModel(rootCn, treeEval);
+		GenericTreeModel treeModel = createTreeModel(treeEval);
 		
 		CourseTreeNode courseTreeNode = treeEval.getCorrespondingTreeNode(courseNode.getIdent());
 		NodeClickedRef nclr;
@@ -324,9 +323,8 @@ public class NavigationHandler implements Disposable {
 			log.debug("evaluateJumpTo courseNode = " + courseNode.getIdent() + ", " + courseNode.getShortName());
 		}
 
-		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 		TreeEvaluation treeEval = new TreeEvaluation();
-		GenericTreeModel treeModel = createTreeModel(rootCn, treeEval);
+		GenericTreeModel treeModel = createTreeModel(treeEval);
 
 		// find the treenode that corresponds to the node (!= selectedTreeNode since
 		// we built the TreeModel anew in the meantime
@@ -402,10 +400,10 @@ public class NavigationHandler implements Disposable {
 						child = courseNode.getChildAt(i);
 						if (child instanceof CourseNode) {
 							CourseNode cn = (CourseNode) child;
-							CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv).build(cn, treeEval, filter);
-							if (courseTreeNode.isVisible()) {
+							TreeNode childTreeNode = treeModel.getNodeById(cn.getIdent());
+							if (childTreeNode != null) { // not visible
 								return doEvaluateJumpTo(ureq, wControl, cn, listeningController, nodecmd, nodeSubCmd,
-									currentNodeController);
+										currentNodeController);
 							}
 						}
 					}
@@ -490,8 +488,7 @@ public class NavigationHandler implements Disposable {
 					}
 				}
 				if (evaluateTree) {
-					rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-					treeModel = createTreeModel(rootCn, treeEval);;
+					treeModel = createTreeModel(treeEval);;
 				}
 				
 				if((TreeEvent.COMMAND_TREENODE_OPEN.equals(nodeSubCmd) || TreeEvent.COMMAND_TREENODE_CLOSE.equals(nodeSubCmd)) &&
@@ -511,11 +508,8 @@ public class NavigationHandler implements Disposable {
 		return nclr;
 	}
 
-	private GenericTreeModel createTreeModel(CourseNode courseNode, TreeEvaluation treeEval) {
-		CourseTreeNode treeRoot = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv).build(courseNode, treeEval, filter);
-		GenericTreeModel treeModel = new GenericTreeModel();
-		treeModel.setRootNode(treeRoot);
-		return treeModel;
+	private GenericTreeModel createTreeModel(TreeEvaluation treeEval) {
+		return nodeAccessService.getCourseTreeModelBuilder(userCourseEnv).build(treeEval, filter);
 	}
 	
 	private void reattachExternalTreeModels(TreeEvaluation treeEval) {

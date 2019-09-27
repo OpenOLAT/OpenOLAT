@@ -19,7 +19,6 @@
  */
 package org.olat.course.learningpath;
 
-import org.olat.course.learningpath.evaluation.AccessEvaluator;
 import org.olat.course.nodes.CourseNode;
 
 /**
@@ -31,7 +30,5 @@ import org.olat.course.nodes.CourseNode;
 public interface LearningPathService {
 
 	public LearningPathConfigs getConfigs(CourseNode courseNode);
-	
-	public AccessEvaluator getAccessEvaluator();
 
 }

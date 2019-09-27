@@ -35,6 +35,7 @@ import org.olat.core.dispatcher.Dispatcher;
 import org.olat.core.dispatcher.DispatcherModule;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.UserRequestImpl;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
@@ -54,7 +55,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -398,9 +398,10 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 					false);
 			// Build an evaluation tree
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-			CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
-					.build(node, new TreeEvaluation(), new VisibleTreeFilter());
-			if (courseTreeNode.isVisible() && courseTreeNode.isAccessible()) {
+			TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+					.build(new TreeEvaluation(), new VisibleTreeFilter())
+					.getNodeById(node.getIdent());
+			if (treeNode != null && treeNode.isAccessible()) {
 				hasAccess = true;
 			}
 		}

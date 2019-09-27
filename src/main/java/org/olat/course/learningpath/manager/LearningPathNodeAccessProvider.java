@@ -35,7 +35,7 @@ import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.navigation.NodeVisitedListener;
-import org.olat.course.run.userview.CourseTreeNodeBuilder;
+import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.assessment.Role;
@@ -89,8 +89,8 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeV
 	}
 
 	@Override
-	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
-		return new LearningPathCourseTreeNodeBuilder(userCourseEnvironment);
+	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
+		return new LearningPathCourseTreeModelBuilder(userCourseEnv);
 	}
 
 	@Override

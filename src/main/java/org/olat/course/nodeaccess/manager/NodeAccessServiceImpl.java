@@ -31,7 +31,7 @@ import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.CourseTreeNodeBuilder;
+import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.assessment.Role;
@@ -85,9 +85,9 @@ public class NodeAccessServiceImpl implements NodeAccessService {
 	}
 
 	@Override
-	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
-		NodeAccessType type = NodeAccessType.of(userCourseEnvironment);
-		return getNodeAccessProvider(type).getNodeEvaluationBuilder(userCourseEnvironment);
+	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
+		NodeAccessType type = NodeAccessType.of(userCourseEnv);
+		return getNodeAccessProvider(type).getCourseTreeModelBuilder(userCourseEnv);
 	}
 
 	@Override

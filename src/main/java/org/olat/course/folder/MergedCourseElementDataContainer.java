@@ -101,10 +101,10 @@ public class MergedCourseElementDataContainer extends MergeSource {
 			TreeEvaluation treeEval = new TreeEvaluation();
 			PersistingCourseImpl persistingCourse = (PersistingCourseImpl)course;
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
-			CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-			CourseTreeNode rootTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
-					.build(rootCn, treeEval, new VisibleTreeFilter());
+			CourseTreeNode rootTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+					.build(treeEval, new VisibleTreeFilter())
+					.getRootNode();
 	
 			new TreeVisitor(node -> {
 				if(node instanceof CourseTreeNode) {
@@ -153,10 +153,10 @@ public class MergedCourseElementDataContainer extends MergeSource {
 		} else {
 			TreeEvaluation treeEval = new TreeEvaluation();
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
-			CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-			CourseTreeNode treeRoot = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
-					.build(rootCn, treeEval, new VisibleTreeFilter());
+			CourseTreeNode treeRoot = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+					.build(treeEval, new VisibleTreeFilter())
+					.getRootNode();
 			addFolders(persistingCourse, this, treeRoot);
 		}
 	}

@@ -20,6 +20,7 @@
 package org.olat.course.run.userview;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.util.tree.Visitor;
 import org.olat.course.ICourse;
@@ -59,31 +60,34 @@ public class CourseTreeVisitor {
 	
 	public boolean isAccessible(CourseNode node, TreeFilter filter) {
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(uce)
-				.build(node, new TreeEvaluation(), filter);
-
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(courseTreeNode);
-		if(mayAccessWholeTreeUp) {
-			return true;
+		TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(uce)
+				.build(new TreeEvaluation(), filter)
+				.getNodeById(node.getIdent());
+		if (treeNode instanceof CourseTreeNode) {
+			boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp((CourseTreeNode)treeNode);
+			if(mayAccessWholeTreeUp) {
+				return true;
+			}
 		}
+
 		return false;
 	}
 	
 	public void visit(Visitor visitor, TreeFilter filter) {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		TreeEvaluation treeEval = new TreeEvaluation();
-		CourseNode rootNode = courseEnv.getRunStructure().getRootNode();
-		visit(visitor, rootNode, userCourseEnv, treeEval, filter);
+		CourseTreeNode rootTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+				.build(treeEval, filter)
+				.getRootNode();
+		visit(visitor, rootTreeNode, userCourseEnv, treeEval, filter);
 	}
 	
-	private void visit(Visitor visitor, CourseNode node, UserCourseEnvironment userCourseEnv, TreeEvaluation treeEval, TreeFilter filter) {
-		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
-				.build(node, treeEval, filter);
-		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(courseTreeNode);
+	private void visit(Visitor visitor, CourseTreeNode node, UserCourseEnvironment userCourseEnv, TreeEvaluation treeEval, TreeFilter filter) {
+		boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(node);
 		if(mayAccessWholeTreeUp) {
 			visitor.visit(node);
 			for(int i=0; i<node.getChildCount(); i++) {
-				CourseNode childNode = (CourseNode)node.getChildAt(i);
+				CourseTreeNode childNode = (CourseTreeNode)node.getChildAt(i);
 				visit(visitor, childNode, userCourseEnv, treeEval, filter);
 			}	
 		}

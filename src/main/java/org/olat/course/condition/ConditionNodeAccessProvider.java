@@ -30,7 +30,7 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.CourseTreeNodeBuilder;
+import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.assessment.Role;
@@ -77,8 +77,8 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment) {
-		return new ConditionCourseTreeNodeBuilder(userCourseEnvironment);
+	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
+		return new ConditionCourseTreeModelBuilder(userCourseEnv);
 	}
 
 	@Override

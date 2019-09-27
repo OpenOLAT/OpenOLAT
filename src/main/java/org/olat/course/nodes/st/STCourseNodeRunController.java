@@ -124,8 +124,9 @@ public class STCourseNodeRunController extends BasicController {
 		// grandchildren)
 		String peekviewChildNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, null);
 		List<String> peekviewChildNodes =  (peekviewChildNodesConfig == null ? new ArrayList<>() : Arrays.asList(peekviewChildNodesConfig.split(",")));
-		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
-				.build(stCourseNode, new TreeEvaluation(), new VisibleTreeFilter());
+		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+				.build( new TreeEvaluation(), new VisibleTreeFilter())
+				.getNodeById(stCourseNode.getIdent());
 		int chdCnt = courseTreeNode.getChildCount();
 		for (int i = 0; i < chdCnt; i++) {
 			INode childNode = courseTreeNode.getChildAt(i);

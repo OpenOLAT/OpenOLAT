@@ -25,7 +25,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.userview.CourseTreeNodeBuilder;
+import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
 import org.olat.modules.assessment.Role;
@@ -59,7 +59,14 @@ public interface NodeAccessService {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, NodeAccessType type,
 			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel);
 
-	public CourseTreeNodeBuilder getNodeEvaluationBuilder(UserCourseEnvironment userCourseEnvironment);
+	/**
+	 * Builder to build the TreeModel of the complete course run structure.
+	 * The builded TreeModel holds only TreeNodes of the (sub) type CourseTreeNode
+	 *
+	 * @param userCourseEnv
+	 * @return
+	 */
+	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
 
 	/**
 	 * Hook after the completion and the run status is updated.

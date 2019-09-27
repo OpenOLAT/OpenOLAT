@@ -17,33 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.condition;
 
-import org.olat.course.learningpath.model.LearningPathRolesImpl;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.CourseTreeModelBuilder;
+import org.olat.course.run.userview.CourseTreeNode;
+import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
- * Data object as a holder of the course roles.
  * 
- * Initial date: 2 Sep 2019<br>
+ * Initial date: 25 Sep 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathRoles {
-	
-	public boolean isParticipant();
-	
-	public boolean isCoach();
-	
-	public boolean isAdmin();
-	
-	public static LearningPathRoles of(boolean participant, boolean coach, boolean admin) {
-		return new LearningPathRolesImpl(participant, coach, admin);
+public class ConditionCourseTreeModelBuilder extends CourseTreeModelBuilder {
+
+	protected ConditionCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
+		super(userCourseEnv);
 	}
-	
-	public static LearningPathRoles of(UserCourseEnvironment userCourseEnvironment) {
-		return of(userCourseEnvironment.isParticipant(), userCourseEnvironment.isCoach(),
-				userCourseEnvironment.isAdmin());
+
+	@Override
+	protected CourseTreeNode createCourseTreeNode(CourseNode courseNode, int treeLevel) {
+		NodeEvaluation nodeEval = new NodeEvaluation();
+		courseNode.calcAccessAndVisibility(userCourseEnv.getConditionInterpreter(), nodeEval);
+		
+		CourseTreeNode courseTreeNode = new CourseTreeNode(courseNode, treeLevel);
+		courseTreeNode.setNodeEvaluation(nodeEval);
+		courseTreeNode.setVisible(nodeEval.isVisible());
+		courseTreeNode.setAccessible(nodeEval.isAtLeastOneAccessible());
+		return courseTreeNode;
 	}
 
 }

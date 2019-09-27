@@ -35,28 +35,43 @@ public class CourseTreeNode extends GenericTreeNode implements CourseNodeSecurit
 	private static final long serialVersionUID = -2463822839337921991L;
 	
 	private final CourseNode courseNode;
+	private final int treeLevel;
 	private boolean visible;
 	private NodeEvaluation nodeEvaluation;
-	
-	public CourseTreeNode(CourseNode courseNode) {
+
+	public CourseTreeNode(CourseNode courseNode, int treeLevel) {
 		super(courseNode.getIdent());
 		this.courseNode = courseNode;
+		this.treeLevel = treeLevel;
 		setTitle(courseNode.getShortTitle());
 		setAltText(courseNode.getLongTitle());
 		String type = courseNode.getType();
-		CourseNodeConfiguration cnConfig = CourseNodeFactory.getInstance().getCourseNodeConfigurationEvenForDisabledBB(type);
-		if(cnConfig != null) {
-			String nodeCssClass = null;
-			if (courseNode.getParent() == null) {
-				// Spacial case for root node
-				nodeCssClass = "o_CourseModule_icon";
-			} else {
-				nodeCssClass = cnConfig.getIconCSSClass();
+		CourseNodeFactory courseNodeFactory = CourseNodeFactory.getInstance();
+		// courseNodeFactory may be null in pure JUnitTests.
+		// Usually this code does not mater in JUnitTests, so just ignore it.
+		if (courseNodeFactory != null) {
+			CourseNodeConfiguration cnConfig = courseNodeFactory.getCourseNodeConfigurationEvenForDisabledBB(type);
+			if(cnConfig != null) {
+				String nodeCssClass = null;
+				if (courseNode.getParent() == null) {
+					// Spacial case for root node
+					nodeCssClass = "o_CourseModule_icon";
+				} else {
+					nodeCssClass = cnConfig.getIconCSSClass();
+				}
+				setIconCssClass(nodeCssClass);
 			}
-			setIconCssClass(nodeCssClass);
 		}
 	}
 	
+	public CourseNode getCourseNode() {
+		return courseNode;
+	}
+	
+	public int getTreeLevel() {
+		return treeLevel;
+	}
+
 	@Override
 	public boolean isVisible() {
 		return visible;
@@ -66,14 +81,11 @@ public class CourseTreeNode extends GenericTreeNode implements CourseNodeSecurit
 		this.visible = visible;
 	}
 	
-	public CourseNode getCourseNode() {
-		return courseNode;
-	}
-	
 	@Override
 	public NodeEvaluation getNodeEvaluation() {
 		return nodeEvaluation;
 	}
+	
 	public void setNodeEvaluation(NodeEvaluation nodeEvaluation) {
 		this.nodeEvaluation = nodeEvaluation;
 	}

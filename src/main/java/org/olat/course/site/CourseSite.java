@@ -35,7 +35,6 @@ import org.olat.core.util.UserSession;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
-import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
 import org.olat.course.run.navigation.NavigationHandler;
@@ -107,12 +106,12 @@ public class CourseSite extends AbstractSiteInstance {
 				hasAccess = false;
 			} else {
 				// check within course: accessibility of course root node
-				CourseNode rootNode = course.getRunStructure().getRootNode();
 				UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ureq.getUserSession().getIdentityEnvironment(), course
 						.getCourseEnvironment());
 				NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-				CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(uce)
-						.build(rootNode, new TreeEvaluation(), new VisibleTreeFilter());
+				CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(uce)
+						.build(new TreeEvaluation(), new VisibleTreeFilter())
+						.getRootNode();
 				boolean mayAccessWholeTreeUp = NavigationHandler.mayAccessWholeTreeUp(courseTreeNode);
 				hasAccess = mayAccessWholeTreeUp && courseTreeNode.isVisible();
 			}

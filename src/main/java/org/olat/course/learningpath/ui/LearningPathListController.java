@@ -39,8 +39,11 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
+import org.olat.course.run.userview.TreeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibleTreeFilter;
 
 /**
  * 
@@ -85,8 +88,8 @@ public class LearningPathListController extends FormBasicController {
 	}
 
 	void loadModel() {
-		GenericTreeModel learningPathTreeModel = LearningPathTreeModelBuilder.builder(userCourseEnv)
-				.create();
+		LearningPathCourseTreeModelBuilder learningPathCourseTreeModelBuilder = new LearningPathCourseTreeModelBuilder(userCourseEnv);
+		GenericTreeModel learningPathTreeModel = learningPathCourseTreeModelBuilder.build(new TreeEvaluation(), new VisibleTreeFilter());
 		List<LearningPathRow> rows = forgeRows(learningPathTreeModel);
 		dataModel.setObjects(rows);
 		tableEl.reset(true, true, true);
@@ -120,7 +123,7 @@ public class LearningPathListController extends FormBasicController {
 
 	private LearningPathRow forgeRow(LearningPathTreeNode treeNode, LearningPathRow parent) {
 		ProgressBar progressBar = new ProgressBar("progress-" + treeNode.getIdent());
-		float actual = treeNode.getProgress() != null? treeNode.getProgress().floatValue(): 0.0f;
+		float actual = treeNode.getCompletion() != null? treeNode.getCompletion().floatValue(): 0.0f;
 		progressBar.setActual(actual);
 		progressBar.setMax(1.0f);
 		progressBar.setWidthInPercent(true);

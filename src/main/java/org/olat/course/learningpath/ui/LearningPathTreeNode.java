@@ -21,8 +21,9 @@ package org.olat.course.learningpath.ui;
 
 import java.util.Date;
 
-import org.olat.core.gui.components.tree.GenericTreeNode;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -32,72 +33,39 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathTreeNode extends GenericTreeNode {
+public class LearningPathTreeNode extends CourseTreeNode {
 
 	private static final long serialVersionUID = -9033714563825036957L;
 	
-	private final CourseNode courseNode;
-	private final int recursionLevel;
-	private AssessmentEntryStatus status;
-	private AssessmentObligation obligation;
-	private Date dateDone;
-	private Integer duration;
-	private Double progress;
+	private final AssessmentEvaluation assessmentEvaluation;
 
-	public LearningPathTreeNode(CourseNode courseNode, int recursionLevel) {
-		this.courseNode = courseNode;
-		this.recursionLevel = recursionLevel;
-		if (courseNode != null) {
-			setIdent(courseNode.getIdent());
-		}
+	public LearningPathTreeNode(CourseNode courseNode, int treeLevel, AssessmentEvaluation assessmentEvaluation) {
+		super(courseNode, treeLevel);
+		this.assessmentEvaluation = assessmentEvaluation;
 	}
 
-	public AssessmentEntryStatus getStatus() {
-		return status;
+	public AssessmentEntryStatus getAssessmentStatus() {
+		return assessmentEvaluation != null? assessmentEvaluation.getAssessmentStatus(): null;
 	}
 
-	public void setStatus(AssessmentEntryStatus status) {
-		this.status = status;
-	}
-
-	public AssessmentObligation getObligation() {
-		return obligation;
-	}
-
-	public void setObligation(AssessmentObligation obligation) {
-		this.obligation = obligation;
-	}
-
-	public Date getDateDone() {
-		return dateDone;
-	}
-
-	public void setDateDone(Date dateDone) {
-		this.dateDone = dateDone;
+	public Boolean getFullyAssessed() {
+		return assessmentEvaluation != null? assessmentEvaluation.getFullyAssessed(): null;
 	}
 
 	public Integer getDuration() {
-		return duration;
+		return assessmentEvaluation != null? assessmentEvaluation.getDuration(): null;
 	}
 
-	public void setDuration(Integer duration) {
-		this.duration = duration;
+	public AssessmentObligation getObligation() {
+		return assessmentEvaluation != null? assessmentEvaluation.getObligation(): null;
 	}
 
-	public Double getProgress() {
-		return progress;
+	public Double getCompletion() {
+		return assessmentEvaluation != null? assessmentEvaluation.getCompletion(): null;
 	}
 
-	public void setProgress(Double progress) {
-		this.progress = progress;
+	public Date getAssessmentDone() {
+		return assessmentEvaluation != null? assessmentEvaluation.getAssessmentDone(): null;
 	}
-
-	public CourseNode getCourseNode() {
-		return courseNode;
-	}
-
-	public int getRecursionLevel() {
-		return recursionLevel;
-	}
-
+	
 }

@@ -186,16 +186,15 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 		if (log.isDebugEnabled()) log.debug("userCourseEnv=" + userCourseEnv + "ienv=" + ienv );
 		
-		CourseNode rootCn = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
-
 		String nodeIdS = nodeId.toString();
 		CourseNode courseNode = course.getRunStructure().getNode(nodeIdS);
 		if (log.isDebugEnabled()) log.debug("courseNode=" + courseNode );
 		
 		TreeEvaluation treeEval = new TreeEvaluation();
 		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
-		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
-				.build(rootCn, treeEval, new VisibleTreeFilter());
+		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+				.build(treeEval, new VisibleTreeFilter())
+				.getRootNode();
 
 		CourseTreeNode newCalledTreeNode = treeEval.getCorrespondingTreeNode(courseNode);
 		if (newCalledTreeNode == null) {

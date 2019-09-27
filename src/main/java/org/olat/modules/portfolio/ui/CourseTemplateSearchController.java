@@ -34,6 +34,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFle
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
+import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.IdentityEnvironment;
@@ -133,16 +134,19 @@ public class CourseTemplateSearchController extends FormBasicController {
 			List<CourseTemplateRow> rows, Set<CurrentBinder> currentSet) {
 		if(courseNode instanceof PortfolioCourseNode) {
 			PortfolioCourseNode pNode = (PortfolioCourseNode)courseNode;
-			CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(uce)
-					.build(pNode, new TreeEvaluation(), new VisibleTreeFilter());
-			if(NavigationHandler.mayAccessWholeTreeUp(courseTreeNode)) {
-				RepositoryEntry refEntry = pNode.getReferencedRepositoryEntry();
-				if("BinderTemplate".equals(refEntry.getOlatResource().getResourceableTypeName())) {
-					RepositoryEntry courseEntry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-					
-					CurrentBinder binderKey = new CurrentBinder(courseEntry.getKey(), pNode.getIdent());
-					if(!currentSet.contains(binderKey)) {
-						rows.add(new CourseTemplateRow(courseEntry, pNode, refEntry));
+			TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(uce)
+					.build(new TreeEvaluation(), new VisibleTreeFilter())
+					.getNodeById(pNode.getIdent());
+			if (treeNode instanceof CourseTreeNode) {
+				if(NavigationHandler.mayAccessWholeTreeUp((CourseTreeNode)treeNode)) {
+					RepositoryEntry refEntry = pNode.getReferencedRepositoryEntry();
+					if("BinderTemplate".equals(refEntry.getOlatResource().getResourceableTypeName())) {
+						RepositoryEntry courseEntry = uce.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+						
+						CurrentBinder binderKey = new CurrentBinder(courseEntry.getKey(), pNode.getIdent());
+						if(!currentSet.contains(binderKey)) {
+							rows.add(new CourseTemplateRow(courseEntry, pNode, refEntry));
+						}
 					}
 				}
 			}

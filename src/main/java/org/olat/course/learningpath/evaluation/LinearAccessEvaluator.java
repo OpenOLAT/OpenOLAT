@@ -21,8 +21,8 @@ package org.olat.course.learningpath.evaluation;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
-import org.olat.course.learningpath.LearningPathRoles;
 import org.olat.course.learningpath.ui.LearningPathTreeNode;
+import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -38,15 +38,15 @@ public class LinearAccessEvaluator implements AccessEvaluator {
 	private static final AssessmentEntryStatus[] accessibleStati = {
 			AssessmentEntryStatus.done,
 			AssessmentEntryStatus.inProgress,
+			AssessmentEntryStatus.inReview,
 			AssessmentEntryStatus.notStarted
 	};
-			
-
+	
 	@Override
-	public boolean isAccessible(LearningPathTreeNode currentNode, LearningPathRoles roles) {
-		if (roles.isAdmin() || roles.isCoach()) return true;
+	public boolean isAccessible(LearningPathTreeNode currentNode, UserCourseEnvironment userCourseEnv) {
+		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) return true;
 		
-		AssessmentEntryStatus status = currentNode.getStatus();
+		AssessmentEntryStatus status = currentNode.getAssessmentStatus();
 		boolean hasAccess = hasAccess(status);
 		log.debug("Access for couse node {} ({}): status '{}' => access '{}'",
 				currentNode.getIdent(),
@@ -55,7 +55,6 @@ public class LinearAccessEvaluator implements AccessEvaluator {
 				hasAccess);
 		return hasAccess;
 	}
-
 
 	private boolean hasAccess(AssessmentEntryStatus status) {
 		for (AssessmentEntryStatus accessibleStatus : accessibleStati) {

@@ -67,8 +67,9 @@ public class STPeekViewController extends BasicController {
 
 		genericPeekViewVC = createVelocityContainer("stPeekView");
 		
-		CourseTreeNode courseTreeNode = nodeAccessService.getNodeEvaluationBuilder(userCourseEnv)
-				.build(courseNode, new TreeEvaluation(), new VisibleTreeFilter());
+		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+				.build(new TreeEvaluation(), new VisibleTreeFilter())
+				.getNodeById(courseNode.getIdent());
 		List<CourseNode> childNodes = new ArrayList<>();
 		// Loop over node evaluations of visible nodes
 		int chdCnt = courseTreeNode.getChildCount();
