@@ -117,9 +117,10 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 			builder.queryParam("source-sco-id", templateId);
 		}
 		if(startDate != null) {
-			builder
-				.queryParam("date-begin", formatDate(startDate))
-				.queryParam("date-end", formatDate(endDate));
+			builder.queryParam("date-begin", formatDate(startDate));
+		}
+		if(endDate != null) {
+			builder.queryParam("date-end", formatDate(endDate));
 		}
 		
 		List<AdobeConnectSco> createdScos = sendScoRequest(builder, error);
@@ -195,9 +196,10 @@ public abstract class AbstractAdobeConnectProvider implements AdobeConnectSPI {
 			builder.queryParam("source-sco-id", templateId);
 		}
 		if(startDate != null) {
-			builder
-				.queryParam("date-begin", formatDate(startDate))
-				.queryParam("date-end", formatDate(endDate));
+			builder.queryParam("date-begin", formatDate(startDate));
+		}
+		if(endDate != null) {
+			builder.queryParam("date-end", formatDate(endDate));
 		}
 		
 		boolean ok = false;
