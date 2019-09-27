@@ -42,6 +42,7 @@ import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.resource.OLATResource;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -51,6 +52,7 @@ import org.quartz.JobExecutionException;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@DisallowConcurrentExecution
 public class VideoTranscodingJob extends JobWithDB {
 	private ArrayList<String> resolutionsWithProfile = new ArrayList<>(Arrays.asList("1080", "720", "480"));
 
