@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>14.1-SNAPSHOT</version>
+	<version>14.1-m1</version>
 	<packaging>jar</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>https://www.openolat.com</url>
@@ -28,10 +28,15 @@
 		</license>
 	</licenses>
 	<distributionManagement>
-		<repository>
+		<!-- repository>
 			<id>nexus.openolat</id>
 			<name>OpenOLAT Internal Nexus Release Repository</name>
 			<url>https://nexus.openolat.org/nexus/content/repositories/openolat</url>
+		</repository -->
+		<repository>
+			<id>github</id>
+			<name>GitHub tomgross Apache Maven Packages</name>
+			<url>https://maven.pkg.github.com/tomgross/OpenOLAT</url>
 		</repository>
 		<snapshotRepository>
 			<id>nexus.openolat</id>
