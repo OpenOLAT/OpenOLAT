@@ -117,7 +117,7 @@ public class ArquillianDeployments {
 	
 	public static WebArchive addClasses(WebArchive archive) {
 		return archive
-				.addPackages(true, new FilterUnusedPackage(), "org.olat", "de.bps", "de.tuchemnitz.wizard");
+				.addPackages(true, new FilterUnusedPackage(),  "ch.uzh.lms.listener", "org.olat", "de.bps", "de.tuchemnitz.wizard");
 	}
 	
 	public static WebArchive addWebInfResources(WebArchive archive) {
