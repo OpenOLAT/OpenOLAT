@@ -79,7 +79,7 @@ import org.olat.repository.RepositoryEntry;
 public class BCCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = 6887400715976544402L;
 	private static final String PACKAGE_BC = Util.getPackageName(BCCourseNodeRunController.class);
-	private static final String TYPE = "bc";
+	public static final String TYPE = "bc";
 	
 	private static final int CURRENT_VERSION = 3;
 	public static final String CONFIG_AUTO_FOLDER = "config.autofolder";
