@@ -109,6 +109,16 @@ test database that you configured in `src/test/profile/mysql/olat.local.properti
 MySQL or `src/test/profile/postgresql/olat.local.properties` for PostgreSQL.
 
 
+*For Oracle*: 
+
+Oracle support is experimental. The database schema is available and 
+updated for historic reason, however running OpenOlat with Oracle is 
+largely untested. Do not use it for production before you tested the 
+entire application. We are interested in adding Oracle to our list of
+fully supported and recommended database, contact us if you want to 
+sponsor this compatibility. 
+
+
 #### 3. Setting up the Tomcat server in Eclipse
 
 Setup a tomcat server by clicking on OpenOlat -> Run As -> "Run on Server". The

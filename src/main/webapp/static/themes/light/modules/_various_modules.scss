@@ -68,14 +68,14 @@ a.o_chelp {
 .o_singlepage {
 	.o_edit {
 		position: absolute;
-		top: $padding-large-vertical;
+		top: 0;
 		right: $padding-base-horizontal + $padding-xs-horizontal + $line-height-computed;
  	}
 }
 /* the clone controller is used to pop content out of the window into another window. */
 .o_content_popup {
 	position: absolute;
-	top: $padding-large-vertical;
+	top: 0;
 	right: $padding-base-horizontal;
 }
 
@@ -83,7 +83,7 @@ a.o_chelp {
 .o_module_cp_wrapper {
 	.o_tools {
 		position: absolute;
-		top: $padding-large-vertical;
+		top: 0;
 		right: $padding-base-horizontal;
 		text-align: right;
 		vertical-align: middle;

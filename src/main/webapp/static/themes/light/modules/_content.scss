@@ -44,6 +44,10 @@ a {
 h1 { 
 	color: $o-content-h1-color;
 }
+body > h1:first-child { 
+	margin-top: 0;
+}
+
 h2 { 
 	color: $o-content-h2-color;
 }
