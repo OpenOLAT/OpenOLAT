@@ -313,14 +313,10 @@ public class NavigationHandler implements Disposable {
 		TreeNode newCalledNode = treeModel.getNodeById(courseNode.getIdent());
 		if (newCalledNode instanceof CourseTreeNode) {
 			CourseTreeNode newCalledTreeNode = (CourseTreeNode) newCalledNode;
-			// calculate the NodeClickedRef
-			// 1. get the correct (new) courseTreeNodes
-			if (newCalledTreeNode.getCourseNode() != null && !newCalledTreeNode.getCourseNode().equals(courseNode)) {
-				throw new AssertException("error in structure");
-			}
 			if (!newCalledTreeNode.isVisible()) {
-				throw new AssertException("node eval not visible!!");
+				return new NodeClickedRef(treeModel, false, null, null, null, null, false);
 			}
+			
 			String newSelectedNodeId = newCalledTreeNode.getIdent();
 			Controller controller;
 			AdditionalConditionManager addMan = null;
