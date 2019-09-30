@@ -68,7 +68,6 @@ import org.olat.course.nodes.cal.CourseCalendars;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -83,12 +82,12 @@ import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 
 /**
  * 
@@ -304,7 +303,7 @@ public class UserCalendarWebService {
 								calVisitor.visit(wrapper);
 							} else {
 								CalCourseNodeVisitor visitor = new CalCourseNodeVisitor();
-								new CourseTreeVisitor(course, ienv).visit(visitor, new VisibleTreeFilter());
+								new CourseTreeVisitor(course, ienv).visit(visitor);
 								if(visitor.isFound()) {
 									KalendarRenderWrapper wrapper = CourseCalendars.getCourseCalendarWrapper(ureq, userCourseEnv, null);
 									calVisitor.visit(wrapper);

@@ -54,29 +54,31 @@ public class CourseTreeVisitor {
 		this.ienv = ienv;
 	}
 	
-	public boolean isAccessible(CourseNode node, TreeFilter filter) {
+	public boolean isAccessible(CourseNode node) {
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		TreeNode treeNode = CoreSpringFactory.getImpl(NodeAccessService.class)
 				.getCourseTreeModelBuilder(uce)
-				.build(filter)
+				.withFilter(AccessibleFilter.create())
+				.build()
 				.getNodeById(node.getIdent());
 		return treeNode != null? treeNode.isAccessible(): false;
 	}
 	
-	public void visit(Visitor visitor, TreeFilter filter) {
+	public void visit(Visitor visitor) {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		TreeNode rootTreeNode = CoreSpringFactory.getImpl(NodeAccessService.class)
+		CourseTreeNode rootTreeNode = (CourseTreeNode)CoreSpringFactory.getImpl(NodeAccessService.class)
 				.getCourseTreeModelBuilder(userCourseEnv)
-				.build(filter)
+				.withFilter(AccessibleFilter.create())
+				.build()
 				.getRootNode();
 		visit(visitor, rootTreeNode);
 	}
 	
-	private void visit(Visitor visitor, TreeNode node) {
+	private void visit(Visitor visitor, CourseTreeNode node) {
 		if(node.isAccessible()) {
-			visitor.visit(node);
+			visitor.visit(node.getCourseNode());
 			for(int i=0; i<node.getChildCount(); i++) {
-				TreeNode childNode = (TreeNode)node.getChildAt(i);
+				CourseTreeNode childNode = (CourseTreeNode)node.getChildAt(i);
 				visit(visitor, childNode);
 			}
 		}

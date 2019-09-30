@@ -26,7 +26,6 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.Structure;
 import org.olat.course.assessment.AssessmentMode;
-import org.olat.course.nodes.CourseNode;
 
 /**
  * 
@@ -34,7 +33,7 @@ import org.olat.course.nodes.CourseNode;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class AssessmentModeTreeFilter implements TreeFilter {
+public class AssessmentModeTreeFilter implements VisibilityFilter {
 	
 	private final boolean enable;
 	private final Set<String> nodeIds = new HashSet<>();
@@ -57,7 +56,7 @@ public class AssessmentModeTreeFilter implements TreeFilter {
 	}
 
 	@Override
-	public boolean isVisible(CourseNode node) {
-		return !enable || nodeIds.contains(node.getIdent());
+	public boolean isVisible(CourseTreeNode node) {
+		return !enable || nodeIds.contains(node.getCourseNode().getIdent());
 	}
 }

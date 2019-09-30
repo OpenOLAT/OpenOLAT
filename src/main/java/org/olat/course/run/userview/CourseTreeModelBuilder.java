@@ -31,23 +31,29 @@ import org.olat.course.nodes.CourseNode;
 public abstract class CourseTreeModelBuilder {
 	
 	protected UserCourseEnvironment userCourseEnv;
+	protected VisibilityFilter visibilityFilter;
 
 	protected CourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		this.userCourseEnv = userCourseEnv;
 	}
 	
-	public GenericTreeModel build(TreeFilter filter) {
+	public CourseTreeModelBuilder withFilter(VisibilityFilter visibilityFilter) {
+		this.visibilityFilter = visibilityFilter;
+		return this;
+	}
+	
+	public GenericTreeModel build() {
 		CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
 		int treeLevel = 0;
-		CourseTreeNode rootTreeNode = getCourseTreeNode(rootNode, filter, treeLevel);
+		CourseTreeNode rootTreeNode = getCourseTreeNode(rootNode, treeLevel);
 		GenericTreeModel treeModel = new GenericTreeModel();
 		treeModel.setRootNode(rootTreeNode);
 		return treeModel;
 	}
 	
-	private CourseTreeNode getCourseTreeNode(CourseNode courseNode, TreeFilter filter, int treeLevel) {
+	private CourseTreeNode getCourseTreeNode(CourseNode courseNode, int treeLevel) {
 		CourseTreeNode treeNode = createCourseTreeNode(courseNode, treeLevel);
-		if(filter != null && !filter.isVisible(courseNode)) {
+		if(visibilityFilter != null && !visibilityFilter.isVisible(treeNode)) {
 			treeNode.setVisible(false);
 		}
 		
@@ -56,7 +62,7 @@ public abstract class CourseTreeModelBuilder {
 			int childCount = courseNode.getChildCount();
 			for (int i = 0; i < childCount; i++) {
 				CourseNode cn = (CourseNode) courseNode.getChildAt(i);
-				CourseTreeNode child = getCourseTreeNode(cn, filter, childLevel);
+				CourseTreeNode child = getCourseTreeNode(cn, childLevel);
 				if (child.isVisible()) {
 					// if the parent is not accessible the child is not accessible as well!
 					if (!treeNode.isAccessible()) {

@@ -37,9 +37,9 @@ import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.run.CourseRuntimeController;
 import org.olat.course.run.RunMainController;
+import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -108,7 +108,8 @@ public class CourseSite extends AbstractSiteInstance {
 						.getCourseEnvironment());
 				NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 				CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(uce)
-						.build(new VisibleTreeFilter())
+						.withFilter(AccessibleFilter.create())
+						.build()
 						.getRootNode();
 				hasAccess = courseTreeNode.isVisible() && courseTreeNode.isAccessible();
 			}

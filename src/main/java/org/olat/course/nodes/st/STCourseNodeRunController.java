@@ -57,9 +57,9 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.ObjectivesHelper;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.run.scoring.ScoreEvaluation;
+import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -123,7 +123,8 @@ public class STCourseNodeRunController extends BasicController {
 		String peekviewChildNodesConfig = config.getStringValue(STCourseNodeEditController.CONFIG_KEY_PEEKVIEW_CHILD_NODES, null);
 		List<String> peekviewChildNodes =  (peekviewChildNodesConfig == null ? new ArrayList<>() : Arrays.asList(peekviewChildNodesConfig.split(",")));
 		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-				.build( new VisibleTreeFilter())
+				.withFilter(AccessibleFilter.create())
+				.build()
 				.getNodeById(stCourseNode.getIdent());
 		int chdCnt = courseTreeNode.getChildCount();
 		for (int i = 0; i < chdCnt; i++) {

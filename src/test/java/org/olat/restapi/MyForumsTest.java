@@ -56,7 +56,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.run.userview.CourseTreeVisitor;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.restapi.ForumVOes;
 import org.olat.repository.RepositoryEntry;
@@ -119,7 +118,7 @@ public class MyForumsTest extends OlatRestTestCase {
 					NotificationsManager.getInstance().subscribe(id, forumSubContext, forumPdata);
 				}
 			}
-		}, new VisibleTreeFilter());
+		});
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve my forums

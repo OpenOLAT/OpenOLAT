@@ -19,19 +19,27 @@
  */
 package org.olat.course.run.userview;
 
-import org.olat.course.nodes.CourseNode;
-
 /**
  * 
- * Initial date: 23.12.2014<br>
- * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
+ * Initial date: 30 Sep 2019<br>
+ * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class VisibleTreeFilter implements TreeFilter {
+public class AccessibleFilter implements VisibilityFilter {
+	
+	private static final AccessibleFilter FILTER = new AccessibleFilter();
+	
+	public static AccessibleFilter create() {
+		return FILTER;
+	}
+	
+	private AccessibleFilter() {
+		// Only get the static object
+	}
 
 	@Override
-	public boolean isVisible(CourseNode node) {
-		return true;
+	public boolean isVisible(CourseTreeNode node) {
+		return node.isAccessible();
 	}
 
 }

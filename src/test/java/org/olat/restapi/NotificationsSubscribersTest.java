@@ -53,7 +53,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.run.userview.CourseTreeVisitor;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.fo.Forum;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
@@ -93,7 +92,7 @@ public class NotificationsSubscribersTest extends OlatRestTestCase {
 		//find the forum
 		IdentityEnvironment ienv = new IdentityEnvironment(id1, Roles.userRoles());
 		ForumVisitor forumVisitor = new ForumVisitor(course);
-		new CourseTreeVisitor(course, ienv).visit(forumVisitor, new VisibleTreeFilter());
+		new CourseTreeVisitor(course, ienv).visit(forumVisitor);
 		FOCourseNode courseNode = forumVisitor.firstNode;
 		Forum forum = forumVisitor.firstForum;
 		Assert.assertNotNull(courseNode);
@@ -154,7 +153,7 @@ public class NotificationsSubscribersTest extends OlatRestTestCase {
 		//find the forum
 		IdentityEnvironment ienv = new IdentityEnvironment(id1, Roles.userRoles());
 		ForumVisitor forumVisitor = new ForumVisitor(course);
-		new CourseTreeVisitor(course, ienv).visit(forumVisitor, new VisibleTreeFilter());
+		new CourseTreeVisitor(course, ienv).visit(forumVisitor);
 		FOCourseNode courseNode = forumVisitor.firstNode;
 		Forum forum = forumVisitor.firstForum;
 		Assert.assertNotNull(courseNode);

@@ -45,9 +45,9 @@ import org.olat.course.CourseModule;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
@@ -189,7 +189,8 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 		
 		TreeNode treeNode = CoreSpringFactory.getImpl(NodeAccessService.class)
 				.getCourseTreeModelBuilder(userCourseEnv)
-				.build(new VisibleTreeFilter())
+				.withFilter(AccessibleFilter.create())
+				.build()
 				.getNodeById(courseNode.getIdent());
 		if (treeNode == null) {
 			// TreeNode no longer visible

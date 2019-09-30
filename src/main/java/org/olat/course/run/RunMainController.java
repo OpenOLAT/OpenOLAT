@@ -88,9 +88,8 @@ import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
 import org.olat.course.run.userview.AssessmentModeTreeFilter;
 import org.olat.course.run.userview.InvisibleTreeFilter;
-import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.course.run.userview.VisibleTreeFilter;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.group.BusinessGroup;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.modules.cp.TreeNodeEvent;
@@ -129,7 +128,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	private CourseNode currentCourseNode;
 	private TreeModel treeModel;
-	private TreeFilter treeFilter;
+	private VisibilityFilter visibilityFilter;
 	private boolean needsRebuildAfter = false;
 	private boolean needsRebuildAfterPublish = false;
 	private boolean needsRebuildAfterRunDone = false;
@@ -192,16 +191,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		if(assessmentMode != null && assessmentMode.isRestrictAccessElements()) {
 			Status assessmentStatus = assessmentMode.getStatus();
 			if(assessmentStatus == Status.assessment) {
-				treeFilter = new AssessmentModeTreeFilter(assessmentMode, uce.getCourseEnvironment().getRunStructure());
+				visibilityFilter = new AssessmentModeTreeFilter(assessmentMode, uce.getCourseEnvironment().getRunStructure());
 			} else if(assessmentStatus == Status.leadtime || assessmentStatus == Status.followup) {
-				treeFilter = new InvisibleTreeFilter();
-			} else {
-				treeFilter = new VisibleTreeFilter();
+				visibilityFilter = new InvisibleTreeFilter();
 			}
-		} else {
-			treeFilter = new VisibleTreeFilter();
 		}
-		navHandler = new NavigationHandler(uce, treeFilter, false);
+		navHandler = new NavigationHandler(uce, visibilityFilter, false);
 
 		currentCourseNode = updateTreeAndContent(ureq, currentCourseNode, null);
 
@@ -526,7 +521,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				uce = loadUserCourseEnvironment(ureq, reSecurity);
 				// build score now
 				uce.getScoreAccounting().evaluateAll();
-				navHandler = new NavigationHandler(uce, treeFilter, false);
+				navHandler = new NavigationHandler(uce, visibilityFilter, false);
 				
 				// rebuild and jump to root node
 				updateTreeAndContent(ureq, null, null);

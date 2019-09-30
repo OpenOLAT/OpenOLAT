@@ -69,8 +69,8 @@ import org.olat.course.nodes.CourseNodeFactory;
 import org.olat.course.nodes.STCourseNode;
 import org.olat.course.nodes.cp.CPRunController;
 import org.olat.course.run.userview.CourseTreeNode;
-import org.olat.course.run.userview.TreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.VisibilityFilter;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -86,7 +86,7 @@ public class NavigationHandler implements Disposable {
 	private final boolean previewMode;
 	
 	private String selectedCourseNodeId;
-	private TreeFilter filter;
+	private VisibilityFilter filter;
 	private Set<String> openCourseNodeIds = new HashSet<>();
 	private Map<String,SubTree> externalTreeModels = new HashMap<>();
 	
@@ -99,7 +99,7 @@ public class NavigationHandler implements Disposable {
 	 * @param userCourseEnv
 	 * @param previewMode
 	 */
-	public NavigationHandler(UserCourseEnvironment userCourseEnv, TreeFilter filter, boolean previewMode) {
+	public NavigationHandler(UserCourseEnvironment userCourseEnv, VisibilityFilter filter, boolean previewMode) {
 		this.userCourseEnv = userCourseEnv;
 		this.previewMode = previewMode;
 		this.filter = filter;
@@ -487,7 +487,7 @@ public class NavigationHandler implements Disposable {
 	}
 
 	private GenericTreeModel createTreeModel() {
-		return nodeAccessService.getCourseTreeModelBuilder(userCourseEnv).build(filter);
+		return nodeAccessService.getCourseTreeModelBuilder(userCourseEnv).withFilter(filter).build();
 	}
 	
 	private void reattachExternalTreeModels(GenericTreeModel courseTreeModel) {

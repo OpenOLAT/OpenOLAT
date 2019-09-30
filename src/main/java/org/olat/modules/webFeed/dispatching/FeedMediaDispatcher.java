@@ -55,9 +55,9 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.fileresource.types.BlogFileResource;
 import org.olat.fileresource.types.PodcastFileResource;
 import org.olat.modules.webFeed.Feed;
@@ -398,7 +398,8 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 			// Build an evaluation tree
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 			TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-					.build(new VisibleTreeFilter())
+					.withFilter(AccessibleFilter.create())
+					.build()
 					.getNodeById(node.getIdent());
 			if (treeNode != null && treeNode.isAccessible()) {
 				hasAccess = true;

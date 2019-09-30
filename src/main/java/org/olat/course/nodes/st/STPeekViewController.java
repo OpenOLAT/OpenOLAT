@@ -36,9 +36,9 @@ import org.olat.core.util.nodes.INode;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeFactory;
+import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -67,7 +67,8 @@ public class STPeekViewController extends BasicController {
 		genericPeekViewVC = createVelocityContainer("stPeekView");
 		
 		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-				.build(new VisibleTreeFilter())
+				.withFilter(AccessibleFilter.create())
+				.build()
 				.getNodeById(courseNode.getIdent());
 		List<CourseNode> childNodes = new ArrayList<>();
 		// Loop over node evaluations of visible nodes

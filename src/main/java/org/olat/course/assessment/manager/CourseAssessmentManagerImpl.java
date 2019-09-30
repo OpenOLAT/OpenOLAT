@@ -166,14 +166,18 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			lastCoachModified = eval.getLastCoachModified();
 			lastUserModified = eval.getLastUserModified();
 		}
-		return assessmentService
+		AssessmentEntry createAssessmentEntry = assessmentService
 				.createAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), referenceEntry,
 						score, passed, lastUserModified, lastCoachModified);
+		DBFactory.getInstance().commit();
+		return createAssessmentEntry;
 	}
 
 	@Override
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry assessmentEntry) {
-		return assessmentService.updateAssessmentEntry(assessmentEntry);
+		AssessmentEntry updateAssessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
+		DBFactory.getInstance().commit();
+		return updateAssessmentEntry;
 	}
 
 	@Override

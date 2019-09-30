@@ -62,11 +62,11 @@ import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.CourseTreeVisitor;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -169,7 +169,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 					folderVOs.add(folder);
 				}
 			}
-		}, new VisibleTreeFilter());
+		});
 
 		FolderVOes voes = new FolderVOes();
 		voes.setFolders(folderVOs.toArray(new FolderVO[folderVOs.size()]));
@@ -358,7 +358,7 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		}
 
 		UserRequest ureq = getUserRequest(httpRequest);
-		boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(courseNode, new VisibleTreeFilter());
+		boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(courseNode);
 		if(accessible) {
 			Set<String> subscribed = new HashSet<>();
 			NotificationsManager man = NotificationsManager.getInstance();
@@ -481,7 +481,8 @@ public class BCWebService extends AbstractCourseNodeWebService {
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
 		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 		CourseTreeNode courseTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(uce)
-				.build(new VisibleTreeFilter())
+				.withFilter(AccessibleFilter.create())
+				.build()
 				.getNodeById(node.getIdent());
 		NodeEvaluation nodeEvaluation = courseTreeNode.getNodeEvaluation();
 

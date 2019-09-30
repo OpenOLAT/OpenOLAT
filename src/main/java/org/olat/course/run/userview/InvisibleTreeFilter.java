@@ -19,18 +19,16 @@
  */
 package org.olat.course.run.userview;
 
-import org.olat.course.nodes.CourseNode;
-
 /**
  * 
  * Initial date: 12.02.2016<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class InvisibleTreeFilter implements TreeFilter {
+public class InvisibleTreeFilter implements VisibilityFilter {
 
 	@Override
-	public boolean isVisible(CourseNode node) {
+	public boolean isVisible(CourseTreeNode node) {
 		return false;
 	}
 

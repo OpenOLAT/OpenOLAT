@@ -52,11 +52,11 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.bc.FolderNodeCallback;
+import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.CourseTreeNode;
 import org.olat.course.run.userview.NodeEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -100,7 +100,8 @@ public class MergedCourseElementDataContainer extends MergeSource {
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 			CourseTreeNode rootTreeNode = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-					.build(new VisibleTreeFilter())
+					.withFilter(AccessibleFilter.create())
+					.build()
 					.getRootNode();
 	
 			new TreeVisitor(node -> {
@@ -151,7 +152,8 @@ public class MergedCourseElementDataContainer extends MergeSource {
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
 			NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 			CourseTreeNode treeRoot = (CourseTreeNode)nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
-					.build(new VisibleTreeFilter())
+					.withFilter(AccessibleFilter.create())
+					.build()
 					.getRootNode();
 			addFolders(persistingCourse, this, treeRoot, userCourseEnv);
 		}

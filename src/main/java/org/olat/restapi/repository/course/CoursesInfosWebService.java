@@ -59,7 +59,6 @@ import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.FOCourseNode;
 import org.olat.course.nodes.bc.BCWebService;
 import org.olat.course.run.userview.CourseTreeVisitor;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.modules.fo.restapi.ForumCourseNodeWebService;
 import org.olat.modules.fo.restapi.ForumVO;
 import org.olat.repository.RepositoryEntry;
@@ -241,7 +240,7 @@ public class CoursesInfosWebService {
 							forums.add(ForumCourseNodeWebService.createForumVO(course, forumNode, forumNotified));
 						}
 					}
-				}, new VisibleTreeFilter());
+				});
 				
 				info.setKey(course.getResourceableId());
 				info.setTitle(course.getCourseTitle());

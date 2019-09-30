@@ -56,7 +56,6 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.run.userview.CourseTreeVisitor;
-import org.olat.course.run.userview.VisibleTreeFilter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.restapi.support.vo.FolderVOes;
 import org.olat.test.JunitTestHelper;
@@ -127,7 +126,7 @@ public class UserFoldersTest extends OlatRestTestCase {
 					NotificationsManager.getInstance().subscribe(id, folderSubContext, folderPdata);
 				}
 			}
-		}, new VisibleTreeFilter());
+		});
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve my folders

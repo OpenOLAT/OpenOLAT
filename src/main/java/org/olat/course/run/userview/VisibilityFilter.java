@@ -19,16 +19,14 @@
  */
 package org.olat.course.run.userview;
 
-import org.olat.course.nodes.CourseNode;
-
 /**
  * 
  * Initial date: 23.12.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public interface TreeFilter {
+public interface VisibilityFilter {
 	
-	public boolean isVisible(CourseNode node);
+	public boolean isVisible(CourseTreeNode node);
 
 }
