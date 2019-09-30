@@ -150,7 +150,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	public void initDefaults() {
 		// version 1
 		// version 2
-		configuration.put(KEY_CHAT_ENABLED, Boolean.TRUE);
+		configuration.put(KEY_CHAT_ENABLED, Boolean.FALSE);
 		// version 3
 		configuration.put(KEY_CSS_FILEREF, VALUE_EMPTY_CSS_FILEREF);
 		// version 4
