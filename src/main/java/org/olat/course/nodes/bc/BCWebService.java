@@ -396,29 +396,33 @@ public class BCWebService extends AbstractCourseNodeWebService {
 	public VFSWebservice getVFSWebService(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @Context HttpServletRequest request) {
 		ICourse course = CoursesWebService.loadCourse(courseId);
 		if(course == null) {
-			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		}
 		
 		boolean author = isAuthorEditor(course, request);
 		if (!author && !CourseWebService.isCourseAccessible(course, request)) {
-			throw new WebApplicationException( Response.serverError().status(Status.UNAUTHORIZED).build());
+			throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
 		}
-		
+
+		UserRequest ureq = getUserRequest(request);
 		CourseNode node;
 		if(author) {
 			node = course.getEditorTreeModel().getCourseNode(nodeId);
 		} else {
 			node = course.getRunStructure().getNode(nodeId);
+			boolean accessible = (new CourseTreeVisitor(course, ureq.getUserSession().getIdentityEnvironment())).isAccessible(node);
+			if (!accessible) {
+				throw new WebApplicationException(Response.serverError().status(Status.UNAUTHORIZED).build());
+			}
 		}
 		
 		if(node == null) {
-			throw new WebApplicationException( Response.serverError().status(Status.NOT_FOUND).build());
+			throw new WebApplicationException(Response.serverError().status(Status.NOT_FOUND).build());
 		} else if(!(node instanceof BCCourseNode)) {
 			throw new WebApplicationException(Response.serverError().status(Status.NOT_ACCEPTABLE).build());
 		}
 		
 		BCCourseNode bcNode = (BCCourseNode)node;
-		UserRequest ureq = getUserRequest(request);
 		VFSContainer container = getSecurisedNodeFolderContainer(bcNode, course.getCourseEnvironment(), ureq.getUserSession().getIdentityEnvironment());
 		return new VFSWebservice(container);
 	}
