@@ -55,6 +55,7 @@ import org.olat.course.ICourse;
 import org.olat.course.condition.Condition;
 import org.olat.course.condition.interpreter.ConditionExpression;
 import org.olat.course.condition.interpreter.ConditionInterpreter;
+import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
@@ -71,7 +72,7 @@ import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.ModuleConfiguration;
 import org.olat.repository.RepositoryEntry;
 
-/**
+/*
  * Description:<br>
  * @author Felix Jost
  */
@@ -79,43 +80,38 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	private static final long serialVersionUID = 6887400715976544402L;
 	private static final String PACKAGE_BC = Util.getPackageName(BCCourseNodeRunController.class);
 	private static final String TYPE = "bc";
+	
+	private static final int CURRENT_VERSION = 3;
+	public static final String CONFIG_AUTO_FOLDER = "config.autofolder";
+	public static final String CONFIG_SUBPATH = "config.subpath";
+	public static final String CONFIG_KEY_UPLOAD_BY_COACH = "upload.by.coach";
+	public static final String CONFIG_KEY_UPLOAD_BY_PARTICIPANT = "upload.by.participant";
 
 	/**
 	 * Condition.getCondition() == null means no precondition, always accessible
 	 */
 	private Condition preConditionUploaders, preConditionDownloaders;
 
-	/**
-	 * Constructor for a course building block of type briefcase (folder)
-	 */
 	public BCCourseNode() {
 		super(TYPE);
 		updateModuleConfigDefaults(true);
-		preConditionUploaders = getPreConditionUploaders();
-		preConditionUploaders.setEasyModeCoachesAndAdmins(true);
-		preConditionUploaders.setConditionExpression(preConditionUploaders.getConditionFromEasyModeConfiguration());
-		preConditionUploaders.setExpertMode(false);
-
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
-		BCCourseNodeEditController childTabCntrllr = new BCCourseNodeEditController(this, course, ureq, wControl, euce);
+		BCCourseNodeEditController childTabCntrllr = new BCCourseNodeEditController(ureq, wControl, this, course, euce);
 		CourseNode chosenNode = course.getEditorTreeModel().getCourseNode(euce.getCourseEditorEnv().getCurrentCourseNodeId());
 		return new NodeEditController(ureq, wControl, course, chosenNode, euce, childTabCntrllr);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createNodeRunConstructionResult(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl,
-	 *      org.olat.course.run.userview.UserCourseEnvironment,
-	 *      org.olat.course.run.userview.NodeEvaluation)
-	 */
+	@Override
+	public ConditionAccessEditConfig getAccessEditConfig() {
+		return hasCustomPreConditions()
+				? ConditionAccessEditConfig.custom()
+				: ConditionAccessEditConfig.regular(false);
+	}
+
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
@@ -136,10 +132,10 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 			
 			// Create a folder peekview controller that shows the latest two entries
 			VFSContainer rootFolder = null;
-			if(getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)) {
+			if(getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)) {
 				rootFolder = getNodeFolderContainer(this, userCourseEnv.getCourseEnvironment());
 			} else {
-				String subPath = getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
+				String subPath = getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "");
 				VFSItem item = userCourseEnv.getCourseEnvironment().getCourseFolderContainer().resolve(subPath);
 				if(item instanceof VFSContainer) {
 					rootFolder = (VFSContainer)item;
@@ -159,7 +155,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
-		return new BCPreviewController(ureq, wControl, this, userCourseEnv.getCourseEnvironment(), nodeSecCallback.getNodeEvaluation());
+		return new BCPreviewController(ureq, wControl, this, userCourseEnv, nodeSecCallback.getNodeEvaluation());
 	}
 
 	/**
@@ -180,7 +176,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	}
 
 	public boolean isSharedFolder(){
-		return getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "")
+		return getModuleConfiguration().getStringValue(CONFIG_SUBPATH, "")
 				.startsWith("/_sharedfolder");
 	}
 
@@ -229,7 +225,7 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public CourseNode createInstanceForCopy(boolean isNewTitle, ICourse course, Identity author) {
 		CourseNode node = super.createInstanceForCopy(isNewTitle, course, author);
-		if(node.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
+		if(node.getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)){
 			File fFolderNodeDir = new File(FolderConfig.getCanonicalRoot() + getFoldernodePathRelToFolderBase(course.getCourseEnvironment(), node));
 			fFolderNodeDir.mkdirs();
 		}
@@ -238,30 +234,53 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public void calcAccessAndVisibility(ConditionInterpreter ci, NodeEvaluation nodeEval) {
+		if (hasCustomPreConditions()) {
+			boolean uploadability = (getPreConditionUploaders().getConditionExpression() == null ? true : ci
+					.evaluateCondition(getPreConditionUploaders()));
+			nodeEval.putAccessStatus("upload", uploadability);
+			boolean downloadability = (getPreConditionDownloaders().getConditionExpression() == null ? true : ci
+					.evaluateCondition(getPreConditionDownloaders()));
+			nodeEval.putAccessStatus("download", downloadability);
 
-		boolean uploadability = (getPreConditionUploaders().getConditionExpression() == null ? true : ci
-				.evaluateCondition(getPreConditionUploaders()));
-		nodeEval.putAccessStatus("upload", uploadability);
-		boolean downloadability = (getPreConditionDownloaders().getConditionExpression() == null ? true : ci
-				.evaluateCondition(getPreConditionDownloaders()));
-		nodeEval.putAccessStatus("download", downloadability);
-
-		boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
-				.evaluateCondition(getPreConditionVisibility()));
-		nodeEval.setVisible(visible);
+			boolean visible = (getPreConditionVisibility().getConditionExpression() == null ? true : ci
+					.evaluateCondition(getPreConditionVisibility()));
+			nodeEval.setVisible(visible);
+		} else {
+			super.calcAccessAndVisibility(ci, nodeEval);
+		}
 	}
 	
-	public static boolean canDownload(NodeEvaluation ne) {
-		return ne != null? ne.isCapabilityAccessible("download"): false;
+	public boolean canDownload(NodeEvaluation ne) {
+		if (hasCustomPreConditions()) {
+			return ne != null? ne.isCapabilityAccessible("download"): false;
+		}
+		return true;
 	}
 	
-	public static boolean canUpload(NodeEvaluation ne) {
-		return ne != null? ne.isCapabilityAccessible("upload"): false;
+	public boolean canUpload(UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		if (hasCustomPreConditions()) {
+			return ne != null? ne.isCapabilityAccessible("upload"): false;
+		} else if (
+				(getModuleConfiguration().getBooleanSafe(CONFIG_KEY_UPLOAD_BY_COACH) && userCourseEnv.isCoach())
+				|| (getModuleConfiguration().getBooleanSafe(CONFIG_KEY_UPLOAD_BY_PARTICIPANT) && userCourseEnv.isParticipant())
+				) {
+			return true;
+		}
+		return false;
 	}
-
+	
 	/**
-	 * @return Returns the preConditionDownloaders.
+	 * The conditions to control the upload or download of files are deprecated. In
+	 * new course nodes this options are controlled by module configurations.
+	 * Existing course nodes may have preconditions. In that case they are still
+	 * used for compatibility reasons.
+	 *
+	 * @return
 	 */
+	public boolean hasCustomPreConditions() {
+		return preConditionDownloaders != null || preConditionUploaders != null;
+	}
+
 	public Condition getPreConditionDownloaders() {
 		if (preConditionDownloaders == null) {
 			preConditionDownloaders = new Condition();
@@ -270,9 +289,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		return preConditionDownloaders;
 	}
 
-	/**
-	 * @param preConditionDownloaders The preConditionDownloaders to set.
-	 */
 	public void setPreConditionDownloaders(Condition preConditionDownloaders) {
 		if (preConditionDownloaders == null) {
 			preConditionDownloaders = getPreConditionDownloaders();
@@ -281,9 +297,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		preConditionDownloaders.setConditionId("downloaders");
 	}
 
-	/**
-	 * @return Returns the preConditionUploaders.
-	 */
 	public Condition getPreConditionUploaders() {
 		if (preConditionUploaders == null) {
 			preConditionUploaders = new Condition();
@@ -292,9 +305,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		return preConditionUploaders;
 	}
 
-	/**
-	 * @param preConditionUploaders The preConditionUploaders to set.
-	 */
 	public void setPreConditionUploaders(Condition preConditionUploaders) {
 		if (preConditionUploaders == null) {
 			preConditionUploaders = getPreConditionUploaders();
@@ -303,16 +313,13 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		this.preConditionUploaders = preConditionUploaders;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
 		updateModuleConfigDefaults(false);
 
 		StatusDescription sd = StatusDescription.NOERROR;
-		if(!getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
-			String subpath = getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH,"");
+		if(!getModuleConfiguration().getBooleanSafe(CONFIG_AUTO_FOLDER)){
+			String subpath = getModuleConfiguration().getStringValue(CONFIG_SUBPATH,"");
 			if(!StringHelper.containsNonWhitespace(subpath)){
 				String shortKey = "error.missingfolder.short";
 				String longKey = "error.missingfolder.long";
@@ -331,10 +338,6 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		return sd;
 	}
 
-
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		//only here we know which translator to take for translating condition error messages
@@ -345,26 +348,16 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 		return oneClickStatusCache;
 	}
 	
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#needsReferenceToARepositoryEntry()
-	 */
 	@Override
 	public boolean needsReferenceToARepositoryEntry() {
 		return false;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#informOnDelete(org.olat.core.gui.UserRequest,
-	 *      org.olat.course.ICourse)
-	 */
 	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		return new PackageTranslator(PACKAGE_BC, locale).translate("warn.folderdelete");
@@ -403,51 +396,74 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public List<ConditionExpression> getConditionExpressions() {
-		List<ConditionExpression> retVal;
-		List<ConditionExpression> parentsConditions = super.getConditionExpressions();
-		if (parentsConditions.size() > 0) {
-			retVal = new ArrayList<>(parentsConditions);
-		} else {
-			retVal = new ArrayList<>();
+		if (hasCustomPreConditions()) {
+			List<ConditionExpression> retVal;
+			List<ConditionExpression> parentsConditions = super.getConditionExpressions();
+			if (parentsConditions.size() > 0) {
+				retVal = new ArrayList<>(parentsConditions);
+			} else {
+				retVal = new ArrayList<>();
+			}
+			
+			String coS = getPreConditionDownloaders().getConditionExpression();
+			if (coS != null && !coS.equals("")) {
+				ConditionExpression ce = new ConditionExpression(getPreConditionDownloaders().getConditionId());
+				ce.setExpressionString(getPreConditionDownloaders().getConditionExpression());
+				retVal.add(ce);
+			}
+			
+			coS = getPreConditionUploaders().getConditionExpression();
+			if (coS != null && !coS.equals("")) {
+				ConditionExpression ce = new ConditionExpression(getPreConditionUploaders().getConditionId());
+				ce.setExpressionString(getPreConditionUploaders().getConditionExpression());
+				retVal.add(ce);
+			}
+			
+			return retVal;
 		}
-		//
-		String coS = getPreConditionDownloaders().getConditionExpression();
-		if (coS != null && !coS.equals("")) {
-			// an active condition is defined
-			ConditionExpression ce = new ConditionExpression(getPreConditionDownloaders().getConditionId());
-			ce.setExpressionString(getPreConditionDownloaders().getConditionExpression());
-			retVal.add(ce);
-		}
-		//
-		coS = getPreConditionUploaders().getConditionExpression();
-		if (coS != null && !coS.equals("")) {
-			// an active condition is defined
-			ConditionExpression ce = new ConditionExpression(getPreConditionUploaders().getConditionId());
-			ce.setExpressionString(getPreConditionUploaders().getConditionExpression());
-			retVal.add(ce);
-		}
-		//
-		return retVal;
+		
+		return super.getConditionExpressions();
 	}
 
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
+		
+		if (version < 2) {
+			config.setBooleanEntry(CONFIG_AUTO_FOLDER, true);
+			config.setStringValue(CONFIG_SUBPATH, "");
+		}
+		if (version < 3) {
+			config.setBooleanEntry(CONFIG_KEY_UPLOAD_BY_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_UPLOAD_BY_PARTICIPANT, false);
+			removeDefaultPreconditions();
+		}
+		config.setConfigurationVersion(CURRENT_VERSION);
+	}
 
-		if(isNewNode){
-			//set autofolder as default and set newest config version
-			config.setBooleanEntry(BCCourseNodeEditController.CONFIG_AUTO_FOLDER, true);
-			config.setStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
-			config.setConfigurationVersion(2);
-		}else{
-			int version = config.getConfigurationVersion();
-			if(version < 2) {
-				config.setBooleanEntry(BCCourseNodeEditController.CONFIG_AUTO_FOLDER, true);
-				config.setStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
-				config.setConfigurationVersion(2);
+	/**
+	 * We don't want to have preConditions for upload and download. So we keep these
+	 * preConditions only, if they have some special configs. Otherwise we delete
+	 * them and use the regular configs.
+	 */
+	private void removeDefaultPreconditions() {
+		if (hasCustomPreConditions()) {
+			boolean defaultPreconditions =
+					!preConditionUploaders.isExpertMode()
+				&& preConditionUploaders.isEasyModeCoachesAndAdmins()
+				&& !preConditionUploaders.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionUploaders.isAssessmentMode()
+				&& !preConditionUploaders.isAssessmentModeViewResults()
+				&& !preConditionDownloaders.isExpertMode()
+				&& !preConditionDownloaders.isEasyModeCoachesAndAdmins()
+				&& !preConditionDownloaders.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionDownloaders.isAssessmentMode()
+				&& !preConditionDownloaders.isAssessmentModeViewResults();
+			if (defaultPreconditions) {
+				preConditionDownloaders = null;
+				preConditionUploaders = null;
 			}
 		}
-
-		super.updateModuleConfigDefaults(isNewNode);
 	}
 }

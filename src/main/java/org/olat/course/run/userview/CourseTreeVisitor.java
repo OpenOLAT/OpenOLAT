@@ -43,23 +43,21 @@ public class CourseTreeVisitor {
 	
 	private final CourseEnvironment courseEnv;
 	private final IdentityEnvironment ienv;
-	private final NodeAccessService nodeAccessService;
 
 	public CourseTreeVisitor(ICourse course, IdentityEnvironment ienv) {
 		this.courseEnv = course.getCourseEnvironment();
 		this.ienv = ienv;
-		this.nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 	}
 	
 	public CourseTreeVisitor(CourseEnvironment courseEnv, IdentityEnvironment ienv) {
 		this.courseEnv = courseEnv;
 		this.ienv = ienv;
-		this.nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
 	}
 	
 	public boolean isAccessible(CourseNode node, TreeFilter filter) {
 		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(uce)
+		TreeNode treeNode = CoreSpringFactory.getImpl(NodeAccessService.class)
+				.getCourseTreeModelBuilder(uce)
 				.build(filter)
 				.getNodeById(node.getIdent());
 		return treeNode != null? treeNode.isAccessible(): false;
@@ -67,7 +65,8 @@ public class CourseTreeVisitor {
 	
 	public void visit(Visitor visitor, TreeFilter filter) {
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, courseEnv);
-		TreeNode rootTreeNode = nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
+		TreeNode rootTreeNode = CoreSpringFactory.getImpl(NodeAccessService.class)
+				.getCourseTreeModelBuilder(userCourseEnv)
 				.build(filter)
 				.getRootNode();
 		visit(visitor, rootTreeNode);

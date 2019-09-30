@@ -39,8 +39,8 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
 import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.nodes.BCCourseNode;
-import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.NodeEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
 
 /**
  * Description: <br>
@@ -53,23 +53,18 @@ public class BCPreviewController extends DefaultController {
 	private Translator trans;
 	private VelocityContainer previewVC;
 
-	/**
-	 * @param ureq
-	 * @param wControl
-	 * @param node
-	 * @param ne
-	 */
-	public BCPreviewController(UserRequest ureq, WindowControl wControl, BCCourseNode node, CourseEnvironment courseEnv, NodeEvaluation ne) {
-		super(wControl);		
+	public BCPreviewController(UserRequest ureq, WindowControl wControl, BCCourseNode node,
+			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
+		super(wControl);
 		trans = Util.createPackageTranslator(BCPreviewController.class, ureq.getLocale());
 		previewVC = new VelocityContainer("bcPreviewVC", VELOCITY_ROOT + "/preview.html", trans, this);
-		VFSContainer namedContainer = BCCourseNode.getNodeFolderContainer(node, courseEnv);
+		VFSContainer namedContainer = BCCourseNode.getNodeFolderContainer(node, userCourseEnv.getCourseEnvironment());
 		namedContainer.setLocalSecurityCallback(new ReadOnlyCallback());
 		FolderRunController folder = new FolderRunController(namedContainer, false, ureq, getWindowControl());
 		previewVC.put("folder", folder.getInitialComponent());
 		// get additional infos
-		boolean canDownload = BCCourseNode.canDownload(ne);
-		boolean canUpload = BCCourseNode.canUpload(ne);
+		boolean canDownload = node.canDownload(ne);
+		boolean canUpload = node.canUpload(userCourseEnv, ne);;
 		VFSSecurityCallback secCallback = new FolderNodeCallback(namedContainer.getRelPath(), canDownload, canUpload, false, false, null);
 		previewVC.contextPut("canUpload", Boolean.valueOf(secCallback.canWrite()));
 		previewVC.contextPut("canDownload", Boolean.valueOf(secCallback.canRead()));
@@ -78,18 +73,11 @@ public class BCPreviewController extends DefaultController {
 		setInitialComponent(previewVC);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//

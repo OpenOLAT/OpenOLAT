@@ -76,15 +76,6 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 	@Autowired
 	private RepositoryService repositoryService;
 
-	/**
-	 * Constructor for a briefcase course building block runtime controller
-	 * 
-	 * @param ureq
-	 * @param userCourseEnv
-	 * @param wContr
-	 * @param bcCourseNode
-	 * @param scallback
-	 */
 	public BCCourseNodeRunController(UserRequest ureq, WindowControl wContr, UserCourseEnvironment userCourseEnv, BCCourseNode courseNode, NodeEvaluation ne) {
 		super(ureq, wContr);
 		
@@ -100,15 +91,15 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 		boolean noFolder = false;
 		VFSContainer target = null;
 		VFSSecurityCallback scallback;
-		if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)) {
+		if(courseNode.getModuleConfiguration().getBooleanSafe(BCCourseNode.CONFIG_AUTO_FOLDER)) {
 			VFSContainer directory = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv);
-			boolean canDownload = BCCourseNode.canDownload(ne);
-			boolean canUpload = BCCourseNode.canUpload(ne);
+			boolean canDownload = courseNode.canDownload(ne);
+			boolean canUpload = courseNode.canUpload(userCourseEnv, ne);
 			boolean isAdministrator = userCourseEnv.isAdmin();
 			scallback = new FolderNodeCallback(directory.getRelPath(), canDownload, canUpload, isAdministrator, isGuestOnly, nodefolderSubContext);
 			target = directory;
 		} else if(courseNode.isSharedFolder()) {
-			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH, "");
+			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH, "");
 			VFSItem item = courseEnv.getCourseFolderContainer().resolve(subpath);
 			if(item == null){
 				noFolder = true;
@@ -123,8 +114,8 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 			} else {
 				String relPath = BCCourseNode.getNodeFolderContainer(courseNode, courseEnv).getRelPath();
 				
-				boolean canDownload = BCCourseNode.canDownload(ne);
-				boolean canUpload = BCCourseNode.canUpload(ne);
+				boolean canDownload = courseNode.canDownload(ne);
+				boolean canUpload = courseNode.canUpload(userCourseEnv, ne);
 				
 				String sfSoftkey = courseEnv.getCourseConfig().getSharedFolderSoftkey();
 				RepositoryEntry sharedResource = repositoryManager.lookupRepositoryEntryBySoftkey(sfSoftkey, false);
@@ -134,7 +125,7 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 			}
 		} else{
 			//create folder automatically if not found
-			String subPath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);
+			String subPath = courseNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH);
 			VFSContainer courseContainer = courseEnv.getCourseFolderContainer();
 			VFSContainer item = VFSManager.resolveOrCreateContainerFromPath(courseContainer, subPath);
 			
@@ -154,8 +145,8 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 			} else {
 				relPath = VFSManager.getRelativeItemPath(target, courseContainer, null);
 			}
-			boolean canDownload = BCCourseNode.canDownload(ne);
-			boolean canUpload = BCCourseNode.canUpload(ne);
+			boolean canDownload = courseNode.canDownload(ne);
+			boolean canUpload = courseNode.canUpload(userCourseEnv, ne);
 			boolean isAdministrator = userCourseEnv.isAdmin();
 			scallback = new FolderNodeCallback(relPath, canDownload, canUpload, isAdministrator, isGuestOnly, nodefolderSubContext);
 		}
@@ -202,18 +193,11 @@ public class BCCourseNodeRunController extends BasicController implements Activa
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 	// no events to catch
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		if (frc != null) {

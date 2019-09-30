@@ -36,7 +36,6 @@ import org.olat.core.util.vfs.VFSItem;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.BCCourseNode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.bc.BCCourseNodeEditController;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.search.service.document.CourseNodeDocument;
 import org.olat.search.service.indexer.FolderIndexer;
@@ -68,10 +67,10 @@ public class BCCourseNodeIndexer extends FolderIndexer implements CourseNodeInde
 		
 		VFSContainer bcContainer = null;
 		
-		if(bcNode.getModuleConfiguration().getBooleanSafe(BCCourseNodeEditController.CONFIG_AUTO_FOLDER)){
+		if(bcNode.getModuleConfiguration().getBooleanSafe(BCCourseNode.CONFIG_AUTO_FOLDER)){
 			bcContainer = BCCourseNode.getNodeFolderContainer(bcNode, course.getCourseEnvironment());
 		} else {
-			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNodeEditController.CONFIG_SUBPATH);
+			String subpath = courseNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH);
 			if(subpath != null) {
 				VFSItem item = course.getCourseEnvironment().getCourseFolderContainer().resolve(subpath);
 				if(item instanceof VFSContainer){

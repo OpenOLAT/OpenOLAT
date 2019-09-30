@@ -485,8 +485,8 @@ public class BCWebService extends AbstractCourseNodeWebService {
 				.getNodeById(node.getIdent());
 		NodeEvaluation nodeEvaluation = courseTreeNode.getNodeEvaluation();
 
-		boolean canDownload = BCCourseNode.canDownload(nodeEvaluation);
-		boolean canUpload = BCCourseNode.canUpload(nodeEvaluation);
+		boolean canDownload = node.canDownload(nodeEvaluation);
+		boolean canUpload = node.canUpload(uce, nodeEvaluation);
 
 		VFSContainer container = BCCourseNode.getNodeFolderContainer(node, courseEnv);
 		VFSSecurityCallback secCallback = new FolderNodeCallback(container.getRelPath(), canDownload, canUpload, reSecurity.isEntryAdmin(), ienv.getRoles().isGuestOnly(), null);
