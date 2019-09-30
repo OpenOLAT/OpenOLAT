@@ -81,16 +81,25 @@ a.o_chelp {
 
 /* content packaging module */
 .o_module_cp_wrapper {
+	position: relative;
 	.o_tools {
 		position: absolute;
 		top: 0;
-		right: $padding-base-horizontal;
+		right: 0;
 		text-align: right;
 		vertical-align: middle;
 		.o_search_wrapper {
 			display: inline-block;
 			position: relative;
 			top: -2px;
+			/* remove space around search icon */
+			.form-group {
+				margin-bottom: 0;
+			}
+			.form-control-static {
+				padding-top: 0;
+				padding-bottom: 0;				
+			}
 	 	}
 	}
 }
