@@ -93,7 +93,7 @@ public class AssessmentStatisticsSmallController extends BasicController {
 		numOfPassed = stats.getCountPassed();
 		mainVC.contextPut("numOfPassed", numOfPassed);
 		
-		int total = membersStatistics.getTotal();
+		float total = membersStatistics.getTotal();
 		int percentPassed = total <= 0 ? 0 : Math.round(100.0f * (stats.getCountPassed() / total));
 		mainVC.contextPut("percentPassed", percentPassed);
 		numOfFailed = stats.getCountFailed();
