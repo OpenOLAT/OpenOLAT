@@ -193,18 +193,14 @@ public class CourseIndexer extends AbstractHierarchicalIndexer {
 				.build()
 				.getNodeById(courseNode.getIdent());
 		if (treeNode == null) {
-			// TreeNode no longer visible
+			// TreeNode no longer visible and accessible
 			return false;
 		}
 
-		if (log.isDebugEnabled()) log.debug("call accessible=" + treeNode.isAccessible() );
-		if (treeNode.isAccessible()) {
-			CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(courseNode);
-			bcContextEntry.setTransientState(new CourseNodeEntry(courseNode));
-			return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)
-					&& super.checkAccess(bcContextEntry, businessControl, identity, roles);		
-		}
-		return false;
+		CourseNodeIndexer courseNodeIndexer = getCourseNodeIndexer(courseNode);
+		bcContextEntry.setTransientState(new CourseNodeEntry(courseNode));
+		return courseNodeIndexer.checkAccess(bcContextEntry, businessControl, identity, roles)
+				&& super.checkAccess(bcContextEntry, businessControl, identity, roles);
 	}
 	
 	private CourseNodeIndexer getCourseNodeIndexer(CourseNode node) {
