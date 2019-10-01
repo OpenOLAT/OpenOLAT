@@ -58,6 +58,7 @@ import org.olat.course.nodes.CPCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ScormCourseNode;
 import org.olat.course.nodes.VideoCourseNode;
+import org.olat.course.nodes.bc.CourseDocumentsFactory;
 import org.olat.course.nodes.cp.CPEditController;
 import org.olat.course.nodes.video.VideoEditController;
 import org.olat.course.tree.CourseEditorTreeNode;
@@ -204,6 +205,10 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 		if(mediaDirectory.exists()) {
 			ZipUtil.addPathToZip("media", mediaDirectory.toPath(), zout);
 		}
+		File documentsDirectory = new File(fCourseBase, CourseDocumentsFactory.FOLDER_NAME);
+		if(documentsDirectory.exists()) {
+			ZipUtil.addPathToZip(CourseDocumentsFactory.FOLDER_NAME, documentsDirectory.toPath(), zout);
+		}
 		
 		try {
 			exportCoursefolder(sourceCourse, zout);
@@ -233,7 +238,7 @@ public class CourseExportMediaResource implements MediaResource, StreamingOutput
 		if (config.hasGlossary()) {
 			exportGlossary(config, sourceCourse, fExportedDataDir, zout);
 		}
-
+		
 		log.info("exportToFilesystem: exporting course configuration and repo data: {}", sourceCourse);
 
 		exportRepositoryEntryMetadata(sourceCourse, zout);

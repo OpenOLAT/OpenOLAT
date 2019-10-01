@@ -19,20 +19,24 @@
  */
 package org.olat.course;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.id.IdentityEnvironment;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.MergeSource;
 import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.callbacks.ReadOnlyCallback;
+import org.olat.core.util.vfs.callbacks.VFSSecurityCallback;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.folder.MergedCourseElementDataContainer;
+import org.olat.course.nodes.bc.CourseDocumentsFactory;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.sharedfolder.SharedFolderManager;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
@@ -110,6 +114,10 @@ public class MergedCourseContainer extends MergeSource {
 		if(options.withSharedResource()) {
 			initSharedFolder(persistingCourse);
 		}
+		
+		if(options.withCourseDocuments()) {
+			initCourseDocuments(persistingCourse);
+		}
 			
 		// add all course building blocks of type BC to a virtual folder
 		if(options.withCourseElements()) {
@@ -119,7 +127,7 @@ public class MergedCourseContainer extends MergeSource {
 			}
 		}
 	}
-	
+
 	/**
 	 * Grab any shared folder that is configured, but only when in unchecked
 	 * security mode (no identity environment) or when the user has course
@@ -150,6 +158,17 @@ public class MergedCourseContainer extends MergeSource {
 				}
 			}
 		}
+	}
+	
+	private void initCourseDocuments(PersistingCourseImpl persistingCourse) {
+		if (identityEnv == null) return;
+		if (!persistingCourse.getCourseConfig().isDocumentsEnabled()) return;
+		
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, persistingCourse.getCourseEnvironment());
+		VFSSecurityCallback securityCallback = CourseDocumentsFactory.getSecurityCallback(userCourseEnv);
+		VFSContainer documentsContainer = CourseDocumentsFactory.getFileContainer(persistingCourse.getCourseEnvironment());
+		documentsContainer.setLocalSecurityCallback(securityCallback);
+		addContainer(new NamedContainerImpl("_documents", documentsContainer));
 	}
 
 	private Object readResolve() {

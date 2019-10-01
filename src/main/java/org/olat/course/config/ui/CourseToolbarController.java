@@ -74,6 +74,7 @@ public class CourseToolbarController extends FormBasicController {
 	private SelectionElement participantInfoEl;
 	private SelectionElement emailEl;
 	private SelectionElement forumEl;
+	private SelectionElement documentsEl;
 	private SelectionElement chatEl;
 	private SelectionElement glossaryEl;
 	
@@ -185,8 +186,17 @@ public class CourseToolbarController extends FormBasicController {
 		boolean managedForum = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.forum);
 		forumEl = uifactory.addCheckboxesHorizontal("forumIsOn", "chkbx.forum.onoff", formLayout, onKeys, onValues);
 		forumEl.select(onKeys[0], forumEnabled);
-		forumEl.setEnabled(editable && !managedEmail);
+		forumEl.setEnabled(editable && !managedForum);
 		if(managedForum && forumEnabled) {
+			canHideToolbar &= false;
+		}
+		
+		boolean documentsEnabled = courseConfig.isDocumentsEnabled();
+		boolean managedDocuments = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.documents);
+		documentsEl = uifactory.addCheckboxesHorizontal("documentsIsOn", "chkbx.documents.onoff", formLayout, onKeys, onValues);
+		documentsEl.select(onKeys[0], documentsEnabled);
+		documentsEl.setEnabled(editable && !managedDocuments);
+		if(managedDocuments && documentsEnabled) {
 			canHideToolbar &= false;
 		}
 		
@@ -238,6 +248,7 @@ public class CourseToolbarController extends FormBasicController {
 				|| participantInfoEl.isSelected(0)
 				|| emailEl.isSelected(0)
 				|| forumEl.isSelected(0)
+				|| documentsEl.isSelected(0)
 				|| chatEl.isSelected(0)
 				|| glossaryEl.isSelected(0);
 	}
@@ -253,6 +264,7 @@ public class CourseToolbarController extends FormBasicController {
 		participantInfoEl.setVisible(enabled);
 		emailEl.setVisible(enabled);
 		forumEl.setVisible(enabled);
+		documentsEl.setVisible(enabled);
 		chatEl.setVisible(enabled);
 		glossaryEl.setVisible(enabled);
 	}
@@ -289,6 +301,10 @@ public class CourseToolbarController extends FormBasicController {
 		boolean enableForum = forumEl.isSelected(0);
 		boolean updateForum = courseConfig.isForumEnabled() != enableForum;
 		courseConfig.setForumEnabled(enableForum && toolbarEnabled);
+		
+		boolean enableDocuments = documentsEl.isSelected(0);
+		boolean updateDocuments = courseConfig.isDocumentsEnabled() != enableDocuments;
+		courseConfig.setDocumentsEnabled(enableDocuments && toolbarEnabled);
 		
 		boolean enableChat = chatEl.isSelected(0);
 		boolean updateChat = courseConfig.isChatEnabled() != enableChat;
@@ -361,6 +377,16 @@ public class CourseToolbarController extends FormBasicController {
 			
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.forum, course.getResourceableId()), course);
+		}
+		
+		if(updateDocuments) {
+			ILoggingAction loggingAction = enableDocuments ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_DOCUMENTS_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_DOCUMENTS_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.documents, course.getResourceableId()), course);
 		}
 		
 		if(updateChat) {

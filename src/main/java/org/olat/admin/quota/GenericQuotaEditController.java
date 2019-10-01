@@ -146,6 +146,7 @@ class GenericQuotaEditController extends BasicController {
 		initDefaultQuota("groups", QuotaConstants.IDENTIFIER_DEFAULT_GROUPS, defQuotaIdent);
 		initDefaultQuota("repository", QuotaConstants.IDENTIFIER_DEFAULT_REPO, defQuotaIdent);
 		initDefaultQuota("coursefolder", QuotaConstants.IDENTIFIER_DEFAULT_COURSE, defQuotaIdent);
+		initDefaultQuota("coursedocuments", QuotaConstants.IDENTIFIER_DEFAULT_DOCUMENTS, defQuotaIdent);
 		initDefaultQuota("nodefolder", QuotaConstants.IDENTIFIER_DEFAULT_NODES, defQuotaIdent);
 		initDefaultQuota("pfNodefolder", QuotaConstants.IDENTIFIER_DEFAULT_PFNODES, defQuotaIdent);
 		initDefaultQuota("feeds", QuotaConstants.IDENTIFIER_DEFAULT_FEEDS, defQuotaIdent);

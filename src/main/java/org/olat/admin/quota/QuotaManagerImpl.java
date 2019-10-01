@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.modules.bc.FolderConfig;
@@ -44,7 +45,6 @@ import org.olat.core.id.OrganisationRef;
 import org.olat.core.id.Roles;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.OLATSecurityException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -123,6 +123,8 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_REPO, defaultQuotaRepository);
 		Quota defaultQuotaCourseFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_COURSE);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_COURSE, defaultQuotaCourseFolder);
+		Quota defaultQuotaCourseDocuments = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_DOCUMENTS);
+		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_DOCUMENTS, defaultQuotaCourseDocuments);
 		Quota defaultQuotaNodeFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_NODES);
 		defaultQuotas.put(QuotaConstants.IDENTIFIER_DEFAULT_NODES, defaultQuotaNodeFolder);
 		Quota defaultQuotaPfNodeFolder = initDefaultQuota(QuotaConstants.IDENTIFIER_DEFAULT_PFNODES);
@@ -554,6 +556,8 @@ public class QuotaManagerImpl implements QuotaManager, InitializingBean {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_NODES;
 			} else if(path.indexOf("/coursefolder") >= 0) {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_COURSE;
+			} else if(path.indexOf("/coursedocuments") >= 0) {
+				identifier = QuotaConstants.IDENTIFIER_DEFAULT_DOCUMENTS;
 			} else if(path.indexOf("/participantfolder/") >= 0) {
 				identifier = QuotaConstants.IDENTIFIER_DEFAULT_PFNODES;
 			} else if(path.indexOf("/returnboxes/") >= 0) {
