@@ -603,7 +603,7 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 
 	@Override
 	public List<AssessmentEntry> getAssessmentEntries(Identity coach, SearchAssessedIdentityParams params, AssessmentEntryStatus status) {
-		StringBuilder sb = new StringBuilder();
+		QueryBuilder sb = new QueryBuilder();
 		sb.append("select aentry from assessmententry aentry")
 		  .append(" inner join fetch aentry.identity as assessedIdentity")
 		  .append(" inner join fetch assessedIdentity.user as assessedUser")
@@ -625,7 +625,8 @@ public class AssessmentToolManagerImpl implements AssessmentToolManager {
 	          .append("  )");
 			if(params.isNonMembers()) {
 				sb.append(" or assessedIdentity.key not in (select membership.identity.key from repoentrytogroup as rel, bgroupmember as membership")
-		          .append("    where rel.entry.key=:repoEntryKey and rel.group=membership.group and membership.identity=aentry.identity")
+		          .append("    where rel.entry.key=:repoEntryKey and rel.group.key=membership.group.key and membership.identity.key=aentry.identity.key")
+		          .append("    and membership.role ").in(GroupRoles.participant, GroupRoles.coach, GroupRoles.owner)
 		          .append(" )");
 			}
 		} else if(params.isCoach()) {
