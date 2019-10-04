@@ -184,6 +184,11 @@ a.o_repo_tools_status {
 	    border-color: $o-repo-deleted-color;
 	    color: $o-repo-status-color-bright;
 	}	
+	&.o_repo_role {
+	    background-color: $o-labeled_bg-color;
+	    border-color: $o-labeled_bg-color;
+	    color: $o-repo-status-color-bright;
+	}
 }
 /* hover effect for menu pulldowns in toolbar */
 .o_toolbar .o_tools_container a.o_labeled:hover {
@@ -207,6 +212,10 @@ a.o_repo_tools_status {
 	}
 	&.o_repo_status_deleted {
 	    background-color: darken($o-repo-deleted-color,10%);
+	}
+	&.o_repo_role {
+	    background-color: lighten($o-labeled_bg-color,10%);
+	    border-color: lighten($o-labeled_bg-color,10%);
 	}	
 }
 

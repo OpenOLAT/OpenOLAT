@@ -26,7 +26,7 @@ import java.util.List;
 import org.olat.core.CoreSpringFactory;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.portfolio.model.AccessRights;
-import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntrySecurity;
 
 /**
  * 

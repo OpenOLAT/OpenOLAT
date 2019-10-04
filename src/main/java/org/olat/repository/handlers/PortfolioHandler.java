@@ -63,10 +63,10 @@ import org.olat.portfolio.ui.structel.EPCreateMapController;
 import org.olat.portfolio.ui.structel.EPMapViewController;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResource;
 import org.olat.resource.references.ReferenceManager;
 

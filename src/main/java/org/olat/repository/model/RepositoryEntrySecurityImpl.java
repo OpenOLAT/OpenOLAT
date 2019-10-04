@@ -19,13 +19,15 @@
  */
 package org.olat.repository.model;
 
+import org.olat.repository.RepositoryEntrySecurity;
+
 /**
  * 
  * Initial date: 19.08.2014<br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class RepositoryEntrySecurity {
+public class RepositoryEntrySecurityImpl implements RepositoryEntrySecurity {
 	
 	private final boolean owner;
 	private final boolean canLaunch;
@@ -44,7 +46,7 @@ public class RepositoryEntrySecurity {
 	private final boolean curriculumCoach;
 	
 	
-	public RepositoryEntrySecurity(boolean entryAdmin, boolean owner,
+	public RepositoryEntrySecurityImpl(boolean entryAdmin, boolean owner,
 			boolean courseParticipant, boolean courseCoach,
 			boolean groupParticipant, boolean groupCoach, boolean groupWaiting,
 			boolean curriculumParticipant, boolean curriculumCoach, boolean masterCoach,
@@ -67,6 +69,7 @@ public class RepositoryEntrySecurity {
 		this.readOnly = readOnly;
 	}
 	
+	@Override
 	public boolean isOwner() {
 		return owner;
 	}
@@ -76,6 +79,7 @@ public class RepositoryEntrySecurity {
 	 * @return true if the user is coach of the repository entry, a group
 	 *   or a curriculum element linked to the repository entry.
 	 */
+	@Override
 	public boolean isCoach() {
 		return courseCoach || groupCoach || curriculumCoach;
 	}
@@ -85,54 +89,67 @@ public class RepositoryEntrySecurity {
 	 * @return true if the user is participant of the repository entry, a group
 	 *   or a curriculum element linked to the repository entry.
 	 */
+	@Override
 	public boolean isParticipant() {
 		return courseParticipant || groupParticipant || curriculumParticipant;
 	}
 	
+	@Override
 	public boolean isMasterCoach() {
 		return masterCoach;
 	}
 	
+	@Override
 	public boolean isEntryAdmin() {
 		return entryAdmin;
 	}
 	
+	@Override
 	public boolean canLaunch() {
 		return canLaunch;
 	}
 	
+	@Override
 	public boolean isReadOnly() {
 		return readOnly;
 	}
 
+	@Override
 	public boolean isCourseParticipant() {
 		return courseParticipant;
 	}
 
+	@Override
 	public boolean isCourseCoach() {
 		return courseCoach;
 	}
 
+	@Override
 	public boolean isGroupParticipant() {
 		return groupParticipant;
 	}
 
+	@Override
 	public boolean isGroupCoach() {
 		return groupCoach;
 	}
 
+	@Override
 	public boolean isGroupWaiting() {
 		return groupWaiting;
 	}
 
+	@Override
 	public boolean isCurriculumParticipant() {
 		return curriculumParticipant;
 	}
 
+	@Override
 	public boolean isCurriculumCoach() {
 		return curriculumCoach;
 	}
 
+	@Override
 	public boolean isMember() {
 		return owner || courseParticipant || courseCoach || groupParticipant || groupCoach || curriculumParticipant || curriculumCoach;
 	}
@@ -141,6 +158,7 @@ public class RepositoryEntrySecurity {
 	 * @return true if the user has the role author in an organization
 	 * 		linked by the repository entry
 	 */
+	@Override
 	public boolean isAuthor() {
 		return author;
 	}
@@ -148,6 +166,7 @@ public class RepositoryEntrySecurity {
 	/**
 	 * @return true if the user has the role principal
 	 */
+	@Override
 	public boolean isPrincipal() {
 		return principal;
 	}
@@ -157,10 +176,12 @@ public class RepositoryEntrySecurity {
 	 * 		is not a member or an administrator of the repository
 	 * 		entry.
 	 */
+	@Override
 	public boolean isOnlyPrincipal() {
 		return principal && !isMember() && !isEntryAdmin();
 	}
 	
+	@Override
 	public boolean isOnlyMasterCoach() {
 		return masterCoach && !isMember() && !isEntryAdmin();
 	}

@@ -25,7 +25,7 @@ import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
 
@@ -50,7 +50,7 @@ public class CPRuntimeController extends RepositoryEntryRuntimeController {
 			if(event instanceof PopEvent) {
 				PopEvent popEvent = (PopEvent)event;
 				if(currentToolCtr == editorCtrl && editorCtrl == popEvent.getController()) {
-					launchContent(ureq, reSecurity);
+					launchContent(ureq);
 					initToolbar();
 				}
 				setActiveTool(null);

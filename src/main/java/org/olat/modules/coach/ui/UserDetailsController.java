@@ -56,8 +56,8 @@ import org.olat.modules.lecture.LectureService;
 import org.olat.modules.lecture.RepositoryEntryLectureConfiguration;
 import org.olat.modules.lecture.ui.ParticipantLectureBlocksController;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
-import org.olat.repository.model.RepositoryEntrySecurity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

@@ -64,11 +64,11 @@ import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.portfolio.manager.EPFrontendManager;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.EntryChangedEvent;
 import org.olat.repository.controllers.EntryChangedEvent.Change;
-import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.resource.OLATResourceManager;
 
 /**

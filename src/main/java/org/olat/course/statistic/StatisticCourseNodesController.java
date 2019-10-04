@@ -52,8 +52,8 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.curriculum.CurriculumElement;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntrySecurity;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**

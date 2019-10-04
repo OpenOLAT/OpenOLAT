@@ -21,6 +21,7 @@ package org.olat.repository.ui;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.olat.NewControllerFactory;
@@ -68,6 +69,7 @@ import org.olat.course.assessment.model.TransientAssessmentMode;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -77,7 +79,8 @@ import org.olat.repository.controllers.EntryChangedEvent.Change;
 import org.olat.repository.handlers.EditionSupport;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity;
+import org.olat.repository.model.SingleRoleRepositoryEntrySecurity.Role;
 import org.olat.repository.ui.author.ConfirmCloseController;
 import org.olat.repository.ui.author.ConfirmDeleteSoftlyController;
 import org.olat.repository.ui.author.CopyRepositoryEntryController;
@@ -136,6 +139,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected Link deleteLink;
 	protected Link settingsLink;
 	
+	private Dropdown rolesDropdown;
+	private Link participantLink;
+	private Link coachLink;
+	private Link ownerLink;
+	
 	private Link preparationLink;
 	private Link reviewLink;
 	private Link coachPublishLink;
@@ -145,7 +153,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	protected final boolean isGuestOnly;
 	protected final boolean isAuthor;
 	
-	protected RepositoryEntrySecurity reSecurity;
+	protected SingleRoleRepositoryEntrySecurity reSecurity;
 	protected final Roles roles;
 
 	protected final boolean showDetails;
@@ -199,13 +207,20 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		//! check corrupted
 		corrupted = isCorrupted(re);
-		assessmentLock = isAssessmentLock(ureq, re, reSecurity);
+		
 
 		UserSession session = ureq.getUserSession();
 		Object wcard = session.removeEntry("override_readonly_" + re.getKey());
 		if(Boolean.TRUE.equals(wcard)) {
 			overrideReadOnly = true;
 		}
+		
+		roles = session.getRoles();
+		isGuestOnly = roles.isGuestOnly();
+		isAuthor = reSecurity.isAuthor();
+		this.reSecurity = new SingleRoleRepositoryEntrySecurity(reSecurity);
+		
+		assessmentLock = isAssessmentLock(ureq, re, this.reSecurity);
 		
 		this.re = re;
 		this.showDetails = showDetails;
@@ -218,7 +233,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			assessmentMode = assessmentModeMgr.getAssessmentModeById(mode.getModeKey());
 		}
 		
-		if(session != null &&  session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
+		if(session.getHistoryStack() != null && session.getHistoryStack().size() >= 2) {
 			// Set previous business path as back link for this course - brings user back to place from which he launched the course
 			List<HistoryPoint> stack = session.getHistoryStack();
 			for(int i=stack.size() - 2; i-->0; ) {
@@ -235,11 +250,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		
 		handler = handlerFactory.getRepositoryHandler(re);
 
-		roles = session.getRoles();
-		isGuestOnly = roles.isGuestOnly();
-		isAuthor = reSecurity.isAuthor();
-		this.reSecurity = reSecurity;
-
 		// set up the components
 		toolbarPanel = new TooledStackedPanel("courseStackPanel", getTranslator(), this);
 		toolbarPanel.setInvisibleCrumb(0); // show root (course) level
@@ -247,7 +257,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		toolbarPanel.getBackLink().setEnabled(!assessmentLock);
 		putInitialPanel(toolbarPanel);
 		doRun(ureq, this.reSecurity);
-		loadRights(this.reSecurity);
+		onSecurityReloaded(ureq);
 		initToolbar();
 		
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
@@ -270,11 +280,15 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 				&& lock.getResourceableTypeName().equals(resource.getResourceableTypeName());
 	}
 	
-	/**
-	 * If override, need to set isOwner and isEntryAdmin
-	 */
-	protected void loadRights(RepositoryEntrySecurity security) {
-		this.reSecurity = security;
+	protected void reloadSecurity(UserRequest ureq) {
+		reSecurity.setWrappedSecurity(repositoryManager.isAllowed(ureq, getRepositoryEntry()));
+		initToolbar();
+		onSecurityReloaded(ureq);
+	}
+	
+	//ureq my be used by sub controller
+	protected void onSecurityReloaded(@SuppressWarnings("unused") UserRequest ureq) {
+		//
 	}
 	
 	protected RepositoryEntry getRepositoryEntry() {
@@ -316,7 +330,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(tools.size() > 0) {
 			toolbarPanel.addTool(tools, Align.left, true);
 		}
-
+		
 		if (reSecurity.isEntryAdmin()) {
 			status = new Dropdown("toolbox.status", "cif.status", false, getTranslator());
 			status.setElementCssClass("o_sel_repository_status");
@@ -325,9 +339,11 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			toolbarPanel.addTool(status, Align.left, false);
 		}
 		
+		initRole();
+
 		toolbarPanel.setDirty(true);
 	}
-	
+
 	protected void reloadStatus() {
 		if(status != null) {
 			status.removeAllComponents();
@@ -366,6 +382,46 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		return statusLink;
 	}
 	
+	private void initRole() {
+		rolesDropdown = new Dropdown("toolbox.roles", "role.switch", false, getTranslator());
+		rolesDropdown.setElementCssClass("o_with_labeled");
+		rolesDropdown.setIconCSS("o_icon " + getCurrentRoleIcon());
+		rolesDropdown.setInnerText(translate("role." + reSecurity.getCurrentRole()));
+		rolesDropdown.setInnerCSS("o_labeled");
+		
+		Set<Role> otherRoles = reSecurity.getOtherRoles();
+		if (otherRoles.contains(Role.participant)) {
+			participantLink = LinkFactory.createToolLink("role.participant", translate("role.participant"), this);
+			participantLink.setIconLeftCSS("o_icon o_icon-fw o_icon_user");
+			participantLink.setElementCssClass("o_labeled o_repo_role");
+			rolesDropdown.addComponent(participantLink);
+		}
+		if (otherRoles.contains(Role.coach)) {
+			coachLink = LinkFactory.createToolLink("role.coach", translate("role.coach"), this);
+			coachLink.setIconLeftCSS("o_icon o_icon-fw o_icon_coach");
+			coachLink.setElementCssClass("o_labeled o_repo_role");
+			rolesDropdown.addComponent(coachLink);
+		}
+		if (otherRoles.contains(Role.owner)) {
+			ownerLink = LinkFactory.createToolLink("role.owner", translate("role.owner"), this);
+			ownerLink.setIconLeftCSS("o_icon o_icon-fw o_icon_owner");
+			ownerLink.setElementCssClass("o_labeled o_repo_role");
+			rolesDropdown.addComponent(ownerLink);
+		}
+		if (rolesDropdown.size() > 0) {
+			toolbarPanel.addTool(rolesDropdown, Align.left);
+		}
+	}
+	
+	private String getCurrentRoleIcon() {
+		switch(reSecurity.getCurrentRole()) {
+		case participant: return "o_icon_user";
+		case coach: return "o_icon_coach";
+		case owner: return "o_icon_owner";
+		}
+		return "";
+	}
+
 	protected void initToolbar(Dropdown toolsDropdown) {
 		initToolsMenu(toolsDropdown);
 
@@ -552,10 +608,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	protected void processClosedUnclosedEvent(UserRequest ureq) {
 		loadRepositoryEntry();
-		reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
-		loadRights(reSecurity);
+		reloadSecurity(ureq);
 		toolbarPanel.popUpToRootController(ureq);
-		initToolbar();
 	}
 	
 	protected void processReloadSettingsEvent(ReloadSettingsEvent event) {
@@ -624,6 +678,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			doDownload(ureq);
 		} else if(deleteLink == source) {
 			doDelete(ureq);
+		} else if (participantLink == source) {
+			doSwitchRole(ureq, Role.participant);
+		} else if (coachLink == source) {
+			doSwitchRole(ureq, Role.coach);
+		} else if (ownerLink == source) {
+			doSwitchRole(ureq, Role.owner);
 		} else if(preparationLink == source) {
 			doChangeStatus(ureq, RepositoryEntryStatusEnum.preparation);
 		} else if(reviewLink == source) {
@@ -647,9 +707,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		if(pop.getController() == settingsCtrl && settingsChanged) {
 			RepositoryEntry entry = repositoryService.loadByKey(getRepositoryEntry().getKey());
 			refreshRepositoryEntry(entry);
-			reSecurity = repositoryManager.isAllowed(ureq, entry);
-			loadRights(reSecurity);
-			initToolbar();// add/remove lectures link from the toolbar
+			reloadSecurity(ureq);
 			settingsChanged = false;
 		}
 	}
@@ -768,9 +826,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	}
 	
 	protected void doPostSuccessfullAccess(UserRequest ureq) {
-		reSecurity = repositoryManager.isAllowed(ureq, getRepositoryEntry());
-		launchContent(ureq, reSecurity);
-		initToolbar();
+		reloadSecurity(ureq);
+		launchContent(ureq);
 		cleanUp();
 	}
 	
@@ -778,12 +835,16 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		RepositoryEntry entry = getRepositoryEntry();
 		RepositoryEntry reloadedEntry = repositoryManager.setStatus(entry, updatedStatus);
 		refreshRepositoryEntry(reloadedEntry);
-		reSecurity = repositoryManager.isAllowed(ureq, reloadedEntry);
-		loadRights(reSecurity);
-		initToolbar();
+		reloadSecurity(ureq);
 
 		EntryChangedEvent e = new EntryChangedEvent(reloadedEntry, getIdentity(), Change.modifiedAccess, "runtime");
 		ureq.getUserSession().getSingleUserEventCenter().fireEventToListenersOf(e, RepositoryService.REPOSITORY_EVENT_ORES);
+	}
+
+	private void doSwitchRole(UserRequest ureq, Role role) {
+		reSecurity.setCurrentRole(role);
+		initToolbar();
+		onSecurityReloaded(ureq);
 	}
 	
 	private void doConfirmCloseResource(UserRequest ureq) {
@@ -886,15 +947,15 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 	
 	private void doRun(UserRequest ureq, RepositoryEntrySecurity security) {
 		if(security.isEntryAdmin() || security.isPrincipal() || reSecurity.isMasterCoach()) {
-			launchContent(ureq, security);
+			launchContent(ureq);
 		} else {
 			// guest are allowed to see resource with BARG
 			if(security.canLaunch()) {
-				launchContent(ureq, security);
+				launchContent(ureq);
 			} else if(re.isBookable()) {
 				AccessResult acResult = acService.isAccessible(re, getIdentity(), security.isMember(), false);
 				if(acResult.isAccessible()) {
-					launchContent(ureq, security);
+					launchContent(ureq);
 				} else if (re != null
 						&& !re.getEntryStatus().decommissioned()
 						&& !acResult.getAvailableMethods().isEmpty()) {
@@ -902,9 +963,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 					ACResultAndSecurity autoResult = tryAutoBooking(ureq, acResult, security);
 					acResult = autoResult.getAcResult();
 					security = autoResult.getSecurity();
-					loadRights(security);
+					reloadSecurity(ureq);
 					if(acResult.isAccessible()) {
-						launchContent(ureq, security);
+						launchContent(ureq);
 					} else {
 						accessController = new AccessListController(ureq, getWindowControl(), acResult.getAvailableMethods());
 						listenTo(accessController);
@@ -931,7 +992,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			if(offerAccess.getOffer().isAutoBooking() && !offerAccess.getMethod().isNeedUserInteraction()) {
 				acResult = acService.accessResource(getIdentity(), offerAccess, null);
 				 if(acResult.isAccessible()) {
-					 security = repositoryManager.isAllowed(ureq, re);
+					 reloadSecurity(ureq);
 				 }
 			}
 		}
@@ -1031,12 +1092,12 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		cmc.activate();
 	}
 	
-	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
+	protected void launchContent(UserRequest ureq) {
 		if(corrupted) {
 			runtimeController = new CorruptedCourseController(ureq, getWindowControl());
 			listenTo(runtimeController);
 			toolbarPanel.rootController(re.getDisplayname(), runtimeController);
-		} else if(security.canLaunch()) {
+		} else if(reSecurity.canLaunch()) {
 			removeAsListenerAndDispose(runtimeController);
 			runtimeController = runtimeControllerCreator.create(ureq, getWindowControl(), toolbarPanel, re, reSecurity, assessmentMode);
 			listenTo(runtimeController);

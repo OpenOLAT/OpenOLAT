@@ -140,10 +140,10 @@ import org.olat.note.NoteController;
 import org.olat.repository.LeavingStatusList;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.controllers.EntryChangedEvent;
-import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryLifeCycleChangeController;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.resource.OLATResource;
@@ -273,20 +273,28 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 
 	@Override
-	protected void loadRights(RepositoryEntrySecurity security) {
-		super.loadRights(security);
+	protected void onSecurityReloaded(UserRequest ureq) {
 		if(corrupted) return;
 		
+		loadRights();
+		
+		RunMainController runMainController = getRunMainController();
+		if(runMainController != null) {
+			runMainController.updateCurrentCourseNode(ureq);
+		}
+	}
+
+	private void loadRights() {
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		// 3) all other rights are defined in the groupmanagement using the learning
 		// group rights
 		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 		if(uce != null) {
-			uce.setUserRoles(security.isEntryAdmin() || security.isPrincipal() || security.isMasterCoach(), security.isCoach(), security.isParticipant());
-			if(security.isOnlyPrincipal() || security.isOnlyMasterCoach()) {
+			uce.setUserRoles(reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach(), reSecurity.isCoach(), reSecurity.isParticipant());
+			if(reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach()) {
 				uce.setCourseReadOnly(Boolean.TRUE);
-			} else if(security.isReadOnly()) {
+			} else if(reSecurity.isReadOnly()) {
 				if(overrideReadOnly) {
 					uce.setCourseReadOnly(Boolean.FALSE);
 				} else {
@@ -298,7 +306,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		courseRightsCache = new HashMap<>();
-		if(!security.isEntryAdmin() && !isGuestOnly) {
+		if(!reSecurity.isEntryAdmin() && !isGuestOnly) {
 			List<String> rights = cgm.getRights(getIdentity());
 			courseRightsCache.put(CourseRights.RIGHT_GROUPMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_GROUPMANAGEMENT)));
 			courseRightsCache.put(CourseRights.RIGHT_MEMBERMANAGEMENT, Boolean.valueOf(rights.contains(CourseRights.RIGHT_MEMBERMANAGEMENT)));
@@ -369,10 +377,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(run != null) run.setInEditor(editor);
 	}
 	
-	private void reloadGroupMemberships(RepositoryEntrySecurity security) {
+	private void reloadGroupMemberships() {
 		RunMainController run = getRunMainController();
 		if(run != null) {
-			run.reloadGroupMemberships(security);
+			run.reloadGroupMemberships(reSecurity);
 		}
 	}
 	
@@ -1039,7 +1047,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	protected void event(UserRequest ureq, Controller source, Event event) {
 		if(getRunMainController() == source) {
 			if(event instanceof BusinessGroupModifiedEvent) {
-				processBusinessGroupModifiedEvent((BusinessGroupModifiedEvent)event);
+				processBusinessGroupModifiedEvent(ureq, (BusinessGroupModifiedEvent)event);
 			}
 		} else if (lifeCycleChangeCtr == source) {
 			if (event == RepositoryEntryLifeCycleChangeController.deletedEvent) {
@@ -1683,8 +1691,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	}
 	
 	@Override
-	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
-		super.launchContent(ureq, security);
+	protected void launchContent(UserRequest ureq) {
+		super.launchContent(ureq);
 		if(getRunMainController() != null) {
 			addCustomCSS(ureq);
 			getRunMainController().initToolbar();
@@ -1860,7 +1868,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			logAudit("User tried to launch a group but user is not owner or participant "
 					+ "of group or group doesn't exist. Hacker attack or group has been changed or deleted. group key :: " + groupKey);
 			// refresh toolbox that contained wrong group
-			reloadGroupMemberships(reSecurity);
+			reloadGroupMemberships();
 		}
 	}
 	
@@ -2036,14 +2044,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private void processBusinessGroupModifiedEvent(BusinessGroupModifiedEvent bgme) {
+	private void processBusinessGroupModifiedEvent(UserRequest ureq, BusinessGroupModifiedEvent bgme) {
 		Identity identity = getIdentity();
 		// only do something if this identity is affected by change and the action
 		// was adding or removing of the user
 		if (bgme.wasMyselfAdded(identity) || bgme.wasMyselfRemoved(identity)) {
-			reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
-			reloadGroupMemberships(reSecurity);
-			loadRights(reSecurity);
+			reloadSecurity(ureq);
+			reloadGroupMemberships();
 			initToolbar();
 		} else if (bgme.getCommand().equals(BusinessGroupModifiedEvent.GROUPRIGHTS_MODIFIED_EVENT)) {
 			// check if this affects a right group where the user does participate.
@@ -2051,9 +2058,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
 			if (uce != null && (PersistenceHelper.listContainsObjectByKey(uce.getParticipatingGroups(), bgme.getModifiedGroupKey()) ||
 					PersistenceHelper.listContainsObjectByKey(uce.getCoachedGroups(), bgme.getModifiedGroupKey()))) {
-				reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
-				reloadGroupMemberships(reSecurity);
-				loadRights(reSecurity);
+				reloadSecurity(ureq);
+				reloadGroupMemberships();
 				initToolbar();
 			}
 		}
@@ -2080,13 +2086,13 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			//author is not affected
 		} else {
 			loadRepositoryEntry();
-			reSecurity = repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry());
+			reSecurity.setWrappedSecurity(repositoryManager.isAllowed(getIdentity(), roles, getRepositoryEntry()));
 			if(reSecurity.canLaunch()) {
-				loadRights(reSecurity);
 				reloadStatus();
+				loadRights();
 			} else {
 				doDisposeAfterEvent();
-				loadRights(reSecurity);
+				loadRights();
 				initToolbar();
 			}
 		}

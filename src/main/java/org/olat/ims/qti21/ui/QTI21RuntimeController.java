@@ -46,7 +46,7 @@ import org.olat.modules.assessment.ui.AssessableResource;
 import org.olat.modules.assessment.ui.AssessmentToolController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
@@ -154,7 +154,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		if(reSecurity.isEntryAdmin()) {
 			qtiService.deleteAuthorAssessmentTestSession(getRepositoryEntry(), candidateSession);
 		}
-		launchContent(ureq, reSecurity);
+		launchContent(ureq);
 		if(toolbarPanel.getTools().isEmpty()) {
 			initToolbar();
 		}
@@ -171,7 +171,7 @@ public class QTI21RuntimeController extends RepositoryEntryRuntimeController  {
 		if(reSecurity.isEntryAdmin()) {
 			qtiService.deleteAuthorsAssessmentTestSession(getRepositoryEntry());
 		}
-		launchContent(ureq, reSecurity);
+		launchContent(ureq);
 		if(toolbarPanel.getTools().isEmpty()) {
 			initToolbar();
 		}

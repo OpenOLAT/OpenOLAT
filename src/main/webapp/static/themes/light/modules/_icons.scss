@@ -83,6 +83,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_close_tree:before { content: $fa-var-caret-down;}
 .o_icon_close_togglebox:before { content: $fa-var-caret-down;}
 .o_icon_code:before { content: $fa-var-code;}
+.o_icon_coach:before {content: $fa-var-graduation-cap; }
 .o_icon_color_picker:before { content: $fa-var-tint;}
 .o_icon_column:before { content: $fa-var-align-justify;}
 .o_icon_columns:before { content: $fa-var-columns;}
@@ -214,6 +215,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_options:before { content: $fa-var-toggle-on; }
 .o_icon_origin:before { content: $fa-var-globe; }
 .o_icon_others:before { content: $fa-var-star; }
+.o_icon_owner:before {content: $fa-var-star; }
 .o_icon_pageing:before { content: $fa-var-ellipsis-h;}
 .o_icon_paragraph:before { content: $fa-var-paragraph; }
 .o_icon_passed:before { content: $fa-var-check-circle;}
@@ -278,6 +280,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_right:before { content: $fa-var-arrow-circle-right; }
 .o_icon_rss:before { content: $fa-var-rss;}
 .o_icon_rss_unsubscribe:before { content: $fa-var-rss; color: #996633;}
+.o_icon_role:before { content: $fa-var-exchange; }
 .o_icon_rubric:before { content: $fa-var-sliders; }
 .o_icon_rubric_insufficient:before { content: $fa-var-times-circle; color: $o-evaluation-insufficient-color}
 .o_icon_rubric_sufficient:before { content: $fa-var-check-circle; color: $o-evaluation-sufficient-color}

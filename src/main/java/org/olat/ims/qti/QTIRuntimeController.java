@@ -39,9 +39,9 @@ import org.olat.fileresource.types.ImsQTI21Resource;
 import org.olat.ims.qti21.pool.QTI12To21Converter;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.handlers.RepositoryHandler;
 import org.olat.repository.handlers.RepositoryHandlerFactory;
-import org.olat.repository.model.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.author.CreateRepositoryEntryController;
 import org.olat.resource.OLATResource;
@@ -114,7 +114,7 @@ public class QTIRuntimeController extends RepositoryEntryRuntimeController imple
 							cleanUp();
 							Controller runtimeCtrl = getRuntimeController();
 							if(runtimeCtrl != null) {
-								launchContent(ureq, reSecurity);
+								launchContent(ureq);
 								initToolbar();
 							}
 							break;

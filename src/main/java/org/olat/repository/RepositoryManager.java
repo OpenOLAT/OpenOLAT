@@ -89,7 +89,7 @@ import org.olat.repository.model.RepositoryEntryLifecycle;
 import org.olat.repository.model.RepositoryEntryMembership;
 import org.olat.repository.model.RepositoryEntryMembershipModifiedEvent;
 import org.olat.repository.model.RepositoryEntryPermissionChangeEvent;
-import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.model.RepositoryEntrySecurityImpl;
 import org.olat.repository.model.RepositoryEntryToGroupRelation;
 import org.olat.repository.model.SearchRepositoryEntryParameters;
 import org.olat.resource.OLATResource;
@@ -643,7 +643,7 @@ public class RepositoryManager {
 
 		boolean readOnly = re.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 
-		return new RepositoryEntrySecurity(isEntryAdmin, isOwner,
+		return new RepositoryEntrySecurityImpl(isEntryAdmin, isOwner,
 				isCourseParticipant, isCourseCoach,
 				isGroupParticipant, isGroupCoach, isGroupWaiting,
 				isCurriculumParticipant, isCurriculumCoach, isMasterCoach,

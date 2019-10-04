@@ -41,7 +41,7 @@ import org.olat.modules.assessment.ui.AssessmentToolController;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.modules.portfolio.ui.model.AssessableBinderResource;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 import org.olat.repository.ui.RepositoryEntrySettingsController;
 import org.olat.util.logging.activity.LoggingResourceable;
@@ -163,8 +163,8 @@ public class BinderRuntimeController extends RepositoryEntryRuntimeController {
 	}
 
 	@Override
-	protected void launchContent(UserRequest ureq, RepositoryEntrySecurity security) {
-		super.launchContent(ureq, security);
+	protected void launchContent(UserRequest ureq) {
+		super.launchContent(ureq);
 		enableRuntimeNavBar(true); 
 	}
 

@@ -122,10 +122,11 @@ import org.olat.group.BusinessGroup;
 import org.olat.instantMessaging.InstantMessagingService;
 import org.olat.instantMessaging.manager.ChatLogHelper;
 import org.olat.repository.RepositoryEntry;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.RepositoryEntryStatusEnum;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
-import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.model.RepositoryEntrySecurityImpl;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
 import org.olat.resource.references.Reference;
@@ -611,7 +612,7 @@ public class CourseFactory {
 
 			ContextEntry ce = BusinessControlFactory.getInstance().createContextEntry(entry);
 			WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ce, wControl);
-			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurity(false, false, false, false, false, false, false, false, false, false, false, false, true, false);
+			RepositoryEntrySecurity reSecurity = new RepositoryEntrySecurityImpl(false, false, false, false, false, false, false, false, false, false, false, false, true, false);
 			return new RunMainController(ureq, bwControl, null, course, entry, reSecurity, null);
 		}
 	}

@@ -25,7 +25,7 @@ import org.olat.core.gui.components.stack.PopEvent;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.RepositoryEntryRuntimeController;
 
 /**
@@ -63,7 +63,7 @@ public class EvaluationFormRuntimeController extends RepositoryEntryRuntimeContr
 	
 	private void doReloadRuntimeController(UserRequest ureq) {
 		disposeRuntimeController();
-		launchContent(ureq, reSecurity);
+		launchContent(ureq);
 		if(toolbarPanel.getTools().isEmpty()) {
 			initToolbar();
 		}

@@ -47,7 +47,7 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.repository.ErrorList;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.model.RepositoryEntrySecurity;
+import org.olat.repository.RepositoryEntrySecurity;
 import org.olat.repository.ui.author.CreateEntryController;
 import org.olat.repository.ui.author.CreateRepositoryEntryController;
 

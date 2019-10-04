@@ -75,7 +75,7 @@
 
 		a {
 			// Following rules copied from .navbar-link;
-	   	 	color: $o-toolbar-link-color;
+			color: $o-toolbar-link-color;
 	    	&:hover { 
 	      		color: $o-toolbar-link-hover-color;
 	    	}
@@ -102,7 +102,7 @@
 				// override rule from above
 		    	display: block;
 		    	&.active {
-		    		color: $o-toolbar-dropdown-active-color;
+					color: $o-toolbar-dropdown-active-color;
 					background-color: $o-toolbar-dropdown-active-bg;
 		    	}
 		    }
@@ -343,9 +343,7 @@
 				padding: 5px 5px;
 				margin: 1px;
 			}
-		}			
-		
-		
+		}
 	}	
 	
 	.o_tools_left {
