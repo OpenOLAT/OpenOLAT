@@ -29,7 +29,6 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.controllers.linkchooser.LinkChooserController;
 import org.olat.core.commons.controllers.linkchooser.URLChoosenEvent;
 import org.olat.core.commons.modules.bc.FileUploadController;
@@ -50,10 +49,8 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.resource.OresHelper;
@@ -130,16 +127,11 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 
 		mainVC = createVelocityContainer("dialog");		
 
-		UserSession usess = ureq.getUserSession();
-		Roles roles = usess.getRoles();
-		isGuestOnly = roles.isGuestOnly();
-
-		boolean isAdministrator = (roles.isAdministrator() || roles.isLearnResourceManager()) && repositoryService.hasRoleExpanded(getIdentity(), entry,
-						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+		isGuestOnly = ureq.getUserSession().getRoles().isGuestOnly();
 		subsContext = isGuestOnly ? null : CourseModule.createSubscriptionContext(userCourseEnv.getCourseEnvironment(), courseNode);
 		forumCallback = userCourseEnv.isCourseReadOnly() ?
-				new ReadOnlyDialogNodeForumCallback(nodeEvaluation, isAdministrator, isGuestOnly, subsContext) :
-				new DialogNodeForumCallback(nodeEvaluation, isAdministrator, isGuestOnly, subsContext);
+				new ReadOnlyDialogNodeForumCallback(nodeEvaluation, userCourseEnv.isAdmin(), isGuestOnly, subsContext) :
+				new DialogNodeForumCallback(nodeEvaluation, userCourseEnv.isAdmin(), isGuestOnly, subsContext);
 		
 		if (subsContext != null) {
 			String businessPath = "[RepositoryEntry:" +entry.getKey() + "][CourseNode:" + courseNode.getIdent() + "]";
@@ -152,7 +144,7 @@ public class DialogCourseNodeRunController extends BasicController implements Ac
 		backButton = LinkFactory.createLinkBack(mainVC, this);
 		
 		if (!userCourseEnv.isCourseReadOnly()
-				&& (isAdministrator || userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR))) {
+				&& (userCourseEnv.isAdmin() || cgm.hasRight(getIdentity(), CourseRights.RIGHT_COURSEEDITOR))) {
 			copyButton = LinkFactory.createButton("dialog.copy.file", mainVC, this);
 		}
 		
