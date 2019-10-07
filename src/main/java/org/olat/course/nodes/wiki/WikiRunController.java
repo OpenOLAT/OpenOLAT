@@ -28,7 +28,6 @@ package org.olat.course.nodes.wiki;
 import java.util.List;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.commons.fullWebApp.LayoutMain3ColsController;
 import org.olat.core.commons.fullWebApp.popup.BaseFullWebappPopupLayoutFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
@@ -45,7 +44,6 @@ import org.olat.core.gui.control.generic.clone.CloneLayoutControllerCreatorCallb
 import org.olat.core.gui.control.generic.clone.CloneableController;
 import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControl;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
@@ -97,10 +95,7 @@ public class WikiRunController extends BasicController implements Activateable2 
 		
 		//check role
 		UserSession usess = ureq.getUserSession();
-		Roles roles = usess.getRoles();
-		boolean isAdmininstrator = (roles.isAdministrator() || roles.isLearnResourceManager())
-				&& repositoryService.hasRoleExpanded(getIdentity(), re,
-						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+		boolean isAdmininstrator = userCourseEnv.isAdmin();
 		boolean isGuestOnly = usess.getRoles().isGuestOnly();
 		boolean isResourceOwner = isAdmininstrator || repositoryService.hasRole(getIdentity(), re, GroupRoles.owner.name());
 
