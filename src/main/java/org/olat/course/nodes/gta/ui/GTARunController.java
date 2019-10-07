@@ -78,12 +78,10 @@ public class GTARunController extends BasicController implements Activateable2 {
 		ModuleConfiguration config = gtaNode.getModuleConfiguration();
 		RepositoryEntry entry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		Membership membership = gtaManager.getMembership(getIdentity(), entry, gtaNode);
-		if((membership.isCoach() && membership.isParticipant()) || (userCourseEnv.isAdmin() && membership.isParticipant())) {
+		if((membership.isCoach() && userCourseEnv.isCoach()) || userCourseEnv.isAdmin()) {
 			mainVC = createVelocityContainer("run_segments");
-			
+
 			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-			runLink = LinkFactory.createLink("run.run", mainVC, this);
-			segmentView.addSegment(runLink, false);
 			markedLink = LinkFactory.createLink("run.coach.marked", mainVC, this);
 			segmentView.addSegment(markedLink, false);
 			coachLink = LinkFactory.createLink("run.coach.all", mainVC, this);
@@ -92,36 +90,11 @@ public class GTARunController extends BasicController implements Activateable2 {
 				manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
 				segmentView.addSegment(manageLink, false);
 			}
-			doOpenSelectionList(ureq);
-			mainVC.put("segments", segmentView);
-			putInitialPanel(mainVC);
-		} else if(isManagementTabAvalaible(config)) {
-			mainVC = createVelocityContainer("run_segments");
-
-			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-			markedLink = LinkFactory.createLink("run.coach.marked", mainVC, this);
-			segmentView.addSegment(markedLink, false);
-			coachLink = LinkFactory.createLink("run.coach.all", mainVC, this);
-			segmentView.addSegment(coachLink, true);
-			manageLink = LinkFactory.createLink("run.manage.coach", mainVC, this);
-			segmentView.addSegment(manageLink, false);
 
 			doOpenSelectionList(ureq);
 			mainVC.put("segments", segmentView);
 			putInitialPanel(mainVC);
-		} else if(membership.isCoach() || userCourseEnv.isAdmin()) {
-			mainVC = createVelocityContainer("run_segments");
-
-			segmentView = SegmentViewFactory.createSegmentView("segments", mainVC, this);
-			markedLink = LinkFactory.createLink("run.coach.marked", mainVC, this);
-			segmentView.addSegment(markedLink, false);
-			coachLink = LinkFactory.createLink("run.coach.all", mainVC, this);
-			segmentView.addSegment(coachLink, true);
-
-			doOpenSelectionList(ureq);
-			mainVC.put("segments", segmentView);
-			putInitialPanel(mainVC);
-		} else if(membership.isParticipant()) {
+		} else if(membership.isParticipant() && userCourseEnv.isParticipant()) {
 			createRun(ureq);
 			putInitialPanel(runCtrl.getInitialComponent());
 		} else {
