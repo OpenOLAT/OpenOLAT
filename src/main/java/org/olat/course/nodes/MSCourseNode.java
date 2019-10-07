@@ -56,9 +56,9 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.nodes.ms.MSCoachRunController;
 import org.olat.course.nodes.ms.MSCourseNodeEditController;
 import org.olat.course.nodes.ms.MSCourseNodeRunController;
-import org.olat.course.nodes.ms.MSRunController;
 import org.olat.course.nodes.ms.MSService;
 import org.olat.course.nodes.ms.MinMax;
 import org.olat.course.properties.CoursePropertyManager;
@@ -198,8 +198,15 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 			String title = trans.translate("guestnoaccess.title");
 			String message = trans.translate("guestnoaccess.message");
 			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
+		} else if (userCourseEnv.isParticipant()) {
+			controller = new MSCourseNodeRunController(ureq, wControl, userCourseEnv, this, true, true);
+		} else if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
+			controller = new MSCoachRunController(ureq, wControl, userCourseEnv, this);
 		} else {
-			controller = new MSRunController(ureq, wControl, userCourseEnv, this);
+			Translator trans = Util.createPackageTranslator(MSCourseNode.class, ureq.getLocale());
+			String title = trans.translate("error.no.role.title");
+			String message = trans.translate("error.no.role.message");
+			controller = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		}
 		
 		Controller wrappedCtrl = TitledWrapperHelper.getWrapper(ureq, wControl, controller, this, "o_ms_icon");
