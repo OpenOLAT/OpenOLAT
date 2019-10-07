@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Locale;
 
 import org.olat.basesecurity.GroupRoles;
-import org.olat.basesecurity.OrganisationRoles;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.UserRequest;
@@ -131,9 +130,7 @@ public class PodcastCourseNode extends AbstractFeedCourseNode {
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean isGuest = roles.isGuestOnly();
 		
-		boolean isAdmin = (roles.isAdministrator() || roles.isLearnResourceManager())
-				&& repositoryService.hasRoleExpanded(ureq.getIdentity(), entry,
-						OrganisationRoles.administrator.name(), OrganisationRoles.learnresourcemanager.name());
+		boolean isAdmin = userCourseEnv.isAdmin();
 		boolean isOwner = !isGuest && repositoryService.hasRole(ureq.getIdentity(), entry, GroupRoles.owner.name());
 		FeedSecurityCallback callback;
 		if(userCourseEnv.isCourseReadOnly()) {
