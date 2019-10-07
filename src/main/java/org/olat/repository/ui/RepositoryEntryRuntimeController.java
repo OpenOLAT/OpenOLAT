@@ -325,6 +325,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		tools.setElementCssClass("o_sel_repository_tools");
 		tools.setIconCSS("o_icon o_icon_tools");
 		
+		initRole();
 		initToolbar(tools);
 		
 		if(tools.size() > 0) {
@@ -339,8 +340,6 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			toolbarPanel.addTool(status, Align.left, false);
 		}
 		
-		initRole();
-
 		toolbarPanel.setDirty(true);
 	}
 
@@ -409,7 +408,7 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 			rolesDropdown.addComponent(ownerLink);
 		}
 		if (rolesDropdown.size() > 0) {
-			toolbarPanel.addTool(rolesDropdown, Align.left);
+			toolbarPanel.addTool(rolesDropdown, Align.right);
 		}
 	}
 	
