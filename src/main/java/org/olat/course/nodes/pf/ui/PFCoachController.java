@@ -64,7 +64,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
 import org.olat.course.nodes.pf.manager.PFManager;
-import org.olat.course.nodes.pf.manager.PFView;
 import org.olat.course.nodes.pf.ui.DropBoxTableModel.DropBoxCols;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -113,7 +112,6 @@ public class PFCoachController extends FormBasicController implements Controller
 	private UserCourseEnvironment userCourseEnv;
 	private CourseEnvironment courseEnv;
 
-	private PFView pfView;
 	@Autowired
 	private PFManager pfManager; 
 	@Autowired
@@ -124,13 +122,12 @@ public class PFCoachController extends FormBasicController implements Controller
 	private BaseSecurityModule securityModule;
 	
 	public PFCoachController(UserRequest ureq, WindowControl wControl, PFCourseNode sfNode, 
-			UserCourseEnvironment userCourseEnv, PFView pfView) {
+			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, "coach");
 		
 		this.userCourseEnv = userCourseEnv;
 		this.courseEnv = userCourseEnv.getCourseEnvironment();
 		this.pfNode = sfNode;
-		this.pfView = pfView;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		isAdministrativeUser = securityModule.isUserAllowedAdminProps(roles);
@@ -196,11 +193,11 @@ public class PFCoachController extends FormBasicController implements Controller
 				SelectionEvent se = (SelectionEvent)event;
 				DropBoxRow currentObject = tableModel.getObject(se.getIndex());
 				if ("drop.box".equals(se.getCommand())){
-					doSelectParticipantFolder (ureq, currentObject.getIdentity(), PFView.displayDrop);
+					doSelectParticipantFolder (ureq, currentObject.getIdentity());
 				} else if ("return.box".equals(se.getCommand())){
-					doSelectParticipantFolder (ureq, currentObject.getIdentity(), PFView.displayReturn);
+					doSelectParticipantFolder (ureq, currentObject.getIdentity());
 				} else if ("open.box".equals(se.getCommand())){
-					doSelectParticipantFolder (ureq, currentObject.getIdentity(), PFView.dropAndReturn);
+					doSelectParticipantFolder (ureq, currentObject.getIdentity());
 				} else if ("firstName".equals(se.getCommand()) || "lastName".equals(se.getCommand())) {
 					doOpenHomePage(ureq, currentObject.getIdentity());
 				} 
@@ -210,11 +207,11 @@ public class PFCoachController extends FormBasicController implements Controller
 		}
 	}
 	
-	private void doSelectParticipantFolder (UserRequest ureq, UserPropertiesRow row, PFView view) {
+	private void doSelectParticipantFolder (UserRequest ureq, UserPropertiesRow row) {
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		removeAsListenerAndDispose(pfParticipantController);
 		pfParticipantController = new PFParticipantController(ureq, getWindowControl(), pfNode,
-				userCourseEnv, assessedIdentity, view, true, false);
+				userCourseEnv, assessedIdentity, true, false);
 		listenTo(pfParticipantController);
 		flc.put("single", pfParticipantController.getInitialComponent());
 	}
@@ -284,7 +281,7 @@ public class PFCoachController extends FormBasicController implements Controller
 		dropboxTable.setExportEnabled(true);
 		dropboxTable.setSortSettings(options);
 		initFilters();
-		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach_" + pfView.name());
+		dropboxTable.setAndLoadPersistedPreferences(ureq, "participant-folder_coach");
 		dropboxTable.setEmtpyTableMessageKey("table.empty");
 		
 		

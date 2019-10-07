@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.modules.bc.FileInfo;
 import org.olat.core.commons.modules.bc.FolderManager;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -41,14 +42,13 @@ import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.pf.ui.PFRunController;
+import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.repository.RepositoryEntry;
 import org.olat.user.UserManager;
@@ -81,7 +81,7 @@ public class PFNotifications {
 		this.notificationsManager = notificationsManager;
 		this.pfManager = pfManager;
 		this.userManager = userManager;
-		translator = Util.createPackageTranslator(PFRunController.class, locale);
+		translator = Util.createPackageTranslator(PFParticipantController.class, locale);
 	}
 	
 	public List<SubscriptionListItem> getItems() {

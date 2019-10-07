@@ -48,10 +48,11 @@ import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.nodes.pf.manager.FileSystemExport;
 import org.olat.course.nodes.pf.manager.PFManager;
+import org.olat.course.nodes.pf.ui.PFCoachController;
 import org.olat.course.nodes.pf.ui.PFEditController;
+import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.nodes.pf.ui.PFPeekviewController;
 import org.olat.course.nodes.pf.ui.PFPreviewController;
-import org.olat.course.nodes.pf.ui.PFRunController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.userview.CourseNodeSecurityCallback;
@@ -221,8 +222,15 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public NodeRunConstructionResult createNodeRunConstructionResult(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback, String nodecmd) {
-		PFRunController runController = new PFRunController(ureq, wControl, this, userCourseEnv);
-		return runController.createNodeRunConstructionResult(ureq);	
+		Controller runCtrl;
+		if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
+			runCtrl = new PFCoachController(ureq, wControl, this, userCourseEnv);
+		} else {
+			runCtrl = new PFParticipantController(ureq, wControl, this, userCourseEnv,
+					userCourseEnv.getIdentityEnvironment().getIdentity(), false, false);
+		}
+		Controller ctrl = TitledWrapperHelper.getWrapper(ureq, wControl, runCtrl, this, "o_pf_icon");
+		return new NodeRunConstructionResult(ctrl);
 	}
 	
 	@Override
@@ -281,8 +289,8 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 		CourseEnvironment courseEnv = course.getCourseEnvironment();
 		Path sourceFolder = Paths.get(courseEnv.getCourseBaseContainer().getBasefile().getAbsolutePath(),
 				PFManager.FILENAME_PARTICIPANTFOLDER, getIdent()); 
-		Translator translator = Util.createPackageTranslator(PFRunController.class, locale);
-		return FileSystemExport.fsToZip(exportStream, archivePath, sourceFolder, this, null, translator);		
+		Translator translator = Util.createPackageTranslator(PFParticipantController.class, locale);
+		return FileSystemExport.fsToZip(exportStream, archivePath, sourceFolder, this, null, translator);
 	}
 
 	@Override

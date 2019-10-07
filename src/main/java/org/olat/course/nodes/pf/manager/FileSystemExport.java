@@ -37,18 +37,18 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.io.SystemFileFilter;
 import org.olat.course.nodes.PFCourseNode;
-import org.olat.course.nodes.pf.ui.PFRunController;
+import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.user.UserManager;
 /**
@@ -71,7 +71,7 @@ public class FileSystemExport implements MediaResource {
 		this.identities = identities;
 		this.pfNode = pfNode;
 		this.courseEnv = courseEnv;
-		this.translator = Util.createPackageTranslator(PFRunController.class, locale);
+		this.translator = Util.createPackageTranslator(PFParticipantController.class, locale);
 
 	}
 	

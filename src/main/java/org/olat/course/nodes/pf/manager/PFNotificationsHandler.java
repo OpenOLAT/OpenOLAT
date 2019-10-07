@@ -23,6 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
 import org.olat.core.commons.services.notifications.NotificationsManager;
@@ -35,12 +36,11 @@ import org.olat.core.commons.services.notifications.model.SubscriptionListItem;
 import org.olat.core.commons.services.notifications.model.TitleItem;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.pf.ui.PFRunController;
+import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
@@ -81,7 +81,7 @@ public class PFNotificationsHandler implements NotificationsHandler {
 		Publisher p = subscriber.getPublisher();
 
 		try {
-		 	final Translator translator = Util.createPackageTranslator(PFRunController.class, locale);
+		 	final Translator translator = Util.createPackageTranslator(PFParticipantController.class, locale);
 			
 		 	PFNotifications notifications = new PFNotifications(subscriber, locale, compareDate, 
 		 			pfManager, notificationsManager, userManager);
@@ -144,7 +144,7 @@ public class PFNotificationsHandler implements NotificationsHandler {
 
 	@Override
 	public String createTitleInfo(Subscriber subscriber, Locale locale) {
-		Translator translator = Util.createPackageTranslator(PFRunController.class, locale);
+		Translator translator = Util.createPackageTranslator(PFParticipantController.class, locale);
 		TitleItem title = getTitleItem(subscriber.getPublisher(), translator);
 		return title.getInfoContent("text/plain");
 	}

@@ -36,11 +36,11 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.services.notifications.SubscriptionContext;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Util;
 import org.olat.core.util.i18n.I18nManager;
@@ -58,7 +58,7 @@ import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
 import org.olat.course.CourseModule;
 import org.olat.course.nodes.PFCourseNode;
 import org.olat.course.nodes.pf.ui.DropBoxRow;
-import org.olat.course.nodes.pf.ui.PFRunController;
+import org.olat.course.nodes.pf.ui.PFParticipantController;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroupRef;
@@ -316,7 +316,7 @@ public class PFManager {
 	private VFSContainer provideParticipantContainer (PFCourseNode pfNode, CourseEnvironment courseEnv,
 			Identity identity, boolean courseReadOnly) {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(PFRunController.class, locale);
+		Translator translator = Util.createPackageTranslator(PFParticipantController.class, locale);
 		SubscriptionContext subsContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		String path = courseEnv.getCourseBaseContainer().getRelPath() + "/" + FILENAME_PARTICIPANTFOLDER;
 		String quotaPath = path + "/" + pfNode.getIdent();
@@ -355,7 +355,7 @@ public class PFManager {
 	 */
 	private VFSContainer provideCoachContainer (PFCourseNode pfNode, CourseEnvironment courseEnv, Identity identity, boolean admin) {
 		Locale locale = I18nManager.getInstance().getLocaleOrDefault(identity.getUser().getPreferences().getLanguage());
-		Translator translator = Util.createPackageTranslator(PFRunController.class, locale);
+		Translator translator = Util.createPackageTranslator(PFParticipantController.class, locale);
 		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		List<Identity> participants =  getParticipants(identity, courseEnv, admin);
 		String courseContainerRelPath = courseEnv.getCourseBaseContainer().getRelPath();
@@ -403,7 +403,7 @@ public class PFManager {
 	 * @return the VFS container
 	 */
 	public VFSContainer provideAdminContainer (PFCourseNode pfNode, CourseEnvironment courseEnv) {
-		Translator translator = Util.createPackageTranslator(PFRunController.class, I18nModule.getDefaultLocale());
+		Translator translator = Util.createPackageTranslator(PFParticipantController.class, I18nModule.getDefaultLocale());
 		SubscriptionContext nodefolderSubContext = CourseModule.createSubscriptionContext(courseEnv, pfNode);
 		RepositoryEntry re = courseEnv.getCourseGroupManager().getCourseEntry();
 		List<Identity> participants =  repositoryEntryRelationDao.getMembers(re, 

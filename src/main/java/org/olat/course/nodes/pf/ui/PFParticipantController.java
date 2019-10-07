@@ -49,12 +49,13 @@ public class PFParticipantController extends BasicController {
 	private VelocityContainer mainVC;
 	private FolderRunController folderRunController;
 	private ContextualSubscriptionController contextualSubscriptionCtr;
+	
 	@Autowired
 	private PFManager pfManager;
 
 	@SuppressWarnings("incomplete-switch")
 	public PFParticipantController(UserRequest ureq, WindowControl wControl, PFCourseNode pfNode,
-			UserCourseEnvironment userCourseEnv, Identity identity, PFView pfView, boolean isCoach, boolean readOnly) {
+			UserCourseEnvironment userCourseEnv, Identity identity, boolean isCoach, boolean readOnly) {
 		super(ureq, wControl);	
 		mainVC = createVelocityContainer("participant");
 		
@@ -78,6 +79,7 @@ public class PFParticipantController extends BasicController {
 		//CourseFreeze
 		readOnly = readOnly ? true : userCourseEnv.isCourseReadOnly();
 		
+		PFView pfView = pfManager.providePFView(pfNode);
 		VFSContainer frc = pfManager.provideParticipantFolder(pfNode, pfView, getTranslator(),courseEnv,
 				identity, isCoach, readOnly);
 		folderRunController = new FolderRunController(frc, false, false, false, false, ureq, wControl, null, null, null);
