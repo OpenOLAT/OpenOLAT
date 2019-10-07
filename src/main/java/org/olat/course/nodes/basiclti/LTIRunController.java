@@ -344,8 +344,9 @@ public class LTIRunController extends BasicController {
 		startButton = LinkFactory.createButton("start", startPage, this);
 		startButton.setPrimary(true);
 
-		Boolean assessable = config.getBooleanEntry(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD);
-		if(assessable != null && assessable.booleanValue()) {
+		boolean assessable = config.getBooleanSafe(BasicLTICourseNode.CONFIG_KEY_HAS_SCORE_FIELD, false)
+				&& userCourseEnv.isParticipant();
+		if(assessable) {
 			startPage.contextPut("isassessable", assessable);
 	    
 			Integer attempts = courseAssessmentService.getAttempts(courseNode, userCourseEnv);
@@ -464,10 +465,13 @@ public class LTIRunController extends BasicController {
 		String backMapperUrl = registerCacheableMapper(ureq, sourcedId + "_talkback", talkbackMapper);
 		String backMapperUri = serverUri + backMapperUrl + "/";
 
-		Mapper outcomeMapper = new CourseNodeOutcomeMapper(getIdentity(), courseResource, courseNode.getIdent(),
-				oauth_consumer_key, oauth_secret, sourcedId);
-		String outcomeMapperUrl = registerCacheableMapper(ureq, sourcedId, outcomeMapper, LTIManager.EXPIRATION_TIME);
-		String outcomeMapperUri = serverUri + outcomeMapperUrl + "/";
+		String outcomeMapperUri = null;
+		if (userCourseEnv.isParticipant()) {
+			Mapper outcomeMapper = new CourseNodeOutcomeMapper(getIdentity(), courseResource, courseNode.getIdent(),
+					oauth_consumer_key, oauth_secret, sourcedId);
+			String outcomeMapperUrl = registerCacheableMapper(ureq, sourcedId, outcomeMapper, LTIManager.EXPIRATION_TIME);
+			outcomeMapperUri = serverUri + outcomeMapperUrl + "/";
+		}
 
 		boolean sendname = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDNAME, false);
 		boolean sendmail = config.getBooleanSafe(LTIConfigForm.CONFIG_KEY_SENDEMAIL, false);
