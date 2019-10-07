@@ -126,7 +126,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// assertion to make sure the moduleconfig is valid
 		if (!ScormEditController.isModuleConfigValid(config))
 			throw new AssertException("scorm run controller had an invalid module config:" + config.toString());
-		this.isPreview = isPreview || userCourseEnv.isCourseReadOnly();
+		this.isPreview = isPreview || userCourseEnv.isCourseReadOnly() || !userCourseEnv.isParticipant();
 		this.userCourseEnv = userCourseEnv;
 		this.config = config;
 		this.scormNode = scormNode;
@@ -141,7 +141,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		startPage = createVelocityContainer("run");
 		// show browse mode option only if not assessable, hide it if in
 		// "real test mode"
-		isAssessable = config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
+		isAssessable = userCourseEnv.isParticipant() && config.getBooleanSafe(ScormEditController.CONFIG_ISASSESSABLE, true);
 		if(isAssessable) {
 			assessableType = config.getStringValue(ScormEditController.CONFIG_ASSESSABLE_TYPE,
 					ScormEditController.CONFIG_ASSESSABLE_TYPE_SCORE);
@@ -152,7 +152,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 		// score was given back by the SCORM
 		// set start button if max attempts are not reached
 		if (!maxAttemptsReached()) {
-			chooseScormRunMode = new ChooseScormRunModeForm(ureq, getWindowControl(), !isAssessable, userCourseEnv.isCourseReadOnly());
+			chooseScormRunMode = new ChooseScormRunModeForm(ureq, getWindowControl(), !isAssessable && !isPreview, userCourseEnv.isCourseReadOnly());
 			listenTo(chooseScormRunMode);
 			startPage.put("chooseScormRunMode", chooseScormRunMode.getInitialComponent());
 			startPage.contextPut("maxAttemptsReached", Boolean.FALSE);
@@ -314,11 +314,13 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 					true, null, doActivate, fullWindow, false, deliveryOptions);
 		} else {
 			boolean attemptsIncremented = false;
-			//increment user attempts only once!
-			if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
-					|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
-				courseAssessmentService.incrementAttempts(scormNode, userCourseEnv, Role.user);
-				attemptsIncremented = true;
+			if (userCourseEnv.isParticipant()) {
+				//increment user attempts only once!
+				if(!config.getBooleanSafe(ScormEditController.CONFIG_ADVANCESCORE, true)
+						|| !config.getBooleanSafe(ScormEditController.CONFIG_ATTEMPTSDEPENDONSCORE, false)) {
+					courseAssessmentService.incrementAttempts(scormNode, userCourseEnv, Role.user);
+					attemptsIncremented = true;
+				}
 			}
 			
 			courseId = userCourseEnv.getCourseEnvironment().getCourseResourceableId().toString();
