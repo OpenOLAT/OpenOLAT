@@ -39,6 +39,8 @@ import org.olat.core.gui.components.velocity.VelocityContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.messages.MessageController;
+import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.modal.DialogBoxController;
 import org.olat.core.gui.control.generic.modal.DialogBoxUIFactory;
 import org.olat.core.id.OLATResourceable;
@@ -143,7 +145,20 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (userCourseEnv.isAdmin() || userCourseEnv.isCoach()) {
+			String title = "";
+			if(templateMap != null) {
+				title = StringHelper.escapeHtml(templateMap.getTitle());
+			} else if(templateBinder != null) {
+				title = StringHelper.escapeHtml(templateBinder.getTitle());
+			}
+			MessageController coachMessage = MessageUIFactory.createInfoMessage(ureq, getWindowControl(),
+					translate("info.coach.title"), translate("info.coach.text", new String[] { title }));
+			(((FormLayoutContainer) formLayout).getFormItemComponent()).put("coachMessage", coachMessage.getInitialComponent());
+		}
+		
 		infosContainer = FormLayoutContainer.createDefaultFormLayout("infos", getTranslator());
+		infosContainer.setVisible(userCourseEnv.isParticipant());
 		formLayout.add(infosContainer);
 		
 		String assessmentPage = velocity_root + "/assessment_infos.html";
@@ -304,7 +319,7 @@ public class PortfolioCourseNodeRunController extends FormBasicController {
 	}
 	
 	private void updateAssessmentInfos(UserRequest ureq, Date returnDate) {
-		if(returnDate != null || copyBinder != null) {
+		if(userCourseEnv.isParticipant() && (returnDate != null || copyBinder != null)) {
 			String rDate = formatter.formatDateAndTime(returnDate);
 			uifactory.addStaticTextElement("map.returnDate", rDate, infosContainer);
 
