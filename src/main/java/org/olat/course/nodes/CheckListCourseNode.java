@@ -67,10 +67,10 @@ import org.olat.course.nodes.cl.CheckListAssessmentConfig;
 import org.olat.course.nodes.cl.CheckboxManager;
 import org.olat.course.nodes.cl.model.Checkbox;
 import org.olat.course.nodes.cl.model.CheckboxList;
+import org.olat.course.nodes.cl.ui.CheckListAssessmentController;
 import org.olat.course.nodes.cl.ui.CheckListEditController;
 import org.olat.course.nodes.cl.ui.CheckListExcelExport;
 import org.olat.course.nodes.cl.ui.CheckListRunController;
-import org.olat.course.nodes.cl.ui.CheckListRunForCoachController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
 import org.olat.course.run.scoring.ScoreEvaluation;
@@ -139,7 +139,7 @@ public class CheckListCourseNode extends AbstractAccessableCourseNode {
 			String message = trans.translate("guestnoaccess.message");
 			ctrl = MessageUIFactory.createInfoMessage(ureq, wControl, title, message);
 		} else if(userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
-			ctrl = new CheckListRunForCoachController(ureq, wControl, userCourseEnv, ores, this);
+			ctrl = new CheckListAssessmentController(ureq, wControl, userCourseEnv, ores, this);
 		} else {
 			ctrl = new CheckListRunController(ureq, wControl, userCourseEnv, ores, this);
 		}
