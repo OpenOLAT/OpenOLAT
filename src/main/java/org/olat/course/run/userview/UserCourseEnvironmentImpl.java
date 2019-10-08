@@ -42,6 +42,7 @@ import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.scoring.AssessmentAccounting;
+import org.olat.course.run.scoring.NoEvaluationAccounting;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.curriculum.CurriculumElement;
@@ -91,7 +92,6 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 			Boolean coach, Boolean admin, Boolean participant, Boolean courseReadOnly) {
 		this.courseEnvironment = courseEnvironment;
 		this.identityEnvironment = identityEnvironment;
-		this.scoreAccounting = new AssessmentAccounting(this);
 		this.conditionInterpreter = new ConditionInterpreter(this);
 		this.coachedGroups = coachedGroups;
 		this.participatingGroups = participatingGroups;
@@ -101,8 +101,9 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		this.participant = participant;
 		this.windowControl = windowControl;
 		this.courseReadOnly = courseReadOnly;
+		initScoreAccounting();
 	}
-	
+
 	public static UserCourseEnvironmentImpl load(UserRequest ureq, ICourse course, RepositoryEntrySecurity reSecurity, WindowControl wControl) {
 		CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
 		List<BusinessGroup> coachedGroups;
@@ -130,9 +131,14 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 				reSecurity.isReadOnly() || reSecurity.isOnlyPrincipal() || reSecurity.isOnlyMasterCoach());
 	}
 
-	/**
-	 * @return Returns the courseEnvironment.
-	 */
+	private void initScoreAccounting() {
+		if (isParticipant()) {
+			scoreAccounting =  new AssessmentAccounting(this);
+		} else {
+			scoreAccounting = new NoEvaluationAccounting();
+		}
+	}
+	
 	@Override
 	public CourseEnvironment getCourseEnvironment() {
 		return courseEnvironment;
@@ -341,6 +347,10 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 	public void setUserRoles(boolean admin, boolean coach, boolean participant) {
 		this.admin = Boolean.valueOf(admin);
 		this.coach = Boolean.valueOf(coach);
+		boolean participantChanged = isParticipant() != participant;
 		this.participant = Boolean.valueOf(participant);
+		if (participantChanged) {
+			initScoreAccounting();
+		}
 	}
 }

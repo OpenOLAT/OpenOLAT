@@ -705,6 +705,7 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setEmailEnabled(isEmailEnabled());
 		clone.setForumEnabled(isForumEnabled());
 		clone.setDocumentsEnabled(isDocumentsEnabled());
+		clone.setNodeAccessType(getNodeAccessType().getType());
 		return clone;
 	}
 
