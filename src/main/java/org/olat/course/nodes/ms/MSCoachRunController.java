@@ -67,8 +67,7 @@ public class MSCoachRunController extends BasicController {
 
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		RepositoryEntrySecurity reSecurity = repositoryManager.isAllowed(ureq, courseEntry);
-		boolean admin = reSecurity.isEntryAdmin() || reSecurity.isPrincipal() || reSecurity.isMasterCoach()
-				|| hasAssessmentRight;
+		boolean admin = userCourseEnv.isAdmin() || hasAssessmentRight;
 
 		boolean nonMembers = reSecurity.isEntryAdmin();
 		List<BusinessGroup> coachedGroups = null;
