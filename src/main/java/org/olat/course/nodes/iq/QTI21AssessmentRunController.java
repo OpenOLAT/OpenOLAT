@@ -60,7 +60,6 @@ import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CourseModule;
 import org.olat.course.DisposedCourseRestartController;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.manager.AssessmentNotificationsHandler;
@@ -85,6 +84,7 @@ import org.olat.ims.qti21.QTI21DeliveryOptions;
 import org.olat.ims.qti21.QTI21LoggingAction;
 import org.olat.ims.qti21.QTI21Service;
 import org.olat.ims.qti21.model.DigitalSignatureOptions;
+import org.olat.ims.qti21.model.InMemoryOutcomeListener;
 import org.olat.ims.qti21.ui.AssessmentResultController;
 import org.olat.ims.qti21.ui.AssessmentTestDisplayController;
 import org.olat.ims.qti21.ui.QTI21Event;
@@ -272,7 +272,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			}
 		} else if(courseNode instanceof IQTESTCourseNode) {
 			IQTESTCourseNode testCourseNode = (IQTESTCourseNode)courseNode;
-			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(testCourseNode, userCourseEnv);
+			AssessmentEntry assessmentEntry = userCourseEnv.isParticipant()
+					? courseAssessmentService.getAssessmentEntry(testCourseNode, userCourseEnv)
+					: null;
 			if(assessmentEntry == null) {
 				mainVC.contextPut("blockAfterSuccess", Boolean.FALSE);
 				mainVC.contextPut("score", null);
@@ -281,6 +283,9 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 				mainVC.contextPut("comment", null);
 				mainVC.contextPut("attempts", 0);
 				mainVC.contextPut("showChangeLog", Boolean.FALSE);
+				if (!userCourseEnv.isParticipant()) {
+					mainVC.contextPut("enableScoreInfo", Boolean.FALSE);
+				}
 			} else {
 				Boolean passed = assessmentEntry.getPassed();
 				//block if test passed (and config set to check it)
@@ -427,7 +432,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			mainVC.contextPut("showResultsOnHomePage", Boolean.valueOf(showResultsOnHomePage && !showSummary.none()));	
 		}
 		
-		if(!anonym && resultsVisible) {
+		if(!anonym && resultsVisible && userCourseEnv.isParticipant()) {
 			UserNodeAuditManager am = userCourseEnv.getCourseEnvironment().getAuditManager();
 			String userLog = am.getUserNodeLog(courseNode, getIdentity());
 			mainVC.contextPut("log", StringHelper.escapeHtml(userLog));	
@@ -548,9 +553,8 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 			session = qtiService.getLastAssessmentTestSessions(courseEntry, courseNode.getIdent(), testEntry, getIdentity());
 		} else {
-			AssessmentManager am = userCourseEnv.getCourseEnvironment().getAssessmentManager();
-			AssessmentEntry assessmentEntry = am.getAssessmentEntry(courseNode, getIdentity());
-			if(assessmentEntry.getAssessmentId() != null) {
+			AssessmentEntry assessmentEntry = courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnv);
+			if(userCourseEnv.isParticipant() && assessmentEntry.getAssessmentId() != null) {
 				session = qtiService.getAssessmentTestSession(assessmentEntry.getAssessmentId());
 			} else {
 				RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
@@ -624,8 +628,13 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		WindowControl bwControl = addToHistory(ureq, ores, null);
 		
 		RepositoryEntry courseRe = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-		displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe, courseNode.getIdent(),
-				deliveryOptions, overrideOptions, true, false, false);
+		if (!userCourseEnv.isParticipant() && courseNode instanceof IQTESTCourseNode) {
+			displayCtrl = new AssessmentTestDisplayController(ureq, getWindowControl(), new InMemoryOutcomeListener(),
+					testEntry, courseRe, courseNode.getIdent(), deliveryOptions, overrideOptions, true, true, true);
+		} else {
+			displayCtrl = new AssessmentTestDisplayController(ureq, bwControl, this, testEntry, courseRe,
+					courseNode.getIdent(), deliveryOptions, overrideOptions, true, false, false);
+		}
 		listenTo(displayCtrl);
 		if(displayCtrl.getAssessmentTest() == null) {
 			logError("Test cannot be read: " + testEntry + " in course: " + courseRe + " element: " + courseNode.getIdent() , null);
@@ -750,7 +759,7 @@ public class QTI21AssessmentRunController extends BasicController implements Gen
 		}	
 		
 		removeHistory(ureq);
-		if(courseNode instanceof IQTESTCourseNode) {
+		if(userCourseEnv.isParticipant() && courseNode instanceof IQTESTCourseNode) {
 			courseAssessmentService.updateCurrentCompletion(courseNode, userCourseEnv, null, null, Role.user);
 		}
 		
