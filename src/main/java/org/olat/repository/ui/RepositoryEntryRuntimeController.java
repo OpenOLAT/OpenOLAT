@@ -842,8 +842,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 
 	private void doSwitchRole(UserRequest ureq, Role role) {
 		reSecurity.setCurrentRole(role);
-		initToolbar();
 		onSecurityReloaded(ureq);
+		initToolbar();
 	}
 	
 	private void doConfirmCloseResource(UserRequest ureq) {

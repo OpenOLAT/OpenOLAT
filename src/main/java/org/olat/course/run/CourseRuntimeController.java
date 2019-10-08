@@ -682,7 +682,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		// Personal tools on right side
 		CourseConfig cc = course.getCourseConfig();
-		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock && uce != null) {
+		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock) {
 			// link to efficiency statements should
 			// - not appear when not configured in course configuration
 			// - not appear when configured in course configuration but no assessable
@@ -699,6 +699,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				efficiencyStatementsLink.setVisible(certification);
 			}
 		}
+		if (efficiencyStatementsLink != null && !uce.isParticipant()) {
+			efficiencyStatementsLink.setVisible(false);
+		}
 		
 		if (!isGuestOnly && !assessmentLock) {
 			noteLink = LinkFactory.createToolLink("personalnote",translate("command.personalnote"), this, "o_icon_notes");
@@ -714,56 +717,55 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			myCourse.addComponent(bookmarkLink);
 		}
 
-		if(uce != null) {
-			if(myCourse.size() > 0 && (!uce.getCoachedGroups().isEmpty() || !uce.getParticipatingGroups().isEmpty() || !uce.getWaitingLists().isEmpty())) {
-				myCourse.addComponent(new Spacer(""));
-			}
-			
-			// 2) add coached groups
-			if (!uce.getCoachedGroups().isEmpty()) {
-				for (BusinessGroup group:uce.getCoachedGroups()) {
-					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
-					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-					link.setUserObject(group);
-					link.setEnabled(!assessmentLock);
-					myCourse.addComponent(link);
-					
-				}
-			}
-	
-			// 3) add participating groups
-			if (!uce.getParticipatingGroups().isEmpty()) {
-				for (BusinessGroup group: uce.getParticipatingGroups()) {
-					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
-					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-					link.setUserObject(group);
-					link.setEnabled(!assessmentLock);
-					myCourse.addComponent(link);
-				}
-			}
-	
-			// 5) add waiting-list groups
-			if (!uce.getWaitingLists().isEmpty()) {
-				for (BusinessGroup group:uce.getWaitingLists()) {
-					int pos = businessGroupService.getPositionInWaitingListFor(getIdentity(), group);
-					String name = StringHelper.escapeHtml(group.getName()) + " (" + pos + ")";
-					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", name, this);
-					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-					link.setUserObject(group);
-					link.setEnabled(false);
-					myCourse.addComponent(link);
-				}
-			}
-			
-			if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
-					&& !assessmentLock && !roles.isGuestOnly() && !uce.isCourseReadOnly()
-					&& isAllowedToLeave(uce)) {
-				leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
-				leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
-				myCourse.addComponent(new Spacer("leaving-space"));
-				myCourse.addComponent(leaveLink);
+		if(myCourse.size() > 0 && (!uce.getCoachedGroups().isEmpty() || !uce.getParticipatingGroups().isEmpty() || !uce.getWaitingLists().isEmpty())) {
+			myCourse.addComponent(new Spacer(""));
+		}
+		
+		// 2) add coached groups
+		if (!uce.getCoachedGroups().isEmpty()) {
+			for (BusinessGroup group:uce.getCoachedGroups()) {
+				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
+				link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+				link.setUserObject(group);
+				link.setEnabled(!assessmentLock);
+				myCourse.addComponent(link);
+				
 			}
 		}
+
+		// 3) add participating groups
+		if (!uce.getParticipatingGroups().isEmpty()) {
+			for (BusinessGroup group: uce.getParticipatingGroups()) {
+				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
+				link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+				link.setUserObject(group);
+				link.setEnabled(!assessmentLock);
+				myCourse.addComponent(link);
+			}
+		}
+
+		// 5) add waiting-list groups
+		if (!uce.getWaitingLists().isEmpty()) {
+			for (BusinessGroup group:uce.getWaitingLists()) {
+				int pos = businessGroupService.getPositionInWaitingListFor(getIdentity(), group);
+				String name = StringHelper.escapeHtml(group.getName()) + " (" + pos + ")";
+				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", name, this);
+				link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+				link.setUserObject(group);
+				link.setEnabled(false);
+				myCourse.addComponent(link);
+			}
+		}
+		
+		if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
+				&& !assessmentLock && !roles.isGuestOnly() && !uce.isCourseReadOnly()
+				&& isAllowedToLeave(uce)) {
+			leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
+			leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
+			myCourse.addComponent(new Spacer("leaving-space"));
+			myCourse.addComponent(leaveLink);
+		}
+			
 		if(myCourse.size() > 0) {
 			toolbarPanel.addTool(myCourse, Align.right);
 		}
@@ -1191,7 +1193,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					doDocuments(ureq);
 				}
 			} else if("Certification".equalsIgnoreCase(type)) {
-				doEfficiencyStatements(ureq);
+				if (efficiencyStatementsLink != null && efficiencyStatementsLink.isVisible()) {
+					doEfficiencyStatements(ureq);
+				}
 			} else if("Reminders".equalsIgnoreCase(type) || "RemindersLogs".equalsIgnoreCase(type)) {
 				doReminders(ureq);
 			} else if("Lectures".equalsIgnoreCase(type)) {
