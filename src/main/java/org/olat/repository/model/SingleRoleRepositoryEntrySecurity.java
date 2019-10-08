@@ -67,6 +67,12 @@ public class SingleRoleRepositoryEntrySecurity implements RepositoryEntrySecurit
 
 	public void setWrappedSecurity(RepositoryEntrySecurity wrappedSecurity) {
 		this.wrappedSecurity = wrappedSecurity;
+		// current role no longer possible
+		if ((Role.participant.equals(currentRole) && !isParticipant())
+			|| (Role.coach.equals(currentRole) && !isCoach())
+			|| (Role.owner.equals(currentRole) && !isOwner())) {
+			currentRole = getDefaultRole();
+		}
 	}
 	
 	public Set<Role> getOtherRoles() {
