@@ -41,12 +41,11 @@
 			</div>
 		#end
 	</div>
-	
-	#if ($r.available("highScore"))
-		$r.render("highScore")
-	#end
-	
  #end
+	
+#if ($r.available("highScore"))
+	$r.render("highScore")
+#end
 
 #if ($children && $children.size() > 0)
 	#set ($i = 0)
