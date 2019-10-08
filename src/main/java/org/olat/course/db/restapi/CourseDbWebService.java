@@ -54,6 +54,7 @@ import org.olat.restapi.support.vo.KeyValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -229,7 +230,7 @@ public class CourseDbWebService {
 	@PUT
 	@Path("values/{name}")
 	public Response putValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name,
-			@QueryParam("value") String value, @Context HttpServletRequest request) {
+			@QueryParam("value")  @Parameter(description = "The value of the key value pair") String value, @Context HttpServletRequest request) {
 		return internPutValue(courseId, category, name, value, request);
 	}
 

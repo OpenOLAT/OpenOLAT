@@ -68,6 +68,15 @@ import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 /**
  * The security checks are done by the CurriculumsWebService.
  * 
@@ -543,7 +552,20 @@ public class CurriculumElementsWebService {
 	 */
 	@GET
 	@Path("{curriculumElementKey}/users")
-	public Response getUsers(@PathParam("curriculumElementKey") Long curriculumElementKey, @QueryParam("role") String role) {
+	@Operation(summary = "Get all members",
+	description = "Get all members of the specified curriculum element. A query parameter can\n" + 
+			"	  specify the role of them")
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "The array of authors",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = UserVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = UserVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
+			@ApiResponse(responseCode = "401", description = "The course not found")}
+		)
+	public Response getUsers(@PathParam("curriculumElementKey") Long curriculumElementKey, @QueryParam("role")  @Parameter(description = "Filter by specific role") String role) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();

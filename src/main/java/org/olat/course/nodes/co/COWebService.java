@@ -66,6 +66,7 @@ import org.olat.restapi.repository.course.AbstractCourseNodeWebService;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Parameter;
 
 /**
  * 
@@ -114,13 +115,13 @@ public class COWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachContact(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("coaches") @DefaultValue("false") boolean coaches, @QueryParam("participants") @DefaultValue("false") boolean participants,
-			@QueryParam("groups") String groups, @QueryParam("areas") String areas, @QueryParam("to") String to,
-			@QueryParam("defaultSubject") String defaultSubject, @QueryParam("defaultBody") String defaultBody,
+	public Response attachContact(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this structure")String parentNodeId,
+			@QueryParam("position") @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position, @QueryParam("shortTitle") @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle") @Parameter(description = "The node long title") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @Parameter(description = "The node learning objectives") @DefaultValue("undefined") String objectives,
+			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules, @QueryParam("accessExpertRules") @Parameter(description = "The rules to access the node (optional)") String accessExpertRules,
+			@QueryParam("coaches") @Parameter(description = "Send to coaches (true/false)") @DefaultValue("false") boolean coaches, @QueryParam("participants") @Parameter(description = "Send to participants (true/false)") @DefaultValue("false") boolean participants,
+			@QueryParam("groups") @Parameter(description = "A list of learning groups (list of keys)") String groups, @QueryParam("areas") @Parameter(description = "A list of learning areas (list of keys)") String areas, @QueryParam("to") String to,
+			@QueryParam("defaultSubject") @Parameter(description = "The default subject") String defaultSubject, @QueryParam("defaultBody") @Parameter(description = "The default body text") String defaultBody,
 			@Context HttpServletRequest request) {
 		
 		ContactConfigDelegate config = new ContactConfigDelegate(coaches, participants, groups, areas, to, defaultSubject, defaultBody);

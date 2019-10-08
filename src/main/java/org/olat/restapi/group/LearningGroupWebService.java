@@ -85,6 +85,7 @@ import org.olat.user.restapi.UserVO;
 import org.olat.user.restapi.UserVOFactory;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 
@@ -138,7 +139,7 @@ public class LearningGroupWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getGroupList(@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
+	public Response getGroupList(@QueryParam("externalId") @Parameter(description = "Search with an external ID") String externalId, @QueryParam("managed") @Parameter(description = "(true / false) Search only managed / not managed groups") Boolean managed,
 			@Context HttpServletRequest request) {
 		BusinessGroupService bgs = CoreSpringFactory.getImpl(BusinessGroupService.class);
 		List<BusinessGroup> groups;
