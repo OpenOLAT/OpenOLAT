@@ -38,10 +38,13 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.nodes.INode;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -61,6 +64,9 @@ public class LearningPathListController extends FormBasicController {
 		this.userCourseEnv = userCourseEnvironment;
 		initForm(ureq);
 	}
+	
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
@@ -120,13 +126,17 @@ public class LearningPathListController extends FormBasicController {
 	}
 
 	private LearningPathRow forgeRow(LearningPathTreeNode treeNode, LearningPathRow parent) {
-		ProgressBar progressBar = new ProgressBar("progress-" + treeNode.getIdent());
-		float actual = treeNode.getCompletion() != null? treeNode.getCompletion().floatValue(): 0.0f;
-		progressBar.setActual(actual);
-		progressBar.setMax(1.0f);
-		progressBar.setWidthInPercent(true);
-		progressBar.setPercentagesEnabled(true);
-		progressBar.setLabelAlignment(LabelAlignment.none);
+		ProgressBar progressBar = null;
+		boolean hasCompletion = !Mode.none.equals(courseAssessmentService.getAssessmentConfig(treeNode.getCourseNode()).getCompletionMode());
+		if (hasCompletion) {
+			progressBar = new ProgressBar("progress-" + treeNode.getIdent());
+			float actual = treeNode.getCompletion() != null? treeNode.getCompletion().floatValue(): 0.0f;
+			progressBar.setActual(actual);
+			progressBar.setMax(1.0f);
+			progressBar.setWidthInPercent(true);
+			progressBar.setPercentagesEnabled(true);
+			progressBar.setLabelAlignment(LabelAlignment.none);
+		}
 		LearningPathRow row = new LearningPathRow(treeNode, progressBar);
 		row.setParent(parent);
 		return row;

@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st.assessment;
+package org.olat.course.run.scoring;
 
 import java.util.function.Function;
 
@@ -28,10 +28,6 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.CompletionEvaluator;
-import org.olat.course.run.scoring.ScoreAccounting;
-import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
@@ -42,9 +38,11 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class AverageCompletionEvaluator implements CompletionEvaluator {
 	
-	final static Function<AssessmentEvaluation, Integer> UNWEIGHTED = (ae) -> 1;
-	final static Function<AssessmentEvaluation, Integer> DURATION_WEIGHTED = 
+	public final static Function<AssessmentEvaluation, Integer> UNWEIGHTED = (ae) -> 1;
+	public final static Function<AssessmentEvaluation, Integer> DURATION_WEIGHTED = 
 			(ae) -> ae.getDuration() != null? ae.getDuration(): Integer.valueOf(1);
+			
+	private static final StatusCompletionEvaluator statusCompletionEvaluator = new StatusCompletionEvaluator();
 	
 	private final CourseAssessmentService courseAssessmentService;
 	private final Function<AssessmentEvaluation, Integer> weightFunction;
@@ -82,7 +80,7 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 							: 0.0;
 				} else if (Mode.none.equals(assessmentConfig.getCompletionMode())) {
 					nodeCount = 1;
-					completion += getCompletion(assessmentEvaluation);
+					completion += statusCompletionEvaluator.getCompletion(assessmentEvaluation);
 				}
 				int weight = weightFunction.apply(assessmentEvaluation).intValue();
 				count += weight * nodeCount;
@@ -97,22 +95,6 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 		return evaluation != null
 				&& evaluation.getObligation() != null
 				&& AssessmentObligation.mandatory.equals(evaluation.getObligation());
-	}
-
-	private double getCompletion(AssessmentEvaluation evaluation) {
-		if (evaluation.getFullyAssessed() != null && evaluation.getFullyAssessed().booleanValue()) return 1.0;
-		
-		AssessmentEntryStatus assessmentStatus = evaluation.getAssessmentStatus();
-		if (assessmentStatus == null) return 0.0;
-		
-		switch (assessmentStatus) {
-		case notReady: return 0.0;
-		case notStarted: return 0.0;
-		case inProgress: return 0.5;
-		case inReview: return 0.75;
-		case done: return 1.0;
-		default: return 0.0;
-		}
 	}
 
 }

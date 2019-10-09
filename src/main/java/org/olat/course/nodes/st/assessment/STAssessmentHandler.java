@@ -19,8 +19,8 @@
  */
 package org.olat.course.nodes.st.assessment;
 
-import static org.olat.course.nodes.st.assessment.AverageCompletionEvaluator.DURATION_WEIGHTED;
-import static org.olat.course.nodes.st.assessment.AverageCompletionEvaluator.UNWEIGHTED;
+import static org.olat.course.run.scoring.AverageCompletionEvaluator.DURATION_WEIGHTED;
+import static org.olat.course.run.scoring.AverageCompletionEvaluator.UNWEIGHTED;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -43,6 +43,7 @@ import org.olat.course.nodes.st.STIdentityListCourseNodeController;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AccountingEvaluatorsBuilder;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.AverageCompletionEvaluator;
 import org.olat.course.run.scoring.CompletionEvaluator;
 import org.olat.course.run.scoring.FullyAssessedEvaluator;
 import org.olat.course.run.scoring.LastModificationsEvaluator;

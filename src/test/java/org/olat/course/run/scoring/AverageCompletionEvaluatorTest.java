@@ -17,13 +17,13 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.nodes.st.assessment;
+package org.olat.course.run.scoring;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
 import static org.mockito.Mockito.when;
-import static org.olat.course.nodes.st.assessment.AverageCompletionEvaluator.DURATION_WEIGHTED;
-import static org.olat.course.nodes.st.assessment.AverageCompletionEvaluator.UNWEIGHTED;
+import static org.olat.course.run.scoring.AverageCompletionEvaluator.DURATION_WEIGHTED;
+import static org.olat.course.run.scoring.AverageCompletionEvaluator.UNWEIGHTED;
 import static org.olat.modules.assessment.model.AssessmentObligation.mandatory;
 import static org.olat.modules.assessment.model.AssessmentObligation.optional;
 
@@ -39,7 +39,6 @@ import org.olat.course.nodes.Card2BrainCourseNode;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.SPCourseNode;
 import org.olat.course.nodes.STCourseNode;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
