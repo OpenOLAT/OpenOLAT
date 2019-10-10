@@ -23,6 +23,7 @@ import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.modules.lecture.LectureModule;
 import org.olat.modules.lecture.LectureService;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -32,6 +33,7 @@ import org.quartz.JobExecutionException;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@DisallowConcurrentExecution
 public class AutoCloseLecturesJob extends JobWithDB {
 
 	@Override

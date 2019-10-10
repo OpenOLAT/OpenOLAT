@@ -39,11 +39,13 @@ public class UsernameValidationRulesFactory {
 	@Autowired
 	private LoginModule loginModule;
 	
-	public ValidationRulesProvider createRules() {
+	public ValidationRulesProvider createRules(boolean checkUsernameExists) {
 		ValidationRulesProviderBuilder providerBuilder = new ValidationRulesProviderBuilder();
 		providerBuilder.add(createUsernameSyntaxRule());
 		providerBuilder.add(createBlackListRule());
-		providerBuilder.add(createUsernameExistsRule());
+		if (checkUsernameExists) {
+			providerBuilder.add(createUsernameExistsRule());
+		}
 		return providerBuilder.create();
 	}
 

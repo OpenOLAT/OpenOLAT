@@ -31,6 +31,7 @@ import org.olat.modules.adobeconnect.AdobeConnectManager;
 import org.olat.modules.adobeconnect.AdobeConnectMeeting;
 import org.olat.modules.adobeconnect.AdobeConnectModule;
 import org.olat.modules.adobeconnect.model.AdobeConnectErrors;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -40,6 +41,7 @@ import org.quartz.JobExecutionException;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@DisallowConcurrentExecution
 public class AdobeConnectCleanupJob extends JobWithDB {
 	
 	private static final Logger log = Tracing.createLoggerFor(AdobeConnectCleanupJob.class);

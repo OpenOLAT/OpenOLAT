@@ -177,7 +177,7 @@ public class LectureBlockDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void searchLectureBlocks() {
+	public void searchLectureBlocks_lectureManager() {
 		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-1");
 		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-1");
 		RepositoryEntry entry = createResourceWithLecturesEnabled();
@@ -239,6 +239,66 @@ public class LectureBlockDAOTest extends OlatTestCase {
 		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
 		Assert.assertNotNull(blocks);
 		Assert.assertTrue(blocks.isEmpty());
+	}
+	
+	@Test
+	public void searchLectureBlocks_lectureManager_negative() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-1");
+		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-1");
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		repositoryEntryRelationDao.addRole(lectureManager, entry, OrganisationRoles.lecturemanager.name());
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecture manager");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+		
+		// other course, other lecture manager
+		Identity otherLectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-alien");
+		RepositoryEntry otherEntry = createResourceWithLecturesEnabled();
+		repositoryEntryRelationDao.addRole(otherLectureManager, otherEntry, OrganisationRoles.lecturemanager.name());
+		dbInstance.commitAndCloseSession();
+
+		// first see something
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setManager(lectureManager);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		Assert.assertNotNull(blocks);
+		Assert.assertEquals(1, blocks.size());
+		
+		// second not
+		LecturesBlockSearchParameters otherSearchParams = new LecturesBlockSearchParameters();
+		otherSearchParams.setManager(otherLectureManager);
+		List<LectureBlock> otherBlocks = lectureBlockDao.searchLectureBlocks(otherSearchParams);
+		Assert.assertNotNull(otherBlocks);
+		Assert.assertTrue(otherBlocks.isEmpty());
+	}
+	
+	@Test
+	public void searchLectureBlocks_lectureManager_organisation() {
+		Identity teacher = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-teacher-1");
+		Identity lectureManager = JunitTestHelper.createAndPersistIdentityAsRndUser("lec-manager-org");
+		RepositoryEntry entry = createResourceWithLecturesEnabled();
+		organisationService.addMember(lectureManager, OrganisationRoles.lecturemanager);
+		
+		LectureBlock lectureBlock = lectureBlockDao.createLectureBlock(entry);
+		lectureBlock.setStartDate(new Date());
+		lectureBlock.setEndDate(new Date());
+		lectureBlock.setTitle("Hello lecture manager");
+		lectureBlock = lectureBlockDao.update(lectureBlock);
+		lectureService.addTeacher(lectureBlock, teacher);
+		dbInstance.commitAndCloseSession();
+
+		// first see something
+		LecturesBlockSearchParameters searchParams = new LecturesBlockSearchParameters();
+		searchParams.setManager(lectureManager);
+		List<LectureBlock> blocks = lectureBlockDao.searchLectureBlocks(searchParams);
+		Assert.assertNotNull(blocks);
+		Assert.assertFalse(blocks.isEmpty());
+		Assert.assertTrue(blocks.contains(lectureBlock));
 	}
 	
 	@Test

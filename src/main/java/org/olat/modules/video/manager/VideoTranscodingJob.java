@@ -28,12 +28,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.hibernate.ObjectDeletedException;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.core.commons.services.video.MovieService;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.LocalFileImpl;
 import org.olat.core.util.vfs.LocalFolderImpl;
@@ -42,6 +44,7 @@ import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.resource.OLATResource;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -51,13 +54,12 @@ import org.quartz.JobExecutionException;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@DisallowConcurrentExecution
 public class VideoTranscodingJob extends JobWithDB {
-	private ArrayList<String> resolutionsWithProfile = new ArrayList<>(Arrays.asList("1080", "720", "480"));
+	
+	private static final Logger log = Tracing.createLoggerFor(VideoTranscodingJob.class);
+	private final List<String> resolutionsWithProfile = new ArrayList<>(Arrays.asList("1080", "720", "480"));
 
-	/**
-	 * 
-	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
-	 */
 	@Override
 	public void executeWithDB(JobExecutionContext context) throws JobExecutionException {
 		// uses StatefulJob interface to prevent concurrent job execution
@@ -80,9 +82,22 @@ public class VideoTranscodingJob extends JobWithDB {
 		// Find first one to work with
 		boolean allOk = true;
 		for(VideoTranscoding videoTranscoding = getNextVideo(); videoTranscoding != null;  videoTranscoding = getNextVideo()) {
+			if(cancelTranscoding()) {
+				break;
+			}
 			allOk &= forkTranscodingProcess(videoTranscoding);
 		}
 		return allOk;
+	}
+	
+	private boolean cancelTranscoding() {
+		try {
+			VideoModule videoModule = CoreSpringFactory.getImpl(VideoModule.class);
+			return (!videoModule.isTranscodingLocal() || !videoModule.isTranscodingEnabled());
+		} catch (Exception e) {
+			log.error("", e);
+			return true;
+		}
 	}
 	
 	private VideoTranscoding getNextVideo() {
@@ -170,7 +185,7 @@ public class VideoTranscodingJob extends JobWithDB {
 			ProcessBuilder builder = new ProcessBuilder(cmd);
 			process = builder.start();
 			return updateVideoTranscodingFromProcessOutput(process, videoTranscoding, transcodedFile);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			log.error ("Could not spawn convert sub process", e);
 			return false;
 		} finally {

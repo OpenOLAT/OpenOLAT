@@ -27,9 +27,12 @@ package org.olat.commons.calendar;
 
 import java.util.Random;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.manager.ImportToCalendarManager;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 
 /**
@@ -40,8 +43,10 @@ import org.quartz.JobExecutionContext;
  * Initial Date:  21 feb. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@DisallowConcurrentExecution
 public class ImportCalendarJob extends JobWithDB {
-	
+
+	private static final Logger log = Tracing.createLoggerFor(ImportCalendarJob.class);
 	private static final Random random = new Random();
 	
 	@Override

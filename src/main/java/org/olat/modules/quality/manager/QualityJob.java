@@ -27,6 +27,7 @@ import org.olat.core.commons.services.scheduler.JobWithDB;
 import org.olat.modules.quality.QualityModule;
 import org.olat.modules.quality.QualityService;
 import org.olat.modules.quality.generator.QualityGeneratorService;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -36,6 +37,7 @@ import org.quartz.JobExecutionException;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
+@DisallowConcurrentExecution
 public class QualityJob extends JobWithDB {
 
 	@Override

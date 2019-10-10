@@ -28,12 +28,15 @@ package org.olat.core.gui.components;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -88,7 +91,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.HistoryPoint;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -949,26 +951,24 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 			}
 			
 			final List<Component> dirties = new ArrayList<>();
-			ComponentVisitor dirtyV = new ComponentVisitor() {
-				@Override
-				public boolean visit(Component comp, UserRequest ureq) {
-					boolean visitChildren = false;
-					if(comp == null) {
-						log.warn("Ooops, a component is null");
-					} else if (!comp.isVisible()) {
-						// a component just made -visible- still needs to be collected (detected by checking dirty flag)
-						if (comp.isDirty()) {
-							dirties.add(comp);
-							comp.setDirty(false);  // clear manually here since this component will not be rendered
-						}
-					} else if (comp.isDirty()) {
+			ComponentVisitor dirtyV = (comp, ureq) -> {
+				boolean visitChildren = false;
+				if(comp == null) {
+					log.warn("Ooops, a component is null");
+				} else if (!comp.isVisible()) {
+					// a component just made -visible- still needs to be collected (detected by checking dirty flag)
+					if (comp.isDirty()) {
 						dirties.add(comp);
-					} else {
-						// visible and not dirty -> visit children
-						visitChildren = true;
-					}				
-					return visitChildren;
-				}};
+						comp.setDirty(false);  // clear manually here since this component will not be rendered
+					}
+				} else if (comp.isDirty()) {
+					dirties.add(comp);
+				} else {
+					// visible and not dirty -> visit children
+					visitChildren = true;
+				}				
+				return visitChildren;
+			};
 			ComponentTraverser ct = new ComponentTraverser(dirtyV, getContentPane(), false);
 			ct.visitAll(null);
 			int dCnt = dirties.size();
@@ -1000,8 +1000,14 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							debugMsg = new StringBuilder("update:").append(String.valueOf(dCnt)).append(";");
 						}
 						
+						Set<Component> dirtyDuplicates = new HashSet<>();
+						
 						for (int i = 0; i < dCnt; i++) {
 							Component toRender = dirties.get(i);
+							if(dirtyDuplicates.contains(toRender)) {
+								continue;// prevent rendering twice the same component
+							}
+							
 							if(isDebugLog) {
 								log.debug("Perf-Test: Window.handleDirties toRender.getComponentName()=" + toRender.getComponentName());
 								log.debug("Perf-Test: Window.handleDirties toRender=" + toRender);
@@ -1010,6 +1016,7 @@ public class Window extends AbstractComponent implements CustomCSSDelegate {
 							if (!wasDomR) {
 								throw new CannotReplaceDOMFragmentException("cannot replace as dom fragment:"+toRender.getComponentName()+" ("+toRender.getClass().getName()+"),"+toRender.getExtendedDebugInfo());
 							}
+							dirtyDuplicates.add(toRender);
 							
 							Panel wrapper = new Panel("renderpanel");
 							wrapper.setDomReplaceable(false); // to omit <div> around the render helper panel

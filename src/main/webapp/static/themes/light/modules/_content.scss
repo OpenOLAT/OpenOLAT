@@ -44,6 +44,10 @@ a {
 h1 { 
 	color: $o-content-h1-color;
 }
+body > h1:first-child { 
+	margin-top: 0;
+}
+
 h2 { 
 	color: $o-content-h2-color;
 }
@@ -62,7 +66,6 @@ h5 {
 hr {
 	border-top: $o-content-hr-size solid $o-content-hr-color;
 }
-
 
 /* 2) OpenOLAT specific styles /* 
 

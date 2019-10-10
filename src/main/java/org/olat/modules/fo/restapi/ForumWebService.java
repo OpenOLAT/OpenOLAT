@@ -22,7 +22,6 @@ package org.olat.modules.fo.restapi;
 
 import static org.olat.restapi.security.RestSecurityHelper.getIdentity;
 
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -282,8 +281,8 @@ public class ForumWebService {
 		)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response newThreadToForum(@QueryParam("title") String title,
-			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
+	public Response newThreadToForum(@QueryParam("title") @Parameter(description = "The title for the first post in the thread") String title,
+			@QueryParam("body") String body, @QueryParam("authorKey") @Parameter(description = "The author user key (optional)") Long authorKey,
 			@Context HttpServletRequest httpRequest) {
 
 		Identity author = getMessageAuthor(authorKey, httpRequest);
@@ -330,7 +329,7 @@ public class ForumWebService {
 			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
 			@ApiResponse(responseCode = "404", description = "The author, forum or message not found.")}
 		)
-	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @Parameter(description = "Set the date for the earliest thread.") @DefaultValue("0") Integer start,
+	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @Parameter(description = "Set the date for the earliest thread") @DefaultValue("0") Integer start,
 			@QueryParam("limit")@Parameter(description = "Limit the amount of threads to be returned.") @DefaultValue("25") Integer limit, @QueryParam("orderBy")@Parameter(description = "orderBy (value name,creationDate)") @DefaultValue("creationDate") String orderBy,
 			@QueryParam("asc") @Parameter(description = "Determine the type of order.") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
 			@Context Request request) {
@@ -426,8 +425,8 @@ public class ForumWebService {
 		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") String title,
-			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
+	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") @Parameter(description = "The title for the first post in the thread") String title,
+			@QueryParam("body") @Parameter(description = "The body for the first post in the thread") String body, @QueryParam("authorKey") @Parameter(description = "The author user key (optional)") Long authorKey,
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		ServletUtil.printOutRequestHeaders(httpRequest);
 		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest, uriInfo);

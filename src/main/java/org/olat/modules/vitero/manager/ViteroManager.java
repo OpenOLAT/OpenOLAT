@@ -231,10 +231,7 @@ public class ViteroManager implements UserDataDeletable {
 		cal.add(Calendar.MINUTE, booking.getEndBuffer());
 		Date end = cal.getTime();
 		
-		if(start.before(now) && end.after(now)) {
-			return true;
-		}
-		return false;
+		return(start.before(now) && end.after(now));
 	}
 	
 	public String getURLToBooking(Identity identity, ViteroBooking booking)
@@ -1039,6 +1036,8 @@ public class ViteroManager implements UserDataDeletable {
 		booking.setEnd(cal.getTime());
 		booking.setEndBuffer(15);
 		
+		booking.setInspire(viteroModule.isInspire());
+		
 		List<Integer> roomSizes = getLicencedRoomSizes();
 		if(!roomSizes.isEmpty()) {
 			booking.setRoomSize(roomSizes.get(0));
@@ -1304,7 +1303,7 @@ public class ViteroManager implements UserDataDeletable {
 	throws VmsNotAvailableException {
 		ViteroBooking booking = null;
 		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, Integer.toString(bookingId));
-		if(properties.size() > 0) {
+		if(!properties.isEmpty()) {
 			Property property = properties.get(0);
 			String propIdentifier = property.getStringValue();
 			if((propIdentifier == null || subIdentifier == null)
@@ -1388,7 +1387,7 @@ public class ViteroManager implements UserDataDeletable {
 		//check if vms user with an openolat login exists on vms server
 		//without the need authentication object in openolat.
 		List<Usertype> users = getCustomersUsers();
-		if(users != null && users.size() > 0) {
+		if(users != null && !users.isEmpty()) {
 			for(Usertype user:users) {
 				String vmsUsername = user.getUsername();
 				if(vmsUsername.startsWith(prefix)) {
@@ -1549,7 +1548,7 @@ public class ViteroManager implements UserDataDeletable {
 	private final List<ViteroBooking> convert(List<Booking_Type> bookings) {
 		List<ViteroBooking> viteroBookings = new ArrayList<>();
 		
-		if(bookings != null && bookings.size() > 0) {
+		if(bookings != null && !bookings.isEmpty()) {
 			for(Booking_Type b:bookings) {
 				viteroBookings.add(convert(b));
 			}
@@ -1574,6 +1573,7 @@ public class ViteroManager implements UserDataDeletable {
 		vb.setStartBuffer(booking.getStartbuffer());
 		vb.setEnd(parse(booking.getEnd()));
 		vb.setEndBuffer(booking.getEndbuffer());
+		vb.setInspire(booking.isInspire());
 		return vb;
 	}
 	

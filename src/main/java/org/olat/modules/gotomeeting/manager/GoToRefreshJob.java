@@ -29,6 +29,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.modules.gotomeeting.GoToMeetingManager;
 import org.olat.modules.gotomeeting.GoToMeetingModule;
 import org.olat.modules.gotomeeting.GoToOrganizer;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 
@@ -38,6 +39,7 @@ import org.quartz.JobExecutionException;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
+@DisallowConcurrentExecution
 public class GoToRefreshJob extends JobWithDB {
 
 	@Override

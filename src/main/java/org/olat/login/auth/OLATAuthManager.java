@@ -205,7 +205,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 	}
 	
 	public SyntaxValidator createUsernameSytaxValidator() {
-		return new SyntaxValidator(usernameRulesFactory.createRules(), false);
+		return new SyntaxValidator(usernameRulesFactory.createRules(true), false);
 	}
 	
 	

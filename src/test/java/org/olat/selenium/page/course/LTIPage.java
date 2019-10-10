@@ -45,19 +45,24 @@ public class LTIPage {
 	}
 	
 	public LTIPage start() {
-		By startBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'start')]");
-		OOGraphene.waitElement(startBy, browser);
-		browser.findElement(startBy).click();
-		
-		By iframeBy = By.cssSelector(".o_iframedisplay iframe");
-		OOGraphene.waitElement(iframeBy, browser);
-		
-		List<WebElement> iframes = browser.findElements(iframeBy);
-		browser = browser.switchTo().frame(iframes.get(0));
-		
-		By launchedBy = By.xpath("//p[contains(text(),'Launch Validated.')]");
-		OOGraphene.waitElement(launchedBy, browser);
-		
+		try {
+			By startBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'start')]");
+			OOGraphene.waitElement(startBy, browser);
+			browser.findElement(startBy).click();
+			
+			By iframeBy = By.cssSelector(".o_iframedisplay iframe");
+			OOGraphene.waitElement(iframeBy, browser);
+			
+			List<WebElement> iframes = browser.findElements(iframeBy);
+			browser = browser.switchTo().frame(iframes.get(0));
+			
+			By launchedBy = By.xpath("//p[contains(text(),'Launch Validated.')]");
+			OOGraphene.waitElement(launchedBy, browser);
+		} catch (Exception e) {
+			OOGraphene.takeScreenshot("LTIPage_start", browser);
+
+			throw e;
+		}
 		return this;
 	}
 	

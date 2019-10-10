@@ -46,7 +46,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
  */
 public abstract class JobWithDB extends QuartzJobBean {
 	// A logger instantiated for the immplementing class of this abstract class
-	protected final Logger log = Tracing.createLoggerFor(this.getClass());
+	private static final Logger log = Tracing.createLoggerFor(JobWithDB.class);
 	
 	@Override
 	protected final void executeInternal(JobExecutionContext arg0)
@@ -61,6 +61,7 @@ public abstract class JobWithDB extends QuartzJobBean {
 			success = true;
 		} catch(JobExecutionException e) {
 			// for documentation purpose only
+			log.error("", e);
 			throw e;
 		} finally {
 			//clean up logging

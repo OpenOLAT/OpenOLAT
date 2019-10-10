@@ -20,8 +20,11 @@
 
 package org.olat.portfolio.manager;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 
 /**
@@ -33,10 +36,12 @@ import org.quartz.JobExecutionContext;
  * Initial Date:  12 nov. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
+@DisallowConcurrentExecution
 public class EPDeadlineJob  extends JobWithDB {
-	/**
-	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
-	 */
+	
+	private static final Logger log = Tracing.createLoggerFor(EPDeadlineJob.class);
+	
+	@Override
 	public void executeWithDB(JobExecutionContext context) {
 		try {
 			log.info("Starting checking deadline of maps job");

@@ -64,10 +64,12 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 		
 		List<RepositoryEntry> ownerEntries = repoManager.queryByMembership(getIdentity(), true, true, false, SharedFolderFileResource.TYPE_NAME);
 		for (RepositoryEntry entry : ownerEntries) {
-			VFSContainer container = sfm.getNamedSharedFolder(entry, true);
-			if(container != null) {
-				addContainerToList(container, containers);
-				addedEntries.add(entry.getKey());
+			if(entry != null && !addedEntries.contains(entry.getKey())) {
+				VFSContainer container = sfm.getNamedSharedFolder(entry, true);
+				if(container != null) {
+					addContainerToList(container, containers);
+					addedEntries.add(entry.getKey());
+				}
 			}
 		}
 		
@@ -77,7 +79,7 @@ public class SharedFolderWebDAVMergeSource extends WebDAVMergeSource {
 		}
 
 		// see /webapp/WEB-INF/classes/org/olat/core/commons/services/webdav/webdavContext.xml
-		if (publiclyReadableFolders != null && publiclyReadableFolders.size() > 0) {
+		if (publiclyReadableFolders != null && !publiclyReadableFolders.isEmpty()) {
 			// Temporarily save added entries. This is needed to make sure not to add an entry twice.
 			
 			String firstItem = publiclyReadableFolders.get(0);

@@ -43,7 +43,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.UserConstants;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -94,6 +93,8 @@ public class RegistrationForm2 extends FormBasicController {
 	public RegistrationForm2(UserRequest ureq, WindowControl wControl, String languageKey, String proposedUsername,
 			String email, boolean userInUse, boolean usernameReadonly) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
+		
 		this.languageKey = languageKey;
 		this.proposedUsername = proposedUsername;
 		this.email = email;
@@ -172,7 +173,6 @@ public class RegistrationForm2 extends FormBasicController {
 		// first the configured user properties
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
 		
-		Translator tr = Util.createPackageTranslator(UserPropertyHandler.class, getLocale(), getTranslator());
 		
 		// Add all available user fields to this form
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
@@ -181,24 +181,23 @@ public class RegistrationForm2 extends FormBasicController {
 			FormItem fi = userPropertyHandler
 					.addFormItem(getLocale(), null, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout);
 			fi.setElementCssClass("o_sel_registration_" + userPropertyHandler.getName());
-			fi.setTranslator(tr);
 			propFormItems.put(userPropertyHandler.getName(), fi);
-			
-			if (UserConstants.EMAIL.equals(userPropertyHandler.getName())) {
-				if (fi instanceof TextElement) {
-					((TextElement)fi).setValue(email);
-				}
+			if (UserConstants.EMAIL.equals(userPropertyHandler.getName()) && fi instanceof TextElement) {
+				((TextElement)fi).setValue(email);
 			}
 		}
 		
 		uifactory.addSpacerElement("lang", formLayout, true);
 		// second the user language
 		Map<String, String> languages = i18nManager.getEnabledLanguagesTranslated();
-		lang = uifactory.addDropdownSingleselect("user.language", formLayout,
-				StringHelper.getMapKeysAsStringArray(languages),
-				StringHelper.getMapValuesAsStringArray(languages),
-				null); 
-		lang.select(languageKey, true);
+		String[] languageKeys = StringHelper.getMapKeysAsStringArray(languages);
+		String[] languageValues = StringHelper.getMapValuesAsStringArray(languages);
+		lang = uifactory.addDropdownSingleselect("user.language", formLayout, languageKeys, languageValues, null);
+		if(languages.containsKey(languageKey)) {
+			lang.select(languageKey, true);
+		} else if(languageKeys.length > 0) {
+			lang.select(languageKeys[0], true);
+		}
 		
 		uifactory.addSpacerElement("loginstuff", formLayout, true);
 
@@ -240,16 +239,17 @@ public class RegistrationForm2 extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic (UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		// validate each user field
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			FormItem fi = propFormItems.get(userPropertyHandler.getName());
 			if (fi.isEnabled() && !userPropertyHandler.isValid(null, fi, null)) {
-				if (userPropertyHandler instanceof EmailProperty)
+				if (userPropertyHandler instanceof EmailProperty) {
 					allOk &= registrationManager.isEmailReserved(getEmail());
-				else
+				} else {
 					allOk &= false;
+				}
 			}
 		}
 		
@@ -298,7 +298,7 @@ public class RegistrationForm2 extends FormBasicController {
 			allOk &= false;
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override

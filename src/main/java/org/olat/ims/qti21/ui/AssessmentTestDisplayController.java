@@ -2080,6 +2080,10 @@ public class AssessmentTestDisplayController extends BasicController implements 
 						QTIWorksAssessmentTestEvent qwate = (QTIWorksAssessmentTestEvent)event;
 						if(qwate.getEvent() == QTIWorksAssessmentTestEvent.Event.tmpResponse) {
 							processTemporaryResponse(ureq);
+							return; // only save the response
+						} else if(qwate.getEvent() == QTIWorksAssessmentTestEvent.Event.mark) {
+							fireEvent(ureq, event);
+							return; // only toggle, don't update
 						} else {
 							fireEvent(ureq, event);
 						}
@@ -2098,7 +2102,8 @@ public class AssessmentTestDisplayController extends BasicController implements 
 		
 		@Override
 		protected void propagateDirtinessToContainer(FormItem fiSrc, FormEvent fe) {
-			if(!"mark".equals(fe.getCommand()) && !"rubric".equals(fe.getCommand())) {
+			if(!"mark".equals(fe.getCommand()) && !"rubric".equals(fe.getCommand())
+					&& !"tmpResponse".equals(fe.getCommand())) {
 				super.propagateDirtinessToContainer(fiSrc, fe);
 			}
 		}

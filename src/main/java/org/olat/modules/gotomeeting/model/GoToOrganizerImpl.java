@@ -28,7 +28,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -50,12 +49,9 @@ import org.olat.modules.gotomeeting.GoToOrganizer;
  */
 @Entity(name="gotoorganizer")
 @Table(name="o_goto_organizer")
-@NamedQueries({
-	@NamedQuery(name="loadOrganizerByKey", query="select organizer from gotoorganizer organizer where organizer.key=:key"),
-	@NamedQuery(name="getSystemOrganizers", query="select organizer from gotoorganizer organizer where organizer.owner is null"),
-	@NamedQuery(name="getSystemOrganizersAndMy", query="select organizer from gotoorganizer organizer where organizer.owner is null or organizer.owner.key=:identityKey")
-	
-}) 
+@NamedQuery(name="loadOrganizerByKey", query="select organizer from gotoorganizer organizer where organizer.key=:key")
+@NamedQuery(name="getSystemOrganizers", query="select organizer from gotoorganizer organizer where organizer.owner is null")
+@NamedQuery(name="getSystemOrganizersAndMy", query="select organizer from gotoorganizer organizer where organizer.owner is null or organizer.owner.key=:identityKey")
 public class GoToOrganizerImpl implements GoToOrganizer, Persistable, ModifiedInfo {
 	
 	private static final long serialVersionUID = -1633399884431270798L;
@@ -92,10 +88,10 @@ public class GoToOrganizerImpl implements GoToOrganizer, Persistable, ModifiedIn
 	private String refreshToken;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_renew_date", nullable=false, insertable=true, updatable=true)
+	@Column(name="g_renew_date", nullable=true, insertable=true, updatable=true)
 	private Date renewDate;
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="g_renew_refresh_date", nullable=false, insertable=true, updatable=true)
+	@Column(name="g_renew_refresh_date", nullable=true, insertable=true, updatable=true)
 	private Date renewRefreshDate;
 	
 	@Column(name="g_organizer_key", nullable=false, insertable=true, updatable=true)

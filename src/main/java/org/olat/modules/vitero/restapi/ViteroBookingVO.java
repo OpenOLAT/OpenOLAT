@@ -47,6 +47,7 @@ public class ViteroBookingVO {
 	private Date end;
 	private int endBuffer;
 	private int roomSize;
+	private boolean inspire;
 	private boolean autoSignIn;
 	private String timeZoneId;
 	
@@ -66,6 +67,7 @@ public class ViteroBookingVO {
 		endBuffer = booking.getEndBuffer();
 		roomSize = booking.getRoomSize();
 		autoSignIn = booking.isAutoSignIn();
+		inspire = booking.isInspire();
 		timeZoneId = booking.getTimeZoneId();
 	}
 	
@@ -157,6 +159,14 @@ public class ViteroBookingVO {
 		this.autoSignIn = autoSignIn;
 	}
 	
+	public boolean isInspire() {
+		return inspire;
+	}
+
+	public void setInspire(boolean inspire) {
+		this.inspire = inspire;
+	}
+
 	public String getTimeZoneId() {
 		return timeZoneId;
 	}

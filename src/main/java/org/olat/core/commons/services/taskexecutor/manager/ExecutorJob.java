@@ -19,8 +19,10 @@
  */
 package org.olat.core.commons.services.taskexecutor.manager;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
 import org.quartz.JobExecutionContext;
 
 /**
@@ -32,6 +34,8 @@ import org.quartz.JobExecutionContext;
  *
  */
 public class ExecutorJob extends JobWithDB {
+
+	private static final Logger log = Tracing.createLoggerFor(ExecutorJob.class);
 	
 	@Override
 	public void executeWithDB(JobExecutionContext context) {

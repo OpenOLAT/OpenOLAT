@@ -65,6 +65,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -227,8 +228,8 @@ public class CertificationWebService {
 			@ApiResponse(responseCode = "404", description = "The identity or the resource cannot be found"),
 			@ApiResponse(responseCode = "500", description = "An unexpected error happened during the creation of the certificate")})	
 	public Response putCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
-			@QueryParam("score") Float score, @QueryParam("passed") Boolean passed,
-			@QueryParam("creationDate") String creationDate,
+			@QueryParam("score")@Parameter(description = "The score which appears in the certificate") Float score, @QueryParam("passed") @Parameter(description = "The passed/failed which appears in the certificate (true/false)")  Boolean passed,
+			@QueryParam("creationDate") @Parameter(description = "The date of the certification") String creationDate,
 			@Context HttpServletRequest request) {
 		Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 		if(assessedIdentity == null) {

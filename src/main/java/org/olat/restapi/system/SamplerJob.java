@@ -19,6 +19,7 @@
  */
 package org.olat.restapi.system;
 
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
@@ -33,6 +34,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
  * Initial Date:  21 feb. 2011 <br>
  * @author srosse, stephane.rosse@frentix.com, www.frentix.com
  */
+@DisallowConcurrentExecution
 public class SamplerJob extends QuartzJobBean {
 
 	@Override

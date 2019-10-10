@@ -19,8 +19,11 @@
  */
 package org.olat.portfolio.manager;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.services.scheduler.JobWithDB;
+import org.olat.core.logging.Tracing;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.JobExecutionContext;
 
 /**
@@ -31,11 +34,12 @@ import org.quartz.JobExecutionContext;
  * Initial Date:  11 nov. 2010 <br>
  * @author srosse
  */
+@DisallowConcurrentExecution
 public class InvitationCleanupJob extends JobWithDB {
 
-	/**
-	 * @see org.olat.core.commons.services.scheduler.JobWithDB#executeWithDB(org.quartz.JobExecutionContext)
-	 */
+	private static final Logger log = Tracing.createLoggerFor(InvitationCleanupJob.class);
+
+	@Override
 	public void executeWithDB(JobExecutionContext context) {
 		try {
 			log.info("Starting invitation clean up job");

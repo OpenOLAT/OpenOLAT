@@ -58,6 +58,7 @@ import org.olat.user.UserModule;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
@@ -111,7 +112,7 @@ public class RegistrationWebService {
 	@ApiResponses({
 			@ApiResponse(responseCode = "200", description = "Registration successful"),
 			@ApiResponse(responseCode = "304", description = "Already registered, HTTP-Header location set to redirect") })	
-	public Response register(@QueryParam("email") String email, @Context HttpServletRequest request) {
+	public Response register(@QueryParam("email") @Parameter(description = "The email address") String email, @Context HttpServletRequest request) {
 		if (!CoreSpringFactory.getImpl(RegistrationModule.class).isSelfRegistrationEnabled()) {
 			return Response.serverError().status(Status.NOT_FOUND).build();
 		}

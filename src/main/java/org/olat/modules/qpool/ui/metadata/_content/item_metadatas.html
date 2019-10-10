@@ -1,5 +1,5 @@
  <div class="panel-group" id="accordion">
-	<div class="panel panel-default">
+	<div class="panel panel-default o_sel_qpool_metadata_general">
 		<div class="panel-heading">
 			<h4 class="panel-title">
 				<i id="collapseGeneralToggler" class="o_icon o_icon-fw #if($inGeneral) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
@@ -14,15 +14,13 @@
 			</div>
 		</div>
 		<script>
-			/* <![CDATA[ */
-				jQuery('#general').on('hide.bs.collapse', function () {
-					jQuery('#collapseGeneralToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-				})
-				jQuery('#general').on('show.bs.collapse', function () {
-					jQuery('#collapseGeneralToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					$r.backgroundCommand("show","panel","general")
-				})
-			/* ]]> */
+		jQuery('#general').on('hide.bs.collapse', function () {
+			jQuery('#collapseGeneralToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#general').on('show.bs.collapse', function () {
+			jQuery('#collapseGeneralToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			$r.backgroundCommand("show","panel","general")
+		})
 		</script>
 	</div>
 	<div class="panel panel-default">
