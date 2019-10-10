@@ -22,7 +22,6 @@ package org.olat.course.db.restapi;
 
 import java.util.List;
 
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -38,6 +37,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.id.Identity;
@@ -55,9 +55,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -302,7 +303,7 @@ public class CourseDbWebService {
 			}
 		)
 	public Response putValue(@PathParam("courseId") Long courseId, @PathParam("category") String category, @PathParam("name") String name,
-			@QueryParam("value") String value, @Context HttpServletRequest request) {
+			@QueryParam("value")  @Parameter(description = "The value of the key value pair") String value, @Context HttpServletRequest request) {
 		return internPutValue(courseId, category, name, value, request);
 	}
 

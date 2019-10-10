@@ -53,6 +53,7 @@ import org.olat.restapi.support.vo.GroupVOes;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -104,8 +105,8 @@ public class MyGroupWebService {
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) }),
 			@ApiResponse(responseCode = "404", description = "The identity not found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getUserGroupList(@QueryParam("start") @DefaultValue("0") Integer start, @QueryParam("limit") @DefaultValue("25") Integer limit,
-			@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
+	public Response getUserGroupList(@QueryParam("start") @Parameter(description = "The first result") @DefaultValue("0") Integer start, @QueryParam("limit") @Parameter(description = "The maximum results")  @DefaultValue("25") Integer limit,
+			@QueryParam("externalId") @Parameter(description = "Search with an external ID") String externalId, @QueryParam("managed") @Parameter(description = "(true / false) Search only managed / not managed groups") Boolean managed,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 
 		return getGroupList(start, limit, externalId, managed, true, true, httpRequest, request);
@@ -135,8 +136,8 @@ public class MyGroupWebService {
 					@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = GroupVO.class))) }),
 			@ApiResponse(responseCode = "404", description = "The identity not found") })	
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getOwnedGroupList(@QueryParam("start") @DefaultValue("0") Integer start, @QueryParam("limit") @DefaultValue("25") Integer limit,
-			@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
+	public Response getOwnedGroupList(@QueryParam("start") @Parameter(description = "The first result") @DefaultValue("0") Integer start, @QueryParam("limit") @Parameter(description = "The maximum results") @DefaultValue("25") Integer limit,
+			@QueryParam("externalId") @Parameter(description = "Search with an external ID") String externalId, @QueryParam("managed") @Parameter(description = "(true / false) Search only managed / not managed groups") Boolean managed,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		return getGroupList(start, limit, externalId, managed, true, false, httpRequest, request);
 	}

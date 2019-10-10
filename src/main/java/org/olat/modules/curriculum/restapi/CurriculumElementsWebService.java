@@ -20,7 +20,6 @@
 package org.olat.modules.curriculum.restapi;
 
 import java.util.ArrayList;
-
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -70,11 +69,13 @@ import org.olat.user.restapi.UserVOFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 
 /**
  * The security checks are done by the CurriculumsWebService.
@@ -693,7 +694,7 @@ public class CurriculumElementsWebService {
 			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient"),
 			@ApiResponse(responseCode = "401", description = "The course not found")}
 		)
-	public Response getUsers(@PathParam("curriculumElementKey") Long curriculumElementKey, @QueryParam("role") String role) {
+	public Response getUsers(@PathParam("curriculumElementKey") Long curriculumElementKey, @QueryParam("role")  @Parameter(description = "Filter by specific role") String role) {
 		CurriculumElement curriculumElement = curriculumService.getCurriculumElement(new CurriculumElementRefImpl(curriculumElementKey));
 		if(curriculumElement == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();

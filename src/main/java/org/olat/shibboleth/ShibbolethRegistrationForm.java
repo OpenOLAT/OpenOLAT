@@ -35,8 +35,8 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
-import org.olat.login.auth.OLATAuthManager;
 import org.olat.login.validation.SyntaxValidator;
+import org.olat.login.validation.UsernameValidationRulesFactory;
 import org.olat.login.validation.ValidationResult;
 import org.olat.user.ChangePasswordForm;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,13 +58,13 @@ public class ShibbolethRegistrationForm extends FormBasicController {
 	private final SyntaxValidator usernameSyntaxValidator;
 
 	@Autowired
-	private OLATAuthManager olatAuthManager;
+	private UsernameValidationRulesFactory usernameRulesFactory;
 
 	public ShibbolethRegistrationForm(UserRequest ureq, WindowControl wControl, String proposedUsername) {
 		super(ureq, wControl);
 		setTranslator(Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale(), getTranslator()));
 		this.proposedUsername = proposedUsername;
-		this.usernameSyntaxValidator = olatAuthManager.createUsernameSytaxValidator();
+		this.usernameSyntaxValidator = new SyntaxValidator(usernameRulesFactory.createRules(false), false);
 		initForm(ureq);
 	}
 	

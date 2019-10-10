@@ -134,7 +134,7 @@ public class COWebService extends AbstractCourseNodeWebService {
 		)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachContact(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
+	public Response attachContact(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") @Parameter(description = "The node's id which will be the parent of this structure")String parentNodeId,
 			@QueryParam("position") @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position, @QueryParam("shortTitle") @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
 			@QueryParam("longTitle") @Parameter(description = "The node long title") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @Parameter(description = "The node learning objectives") @DefaultValue("undefined") String objectives,
 			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules, @QueryParam("accessExpertRules") @Parameter(description = "The rules to access the node (optional)") String accessExpertRules,
