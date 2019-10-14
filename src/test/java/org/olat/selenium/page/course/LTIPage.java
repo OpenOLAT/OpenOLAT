@@ -52,12 +52,15 @@ public class LTIPage {
 			
 			By iframeBy = By.cssSelector(".o_iframedisplay iframe");
 			OOGraphene.waitElement(iframeBy, browser);
+			OOGraphene.waitingALittleLonger();
 			
-			List<WebElement> iframes = browser.findElements(iframeBy);
-			browser = browser.switchTo().frame(iframes.get(0));
+			WebElement iframe = browser.findElement(iframeBy);
+			WebDriver iframeBrowser = browser.switchTo().frame(iframe);
 			
 			By launchedBy = By.xpath("//p[contains(text(),'Launch Validated.')]");
 			OOGraphene.waitElement(launchedBy, browser);
+			
+			iframeBrowser.switchTo().defaultContent();
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("LTIPage_start", browser);
 			throw e;
