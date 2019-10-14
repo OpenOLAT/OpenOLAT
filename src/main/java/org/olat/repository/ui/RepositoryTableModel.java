@@ -182,8 +182,8 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 		ColumnDescriptor nameColDesc = new DefaultColumnDescriptor("table.header.displayname", RepoCols.displayname.ordinal(), selectAction, loc) {
 			@Override
 			public int compareTo(int rowa, int rowb) {
-				Object o1 = table.getTableDataModel().getValueAt(rowa, 1);
-				Object o2 = table.getTableDataModel().getValueAt(rowb, 1);
+				Object o1 = table.getTableDataModel().getValueAt(rowa, RepoCols.repoEntry.ordinal());
+				Object o2 = table.getTableDataModel().getValueAt(rowb, RepoCols.repoEntry.ordinal());
 				
 				if(!(o1 instanceof RepositoryEntry)) return -1;
 				if(!(o2 instanceof RepositoryEntry)) return 1;
@@ -191,15 +191,24 @@ public class RepositoryTableModel extends DefaultTableDataModel<RepositoryEntry>
 				RepositoryEntry re2 = (RepositoryEntry)o2;
 				boolean c1 = re1.getEntryStatus() == RepositoryEntryStatusEnum.closed;
 				boolean c2 = re2.getEntryStatus() == RepositoryEntryStatusEnum.closed;
-				int result = (c2 == c1 ? 0 : (c1 ? 1 : -1));//same as Boolean compare
+				int result = Boolean.compare(c1, c2);
 				if(result == 0) {
 					Object a = table.getTableDataModel().getValueAt(rowa, dataColumn);
 					Object b = table.getTableDataModel().getValueAt(rowb, dataColumn);
-					if(!(a instanceof String)) return -1;
-					if(!(b instanceof String)) return 1;
-					String s1 = (String)a;
-					String s2 = (String)b;
-					result = compareString(s1, s2);
+					if(!(a instanceof String)) {
+						if(!(b instanceof String)) {
+							result = 0 ;
+						} else {
+							result = -1;
+						}
+					} else if(!(b instanceof String)) {
+						result = 1;
+					} else {
+						result = compareString((String)a, (String)b);
+					}
+				}
+				if(result == 0) {
+					result = Long.compare(re1.getKey().longValue(), re2.getKey().longValue());
 				}
 				return result;
 			}
