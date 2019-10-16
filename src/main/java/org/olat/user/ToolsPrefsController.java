@@ -20,9 +20,9 @@
 package org.olat.user;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.olat.admin.user.tools.UserToolExtension;
 import org.olat.admin.user.tools.UserToolsModule;
@@ -71,15 +71,10 @@ public class ToolsPrefsController extends FormBasicController {
 		
 		if(enabled) {
 			Set<String> aToolSet = userToolsModule.getAvailableUserToolSet();
-			userTools = userToolsModule.getAllUserToolExtensions(ureq);
-			if(!aToolSet.isEmpty()) {
-				for(Iterator<UserToolExtension> it=userTools.iterator(); it.hasNext(); ) {
-					UserToolExtension userToolExt = it.next();
-					if(!aToolSet.contains(userToolExt.getUniqueExtensionID()) || userToolExt.isShortCutOnly()) {
-						it.remove();
-					}
-				}
-			}
+			List<UserToolExtension> userToolList = userToolsModule.getAllUserToolExtensions(ureq);
+			userTools = userToolList.stream()
+					.filter(tool -> (!tool.isShortCutOnly() && (aToolSet.isEmpty() || aToolSet.contains(tool.getUniqueExtensionID()))))
+					.collect(Collectors.toList());
 		} else {
 			userTools = Collections.emptyList();
 		}
