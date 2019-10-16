@@ -21,8 +21,8 @@ package org.olat.repository;
 
 import java.util.Arrays;
 
-import org.olat.core.CoreSpringFactory;
 import org.apache.logging.log4j.Logger;
+import org.olat.core.CoreSpringFactory;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 

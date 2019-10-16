@@ -31,6 +31,8 @@ import org.olat.basesecurity.RelationRole;
 import org.olat.basesecurity.RelationRoleManagedFlag;
 import org.olat.basesecurity.RelationRoleToRight;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * 
  * Initial date: 31 janv. 2019<br>
@@ -45,6 +47,11 @@ public class RelationRoleVO {
 	private String role;
 	private String externalId;
 	private String externalRef;
+	@Schema(required = true, description = "Action to be performed on managedFlags", allowableValues = { 
+			"all",
+			 "name(all)",
+			 "rights(all)",
+		     "delete(all)"})
 	private String managedFlags;
 	private List<String> rights;
 	
