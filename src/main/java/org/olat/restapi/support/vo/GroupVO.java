@@ -23,6 +23,9 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
 /**
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
@@ -33,6 +36,19 @@ public class GroupVO {
 	private Long key;
 	private String description;
 	private String externalId;
+	@Schema(required = true, description = "Action to be performed on managedFlags", allowableValues = { 
+			"all",
+			  "details(all) //details tab",
+			    "title(details,all)",
+			    "description(details,all)",
+			    "settings(details,all) //max num of participants...",
+			  "tools(all) //tools tab",
+			  "members(all) //members tab",
+			    "display(members,all) // members display options",
+			    "membersmanagement(members,all)",
+			  "resources(all) //add/remove courses",
+			  "bookings(all) // change booking rules",
+			  "delete(all)"})
 	private String managedFlags;
 	private String name;
 	private String type;

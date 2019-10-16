@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.olat.basesecurity.OrganisationType;
 import org.olat.basesecurity.OrganisationTypeManagedFlag;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * 
  * Initial date: 14 mai 2018<br>
@@ -42,6 +44,15 @@ public class OrganisationTypeVO {
 	private String description;
 	private String cssClass;
 	private String externalId;
+	@Schema(required = true, description = "Action to be performed on managedFlagsString", allowableValues = { 
+			"all",
+			 "identifier(all)",
+			 "displayName(all)",
+			 "description(all)",
+			 "cssClass(all)",
+			 "externalId(all)",
+			 "subTypes(all)",
+			 "delete(all)"})
 	private String managedFlagsString;
 	
 	public OrganisationTypeVO() {

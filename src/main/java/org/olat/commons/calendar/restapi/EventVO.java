@@ -28,6 +28,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.olat.commons.calendar.CalendarManagedFlag;
 import org.olat.commons.calendar.model.KalendarEvent;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "eventVO")
 public class EventVO {
@@ -45,6 +47,16 @@ public class EventVO {
 	
 	private String liveStreamUrl;
 	
+	@Schema(required = true, description = "Action to be performed on managedFlags", allowableValues = { 
+			"all",
+			"details(all)",
+			"subject(details, all)",
+			"description(details, all)",
+			"location(details, all)",
+			"dates(details, all)",
+			"classification(all)",
+			"links(all)",
+			"liveStreamUrl(details, all)"})
 	private String managedFlags;
 	private String externalId;
 	private String externalSource;
