@@ -28,6 +28,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.olat.modules.lecture.LectureBlock;
 import org.olat.modules.lecture.LectureBlockRef;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * 
  * Initial date: 8 juin 2017<br>
@@ -40,6 +42,21 @@ public class LectureBlockVO implements LectureBlockRef {
 	
 	private Long key;
 	private String externalId;
+	
+	@Schema(required = true, description = "Action to be performed on managedFlagsString", allowableValues = { 
+			"all",
+		      "details(all) //details tab",
+		        "title(details,all)",
+		        "compulsory(details,all)",
+		        "plannedLectures(details,all)",
+		        "teachers(details,all)",
+		        "groups(details,all)",
+		        "description(details,all)",
+		        "preparation(details,all)",
+		        "location(details,all)",
+		        "dates(details,all)",
+		      "settings(all)",
+		      "delete(all)"})
 	private String managedFlagsString;
 	
 	private String title;

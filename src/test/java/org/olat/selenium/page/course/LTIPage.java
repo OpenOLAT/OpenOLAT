@@ -44,6 +44,12 @@ public class LTIPage {
 		this.browser = browser;
 	}
 	
+	/**
+	 * A successful start will switch the browser to the iframe. If you need
+	 * to go back to the LMS, you need to switch back to the default content.
+	 * 
+	 * @return Itself
+	 */
 	public LTIPage start() {
 		try {
 			By startBy = By.xpath("//div[contains(@class,'o_button_group')]/a[contains(@onclick,'start')]");
@@ -55,12 +61,10 @@ public class LTIPage {
 			OOGraphene.waitingALittleLonger();
 			
 			WebElement iframe = browser.findElement(iframeBy);
-			WebDriver iframeBrowser = browser.switchTo().frame(iframe);
+			browser = browser.switchTo().frame(iframe);
 			
 			By launchedBy = By.xpath("//p[contains(text(),'Launch Validated.')]");
 			OOGraphene.waitElement(launchedBy, browser);
-			
-			iframeBrowser.switchTo().defaultContent();
 		} catch (Exception e) {
 			OOGraphene.takeScreenshot("LTIPage_start", browser);
 
@@ -95,6 +99,11 @@ public class LTIPage {
 			}
 		}
 		Assert.assertTrue(success);
+		return this;
+	}
+	
+	public LTIPage backToOpenOLAT() {
+		browser = browser.switchTo().defaultContent();
 		return this;
 	}
 

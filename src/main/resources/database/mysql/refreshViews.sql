@@ -10,21 +10,18 @@ drop view if exists o_as_eff_statement_groups_v;
 
 
 -- user view
-create or replace view o_bs_identity_short_v as (
+create view o_bs_identity_short_v as (
    select
       ident.id as id_id,
       ident.name as id_name,
       ident.lastlogin as id_lastlogin,
       ident.status as id_status,
       us.user_id as us_id,
-      p_firstname.propvalue as first_name,
-      p_lastname.propvalue as last_name,
-      p_email.propvalue as email
+      us.u_firstname as first_name,
+      us.u_lastname as last_name,
+      us.u_email as email
    from o_bs_identity as ident
-   inner join o_user as us on (ident.fk_user_id = us.user_id)
-   left join o_userproperty as p_firstname on (us.user_id = p_firstname.fk_user_id and p_firstname.propName = 'firstName')
-   left join o_userproperty as p_lastname on (us.user_id = p_lastname.fk_user_id and p_lastname.propName = 'lastName')
-   left join o_userproperty as p_email on (us.user_id = p_email.fk_user_id and p_email.propName = 'email')
+   inner join o_user as us on (ident.id = us.fk_identity)
 );
 
 -- eportfolio views
@@ -72,7 +69,7 @@ create or replace view o_ep_notifications_rating_v as (
       page.title as page_title,
       urating.creator_id as author_id,
       urating.creationdate as creation_date,
-      urating.lastmodified as last_modified 
+      urating.lastmodified as last_modified
    from o_userrating as urating
    inner join o_olatresource as rating_resource on (rating_resource.resid = urating.resid and rating_resource.resname = urating.resname)
    inner join o_ep_struct_el as map on (map.fk_olatresource = rating_resource.resource_id)
@@ -95,7 +92,7 @@ create or replace view o_ep_notifications_comment_v as (
 );
 
 create or replace view o_gp_business_to_repository_v as (
-	select 
+	select
 		grp.group_id as grp_id,
 		repoentry.repositoryentry_id as re_id,
 		repoentry.displayname as re_displayname
@@ -126,9 +123,9 @@ create or replace view o_re_membership_v as (
       re.repositoryentry_id as fk_entry_id
    from o_repositoryentry as re
    inner join o_re_to_group relgroup on (relgroup.fk_entry_id=re.repositoryentry_id and relgroup.r_defgroup=1)
-   inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id) 
+   inner join o_bs_group_member as bmember on (bmember.fk_group_id=relgroup.fk_group_id)
 );
-  
+
 -- contacts
 create or replace view o_gp_contactkey_v as (
    select
@@ -141,9 +138,9 @@ create or replace view o_gp_contactkey_v as (
    inner join o_bs_group_member as bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
    inner join o_bs_group_member as bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
    where
-      (bgroup.ownersintern=true and bg_member.g_role='coach')
+      (bgroup.ownersintern=1 and bg_member.g_role='coach')
       or
-      (bgroup.participantsintern=true and bg_member.g_role='participant')
+      (bgroup.participantsintern=1 and bg_member.g_role='participant')
 );
 
 create or replace view o_gp_contactext_v as (
@@ -152,23 +149,22 @@ create or replace view o_gp_contactext_v as (
       bg_member.fk_identity_id as member_id,
       bg_member.g_role as membership_role,
       id_member.name as member_name,
-      first_member.propvalue as member_firstname,
-      last_member.propvalue as member_lastname,
+      us_member.u_firstname as member_firstname,
+      us_member.u_lastname as member_lastname,
       bg_me.fk_identity_id as me_id,
       bgroup.group_id as bg_id,
       bgroup.groupname as bg_name
    from o_gp_business as bgroup
    inner join o_bs_group_member as bg_member on (bg_member.fk_group_id = bgroup.fk_group_id)
    inner join o_bs_identity as id_member on (bg_member.fk_identity_id = id_member.id)
-   inner join o_user as us_member on (id_member.fk_user_id = us_member.user_id)
-   inner join o_userproperty as first_member on (first_member.fk_user_id = us_member.user_id and first_member.propname='firstName')
-   inner join o_userproperty as last_member on (last_member.fk_user_id = us_member.user_id and last_member.propname='lastName')
+   inner join o_user as us_member on (id_member.id = us_member.fk_identity)
    inner join o_bs_group_member as bg_me on (bg_me.fk_group_id = bgroup.fk_group_id)
    where
-      (bgroup.ownersintern=true and bg_member.g_role='coach')
+      (bgroup.ownersintern=1 and bg_member.g_role='coach')
       or
-      (bgroup.participantsintern=true and bg_member.g_role='participant')
+      (bgroup.participantsintern=1 and bg_member.g_role='participant')
 );
+
 
 -- instant messaging
 create or replace view o_im_roster_entry_v as (
@@ -213,5 +209,4 @@ create or replace view o_qp_share_2_item_short_v as (
    inner join o_qp_share_item as shareditem on (shareditem.fk_item_id = item.id)
    inner join o_gp_business as bgroup on (shareditem.fk_resource_id = bgroup.fk_resource)
 );
-
 
