@@ -89,24 +89,20 @@ class FeedFormController extends FormBasicController {
 		initForm(ureq);
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#doDispose()
-	 */
+	
 	@Override
 	protected void doDispose() {
-	// nothing to dispose
+		// nothing to dispose
 	}
 
-	/**
-	 * @see org.olat.core.gui.components.form.flexible.impl.FormBasicController#formOK(org.olat.core.gui.UserRequest)
-	 */
 	@Override
 	protected void formOK(UserRequest ureq) {
 		feed.setTitle(title.getValue());
 		feed.setDescription(description.getValue());
 		
-		if(feed.isExternal())
-		feed.setExternalFeedUrl(feedUrl.isEmpty() ? null : feedUrl.getValue());
+		if(feed.isExternal()) {
+			feed.setExternalFeedUrl(feedUrl.isEmpty() ? null : feedUrl.getValue());
+		}
 		
 		feed.setLastModified(new Date());
 		// The image is retrieved by the main controller
@@ -236,6 +232,7 @@ class FeedFormController extends FormBasicController {
 		deleteImage.setVisible(false);
 
 		file = uifactory.addFileElement(getWindowControl(), "feed.file.label", formLayout);
+		file.setExampleKey("feed.form.file.type.explain.images", null);
 		file.addActionListener(FormEvent.ONCHANGE);
 		file.setPreview(ureq.getUserSession(), true);
 		if (feed.getImageName() != null) {
