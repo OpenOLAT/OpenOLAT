@@ -10,7 +10,7 @@ drop view if exists o_as_eff_statement_groups_v;
 
 
 -- user view
-create view o_bs_identity_short_v as (
+create or replace view o_bs_identity_short_v as (
    select
       ident.id as id_id,
       ident.name as id_name,
