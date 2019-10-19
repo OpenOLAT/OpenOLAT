@@ -199,7 +199,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			
 			VFSMetadata parent = getMetadataFor(file.getParentFile());
 			metadata = metadataDao.createMetadata(uuid, relativePath, filename, new Date(), size, directory, uri, "file", parent);
-		} else if(file.isFile() && file.length() != metadata.getFileSize()) {
+		} else if(file.isFile() && (file.length() != metadata.getFileSize() || !file.exists() != metadata.isDeleted())) {
 			AsyncFileSizeUpdateEvent event = new AsyncFileSizeUpdateEvent(relativePath, filename);
 			coordinatorManager.getCoordinator().getEventBus().fireEventToListenersOf(event, fileSizeSubscription);
 		}
