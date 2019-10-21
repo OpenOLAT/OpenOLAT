@@ -20,7 +20,7 @@
 				logoElement.addClass('o_clickable');					
 				logoElement.prop('href', "http://www.openolat.org");
 				logoElement.prop('target', "_blank");
-				logoElement.prop('title', 'OpenOLAT - infinite learning');
+				logoElement.prop('title', 'OLAT - Online Learning and Training');
 			}
 		},
 		
