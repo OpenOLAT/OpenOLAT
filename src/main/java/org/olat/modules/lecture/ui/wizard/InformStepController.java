@@ -62,7 +62,7 @@ public class InformStepController extends StepFormBasicController {
 
 	@Override
 	protected void doDispose() {
-		//
+		mainForm.removeSubFormListener(teachersCtrl);
 	}
 
 	@Override
