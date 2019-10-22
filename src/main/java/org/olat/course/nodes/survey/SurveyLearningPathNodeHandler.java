@@ -66,7 +66,7 @@ public class SurveyLearningPathNodeHandler implements LearningPathNodeHandler {
 		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
 				.enableNodeVisited()
 				.enableConfirmed()
-				.enableStatusDone(translator.translate("fully.assessed.status.done"))
+				.enableStatusDone(translator.translate("fully.assessed.trigger.status.done"))
 				.build();
 		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
 	}

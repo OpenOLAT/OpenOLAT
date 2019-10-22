@@ -27,6 +27,7 @@ import org.olat.course.nodes.AbstractCourseNodeConfiguration;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeGroup;
 import org.olat.course.nodes.SurveyCourseNode;
+import org.olat.course.nodes.survey.ui.SurveyRunController;
 
 /**
  * 
@@ -53,7 +54,7 @@ public class SurveyCourseNodeConfiguration extends AbstractCourseNodeConfigurati
 
 	@Override
 	public String getLinkText(Locale locale) {
-		Translator translator = Util.createPackageTranslator(SurveyCourseNodeConfiguration.class, locale);
+		Translator translator = Util.createPackageTranslator(SurveyRunController.class, locale);
 		return translator.translate("course.node.link.text");
 	}
 
