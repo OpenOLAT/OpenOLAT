@@ -34,7 +34,6 @@ import org.olat.course.learningpath.ui.LearningPathNodeConfigController;
 import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -51,7 +50,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeVisitedListener {
+public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 
 	public static final String TYPE = "learningpath";
 	

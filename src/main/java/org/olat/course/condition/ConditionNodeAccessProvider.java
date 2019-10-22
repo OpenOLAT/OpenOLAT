@@ -84,6 +84,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
+	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		return false;
+	}
+
+	@Override
 	public boolean isAssessmentConfirmationEnabled(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		return false;
 	}

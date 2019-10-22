@@ -44,6 +44,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
 
+	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);
+
 	public boolean isAssessmentConfirmationEnabled(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
 	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv);

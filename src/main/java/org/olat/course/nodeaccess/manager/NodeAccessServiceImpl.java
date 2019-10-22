@@ -31,6 +31,7 @@ import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.userview.CourseTreeModelBuilder;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
@@ -46,7 +47,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service
-public class NodeAccessServiceImpl implements NodeAccessService {
+public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedListener {
 
 	private static final Logger log = Tracing.createLoggerFor(NodeAccessServiceImpl.class);
 
@@ -107,6 +108,12 @@ public class NodeAccessServiceImpl implements NodeAccessService {
 			Double completion, AssessmentEntryStatus status, Role by) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
 		getNodeAccessProvider(type).onCompletionUpdate(courseNode, userCourseEnv, completion, status, by);
+	}
+
+	@Override
+	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+		NodeAccessType type = NodeAccessType.of(userCourseEnvironment);
+		return getNodeAccessProvider(type).onNodeVisited(courseNode, userCourseEnvironment);
 	}
 
 }
