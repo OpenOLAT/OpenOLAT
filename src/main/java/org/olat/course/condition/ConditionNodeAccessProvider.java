@@ -65,12 +65,14 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel) {
+	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
+			UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel) {
 		if (courseNode instanceof AbstractAccessableCourseNode) {
 			AbstractAccessableCourseNode acccessableCourseNode = (AbstractAccessableCourseNode) courseNode;
 			ConditionAccessEditConfig accessEditConfig = acccessableCourseNode.getAccessEditConfig();
 			if (!accessEditConfig.isCustomAccessConditionController()) {
-				return new TabbableConditionNodeConfigController(ureq, wControl, courseNode, userCourseEnvironment, editorModel, accessEditConfig);
+				return new TabbableConditionNodeConfigController(ureq, wControl, courseNode, userCourseEnv, editorModel,
+						accessEditConfig);
 			}
 		}
 		return null;
@@ -82,7 +84,17 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+	public boolean isAssessmentConfirmationEnabled(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		return false;
+	}
+
+	@Override
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		// nothing to do
+	}
+
+	@Override
+	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			Double completion, AssessmentEntryStatus status, Role by) {
 		// nothing to do
 	}

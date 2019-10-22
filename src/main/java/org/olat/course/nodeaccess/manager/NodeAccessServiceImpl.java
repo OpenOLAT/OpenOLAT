@@ -80,8 +80,8 @@ public class NodeAccessServiceImpl implements NodeAccessService {
 
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, NodeAccessType type,
-			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel) {
-		return getNodeAccessProvider(type).createEditController(ureq, wControl, courseNode, userCourseEnvironment, editorModel);
+			CourseNode courseNode, UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel) {
+		return getNodeAccessProvider(type).createEditController(ureq, wControl, courseNode, userCourseEnv, editorModel);
 	}
 
 	@Override
@@ -91,10 +91,22 @@ public class NodeAccessServiceImpl implements NodeAccessService {
 	}
 
 	@Override
-	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+	public boolean isAssessmentConfirmationEnabled(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		NodeAccessType type = NodeAccessType.of(userCourseEnv);
+		return getNodeAccessProvider(type).isAssessmentConfirmationEnabled(courseNode, userCourseEnv);
+	}
+
+	@Override
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		NodeAccessType type = NodeAccessType.of(userCourseEnv);
+		getNodeAccessProvider(type).onAssessmentConfirmed(courseNode, userCourseEnv);
+	}
+
+	@Override
+	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			Double completion, AssessmentEntryStatus status, Role by) {
-		NodeAccessType type = NodeAccessType.of(userCourseEnvironment);
-		getNodeAccessProvider(type).onCompletionUpdate(courseNode, userCourseEnvironment, completion, status, by);
+		NodeAccessType type = NodeAccessType.of(userCourseEnv);
+		getNodeAccessProvider(type).onCompletionUpdate(courseNode, userCourseEnv, completion, status, by);
 	}
 
 }

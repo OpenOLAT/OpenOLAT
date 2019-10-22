@@ -19,6 +19,7 @@
  */
 package org.olat.course.learningpath.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -116,6 +117,87 @@ public class LearningPathNodeAccessProviderTest {
 	}
 	
 	@Test
+	public void shouldReturnConfirmEnabled() {
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.isFullyAssessedOnConfirmation()).thenReturn(fullyAssessed(true, true));
+		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
+		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
+		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
+
+		boolean enabled = sut.isAssessmentConfirmationEnabled(courseNodeMock, participantCourseEnv);
+
+		assertThat(enabled).isTrue();
+	}
+	
+	@Test
+	public void shouldNotReturnConfirmEnabledNotEnabledInConfiguration() {
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.isFullyAssessedOnConfirmation()).thenReturn(notFullyAssessed());
+		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
+		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
+		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
+
+		boolean enabled = sut.isAssessmentConfirmationEnabled(courseNodeMock, participantCourseEnv);
+
+		assertThat(enabled).isFalse();
+	}
+	
+	@Test
+	public void shouldNotReturnConfirmEnabledNotAParticipant() {
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.isFullyAssessedOnConfirmation()).thenReturn(fullyAssessed(true, true));
+		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
+		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
+		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
+
+		boolean enabled = sut.isAssessmentConfirmationEnabled(courseNodeMock, coachCourseEnv);
+
+		assertThat(enabled).isFalse();
+	}
+	
+	@Test
+	public void shouldSetAssessmentAsDoneIfConfirmed() {
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.isFullyAssessedOnConfirmation()).thenReturn(fullyAssessed(true, true));
+		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
+		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
+		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
+
+		sut.onAssessmentConfirmed(courseNodeMock, participantCourseEnv);
+
+		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
+				AssessmentEntryStatus.done, Role.user);
+	}
+	
+	@Test
+	public void shouldSetAssessmentAsDoneIfConfirmationNotEnabled() {
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.isFullyAssessedOnConfirmation()).thenReturn(notFullyAssessed());
+		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
+		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
+		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
+
+		sut.onAssessmentConfirmed(courseNodeMock, participantCourseEnv);
+
+		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
+				AssessmentEntryStatus.done, Role.user);
+	}
+	
+	@Test
+	public void shouldNotChangeAssessmentIfNotAParticipantConfirmed() {
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.isFullyAssessedOnConfirmation()).thenReturn(fullyAssessed(true, true));
+		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
+		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
+		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
+
+		sut.onAssessmentConfirmed(courseNodeMock, coachCourseEnv);
+
+		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
+				AssessmentEntryStatus.done, Role.user);
+	}
+	
+	@Test
 	public void shouldSetAssessmentAsDoneIfRunStatusIsReached() {
 		Role role = Role.auto;
 		LearningPathConfigs configs = mock(LearningPathConfigs.class);
@@ -128,7 +210,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.onCompletionUpdate(courseNodeMock, participantCourseEnv, COMPLETION, AssessmentEntryStatus.done, role);
 
 		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done, role);
 	}
 
 	@Test
@@ -144,7 +226,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.onCompletionUpdate(courseNodeMock, participantCourseEnv, COMPLETION, AssessmentEntryStatus.done, role);
 
 		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done, role);
 	}
 
 	@Test
@@ -160,7 +242,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.onCompletionUpdate(courseNodeMock, coachCourseEnv, COMPLETION, AssessmentEntryStatus.done, role);
 
 		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done, role);
 	}
 	
 	@Test
@@ -176,7 +258,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.onCompletionUpdate(courseNodeMock, participantCourseEnv, COMPLETION, null, role);
 
 		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done, role);
 	}
 	
 	@Test
@@ -192,7 +274,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.onCompletionUpdate(courseNodeMock, participantCourseEnv, COMPLETION, AssessmentEntryStatus.done, role);
 
 		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done, role);
 	}
 	
 	@Test
@@ -208,7 +290,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.onCompletionUpdate(courseNodeMock, coachCourseEnv, COMPLETION, AssessmentEntryStatus.done, role);
 
 		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.done, role);
 	}
 
 }

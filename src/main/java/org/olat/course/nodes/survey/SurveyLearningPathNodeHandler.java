@@ -65,6 +65,7 @@ public class SurveyLearningPathNodeHandler implements LearningPathNodeHandler {
 		Translator translator = Util.createPackageTranslator(SurveyRunController.class, ureq.getLocale());
 		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
 				.enableNodeVisited()
+				.enableConfirmed()
 				.enableStatusDone(translator.translate("done.trigger.status.done"))
 				.build();
 		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);

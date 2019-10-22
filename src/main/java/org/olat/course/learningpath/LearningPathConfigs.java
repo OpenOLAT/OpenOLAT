@@ -37,10 +37,13 @@ public interface LearningPathConfigs {
 	public AssessmentObligation getObligation();
 	
 	public FullyAssessedResult isFullyAssessedOnNodeVisited();
+	
+	public FullyAssessedResult isFullyAssessedOnConfirmation();
 
 	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion);
 	
 	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status);
+	
 	
 	public static FullyAssessedResult notFullyAssessed() {
 		return new FullyAssessedResultImpl(false, false);

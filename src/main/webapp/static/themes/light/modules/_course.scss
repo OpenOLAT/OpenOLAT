@@ -161,6 +161,31 @@
 	}
 }
 
+/* pagination */
+.o_course_pagination {
+	margin-bottom: 10px;
+	display: flex;
+	align-items: center;
+	:not(:first-child) {
+		margin-left: 5px;
+	}
+	
+	.o_previous,
+	.o_next {
+		a {
+			width: 60px;
+		}
+	}
+	
+	.o_progress {
+		flex-grow: 1;
+	}
+	
+	.progress {
+		height: 21px;
+	}
+}
+
 /* statistics */
 .o_course_stats .o_desc {
 	@extend %o_note
@@ -325,6 +350,8 @@ div.o_correction_navigation {
 		}
 	}
 }
+
+/* Manual scoring */
 .o_ms_stack_panel {
 	.o_toolbar {
 		margin-top: 0px;

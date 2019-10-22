@@ -24,6 +24,7 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DURATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_OBLIGATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_TRIGGER;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_CONFIRMED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_NODE_VISITED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_DONE;
 
@@ -79,6 +80,15 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	public FullyAssessedResult isFullyAssessedOnNodeVisited() {
 		String doneTriggerName = getDoneTriggerName();
 		if (CONFIG_VALUE_TRIGGER_NODE_VISITED.equals(doneTriggerName)) {
+			return LearningPathConfigs.fullyAssessed(true, true);
+		}
+		return LearningPathConfigs.notFullyAssessed();
+	}
+
+	@Override
+	public FullyAssessedResult isFullyAssessedOnConfirmation() {
+		String doneTriggerName = getDoneTriggerName();
+		if (CONFIG_VALUE_TRIGGER_CONFIRMED.equals(doneTriggerName)) {
 			return LearningPathConfigs.fullyAssessed(true, true);
 		}
 		return LearningPathConfigs.notFullyAssessed();

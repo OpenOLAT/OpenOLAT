@@ -52,12 +52,12 @@ public interface NodeAccessService {
 	 * @param windowControl
 	 * @param type
 	 * @param courseNode
-	 * @param userCourseEnvironment
+	 * @param userCourseEnv
 	 * @param editorModel 
 	 * @return
 	 */
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, NodeAccessType type,
-			CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel);
+			CourseNode courseNode, UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel);
 
 	/**
 	 * Builder to build the TreeModel of the complete course run structure.
@@ -67,17 +67,34 @@ public interface NodeAccessService {
 	 * @return
 	 */
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
+	
+	/**
+	 * Returns if a user can confirm the execution of a assessemnt
+	 *
+	 * @param courseNode
+	 * @param userCourseEnv
+	 * @return
+	 */
+	public boolean isAssessmentConfirmationEnabled(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
+
+	/**
+	 * Hook after the participant has confirmed the execution of a course node.
+	 * 
+	 * @param courseNode
+	 * @param userCourseEnv
+	 */
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
 	/**
 	 * Hook after the completion and the run status is updated.
 	 *
 	 * @param courseNode
-	 * @param userCourseEnvironment
+	 * @param userCourseEnv
 	 * @param completion
 	 * @param status
 	 * @param by
 	 */
-	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			Double completion, AssessmentEntryStatus status, Role by);
 
 }

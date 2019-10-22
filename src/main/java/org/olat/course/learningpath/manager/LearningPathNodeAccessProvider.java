@@ -94,29 +94,48 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider, NodeV
 	}
 
 	@Override
-	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment) {
+	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
 		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnNodeVisited();
-		boolean participant = userCourseEnvironment.isParticipant();
+		boolean participant = userCourseEnv.isParticipant();
 		if (participant && result.isFullyAssessed()) {
-			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnvironment, result.isDone());
-			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnvironment, Boolean.TRUE,
-					status, Role.auto);
+			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnv, result.isDone());
+			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnv, Boolean.TRUE,
+					status, Role.user);
 			return true;
 		}
 		return false;
 	}
 
 	@Override
-	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
+	public boolean isAssessmentConfirmationEnabled(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnConfirmation();
+		boolean participant = userCourseEnv.isParticipant();
+		boolean confirmationEnabled = participant && result.isFullyAssessed();
+		return confirmationEnabled;
+	}
+
+	@Override
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnConfirmation();
+		boolean participant = userCourseEnv.isParticipant();
+		if (participant && result.isFullyAssessed()) {
+			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnv, result.isDone());
+			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnv, Boolean.TRUE,
+					status, Role.user);
+		}
+	}
+
+	@Override
+	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			Double completion, AssessmentEntryStatus status, Role by) {
 		FullyAssessedResult onCompletion = getConfigs(courseNode).isFullyAssessedOnCompletion(completion);
 		FullyAssessedResult onRunStatus = getConfigs(courseNode).isFullyAssessedOnStatus(status);
 		boolean isFullyAssessed = onCompletion.isFullyAssessed() || onRunStatus.isFullyAssessed();
-		boolean participant = userCourseEnvironment.isParticipant();
+		boolean participant = userCourseEnv.isParticipant();
 		if (participant && isFullyAssessed) {
 			boolean isDone = onCompletion.isDone() || onRunStatus.isDone();
-			AssessmentEntryStatus newStatus = getStatus(courseNode, userCourseEnvironment, isDone);
-			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnvironment, Boolean.TRUE,
+			AssessmentEntryStatus newStatus = getStatus(courseNode, userCourseEnv, isDone);
+			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnv, Boolean.TRUE,
 					newStatus, by);
 		}
 	}

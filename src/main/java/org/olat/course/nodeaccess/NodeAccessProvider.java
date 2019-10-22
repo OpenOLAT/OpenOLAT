@@ -40,11 +40,15 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	public boolean isSupported(String courseNodeType);
 
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
-			UserCourseEnvironment userCourseEnvironment, CourseEditorTreeModel editorModel);
+			UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel);
 
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
 
-	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			Double completion, AssessmentEntryStatus status, Role by);
+	public boolean isAssessmentConfirmationEnabled(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
+
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 	
+	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
+			Double completion, AssessmentEntryStatus status, Role by);
+
 }

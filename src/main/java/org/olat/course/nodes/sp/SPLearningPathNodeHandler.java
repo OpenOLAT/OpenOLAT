@@ -61,6 +61,7 @@ public class SPLearningPathNodeHandler implements LearningPathNodeHandler {
 			CourseNode courseNode) {
 		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
 				.enableNodeVisited()
+				.enableConfirmed()
 				.build();
 		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
 	}

@@ -81,11 +81,13 @@ import org.olat.course.assessment.AssessmentMode.Status;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
 import org.olat.course.run.navigation.NavigationHandler;
 import org.olat.course.run.navigation.NodeClickedRef;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.AssessmentModeTreeFilter;
 import org.olat.course.run.userview.InvisibleTreeFilter;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -122,7 +124,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private TooledStackedPanel toolbarPanel;
 	private LayoutMain3ColsController columnLayoutCtr;
 
-	private Controller currentNodeController; // the currently open node config
+	private CourseContentController contentCtrl;
+	private CoursePaginationController paginationCtrl;
+	private Controller currentNodeController;
 
 	private boolean isInEditor = false;
 
@@ -140,6 +144,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private NodeAccessService nodeAccessService;
 	
 	/**
 	 * Constructor for the run main controller
@@ -180,6 +186,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree.setExpandSelectedNode(false);
 		luTree.setElementCssClass("o_course_menu");
 		contentP = new Panel("building_block_content");
+
+		paginationCtrl = new CoursePaginationController(ureq, getWindowControl());
+		listenTo(paginationCtrl);
 
 		// build up the running structure for this user
 		// get all group memberships for this course
@@ -230,10 +239,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else {
 				glossaryMarkerCtr.setTextMarkingEnabled(state.booleanValue());
 			}
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree, glossaryMarkerCtr.getInitialComponent(), "course" + course.getResourceableId());				
+			contentCtrl = new CourseContentController(ureq, getWindowControl(), paginationCtrl.getInitialComponent(),
+					glossaryMarkerCtr.getInitialComponent());
 		} else {
-			columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree, contentP, "courseRun" + course.getResourceableId());							
+			contentCtrl = new CourseContentController(ureq, getWindowControl(), paginationCtrl.getInitialComponent(),
+					contentP);
 		}
+		columnLayoutCtr = new LayoutMain3ColsController(ureq, getWindowControl(), layoutTree,
+				contentCtrl.getInitialComponent(), "courseRun" + course.getResourceableId());
 		listenTo(columnLayoutCtr);
 
 		// activate the custom course css if any
@@ -363,6 +376,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 		previousLink.setEnabled(hasPrevious);
 		nextLink.setEnabled(hasNext);
+		if (paginationCtrl != null) {
+			paginationCtrl.updateNextPreviousUI(hasPrevious, hasNext);
+		}
 	}
 	
 	protected CourseNode updateCurrentCourseNode(UserRequest ureq) {
@@ -434,6 +450,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		updateNextPrevious();
 		updateCourseDataAttributes(nclr.getCalledCourseNode());
+		updateAssessmentConfirmUI(nclr.getCalledCourseNode());
+		updateProgressUI();
 		updateLastUsage(nclr.getCalledCourseNode());
 		return nclr.getCalledCourseNode();
 	}
@@ -470,12 +488,30 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			getWindowControl().getWindowBackOffice().getWindow().setTitle(getTranslator(), newTitle);						
 		}
 	}
+	
+	private void updateAssessmentConfirmUI(CourseNode calledCourseNode) {
+		if (paginationCtrl != null) {
+			TreeNode treeNode = treeModel.getNodeById(calledCourseNode.getIdent());
+			boolean confirmationEnabled = nodeAccessService.isAssessmentConfirmationEnabled(calledCourseNode, getUce());
+			AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(calledCourseNode);
+			boolean confirmVisible = treeNode.isAccessible()
+					&& confirmationEnabled
+					&& !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
+			paginationCtrl.updateAssessmentConfirmUI(confirmVisible);
+			updateProgressUI();
+		}
+	}
+	
+	private void updateProgressUI() {
+		if (paginationCtrl != null) {
+			CourseNode rootNode = getUce().getCourseEnvironment().getRunStructure().getRootNode();
+			AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(rootNode);
+			Double completion = assessmentEvaluation.getCompletion();
+			float actual = completion != null? completion.floatValue(): 0;
+			paginationCtrl.updateProgressUI(actual);
+		}
+	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component,
-	 *      org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if(needsRebuildAfter) {
@@ -537,10 +573,6 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		this.isInEditor = isInEditor;
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Controller source, Event event) {
 		if(needsRebuildAfter) {
@@ -596,6 +628,14 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 				fireEvent(ureq, event);
 				updateTreeAndContent(ureq, currentCourseNode, null);
 			}
+		} else if (source == paginationCtrl) {
+			if (event == CoursePaginationController.NEXT_EVENT) {
+				doNext(ureq);
+			} else if (event == CoursePaginationController.PREVIOUS_EVENT) {
+				doPrevious(ureq);
+			} else if (event == CoursePaginationController.CONFIRMED_EVENT) {
+				doAssessmentConfirmation();
+			}
 		}
 	}
 	
@@ -623,6 +663,12 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
+	private void doAssessmentConfirmation() {
+		nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce());
+		updateAfterChanges(getCurrentCourseNode());
+		updateAssessmentConfirmUI(getCurrentCourseNode());
+	}
+
 	private void doNodeClick(UserRequest ureq, TreeEvent tev) {
 		if(assessmentChangedEventReceived) {
 			uce.getScoreAccounting().evaluateAll();
@@ -639,6 +685,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			updateTreeAndContent(ureq, null, null);
 			updateNextPrevious();
 			updateCourseDataAttributes(nclr.getCalledCourseNode());
+			updateAssessmentConfirmUI(nclr.getCalledCourseNode());
 			return;
 		}
 		// a click to a subtree's node
@@ -660,6 +707,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			}
 			updateNextPrevious();
 			updateCourseDataAttributes(nclr.getCalledCourseNode());
+			updateAssessmentConfirmUI(nclr.getCalledCourseNode());
+			updateProgressUI();
 			return;
 		}
 
@@ -691,8 +740,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		
 		updateNextPrevious();
 		updateCourseDataAttributes(nclr.getCalledCourseNode());
+		updateAssessmentConfirmUI(nclr.getCalledCourseNode());
+		updateProgressUI();
 	}
-
 
 	/**
 	 * implementation of listener which listens to publish events

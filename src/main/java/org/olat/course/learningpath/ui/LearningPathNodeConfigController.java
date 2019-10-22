@@ -233,6 +233,11 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			return this;
 		}
 		
+		public ControllerConfigBuilder enableConfirmed() {
+			triggerConfirmed = true;
+			return this;
+		}
+		
 		public ControllerConfigBuilder enableStatusDone() {
 			triggerStatusDone = TranslateableBoolean.untranslatedTrue();
 			return this;
