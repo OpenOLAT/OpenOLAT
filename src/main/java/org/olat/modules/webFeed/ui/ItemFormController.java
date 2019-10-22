@@ -132,6 +132,7 @@ public abstract class ItemFormController extends FormBasicController {
 
 		file = uifactory.addFileElement(getWindowControl(), "file", null, flc);
 		file.setLabel("feed.item.file.label", null);
+		file.setExampleKey("feed.form.file.type.explain", null);
 		if (hasMandatoryMedia()) {
 			file.setMandatory(true, "feed.item.file.mandatory");
 		} else {

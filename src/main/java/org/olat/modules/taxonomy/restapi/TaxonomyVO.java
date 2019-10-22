@@ -25,6 +25,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.olat.modules.taxonomy.Taxonomy;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * 
  * Initial date: 5 Oct 2017<br>
@@ -41,6 +43,13 @@ public class TaxonomyVO {
 	private String description;
 	private String externalId;
 	
+	@Schema(required = true, description = "Action to be performed on managedFlags", allowableValues = { 
+			"all",
+			"identifier(all)",
+			 "displayName(all)",
+			 "description(all)",
+			 "externalId(all)",
+			 "librarySettings(all)"})
 	private String managedFlags;
 	
 	public TaxonomyVO() {

@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.olat.core.commons.modules.bc.FolderModule;
 import org.olat.core.commons.services.vfs.VFSMetadata;
+import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.commons.services.vfs.ui.media.VFSMetadataMediaResource;
 import org.olat.core.gui.UserRequest;
@@ -70,6 +71,8 @@ public class BCPeekviewController extends BasicController implements Controller 
 	@Autowired
 	private FolderModule folderModule;
 	@Autowired
+	private VFSRepositoryModule vfsModule;
+	@Autowired
 	private VFSRepositoryService vfsRepositoryService;
 
 	/**
@@ -90,7 +93,7 @@ public class BCPeekviewController extends BasicController implements Controller 
 		
 		VFSMetadata metadata = vfsRepositoryService.getMetadataFor(rootFolder);
 		// don't force migration here to prevent overloading big OpenOLAT instances
-		if("migrated".equals(metadata.getMigrated())) {
+		if(vfsModule.isMigrated() || "migrated".equals(metadata.getMigrated())) {
 			fileMetadata(links, metadata, itemsToDisplay);
 		} else {
 			fileFallback(links, rootFolder, itemsToDisplay);

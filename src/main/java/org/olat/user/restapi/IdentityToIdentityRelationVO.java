@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.olat.basesecurity.IdentityToIdentityRelation;
 import org.olat.basesecurity.IdentityToIdentityRelationManagedFlag;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * 
  * Initial date: 31 janv. 2019<br>
@@ -41,6 +43,9 @@ public class IdentityToIdentityRelationVO {
 	private Long identityTargetKey;
 
 	private String externalId;
+	@Schema(required = true, description = "Action to be performed on managedFlagsString", allowableValues = { 
+			"all",
+			"delete(all)"})
 	private String managedFlagsString;
 	
 	private Long relationRoleKey;

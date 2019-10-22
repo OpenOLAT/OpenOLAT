@@ -79,6 +79,19 @@ public class RestSecurityHelper {
 		}
 	}
 	
+	public static boolean isOwnerGrpManager(ICourse course, HttpServletRequest request) {
+		try {
+			Roles roles = getRoles(request);
+			if(roles.isAdministrator()) return true;
+			CourseGroupManager cgm = course.getCourseEnvironment().getCourseGroupManager();
+			UserRequest ureq = getUserRequest(request);
+			Identity identity = ureq.getIdentity();
+			return cgm.isIdentityCourseAdministrator(identity) || cgm.hasRight(identity, CourseRights.RIGHT_GROUPMANAGEMENT);
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
 	public static boolean isAuthorGrpManager(ICourse course, HttpServletRequest request) {
 		try {
 			Roles roles = getRoles(request);

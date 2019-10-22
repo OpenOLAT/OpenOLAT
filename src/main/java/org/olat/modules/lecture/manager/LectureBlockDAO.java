@@ -42,6 +42,8 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.LectureBlock;
@@ -78,6 +80,8 @@ public class LectureBlockDAO {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private AssessmentModeDAO assessmentModeDao;
 	
 	public LectureBlock createLectureBlock(RepositoryEntry entry) {
 		LectureBlockImpl block = new LectureBlockImpl();
@@ -125,6 +129,11 @@ public class LectureBlockDAO {
 	public int delete(LectureBlock lectureBlock) {
 		LectureBlock reloadedBlock = dbInstance.getCurrentEntityManager()
 			.getReference(LectureBlockImpl.class, lectureBlock.getKey());
+		
+		AssessmentMode assessmentMode = assessmentModeDao.getAssessmentModeByLecture(reloadedBlock);
+		if(assessmentMode != null) {
+			assessmentModeDao.delete(assessmentMode);
+		}
 		
 		//delete lecture block to group
 		String deleteToGroup = "delete from lectureblocktogroup blocktogroup where blocktogroup.lectureBlock.key=:lectureBlockKey";

@@ -27,6 +27,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
 /**
  * Initial Date:  7 apr. 2010 <br>
  * @author srosse, stephane.rosse@frentix.com
@@ -34,6 +37,7 @@ import org.olat.resource.OLATResource;
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlRootElement(name = "repositoryEntryVO")
 public class RepositoryEntryVO {
+	
 	
 	private Long key;
 	private String softkey;
@@ -46,6 +50,34 @@ public class RepositoryEntryVO {
 	private String location;
 	private String externalId;
 	private String externalRef;
+	 @Schema(required = true, description = "Action to be performed on managedFlags", allowableValues = { "all",
+			  "editcontent(all)",
+			    "details(all) //details tab",
+			      "title(details,all)",
+			      "description(details,all)",
+			      "objectives(details,all)",
+			      "requirements(details,all)",
+			      "credits(details,all)",
+			      "location(details,all)",
+			      "organisations(details,all)",
+			    "settings(all) //max num of participants...",
+			     "access(settings,all)",
+			      "search(settings, all)",
+			      "chat(settings,all)",
+			      "layout(settings,all)",
+			      "resourcefolder(settings,all)",
+			      "efficencystatement(settings,all)",
+			      "calendar(settings,all)",
+			      "glossary(settings,all)",
+			    "lecture(all)",
+			      "lectureconfig(lecture, all)",
+			      "lecturemanagement(lecture, all)",
+			    "bookings(all) // change booking rules",
+			    "membersmanagement(all)",
+			    "groups(all)",
+			    "close(all)",
+			    "copy(all)",
+			    "delete(all)"})	
 	private String managedFlags;
 	private Long resourceableId;
 	private String resourceableTypeName;
