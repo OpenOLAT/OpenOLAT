@@ -134,7 +134,13 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private AssessmentEntry getOrCreateAssessmentEntry(CourseNode courseNode) {
 		AssessmentEntry entry = identToEntry.get(courseNode.getIdent());
 		if (entry == null) {
-			entry = getAssessmentManager().createAssessmentEntry(courseNode, getIdentity(), null);
+			entry = getAssessmentManager().getAssessmentEntry(courseNode, getIdentity());
+			if (entry == null) {
+				entry = getAssessmentManager().createAssessmentEntry(courseNode, getIdentity(), null);
+			}
+			identToEntry.put(entry.getSubIdent(), entry);
+			AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(courseNode);
+			courseNodeToEval.put(courseNode, assessmentEvaluation);
 		}
 		return entry;
 	}

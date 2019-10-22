@@ -303,6 +303,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else {
 				uce.setCourseReadOnly(Boolean.FALSE);
 			}
+			uce.getScoreAccounting().evaluateAll(true);
 		}
 		
 		courseRightsCache = new HashMap<>();
