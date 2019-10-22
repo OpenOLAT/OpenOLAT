@@ -53,20 +53,22 @@ public class IdentityOverviewController extends BasicController implements Toole
 	
 	private LearningPathListController learningPathListController;
 	
-	private RepositoryEntry courseEntry;
+	private final UserCourseEnvironment userCourseEnv;
+	private final RepositoryEntry courseEntry;
 	
 	@Autowired
 	private AssessmentService assessmentService;
 
 	public IdentityOverviewController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
-			UserCourseEnvironment userCourseEnvironment) {
+			UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl);
 		this.stackPanel = stackPanel;
-		this.courseEntry = userCourseEnvironment.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		this.userCourseEnv = userCourseEnv;
+		this.courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		
 		mainVC = createVelocityContainer("identity_overview");
 		
-		learningPathListController = new LearningPathListController(ureq, wControl, userCourseEnvironment);
+		learningPathListController = new LearningPathListController(ureq, wControl, userCourseEnv);
 		listenTo(learningPathListController);
 		mainVC.put("list", learningPathListController.getInitialComponent());
 		
@@ -96,6 +98,7 @@ public class IdentityOverviewController extends BasicController implements Toole
 			assessmentEntry.setAssessmentStatus(null);
 			assessmentService.updateAssessmentEntry(assessmentEntry);
 		}
+		userCourseEnv.getScoreAccounting().evaluateAll(true);
 		learningPathListController.loadModel();
 	}
 

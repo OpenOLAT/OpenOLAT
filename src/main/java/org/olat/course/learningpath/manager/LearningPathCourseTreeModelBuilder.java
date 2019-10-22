@@ -41,7 +41,6 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 	
 	public LearningPathCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		super(userCourseEnv);
-		userCourseEnv.getScoreAccounting().evaluateAll(true);
 	}
 
 	@Override
