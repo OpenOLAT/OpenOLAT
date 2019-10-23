@@ -491,12 +491,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	
 	private void updateAssessmentConfirmUI(CourseNode calledCourseNode) {
 		if (paginationCtrl != null) {
-			TreeNode treeNode = treeModel.getNodeById(calledCourseNode.getIdent());
-			boolean confirmationEnabled = nodeAccessService.isAssessmentConfirmationEnabled(calledCourseNode, getUce());
-			AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(calledCourseNode);
-			boolean confirmVisible = treeNode.isAccessible()
-					&& confirmationEnabled
-					&& !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
+			boolean confirmVisible = false;
+			if (calledCourseNode != null) {
+				TreeNode treeNode = treeModel.getNodeById(calledCourseNode.getIdent());
+				boolean confirmationEnabled = nodeAccessService.isAssessmentConfirmationEnabled(calledCourseNode, getUce());
+				AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(calledCourseNode);
+				confirmVisible = treeNode.isAccessible()
+						&& confirmationEnabled
+						&& !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
+			}
 			paginationCtrl.updateAssessmentConfirmUI(confirmVisible);
 			updateProgressUI();
 		}
