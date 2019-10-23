@@ -23,8 +23,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 
-import org.apache.commons.io.IOUtils;
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.velocity.VelocityContainer;
@@ -32,8 +30,10 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -41,14 +41,15 @@ import org.olat.modules.qpool.QPoolService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class TextPreviewController extends BasicController {
+public class TextPreviewController extends BasicController implements QPoolItemEditorController {
 
 	private final VelocityContainer mainVC;
-	private final QPoolService qpoolService;
+	
+	@Autowired
+	private QPoolService qpoolService;
 	
 	public TextPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem, boolean summary) {
 		super(ureq, wControl);
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		mainVC = createVelocityContainer("text_preview");
 		
 		VFSLeaf leaf = qpoolService.getRootLeaf(qitem);
@@ -65,33 +66,40 @@ public class TextPreviewController extends BasicController {
 	}
 
 	@Override
+	public QuestionItem getItem() {
+		return null;
+	}
+
+	@Override
+	public boolean isValid() {
+		return true;
+	}
+
+	@Override
 	protected void doDispose() {
 		//
 	}
 	
 	protected String readSummary(VFSLeaf leaf) {
-    StringWriter out = new StringWriter();
-    InputStream in = leaf.getInputStream();
-    InputStreamReader inr = new InputStreamReader(in);
-		try {
+		StringWriter out = new StringWriter();
+   
+		try( InputStream in = leaf.getInputStream();
+			    InputStreamReader inr = new InputStreamReader(in)) {
 			char[] buffer = new char[4096];
 			
 			int count = 0;
-	    int n = 0;
-	    while (-1 != (n = inr.read(buffer))) {
-	        out.write(buffer, 0, n);
-	        count += n;
-	        if(count >= 10000) {
-	        	break;
-	        }
-	    }
+		    int n = 0;
+		    while (-1 != (n = inr.read(buffer))) {
+		        out.write(buffer, 0, n);
+		        count += n;
+		        if(count >= 10000) {
+		        	break;
+		        }
+		    }
 		} catch (Exception e) {
 			logError("", e);
-		} finally {
-			IOUtils.closeQuietly(inr);
-			IOUtils.closeQuietly(in);
 		}
-  	return out.toString();
+		return out.toString();
 	}
 
 	@Override

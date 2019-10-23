@@ -124,7 +124,7 @@ public interface QPoolSPI {
 	 * @param item
 	 * @return
 	 */
-	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item);
+	public QPoolItemEditorController getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item);
 	
 	/**
 	 * Return the editable controller in a read only modus. This controller is e.g.

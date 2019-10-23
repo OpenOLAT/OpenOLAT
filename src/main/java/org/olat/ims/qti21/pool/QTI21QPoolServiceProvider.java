@@ -39,13 +39,13 @@ import java.util.zip.ZipOutputStream;
 
 import javax.xml.XMLConstants;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -76,6 +76,7 @@ import org.olat.imscp.xml.manifest.ResourceType;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.QItemFactory;
+import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -321,7 +322,7 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
+	public QPoolItemEditorController getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		return new QTI21EditorController(ureq, wControl, qitem, false);
 	}
 
@@ -329,7 +330,6 @@ public class QTI21QPoolServiceProvider implements QPoolSPI {
 	public Controller getReadOnlyController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		return new QTI21EditorController(ureq, wControl, item, true);
 	}
-	
 
 	public QuestionItem createItem(Identity identity, QTI21QuestionType type, String title, Locale locale) {
 		AssessmentItemBuilder itemBuilder = AssessmentItemBuilderFactory.get(type, locale);

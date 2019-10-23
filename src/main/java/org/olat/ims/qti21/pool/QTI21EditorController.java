@@ -89,6 +89,11 @@ public class QTI21EditorController extends BasicController implements QPoolItemE
 	}
 	
 	@Override
+	public boolean isValid() {
+		return true;
+	}
+
+	@Override
 	public QuestionItem getItem() {
 		return questionItem;
 	}

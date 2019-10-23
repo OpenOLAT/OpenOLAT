@@ -92,6 +92,11 @@ public class QTI12EditorController extends BasicController implements QPoolItemE
 	}
 	
 	@Override
+	public boolean isValid() {
+		return item != null;
+	}
+
+	@Override
 	public QuestionItem getItem() {
 		return qitem;
 	}
