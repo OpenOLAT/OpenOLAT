@@ -83,7 +83,13 @@ class AccountingEvaluatorsFactory {
 	private static class NullObligationEvaluator implements ObligationEvaluator {
 
 		@Override
-		public AssessmentObligation getObligation(CourseNode courseNode) {
+		public AssessmentObligation getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode) {
+			return null;
+		}
+
+		@Override
+		public AssessmentObligation getObligation(AssessmentEvaluation currentEvaluation,
+				List<AssessmentEvaluation> children) {
 			return null;
 		}
 		
@@ -145,7 +151,7 @@ class AccountingEvaluatorsFactory {
 
 		@Override
 		public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation,
-				AssessmentEvaluation currentEvaluation) {
+				AssessmentEvaluation currentEvaluation, boolean firstChild) {
 			return currentEvaluation.getAssessmentStatus();
 		}
 

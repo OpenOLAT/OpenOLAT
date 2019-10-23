@@ -47,6 +47,7 @@ import org.olat.course.run.scoring.AverageCompletionEvaluator;
 import org.olat.course.run.scoring.CompletionEvaluator;
 import org.olat.course.run.scoring.FullyAssessedEvaluator;
 import org.olat.course.run.scoring.LastModificationsEvaluator;
+import org.olat.course.run.scoring.ObligationEvaluator;
 import org.olat.course.run.scoring.PassedEvaluator;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluator;
@@ -68,11 +69,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class STAssessmentHandler implements AssessmentHandler {
 	
+	private static final ObligationEvaluator MANDATORY_OBLIGATION_EVALUATOR = new MandatoryObligationEvaluator();
 	private static final CumulatingDurationEvaluator CUMULATION_DURATION_EVALUATOR = new CumulatingDurationEvaluator();
 	private static final ScoreEvaluator CONDITION_SCORE_EVALUATOR = new ConditionScoreEvaluator();
 	private static final PassedEvaluator CONDITION_PASSED_EVALUATOR = new ConditionPassedEvaluator();
 	private static final StatusEvaluator SCORE_STATUS_EVALUATOR = new ScoreStatusEvaluator();
-	private static final StatusEvaluator STATUS_LEARNING_PATH_STATUS_EVALUATOR = new STLinearStatusEvaluator();
+	private static final StatusEvaluator LEARNING_PATH_STATUS_EVALUATOR = new STLinearStatusEvaluator();
 	private static final FullyAssessedEvaluator FULLY_ASSESSED_EVALUATOR = new STFullyAssessedEvaluator();
 	private static final LastModificationsEvaluator LAST_MODIFICATION_EVALUATOR = new STLastModificationsEvaluator();
 	private static final AccountingEvaluators CONVENTIONAL_EVALUATORS = AccountingEvaluatorsBuilder.builder()
@@ -107,10 +109,11 @@ public class STAssessmentHandler implements AssessmentHandler {
 	public AccountingEvaluators getEvaluators(CourseNode courseNode, CourseConfig courseConfig) {
 		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
 			AccountingEvaluatorsBuilder builder = AccountingEvaluatorsBuilder.builder()
+					.withObligationEvaluator(MANDATORY_OBLIGATION_EVALUATOR)
 					.withDurationEvaluator(CUMULATION_DURATION_EVALUATOR)
 					.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
 					.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
-					.withStatusEvaluator(STATUS_LEARNING_PATH_STATUS_EVALUATOR)
+					.withStatusEvaluator(LEARNING_PATH_STATUS_EVALUATOR)
 					.withFullyAssessedEvaluator(FULLY_ASSESSED_EVALUATOR)
 					.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR);
 			CompletionEvaluator completionEvaluator = CompletionType.duration.equals(courseConfig.getCompletionType())

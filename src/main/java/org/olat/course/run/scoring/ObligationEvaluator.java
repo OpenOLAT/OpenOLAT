@@ -19,6 +19,8 @@
  */
 package org.olat.course.run.scoring;
 
+import java.util.List;
+
 import org.olat.course.nodes.CourseNode;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -30,6 +32,8 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public interface ObligationEvaluator {
 	
-	public AssessmentObligation getObligation(CourseNode courseNode);
+	public AssessmentObligation getObligation(AssessmentEvaluation currentEvaluation, CourseNode courseNode);
+
+	public AssessmentObligation getObligation(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children);
 
 }

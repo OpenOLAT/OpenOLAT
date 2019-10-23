@@ -39,11 +39,12 @@ public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 	private static final Logger log = Tracing.createLoggerFor(DefaultLinearStatusEvaluator.class);
 
 	@Override
-	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation, AssessmentEvaluation currentEvaluation) {
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation,
+			AssessmentEvaluation currentEvaluation, boolean firstChild) {
 		AssessmentEntryStatus currentStatus = currentEvaluation.getAssessmentStatus();
 		AssessmentEntryStatus status = currentStatus;
 		if (isNotReadyYet(currentStatus)) {
-			if (isAccessible(previousEvaluation)) {
+			if (isAccessible(previousEvaluation, firstChild)) {
 				status = AssessmentEntryStatus.notStarted;
 			} else {
 				status = AssessmentEntryStatus.notReady;
@@ -67,10 +68,11 @@ public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 		return currentStatus == null || AssessmentEntryStatus.notReady.equals(currentStatus);
 	}
 	
-	private boolean isAccessible(AssessmentEvaluation assessmentEvaluation) {
+	private boolean isAccessible(AssessmentEvaluation assessmentEvaluation, boolean firstChild) {
 		return isRoot(assessmentEvaluation)
 				|| isFullyAssessed(assessmentEvaluation)
-				|| isOptionalAndReady(assessmentEvaluation);
+				|| isOptionalAndReady(assessmentEvaluation)
+				|| isFirstChildAndNotStarted(assessmentEvaluation, firstChild);
 	}
 
 	private boolean isRoot(AssessmentEvaluation assessmentEvaluation) {
@@ -84,6 +86,10 @@ public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 	private boolean isOptionalAndReady(AssessmentEvaluation assessmentEvaluation) {
 		return !AssessmentObligation.mandatory.equals(assessmentEvaluation.getObligation())
 				&& !AssessmentEntryStatus.notReady.equals(assessmentEvaluation.getAssessmentStatus());
+	}
+
+	private boolean isFirstChildAndNotStarted(AssessmentEvaluation assessmentEvaluation, boolean firstChild) {
+		return firstChild && AssessmentEntryStatus.notStarted.equals(assessmentEvaluation.getAssessmentStatus());
 	}
 
 	@Override

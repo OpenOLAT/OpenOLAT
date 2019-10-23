@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.olat.course.nodes.st.assessment.STLinearStatusEvaluator;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -56,28 +55,60 @@ public class STLinearStatusEvaluatorTest {
 	}
 	
 	@Test
-	public void shouldReturnInProgressIfChildIsDone() {
-		assertStatus(AssessmentEntryStatus.notStarted, AssessmentEntryStatus.done, AssessmentEntryStatus.inProgress);
+	public void shouldReturnNotStartedIfNoChildIsStarted() {
+		assertStatus(AssessmentEntryStatus.inProgress, AssessmentEntryStatus.notStarted, AssessmentEntryStatus.notStarted);
 	}
 	
-	@Test
-	public void shouldReturnInProgessEvenIfChildIsNot() {
-		assertStatus(AssessmentEntryStatus.inProgress, AssessmentEntryStatus.notStarted, AssessmentEntryStatus.inProgress);
-	}
-	
-	@Test
-	public void shouldReturnDoneEvenIfChildIsNot() {
-		assertStatus(AssessmentEntryStatus.done, AssessmentEntryStatus.notStarted, AssessmentEntryStatus.done);
-	}
-	
-	public void assertStatus(AssessmentEntryStatus currentStatus, AssessmentEntryStatus childStatus, AssessmentEntryStatus expectedtStatus) {
+	private void assertStatus(AssessmentEntryStatus currentStatus, AssessmentEntryStatus childStatus, AssessmentEntryStatus expectedtStatus) {
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, currentStatus, null);
-		AssessmentEvaluation child = getAssessmentEvaluation(Boolean.TRUE, childStatus, null);
+		AssessmentEvaluation child = getAssessmentEvaluation(Boolean.TRUE, childStatus, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(child);
 		
 		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
 		
 		assertThat(status).isEqualTo(expectedtStatus);
+	}
+	
+	@Test
+	public void shouldReturnDoneIfAllMandatoryChildrenAreDone() {
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.inProgress, null);
+		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.done,
+				AssessmentObligation.mandatory);
+		AssessmentEvaluation child2 = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.inProgress,
+				AssessmentObligation.optional);
+		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
+		
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.done);
+	}
+	
+	@Test
+	public void shouldNotReturnDoneIfNotAllMandatoryChildrenAreDone() {
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.done, null);
+		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.inProgress,
+				AssessmentObligation.mandatory);
+		AssessmentEvaluation child2 = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.done,
+				AssessmentObligation.optional);
+		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
+		
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.inProgress);
+	}
+	
+	@Test
+	public void shouldReturnDoneIfItHAsOnlyOptionalChildren() {
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.notStarted, null);
+		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.inProgress,
+				AssessmentObligation.optional);
+		AssessmentEvaluation child2 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.notStarted,
+				AssessmentObligation.optional);
+		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
+		
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.done);
 	}
 
 	private AssessmentEvaluation getAssessmentEvaluation(Boolean fullyAssessd, AssessmentEntryStatus assessmentStatus, AssessmentObligation obligation) {

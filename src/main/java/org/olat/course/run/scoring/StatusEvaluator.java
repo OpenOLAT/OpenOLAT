@@ -31,7 +31,7 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public interface StatusEvaluator {
 	
-	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation, AssessmentEvaluation currentEvaluation);
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation, AssessmentEvaluation currentEvaluation, boolean firstChild);
 	
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation>children);
 	

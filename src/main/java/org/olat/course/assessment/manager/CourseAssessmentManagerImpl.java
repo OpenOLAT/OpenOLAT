@@ -139,6 +139,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public List<AssessmentEntry> getAssessmentEntries(Identity assessedIdentity) {
+		log.debug("Load assessment entries of {}", assessedIdentity);
 		return assessmentService.loadAssessmentEntriesByAssessedIdentity(assessedIdentity, cgm.getCourseEntry());
 	}
 

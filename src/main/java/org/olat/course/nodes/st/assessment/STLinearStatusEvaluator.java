@@ -25,6 +25,7 @@ import org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluator;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 
 /**
  * 
@@ -38,25 +39,50 @@ public class STLinearStatusEvaluator implements StatusEvaluator {
 
 	@Override
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation,
-			AssessmentEvaluation currentEvaluation) {
-		return defaultEvaluator.getStatus(previousEvaluation, currentEvaluation);
+			AssessmentEvaluation currentEvaluation, boolean firstChild) {
+		return defaultEvaluator.getStatus(previousEvaluation, currentEvaluation, firstChild);
 	}
 
 	@Override
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
 			List<AssessmentEvaluation> children) {
+		boolean notStarted = false;
+		boolean inProgress = false;
+		boolean done = true;
 		for (AssessmentEvaluation child : children) {
+			if (isNotStarted(child)) {
+				notStarted = true;
+			}
 			if (isInProgess(child)) {
-				return AssessmentEntryStatus.inProgress;
+				inProgress = true;
+			}
+			if (isMandatory(child) && isNotDone(child)) {
+				done = false;
 			}
 		}
-		return currentEvaluation.getAssessmentStatus();
+		
+		if (done)        return AssessmentEntryStatus.done;
+		if (inProgress)  return AssessmentEntryStatus.inProgress;
+		if (notStarted)  return AssessmentEntryStatus.notStarted;
+		                 return currentEvaluation.getAssessmentStatus();
 	}
 	
+	private boolean isNotStarted(AssessmentEvaluation assessmentEvaluation) {
+		return isInProgess(assessmentEvaluation)
+				|| AssessmentEntryStatus.notStarted.equals(assessmentEvaluation.getAssessmentStatus());
+	}
+
 	private boolean isInProgess(AssessmentEvaluation assessmentEvaluation) {
 		return AssessmentEntryStatus.inProgress.equals(assessmentEvaluation.getAssessmentStatus())
 				|| AssessmentEntryStatus.inReview.equals(assessmentEvaluation.getAssessmentStatus())
 				|| AssessmentEntryStatus.done.equals(assessmentEvaluation.getAssessmentStatus());
+	}
+
+	private boolean isMandatory(AssessmentEvaluation evaluation) {
+		return evaluation.getObligation() != null && AssessmentObligation.mandatory.equals(evaluation.getObligation());
+	}
+	private boolean isNotDone(AssessmentEvaluation assessmentEvaluation) {
+		return !AssessmentEntryStatus.done.equals(assessmentEvaluation.getAssessmentStatus());
 	}
 
 }

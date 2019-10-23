@@ -48,7 +48,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	public void shouldReturnDoneIfAssessmentStatusIsDone() {
 		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, done, null);
 		
-		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation);
+		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation, false);
 		
 		assertThat(status).isEqualTo(done);
 	}
@@ -57,7 +57,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	public void shouldReturnReadyIfIsRootNodeAndNotAlreadyDone() {
 		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, notStarted, null);
 		
-		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation);
+		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation, false);
 		
 		assertThat(status).isEqualTo(notStarted);
 	}
@@ -66,7 +66,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	public void shouldReturnReadyIfIsRootNodeAndIsNotStartedYet() {
 		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, notReady, null);
 		
-		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation);
+		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation, false);
 		
 		assertThat(status).isEqualTo(notStarted);
 	}
@@ -75,7 +75,7 @@ public class DefaultLinearStatusEvaluatorTest {
 	public void shouldReturnReadyIfIsRootNodeAndHasNoStatusYet() {
 		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, null, null);
 		
-		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation);
+		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation, false);
 		
 		assertThat(status).isEqualTo(notStarted);
 	}
@@ -123,10 +123,21 @@ public class DefaultLinearStatusEvaluatorTest {
 		AssessmentEvaluation previousEvaluation = getAssessmentEvaluation(previousFullyAssessd, previousStatus, previousObligation);
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, currentStatus, null);
 		
-		AssessmentEntryStatus status = sut.getStatus(previousEvaluation, currentEvaluation);
+		AssessmentEntryStatus status = sut.getStatus(previousEvaluation, currentEvaluation, false);
 		
 		assertThat(status).isEqualTo(expected);
 	}
+
+	@Test
+	public void shouldRetrunNotStartedIfisFirstChildAndPreviuosIsNotStartedAndMandatory() {
+		AssessmentEvaluation previousEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.notStarted, AssessmentObligation.mandatory);
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.notReady, null);
+		
+		AssessmentEntryStatus status = sut.getStatus(previousEvaluation, currentEvaluation, true);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.notStarted);
+	}
+
 	
 	@Test
 	public void shouldNotChangeStatusWhenCheckingAgainstChildren() {

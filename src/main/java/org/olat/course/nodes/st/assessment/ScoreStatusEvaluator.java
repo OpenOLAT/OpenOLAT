@@ -35,7 +35,7 @@ public class ScoreStatusEvaluator implements StatusEvaluator {
 
 	@Override
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation,
-			AssessmentEvaluation currentEvaluation) {
+			AssessmentEvaluation currentEvaluation, boolean firstChild) {
 		if (currentEvaluation.getPassed() != null && currentEvaluation.getPassed().booleanValue()) {
 			return AssessmentEntryStatus.done;
 		} else if (currentEvaluation.getScore() != null) {

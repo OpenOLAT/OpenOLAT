@@ -57,7 +57,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private final CourseConfig courseConfig;
 	private Map<String, AssessmentEntry> identToEntry = new HashMap<>();
 	private final Map<CourseNode, AssessmentEvaluation> courseNodeToEval = new HashMap<>();
-	private AssessmentEvaluation previosEvaluation;
+	private AssessmentEvaluation previousEvaluation;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -90,7 +90,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 	
 	@Override
 	public boolean evaluateAll(boolean update) {
-		previosEvaluation = null;
+		previousEvaluation = null;
 		courseNodeToEval.clear();
 		
 		identToEntry = loadAssessmentEntries(getIdentity());
@@ -99,7 +99,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		fillCacheRecursiv(root);
 		
 		if (update) {
-			updateEntryRecursiv(root);
+			updateEntryRecursiv(root, true);
 		}
 		
 		return false;
@@ -145,7 +145,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		return entry;
 	}
 	
-	private AccountingResult updateEntryRecursiv(CourseNode courseNode) {
+	private AccountingResult updateEntryRecursiv(CourseNode courseNode, boolean firstChild) {
 		log.debug("Evaluate course node: type '{}', ident: '{}'", courseNode.getType(), courseNode.getIdent());
 		
 		AssessmentEvaluation currentEvaluation = courseNodeToEval.get(courseNode);
@@ -154,7 +154,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, courseConfig);
 		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
-		AssessmentObligation obligation = obligationEvaluator.getObligation(courseNode);
+		AssessmentObligation obligation = obligationEvaluator.getObligation(result, courseNode);
 		result.setObligation(obligation);
 		
 		DurationEvaluator durationEvaluator = evaluators.getDurationEvaluator();
@@ -174,17 +174,18 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setPassed(passed);
 		
 		StatusEvaluator statusEvaluator = evaluators.getStatusEvaluator();
-		AssessmentEntryStatus status = statusEvaluator.getStatus(previosEvaluation, result);
+		AssessmentEntryStatus status = statusEvaluator.getStatus(previousEvaluation, result, firstChild);
 		result.setStatus(status);
 		
-		previosEvaluation = result;
+		previousEvaluation = result;
 		int childCount = courseNode.getChildCount();
 		List<AssessmentEvaluation> children = new ArrayList<>(childCount);
 		for (int i = 0; i < childCount; i++) {
 			INode child = courseNode.getChildAt(i);
+			firstChild = i== 0;
 			if (child instanceof CourseNode) {
 				CourseNode childCourseNode = (CourseNode) child;
-				AccountingResult childResult = updateEntryRecursiv(childCourseNode);
+				AccountingResult childResult = updateEntryRecursiv(childCourseNode, firstChild);
 				children.add(childResult);
 			}
 		}
@@ -198,6 +199,9 @@ public class AssessmentAccounting implements ScoreAccounting {
 		LastModifications lastModifications = lastModificationsEvaluator.getLastModifications(result, children);
 		result.setLastUserModified(lastModifications.getLastUserModified());
 		result.setLastCoachModified(lastModifications.getLastCoachModified());
+		
+		obligation = obligationEvaluator.getObligation(result, children);
+		result.setObligation(obligation);
 		
 		CompletionEvaluator completionEvaluator = evaluators.getCompletionEvaluator();
 		Double completion = completionEvaluator.getCompletion(result, courseNode, this);
