@@ -307,8 +307,10 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	}
 	
 	private void updateHighscoreTab() {
-		Boolean sf = scormNode.getModuleConfiguration().getBooleanSafe(CONFIG_ISASSESSABLE,true);
-		myTabbedPane.setEnabled(5, sf);
+		if (highScoreNodeConfigController != null) {
+			Boolean sf = scormNode.getModuleConfiguration().getBooleanSafe(CONFIG_ISASSESSABLE,true);
+			myTabbedPane.setEnabled(myTabbedPane.indexOfTab(highScoreNodeConfigController.getInitialComponent()), sf);
+		}
 	}
 
 	@Override
