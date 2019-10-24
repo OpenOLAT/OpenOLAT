@@ -825,7 +825,7 @@ public class BGAreaManagerTest extends OlatTestCase {
 	@Test
 	public void testSynchronisationUpdateBGArea() {
 
-		final int maxLoop = 75; // => 400 x 100ms => 40sec => finished in 50sec
+		final int maxLoop = 30;
 		final String areaName = "BGArea_2";
 
 		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));

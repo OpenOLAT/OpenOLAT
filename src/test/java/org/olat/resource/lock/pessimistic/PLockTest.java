@@ -29,7 +29,6 @@ package org.olat.resource.lock.pessimistic;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +37,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 import org.olat.basesecurity.SecurityGroup;
@@ -46,7 +46,6 @@ import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.lock.pessimistic.PLock;
 import org.olat.core.commons.services.lock.pessimistic.PessimisticLockManager;
 import org.olat.core.id.Identity;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -176,89 +175,6 @@ public class PLockTest extends OlatTestCase {
 			exception.printStackTrace();
 		}
 		assertTrue("exception in test => see sysout", exceptionHolder.size() == 0);				
-	}
-
-	@Test public void testLockWaitTimout() {
-		//Ignore Test if DB is PostgreSQL. PostgreSQL has not lock timeout
-		assumeTrue(!isPostgresqlConfigured() && !isOracleConfigured());
-		
-		final String asset = "testLockWaitTimout";
-		
-		log.info("testing if holding a lock timeouts");
-		// make sure all three row entries for the locks are created, otherwise the system-wide locking 
-		// applied on lock-row-creation cannot support row-level-locking by definition. 
-
-		PLock pc3 = pessimisticLockManager.findOrPersistPLock("blibli");
-		assertNotNull(pc3);
-		dbInstance.closeSession();
-		
-		/**
-		 *    t1   t2
-		 *    ..  bli
-		 *    ..   ..
-		 *    ..   ..
-		 *    ..   ..
-		 *    bli  ..
-		 *         ..
-		 *         ..
-		 *         .... hold for longer than 30 secs
-		 *    
-		 */
-		
-	
-		final List<Exception> exceptionHolder = Collections.synchronizedList(new ArrayList<Exception>(1));
-		final CountDownLatch finishCount = new CountDownLatch(2);
-		
-		// t1
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					sleep(500);
-					PLock p3 = pessimisticLockManager.findOrPersistPLock(asset);
-					assertNotNull(p3);					
-				} catch (Exception e) {
-					exceptionHolder.add(e);
-				} finally {
-					finishCount.countDown();
-					try {
-						dbInstance.closeSession();
-					} catch (Exception e) {
-						// ignore
-					}
-				}	
-			}}).start();
-		
-		// t2
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					PLock p2 = pessimisticLockManager.findOrPersistPLock(asset);
-					assertNotNull(p2);
-					sleep(55000);
-					// holding the lock for more than the transaction timeout
-					// (normally 30secs, configured where? hib) should cause a lock timeout
-					// if the db is configured so (innodb_lock_wait_timeout).
-				} catch (Exception e) {
-					exceptionHolder.add(e);
-				} finally {
-					finishCount.countDown();
-					try {
-						dbInstance.closeSession();
-					} catch (Exception e) {
-						// ignore
-					}
-				}					
-			}}).start();
-		
-		// sleep until t1 and t2 should have terminated/excepted
-		try {
-			log.info("Sleep 55s");
-			finishCount.await(60, TimeUnit.SECONDS);
-		} catch (InterruptedException e) {
-			Assert.fail("");
-		}
-		
-		Assert.assertEquals("expected a lock wait timeout exceeded exception", 1, exceptionHolder.size());				
 	}
 	
 	@Test

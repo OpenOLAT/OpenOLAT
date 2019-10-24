@@ -36,7 +36,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.olat.basesecurity.BaseSecurity;
@@ -1286,15 +1285,15 @@ public class BusinessGroupServiceTest extends OlatTestCase {
 		Assert.assertFalse(contactList.contains(adminIdentity3));
 	}
 	
-	@Ignore @Test
+	@Test
 	public void parallelRemoveParticipants() {
 		mailModule.setInterSystem(true);
 		businessGroupModule.setMandatoryEnrolmentEmailFor(OrganisationRoles.user, "true");
 		
 		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndUser("remove-p1-1");
 		
-		int NUM_OF_THREADS = 20;
-		int NUM_OF_GROUPS = 50;
+		int NUM_OF_THREADS = 5;
+		int NUM_OF_GROUPS = 5;
 		int NUM_OF_PARTICIPANTS = 10;
 		
 		//create the members

@@ -43,7 +43,6 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
@@ -470,72 +469,10 @@ public class I18nTest extends OlatTestCase {
 	}
 
 	/**
-	 * Test methods i18nManager.getProperties(), i18nManager.saveOrUpdateProperties() and i18nManager.deleteProperties()
-	 */
-	@Ignore
-	@Test public void testGetSaveOrUpdateAndDeleteProperties() {
-		// test with existing files
-		Properties props = i18nMgr.getResolvedProperties(i18nMgr.getLocaleOrDefault("de"), "org.olat.core");
-		assertNotNull(props);
-		assertTrue(props.size() > 0);
-		// test with non existing files
-		String testNewBundle =  "org.olat.core.util.i18n.junittestdata.new";
-		Locale testLocale = i18nMgr.getLocaleOrDefault("de");
-		File baseDir = i18nModule.getPropertyFilesBaseDir(testLocale, testNewBundle);
-		File testFile = i18nMgr.getPropertiesFile(testLocale, testNewBundle, baseDir);
-		// clean first existing files from previous broken testcase
-		if (testFile.exists()) {
-			i18nMgr.deleteProperties(testLocale, testNewBundle);			
-		}
-		props = i18nMgr.getResolvedProperties(testLocale, testNewBundle);
-		assertNotNull(props);
-		assertEquals(0, props.size());
-		// test deleting of non existing
-		assertFalse(testFile.exists());
-		i18nMgr.deleteProperties(testLocale, testNewBundle);
-		assertFalse(testFile.exists());
-		// test saving of non existing
-		props.setProperty("test.key", "Hello wörld !");
-		i18nMgr.saveOrUpdateProperties(props, testLocale, testNewBundle);
-		assertTrue(testFile.exists());
-		assertEquals("Hello wörld !", i18nMgr.getLocalizedString(testNewBundle, "test.key", null, testLocale, false, false));
-		// test saving of existing
-		props = new Properties();
-		props.setProperty("hello.world", "&%çest françias, ê alors");
-		i18nMgr.saveOrUpdateProperties(props, testLocale, testNewBundle);
-		assertTrue(testFile.exists());
-		assertEquals("&%çest françias, ê alors", i18nMgr.getLocalizedString(testNewBundle, "hello.world", null, testLocale, false, false));
-		assertFalse("Hello wörld !".equals(i18nMgr.getLocalizedString(testNewBundle, "test.key", null, testLocale, false, false)));
-		// test various special cases
-		props.setProperty("chinesetest", "请选择你的大学");
-		props.setProperty("specialtest", "that's like \"really\" bad");
-		props.setProperty("multiline", "bla\tbla\nsecond line");
-		props.setProperty("html", "<h1>Hello World</h1>");
-		props.setProperty("empty.property", "");
-		i18nMgr.saveOrUpdateProperties(props, testLocale, testNewBundle);
-		i18nMgr.clearCaches();
-		assertEquals("请选择你的大学", i18nMgr.getLocalizedString(testNewBundle, "chinesetest", null, testLocale, false, false));
-		assertEquals("that's like \"really\" bad", i18nMgr.getLocalizedString(testNewBundle, "specialtest", null, testLocale, false, false));
-		assertEquals("bla\tbla\nsecond line", i18nMgr.getLocalizedString(testNewBundle, "multiline", null, testLocale, false, false));
-		assertEquals("<h1>Hello World</h1>", i18nMgr.getLocalizedString(testNewBundle, "html", null, testLocale, false, false));
-		assertEquals("", i18nMgr.getLocalizedString(testNewBundle, "empty.property", null, testLocale, false, false));
-		assertEquals(null, i18nMgr.getLocalizedString(testNewBundle, "not.existing.property", null, testLocale, false, false));
-		// test deleting of existing
-		i18nMgr.deleteProperties(testLocale, testNewBundle);
-		assertFalse(testFile.exists());
-		assertFalse("Hello wörld !".equals(i18nMgr.getLocalizedString(testNewBundle, "test.key", null, testLocale, false, false)));
-		assertFalse("&%çest françias, ê alors".equals(i18nMgr.getLocalizedString(testNewBundle, "hello.world", null, testLocale, false, false)));
-		// clean up
-		if (testFile.exists()) {
-			i18nMgr.deleteProperties(testLocale, testNewBundle);			
-		}
-		if (testFile.getParentFile().exists()) testFile.getParentFile().delete();
-	}
-
-	/**
 	 * Test methods i18nManager.getBundlePriority(), i18nManager.getKeyPriority()
 	 */
-	@Test public void testGetBundleAndKeyPriority() {
+	@Test
+	public void testGetBundleAndKeyPriority() {
 		// existing bundle prios
 		String bundleName = "org.olat.core.util.i18n.junittestdata";
 		Properties metadataProperties = i18nMgr.getPropertiesWithoutResolvingRecursively(null, bundleName);
@@ -555,7 +492,8 @@ public class I18nTest extends OlatTestCase {
 	/**
 	 * Test methods i18nManager.getAnnotation()
 	 */
-	@Test public void testGetAnnotation() {
+	@Test
+	public void testGetAnnotation() {
 		// existing bundle prios
 		String bundleName = "org.olat.core.util.i18n.junittestdata";
 		Locale testLocale = i18nMgr.getLocaleOrDefault("de");
@@ -569,61 +507,12 @@ public class I18nTest extends OlatTestCase {
 			}
 		}
 	}
-	
-	/**
-	 * Test methods i18nManager.countI18nItems() and i18nManager.countBundles()
-	 */
-	@Ignore
-	@Test public void testCountI18nItemsAndBundles() {
-		i18nModule.initBundleNames(); // remove dirty stuff from previous tests
-		int bundleCounter = i18nModule.getBundleNamesContainingI18nFiles().size();
-		String testNewBundle =  "org.olat.core.util.i18n.junittestdata.new";
-		Locale testLocale = i18nMgr.getLocaleOrDefault("de");
-		File baseDir = i18nModule.getPropertyFilesBaseDir(testLocale, testNewBundle);
-		File testFile = i18nMgr.getPropertiesFile(testLocale, testNewBundle, baseDir);
-		// clean first existing files from previous broken testcase
-		if (testFile.exists()) {
-			i18nMgr.deleteProperties(testLocale, testNewBundle);			
-		}
-		Properties props = i18nMgr.getResolvedProperties(testLocale, testNewBundle);
-		assertEquals(0, i18nMgr.countI18nItems(testLocale, testNewBundle, true));
-		assertEquals(0, i18nMgr.countI18nItems(testLocale, testNewBundle, false));
-		props.setProperty("key.1", "1");
-		props.setProperty("key.2", "2");
-		i18nMgr.saveOrUpdateProperties(props, testLocale, testNewBundle);
-		assertEquals(2, i18nMgr.countI18nItems(testLocale, testNewBundle, false));
-		assertEquals(0, i18nMgr.countI18nItems(i18nMgr.getLocaleOrDefault("en"), testNewBundle, false));
-		assertEquals(bundleCounter + 1, i18nModule.getBundleNamesContainingI18nFiles().size());
-		// test all bundles
-		int allCount = i18nMgr.countI18nItems(testLocale, null, true);
-		assertEquals(allCount, i18nMgr.countI18nItems(testLocale, null, false));
-		props.remove("key.1");
-		i18nMgr.saveOrUpdateProperties(props, testLocale, testNewBundle);
-		assertEquals(allCount-1, i18nMgr.countI18nItems(testLocale, null, false));
-		i18nMgr.deleteProperties(testLocale, testNewBundle);
-		assertEquals(allCount-2, i18nMgr.countI18nItems(testLocale, null, false));
-		assertEquals(bundleCounter, i18nModule.getBundleNamesContainingI18nFiles().size());
-		// count bundles tests
-		assertEquals(0, i18nMgr.countBundles("org.olat.core.util.i18n.nonexisting", true));
-		assertEquals(1, i18nMgr.countBundles("org.olat.core.util.i18n.ui", true));
-		// finds 4: regular: i18n.devtools, i18n.ui;
-		assertEquals(2, i18nMgr.countBundles("org.olat.core.util.i18n", true));
-		assertEquals(0, i18nMgr.countBundles("org.olat.core.util.i18n", false));
-		assertEquals(1, i18nMgr.countBundles("org.olat.core.util.i18n.ui", false));
-		assertTrue(0 < i18nMgr.countBundles(null, false));
-		// clean up
-		if (testFile.exists()) {
-			i18nMgr.deleteProperties(testLocale, testNewBundle);			
-		}
-		if (testFile.getParentFile().exists()) {
-			testFile.getParentFile().delete();
-		}
-	}
 
 	/**
 	 * Test methods i18nManager.findInKeys() i18nManager.findInValues()
 	 */
-	@Test public void testFindInKeysAndFindInValues() {
+	@Test
+	public void testFindInKeysAndFindInValues() {
 		Locale testLocale = i18nMgr.getLocaleOrDefault("de");
 		// in keys speedtest
 		long start = System.currentTimeMillis();
