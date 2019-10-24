@@ -85,7 +85,7 @@ public class RepositoryEntrySearchController extends FormBasicController impleme
 		text.setElementCssClass("o_sel_repo_search_displayname");
 		text.setFocus(true);
 		
-		author = uifactory.addTextElement("cif_author", "cif.author", 255, "", leftContainer);
+		author = uifactory.addTextElement("cif_author", "cif.author.search", 255, "", leftContainer);
 		author.setElementCssClass("o_sel_repo_search_author");
 
 		FormLayoutContainer rightContainer = FormLayoutContainer.createDefaultFormLayout("right_1", getTranslator());
