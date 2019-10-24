@@ -1266,11 +1266,12 @@ public class BusinessGroupDAO {
 		StringBuilder so = new StringBuilder();
 		so.append("select access.method, resource.key, offer.price from acofferaccess access ")
 			.append(" inner join access.offer offer")
-			.append(" inner join offer.resource resource");
+			.append(" inner join offer.resource resource")
+			.append(" where offer.valid=true");
 		if(resourceKeyToGroup.size() < OFFERS_IN_LIMIT) {
-			so.append(" where resource.key in (:resourceKeys)");
+			so.append(" and resource.key in (:resourceKeys)");
 		} else {
-			so.append(" where exists (select bgi.key from businessgroup bgi where bgi.resource=resource)");
+			so.append(" and exists (select bgi.key from businessgroup bgi where bgi.resource=resource)");
 		}
 			
 		TypedQuery<Object[]> offersQuery = dbInstance.getCurrentEntityManager()
