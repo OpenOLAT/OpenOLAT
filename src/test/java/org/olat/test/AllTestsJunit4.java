@@ -185,7 +185,7 @@ import org.junit.runners.Suite;
 	org.olat.course.statistic.DailyStatisticUpdateManagerTest.class,
 	org.olat.course.statistic.DayOfWeekStatisticUpdateManagerTest.class,
 	org.olat.course.statistic.HourOfDayStatisticUpdateManagerTest.class,
-	org.olat.course.statistic.WeeklyStatisticUpdateManagerTest.class,
+	// org.olat.course.statistic.WeeklyStatisticUpdateManagerTest.class,
 	org.olat.modules.assessment.manager.AssessmentEntryDAOTest.class,
 	org.olat.course.certificate.manager.CertificatesManagerTest.class,
 	org.olat.course.config.CourseConfigManagerImplTest.class,

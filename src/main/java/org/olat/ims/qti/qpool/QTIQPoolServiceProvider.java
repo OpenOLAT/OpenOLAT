@@ -30,6 +30,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.xml.XMLConstants;
 
+import org.apache.logging.log4j.Logger;
 import org.dom4j.Document;
 import org.dom4j.Element;
 import org.olat.core.commons.persistence.DB;
@@ -41,7 +42,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Util;
@@ -69,6 +69,7 @@ import org.olat.ims.resources.IMSEntityResolver;
 import org.olat.modules.qpool.ExportFormatOptions;
 import org.olat.modules.qpool.ExportFormatOptions.Outcome;
 import org.olat.modules.qpool.QItemFactory;
+import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
@@ -381,7 +382,7 @@ public class QTIQPoolServiceProvider implements QPoolSPI {
 	}
 
 	@Override
-	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+	public QPoolItemEditorController getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
 		return new QTI12EditorController(ureq, wControl, item);
 	}
 

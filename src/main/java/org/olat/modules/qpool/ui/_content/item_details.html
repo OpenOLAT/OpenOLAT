@@ -13,7 +13,11 @@
 <div class="row">
 	#if($metadataSwitch)
 		<div class="col-md-8">
-			$r.render("type_specifics")
+			#if($r.isTrue($corrupted))
+				<div class="o_error">$r.translate("error.corrupted.question")</div>
+			#elseif($r.available("type_specifics"))
+				$r.render("type_specifics")
+			#end
 			$r.render("comments")
 		</div>
 		<div class="col-md-4">
@@ -21,7 +25,11 @@
 		</div>
 	#else
 	<div class="col-md-12">
-		$r.render("type_specifics")
+		#if($r.isTrue($corrupted))
+			<div class="o_error">$r.translate("error.corrupted.question")</div>
+		#elseif($r.available("type_specifics"))
+			$r.render("type_specifics")
+		#end
 		$r.render("comments")
 	</div>
 	#end

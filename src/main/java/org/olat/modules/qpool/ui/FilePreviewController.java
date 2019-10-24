@@ -27,8 +27,9 @@ import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.modules.qpool.QuestionItem;
+import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolService;
+import org.olat.modules.qpool.QuestionItem;
 
 /**
  * 
@@ -36,12 +37,15 @@ import org.olat.modules.qpool.QPoolService;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  *
  */
-public class FilePreviewController extends BasicController {
+public class FilePreviewController extends BasicController implements QPoolItemEditorController {
 
 	private final VelocityContainer mainVC;
+
+	private final QuestionItem qitem;
 	
 	public FilePreviewController(UserRequest ureq, WindowControl wControl, QuestionItem qitem) {
 		super(ureq, wControl);
+		this.qitem = qitem;
 		QPoolService qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		mainVC = createVelocityContainer("file_preview");
 		
@@ -51,6 +55,16 @@ public class FilePreviewController extends BasicController {
 		}
 		
 		putInitialPanel(mainVC);
+	}
+
+	@Override
+	public QuestionItem getItem() {
+		return qitem;
+	}
+
+	@Override
+	public boolean isValid() {
+		return true;
 	}
 
 	@Override
