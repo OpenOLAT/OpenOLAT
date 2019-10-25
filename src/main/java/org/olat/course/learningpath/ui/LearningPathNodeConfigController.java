@@ -58,12 +58,15 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = "nodeVisited";
 	public static final String CONFIG_VALUE_TRIGGER_CONFIRMED = "confirmed";
 	public static final String CONFIG_VALUE_TRIGGER_STATUS_DONE = "statusDone";
+	public static final String CONFIG_VALUE_TRIGGER_SCORE = "score";
 	public static final String CONFIG_VALUE_TRIGGER_PASSED = "passed";
 	public static final String CONFIG_DEFAULT_TRIGGER = CONFIG_VALUE_TRIGGER_NONE;
+	public static final String CONFIG_KEY_SCORE_CUT_VALUE = "scoreCutValue";
 	
 	private TextElement durationEl;
 	private SingleSelection obligationEl;
 	private SingleSelection triggerEl;
+	private TextElement scoreCutEl;
 
 	private final CourseConfig courseConfig;
 	private final ModuleConfiguration moduleConfigs;
@@ -102,6 +105,10 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			triggerEl.select(triggerKey, true);
 		}
 		
+		String score = moduleConfigs.getStringValue(CONFIG_KEY_SCORE_CUT_VALUE);
+		scoreCutEl = uifactory.addTextElement("config.score.cut", 100, score, formLayout);
+		scoreCutEl.setMandatory(true);
+		
 		uifactory.addFormSubmitButton("save", formLayout);
 		
 		updateUI();
@@ -115,6 +122,9 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		}
 		if (ctrlConfig.isTriggerConfirmed()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_CONFIRMED, translate("config.trigger.confirmed")));
+		}
+		if (ctrlConfig.isTriggerScore()) {
+			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_SCORE, translate("config.trigger.score")));
 		}
 		if (ctrlConfig.isTriggerPassed()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_PASSED, translate("config.trigger.passed")));
@@ -135,11 +145,16 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	
 	private void updateUI() {
 		durationEl.setMandatory(isDurationMandatory());
+		
+		boolean triggerScore = triggerEl.isOneSelected() && triggerEl.getSelectedKey().equals(CONFIG_VALUE_TRIGGER_SCORE);
+		scoreCutEl.setVisible(triggerScore);
 	}
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
 		if (source == obligationEl) {
+			updateUI();
+		} else if (source == triggerEl) {
 			updateUI();
 		}
 		super.formInnerEvent(ureq, source, event);
@@ -150,6 +165,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		boolean allOk = true;
 		
 		allOk = validateInteger(durationEl, 1, 10000, isDurationMandatory(), "error.positiv.int");
+		allOk = validateInteger(scoreCutEl, 0, 10000, true, "error.positiv.int");
 		
 		return allOk & super.validateFormLogic(ureq);
 	}
@@ -195,6 +211,13 @@ public class LearningPathNodeConfigController extends FormBasicController {
 				: CONFIG_DEFAULT_TRIGGER;
 		moduleConfigs.setStringValue(CONFIG_KEY_TRIGGER, trigger);
 		
+		if (scoreCutEl.isVisible()) {
+			String scoreCut = scoreCutEl.getValue();
+			moduleConfigs.setStringValue(CONFIG_KEY_SCORE_CUT_VALUE, scoreCut);
+		} else {
+			moduleConfigs.remove(CONFIG_KEY_SCORE_CUT_VALUE);
+		}
+		
 		fireEvent(ureq, Event.DONE_EVENT);
 	}
 
@@ -215,6 +238,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		public boolean isTriggerConfirmed();
 		
+		public boolean isTriggerScore();
+		
 		public boolean isTriggerPassed();
 		
 		public TranslateableBoolean getTriggerStatusDone();
@@ -229,6 +254,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		private boolean triggerNodeVisited;
 		private boolean triggerConfirmed;
+		private boolean triggerScore;
 		private boolean triggerPassed;
 		private TranslateableBoolean triggerStatusDone;
 		
@@ -242,6 +268,11 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		public ControllerConfigBuilder enableConfirmed() {
 			triggerConfirmed = true;
+			return this;
+		}
+		
+		public ControllerConfigBuilder enableScore() {
+			triggerScore = true;
 			return this;
 		}
 		
@@ -268,12 +299,14 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			
 			public final boolean triggerNodeVisited;
 			public final boolean triggerConfirmed;
+			public final boolean triggerScore;
 			public final boolean triggerPassed;
 			public final TranslateableBoolean triggerStatusDone;
 
 			public ControllerConfigImpl(ControllerConfigBuilder builder) {
 				this.triggerNodeVisited = builder.triggerNodeVisited;
 				this.triggerConfirmed = builder.triggerConfirmed;
+				this.triggerScore = builder.triggerScore;
 				this.triggerPassed = builder.triggerPassed;
 				this.triggerStatusDone = falseIfNull(builder.triggerStatusDone);
 			}
@@ -292,6 +325,11 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			@Override
 			public boolean isTriggerConfirmed() {
 				return triggerConfirmed;
+			}
+
+			@Override
+			public boolean isTriggerScore() {
+				return triggerScore;
 			}
 
 			@Override
