@@ -28,17 +28,19 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.jcodec.api.FrameGrab;
-import org.jcodec.common.FileChannelWrapper;
+import org.jcodec.common.Codec;
+import org.jcodec.common.io.FileChannelWrapper;
 import org.jcodec.containers.mp4.boxes.MovieBox;
 import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
+import org.jcodec.scale.AWTUtil;
 import org.olat.core.commons.services.image.Size;
 import org.olat.core.commons.services.image.spi.ImageHelperImpl;
 import org.olat.core.commons.services.thumbnail.CannotGenerateThumbnailException;
 import org.olat.core.commons.services.thumbnail.FinalSize;
 import org.olat.core.commons.services.thumbnail.ThumbnailSPI;
 import org.olat.core.commons.services.video.spi.FLVParser;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.WorkThreadInformations;
@@ -59,18 +61,18 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 	private static final Logger log = Tracing.createLoggerFor(MovieServiceImpl.class);
 
 	private static final List<String> extensions = new ArrayList<>();
-	private static final List<String> fourCCs = new ArrayList<>();
+	private static final List<Codec> supportedCodecs = new ArrayList<>();
 	static {
 		// supported file extensions
 		extensions.add("mp4");
 		extensions.add("m4v");
 		extensions.add("mov");
 		// supported fourCC for H264 codec
-		fourCCs.add("avc1");
-		fourCCs.add("davc");
-		fourCCs.add("h264");
-		fourCCs.add("x264");
-		fourCCs.add("vssh");
+		supportedCodecs.add(Codec.codecByFourcc("avc1"));
+		supportedCodecs.add(Codec.codecByFourcc("davc"));
+		supportedCodecs.add(Codec.codecByFourcc("h264"));
+		supportedCodecs.add(Codec.codecByFourcc("x264"));
+		supportedCodecs.add(Codec.codecByFourcc("vssh"));
 	}
 	
 	
@@ -96,9 +98,10 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		if(extensions.contains(suffix)) {
 			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r");
 					FileChannel ch = accessFile.getChannel();
-					FileChannelWrapper in = new FileChannelWrapper(ch)) {
+					FileChannelWrapper in = new FileChannelWrapper(ch);
+					MP4Demuxer demuxer1 = MP4Demuxer.createMP4Demuxer(in)) {
 				
-				MP4Demuxer demuxer1 = new MP4Demuxer(in);
+				
 				org.jcodec.common.model.Size size = demuxer1.getMovie().getDisplaySize();
 				// Case 1: standard case, get dimension from movie
 				int w = size.getWidth();
@@ -117,7 +120,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 						// flag of the movie. Those mp4 guys are really
 						// secretive folks, did not find any documentation about
 						// this. Best guess.
-						org.jcodec.common.model.Size size2 = demuxer1.getVideoTrack().getBox().getCodedSize();
+						org.jcodec.common.model.Size size2 = demuxer1.getVideoTrack().getMeta().getVideoCodecMeta().getSize();
 						w = size2.getHeight();
 						h = size2.getWidth();					
 					} catch(Exception e) {
@@ -161,9 +164,9 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		if(extensions.contains(suffix)) {
 			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r");
 				FileChannel ch = accessFile.getChannel();
-				FileChannelWrapper in = new FileChannelWrapper(ch)) {
-
-				MP4Demuxer demuxer1 = new MP4Demuxer(in);
+				FileChannelWrapper in = new FileChannelWrapper(ch);
+				MP4Demuxer demuxer1 = MP4Demuxer.createMP4Demuxer(in)) {
+				
 				MovieBox movie = demuxer1.getMovie();
 				long duration = movie.getDuration();
 				int timescale = movie.getTimescale();
@@ -196,10 +199,9 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		if(extensions.contains(suffix)) {
 			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r");
 					FileChannel ch = accessFile.getChannel();
-					FileChannelWrapper in = new FileChannelWrapper(ch)) {
-				
-				MP4Demuxer demuxer1 = new MP4Demuxer(in);
-				return demuxer1.getVideoTrack().getFrameCount();
+					FileChannelWrapper in = new FileChannelWrapper(ch);
+					MP4Demuxer demuxer1 = MP4Demuxer.createMP4Demuxer(in)) {
+				return demuxer1.getVideoTrack().getMeta().getTotalFrames();
 			} catch (Exception | AssertionError e) {
 				log.error("Cannot extract num. of frames of: " + media, e);
 			}
@@ -226,12 +228,12 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 					FileChannel ch = accessFile.getChannel();
 					FileChannelWrapper in = new FileChannelWrapper(ch)) {
 				
-				MP4Demuxer demuxer1 = new MP4Demuxer(in);
-				String fourCC = demuxer1.getVideoTrack().getFourcc();
-				if (fourCCs.contains(fourCC.toLowerCase())) {
+				MP4Demuxer demuxer1 = MP4Demuxer.createMP4Demuxer(in);
+				Codec codec = demuxer1.getVideoTrack().getMeta().getCodec();
+				if (supportedCodecs.contains(codec)) {
 					return true;
 				} 
-				log.info("Movie file::" + fileName + " has correct suffix::" + suffix + " but fourCC::" + fourCC + " not in our list of supported codecs.");
+				log.info("Movie file::" + fileName + " has correct suffix::" + suffix + " but fourCC::" + codec + " not in our list of supported codecs.");
 			} catch (Exception | Error e) {
 				// anticipated exception, is not an mp4 file
 			}
@@ -251,7 +253,7 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 				
 				File baseFile = ((LocalFileImpl)file).getBasefile();
 				File scaledImage = ((LocalFileImpl)thumbnailFile).getBasefile();
-				BufferedImage frame = FrameGrab.getFrame(baseFile, 20);
+				BufferedImage frame = AWTUtil.toBufferedImage(FrameGrab.getFrameFromFile(baseFile, 20));
 				Size scaledSize = ImageHelperImpl.calcScaledSize(frame, maxWidth, maxHeight);
 				if(ImageHelperImpl.writeTo(frame, scaledImage, scaledSize, "jpeg")) {
 					size = new FinalSize(scaledSize.getWidth(), scaledSize.getHeight());
