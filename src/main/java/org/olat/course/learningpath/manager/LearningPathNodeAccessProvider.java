@@ -97,7 +97,8 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnNodeVisited();
 		boolean participant = userCourseEnv.isParticipant();
 		if (participant && result.isEnabled()) {
-			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnv, result.isDone());
+			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnv, result.isDone(),
+					result.isFullyAssessed());
 			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnv,
 					Boolean.valueOf(result.isFullyAssessed()), status, Role.user);
 			return true;
@@ -137,16 +138,17 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 			FullyAssessedResult result) {
 		boolean participant = userCourseEnv.isParticipant();
 		if (participant && result.isEnabled()) {
-			AssessmentEntryStatus newStatus = getStatus(courseNode, userCourseEnv, result.isDone());
+			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnv, result.isDone(),
+					result.isFullyAssessed());
 			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnv,
-					Boolean.valueOf(result.isFullyAssessed()), newStatus, by);
+					Boolean.valueOf(result.isFullyAssessed()), status, by);
 		}
 	}
 
 	private AssessmentEntryStatus getStatus(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment,
-			boolean isDone) {
-		return isDone
-				? AssessmentEntryStatus.done
+			boolean setDone, boolean fullyAssessed) {
+		return setDone
+				? fullyAssessed? AssessmentEntryStatus.done: AssessmentEntryStatus.notStarted
 				: courseAssessmentService.getAssessmentEntry(courseNode, userCourseEnvironment).getAssessmentStatus();
 	}
 

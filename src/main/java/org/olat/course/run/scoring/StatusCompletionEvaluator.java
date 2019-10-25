@@ -47,7 +47,7 @@ public class StatusCompletionEvaluator implements CompletionEvaluator {
 		case notStarted: return 0.0;
 		case inProgress: return 0.5;
 		case inReview: return 0.75;
-		case done: return 1.0;
+		case done: return 0.9; // 1.0 is reached when fully assessed
 		default: return 0.0;
 		}
 	}

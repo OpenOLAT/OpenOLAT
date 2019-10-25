@@ -198,7 +198,7 @@ public class LearningPathNodeAccessProviderTest {
 		sut.updateFullyAssessed(courseNodeMock, participantCourseEnv, Role.auto, result);
 
 		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.FALSE,
-				AssessmentEntryStatus.done, Role.auto);
+				AssessmentEntryStatus.notStarted, Role.auto);
 	}
 	
 	@Test
