@@ -104,4 +104,9 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 		// nothing to do
 	}
 
+	@Override
+	public void onPassed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Role by) {
+		// nothing to do
+	}
+
 }

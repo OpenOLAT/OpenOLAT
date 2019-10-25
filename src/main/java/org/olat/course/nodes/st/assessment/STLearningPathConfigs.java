@@ -57,6 +57,11 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public FullyAssessedResult isFullyAssessedOnPassed() {
+		return LearningPathConfigs.notFullyAssessed();
+	}
+
+	@Override
 	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status) {
 		return LearningPathConfigs.notFullyAssessed();
 	}

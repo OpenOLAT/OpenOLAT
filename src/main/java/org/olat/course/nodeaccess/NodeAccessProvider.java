@@ -50,6 +50,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 
 	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 	
+	public void onPassed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Role by);
+
 	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			Double completion, AssessmentEntryStatus status, Role by);
 

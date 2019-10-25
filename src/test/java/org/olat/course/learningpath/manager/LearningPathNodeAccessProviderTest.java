@@ -198,6 +198,48 @@ public class LearningPathNodeAccessProviderTest {
 	}
 	
 	@Test
+	public void shouldSetAssessmentAsDoneIfPassed() {
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.isFullyAssessedOnPassed()).thenReturn(fullyAssessed(true, true));
+		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
+		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
+		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
+
+		sut.onPassed(courseNodeMock, participantCourseEnv, Role.user);
+
+		verify(courseAssessmentService).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
+				AssessmentEntryStatus.done, Role.user);
+	}
+	
+	@Test
+	public void shouldSetAssessmentAsDoneIfPassedNotEnabled() {
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.isFullyAssessedOnPassed()).thenReturn(notFullyAssessed());
+		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
+		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
+		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
+
+		sut.onPassed(courseNodeMock, participantCourseEnv, Role.user);
+
+		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
+				AssessmentEntryStatus.done, Role.user);
+	}
+	
+	@Test
+	public void shouldNotChangeAssessmentIfNotAParticipantPassed() {
+		LearningPathConfigs configs = mock(LearningPathConfigs.class);
+		when(configs.isFullyAssessedOnPassed()).thenReturn(fullyAssessed(true, true));
+		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
+		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
+		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
+
+		sut.onPassed(courseNodeMock, coachCourseEnv, Role.user);
+
+		verify(courseAssessmentService, never()).updateFullyAssessed(courseNodeMock, participantCourseEnv, Boolean.TRUE,
+				AssessmentEntryStatus.done, Role.user);
+	}
+	
+	@Test
 	public void shouldSetAssessmentAsDoneIfRunStatusIsReached() {
 		Role role = Role.auto;
 		LearningPathConfigs configs = mock(LearningPathConfigs.class);

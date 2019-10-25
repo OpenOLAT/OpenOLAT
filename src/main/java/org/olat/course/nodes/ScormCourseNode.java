@@ -27,6 +27,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -55,8 +56,11 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.cp.CPEditController;
+import org.olat.course.nodes.scorm.ScormAssessmentConfig;
 import org.olat.course.nodes.scorm.ScormEditController;
+import org.olat.course.nodes.scorm.ScormLearningPathNodeHandler;
 import org.olat.course.nodes.scorm.ScormRunController;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -81,6 +85,9 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 	
 	private static final Logger log = Tracing.createLoggerFor(ScormCourseNode.class);
 	private static final long serialVersionUID = 2970594874787761801L;
+	@SuppressWarnings("deprecation")
+	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(ScormEditController.class);
+	
 	public static final String TYPE = "scorm";
 	private static final int CURRENT_CONFIG_VERSION = 5;
 	
@@ -125,32 +132,65 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
-
-		StatusDescription sd = StatusDescription.NOERROR;
-		boolean isValid = ScormEditController.isModuleConfigValid(getModuleConfiguration());
-		if (!isValid) {
-			String shortKey = "error.noreference.short";
-			String longKey = "error.noreference.long";
-			String[] params = new String[] { this.getShortTitle() };
-			String translPackage = Util.getPackageName(ScormEditController.class);
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translPackage);
-			sd.setDescriptionForUnit(getIdent());
-			// set which pane is affected by error
-			sd.setActivateableViewIdentifier(ScormEditController.PANE_TAB_CPCONFIG);
+		if (oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			return oneClickStatusCache[0];
 		}
-		return sd;
+		
+		List<StatusDescription> statusDescs = validateInternalConfiguration();
+		if(statusDescs.isEmpty()) {
+			statusDescs.add(StatusDescription.NOERROR);
+		}
+		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
+		return oneClickStatusCache[0];
 	}
 
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
-		// only here we know which translator to take for translating condition
-		// error messages
-		String translatorStr = Util.getPackageName(ScormEditController.class);
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
+		
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, TRANSLATOR_PACKAGE, getConditionExpressions());
+		if(oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			//isConfigValidWithTranslator add first
+			sds.remove(oneClickStatusCache[0]);
+		}
+		sds.addAll(validateInternalConfiguration());
 		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
 		return oneClickStatusCache;
+	}
+	
+	private List<StatusDescription> validateInternalConfiguration() {
+		List<StatusDescription> sdList = new ArrayList<>(2);
+
+		boolean hasScormReference = ScormEditController.hasScormReference(getModuleConfiguration());
+		if (!hasScormReference) {
+			addStatusErrorDescription("error.noreference.short", "error.noreference.long", ScormEditController.PANE_TAB_CPCONFIG, sdList);
+		}
+		
+		if (isFullyAssessedPassedConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNIN_PATH, sdList);
+		}
+		
+		return sdList;
+	}
+	
+	private boolean isFullyAssessedPassedConfigError() {
+		boolean hasPassed = new ScormAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean isPassedTrigger = CoreSpringFactory.getImpl(ScormLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnPassed()
+				.isFullyAssessed();
+		return isPassedTrigger && !hasPassed;
+	}
+
+	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
+			List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, shortDescKey, longDescKey, params,
+				TRANSLATOR_PACKAGE);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
 	}
 
 	@Override

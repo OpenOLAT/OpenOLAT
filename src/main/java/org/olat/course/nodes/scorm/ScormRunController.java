@@ -124,7 +124,7 @@ public class ScormRunController extends BasicController implements ScormAPICallb
 			ScormCourseNode scormNode, boolean isPreview) {
 		super(ureq, wControl, Util.createPackageTranslator(CourseNode.class, ureq.getLocale()));
 		// assertion to make sure the moduleconfig is valid
-		if (!ScormEditController.isModuleConfigValid(config))
+		if (!ScormEditController.hasScormReference(config))
 			throw new AssertException("scorm run controller had an invalid module config:" + config.toString());
 		this.isPreview = isPreview || userCourseEnv.isCourseReadOnly() || !userCourseEnv.isParticipant();
 		this.userCourseEnv = userCourseEnv;

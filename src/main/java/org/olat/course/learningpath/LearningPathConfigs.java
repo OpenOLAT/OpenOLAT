@@ -40,6 +40,8 @@ public interface LearningPathConfigs {
 	
 	public FullyAssessedResult isFullyAssessedOnConfirmation();
 
+	public FullyAssessedResult isFullyAssessedOnPassed();
+
 	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion);
 	
 	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status);

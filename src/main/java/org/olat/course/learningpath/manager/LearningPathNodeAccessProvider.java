@@ -125,6 +125,16 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
+	public void onPassed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Role by) {
+		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnPassed();
+		boolean participant = userCourseEnv.isParticipant();
+		if (participant && result.isFullyAssessed()) {
+			AssessmentEntryStatus status = getStatus(courseNode, userCourseEnv, result.isDone());
+			courseAssessmentService.updateFullyAssessed(courseNode, userCourseEnv, Boolean.TRUE, status, by);
+		}
+	}
+
+	@Override
 	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			Double completion, AssessmentEntryStatus status, Role by) {
 		FullyAssessedResult onCompletion = getConfigs(courseNode).isFullyAssessedOnCompletion(completion);

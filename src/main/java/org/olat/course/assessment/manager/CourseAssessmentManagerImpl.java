@@ -528,6 +528,11 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		}
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		DBFactory.getInstance().commit();//commit before sending events
+		
+		if (Boolean.TRUE.equals(passed)) {
+			nodeAccessService.onPassed(courseNode, userCourseEnv , Role.auto);
+		}
+		
 		//reevalute the tree
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);

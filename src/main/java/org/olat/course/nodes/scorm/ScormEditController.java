@@ -357,7 +357,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		moduleConfiguration.set(CONFIG_KEY_REPOSITORY_SOFTKEY, re.getSoftkey());
 	}
 
-	public static boolean isModuleConfigValid(ModuleConfiguration moduleConfiguration) {
+	public static boolean hasScormReference(ModuleConfiguration moduleConfiguration) {
 		return (moduleConfiguration.get(CONFIG_KEY_REPOSITORY_SOFTKEY) != null);
 	}
 

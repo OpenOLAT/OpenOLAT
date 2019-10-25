@@ -69,7 +69,7 @@ public interface NodeAccessService {
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
 	
 	/**
-	 * Returns if a user can confirm the execution of a assessemnt
+	 * Returns if a user can confirm the execution of an assessment.
 	 *
 	 * @param courseNode
 	 * @param userCourseEnv
@@ -84,6 +84,15 @@ public interface NodeAccessService {
 	 * @param userCourseEnv
 	 */
 	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
+
+	/**
+	 * Hook after the user has passed an assessment.
+	 *
+	 * @param courseNode
+	 * @param userCourseEnv
+	 * @param by
+	 */
+	public void onPassed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Role by);
 
 	/**
 	 * Hook after the completion and the run status is updated.

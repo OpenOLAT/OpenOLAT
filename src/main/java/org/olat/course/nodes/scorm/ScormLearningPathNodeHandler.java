@@ -62,6 +62,7 @@ public class ScormLearningPathNodeHandler implements LearningPathNodeHandler {
 		LearningPathControllerConfig ctrlConfig = LearningPathNodeConfigController.builder()
 				.enableNodeVisited()
 				.enableConfirmed()
+				.enablePassed()
 				.build();
 		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
 	}

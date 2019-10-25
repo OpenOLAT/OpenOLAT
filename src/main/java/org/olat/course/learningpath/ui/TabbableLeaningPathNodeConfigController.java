@@ -36,7 +36,7 @@ import org.olat.course.editor.NodeEditController;
  */
 public class TabbableLeaningPathNodeConfigController extends ActivateableTabbableDefaultController {
 
-	private static final String PANE_TAB_LEARNIN_PATH = "pane.tab.learning.path";
+	public static final String PANE_TAB_LEARNIN_PATH = "pane.tab.learning.path";
 	private final static String[] paneKeys = { PANE_TAB_LEARNIN_PATH };
 	
 	private final Controller configCtrl;

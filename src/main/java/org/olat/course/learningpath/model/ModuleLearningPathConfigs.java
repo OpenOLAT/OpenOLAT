@@ -26,6 +26,7 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_CONFIRMED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_NODE_VISITED;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_PASSED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_DONE;
 
 import org.olat.core.util.StringHelper;
@@ -89,6 +90,15 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	public FullyAssessedResult isFullyAssessedOnConfirmation() {
 		String doneTriggerName = getDoneTriggerName();
 		if (CONFIG_VALUE_TRIGGER_CONFIRMED.equals(doneTriggerName)) {
+			return LearningPathConfigs.fullyAssessed(true, true);
+		}
+		return LearningPathConfigs.notFullyAssessed();
+	}
+
+	@Override
+	public FullyAssessedResult isFullyAssessedOnPassed() {
+		String doneTriggerName = getDoneTriggerName();
+		if (CONFIG_VALUE_TRIGGER_PASSED.equals(doneTriggerName)) {
 			return LearningPathConfigs.fullyAssessed(true, true);
 		}
 		return LearningPathConfigs.notFullyAssessed();

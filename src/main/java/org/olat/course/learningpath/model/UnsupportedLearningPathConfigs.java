@@ -57,6 +57,11 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public FullyAssessedResult isFullyAssessedOnPassed() {
+		return LearningPathConfigs.notFullyAssessed();
+	}
+
+	@Override
 	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion) {
 		return LearningPathConfigs.notFullyAssessed();
 	}
