@@ -98,10 +98,10 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed) {
+	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed, Boolean userVisibility) {
 		String doneTriggerName = getDoneTriggerName();
 		if (CONFIG_VALUE_TRIGGER_PASSED.equals(doneTriggerName)) {
-			boolean fullyAssessed = Boolean.TRUE.equals(passed);
+			boolean fullyAssessed = Boolean.TRUE.equals(passed) && Boolean.TRUE.equals(userVisibility);
 			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, doneOnFullyAssessed);
 		}
 		return LearningPathConfigs.notFullyAssessed();
@@ -115,8 +115,8 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status) {
 		String doneTriggerName = getDoneTriggerName();
 		if (CONFIG_VALUE_TRIGGER_STATUS_DONE.equals(doneTriggerName)) {
-			boolean fulylAssessed = AssessmentEntryStatus.done.equals(status);
-			return LearningPathConfigs.fullyAssessed(true, fulylAssessed, false);
+			boolean fullyAssessed = AssessmentEntryStatus.done.equals(status);
+			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, false);
 		}
 		return LearningPathConfigs.notFullyAssessed();
 	}

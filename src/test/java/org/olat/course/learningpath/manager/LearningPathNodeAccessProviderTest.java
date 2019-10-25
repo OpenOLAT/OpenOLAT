@@ -234,9 +234,9 @@ public class LearningPathNodeAccessProviderTest {
 	
 	@Test
 	public void shouldInvokePassedConfig() {
-		sut.onPassedUpdated(courseNodeMock, coachCourseEnv, null, null);
+		sut.onPassedUpdated(courseNodeMock, coachCourseEnv, null, null, null);
 
-		verify(configMock).isFullyAssessedOnPassed(any());
+		verify(configMock).isFullyAssessedOnPassed(any(), null);
 	}
 	
 	@Test

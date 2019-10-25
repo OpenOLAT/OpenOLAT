@@ -104,9 +104,10 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 
 	@Override
-	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed, Role by) {
+	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed,
+			Boolean userVisibility, Role by) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
-		getNodeAccessProvider(type).onPassedUpdated(courseNode, userCourseEnv, passed, by);
+		getNodeAccessProvider(type).onPassedUpdated(courseNode, userCourseEnv, passed, userVisibility, by);
 	}
 
 	@Override

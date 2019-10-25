@@ -530,7 +530,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		DBFactory.getInstance().commit();
 		
-		nodeAccessService.onPassedUpdated(courseNode, userCourseEnv, passed, Role.auto);
+		nodeAccessService.onPassedUpdated(courseNode, userCourseEnv, passed, assessmentEntry.getUserVisibility(), by);
 		nodeAccessService.onStatusUpdated(courseNode, userCourseEnv, assessmentEntry.getAssessmentStatus(), by);
 		DBFactory.getInstance().commit();
 		

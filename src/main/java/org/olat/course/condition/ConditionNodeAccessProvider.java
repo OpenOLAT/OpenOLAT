@@ -105,7 +105,7 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed, Role by) {
+	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed, Boolean userVisibility, Role by) {
 		// nothing to do
 	}
 

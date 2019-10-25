@@ -91,9 +91,11 @@ public interface NodeAccessService {
 	 * @param courseNode
 	 * @param userCourseEnv
 	 * @param passed 
+	 * @param userVisibility 
 	 * @param by
 	 */
-	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed, Role by);
+	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed,
+			Boolean userVisibility, Role by);
 
 	/**
 	 * Hook after the completion and the run status is updated.
