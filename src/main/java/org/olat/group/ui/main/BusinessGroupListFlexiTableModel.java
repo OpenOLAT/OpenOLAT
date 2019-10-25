@@ -95,7 +95,7 @@ public class BusinessGroupListFlexiTableModel extends DefaultFlexiTableDataModel
 			case resources:
 				return wrapped;
 			case accessControl:
-				return new Boolean(wrapped.isAccessControl());
+				return Boolean.valueOf(wrapped.isAccessControl());
 			case accessControlLaunch:
 				return wrapped.getAccessLink();
 			case accessTypes:

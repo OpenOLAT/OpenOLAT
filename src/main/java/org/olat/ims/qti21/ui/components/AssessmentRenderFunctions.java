@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.Logger;
-import org.jcodec.common.IOUtils;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.logging.Tracing;
