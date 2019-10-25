@@ -89,10 +89,10 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public FullyAssessedResult isFullyAssessedOnConfirmation() {
+	public FullyAssessedResult isFullyAssessedOnConfirmation(boolean confirmed) {
 		String doneTriggerName = getDoneTriggerName();
 		if (CONFIG_VALUE_TRIGGER_CONFIRMED.equals(doneTriggerName)) {
-			return LearningPathConfigs.fullyAssessed(true, true, doneOnFullyAssessed);
+			return LearningPathConfigs.fullyAssessed(true, confirmed, doneOnFullyAssessed);
 		}
 		return LearningPathConfigs.notFullyAssessed();
 	}

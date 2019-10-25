@@ -82,8 +82,9 @@ public interface NodeAccessService {
 	 * 
 	 * @param courseNode
 	 * @param userCourseEnv
+	 * @param confirmed 
 	 */
-	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean confirmed);
 
 	/**
 	 * Hook after the user has passed an assessment.

@@ -98,9 +98,9 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 
 	@Override
-	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean confirmed) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
-		getNodeAccessProvider(type).onAssessmentConfirmed(courseNode, userCourseEnv);
+		getNodeAccessProvider(type).onAssessmentConfirmed(courseNode, userCourseEnv, confirmed);
 	}
 
 	@Override

@@ -107,15 +107,15 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 
 	@Override
 	public boolean isAssessmentConfirmationEnabled(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnConfirmation();
+		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnConfirmation(true);
 		boolean participant = userCourseEnv.isParticipant();
 		boolean confirmationEnabled = participant && result.isEnabled();
 		return confirmationEnabled;
 	}
 
 	@Override
-	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
-		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnConfirmation();
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean confirmed) {
+		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnConfirmation(confirmed);
 		updateFullyAssessed(courseNode, userCourseEnv, Role.user, result);
 	}
 

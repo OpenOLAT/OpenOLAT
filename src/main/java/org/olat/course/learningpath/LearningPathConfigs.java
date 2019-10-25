@@ -38,7 +38,7 @@ public interface LearningPathConfigs {
 	
 	public FullyAssessedResult isFullyAssessedOnNodeVisited();
 	
-	public FullyAssessedResult isFullyAssessedOnConfirmation();
+	public FullyAssessedResult isFullyAssessedOnConfirmation(boolean confirmed);
 
 	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed, Boolean userVisibility);
 	

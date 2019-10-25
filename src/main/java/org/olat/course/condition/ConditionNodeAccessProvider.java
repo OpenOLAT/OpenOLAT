@@ -94,7 +94,7 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv) {
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean confirmed) {
 		// nothing to do
 	}
 

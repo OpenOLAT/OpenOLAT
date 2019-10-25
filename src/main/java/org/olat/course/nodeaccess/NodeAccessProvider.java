@@ -48,7 +48,7 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 
 	public boolean isAssessmentConfirmationEnabled(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
 
-	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv);
+	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean confirmed);
 	
 	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed, Boolean userVisibility, Role by);
 

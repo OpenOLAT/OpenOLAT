@@ -492,15 +492,15 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 	private void updateAssessmentConfirmUI(CourseNode calledCourseNode) {
 		if (paginationCtrl != null) {
 			boolean confirmVisible = false;
+			boolean showDone = false;
 			if (calledCourseNode != null) {
 				TreeNode treeNode = treeModel.getNodeById(calledCourseNode.getIdent());
 				boolean confirmationEnabled = nodeAccessService.isAssessmentConfirmationEnabled(calledCourseNode, getUce());
 				AssessmentEvaluation assessmentEvaluation = getUce().getScoreAccounting().evalCourseNode(calledCourseNode);
-				confirmVisible = treeNode.isAccessible()
-						&& confirmationEnabled
-						&& !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
+				confirmVisible = treeNode.isAccessible() && confirmationEnabled;
+				showDone = !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
 			}
-			paginationCtrl.updateAssessmentConfirmUI(confirmVisible);
+			paginationCtrl.updateAssessmentConfirmUI(confirmVisible, showDone);
 			updateProgressUI();
 		}
 	}
@@ -637,7 +637,9 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 			} else if (event == CoursePaginationController.PREVIOUS_EVENT) {
 				doPrevious(ureq);
 			} else if (event == CoursePaginationController.CONFIRMED_EVENT) {
-				doAssessmentConfirmation();
+				doAssessmentConfirmation(true);
+			} else if (event == CoursePaginationController.UNCONFIRMED_EVENT) {
+				doAssessmentConfirmation(false);
 			}
 		}
 	}
@@ -666,8 +668,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		}
 	}
 	
-	private void doAssessmentConfirmation() {
-		nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce());
+	private void doAssessmentConfirmation(boolean confirmed) {
+		nodeAccessService.onAssessmentConfirmed(getCurrentCourseNode(), getUce(), confirmed);
 		updateAfterChanges(getCurrentCourseNode());
 		updateAssessmentConfirmUI(getCurrentCourseNode());
 	}

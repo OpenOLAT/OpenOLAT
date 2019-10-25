@@ -52,7 +52,7 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public FullyAssessedResult isFullyAssessedOnConfirmation() {
+	public FullyAssessedResult isFullyAssessedOnConfirmation(boolean confirmed) {
 		return LearningPathConfigs.notFullyAssessed();
 	}
 

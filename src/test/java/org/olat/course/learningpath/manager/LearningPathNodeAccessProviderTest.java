@@ -126,7 +126,7 @@ public class LearningPathNodeAccessProviderTest {
 	@Test
 	public void shouldReturnConfirmEnabled() {
 		LearningPathConfigs configs = mock(LearningPathConfigs.class);
-		when(configs.isFullyAssessedOnConfirmation()).thenReturn(fullyAssessed(true, true, true));
+		when(configs.isFullyAssessedOnConfirmation(true)).thenReturn(fullyAssessed(true, true, true));
 		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
 		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
 		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
@@ -139,7 +139,7 @@ public class LearningPathNodeAccessProviderTest {
 	@Test
 	public void shouldNotReturnConfirmEnabledNotEnabledInConfiguration() {
 		LearningPathConfigs configs = mock(LearningPathConfigs.class);
-		when(configs.isFullyAssessedOnConfirmation()).thenReturn(fullyAssessed(false, true, true));
+		when(configs.isFullyAssessedOnConfirmation(true)).thenReturn(fullyAssessed(false, true, true));
 		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
 		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
 		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
@@ -152,7 +152,7 @@ public class LearningPathNodeAccessProviderTest {
 	@Test
 	public void shouldNotReturnConfirmEnabledNotAParticipant() {
 		LearningPathConfigs configs = mock(LearningPathConfigs.class);
-		when(configs.isFullyAssessedOnConfirmation()).thenReturn(fullyAssessed(true, true, true));
+		when(configs.isFullyAssessedOnConfirmation(true)).thenReturn(fullyAssessed(true, true, true));
 		LearningPathNodeHandler handler = mock(LearningPathNodeHandler.class);
 		when(handler.getConfigs(courseNodeMock)).thenReturn(configs);
 		when(registry.getLearningPathNodeHandler(courseNodeMock)).thenReturn(handler);
@@ -227,16 +227,16 @@ public class LearningPathNodeAccessProviderTest {
 	
 	@Test
 	public void shouldInvokeConformedConfig() {
-		sut.onAssessmentConfirmed(courseNodeMock, coachCourseEnv);
+		sut.onAssessmentConfirmed(courseNodeMock, coachCourseEnv, true);
 
-		verify(configMock).isFullyAssessedOnConfirmation();
+		verify(configMock).isFullyAssessedOnConfirmation(true);
 	}
 	
 	@Test
 	public void shouldInvokePassedConfig() {
 		sut.onPassedUpdated(courseNodeMock, coachCourseEnv, null, null, null);
 
-		verify(configMock).isFullyAssessedOnPassed(any(), null);
+		verify(configMock).isFullyAssessedOnPassed(any(), any());
 	}
 	
 	@Test

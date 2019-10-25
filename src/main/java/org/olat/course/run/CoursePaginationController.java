@@ -43,6 +43,7 @@ public class CoursePaginationController extends FormBasicController {
 	public static final Event NEXT_EVENT = new Event("next");
 	public static final Event PREVIOUS_EVENT = new Event("previous");
 	public static final Event CONFIRMED_EVENT = new Event("confirmed");
+	public static final Event UNCONFIRMED_EVENT = new Event("unconfirmed");
 
 	private FormLink previousButton;
 	private FormLink nextButton;
@@ -67,6 +68,7 @@ public class CoursePaginationController extends FormBasicController {
 		
 		confirmButton = uifactory.addFormLink("confirm", "confirm", "command.assessment.done", null, formLayout, Link.BUTTON_XSMALL);
 		confirmButton.setIconLeftCSS("o_icon o_icon_status_done");
+		confirmButton.setUserObject(Boolean.TRUE);
 		
 		nextButton = uifactory.addFormLink("next", "next", "", null, formLayout, Link.BUTTON_XSMALL | Link.NONTRANSLATED);
 		nextButton.setDomReplacementWrapperRequired(false);
@@ -78,8 +80,10 @@ public class CoursePaginationController extends FormBasicController {
 		nextButton.setEnabled(nextEnabled);
 	}
 
-	public void updateAssessmentConfirmUI(boolean cornfirmVisible) {
-		confirmButton.setVisible(cornfirmVisible);
+	public void updateAssessmentConfirmUI(boolean confirmVisible, boolean showDone) {
+		confirmButton.setI18nKey(showDone? "command.assessment.done": "command.assessment.undone");
+		confirmButton.setUserObject(showDone? Boolean.TRUE: Boolean.FALSE);
+		confirmButton.setVisible(confirmVisible);
 		flc.setDirty(true);
 	}
 	
@@ -99,7 +103,8 @@ public class CoursePaginationController extends FormBasicController {
 		} else if(nextButton == source) {
 			doNext(ureq);
 		} else if (confirmButton == source) {
-			doConfirm(ureq);
+			Boolean done = (Boolean)confirmButton.getUserObject();
+			doConfirm(ureq, done);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
@@ -112,8 +117,12 @@ public class CoursePaginationController extends FormBasicController {
 		fireEvent(ureq, NEXT_EVENT);
 	}
 
-	private void doConfirm(UserRequest ureq) {
-		fireEvent(ureq, CONFIRMED_EVENT);
+	private void doConfirm(UserRequest ureq, Boolean done) {
+		if (done.booleanValue()) {
+			fireEvent(ureq, CONFIRMED_EVENT);
+		} else {
+			fireEvent(ureq, UNCONFIRMED_EVENT);
+		}
 	}
 
 	@Override
