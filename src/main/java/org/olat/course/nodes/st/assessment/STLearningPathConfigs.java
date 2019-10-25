@@ -57,7 +57,7 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public FullyAssessedResult isFullyAssessedOnPassed() {
+	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed) {
 		return LearningPathConfigs.notFullyAssessed();
 	}
 
@@ -65,10 +65,4 @@ public class STLearningPathConfigs implements LearningPathConfigs {
 	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status) {
 		return LearningPathConfigs.notFullyAssessed();
 	}
-
-	@Override
-	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion) {
-		return LearningPathConfigs.notFullyAssessed();
-	}
-
 }

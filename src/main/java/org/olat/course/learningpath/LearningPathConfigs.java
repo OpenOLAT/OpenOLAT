@@ -40,22 +40,22 @@ public interface LearningPathConfigs {
 	
 	public FullyAssessedResult isFullyAssessedOnConfirmation();
 
-	public FullyAssessedResult isFullyAssessedOnPassed();
-
-	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion);
+	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed);
 	
 	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status);
 	
 	
 	public static FullyAssessedResult notFullyAssessed() {
-		return new FullyAssessedResultImpl(false, false);
+		return new FullyAssessedResultImpl(false, false, false);
 	}
 	
-	public static FullyAssessedResult fullyAssessed(boolean fullyAssessed, boolean done) {
-		return new FullyAssessedResultImpl(fullyAssessed, done);
+	public static FullyAssessedResult fullyAssessed(boolean enabled, boolean fullyAssessed, boolean done) {
+		return new FullyAssessedResultImpl(enabled, fullyAssessed, done);
 	}
 	
 	public interface FullyAssessedResult {
+		
+		public boolean isEnabled();
 		
 		public boolean isFullyAssessed();
 		

@@ -56,7 +56,7 @@ public class SurveyLearningPathNodeHandler implements LearningPathNodeHandler {
 
 	@Override
 	public LearningPathConfigs getConfigs(CourseNode courseNode) {
-		return new ModuleLearningPathConfigs(courseNode.getModuleConfiguration());
+		return new ModuleLearningPathConfigs(courseNode.getModuleConfiguration(), false);
 	}
 
 	@Override

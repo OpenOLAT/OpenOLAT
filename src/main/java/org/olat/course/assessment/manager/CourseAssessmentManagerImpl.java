@@ -443,7 +443,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		DBFactory.getInstance().commit();
 		
-		nodeAccessService.onCompletionUpdate(courseNode, userCourseEnvironment, completion, status, by);
+		nodeAccessService.onStatusUpdated(courseNode, userCourseEnvironment, status, by);
+		DBFactory.getInstance().commit();
 		
 		ScoreAccounting scoreAccounting = userCourseEnvironment.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
@@ -456,7 +457,7 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity , courseNode);
 		if (Objects.equal(fullyAssessed, nodeAssessment.getFullyAssessed())) {
-			// Fully assess can only set once to true
+			// Fully assess can only set once
 			return;
 		}
 		
@@ -527,16 +528,16 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			assessmentEntry.setAttempts(attempts);
 		}
 		assessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
-		DBFactory.getInstance().commit();//commit before sending events
+		DBFactory.getInstance().commit();
 		
-		if (Boolean.TRUE.equals(passed)) {
-			nodeAccessService.onPassed(courseNode, userCourseEnv , Role.auto);
-		}
+		nodeAccessService.onPassedUpdated(courseNode, userCourseEnv, passed, Role.auto);
+		nodeAccessService.onStatusUpdated(courseNode, userCourseEnv, assessmentEntry.getAssessmentStatus(), by);
+		DBFactory.getInstance().commit();
 		
 		//reevalute the tree
 		ScoreAccounting scoreAccounting = userCourseEnv.getScoreAccounting();
 		scoreAccounting.evaluateAll(true);
-		DBFactory.getInstance().commit();//commit before sending events
+		DBFactory.getInstance().commit();
 		
 		// node log
 		UserNodeAuditManager am = courseEnv.getAuditManager();

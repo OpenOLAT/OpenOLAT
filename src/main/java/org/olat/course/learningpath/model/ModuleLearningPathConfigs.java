@@ -44,9 +44,11 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	
 	private final ModuleConfiguration moduleConfiguration;
+	private final boolean doneOnFullyAssessed;
 
-	public ModuleLearningPathConfigs(ModuleConfiguration moduleConfiguration) {
+	public ModuleLearningPathConfigs(ModuleConfiguration moduleConfiguration, boolean doneOnFullyAssessed) {
 		this.moduleConfiguration = moduleConfiguration;
+		this.doneOnFullyAssessed = doneOnFullyAssessed;
 	}
 
 	@Override
@@ -81,7 +83,7 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	public FullyAssessedResult isFullyAssessedOnNodeVisited() {
 		String doneTriggerName = getDoneTriggerName();
 		if (CONFIG_VALUE_TRIGGER_NODE_VISITED.equals(doneTriggerName)) {
-			return LearningPathConfigs.fullyAssessed(true, true);
+			return LearningPathConfigs.fullyAssessed(true, true, doneOnFullyAssessed);
 		}
 		return LearningPathConfigs.notFullyAssessed();
 	}
@@ -90,16 +92,17 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	public FullyAssessedResult isFullyAssessedOnConfirmation() {
 		String doneTriggerName = getDoneTriggerName();
 		if (CONFIG_VALUE_TRIGGER_CONFIRMED.equals(doneTriggerName)) {
-			return LearningPathConfigs.fullyAssessed(true, true);
+			return LearningPathConfigs.fullyAssessed(true, true, doneOnFullyAssessed);
 		}
 		return LearningPathConfigs.notFullyAssessed();
 	}
 
 	@Override
-	public FullyAssessedResult isFullyAssessedOnPassed() {
+	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed) {
 		String doneTriggerName = getDoneTriggerName();
 		if (CONFIG_VALUE_TRIGGER_PASSED.equals(doneTriggerName)) {
-			return LearningPathConfigs.fullyAssessed(true, true);
+			boolean fullyAssessed = Boolean.TRUE.equals(passed);
+			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, doneOnFullyAssessed);
 		}
 		return LearningPathConfigs.notFullyAssessed();
 	}
@@ -109,16 +112,11 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
-	public FullyAssessedResult isFullyAssessedOnCompletion(Double completion) {
-		// not implemented yet
-		return LearningPathConfigs.notFullyAssessed();
-	}
-
-	@Override
 	public FullyAssessedResult isFullyAssessedOnStatus(AssessmentEntryStatus status) {
 		String doneTriggerName = getDoneTriggerName();
-		if (AssessmentEntryStatus.done.equals(status) && CONFIG_VALUE_TRIGGER_STATUS_DONE.equals(doneTriggerName)) {
-			return LearningPathConfigs.fullyAssessed(true, false);
+		if (CONFIG_VALUE_TRIGGER_STATUS_DONE.equals(doneTriggerName)) {
+			boolean fulylAssessed = AssessmentEntryStatus.done.equals(status);
+			return LearningPathConfigs.fullyAssessed(true, fulylAssessed, false);
 		}
 		return LearningPathConfigs.notFullyAssessed();
 	}

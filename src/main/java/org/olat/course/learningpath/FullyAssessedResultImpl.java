@@ -29,13 +29,20 @@ import org.olat.course.learningpath.LearningPathConfigs.FullyAssessedResult;
  */
 class FullyAssessedResultImpl implements FullyAssessedResult {
 
+	private final boolean enabled;
 	private final boolean fullyAssessed;
 	private final boolean done;
 
-	FullyAssessedResultImpl(boolean fullyAssessed, boolean done) {
+	FullyAssessedResultImpl(boolean enabled, boolean fullyAssessed, boolean done) {
+		this.enabled = enabled;
 		this.fullyAssessed = fullyAssessed;
 		this.done = done;
 		
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return enabled;
 	}
 
 	@Override

@@ -90,20 +90,20 @@ public interface NodeAccessService {
 	 *
 	 * @param courseNode
 	 * @param userCourseEnv
+	 * @param passed 
 	 * @param by
 	 */
-	public void onPassed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Role by);
+	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed, Role by);
 
 	/**
 	 * Hook after the completion and the run status is updated.
 	 *
 	 * @param courseNode
 	 * @param userCourseEnv
-	 * @param completion
 	 * @param status
 	 * @param by
 	 */
-	public void onCompletionUpdate(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
-			Double completion, AssessmentEntryStatus status, Role by);
+	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
+			AssessmentEntryStatus status, Role by);
 
 }

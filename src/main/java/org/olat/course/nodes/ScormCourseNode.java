@@ -178,7 +178,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 		boolean hasPassed = new ScormAssessmentConfig(getModuleConfiguration()).hasPassed();
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(ScormLearningPathNodeHandler.class)
 				.getConfigs(this)
-				.isFullyAssessedOnPassed()
+				.isFullyAssessedOnPassed(null)
 				.isFullyAssessed();
 		return isPassedTrigger && !hasPassed;
 	}
