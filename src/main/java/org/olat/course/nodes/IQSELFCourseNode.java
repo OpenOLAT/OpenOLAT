@@ -102,7 +102,7 @@ public class IQSELFCourseNode extends AbstractAccessableCourseNode implements Se
 	private static final long serialVersionUID = -1929987728611139729L;
 	private static final Logger log = Tracing.createLoggerFor(IQSELFCourseNode.class);
 	private static final String PACKAGE_IQ = Util.getPackageName(IQRunController.class);
-	private static final String TYPE = "iqself";
+	public static final String TYPE = "iqself";
 
 	public IQSELFCourseNode() {
 		super(TYPE);
