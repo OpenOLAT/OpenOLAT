@@ -233,6 +233,13 @@ public class LearningPathNodeAccessProviderTest {
 	}
 	
 	@Test
+	public void shouldInvokeScoreConfig() {
+		sut.onScoreUpdated(courseNodeMock, coachCourseEnv, null, null, null);
+
+		verify(configMock).isFullyAssessedOnScore(any(), any());
+	}
+	
+	@Test
 	public void shouldInvokePassedConfig() {
 		sut.onPassedUpdated(courseNodeMock, coachCourseEnv, null, null, null);
 

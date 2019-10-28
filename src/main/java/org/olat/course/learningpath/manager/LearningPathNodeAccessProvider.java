@@ -121,6 +121,13 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
+	public void onScoreUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Float score,
+			Boolean userVisibility, Role by) {
+		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnScore(score, userVisibility);
+		updateFullyAssessed(courseNode, userCourseEnv, by, result);
+	}
+
+	@Override
 	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed,
 			Boolean userVisibility, Role by) {
 		FullyAssessedResult result = getConfigs(courseNode).isFullyAssessedOnPassed(passed, userVisibility);

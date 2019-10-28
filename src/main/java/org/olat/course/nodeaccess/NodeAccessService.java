@@ -87,7 +87,19 @@ public interface NodeAccessService {
 	public void onAssessmentConfirmed(CourseNode courseNode, UserCourseEnvironment userCourseEnv, boolean confirmed);
 
 	/**
-	 * Hook after the user has passed an assessment.
+	 * Hook after the update of the score value of an assessment changed.
+	 *
+	 * @param courseNode
+	 * @param userCourseEnv
+	 * @param score
+	 * @param userVisibility
+	 * @param by
+	 */
+	public void onScoreUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Float score,
+			Boolean userVisibility, Role by);
+	
+	/**
+	 * Hook after the update of the passed value of an assessment changed.
 	 *
 	 * @param courseNode
 	 * @param userCourseEnv
@@ -99,7 +111,7 @@ public interface NodeAccessService {
 			Boolean userVisibility, Role by);
 
 	/**
-	 * Hook after the completion and the run status is updated.
+	 * Hook after the assessment status is updated.
 	 *
 	 * @param courseNode
 	 * @param userCourseEnv
@@ -108,5 +120,6 @@ public interface NodeAccessService {
 	 */
 	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			AssessmentEntryStatus status, Role by);
+
 
 }

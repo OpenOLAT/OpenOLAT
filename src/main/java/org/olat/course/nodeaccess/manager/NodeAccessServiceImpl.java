@@ -104,10 +104,15 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 
 	@Override
-	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed,
+	public void onScoreUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Float score,
 			Boolean userVisibility, Role by) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
-		getNodeAccessProvider(type).onPassedUpdated(courseNode, userCourseEnv, passed, userVisibility, by);
+		getNodeAccessProvider(type).onScoreUpdated(courseNode, userCourseEnv, score, userVisibility, by);
+	}
+
+	@Override
+	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed,
+			Boolean userVisibility, Role by) {
 	}
 
 	@Override
@@ -122,5 +127,4 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
 		return getNodeAccessProvider(type).onNodeVisited(courseNode, userCourseEnv);
 	}
-
 }

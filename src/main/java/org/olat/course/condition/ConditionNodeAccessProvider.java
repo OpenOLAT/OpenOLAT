@@ -99,14 +99,18 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
-	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
-			AssessmentEntryStatus status, Role by) {
+	public void onScoreUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Float score,
+			Boolean userVisibility, Role by) {
 		// nothing to do
 	}
-
 	@Override
 	public void onPassedUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv, Boolean passed, Boolean userVisibility, Role by) {
 		// nothing to do
 	}
 
+	@Override
+	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
+			AssessmentEntryStatus status, Role by) {
+		// nothing to do
+	}
 }

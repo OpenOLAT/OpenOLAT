@@ -166,12 +166,25 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 			addStatusErrorDescription("error.noreference.short", "error.noreference.long", ScormEditController.PANE_TAB_CPCONFIG, sdList);
 		}
 		
+		if (isFullyAssessedScoreConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
 		if (isFullyAssessedPassedConfigError()) {
 			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
-					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNIN_PATH, sdList);
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
 		}
 		
 		return sdList;
+	}
+	
+	private boolean isFullyAssessedScoreConfigError() {
+		boolean hasScore = new ScormAssessmentConfig(getModuleConfiguration()).hasScore();
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(ScormLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnScore(null, null)
+				.isEnabled();
+		return isScoreTrigger && !hasScore;
 	}
 	
 	private boolean isFullyAssessedPassedConfigError() {
@@ -179,7 +192,7 @@ public class ScormCourseNode extends AbstractAccessableCourseNode {
 		boolean isPassedTrigger = CoreSpringFactory.getImpl(ScormLearningPathNodeHandler.class)
 				.getConfigs(this)
 				.isFullyAssessedOnPassed(null, null)
-				.isFullyAssessed();
+				.isEnabled();
 		return isPassedTrigger && !hasPassed;
 	}
 

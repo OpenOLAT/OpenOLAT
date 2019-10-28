@@ -23,10 +23,12 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_DEFAULT_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DURATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_OBLIGATION;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_SCORE_CUT_VALUE;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_CONFIRMED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_NODE_VISITED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_PASSED;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_SCORE;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_DONE;
 
 import org.olat.core.util.StringHelper;
@@ -98,6 +100,18 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	}
 
 	@Override
+	public FullyAssessedResult isFullyAssessedOnScore(Float score, Boolean userVisibility) {
+		String doneTriggerName = getDoneTriggerName();
+		if (CONFIG_VALUE_TRIGGER_SCORE.equals(doneTriggerName)) {
+			Integer scoreCut = toInteger(moduleConfiguration.getStringValue(CONFIG_KEY_SCORE_CUT_VALUE));
+			boolean fullyAssessed = Boolean.TRUE.equals(userVisibility) && score != null && scoreCut != null
+					&& score >= scoreCut.intValue();
+			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, doneOnFullyAssessed);
+		}
+		return LearningPathConfigs.notFullyAssessed();
+	}
+
+	@Override
 	public FullyAssessedResult isFullyAssessedOnPassed(Boolean passed, Boolean userVisibility) {
 		String doneTriggerName = getDoneTriggerName();
 		if (CONFIG_VALUE_TRIGGER_PASSED.equals(doneTriggerName)) {
@@ -119,6 +133,17 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 			return LearningPathConfigs.fullyAssessed(true, fullyAssessed, false);
 		}
 		return LearningPathConfigs.notFullyAssessed();
+	}
+	
+	private Integer toInteger(String value) {
+		if (StringHelper.containsNonWhitespace(value)) {
+			try {
+				return Integer.valueOf(value);
+			} catch (NumberFormatException e) {
+				// 
+			}
+		}
+		return null;
 	}
 
 }
