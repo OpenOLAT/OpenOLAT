@@ -28,6 +28,7 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -59,11 +60,13 @@ import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
 import org.olat.course.editor.StatusDescription;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
 import org.olat.course.nodes.iq.CourseIQSecurityCallback;
 import org.olat.course.nodes.iq.IQEditController;
 import org.olat.course.nodes.iq.IQPreviewController;
 import org.olat.course.nodes.iq.IQRunController;
 import org.olat.course.nodes.iq.IQTESTAssessmentConfig;
+import org.olat.course.nodes.iq.IQTESTLearningPathNodeHandler;
 import org.olat.course.nodes.iq.QTI21AssessmentRunController;
 import org.olat.course.nodes.iq.QTIResourceTypeModule;
 import org.olat.course.properties.CoursePropertyManager;
@@ -126,7 +129,8 @@ import uk.ac.ed.ph.jqtiplus.resolution.ResolvedAssessmentTest;
 public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QTICourseNode {
 	private static final long serialVersionUID = 5806292895738005387L;
 	private static final Logger log = Tracing.createLoggerFor(IQTESTCourseNode.class);
-	private static final String translatorStr = Util.getPackageName(IQEditController.class);
+	@SuppressWarnings("deprecation")
+	private static final String TRANSLATOR_PACKAGE = Util.getPackageName(IQEditController.class);
 	public static final String TYPE = "iqtest";
 
 	private static final int CURRENT_CONFIG_VERSION = 2;
@@ -322,10 +326,37 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 
 	@Override
 	public StatusDescription isConfigValid() {
-		if (oneClickStatusCache != null) { return oneClickStatusCache[0]; }
+		if (oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			return oneClickStatusCache[0];
+		}
+		
+		List<StatusDescription> statusDescs = validateInternalConfiguration();
+		if(statusDescs.isEmpty()) {
+			statusDescs.add(StatusDescription.NOERROR);
+		}
+		oneClickStatusCache = StatusDescriptionHelper.sort(statusDescs);
+		return oneClickStatusCache[0];
+	}
 
-		boolean isValid = getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY) != null;
-		if (isValid) {
+	@Override
+	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
+		oneClickStatusCache = null;
+		
+		List<StatusDescription> sds = isConfigValidWithTranslator(cev, TRANSLATOR_PACKAGE, getConditionExpressions());
+		if(oneClickStatusCache != null && oneClickStatusCache.length > 0) {
+			//isConfigValidWithTranslator add first
+			sds.remove(oneClickStatusCache[0]);
+		}
+		sds.addAll(validateInternalConfiguration());
+		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
+		return oneClickStatusCache;
+	}
+
+	private List<StatusDescription> validateInternalConfiguration() {
+		List<StatusDescription> sdList = new ArrayList<>(2);
+
+		boolean hasTestReference = getModuleConfiguration().get(IQEditController.CONFIG_KEY_REPOSITORY_SOFTKEY) != null;
+		if (hasTestReference) {
 			/*
 			 * COnfiugre an IQxxx BB with a repo entry, do not publish
 			 * this BB, mark IQxxx as deleted, remove repo entry, undelete BB IQxxx
@@ -333,31 +364,53 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			 */
 			Object repoEntry = IQEditController.getIQReference(getModuleConfiguration(), false);
 			if (repoEntry == null) {
-				isValid = false;
+				hasTestReference = false;
 				IQEditController.removeIQReference(getModuleConfiguration());
 			}
 		}
-		StatusDescription sd = StatusDescription.NOERROR;
-		if (!isValid) {
-			String shortKey = "error.test.undefined.short";
-			String longKey = "error.test.undefined.long";
-			String[] params = new String[] { getShortTitle() };
-			sd = new StatusDescription(StatusDescription.ERROR, shortKey, longKey, params, translatorStr);
-			sd.setDescriptionForUnit(getIdent());
-			// set which pane is affected by error
-			sd.setActivateableViewIdentifier(IQEditController.PANE_TAB_IQCONFIG_TEST);
+		if (!hasTestReference) {
+			addStatusErrorDescription("error.test.undefined.short", "error.test.undefined.long",
+					IQEditController.PANE_TAB_IQCONFIG_TEST, sdList);
 		}
-		return sd;
+		
+		if (isFullyAssessedScoreConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.score", "error.fully.assessed.score",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		if (isFullyAssessedPassedConfigError()) {
+			addStatusErrorDescription("error.fully.assessed.passed", "error.fully.assessed.passed",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		
+		return sdList;
+	}
+	
+	private boolean isFullyAssessedScoreConfigError() {
+		boolean hasScore = new IQTESTAssessmentConfig(this).hasPassed();
+		boolean isScoreTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnScore(null, null)
+				.isEnabled();
+		return isScoreTrigger && !hasScore;
+	}
+	
+	private boolean isFullyAssessedPassedConfigError() {
+		boolean hasPassed = new IQTESTAssessmentConfig(this).hasPassed();
+		boolean isPassedTrigger = CoreSpringFactory.getImpl(IQTESTLearningPathNodeHandler.class)
+				.getConfigs(this)
+				.isFullyAssessedOnPassed(null, null)
+				.isEnabled();
+		return isPassedTrigger && !hasPassed;
 	}
 
-	@Override
-	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
-		oneClickStatusCache = null;
-		// only here we know which translator to take for translating condition
-		// error messages
-		List<StatusDescription> sds = isConfigValidWithTranslator(cev, translatorStr, getConditionExpressions());
-		oneClickStatusCache = StatusDescriptionHelper.sort(sds);
-		return oneClickStatusCache;
+	private void addStatusErrorDescription(String shortDescKey, String longDescKey, String pane,
+			List<StatusDescription> status) {
+		String[] params = new String[] { getShortTitle() };
+		StatusDescription sd = new StatusDescription(StatusDescription.ERROR, shortDescKey, longDescKey, params,
+				TRANSLATOR_PACKAGE);
+		sd.setDescriptionForUnit(getIdent());
+		sd.setActivateableViewIdentifier(pane);
+		status.add(sd);
 	}
 
 	@Override
