@@ -52,7 +52,11 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 		boolean accessible = accessEvaluator.isAccessible(learningPathTreeNode, userCourseEnv);
 		learningPathTreeNode.setAccessible(accessible);
 		String iconDecorator1CssClass = getIconDecorator1CssClass(assessmentEvaluation, userCourseEnv);
-		learningPathTreeNode.setIconDecorator1CssClass(iconDecorator1CssClass);
+		if (userCourseEnv.isParticipant()) {
+			learningPathTreeNode.setIconCssClass(iconDecorator1CssClass);
+		} else {
+			learningPathTreeNode.setIconDecorator1CssClass(iconDecorator1CssClass);
+		}
 		
 		return learningPathTreeNode;
 	}

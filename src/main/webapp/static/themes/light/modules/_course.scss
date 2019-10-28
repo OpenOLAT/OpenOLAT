@@ -17,6 +17,13 @@
 	}
 }
 
+.o_course_menu {
+	.o_lp_not_accessible { color: $o-lp-not-accessible; }
+	.o_lp_ready          { color: $o-lp-ready; }
+	.o_lp_in_progress    { color: $o-lp-in-progress; }
+	.o_lp_done           { color: $o-lp-done; }
+}
+
 /* score info status classes */
 .o_passed {
 	color: $o-course-state-passed-color;
