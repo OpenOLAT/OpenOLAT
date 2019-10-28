@@ -26,6 +26,7 @@ import java.util.List;
 
 import org.junit.Test;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.StatusEvaluator.Blocker;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -38,6 +39,56 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class STLinearStatusEvaluatorTest {
 	
 	private STLinearStatusEvaluator sut = new STLinearStatusEvaluator();
+	@Test
+	public void shouldNotBlockIfMandatoryAndNotFullyAssessed() {
+		Blocker blocker = new Blocker();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.mandatory);
+
+		sut.getStatus(currentEvaluation, blocker);
+		
+		assertThat(blocker.isBlocked()).isFalse();
+	}
+	
+	@Test
+	public void shouldNotBlockIfNotMandatoryAndNotFullyAssessed() {
+		Blocker blocker = new Blocker();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.optional);
+
+		sut.getStatus(currentEvaluation, blocker);
+		
+		assertThat(blocker.isBlocked()).isFalse();
+	}
+	
+	@Test
+	public void shouldNotBlockIfMandatoryAndFullyAssessed() {
+		Blocker blocker = new Blocker();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, null, AssessmentObligation.mandatory);
+
+		sut.getStatus(currentEvaluation, blocker);
+		
+		assertThat(blocker.isBlocked()).isFalse();
+	}
+	
+	@Test
+	public void shouldInitStatusNotStartedIfNotBlocked() {
+		Blocker blocker = new Blocker();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.done, null);
+		
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.notStarted);
+	}
+	
+	@Test
+	public void shouldInitStatusNotReadyIfBlocked() {
+		Blocker blocker = new Blocker();
+		blocker.block();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.done, null);
+		
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.notReady);
+	}
 
 	@Test
 	public void shouldReturnInProgressIfChildIsInProgressNull() {

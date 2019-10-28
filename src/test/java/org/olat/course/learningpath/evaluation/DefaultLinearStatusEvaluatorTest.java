@@ -20,17 +20,10 @@
 package org.olat.course.learningpath.evaluation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.olat.modules.assessment.model.AssessmentEntryStatus.done;
-import static org.olat.modules.assessment.model.AssessmentEntryStatus.notReady;
-import static org.olat.modules.assessment.model.AssessmentEntryStatus.notStarted;
-import static org.olat.modules.assessment.model.AssessmentObligation.mandatory;
-import static org.olat.modules.assessment.model.AssessmentObligation.optional;
-
-import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Test;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.StatusEvaluator.Blocker;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -43,114 +36,90 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class DefaultLinearStatusEvaluatorTest {
 	
 	private DefaultLinearStatusEvaluator sut = new DefaultLinearStatusEvaluator();
-
+	
 	@Test
-	public void shouldReturnDoneIfAssessmentStatusIsDone() {
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, done, null);
+	public void shouldBlockIfMandatoryAndNotFullyAssessed() {
+		Blocker blocker = new Blocker();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.mandatory);
+
+		sut.getStatus(currentEvaluation, blocker);
 		
-		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation, false);
-		
-		assertThat(status).isEqualTo(done);
+		assertThat(blocker.isBlocked()).isTrue();
 	}
 	
 	@Test
-	public void shouldReturnReadyIfIsRootNodeAndNotAlreadyDone() {
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, notStarted, null);
+	public void shouldNotBlockIfNotMandatoryAndNotFullyAssessed() {
+		Blocker blocker = new Blocker();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, null, AssessmentObligation.optional);
+
+		sut.getStatus(currentEvaluation, blocker);
 		
-		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation, false);
-		
-		assertThat(status).isEqualTo(notStarted);
+		assertThat(blocker.isBlocked()).isFalse();
 	}
 	
 	@Test
-	public void shouldReturnReadyIfIsRootNodeAndIsNotStartedYet() {
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, notReady, null);
+	public void shouldNotBlockIfMandatoryAndFullyAssessed() {
+		Blocker blocker = new Blocker();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, null, AssessmentObligation.mandatory);
+
+		sut.getStatus(currentEvaluation, blocker);
 		
-		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation, false);
-		
-		assertThat(status).isEqualTo(notStarted);
+		assertThat(blocker.isBlocked()).isFalse();
 	}
 	
 	@Test
-	public void shouldReturnReadyIfIsRootNodeAndHasNoStatusYet() {
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(null, null, null);
+	public void shouldNotChangeStatusIfBlockedButInProgress() {
+		Blocker blocker = new Blocker();
+		blocker.block();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.inProgress, null);
 		
-		AssessmentEntryStatus status = sut.getStatus(null, assessmentEvaluation, false);
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
 		
-		assertThat(status).isEqualTo(notStarted);
+		assertThat(status).isEqualTo(AssessmentEntryStatus.inProgress);
 	}
-
+	
 	@Test
-	public void shouldReturnReadyIfPreviousNodeFullyAssessed() {
-		assertStatus(Boolean.TRUE, null, null, null, notStarted);
-	}
-
-	@Test
-	public void shouldReturnReadyIfPreviousNodeFullyAssessedAndIsMandatory() {
-		assertStatus(Boolean.TRUE, null, mandatory, null, notStarted);
-	}
-
-	@Test
-	public void shouldReturnReadyIfPreviousNodeIsOptionalAndIsReady() {
-		assertStatus(Boolean.FALSE, notStarted, optional, notReady, notStarted);
-	}
-
-	@Test
-	public void shouldReturnReadyIfPreviousNodeHasNoObligationAndIsReady() {
-		// No obligation means optional. E.g. the STCourseNode has no obligation and is
-		// always the first node in a course tree
-		assertStatus(Boolean.FALSE, notStarted, null, notReady, notStarted);
-	}
-
-	@Test
-	public void shouldReturnNotReadyIfPreviousNodeIsOptionalAndIsNotReady() {
-		assertStatus(Boolean.FALSE, notReady, optional, notReady, notReady);
-	}
-
-	@Test
-	public void shouldReturnNotReadyIfPreviousNodeIsMandatoryAndNotFullyAssessedYet() {
-		assertStatus(Boolean.FALSE, null, mandatory, null, notReady);
-	}
-
-	@Test
-	public void shouldReturnNotReadyIfPreviousNodeIsMandatoryAndFullyAssessedIsNull() {
-		assertStatus(null, null, mandatory, null, notReady);
-	}
-
-	private void assertStatus(Boolean previousFullyAssessd, AssessmentEntryStatus previousStatus,
-			AssessmentObligation previousObligation, AssessmentEntryStatus currentStatus,
-			AssessmentEntryStatus expected) {
-		AssessmentEvaluation previousEvaluation = getAssessmentEvaluation(previousFullyAssessd, previousStatus, previousObligation);
-		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, currentStatus, null);
+	public void shouldNotChangeStatusIfBlockedButInReview() {
+		Blocker blocker = new Blocker();
+		blocker.block();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.inReview, null);
 		
-		AssessmentEntryStatus status = sut.getStatus(previousEvaluation, currentEvaluation, false);
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
 		
-		assertThat(status).isEqualTo(expected);
+		assertThat(status).isEqualTo(AssessmentEntryStatus.inReview);
 	}
-
+	
 	@Test
-	public void shouldRetrunNotStartedIfisFirstChildAndPreviuosIsNotStartedAndMandatory() {
-		AssessmentEvaluation previousEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.notStarted, AssessmentObligation.mandatory);
-		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.notReady, null);
+	public void shouldNotChangeStatusIfBlockedButDone() {
+		Blocker blocker = new Blocker();
+		blocker.block();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, AssessmentEntryStatus.done, null);
 		
-		AssessmentEntryStatus status = sut.getStatus(previousEvaluation, currentEvaluation, true);
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
+		
+		assertThat(status).isEqualTo(AssessmentEntryStatus.done);
+	}
+	
+	@Test
+	public void shouldSetNotStartedIfNotBlocked() {
+		Blocker blocker = new Blocker();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, null, null);
+		
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
 		
 		assertThat(status).isEqualTo(AssessmentEntryStatus.notStarted);
 	}
-
 	
 	@Test
-	public void shouldNotChangeStatusWhenCheckingAgainstChildren() {
-		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, notStarted, null);
-		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.TRUE, done, null);
-		AssessmentEvaluation child2 = getAssessmentEvaluation(Boolean.TRUE, done, null);
-		List<AssessmentEvaluation> children = Arrays.asList(child1, child2);
+	public void shouldSetNotReadyIfBlocked() {
+		Blocker blocker = new Blocker();
+		blocker.block();
+		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, null, null);
 		
-		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
+		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, blocker);
 		
-		assertThat(status).isEqualTo(notStarted);
+		assertThat(status).isEqualTo(AssessmentEntryStatus.notReady);
 	}
-
 
 	private AssessmentEvaluation getAssessmentEvaluation(Boolean fullyAssessd, AssessmentEntryStatus assessmentStatus, AssessmentObligation obligation) {
 		return new AssessmentEvaluation(null, null, null, null, assessmentStatus, null, fullyAssessd, null, null, null, null, null, 0, null, null, null, null, obligation, null);

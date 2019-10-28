@@ -150,8 +150,8 @@ class AccountingEvaluatorsFactory {
 	private static class UnchangingStatusEvaluator implements StatusEvaluator {
 
 		@Override
-		public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation,
-				AssessmentEvaluation currentEvaluation, boolean firstChild) {
+		public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
+				Blocker blocker) {
 			return currentEvaluation.getAssessmentStatus();
 		}
 

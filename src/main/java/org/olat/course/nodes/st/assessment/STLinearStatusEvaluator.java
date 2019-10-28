@@ -21,7 +21,8 @@ package org.olat.course.nodes.st.assessment;
 
 import java.util.List;
 
-import org.olat.course.learningpath.evaluation.DefaultLinearStatusEvaluator;
+import org.apache.logging.log4j.Logger;
+import org.olat.core.logging.Tracing;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -34,13 +35,32 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  *
  */
 public class STLinearStatusEvaluator implements StatusEvaluator {
-	
-	private final StatusEvaluator defaultEvaluator = new DefaultLinearStatusEvaluator();
+
+	private static final Logger log = Tracing.createLoggerFor(STLinearStatusEvaluator.class);
 
 	@Override
-	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation,
-			AssessmentEvaluation currentEvaluation, boolean firstChild) {
-		return defaultEvaluator.getStatus(previousEvaluation, currentEvaluation, firstChild);
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
+			Blocker blocker) {
+		AssessmentEntryStatus currentStatus = currentEvaluation.getAssessmentStatus();
+		AssessmentEntryStatus status = currentStatus;
+		if (isBlocked(blocker)) {
+			status = AssessmentEntryStatus.notReady;
+		} else {
+			status = AssessmentEntryStatus.notStarted;
+		}
+
+		log.debug("         fully assessed '{}', obligation '{}, blocked: '{}', status '{}', new status '{}'"
+				, currentEvaluation.getFullyAssessed()
+				, currentEvaluation.getObligation()
+				, isBlocked(blocker)
+				, currentEvaluation.getAssessmentStatus()
+				, status);
+
+		return status;
+	}
+
+	private boolean isBlocked(Blocker blocker) {
+		return blocker != null && blocker.isBlocked();
 	}
 
 	@Override

@@ -39,57 +39,40 @@ public class DefaultLinearStatusEvaluator implements StatusEvaluator {
 	private static final Logger log = Tracing.createLoggerFor(DefaultLinearStatusEvaluator.class);
 
 	@Override
-	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation,
-			AssessmentEvaluation currentEvaluation, boolean firstChild) {
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
+			Blocker blocker) {
 		AssessmentEntryStatus currentStatus = currentEvaluation.getAssessmentStatus();
 		AssessmentEntryStatus status = currentStatus;
-		if (isNotReadyYet(currentStatus)) {
-			if (isAccessible(previousEvaluation, firstChild)) {
+		if (isNotInProgressYet(currentStatus)) {
+			if (isNotBlocked(blocker)) {
 				status = AssessmentEntryStatus.notStarted;
 			} else {
 				status = AssessmentEntryStatus.notReady;
 			}
 		}
+		if (blocker != null && AssessmentObligation.mandatory.equals(currentEvaluation.getObligation())
+				&& !Boolean.TRUE.equals(currentEvaluation.getFullyAssessed())) {
+			blocker.block();
+		}
 
-		log.debug("Previous: fully assessed '{}', obligation '{}', status '{}'"
-				, previousEvaluation != null? previousEvaluation.getFullyAssessed(): null
-				, previousEvaluation != null? previousEvaluation.getObligation(): null
-				, previousEvaluation != null? previousEvaluation.getAssessmentStatus(): null);
-		log.debug("Current:  fully assessed '{}', obligation '{}, status '{}', new status '{}'"
+		log.debug("fully assessed '{}', obligation '{}, blocked: '{}', status '{}', new status '{}'"
 				, currentEvaluation.getFullyAssessed()
 				, currentEvaluation.getObligation()
+				, !isNotBlocked(blocker)
 				, currentEvaluation.getAssessmentStatus()
 				, status);
 
 		return status;
 	}
 
-	private boolean isNotReadyYet(AssessmentEntryStatus currentStatus) {
-		return currentStatus == null || AssessmentEntryStatus.notReady.equals(currentStatus);
-	}
-	
-	private boolean isAccessible(AssessmentEvaluation assessmentEvaluation, boolean firstChild) {
-		return isRoot(assessmentEvaluation)
-				|| isFullyAssessed(assessmentEvaluation)
-				|| isOptionalAndReady(assessmentEvaluation)
-				|| isFirstChildAndNotStarted(assessmentEvaluation, firstChild);
+	private boolean isNotInProgressYet(AssessmentEntryStatus currentStatus) {
+		return currentStatus == null
+				|| AssessmentEntryStatus.notReady.equals(currentStatus)
+				|| AssessmentEntryStatus.notStarted.equals(currentStatus);
 	}
 
-	private boolean isRoot(AssessmentEvaluation assessmentEvaluation) {
-		return assessmentEvaluation == null;
-	}
-
-	private boolean isFullyAssessed(AssessmentEvaluation assessmentEvaluation) {
-		return assessmentEvaluation.getFullyAssessed() != null && assessmentEvaluation.getFullyAssessed();
-	}
-
-	private boolean isOptionalAndReady(AssessmentEvaluation assessmentEvaluation) {
-		return !AssessmentObligation.mandatory.equals(assessmentEvaluation.getObligation())
-				&& !AssessmentEntryStatus.notReady.equals(assessmentEvaluation.getAssessmentStatus());
-	}
-
-	private boolean isFirstChildAndNotStarted(AssessmentEvaluation assessmentEvaluation, boolean firstChild) {
-		return firstChild && AssessmentEntryStatus.notStarted.equals(assessmentEvaluation.getAssessmentStatus());
+	private boolean isNotBlocked(Blocker blocker) {
+		return blocker == null || !blocker.isBlocked();
 	}
 
 	@Override

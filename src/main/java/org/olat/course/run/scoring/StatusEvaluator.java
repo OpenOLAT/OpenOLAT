@@ -31,8 +31,21 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  */
 public interface StatusEvaluator {
 	
-	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation, AssessmentEvaluation currentEvaluation, boolean firstChild);
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation, Blocker blocker);
+
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children);
 	
-	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation>children);
+	public static class Blocker {
+		
+		private boolean blocked = false;
+		
+		public boolean isBlocked() {
+			return blocked;
+		}
+		
+		public void block() {
+			blocked = true;
+		}
+	}
 	
 }

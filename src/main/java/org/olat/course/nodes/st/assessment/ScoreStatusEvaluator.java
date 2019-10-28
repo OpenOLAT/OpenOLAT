@@ -34,8 +34,8 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 public class ScoreStatusEvaluator implements StatusEvaluator {
 
 	@Override
-	public AssessmentEntryStatus getStatus(AssessmentEvaluation previousEvaluation,
-			AssessmentEvaluation currentEvaluation, boolean firstChild) {
+	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation,
+			Blocker blocker) {
 		if (currentEvaluation.getPassed() != null && currentEvaluation.getPassed().booleanValue()) {
 			return AssessmentEntryStatus.done;
 		} else if (currentEvaluation.getScore() != null) {

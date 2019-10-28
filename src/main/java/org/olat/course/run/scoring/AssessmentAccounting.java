@@ -37,6 +37,7 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
+import org.olat.course.run.scoring.StatusEvaluator.Blocker;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -58,6 +59,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private Map<String, AssessmentEntry> identToEntry = new HashMap<>();
 	private final Map<CourseNode, AssessmentEvaluation> courseNodeToEval = new HashMap<>();
 	private AssessmentEvaluation previousEvaluation;
+	private Blocker blocker;
 	
 	@Autowired
 	private CourseAssessmentService courseAssessmentService;
@@ -91,6 +93,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 	@Override
 	public boolean evaluateAll(boolean update) {
 		previousEvaluation = null;
+		blocker = new Blocker();
 		courseNodeToEval.clear();
 		
 		identToEntry = loadAssessmentEntries(getIdentity());
@@ -174,8 +177,9 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setPassed(passed);
 		
 		StatusEvaluator statusEvaluator = evaluators.getStatusEvaluator();
-		AssessmentEntryStatus status = statusEvaluator.getStatus(previousEvaluation, result, firstChild);
+		AssessmentEntryStatus status = statusEvaluator.getStatus(result, blocker);
 		result.setStatus(status);
+		
 		
 		previousEvaluation = result;
 		int childCount = courseNode.getChildCount();
