@@ -88,6 +88,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
+	public String getCourseTreeCssClass() {
+		return "o_lp_tree";
+	}
+
+	@Override
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		return new LearningPathCourseTreeModelBuilder(userCourseEnv);
 	}

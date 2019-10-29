@@ -42,6 +42,8 @@ public interface NodeAccessProvider extends NodeAccessProviderIdentifier {
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,
 			UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel);
 
+	public String getCourseTreeCssClass();
+
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv);
 
 	public boolean onNodeVisited(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment);

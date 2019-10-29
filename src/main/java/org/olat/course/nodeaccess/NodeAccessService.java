@@ -60,6 +60,14 @@ public interface NodeAccessService {
 			CourseNode courseNode, UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel);
 
 	/**
+	 * CSS class to inject in the course menu tree.
+	 *
+	 * @param type
+	 * @return
+	 */
+	public String getCourseTreeCssClass(NodeAccessType type);
+	
+	/**
 	 * Builder to build the TreeModel of the complete course run structure.
 	 * The builded TreeModel holds only TreeNodes of the (sub) type CourseTreeNode
 	 *
@@ -120,6 +128,5 @@ public interface NodeAccessService {
 	 */
 	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			AssessmentEntryStatus status, Role by);
-
 
 }

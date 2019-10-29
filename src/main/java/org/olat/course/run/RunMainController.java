@@ -82,6 +82,7 @@ import org.olat.course.config.CourseConfig;
 import org.olat.course.editor.PublishEvent;
 import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
+import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.glossary.CourseGlossaryFactory;
 import org.olat.course.run.glossary.CourseGlossaryToolLinkController;
@@ -184,7 +185,8 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		luTree = new MenuTree(null, "luTreeRun", this);
 		luTree.setScrollTopOnClick(true);
 		luTree.setExpandSelectedNode(false);
-		luTree.setElementCssClass("o_course_menu");
+		String treeCssClass =nodeAccessService.getCourseTreeCssClass(NodeAccessType.of(course));
+		luTree.setElementCssClass("o_course_menu " + treeCssClass);
 		contentP = new Panel("building_block_content");
 
 		paginationCtrl = new CoursePaginationController(ureq, getWindowControl());

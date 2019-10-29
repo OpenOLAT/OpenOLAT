@@ -86,6 +86,11 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 
 	@Override
+	public String getCourseTreeCssClass(NodeAccessType type) {
+		return getNodeAccessProvider(type).getCourseTreeCssClass();
+	}
+	
+	@Override
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		NodeAccessType type = NodeAccessType.of(userCourseEnv);
 		return getNodeAccessProvider(type).getCourseTreeModelBuilder(userCourseEnv);

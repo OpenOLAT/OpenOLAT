@@ -54,6 +54,7 @@ public class LearningPathCourseTreeModelBuilder extends CourseTreeModelBuilder {
 		String iconDecorator1CssClass = getIconDecorator1CssClass(assessmentEvaluation, userCourseEnv);
 		if (userCourseEnv.isParticipant()) {
 			learningPathTreeNode.setIconCssClass(iconDecorator1CssClass);
+			learningPathTreeNode.setCssClass(iconDecorator1CssClass);
 		} else {
 			learningPathTreeNode.setIconDecorator1CssClass(iconDecorator1CssClass);
 		}

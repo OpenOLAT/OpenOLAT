@@ -79,6 +79,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	}
 
 	@Override
+	public String getCourseTreeCssClass() {
+		return "";
+	}
+
+	@Override
 	public CourseTreeModelBuilder getCourseTreeModelBuilder(UserCourseEnvironment userCourseEnv) {
 		return new ConditionCourseTreeModelBuilder(userCourseEnv);
 	}
@@ -113,4 +118,5 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 			AssessmentEntryStatus status, Role by) {
 		// nothing to do
 	}
+
 }

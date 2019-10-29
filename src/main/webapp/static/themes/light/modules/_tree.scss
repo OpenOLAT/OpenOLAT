@@ -85,7 +85,8 @@
 		@for $i from 0 through 11 {
 			li div span.o_tree_l#{$i}  {
 				display:block;
-				padding: $o-tree-padding-vertical 2px $o-tree-padding-vertical ($o-tree-padding-horizontal_root_visible + ($i * $o-tree-padding-steps-px)); 
+				padding: $o-tree-padding-vertical 2px $o-tree-padding-vertical $o-tree-padding-left-steps-px;
+				margin-left: $o-tree-padding-horizontal_root_visible + ($i * $o-tree-padding-steps-px);
 				z-index:9; 
 			}
 		}

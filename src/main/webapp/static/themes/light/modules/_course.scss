@@ -17,12 +17,35 @@
 	}
 }
 
-.o_course_menu {
-	.o_lp_not_accessible { color: $o-lp-not-accessible; }
-	.o_lp_ready          { color: $o-lp-ready; }
-	.o_lp_in_progress    { color: $o-lp-in-progress; }
-	.o_lp_done           { color: $o-lp-done; }
+.o_lp_tree.o_tree {
+	border: none;
+	
+	ul li div {
+		border-bottom: none;
+	}
+	
+	span.o_tree_link {
+		border-left: 2px solid;
+	}	
+	li.o_lp_not_accessible > div > span.o_tree_link {
+		border-color: $o-lp-not-accessible;
+	}
+	li.o_lp_ready > div > span.o_tree_link {
+		border-color: $o-lp-ready;
+	}
+	li.o_lp_in_progress > div > span.o_tree_link {
+		border-color: $o-lp-in-progress;
+	}
+	li.o_lp_done > div > span.o_tree_link {
+		border-color: $o-lp-done;
+	}
+
+	i.o_lp_not_accessible { color: $o-lp-not-accessible; }
+	i.o_lp_ready          { color: $o-lp-ready; }
+	i.o_lp_in_progress    { color: $o-lp-in-progress; }
+	i.o_lp_done           { color: $o-lp-done; }
 }
+
 
 /* score info status classes */
 .o_passed {
