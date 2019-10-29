@@ -220,12 +220,19 @@ public class OLATUpgrade_12_0_0 extends OLATUpgrade {
 	
 	private boolean upgradeLastModified(UpgradeManager upgradeManager, UpgradeHistoryData uhd) {
 		boolean allOk = true;
+		String typeName = "";
 		if (!uhd.getBooleanDataValue(LAST_USER_MODIFICATION)) {
 			int counter = 0;
 			List<Long> entryKeys = getRepositoryEntryKeys();
 			for(Long entryKey:entryKeys) {
 				RepositoryEntry course = repositoryService.loadByKey(entryKey);
-				if(course.getOlatResource().getResourceableTypeName().equals("CourseModule")) {
+				try {
+					typeName = course.getOlatResource().getResourceableTypeName();
+				} catch (NullPointerException e) {
+					log.error("Corrupted course: " + course.getKey(), e);
+					continue;
+				}
+				if(typeName.equals("CourseModule")) {
 					try {
 						allOk &= processCourseAssessmentLastModified(course);
 					} catch (CorruptedCourseException e) {

@@ -7,7 +7,7 @@
 	<version>14.1-m2</version>
 	<!-- need to override packaging on command line `mvn jar:jar` to stay in sync with upstream
 	     and for selenium tests -->
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>OpenOLAT LMS</name>
 	<url>https://www.openolat.com</url>
 	<description>
