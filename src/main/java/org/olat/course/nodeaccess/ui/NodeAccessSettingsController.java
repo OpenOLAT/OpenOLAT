@@ -23,15 +23,20 @@ import static org.olat.core.gui.components.util.KeyValues.entry;
 import static org.olat.modules.assessment.model.AssessmentObligation.mandatory;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
+import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.components.util.KeyValues;
 import org.olat.core.gui.control.Controller;
@@ -56,7 +61,6 @@ import org.olat.course.config.CourseConfigEvent.CourseConfigType;
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.learningpath.manager.LearningPathNodeAccessProvider;
-import org.olat.course.nodeaccess.NodeAccessProviderIdentifier;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CollectingVisitor;
 import org.olat.course.nodes.CourseNode;
@@ -72,13 +76,15 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class NodeAccessSettingsController extends FormBasicController {
 	
-	private SingleSelection nodeAccessEl;
+	private FormLink migrateLink;
 	private SingleSelection completionEvaluationeEl;
 
 	private CloseableModalController cmc;
+	private UnsupportedCourseNodesController unsupportedCourseNodesCtrl;
 	private DurationConfirmationController durationConfirmationCtrl;
 	
 	private final RepositoryEntry courseEntry;
+	private final ICourse course;
 	private final CourseConfig courseConfig;
 
 	@Autowired
@@ -89,7 +95,8 @@ public class NodeAccessSettingsController extends FormBasicController {
 	public NodeAccessSettingsController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry) {
 		super(ureq, wControl);
 		this.courseEntry = courseEntry;
-		this.courseConfig = CourseFactory.loadCourse(courseEntry).getCourseConfig();
+		this.course = CourseFactory.loadCourse(courseEntry);
+		this.courseConfig = course.getCourseConfig();
 		initForm(ureq);
 	}
 
@@ -97,14 +104,15 @@ public class NodeAccessSettingsController extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("settings.title");
 		
-		KeyValues nodeAccessKV = new KeyValues();
-		for (NodeAccessProviderIdentifier identifier : nodeAccessService.getNodeAccessProviderIdentifer()) {
-			nodeAccessKV.add(entry(identifier.getType(), identifier.getDisplayName(getLocale())));
+		String nodeAccessTypeName = nodeAccessService.getNodeAccessTypeName(courseConfig.getNodeAccessType(),
+				getLocale());
+		uifactory.addStaticTextElement("settings.type", nodeAccessTypeName, formLayout);;
+		
+		if (!LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
+			FormLayoutContainer migrationCont = FormLayoutContainer.createButtonLayout("migrationButtons", getTranslator());
+			formLayout.add(migrationCont);
+			migrateLink = uifactory.addFormLink("settings.migrate", migrationCont, Link.BUTTON);
 		}
-		nodeAccessEl = uifactory.addDropdownSingleselect("settings.type", "settings.type", formLayout,
-				nodeAccessKV.keys(), nodeAccessKV.values());
-		nodeAccessEl.setEnabled(false);
-		nodeAccessEl.select(courseConfig.getNodeAccessType().getType(), true);
 		
 		if (LearningPathNodeAccessProvider.TYPE.equals(courseConfig.getNodeAccessType().getType())) {
 			KeyValues completionKV = new KeyValues();
@@ -127,15 +135,20 @@ public class NodeAccessSettingsController extends FormBasicController {
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source == completionEvaluationeEl) {
+		if (source == migrateLink) {
+			doMigrate(ureq);
+		} else if (source == completionEvaluationeEl) {
 			doConfirmCompletionEvaluation(ureq);
 		}
 		super.formInnerEvent(ureq, source, event);
 	}
-	
+
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == durationConfirmationCtrl) {
+		if (source == unsupportedCourseNodesCtrl) {
+			cmc.deactivate();
+			cleanUp();
+		} else if (source == durationConfirmationCtrl) {
 			if (Event.DONE_EVENT.equals(event)) {
 				doSetCompletionTypeDuration(durationConfirmationCtrl.getDuration());
 			} else if (Event.CANCELLED_EVENT.equals(event)) {
@@ -151,10 +164,34 @@ public class NodeAccessSettingsController extends FormBasicController {
 	}
 
 	private void cleanUp() {
+		removeAsListenerAndDispose(unsupportedCourseNodesCtrl);
 		removeAsListenerAndDispose(durationConfirmationCtrl);
 		removeAsListenerAndDispose(cmc);
+		unsupportedCourseNodesCtrl = null;
 		durationConfirmationCtrl = null;
 		cmc = null;
+	}
+	
+	private void doMigrate(UserRequest ureq) {
+		List<CourseNode> unsupportedCourseNodes = learningPathService.getUnsupportedCourseNodes(course);
+		if (!unsupportedCourseNodes.isEmpty()) {
+			showUnsupportedMessage(ureq, unsupportedCourseNodes);
+			return;
+		}
+		
+		RepositoryEntry lpEntry = learningPathService.migrate(courseEntry, getIdentity());
+		String bPath = "[RepositoryEntry:" + lpEntry.getKey() + "]";
+		NewControllerFactory.getInstance().launch(bPath, ureq, getWindowControl());
+	}
+
+	private void showUnsupportedMessage(UserRequest ureq, List<CourseNode> unsupportedCourseNodes) {
+		unsupportedCourseNodesCtrl = new UnsupportedCourseNodesController(ureq, getWindowControl(), unsupportedCourseNodes);
+		listenTo(unsupportedCourseNodesCtrl);
+		
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				unsupportedCourseNodesCtrl.getInitialComponent(), true, translate("unsupported.course.nodes.title"));
+		cmc.activate();
+		listenTo(cmc);
 	}
 
 	private void doConfirmCompletionEvaluation(UserRequest ureq) {

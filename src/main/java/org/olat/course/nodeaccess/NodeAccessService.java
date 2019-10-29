@@ -20,6 +20,7 @@
 package org.olat.course.nodeaccess;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.WindowControl;
@@ -40,6 +41,8 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
 public interface NodeAccessService {
 	
 	public List<? extends NodeAccessProviderIdentifier> getNodeAccessProviderIdentifer();
+	
+	public String getNodeAccessTypeName(NodeAccessType type, Locale locale);
 	
 	public boolean isSupported(NodeAccessType type, String courseNodeType);
 

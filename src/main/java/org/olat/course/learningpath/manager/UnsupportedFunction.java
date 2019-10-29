@@ -17,27 +17,38 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.manager;
 
-import java.util.List;
+import java.util.function.Function;
 
-import org.olat.core.id.Identity;
-import org.olat.course.ICourse;
+import org.olat.core.CoreSpringFactory;
+import org.olat.core.util.nodes.INode;
 import org.olat.course.nodes.CourseNode;
-import org.olat.repository.RepositoryEntry;
+import org.olat.course.tree.CourseEditorTreeModel;
 
 /**
  * 
- * Initial date: 1 Sep 2019<br>
+ * Initial date: 29 Oct 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathService {
+public class UnsupportedFunction implements Function<INode, CourseNode> {
 
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
-
-	public List<CourseNode> getUnsupportedCourseNodes(ICourse course);
-
-	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity);
+	private final CourseEditorTreeModel editorTreeModel;
+	private final LearningPathNodeAccessProvider learningPathNodeAccessProvider;
+	
+	public UnsupportedFunction(CourseEditorTreeModel editorTreeModel) {
+		this.editorTreeModel = editorTreeModel;
+		this.learningPathNodeAccessProvider = CoreSpringFactory.getImpl(LearningPathNodeAccessProvider.class);
+	}
+	
+	@Override
+	public CourseNode apply(INode iNode) {
+		CourseNode courseNode = editorTreeModel.getCourseNode(iNode.getIdent());
+		if (courseNode != null && !learningPathNodeAccessProvider.isSupported(courseNode.getType())) {
+			return courseNode;
+		}
+		return null;
+	}
 
 }

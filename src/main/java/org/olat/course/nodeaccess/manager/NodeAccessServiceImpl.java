@@ -20,6 +20,7 @@
 package org.olat.course.nodeaccess.manager;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
@@ -67,6 +68,11 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	@Override
 	public List<? extends NodeAccessProviderIdentifier> getNodeAccessProviderIdentifer() {
 		return nodeAccessProviders;
+	}
+
+	@Override
+	public String getNodeAccessTypeName(NodeAccessType type, Locale locale) {
+		return getNodeAccessProvider(type).getDisplayName(locale);
 	}
 
 	@Override
