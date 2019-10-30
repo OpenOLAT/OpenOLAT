@@ -139,7 +139,7 @@ public class AuthorSearchController extends FormBasicController implements Exten
 		id = uifactory.addTextElement("cif_id", "cif.id", 128, "", leftContainer);
 		id.setElementCssClass("o_sel_repo_search_id");
 		
-		author = uifactory.addTextElement("cif_author", "cif.author", 255, "", leftContainer);
+		author = uifactory.addTextElement("cif_author", "cif.author.search", 255, "", leftContainer);
 		author.setElementCssClass("o_sel_repo_search_author");
 		
 		description = uifactory.addTextElement("cif_description", "cif.description", 255, "", leftContainer);

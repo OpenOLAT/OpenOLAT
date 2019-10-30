@@ -28,9 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.math.RoundingMode;
-import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,7 +49,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.logging.log4j.Logger;
 import org.jcodec.api.FrameGrab;
-import org.jcodec.common.FileChannelWrapper;
+import org.jcodec.common.io.FileChannelWrapper;
+import org.jcodec.common.io.NIOUtils;
+import org.jcodec.scale.AWTUtil;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
@@ -280,19 +280,16 @@ public class VideoManagerImpl implements VideoManager {
 	public boolean getFrame(VFSLeaf video, int frameNumber, VFSLeaf frame) {
 		File videoFile = ((LocalFileImpl)video).getBasefile();
 		
-		try (RandomAccessFile randomAccessFile = new RandomAccessFile(videoFile, "r")) {
-			FileChannel ch = randomAccessFile.getChannel();
-			FileChannelWrapper in = new FileChannelWrapper(ch);
-			FrameGrab frameGrab = new FrameGrab(in).seekToFrameSloppy(frameNumber);
+		try (FileChannelWrapper in = NIOUtils.readableChannel(videoFile)) {
+			FrameGrab frameGrab = FrameGrab.createFrameGrab(in).seekToFrameSloppy(frameNumber);
 			OutputStream frameOutputStream = frame.getOutputStream(false);
 
-			BufferedImage bufImg = frameGrab.getFrame();
+			BufferedImage bufImg = AWTUtil.toBufferedImage(frameGrab.getNativeFrame());
 			ImageIO.write(bufImg, "JPG", frameOutputStream);
 
 			// close everything to prevent resource leaks
 			frameOutputStream.close();
 			in.close();
-			ch.close();
 
 			return true;
 		} catch (Exception | AssertionError e) {
@@ -307,14 +304,11 @@ public class VideoManagerImpl implements VideoManager {
 		BufferedImage bufImg = null;
 		boolean imgBlack = true;
 		int countBlack = 0;
-		try (RandomAccessFile randomAccessFile = new RandomAccessFile(videoFile, "r")) {
+		try (FileChannelWrapper in = NIOUtils.readableChannel(videoFile)) {
 			OutputStream frameOutputStream = frame.getOutputStream(false);
-			
-			FileChannel ch = randomAccessFile.getChannel();
-			FileChannelWrapper in = new FileChannelWrapper(ch);
-			FrameGrab frameGrab = new FrameGrab(in).seekToFrameSloppy(frameNumber);
+			FrameGrab frameGrab = FrameGrab.createFrameGrab(in).seekToFrameSloppy(frameNumber);
 
-			bufImg = frameGrab.getFrame();
+			bufImg = AWTUtil.toBufferedImage(frameGrab.getNativeFrame());
 
 			int xmin = bufImg.getMinX();
 			int ymin = bufImg.getMinY();
@@ -347,7 +341,6 @@ public class VideoManagerImpl implements VideoManager {
 			// close everything to prevent resource leaks
 			frameOutputStream.close();
 			in.close();
-			ch.close();
 
 			return imgBlack;
 		} catch (Exception | AssertionError e) {

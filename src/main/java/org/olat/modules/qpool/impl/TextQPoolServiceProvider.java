@@ -27,6 +27,7 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.qpool.QItemFactory;
+import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.QuestionItem;
 import org.olat.modules.qpool.QuestionType;
@@ -84,8 +85,7 @@ public class TextQPoolServiceProvider extends AbstractQPoolServiceProvider {
 
 	@Override
 	public Controller getPreviewController(UserRequest ureq, WindowControl wControl, QuestionItem item, boolean summary) {
-		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item, summary);
-		return txtController;
+		return new TextPreviewController(ureq, wControl, item, summary);
 	}
 
 	@Override
@@ -94,9 +94,8 @@ public class TextQPoolServiceProvider extends AbstractQPoolServiceProvider {
 	}
 
 	@Override
-	public Controller getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
-		TextPreviewController txtController = new TextPreviewController(ureq, wControl, item, false);
-		return txtController;
+	public QPoolItemEditorController getEditableController(UserRequest ureq, WindowControl wControl, QuestionItem item) {
+		return new TextPreviewController(ureq, wControl, item, false);
 	}
 
 	@Override

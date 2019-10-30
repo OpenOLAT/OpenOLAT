@@ -42,8 +42,8 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.util.EntityUtils;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.olat.basesecurity.OrganisationRoles;
 import org.olat.basesecurity.OrganisationService;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.id.Identity;
@@ -522,7 +522,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		Assert.assertEquals(curriculum, savedElement.getCurriculum());
 	}
 	
-	@Test @Ignore
+	@Test
 	public void updateCurriculumElement_notAuthorized()
 	throws IOException, URISyntaxException {
 		Organisation defOrganisation = organisationService.getDefaultOrganisation();
@@ -532,9 +532,15 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 				null, null, null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
 		Curriculum otherCurriculum = curriculumService.createCurriculum("REST-Curriculum-elements", "REST Curriculum", "A curriculum accessible by REST API for elemets", organisation);
 		dbInstance.commitAndCloseSession();
-
+		
+		// other administration organisation
+		Organisation adminOrganisation = organisationService.createOrganisation("REST Admin Organisation", "REST-p-4admin-organisation", "", defOrganisation, null);
+		Identity admin = JunitTestHelper.createAndPersistIdentityAsRndUser("p-4admin");
+		organisationService.addMember(adminOrganisation, admin, OrganisationRoles.administrator);
+		dbInstance.commitAndCloseSession();
+		
 		RestConnection conn = new RestConnection();
-		assertTrue(conn.login("administrator", "openolat"));
+		assertTrue(conn.login(admin.getName(), JunitTestHelper.PWD));
 		
 		CurriculumElementVO vo = CurriculumElementVO.valueOf(element);
 		vo.setExternalId("REST-CEL-10");
@@ -546,7 +552,7 @@ public class CurriculumElementsWebServiceTest extends OlatRestTestCase {
 		conn.addJsonEntity(method, vo);
 		
 		HttpResponse response = conn.execute(method);
-		Assert.assertEquals(409, response.getStatusLine().getStatusCode());
+		Assert.assertEquals(401, response.getStatusLine().getStatusCode());
 		EntityUtils.consume(response.getEntity());
 	}
 	

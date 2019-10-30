@@ -28,7 +28,6 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.logging.log4j.Logger;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.core.logging.Tracing;
 
@@ -40,7 +39,6 @@ import net.fortuna.ical4j.model.Period;
 import net.fortuna.ical4j.model.PeriodList;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.property.RecurrenceId;
-import net.fortuna.ical4j.util.CompatibilityHints;
 
 /**
  * 
@@ -104,9 +102,8 @@ public class CalendarImportTest {
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
 	}
-	*/
-	
-	@Test @Ignore
+
+	@Test
 	public void testImportFromFGiCal() throws IOException, ParserException {
 		//default settings in olat
 		System.setProperty(CompatibilityHints.KEY_RELAXED_UNFOLDING, "true");
@@ -117,6 +114,7 @@ public class CalendarImportTest {
 		Calendar calendar = builder.build(in);
         assertNotNull(calendar);
 	}
+	*/
 	
 	@Test
 	public void testImportRecurringCal() throws IOException, ParserException {
