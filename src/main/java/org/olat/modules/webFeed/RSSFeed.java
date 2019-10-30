@@ -69,7 +69,8 @@ public class RSSFeed extends SyndFeedImpl {
 		strippedDescription = strippedDescription == null? "": strippedDescription;
 		strippedDescription = strippedDescription.replaceAll("&nbsp;", " ");
 		setDescription(strippedDescription);
-		setLink(helper.getJumpInLink(feed, null));
+		String link = helper.getJumpInLink(feed, null);
+		setLink(link);
 
 		setPublishedDate(feed.getLastModified());
 		// The image

@@ -39,6 +39,7 @@ import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.gui.media.ServletUtil;
+import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.OLATResourceable;
@@ -54,7 +55,7 @@ import org.olat.core.util.vfs.VFSMediaResource;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodeaccess.NodeAccessService;
-import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.course.run.userview.AccessibleFilter;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.course.run.userview.UserCourseEnvironmentImpl;
@@ -251,10 +252,15 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 		}
 		
 		FeedPathKey key = new FeedPathKey(path.getIdentityKey(), ressourceId, path.getNodeId());
-		accessible = validatedUriCache.computeIfAbsent(key, k -> {
+		if (Settings.isDebuging()) {
 			boolean hasAccess = hasAccess(ureq, feed, path);
-			return Boolean.valueOf(hasAccess);
-		});
+			accessible = Boolean.valueOf(hasAccess);
+		} else {
+			accessible = validatedUriCache.computeIfAbsent(key, k -> {
+				boolean hasAccess = hasAccess(ureq, feed, path);
+				return Boolean.valueOf(hasAccess);
+			});
+		}
 
 		return accessible != null && accessible.booleanValue();
 	}
@@ -288,7 +294,10 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 			if (feedLight != null) {
 				lastModifiedMillis = feedLight.getLastModified().getTime();
 			}
-			if (sinceModifiedMillis >= (lastModifiedMillis / 1000L) * 1000L) {
+			boolean sendLastModified = Settings.isDebuging()
+					? false
+					: sinceModifiedMillis >= (lastModifiedMillis / 1000L) * 1000L;
+			if (sendLastModified) {
 				// Send not modified response
 				response.setDateHeader("last-modified", lastModifiedMillis);
 				try {
@@ -348,8 +357,7 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 			// A course node is being requested
 			ICourse course = CourseFactory.loadCourse(path.getCourseId());
 			if(course != null) {
-				CourseNode node = course.getEditorTreeModel().getCourseNode(path.getNodeId());
-				hasAccess = hasAccess(ureq, path, course, node, feed);
+				hasAccess = hasAccess(ureq, path, course, path.getNodeId(), feed);
 			}
 		} else {
 			// A learning resource is being requested
@@ -364,11 +372,11 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 	 * @param identity
 	 * @param token
 	 * @param course
-	 * @param node
+	 * @param pathNodeId
 	 * @return True if the identity has access to the node in the given course.
 	 *         False otherwise.
 	 */
-	private boolean hasAccess(UserRequest ureq, Path path, ICourse course, CourseNode node, OLATResourceable feed) {
+	private boolean hasAccess(UserRequest ureq, Path path, ICourse course, String pathNodeId, OLATResourceable feed) {
 		RepositoryEntry entry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		if (allowsGuestAccess(entry)) {
 			return true;
@@ -391,6 +399,9 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 		
 		boolean hasAccess = false;
 		if(identity != null && roles != null && reSecurity != null) {
+			String courseNodeId = BlogToolController.SUBSCRIPTION_SUBIDENTIFIER.equals(pathNodeId)
+					? course.getRunStructure().getRootNode().getIdent()
+					: pathNodeId;
 			IdentityEnvironment ienv = new IdentityEnvironment(identity, roles);
 			UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment(), null, null, null, null,
 					reSecurity.isCourseCoach() || reSecurity.isGroupCoach(), reSecurity.isEntryAdmin(), reSecurity.isCourseParticipant() || reSecurity.isGroupParticipant(),
@@ -400,7 +411,7 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 			TreeNode treeNode = nodeAccessService.getCourseTreeModelBuilder(userCourseEnv)
 					.withFilter(AccessibleFilter.create())
 					.build()
-					.getNodeById(node.getIdent());
+					.getNodeById(courseNodeId);
 			if (treeNode != null && treeNode.isAccessible()) {
 				hasAccess = true;
 			}

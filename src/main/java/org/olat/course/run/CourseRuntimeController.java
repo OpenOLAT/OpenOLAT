@@ -107,6 +107,7 @@ import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.nodes.bc.CourseDocumentsController;
 import org.olat.course.nodes.co.COToolController;
+import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.course.nodes.fo.FOToolController;
 import org.olat.course.nodes.info.InfoRunController;
 import org.olat.course.nodes.members.MembersToolRunController;
@@ -180,7 +181,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		//my course
 		efficiencyStatementsLink, noteLink, leaveLink,
 		//course tools
-		learninPathLink, calendarLink, chatLink, participantListLink, participantInfoLink, forumLink, documentsLink,
+		learninPathLink, calendarLink, chatLink, participantListLink, participantInfoLink, blogLink, forumLink, documentsLink,
 		emailLink, searchLink,
 		//glossary
 		openGlossaryLink, enableGlossaryLink, lecturesLink;
@@ -189,6 +190,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 	private CloseableModalController cmc;
 	private COToolController emailCtrl;
+	private BlogToolController blogCtrl;
 	private FOToolController forumCtrl;
 	private Controller documentsCtrl;
 	private CourseAreasController areasCtrl;
@@ -847,6 +849,12 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		if(!assessmentLock) {
+			blogLink = LinkFactory.createToolLink("blog", translate("command.blog"), this, "o_blog_icon");
+			blogLink.setVisible(cc.isBlogEnabled());
+			toolbarPanel.addTool(blogLink);
+		}
+		
+		if(!assessmentLock) {
 			forumLink = LinkFactory.createToolLink("forum", translate("command.forum"), this, "o_fo_icon");
 			forumLink.setVisible(cc.isForumEnabled());
 			toolbarPanel.addTool(forumLink);
@@ -990,6 +998,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			doParticipantInfo(ureq);
 		} else if(emailLink == source) {
 			doEmail(ureq);
+		} else if(blogLink == source) {
+			doBlog(ureq);
 		} else if(forumLink == source) {
 			doForum(ureq);
 		} else if(documentsLink == source) {
@@ -1101,6 +1111,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 						case participantList: doParticipantList(ureq); break;
 						case participantInfo: doParticipantInfo(ureq); break;
 						case email: doEmail(ureq); break;
+						case blog: doBlog(ureq); break;
 						case forum: doForum(ureq); break;
 						case documents: doDocuments(ureq); break;
 					}
@@ -1184,6 +1195,14 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			} else if("Email".equalsIgnoreCase(type)) {
 				if (emailLink != null && emailLink.isVisible()) {
 					doEmail(ureq);
+				}
+			} else if("Blog".equalsIgnoreCase(type)) {
+				if (blogLink != null && blogLink.isVisible()) {
+					Activateable2 blog = doBlog(ureq);
+					if (blog != null) {
+						List<ContextEntry> subEntries = entries.subList(1, entries.size());
+						blog.activate(ureq, subEntries, entries.get(0).getTransientState());
+					}
 				}
 			} else if("Forum".equalsIgnoreCase(type)) {
 				if (forumLink != null && forumLink.isVisible()) {
@@ -1804,6 +1823,23 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		};
 	}
 	
+	private BlogToolController doBlog(UserRequest ureq) {
+		if(delayedClose == Delayed.blog || requestForClose(ureq)) {
+			removeCustomCSS();
+			
+			OLATResourceable ores = OresHelper.createOLATResourceableType("blog");
+			WindowControl swControl = addToHistory(ureq, ores, null);
+			blogCtrl = new BlogToolController(ureq, swControl, getUserCourseEnvironment());
+			
+			pushController(ureq, translate("command.blog"), blogCtrl);
+			setActiveTool(blogLink);
+			currentToolCtr = blogCtrl;
+			return blogCtrl;
+		}
+		delayedClose = Delayed.blog;
+		return null;
+	}
+	
 	private void doForum(UserRequest ureq) {
 		if(delayedClose == Delayed.forum || requestForClose(ureq)) {
 			removeCustomCSS();
@@ -1988,6 +2024,15 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				}
 				break;
 			}
+			case blog: {
+				if(blogLink != null) {
+					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
+					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
+					blogLink.setVisible(cc.isBlogEnabled());
+					toolbarPanel.setDirty(true);
+				}
+				break;
+			}
 			case forum: {
 				if(forumLink != null) {
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
@@ -2149,6 +2194,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		participantList,
 		participantInfo,
 		email,
+		blog,
 		forum,
 		documents
 	}

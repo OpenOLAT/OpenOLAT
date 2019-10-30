@@ -28,12 +28,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
@@ -41,6 +41,7 @@ import org.olat.core.util.filter.Filter;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseModule;
+import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.modules.webFeed.dispatching.Path;
 import org.olat.modules.webFeed.manager.FeedManager;
 import org.olat.modules.webFeed.model.ItemPublishDateComparator;
@@ -488,12 +489,19 @@ public class FeedViewHelper {
 		String jumpInLink = null;
 		RepositoryManager resMgr = RepositoryManager.getInstance();
 		if (courseId != null && nodeId != null) {
-			OLATResourceable oresCourse = OLATResourceManager.getInstance().findResourceable(courseId, CourseModule.getCourseTypeName());
-			OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(nodeId));
-			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(oresCourse, false);
+			
 			List<ContextEntry> ces = new ArrayList<>();
+			OLATResourceable oresCourse = OLATResourceManager.getInstance().findResourceable(courseId, CourseModule.getCourseTypeName());
+			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(oresCourse, false);
 			ces.add(BusinessControlFactory.getInstance().createContextEntry(repositoryEntry));
-			ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
+			if (BlogToolController.SUBSCRIPTION_SUBIDENTIFIER.equals(nodeId)) {
+				OLATResourceable oresTool = OresHelper
+						.createOLATResourceableInstance(BlogToolController.SUBSCRIPTION_SUBIDENTIFIER, Long.valueOf(0));
+				ces.add(BusinessControlFactory.getInstance().createContextEntry(oresTool));
+			} else {
+				OLATResourceable oresNode = OresHelper.createOLATResourceableInstance("CourseNode", Long.valueOf(nodeId));
+				ces.add(BusinessControlFactory.getInstance().createContextEntry(oresNode));
+			}
 			jumpInLink = BusinessControlFactory.getInstance().getAsURIString(ces, false);
 		} else {
 			RepositoryEntry repositoryEntry = resMgr.lookupRepositoryEntry(feed, false);

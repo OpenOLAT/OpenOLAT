@@ -74,7 +74,7 @@ public class CourseConfig implements Serializable, Cloneable {
 	/**
 	 * current config file version
 	 */
-	private static final transient int CURRENTVERSION = 18;
+	private static final transient int CURRENTVERSION = 19;
 
 	public static final transient String KEY_LOGLEVEL_ADMIN = "LOGLEVELADMIN";
 	public static final transient String KEY_LOGLEVEL_USER = "LOGLEVELUSER";
@@ -103,7 +103,11 @@ public class CourseConfig implements Serializable, Cloneable {
 	public static final transient String PARTICIPANT_LIST_ENABLED = "PARTICIPANT_LIST_ENABLED";
 	public static final transient String PARTICIPANT_INFO_ENABLED = "PARTICIPANT_INFO_ENABLED";
 	public static final transient String EMAIL_ENABLED = "EMAIL_ENABLED";
+	public static final transient String BLOG_ENABLED = "BLOG_ENABLED";
+	public static final transient String BLOG_SOFTKEY = "BLOG_SOFTKEY";
 	public static final transient String FORUM_ENABLED = "FORUM_ENABLED";
+	public static final transient String WIKI_ENABLED = "WIKI_ENABLED";
+	public static final transient String WIKI_SOFTKEY = "WIKI_SOFTKEY";
 	public static final transient String DOCUMENTS_ENABLED = "DOCUMENTS_ENABLED";
 	public static final transient String KEY_CALENDAR_ENABLED = "KEY_CALENDAR_ENABLED";
 
@@ -173,7 +177,9 @@ public class CourseConfig implements Serializable, Cloneable {
 		configuration.put(PARTICIPANT_LIST_ENABLED, Boolean.FALSE);
 		configuration.put(PARTICIPANT_INFO_ENABLED, Boolean.FALSE);
 		configuration.put(EMAIL_ENABLED, Boolean.FALSE);
+		configuration.put(BLOG_ENABLED, Boolean.FALSE);
 		configuration.put(FORUM_ENABLED, Boolean.FALSE);
+		configuration.put(WIKI_ENABLED, Boolean.FALSE);
 		configuration.put(DOCUMENTS_ENABLED, Boolean.FALSE);
 
 		configuration.put(NODE_ACCESS_TYPE, NODE_ACCESS_TYPE_DEFAULT);
@@ -323,6 +329,15 @@ public class CourseConfig implements Serializable, Cloneable {
 				}
 
 				this.version = 18;
+			}
+			
+			if (version == 18) {
+				if (!configuration.containsKey(BLOG_ENABLED))
+					configuration.put(BLOG_ENABLED, Boolean.FALSE);
+				if (!configuration.containsKey(WIKI_ENABLED))
+					configuration.put(WIKI_ENABLED, Boolean.FALSE);
+
+				this.version = 19;
 			}
 
 			/*
@@ -639,6 +654,28 @@ public class CourseConfig implements Serializable, Cloneable {
 	public void setEmailEnabled(boolean b) {
 		configuration.put(EMAIL_ENABLED, Boolean.valueOf(b));
 	}
+	
+	public boolean isBlogEnabled() {
+		Boolean bool = (Boolean) configuration.get(BLOG_ENABLED);
+		return bool.booleanValue();
+	}
+
+	public void setBlogEnabled(boolean b) {
+		configuration.put(BLOG_ENABLED, Boolean.valueOf(b));
+	}
+
+	public String getBlogSoftKey() {
+		Object softKey = configuration.get(BLOG_SOFTKEY);
+		return softKey != null? (String) softKey: null;
+	}
+	
+	public void setBlogSoftKey(String blogSoftKey) {
+		if (blogSoftKey != null) {
+			configuration.put(BLOG_SOFTKEY, blogSoftKey);
+		} else {
+			configuration.remove(BLOG_SOFTKEY);
+		}
+	}
 
 	public boolean isForumEnabled() {
 		Boolean bool = (Boolean) configuration.get(FORUM_ENABLED);
@@ -647,6 +684,27 @@ public class CourseConfig implements Serializable, Cloneable {
 
 	public void setForumEnabled(boolean b) {
 		configuration.put(FORUM_ENABLED, Boolean.valueOf(b));
+	}
+	public boolean isWikiEnabled() {
+		Boolean bool = (Boolean) configuration.get(WIKI_ENABLED);
+		return bool.booleanValue();
+	}
+
+	public void setWikiEnabled(boolean b) {
+		configuration.put(WIKI_ENABLED, Boolean.valueOf(b));
+	}
+
+	public String getWikiSoftKey() {
+		Object softKey = configuration.get(WIKI_SOFTKEY);
+		return softKey != null? (String) softKey: null;
+	}
+	
+	public void setWikiSoftKey(String wikiSoftKey) {
+		if (wikiSoftKey != null) {
+			configuration.put(WIKI_SOFTKEY, wikiSoftKey);
+		} else {
+			configuration.remove(WIKI_SOFTKEY);
+		}
 	}
 
 	public boolean isDocumentsEnabled() {
@@ -703,7 +761,11 @@ public class CourseConfig implements Serializable, Cloneable {
 		clone.setParticipantListEnabled(isParticipantListEnabled());
 		clone.setParticipantInfoEnabled(isParticipantInfoEnabled());
 		clone.setEmailEnabled(isEmailEnabled());
+		clone.setBlogEnabled(isBlogEnabled());
+		clone.setBlogSoftKey(getBlogSoftKey());
 		clone.setForumEnabled(isForumEnabled());
+		clone.setWikiEnabled(isWikiEnabled());
+		clone.setWikiSoftKey(getWikiSoftKey());
 		clone.setDocumentsEnabled(isDocumentsEnabled());
 		clone.setNodeAccessType(getNodeAccessType().getType());
 		return clone;

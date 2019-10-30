@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.services.commentAndRating.CommentAndRatingService;
 import org.olat.core.commons.services.commentAndRating.model.UserComment;
 import org.olat.core.commons.services.notifications.NotificationsHandler;
@@ -37,7 +38,6 @@ import org.olat.core.gui.translator.Translator;
 import org.olat.core.gui.util.CSSHelper;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -45,6 +45,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.nodes.feed.blog.BlogToolController;
 import org.olat.modules.webFeed.Feed;
 import org.olat.modules.webFeed.Item;
 import org.olat.modules.webFeed.ui.FeedMainController;
@@ -96,7 +97,7 @@ public abstract class FeedNotificationsHandler implements NotificationsHandler {
 				if("CourseModule".equals(p.getResName())) {
 					ICourse course = CourseFactory.loadCourse(re);
 					CourseNode node = course.getRunStructure().getNode(p.getSubidentifier());
-					if(node == null) {
+					if(node == null && !BlogToolController.SUBSCRIPTION_SUBIDENTIFIER.equals(p.getSubidentifier())) {
 						notificationsManager.deactivate(p);
 						return notificationsManager.getNoSubscriptionInfo();
 					}

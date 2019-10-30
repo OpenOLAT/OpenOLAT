@@ -25,15 +25,18 @@ import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.gui.components.form.flexible.elements.SelectionElement;
 import org.olat.core.gui.components.form.flexible.elements.StaticTextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.FormEvent;
 import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.components.form.flexible.impl.elements.FormSubmit;
+import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
+import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.activity.ILoggingAction;
 import org.olat.core.logging.activity.LearningResourceLoggingAction;
@@ -48,9 +51,12 @@ import org.olat.course.ICourse;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.config.CourseConfigEvent;
 import org.olat.course.config.CourseConfigEvent.CourseConfigType;
+import org.olat.fileresource.types.BlogFileResource;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryManagedFlag;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
+import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,20 +79,30 @@ public class CourseToolbarController extends FormBasicController {
 	private SelectionElement participantListEl;
 	private SelectionElement participantInfoEl;
 	private SelectionElement emailEl;
+	private SelectionElement blogEl;
+	private FormLayoutContainer blogCont;
+	private FormLink blogOpenLink;
+	private FormLink blogSelectLink;
 	private SelectionElement forumEl;
 	private SelectionElement documentsEl;
 	private SelectionElement chatEl;
 	private SelectionElement glossaryEl;
+
+	private CloseableModalController cmc;
+	private ReferencableEntriesSearchController blogSearchCtrl;
 	
 	private LockResult lockEntry;
 	private final boolean editable;
 	private RepositoryEntry entry;
 	private CourseConfig courseConfig;
+	private RepositoryEntry blogEntry;
 
 	@Autowired
 	private UserManager userManager;
 	@Autowired
 	private CalendarModule calendarModule;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	
 	public CourseToolbarController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, CourseConfig courseConfig) {
@@ -94,6 +110,9 @@ public class CourseToolbarController extends FormBasicController {
 		onValues = new String[] {translate("on")};
 		this.entry = entry;
 		this.courseConfig = courseConfig;
+		if (StringHelper.containsNonWhitespace(courseConfig.getBlogSoftKey())) {
+			blogEntry = repositoryManager.lookupRepositoryEntryBySoftkey(courseConfig.getBlogSoftKey(), false);
+		}
 		
 		lockEntry = CoordinatorManager.getInstance().getCoordinator().getLocker()
 				.acquireLock(entry.getOlatResource(), getIdentity(), CourseFactory.COURSE_EDITOR_LOCK);
@@ -182,6 +201,22 @@ public class CourseToolbarController extends FormBasicController {
 			canHideToolbar &= false;
 		}
 		
+		boolean blogEnabled = courseConfig.isBlogEnabled();
+		boolean managedBlog = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.blog);
+		blogEl = uifactory.addCheckboxesHorizontal("blogIsOn", "chkbx.blog.onoff", formLayout, onKeys, onValues);
+		blogEl.addActionListener(FormEvent.ONCHANGE);
+		blogEl.select(onKeys[0], blogEnabled);
+		blogEl.setEnabled(editable && !managedBlog);
+		if(managedBlog && blogEnabled) {
+			canHideToolbar &= false;
+		}
+		
+		blogCont = FormLayoutContainer.createButtonLayout("blogButtons", getTranslator());
+		blogCont.setRootForm(mainForm);
+		formLayout.add(blogCont);
+		blogOpenLink = uifactory.addFormLink("blog.not.selected", blogCont, Link.LINK);
+		blogSelectLink = uifactory.addFormLink("blog.select", blogCont, Link.BUTTON_XSMALL);
+		
 		boolean forumEnabled = courseConfig.isForumEnabled();
 		boolean managedForum = RepositoryEntryManagedFlag.isManaged(entry, RepositoryEntryManagedFlag.forum);
 		forumEl = uifactory.addCheckboxesHorizontal("forumIsOn", "chkbx.forum.onoff", formLayout, onKeys, onValues);
@@ -228,11 +263,37 @@ public class CourseToolbarController extends FormBasicController {
 		FormSubmit saveButton = uifactory.addFormSubmitButton("save", buttonsCont);
 		saveButton.setElementCssClass("o_sel_settings_save");
 		saveButton.setEnabled(editable);
+		
+		updateUI();
+	}
+
+	private void updateUI() {
+		boolean blogEnabled = blogEl.isSelected(0);
+		blogOpenLink.setVisible(blogEnabled);
+		blogCont.setVisible(blogEnabled);
+		blogSelectLink.setVisible(blogEnabled);
+		if (blogEnabled) {
+			boolean blogSelected = blogEntry != null;
+			blogOpenLink.setEnabled(blogSelected);
+			String blogTitle = blogSelected
+					? StringHelper.escapeHtml(blogEntry.getDisplayname())
+					: translate("blog.not.selected");
+			blogOpenLink.setI18nKey("blog.open", new String[] { blogTitle });
+			blogOpenLink.setIconLeftCSS(blogSelected? "o_icon o_icon-fw o_icon_preview": null);
+
+			boolean blogEntryEditable = blogEl.isEnabled() && blogEnabled;
+			blogSelectLink.setVisible(blogEntryEditable);
+			blogSelectLink.setI18nKey("blog.select.button", new String[] { translate(blogSelected? "blog.replace": "blog.select")});
+		}
 	}
 
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if(toolbarEl == source) {
+		if (source == blogEl) {
+			updateUI();
+		} else if (source == blogSelectLink) {
+			doSelectBlog(ureq);
+		} else if(toolbarEl == source) {
 			if(!toolbarEl.isSelected(0) && isAnyToolSelected()) {
 				showWarning("chkbx.toolbar.off.warning");
 			}
@@ -247,6 +308,7 @@ public class CourseToolbarController extends FormBasicController {
 				|| participantListEl.isSelected(0)
 				|| participantInfoEl.isSelected(0)
 				|| emailEl.isSelected(0)
+				|| blogEl.isSelected(0)
 				|| forumEl.isSelected(0)
 				|| documentsEl.isSelected(0)
 				|| chatEl.isSelected(0)
@@ -263,10 +325,50 @@ public class CourseToolbarController extends FormBasicController {
 		participantListEl.setVisible(enabled);
 		participantInfoEl.setVisible(enabled);
 		emailEl.setVisible(enabled);
+		blogEl.setVisible(enabled);
 		forumEl.setVisible(enabled);
 		documentsEl.setVisible(enabled);
 		chatEl.setVisible(enabled);
 		glossaryEl.setVisible(enabled);
+	}
+
+	@Override
+	protected void event(UserRequest ureq, Controller source, Event event) {
+		if (source == blogSearchCtrl) {
+			if (event == ReferencableEntriesSearchController.EVENT_REPOSITORY_ENTRY_SELECTED) {
+				RepositoryEntry blogEntry = blogSearchCtrl.getSelectedEntry();
+				if (blogEntry != null) {
+					this.blogEntry = blogEntry;
+					updateUI();
+				}
+			}
+			cmc.deactivate();
+			cleanUp();
+		}
+		super.event(ureq, source, event);
+	}
+
+	private void cleanUp() {
+		removeAsListenerAndDispose(blogSearchCtrl);
+		removeAsListenerAndDispose(cmc);
+		blogSearchCtrl = null;
+		cmc = null;
+	}
+
+	@Override
+	protected boolean validateFormLogic(UserRequest ureq) {
+		boolean allOk = true;
+		
+		blogCont.clearError();
+		boolean blogEnabled = blogEl.isSelected(0);
+		if (blogEnabled) {
+			if (blogEntry == null) {
+				blogCont.setErrorKey("error.no.blog.selected", null);
+				allOk = false;
+			}
+		}
+		
+		return allOk & super.validateFormLogic(ureq);
 	}
 
 	@Override
@@ -297,6 +399,13 @@ public class CourseToolbarController extends FormBasicController {
 		boolean enableEmail = emailEl.isSelected(0);
 		boolean updateEmail = courseConfig.isEmailEnabled() != enableEmail;
 		courseConfig.setEmailEnabled(enableEmail && toolbarEnabled);
+		
+		boolean enableBlog = blogEl.isSelected(0);
+		boolean updateBlog = courseConfig.isBlogEnabled() != enableBlog;
+		courseConfig.setBlogEnabled(enableBlog && toolbarEnabled);
+		boolean blogSelected = enableBlog && blogEntry != null;
+		String blogSoftKey = blogSelected? blogEntry.getSoftkey(): null;;
+		courseConfig.setBlogSoftKey(blogSoftKey);
 		
 		boolean enableForum = forumEl.isSelected(0);
 		boolean updateForum = courseConfig.isForumEnabled() != enableForum;
@@ -368,6 +477,16 @@ public class CourseToolbarController extends FormBasicController {
 			CoordinatorManager.getInstance().getCoordinator().getEventBus()
 				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.email, course.getResourceableId()), course);
 		}
+	
+		if(updateBlog) {
+			ILoggingAction loggingAction = enableBlog ?
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BLOG_ENABLED:
+					LearningResourceLoggingAction.REPOSITORY_ENTRY_PROPERTIES_BLOG_DISABLED;
+			ThreadLocalUserActivityLogger.log(loggingAction, getClass());
+			
+			CoordinatorManager.getInstance().getCoordinator().getEventBus()
+				.fireEventToListenersOf(new CourseConfigEvent(CourseConfigType.blog, course.getResourceableId()), course);
+		}
 		
 		if(updateForum) {
 			ILoggingAction loggingAction = enableForum ?
@@ -416,4 +535,14 @@ public class CourseToolbarController extends FormBasicController {
 	protected void formCancelled(UserRequest ureq) {
 		fireEvent(ureq, Event.CANCELLED_EVENT);
 	}	
+
+	private void doSelectBlog(UserRequest ureq) {
+		blogSearchCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, BlogFileResource.TYPE_NAME,
+				translate("blog.select.titile"));
+		listenTo(blogSearchCtrl);
+		cmc = new CloseableModalController(getWindowControl(), translate("close"),
+				blogSearchCtrl.getInitialComponent(), true, translate("blog.select.title"));
+		cmc.activate();
+	}
+
 }
