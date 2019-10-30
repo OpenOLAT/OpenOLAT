@@ -108,7 +108,7 @@ public class PublishProcess {
 	private ICourse course;
 	private RepositoryEntry repositoryEntry;
 	//to be replaced
-	private PublishTreeModel publishTreeModel;
+	private final PublishTreeModel publishTreeModel;
 	
 	/*
 	 * intermediate structures to calculate next course run
@@ -152,7 +152,9 @@ public class PublishProcess {
 			// avoid using iterator here so we can modify the Collection
 			String nodeId = nodeIdsToPublish.get(i);
 			CourseEditorTreeNode cetn = editorTreeModel.getCourseEditorNodeById(nodeId);
-			if (cetn.isNewnode() || cetn.isDeleted() || publishTreeModel.isMoved(cetn)) appendPublishableSubnodeIds(cetn, nodeIdsToPublish);
+			if (cetn != null && (cetn.isNewnode() || cetn.isDeleted() || publishTreeModel.isMoved(cetn))) {
+				appendPublishableSubnodeIds(cetn, nodeIdsToPublish);
+			}
 		}
 
 		/*
