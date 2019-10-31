@@ -22,6 +22,7 @@ package org.olat.modules.video.ui;
 import java.util.Locale;
 
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
@@ -50,14 +51,14 @@ public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTable
 	public Object getValueAt(int row, int col) {
 		TrackTableRow track = getObject(row);
 		switch(TrackTableCols.values()[col]) {
-			case file: return track.getTrack();
+			case file: return track.getTrack() == null ? "-" : track.getTrack().getName();
 			case language: return new Locale(track.getLanguage()).getDisplayLanguage(locale);
 			case delete: return track.getDeleteLink();
 			default: return "";
 		}
 	}
 
-	public enum TrackTableCols {
+	public enum TrackTableCols implements FlexiSortableColumnDef {
 		file("track.table.header.file"),
 		language("track.table.header.language"),
 		delete("track.table.header.delete");
@@ -68,8 +69,19 @@ public class VideoTracksTableModel extends DefaultFlexiTableDataModel<TrackTable
 			this.i18nKey = i18nKey;
 		}
 
-		public String i18nKey() {
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

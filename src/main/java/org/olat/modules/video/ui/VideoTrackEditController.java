@@ -83,9 +83,9 @@ public class VideoTrackEditController extends FormBasicController {
 		formLayout.add(generalCont);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, TrackTableCols.file.i18nKey(), TrackTableCols.file.ordinal(), true, TrackTableCols.file.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.language.i18nKey(), TrackTableCols.language.ordinal(), true, TrackTableCols.language.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, TrackTableCols.delete.i18nKey(), TrackTableCols.delete.ordinal(),false, TrackTableCols.delete.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.file));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.language));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TrackTableCols.delete));
 		tableModel = new VideoTracksTableModel(columnsModel, getLocale());
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "tracks", tableModel, getTranslator(), generalCont);
