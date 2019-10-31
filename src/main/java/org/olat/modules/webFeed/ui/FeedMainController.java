@@ -133,7 +133,7 @@ public class FeedMainController extends BasicController implements Activateable2
 			vcMain.contextPut("errorMessage", translate("feed.error"));
 			putInitialPanel(vcMain);
 		} else {
-			helper = new FeedViewHelper(feed, getIdentity(), uiFactory.getTranslator(), courseId, nodeId);
+			helper = new FeedViewHelper(feed, getIdentity(), ureq.getUserSession().getRoles(), uiFactory.getTranslator(), courseId, nodeId);
 			CoordinatorManager.getInstance().getCoordinator().getEventBus().registerFor(this, ureq.getIdentity(), feed);
 			display(ureq, wControl, displayConfig);
 			// do logging

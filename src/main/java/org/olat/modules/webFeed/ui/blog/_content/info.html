@@ -2,10 +2,7 @@
 	#if ($r.available("feed.edit"))
 		<div class="o_edit pull-right">$r.render("feed.edit")</div>
 	#end		
-	<h2>	
-		<i class="o_icon o_icon-fw o_icon o_FileResource-BLOG_icon"></i> 
-		$r.escapeHtml($!feed.getTitle())
-	</h2>
+	<h2><i class="o_icon o_icon-fw o_icon o_FileResource-BLOG_icon"> </i> $r.escapeHtml($!feed.getTitle())</h2>
 	#if ($helper.getImageUrl($feed) && $helper.getImageUrl($feed) != "")
 		<img class="o_media" src="$helper.getImageUrl($feed)?thumbnail=180x121{$!supressCache}" alt="Blog Image" />
 	#end
@@ -20,10 +17,7 @@
 	
 		#if (!$feed.isUndefined())
 			<div class="o_subscription">
-				<a href="$!helper.getFeedUrl()" class="o_nowrap" target="_blank">
-					<i class="o_icon o_icon-fw o_icon_rss"></i> 
-					$r.translate("blog.subscribe.to.this.feed")
-				</a>
+				<a href="$!helper.getFeedUrl()" class="o_nowrap" target="_blank"><i class="o_icon o_icon-fw o_icon_rss"> </i> $r.translate("blog.subscribe.to.this.feed")</a>
 			</div>
 		#end
 		
