@@ -532,6 +532,7 @@ public class CoursesWebService {
 			preparedEntry = handler.copy(initialAuthor, src, preparedEntry);
 
 			preparedEntry.setCanDownload(src.getCanDownload());
+			preparedEntry.setMainLanguage(src.getMainLanguage());
 			if(StringHelper.containsNonWhitespace(softKey)) {
 				preparedEntry.setSoftkey(softKey);
 			}
@@ -543,24 +544,36 @@ public class CoursesWebService {
 			}
 			if(StringHelper.containsNonWhitespace(authors)) {
 				preparedEntry.setAuthors(authors);
+			} else {
+				preparedEntry.setAuthors(src.getAuthors());
 			}
 			if(StringHelper.containsNonWhitespace(location)) {
 				preparedEntry.setLocation(location);
+			} else {
+				preparedEntry.setLocation(src.getLocation());
 			}
 			if(StringHelper.containsNonWhitespace(managedFlags)) {
 				preparedEntry.setManagedFlagsString(managedFlags);
 			}
 			if(StringHelper.containsNonWhitespace(objectives)) {
 				preparedEntry.setObjectives(objectives);
+			} else {
+				preparedEntry.setObjectives(src.getObjectives());
 			}
 			if(StringHelper.containsNonWhitespace(credits)) {
 				preparedEntry.setCredits(credits);
+			} else {
+				preparedEntry.setCredits(src.getCredits());
 			}
 			if(StringHelper.containsNonWhitespace(requirements)) {
 				preparedEntry.setRequirements(requirements);
+			} else {
+				preparedEntry.setRequirements(src.getRequirements());
 			}
 			if(StringHelper.containsNonWhitespace(expenditureOfWork)) {
 				preparedEntry.setExpenditureOfWork(expenditureOfWork);
+			} else {
+				preparedEntry.setExpenditureOfWork(src.getExpenditureOfWork());
 			}
 			preparedEntry.setEntryStatus(status);
 			preparedEntry.setAllUsers(allUsers);

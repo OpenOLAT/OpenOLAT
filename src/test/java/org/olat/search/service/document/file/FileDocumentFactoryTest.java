@@ -34,11 +34,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.Document;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.resource.OresHelper;
@@ -47,7 +47,7 @@ import org.olat.core.util.vfs.NamedContainerImpl;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.core.util.vfs.VFSManager;
-import org.olat.search.model.OlatDocument;
+import org.olat.search.model.AbstractOlatDocument;
 import org.olat.search.service.SearchResourceContext;
 import org.olat.test.OlatTestCase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,13 +150,13 @@ public class FileDocumentFactoryTest extends OlatTestCase {
 			resourceContext.setFilePath(filePath + "/" + leaf.getName());
 			Document htmlDocument = fileDocumentFactory.createDocument(resourceContext, leaf);
 			// 1. Check content
-			String content = htmlDocument.get(OlatDocument.CONTENT_FIELD_NAME);
+			String content = htmlDocument.get(AbstractOlatDocument.CONTENT_FIELD_NAME);
 			assertEquals("Wrong HTML content=" + content.trim() + " , must be =" + text.trim(), text.trim(), content.trim());
       // 2. Check resourceUrl
-			String resourceUrl = htmlDocument.get(OlatDocument.RESOURCEURL_FIELD_NAME);
+			String resourceUrl = htmlDocument.get(AbstractOlatDocument.RESOURCEURL_FIELD_NAME);
 			assertEquals("Wrong ResourceUrl", "[FileDocumentFactoryTest:0][path=" + filePath + "/" + htmlFileName + "]", resourceUrl); 
       // 3. Check File-Type
-			String fileType = htmlDocument.get(OlatDocument.FILETYPE_FIELD_NAME);
+			String fileType = htmlDocument.get(AbstractOlatDocument.FILETYPE_FIELD_NAME);
 			assertEquals("Wrong file-type", "type.file.html", fileType); 
 			
 		} catch (IOException e) {
