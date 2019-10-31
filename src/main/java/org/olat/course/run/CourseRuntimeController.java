@@ -532,7 +532,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			if(lectureModule.isEnabled() && (courseAuthorRight || reSecurity.isPrincipal() || reSecurity.isMasterCoach()) && isLectureEnabled()) {
 				lecturesAdminLink = LinkFactory.createToolLink("lectures.admin.cmd", translate("command.options.lectures.admin"), this, "o_icon_lecture");
 				lecturesAdminLink.setElementCssClass("o_sel_course_lectures_admin");
-				lecturesAdminLink.setVisible(!uce.isCourseReadOnly());
 				tools.addComponent(lecturesAdminLink);
 			}
 			
@@ -1342,7 +1341,8 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				OLATResourceable ores = OresHelper.createOLATResourceableType("LecturesAdmin");
 				WindowControl swControl = addToHistory(ureq, ores, null);
 				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
-						.getSecurityCallback(reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR), reSecurity.isMasterCoach(), false);
+						.getSecurityCallback(reSecurity.isEntryAdmin() || hasCourseRight(CourseRights.RIGHT_COURSEEDITOR), reSecurity.isMasterCoach(), false,
+								getUserCourseEnvironment().isCourseReadOnly());
 				LectureRepositoryAdminController ctrl = new LectureRepositoryAdminController(ureq, swControl, toolbarPanel, getRepositoryEntry(), secCallback);
 				listenTo(ctrl);
 				lecturesAdminCtrl = pushController(ureq, translate("command.options.lectures.admin"), ctrl);
