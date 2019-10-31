@@ -536,6 +536,50 @@ public class CoursesTest extends OlatRestTestCase {
 		assertNotNull(vo.getRepoEntryKey());
 		assertNotNull(vo.getKey());
 	}
+	
+	@Test
+	public void testCopyCourse_metadata() throws IOException, URISyntaxException {
+		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("author-5");
+		RepositoryEntry entry = JunitTestHelper.deployBasicCourse(author);
+		Assert.assertNotNull(entry);
+		
+		// set some metadata
+		repositoryManager.setDescriptionAndName(entry, "REST Course copy", "external-ref", "Prof.Dr. Mueller",
+				"A very descriptive course", "With high objectives", "Lots of requirements", "But credited", "English", "Bienne",
+				"Expedited in 2 hours", null, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		conn = new RestConnection();
+		Assert.assertTrue(conn.login("administrator", "openolat"));
+
+		URI uri = UriBuilder.fromUri(getContextURI()).path("repo").path("courses")
+				.queryParam("shortTitle", "Course copy")
+				.queryParam("title", "Course copy")
+				.queryParam("initialAuthor", author.getKey().toString())
+				.queryParam("copyFrom", entry.getKey().toString())
+				.build();
+		HttpPut method = conn.createPut(uri, MediaType.APPLICATION_JSON, true);
+		HttpResponse response = conn.execute(method);
+		assertTrue(response.getStatusLine().getStatusCode() == 200 || response.getStatusLine().getStatusCode() == 201);
+
+		CourseVO vo = conn.parse(response, CourseVO.class);
+		Assert.assertNotNull(vo);
+		Assert.assertNotNull(vo.getRepoEntryKey());
+		Assert.assertNotNull(vo.getKey());
+		
+		// check metadata
+		RepositoryEntry courseEntry = repositoryManager.lookupRepositoryEntry(vo.getRepoEntryKey());
+		Assert.assertNotNull(courseEntry);
+		Assert.assertNull(courseEntry.getExternalId());
+		Assert.assertNull(courseEntry.getExternalRef());
+		Assert.assertEquals("A very descriptive course", courseEntry.getDescription());
+		Assert.assertEquals("With high objectives", courseEntry.getObjectives());
+		Assert.assertEquals("Lots of requirements", courseEntry.getRequirements());
+		Assert.assertEquals("But credited", courseEntry.getCredits());
+		Assert.assertEquals("English", courseEntry.getMainLanguage());
+		Assert.assertEquals("Bienne", courseEntry.getLocation());
+		Assert.assertEquals("Expedited in 2 hours", courseEntry.getExpenditureOfWork());
+	}
 
 	@Test
 	public void testCopyCourse_unkownCourse() throws IOException, URISyntaxException {

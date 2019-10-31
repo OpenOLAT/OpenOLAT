@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.logging.log4j.Logger;
 import org.olat.admin.quota.QuotaConstants;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
@@ -43,7 +44,7 @@ import org.olat.core.gui.media.MediaResource;
 import org.olat.core.helpers.Settings;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
-import org.apache.logging.log4j.Logger;
+import org.olat.core.id.Roles;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.FileUtils;
@@ -682,7 +683,7 @@ public class FeedManagerImpl extends FeedManager {
 	 * @return The feed base uri for the given user (identity)
 	 */
 	@Override
-	public String getFeedBaseUri(Feed feed, Identity identity, Long courseId, String nodeId) {
+	public String getFeedBaseUri(Feed feed, Identity identity, Roles roles, Long courseId, String nodeId) {
 		boolean isCourseNode = courseId != null && nodeId != null;
 
 		final String slash = "/";
@@ -715,7 +716,12 @@ public class FeedManagerImpl extends FeedManager {
 			} else {
 				entry = repositoryManager.lookupRepositoryEntry(feed, false);
 			}
-			if (entry == null || entry.isGuests()) {
+
+			boolean isPrivate = true;
+			if (entry != null && entry.isGuests()) {
+				isPrivate = false;
+			}
+			if (isPrivate && !roles.isGuestOnly()) {
 				// identity key
 				uri.append(idKey);
 				uri.append(slash);
@@ -739,12 +745,12 @@ public class FeedManagerImpl extends FeedManager {
 	}
 
 	@Override
-	public MediaResource createFeedFile(OLATResourceable ores, Identity identity, Long courseId, String nodeId) {
+	public MediaResource createFeedFile(OLATResourceable ores, Identity identity, Roles roles, Long courseId, String nodeId) {
 		MediaResource media = null;
 		Feed feed = loadFeed(ores);
 
 		if (feed != null) {
-			SyndFeed rssFeed = new RSSFeed(feed, identity, courseId, nodeId);
+			SyndFeed rssFeed = new RSSFeed(feed, identity, roles, courseId, nodeId);
 			media = new SyndFeedMediaResource(rssFeed);
 		}
 		return media;

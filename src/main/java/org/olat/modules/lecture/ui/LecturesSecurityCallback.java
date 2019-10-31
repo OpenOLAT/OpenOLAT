@@ -41,6 +41,8 @@ public interface LecturesSecurityCallback {
 	
 	public boolean canAuthorizeAbsence();
 	
+	public boolean canReopenLectureBlock();
+	
 	public boolean canAddAbsences();
 	
 	public boolean canAddNoticeOfAbsences();

@@ -43,8 +43,9 @@ public class LecturesToolController extends BasicController implements Activatea
 	
 	public LecturesToolController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
-		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(false, false, false, LectureRoles.participant);
-		profileCtrl = new IdentityProfileController(ureq, this.getWindowControl(), ureq.getIdentity(), secCallback, false);
+		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory
+				.getSecurityCallback(false, false, false, LectureRoles.participant, false);
+		profileCtrl = new IdentityProfileController(ureq, getWindowControl(), ureq.getIdentity(), secCallback, false);
 		listenTo(profileCtrl);
 		
 		putInitialPanel(profileCtrl.getInitialComponent());

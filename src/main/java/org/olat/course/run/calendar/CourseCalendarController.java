@@ -63,7 +63,7 @@ public class CourseCalendarController extends BasicController {
 		super(ureq, wControl);
 		this.userCourseEnv = userCourseEnv;
 		List<KalendarRenderWrapper> calendars = getListOfCalendarWrappers(ureq);
-		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, WeeklyCalendarController.CALLER_COURSE,
+		calendarController = new WeeklyCalendarController(ureq, wControl, calendars, CalendarController.CALLER_COURSE,
 				userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource(), false);
 		calendarController.setDifferentiateManagedEvent(CourseCalendars.needToDifferentiateManagedEvents(calendars));
 		listenTo(calendarController);
