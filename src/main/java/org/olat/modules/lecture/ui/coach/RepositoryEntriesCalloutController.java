@@ -21,6 +21,7 @@ package org.olat.modules.lecture.ui.coach;
 
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -35,8 +36,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
 import org.olat.modules.lecture.ui.event.OpenRepositoryEntryEvent;
 import org.olat.repository.RepositoryEntry;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 

@@ -28,6 +28,7 @@ import static org.olat.login.LoginModule.FORBIDDEN;
 import static org.olat.login.LoginModule.VALIDATE_SEPARATELY;
 import static org.olat.login.ui.LoginUIFactory.validateInteger;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.logging.log4j.Logger;
@@ -56,8 +57,6 @@ import org.olat.login.validation.PasswordValidationRulesFactory;
 import org.olat.login.validation.SyntaxValidator;
 import org.olat.login.validation.ValidationRulesProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import edu.emory.mathcs.backport.java.util.Arrays;
 
 /**
  * 

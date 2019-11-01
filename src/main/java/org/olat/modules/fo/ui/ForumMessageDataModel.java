@@ -19,6 +19,7 @@
  */
 package org.olat.modules.fo.ui;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -33,8 +34,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.StringHelper;
 import org.olat.group.ui.main.AbstractMemberListController;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
