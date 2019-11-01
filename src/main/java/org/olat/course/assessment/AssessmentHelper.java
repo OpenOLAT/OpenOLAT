@@ -114,7 +114,7 @@ public class AssessmentHelper {
 		// create an identenv with no roles, no attributes, no locale
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(identity);
-		UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
+		UserCourseEnvironmentImpl uce = new UserCourseEnvironmentImpl(ienv, course.getCourseEnvironment());
 		// Fetch all score and passed and calculate score accounting for the entire
 		// course
 		uce.getScoreAccounting().evaluateAll(true);

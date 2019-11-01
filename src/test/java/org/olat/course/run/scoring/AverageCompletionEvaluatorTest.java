@@ -227,7 +227,7 @@ public class AverageCompletionEvaluatorTest {
 		
 		Double completion = sut.getCompletion(null, parent, scoreAccounting);
 		
-		double expected = (1.0 + 0.0 + 0.0 + 0.0 + 0.5 + 0.75 + 1.0) / 7;
+		double expected = (1.0 + 0.0 + 0.0 + 0.0 + 0.5 + 0.75 + 0.9) / 7;
 		assertThat(completion).isEqualTo(expected, offset(0.001));
 	}
 	

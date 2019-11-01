@@ -61,6 +61,7 @@ import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.modules.assessment.Role;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
 import org.olat.user.manager.ManifestBuilder;
@@ -90,6 +91,8 @@ public class AssessmentManagerTest extends OlatTestCase  {
 	
 	@Autowired
 	private EfficiencyStatementManager efficiencyStatementManager;
+	@Autowired
+	private RepositoryService repositoryService;
 	
 	@Before
 	public void setUp() throws Exception {		
@@ -104,6 +107,8 @@ public class AssessmentManagerTest extends OlatTestCase  {
 			RepositoryEntry repositoryEntry = JunitTestHelper.deployDemoCourse(author);
 			Long resourceableId = repositoryEntry.getOlatResource().getResourceableId();
 			log.info("Demo course imported - resourceableId: " + resourceableId);
+			
+			repositoryService.addRole(student, repositoryEntry, "participant");
 		
 			course = CourseFactory.loadCourse(resourceableId);
 			DBFactory.getInstance().closeSession();
