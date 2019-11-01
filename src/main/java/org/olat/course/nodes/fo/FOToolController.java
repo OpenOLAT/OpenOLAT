@@ -25,6 +25,9 @@ import org.olat.core.gui.components.Component;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.controller.BasicController;
+import org.olat.core.id.OLATResourceable;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.course.CourseModule;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.fo.Forum;
 import org.olat.modules.fo.ForumCallback;
@@ -54,8 +57,11 @@ public class FOToolController extends BasicController {
 		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 		Forum forum = getOrCreateForum(courseEntry);
 		
-	
-		SubscriptionContext forumSubContext = new SubscriptionContext(courseEntry, SUBSCRIPTION_SUBIDENTIFIER);
+		String resName = CourseModule.getCourseTypeName();
+		Long resId = userCourseEnv.getCourseEnvironment().getCourseResourceableId();
+		OLATResourceable courseOres = OresHelper.createOLATResourceableInstance(resName, resId);
+		SubscriptionContext forumSubContext = new SubscriptionContext(courseOres, SUBSCRIPTION_SUBIDENTIFIER);
+		
 		ForumCallback forumCallback = userCourseEnv.isCourseReadOnly() || ureq.getUserSession().getRoles().isGuestOnly()
 				? new ReadOnlyForumCallback(userCourseEnv)
 				: new ToolSecurityCallback(userCourseEnv, forumSubContext);
