@@ -115,9 +115,8 @@ public class MSCourseNode extends AbstractAccessableCourseNode {
 	public static final String CONFIG_KEY_INFOTEXT_USER = "infoTextUser";
 	/** configuration: infotext for coach */
 	public static final String CONFIG_KEY_INFOTEXT_COACH = "nfoTextCoach";
-	/** configuration: infotext for coach */
-	public static final String CONFIG_KEY_OPTIONAL = "cnOptional";
 	
+	public static final String CONFIG_KEY_OPTIONAL = "cnOptional";
 	public static final String CONFIG_KEY_SCORE = "score";
 	public static final String CONFIG_VALUE_SCORE_NONE = "score.none";
 	public static final String CONFIG_VALUE_SCORE_MANUAL = "score.manual";

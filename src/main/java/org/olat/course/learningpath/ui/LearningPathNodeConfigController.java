@@ -95,6 +95,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		if (Arrays.asList(obligationEl.getKeys()).contains(obligationKey)) {
 			obligationEl.select(obligationKey, true);
 		}
+		obligationEl.setVisible(ctrlConfig.isObligationVisible());
 		
 		KeyValues triggerKV = getTriggerKV();
 		triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,
@@ -234,6 +235,8 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	
 	public interface LearningPathControllerConfig {
 		
+		public boolean isObligationVisible();
+		
 		public boolean isTriggerNodeVisited();
 		
 		public boolean isTriggerConfirmed();
@@ -252,6 +255,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	
 	public static class ControllerConfigBuilder {
 		
+		public boolean obligationVisible = true;
 		private boolean triggerNodeVisited;
 		private boolean triggerConfirmed;
 		private boolean triggerScore;
@@ -259,6 +263,11 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		private TranslateableBoolean triggerStatusDone;
 		
 		private ControllerConfigBuilder() {
+		}
+		
+		public ControllerConfigBuilder disableObligation() {
+			obligationVisible = false;
+			return this;
 		}
 		
 		public ControllerConfigBuilder enableNodeVisited() {
@@ -297,6 +306,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 		
 		private final static class ControllerConfigImpl implements LearningPathControllerConfig {
 			
+			public final boolean obligationVisible;
 			public final boolean triggerNodeVisited;
 			public final boolean triggerConfirmed;
 			public final boolean triggerScore;
@@ -304,6 +314,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			public final TranslateableBoolean triggerStatusDone;
 
 			public ControllerConfigImpl(ControllerConfigBuilder builder) {
+				this.obligationVisible = builder.obligationVisible;
 				this.triggerNodeVisited = builder.triggerNodeVisited;
 				this.triggerConfirmed = builder.triggerConfirmed;
 				this.triggerScore = builder.triggerScore;
@@ -315,6 +326,11 @@ public class LearningPathNodeConfigController extends FormBasicController {
 				return translateableBoolean != null
 						? translateableBoolean
 						: TranslateableBoolean.untranslatedFalse();
+			}
+
+			@Override
+			public boolean isObligationVisible() {
+				return obligationVisible;
 			}
 
 			@Override

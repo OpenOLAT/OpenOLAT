@@ -68,8 +68,13 @@ import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.learningpath.LearningPathNodeHandler;
+import org.olat.course.learningpath.ui.TabbableLeaningPathNodeConfigController;
+import org.olat.course.nodes.gta.GTAAssessmentConfig;
+import org.olat.course.nodes.gta.GTALearningPathNodeHandler;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
+import org.olat.course.nodes.gta.ITALearningPathNodeHandler;
 import org.olat.course.nodes.gta.Task;
 import org.olat.course.nodes.gta.TaskHelper;
 import org.olat.course.nodes.gta.TaskList;
@@ -267,6 +272,16 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 			addStatusErrorDescription("error.select.atleastonestep", GTAEditController.PANE_TAB_WORKLOW, sdList);
 		}
 		
+		LearningPathNodeHandler lpNodeHandler = getLearningPathNodeHandler();
+		if (isFullyAssessedScoreConfigError(lpNodeHandler)) {
+			addStatusErrorDescription("error.fully.assessed.score",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		if (isFullyAssessedPassedConfigError(lpNodeHandler)) {
+			addStatusErrorDescription("error.fully.assessed.passed",
+					TabbableLeaningPathNodeConfigController.PANE_TAB_LEARNING_PATH, sdList);
+		}
+		
 		if(cev != null) {
 			//check assignment
 			GTAManager gtaManager = CoreSpringFactory.getImpl(GTAManager.class);
@@ -338,6 +353,30 @@ public class GTACourseNode extends AbstractAccessableCourseNode {
 		}
 
 		return sdList;
+	}
+	
+	private boolean isFullyAssessedScoreConfigError(LearningPathNodeHandler lpNodeHandler) {
+		boolean hasScore = new GTAAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean isScoreTrigger = lpNodeHandler
+				.getConfigs(this)
+				.isFullyAssessedOnScore(null, null)
+				.isEnabled();
+		return isScoreTrigger && !hasScore;
+	}
+	
+	private boolean isFullyAssessedPassedConfigError(LearningPathNodeHandler lpNodeHandler) {
+		boolean hasPassed = new GTAAssessmentConfig(getModuleConfiguration()).hasPassed();
+		boolean isPassedTrigger = lpNodeHandler
+				.getConfigs(this)
+				.isFullyAssessedOnPassed(null, null)
+				.isEnabled();
+		return isPassedTrigger && !hasPassed;
+	}
+
+	private LearningPathNodeHandler getLearningPathNodeHandler() {
+		return TYPE_GROUP.equals(this.getType())
+				? CoreSpringFactory.getImpl(GTALearningPathNodeHandler.class)
+				: CoreSpringFactory.getImpl(ITALearningPathNodeHandler.class);
 	}
 	
 	private void addStatusErrorDescription(String key, String pane, List<StatusDescription> status) {

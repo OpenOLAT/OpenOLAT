@@ -45,7 +45,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
  */
 public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	
-	private final ModuleConfiguration moduleConfiguration;
+	protected final ModuleConfiguration moduleConfiguration;
 	private final boolean doneOnFullyAssessed;
 
 	public ModuleLearningPathConfigs(ModuleConfiguration moduleConfiguration, boolean doneOnFullyAssessed) {
