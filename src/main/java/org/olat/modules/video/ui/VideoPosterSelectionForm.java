@@ -84,7 +84,7 @@ public class VideoPosterSelectionForm extends BasicController {
 			videoFile = videoManager.downloadTmpVideo(videoResource, videoMetadata);
 			tmpFile = videoFile;// delete temporary file
 		} else {
-			videoFile = videoManager.getMasterVideo(videoResource);
+			videoFile = videoManager.getMasterVideoFile(videoResource);
 		}
 		
 		List<String> proposals = generatePosterProposals(videoFile);
