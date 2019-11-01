@@ -1722,6 +1722,14 @@ public class GTAManagerImpl implements GTAManager {
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			//update whole group
 			assessmentService.updateAssessmentEntries(taskImpl.getBusinessGroup(), courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
+			dbInstance.commit();
+
+			ICourse course = CourseFactory.loadCourse(courseRepoEntry);
+			List<Identity> assessedIdentities = businessGroupRelationDao.getMembers(taskImpl.getBusinessGroup(), GroupRoles.participant.name());
+			for(Identity assessedIdentity:assessedIdentities) {
+				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
+				cNode.updateLastModifications(userCourseEnv, assessedIdentity, by);
+			}
 		} else {
 			Identity assessedIdentity = taskImpl.getIdentity();
 			assessmentService.updateAssessmentEntry(assessedIdentity, courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
