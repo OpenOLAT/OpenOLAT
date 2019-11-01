@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.olat.core.commons.persistence.DB;
 import org.olat.modules.video.VideoFormat;
 import org.olat.modules.video.VideoMeta;
-import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -97,7 +96,7 @@ public class VideoMetadataDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve list of entries
-		List<VideoMetaImpl> metadata = videoMetadataDao.getAllVideoResourcesMetadata();
+		List<VideoMeta> metadata = videoMetadataDao.getAllVideoResourcesMetadata();
 		Assert.assertTrue(metadata.contains(meta0));
 		Assert.assertTrue(metadata.contains(meta1));
 		Assert.assertTrue(metadata.contains(meta2));
@@ -111,7 +110,7 @@ public class VideoMetadataDAOTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		//retrieve new list
-		List<VideoMetaImpl> deleteMetadata = videoMetadataDao.getAllVideoResourcesMetadata();
+		List<VideoMeta> deleteMetadata = videoMetadataDao.getAllVideoResourcesMetadata();
 		Assert.assertFalse(deleteMetadata.contains(meta0));
 		Assert.assertTrue(deleteMetadata.contains(meta1));
 		Assert.assertTrue(deleteMetadata.contains(meta2));

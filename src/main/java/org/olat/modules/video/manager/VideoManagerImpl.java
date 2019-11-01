@@ -716,7 +716,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public void updateVideoMetadata (OLATResource videoResource,VFSLeaf uploadVideo) {	
+	public VideoMeta updateVideoMetadata(OLATResource videoResource, VFSLeaf uploadVideo) {	
 		VideoMeta meta = getVideoMetadata(videoResource);
 
 		Size dimensions = movieService.getSize(uploadVideo, VideoManagerImpl.FILETYPE_MP4);
@@ -733,8 +733,22 @@ public class VideoManagerImpl implements VideoManager {
 			meta.setVideoFormat(format);
 			meta.setLength(length);
 		}
+		return updateVideoMetadata(meta);
 	}
 	
+	@Override
+	public VideoMeta checkUnkownVideoFormat(VideoMeta meta) {
+		if(meta == null || meta.getVideoResource() == null || StringHelper.containsNonWhitespace(meta.getUrl())) return null;
+		
+		VFSLeaf video = getMasterVideoFile(meta.getVideoResource());
+		if(video != null) {
+			VideoFormat format = VideoFormat.valueOfFilename(video.getName());
+			meta.setVideoFormat(format);
+			meta = updateVideoMetadata(meta);
+		}
+		return meta;
+	}
+
 	@Override
 	public RepositoryEntry updateVideoMetadata(RepositoryEntry entry, Long durationInSeconds) {
 		if(durationInSeconds == null) return entry;
@@ -1131,12 +1145,6 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public VFSLeaf getMasterVideo(OLATResource videoResource) {
-		VFSContainer masterContainer = getMasterContainer(videoResource);
-		return (VFSLeaf)masterContainer.resolve(FILENAME_VIDEO_MP4);
-	}
-
-	@Override
 	public long getVideoDuration(OLATResource videoResource){
 		VFSContainer masterContainer = getMasterContainer(videoResource);
 		VFSLeaf video = (VFSLeaf)masterContainer.resolve(FILENAME_VIDEO_MP4);	
@@ -1144,7 +1152,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 
 	@Override
-	public List<VideoMetaImpl> getAllVideoResourcesMetadata() {
+	public List<VideoMeta> getAllVideoResourcesMetadata() {
 		return videoMetadataDao.getAllVideoResourcesMetadata();
 	}
 	

@@ -32,6 +32,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.closablewrapper.CloseableModalController;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.modules.video.VideoFormat;
@@ -67,6 +68,9 @@ public class VideoPosterEditController extends FormBasicController {
 		super(ureq, wControl);
 		this.videoResource = videoResource;
 		videoMetadata = videoManager.getVideoMetadata(videoResource);
+		if(!StringHelper.containsNonWhitespace(videoMetadata.getUrl()) && videoMetadata.getVideoFormat() == null) {
+			videoMetadata = videoManager.checkUnkownVideoFormat(videoMetadata);
+		}
 		initForm(ureq);
 		updatePosterImage(ureq, videoResource);
 	}
