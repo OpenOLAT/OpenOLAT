@@ -157,26 +157,19 @@ public class VideoHandler extends FileHandler {
 		}
 		fileName = fileName.toLowerCase();
 		VFSLeaf importFile = new LocalFileImpl(file);	
-		long filesize = importFile.getSize();
 
+		VideoMeta videoMeta = null;
 		if (fileName.endsWith(".mp4") || fileName.endsWith(".mov") || fileName.endsWith(".m4v")) {
 			// 2a) import video from raw mp4 master video file
-			videoManager.importFromMasterFile(repoEntry, importFile);
-			
+			videoMeta = videoManager.importFromMasterFile(repoEntry, importFile);
 		} else if (fileName.endsWith(".zip")) {
 			// 2b) import video from archive from another OpenOLAT instance
-			dbInstance.commit();
-			videoManager.importFromExportArchive(repoEntry, importFile);
-			dbInstance.commit();			
-		}	
-		// 3) Persist Meta data
-		VideoMeta videoMeta = videoManager.getVideoMetadata(resource);
-		if(videoMeta == null) {
-			videoMeta =videoManager.createVideoMetadata(repoEntry, filesize, fileName);
+			videoMeta = videoManager.importFromExportArchive(repoEntry, importFile);
 		}
 		dbInstance.commit();
+		
 		// 4) start transcoding process if enabled
-		if(!StringHelper.containsNonWhitespace(videoMeta.getUrl())) {
+		if(videoMeta != null && !StringHelper.containsNonWhitespace(videoMeta.getUrl())) {
 			videoManager.startTranscodingProcessIfEnabled(resource);
 		}
 		return repoEntry;
