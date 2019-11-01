@@ -200,6 +200,8 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-6");
 		Identity participant4 = JunitTestHelper.createAndPersistIdentityAsRndUser("gta-user-7");
 		
+		RepositoryEntry re = deployGTACourse();
+		
 		BusinessGroup businessGroup1 = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
 		BusinessGroup businessGroup2 = businessGroupDao.createAndPersist(coach, "gdao", "gdao-desc", -1, -1, false, false, false, false, false);
 		
@@ -209,7 +211,6 @@ public class GTAReminderRuleTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(participant4, businessGroup2, GroupRole.participant.name());
 		dbInstance.commit();
 		
-		RepositoryEntry re = JunitTestHelper.createAndPersistRepositoryEntry("", false);
 		businessGroupRelationDao.addRelationToResource(businessGroup1, re);
 		businessGroupRelationDao.addRelationToResource(businessGroup2, re);
 		
