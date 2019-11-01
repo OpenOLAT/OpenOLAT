@@ -31,6 +31,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.Codec;
+import org.jcodec.common.VideoCodecMeta;
 import org.jcodec.common.io.FileChannelWrapper;
 import org.jcodec.containers.mp4.boxes.MovieBox;
 import org.jcodec.containers.mp4.demuxer.MP4Demuxer;
@@ -120,11 +121,12 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 						// flag of the movie. Those mp4 guys are really
 						// secretive folks, did not find any documentation about
 						// this. Best guess.
-						org.jcodec.common.model.Size size2 = demuxer1.getVideoTrack().getMeta().getVideoCodecMeta().getSize();
+						VideoCodecMeta meta = demuxer1.getVideoTrack().getMeta().getVideoCodecMeta();
+						org.jcodec.common.model.Size size2 = meta.getSize();
 						w = size2.getHeight();
-						h = size2.getWidth();					
+						h = size2.getWidth();
 					} catch(Exception e) {
-						log.debug("can not get size from box " + e.getMessage());
+						log.debug("can not get size from box {}", e.getMessage());
 					}
 				}
 				return new Size(w, h, false);
@@ -226,14 +228,13 @@ public class MovieServiceImpl implements MovieService, ThumbnailSPI {
 		if(extensions.contains(suffix)) {
 			try(RandomAccessFile accessFile = new RandomAccessFile(file, "r");
 					FileChannel ch = accessFile.getChannel();
-					FileChannelWrapper in = new FileChannelWrapper(ch)) {
-				
-				MP4Demuxer demuxer1 = MP4Demuxer.createMP4Demuxer(in);
+					FileChannelWrapper in = new FileChannelWrapper(ch);
+					MP4Demuxer demuxer1 = MP4Demuxer.createMP4Demuxer(in)) {
 				Codec codec = demuxer1.getVideoTrack().getMeta().getCodec();
 				if (supportedCodecs.contains(codec)) {
 					return true;
 				} 
-				log.info("Movie file::" + fileName + " has correct suffix::" + suffix + " but fourCC::" + codec + " not in our list of supported codecs.");
+				log.info("Movie file:: {} has correct suffix:: {} but fourCC:: {} not in our list of supported codecs.", fileName, suffix, codec);
 			} catch (Exception | Error e) {
 				// anticipated exception, is not an mp4 file
 			}

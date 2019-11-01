@@ -78,12 +78,12 @@ public class VideoMetadataDAO {
 	 *
 	 * @return the all video resources metadata
 	 */
-	List<VideoMetaImpl> getAllVideoResourcesMetadata () {
+	List<VideoMeta> getAllVideoResourcesMetadata () {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select meta from videometadata as meta")
 			.append(" order by meta.creationDate asc, meta.id asc");
 		return dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(),VideoMetaImpl.class)
+				.createQuery(sb.toString(),VideoMeta.class)
 				.getResultList();
 	}
 	
