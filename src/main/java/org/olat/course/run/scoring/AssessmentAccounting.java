@@ -58,7 +58,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private final CourseConfig courseConfig;
 	private Map<String, AssessmentEntry> identToEntry = new HashMap<>();
 	private final Map<CourseNode, AssessmentEvaluation> courseNodeToEval = new HashMap<>();
-	private AssessmentEvaluation previousEvaluation;
 	private Blocker blocker;
 	
 	@Autowired
@@ -92,7 +91,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 	
 	@Override
 	public boolean evaluateAll(boolean update) {
-		previousEvaluation = null;
 		blocker = new Blocker();
 		courseNodeToEval.clear();
 		
@@ -181,7 +179,6 @@ public class AssessmentAccounting implements ScoreAccounting {
 		result.setStatus(status);
 		
 		
-		previousEvaluation = result;
 		int childCount = courseNode.getChildCount();
 		List<AssessmentEvaluation> children = new ArrayList<>(childCount);
 		for (int i = 0; i < childCount; i++) {

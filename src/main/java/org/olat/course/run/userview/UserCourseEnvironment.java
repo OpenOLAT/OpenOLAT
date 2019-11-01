@@ -90,6 +90,9 @@ public interface UserCourseEnvironment {
 	
 	public boolean isInOrganisation(String organisationIdentifier, OrganisationRoles... roles);
 	
+	public List<BusinessGroup>  getParticipatingGroups();
+	
+	public List<BusinessGroup>  getWaitingLists();
 	
 	public List<BusinessGroup> getCoachedGroups();
 	

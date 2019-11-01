@@ -286,6 +286,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return coachedGroups;
 	}
 
+	@Override
 	public List<BusinessGroup> getParticipatingGroups() {
 		if(participatingGroups == null) {
 			return Collections.emptyList();
@@ -293,6 +294,7 @@ public class UserCourseEnvironmentImpl implements UserCourseEnvironment {
 		return participatingGroups;
 	}
 
+	@Override
 	public List<BusinessGroup> getWaitingLists() {
 		if(waitingLists == null) {
 			return Collections.emptyList();

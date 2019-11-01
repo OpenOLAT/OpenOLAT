@@ -429,7 +429,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			cc.removeCurrentCustomCSSFromView();
 		}
 		setCustomCSS(null);
-		setCourseClosedMessage(getUserCourseEnvironment());
+		setCourseClosedMessage();
 	}
 
 	@Override
@@ -438,8 +438,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		if(corrupted) return;
 		
 		ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
-		UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
-		
 		if(!course.getCourseConfig().isToolbarEnabled() && !reSecurity.isEntryAdmin() && !reSecurity.isCoach()
 				&& !hasCourseRight(CourseRights.RIGHT_COURSEEDITOR) && !hasCourseRight(CourseRights.RIGHT_MEMBERMANAGEMENT)
 				&& !hasCourseRight(CourseRights.RIGHT_GROUPMANAGEMENT) && !hasCourseRight(CourseRights.RIGHT_ARCHIVING)
@@ -456,18 +454,19 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 		
 		initToolsMenu(toolsDropdown);
-		initToolsMyCourse(course, uce);
+		initToolsMyCourse(course);
 		initGeneralTools(course);
 		
 		RunMainController rmc = getRunMainController();
 		if(rmc != null) {
 			rmc.initToolbar();
 		}
-		setCourseClosedMessage(uce);
+		setCourseClosedMessage();
 	}
 	
-	private void setCourseClosedMessage(UserCourseEnvironment uce) {
-		if(uce != null &&  getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed) {
+	private void setCourseClosedMessage() {
+		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
+		if(userCourseEnv != null &&  getRepositoryEntry().getEntryStatus() == RepositoryEntryStatusEnum.closed) {
 			toolbarPanel.setMessage(translate("course.closed"));
 			toolbarPanel.setMessageCssClass("o_warning");
 		} else {
@@ -676,8 +675,9 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 
-	private void initToolsMyCourse(ICourse course, UserCourseEnvironmentImpl uce) {
+	private void initToolsMyCourse(ICourse course) {
 		boolean assessmentLock = isAssessmentLock();
+		UserCourseEnvironment userCourseEnv = getUserCourseEnvironment();
 
 		myCourse = new Dropdown("myCourse", "header.tools.mycourse", false, getTranslator());
 		myCourse.setElementCssClass("dropdown-menu-right");
@@ -685,7 +685,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		// Personal tools on right side
 		CourseConfig cc = course.getCourseConfig();
-		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock) {
+		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock && userCourseEnv != null) {
 			// link to efficiency statements should
 			// - not appear when not configured in course configuration
 			// - not appear when configured in course configuration but no assessable
@@ -698,11 +698,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled());
 			myCourse.addComponent(efficiencyStatementsLink);
 			if(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) {
-				boolean certification = uce.hasEfficiencyStatementOrCertificate(false);
+				boolean certification = userCourseEnv.hasEfficiencyStatementOrCertificate(false);
 				efficiencyStatementsLink.setVisible(certification);
 			}
 		}
-		if (efficiencyStatementsLink != null && !uce.isParticipant()) {
+		if (efficiencyStatementsLink != null && userCourseEnv != null && !userCourseEnv.isParticipant()) {
 			efficiencyStatementsLink.setVisible(false);
 		}
 		
@@ -720,53 +720,55 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			myCourse.addComponent(bookmarkLink);
 		}
 
-		if(myCourse.size() > 0 && (!uce.getCoachedGroups().isEmpty() || !uce.getParticipatingGroups().isEmpty() || !uce.getWaitingLists().isEmpty())) {
-			myCourse.addComponent(new Spacer(""));
-		}
-		
-		// 2) add coached groups
-		if (!uce.getCoachedGroups().isEmpty()) {
-			for (BusinessGroup group:uce.getCoachedGroups()) {
-				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
-				link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-				link.setUserObject(group);
-				link.setEnabled(!assessmentLock);
-				myCourse.addComponent(link);
-				
+		if (userCourseEnv != null) {
+			if(myCourse.size() > 0 && (!userCourseEnv.getCoachedGroups().isEmpty() || !userCourseEnv.getParticipatingGroups().isEmpty() || !userCourseEnv.getWaitingLists().isEmpty())) {
+				myCourse.addComponent(new Spacer(""));
 			}
-		}
+			
+			// 2) add coached groups
+			if (!userCourseEnv.getCoachedGroups().isEmpty()) {
+				for (BusinessGroup group: userCourseEnv.getCoachedGroups()) {
+					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
+					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+					link.setUserObject(group);
+					link.setEnabled(!assessmentLock);
+					myCourse.addComponent(link);
+					
+				}
+			}
 
-		// 3) add participating groups
-		if (!uce.getParticipatingGroups().isEmpty()) {
-			for (BusinessGroup group: uce.getParticipatingGroups()) {
-				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
-				link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-				link.setUserObject(group);
-				link.setEnabled(!assessmentLock);
-				myCourse.addComponent(link);
+			// 3) add participating groups
+			if (!userCourseEnv.getParticipatingGroups().isEmpty()) {
+				for (BusinessGroup group: userCourseEnv.getParticipatingGroups()) {
+					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", StringHelper.escapeHtml(group.getName()), this);
+					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+					link.setUserObject(group);
+					link.setEnabled(!assessmentLock);
+					myCourse.addComponent(link);
+				}
 			}
-		}
 
-		// 5) add waiting-list groups
-		if (!uce.getWaitingLists().isEmpty()) {
-			for (BusinessGroup group:uce.getWaitingLists()) {
-				int pos = businessGroupService.getPositionInWaitingListFor(getIdentity(), group);
-				String name = StringHelper.escapeHtml(group.getName()) + " (" + pos + ")";
-				Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", name, this);
-				link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
-				link.setUserObject(group);
-				link.setEnabled(false);
-				myCourse.addComponent(link);
+			// 5) add waiting-list groups
+			if (!userCourseEnv.getWaitingLists().isEmpty()) {
+				for (BusinessGroup group: userCourseEnv.getWaitingLists()) {
+					int pos = businessGroupService.getPositionInWaitingListFor(getIdentity(), group);
+					String name = StringHelper.escapeHtml(group.getName()) + " (" + pos + ")";
+					Link link = LinkFactory.createToolLink(CMD_START_GROUP_PREFIX + group.getKey(), "group", name, this);
+					link.setIconLeftCSS("o_icon o_icon-fw o_icon_group");
+					link.setUserObject(group);
+					link.setEnabled(false);
+					myCourse.addComponent(link);
+				}
 			}
-		}
-		
-		if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
-				&& !assessmentLock && !roles.isGuestOnly() && !uce.isCourseReadOnly()
-				&& isAllowedToLeave(uce)) {
-			leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
-			leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
-			myCourse.addComponent(new Spacer("leaving-space"));
-			myCourse.addComponent(leaveLink);
+			
+			if(repositoryService.isParticipantAllowedToLeave(getRepositoryEntry())
+					&& !assessmentLock && !roles.isGuestOnly() && !userCourseEnv.isCourseReadOnly()
+					&& isAllowedToLeave(userCourseEnv)) {
+				leaveLink = LinkFactory.createToolLink("sign.out", "leave", translate("sign.out"), this);
+				leaveLink.setIconLeftCSS("o_icon o_icon-fw o_icon_sign_out");
+				myCourse.addComponent(new Spacer("leaving-space"));
+				myCourse.addComponent(leaveLink);
+			}
 		}
 			
 		if(myCourse.size() > 0) {
@@ -774,10 +776,10 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		}
 	}
 	
-	private boolean isAllowedToLeave(UserCourseEnvironmentImpl uce) {
-		if(!uce.getParticipatingGroups().isEmpty()) {
-			CourseNode rootNode = uce.getCourseEnvironment().getRunStructure().getRootNode();
-			OLATResource courseResource = uce.getCourseEnvironment().getCourseGroupManager().getCourseResource();
+	private boolean isAllowedToLeave(UserCourseEnvironment userCourseEnv) {
+		if(!userCourseEnv.getParticipatingGroups().isEmpty()) {
+			CourseNode rootNode = userCourseEnv.getCourseEnvironment().getRunStructure().getRootNode();
+			OLATResource courseResource = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseResource();
 			
 			AtomicBoolean bool = new AtomicBoolean(false);
 			new TreeVisitor(node -> {
@@ -785,7 +787,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					try {
 						ENCourseNode enNode = (ENCourseNode)node;
 						boolean cancelEnrollEnabled = enNode.getModuleConfiguration().getBooleanSafe(ENCourseNode.CONF_CANCEL_ENROLL_ENABLED);
-						if(!cancelEnrollEnabled && enNode.isUsedForEnrollment(uce.getParticipatingGroups(), courseResource)) {
+						if(!cancelEnrollEnabled && enNode.isUsedForEnrollment(userCourseEnv.getParticipatingGroups(), courseResource)) {
 							bool.set(true);
 						}
 					} catch (Exception e) {
@@ -798,7 +800,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 				return false;// is in a enrollment group
 			}
 		}
-		return (uce.isParticipant() || !uce.getParticipatingGroups().isEmpty());
+		return (userCourseEnv.isParticipant() || !userCourseEnv.getParticipatingGroups().isEmpty());
 	}
 	
 	private void initGeneralTools(ICourse course) {
@@ -1049,7 +1051,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 		super.processPopEvent(ureq, pop);
 		
 		if(pop.getController() == assessmentToolCtr) {
-			setCourseClosedMessage(getUserCourseEnvironment());
+			setCourseClosedMessage();
 		}
 		if(pop.getController() != getRunMainController()) {
 			toolControllerDone(ureq);

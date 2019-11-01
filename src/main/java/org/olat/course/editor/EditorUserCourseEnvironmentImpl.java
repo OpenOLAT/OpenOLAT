@@ -120,6 +120,16 @@ public class EditorUserCourseEnvironmentImpl implements UserCourseEnvironment {
 	}
 
 	@Override
+	public List<BusinessGroup> getParticipatingGroups() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<BusinessGroup> getWaitingLists() {
+		return Collections.emptyList();
+	}
+
+	@Override
 	public List<BusinessGroup> getCoachedGroups() {
 		return Collections.emptyList();
 	}

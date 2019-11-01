@@ -256,8 +256,8 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		toolbarPanel.setShowCloseLink(!assessmentLock, !assessmentLock);
 		toolbarPanel.getBackLink().setEnabled(!assessmentLock);
 		putInitialPanel(toolbarPanel);
-		doRun(ureq, this.reSecurity);
 		onSecurityReloaded(ureq);
+		doRun(ureq, this.reSecurity);
 		initToolbar();
 		
 		eventBus = ureq.getUserSession().getSingleUserEventCenter();
@@ -944,8 +944,9 @@ public class RepositoryEntryRuntimeController extends MainLayoutBasicController 
 		setActiveTool(ordersLink);
 	}
 	
-	private void doRun(UserRequest ureq, RepositoryEntrySecurity security) {
-		if(security.isEntryAdmin() || security.isPrincipal() || reSecurity.isMasterCoach()) {
+	private void doRun(UserRequest ureq, SingleRoleRepositoryEntrySecurity srSecurity) {
+		RepositoryEntrySecurity security = srSecurity.getWrappedSecurity();
+		if(security .isEntryAdmin() || security.isPrincipal() || reSecurity.isMasterCoach()) {
 			launchContent(ureq);
 		} else {
 			// guest are allowed to see resource with BARG

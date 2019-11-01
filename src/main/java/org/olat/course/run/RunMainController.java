@@ -197,7 +197,7 @@ public class RunMainController extends MainLayoutBasicController implements Gene
 		uce = loadUserCourseEnvironment(ureq, reSecurity);
 
 		// build score now
-		uce.getScoreAccounting().evaluateAll();
+		uce.getScoreAccounting().evaluateAll(true);
 		
 		if(assessmentMode != null && assessmentMode.isRestrictAccessElements()) {
 			Status assessmentStatus = assessmentMode.getStatus();
