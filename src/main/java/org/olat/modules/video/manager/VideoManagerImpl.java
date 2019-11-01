@@ -52,6 +52,7 @@ import org.jcodec.api.FrameGrab;
 import org.jcodec.common.io.FileChannelWrapper;
 import org.jcodec.common.io.NIOUtils;
 import org.jcodec.scale.AWTUtil;
+import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.image.Crop;
 import org.olat.core.commons.services.image.ImageService;
 import org.olat.core.commons.services.image.Size;
@@ -136,6 +137,8 @@ public class VideoManagerImpl implements VideoManager {
 	
 	private final JobKey videoJobKey = new JobKey("videoTranscodingJobDetail", Scheduler.DEFAULT_GROUP);
 
+	@Autowired
+	private DB dbInstance;
 	@Autowired
 	private MovieService movieService;
 	@Autowired
@@ -662,7 +665,7 @@ public class VideoManagerImpl implements VideoManager {
 	}
 	
 	@Override
-	public boolean importFromMasterFile(RepositoryEntry repoEntry, VFSLeaf masterVideo) {
+	public VideoMeta importFromMasterFile(RepositoryEntry repoEntry, VFSLeaf masterVideo) {
 		OLATResource videoResource = repoEntry.getOlatResource();
 		
 		// 1) copy master video to final destination with standard name
@@ -685,8 +688,66 @@ public class VideoManagerImpl implements VideoManager {
 		if (posterImage != null) {
 			repositoryManager.setImage(posterImage, repoEntry);
 		}
-				
-		return true;
+		
+		VideoMeta meta = null;
+		if(targetFile != null) {
+			createVideoMetadata(repoEntry, targetFile.getSize(), targetFile.getName());
+			dbInstance.commit();
+			meta = updateVideoMetadata(videoResource, targetFile);
+		}		
+		return meta;
+	}
+	
+	@Override
+	public VideoMeta importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive) {
+		OLATResource videoResource = repoEntry.getOlatResource();
+		// 1) unzip archive
+		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
+		ZipUtil.unzip(exportArchive, baseContainer);
+		exportArchive.delete();
+		
+		// 2) update metadata from the repo entry export
+		VideoMeta meta = null;
+		LocalFolderImpl repoentryContainer = (LocalFolderImpl) baseContainer.resolve(DIRNAME_REPOENTRY); 
+		if (repoentryContainer != null) {
+			// repo metadata
+			RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(repoentryContainer.getBasefile());
+			importExport.setRepoEntryPropertiesFromImport(repoEntry);
+			// video metadata
+			VFSItem videoMetaFile = repoentryContainer.resolve(FILENAME_VIDEO_METADATA_XML); 
+			if(videoMetaFile instanceof VFSLeaf) {
+				VideoMeta videoMeta = VideoMetaXStream.fromXml((VFSLeaf)videoMetaFile);
+				meta = videoMetadataDao.copyVideoMetadata(repoEntry, videoMeta);
+			}
+			// now delete the import folder, not used anymore
+			repoentryContainer.delete();
+		}
+		
+		// 3) Set poster image for repo entry
+		VFSContainer masterContainer = getMasterContainer(videoResource);
+		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
+		if (posterImage != null) {
+			repositoryManager.setImage(posterImage, repoEntry);
+		}
+		
+		dbInstance.commit();
+
+		VFSLeaf videoFile = getMasterVideoFile(videoResource);
+		if(videoFile != null) {
+			if(meta == null) {
+				meta = createVideoMetadata(repoEntry, videoFile.getSize(), videoFile.getName());
+				dbInstance.commit();
+			} else if(meta.getVideoFormat() == null) {
+				meta = checkUnkownVideoFormat(meta);
+				dbInstance.commit();
+			}
+			
+			// check if these are default settings
+			if(meta != null && meta.getWidth() == 800 && meta.getHeight() == 600) {
+				meta = updateVideoMetadata(videoResource, videoFile);
+			}
+		}
+		return meta;
 	}
 	
 	@Override
@@ -742,7 +803,7 @@ public class VideoManagerImpl implements VideoManager {
 	
 	@Override
 	public VideoMeta checkUnkownVideoFormat(VideoMeta meta) {
-		if(meta == null || meta.getVideoResource() == null || StringHelper.containsNonWhitespace(meta.getUrl())) return null;
+		if(meta == null || meta.getVideoResource() == null || StringHelper.containsNonWhitespace(meta.getUrl())) return meta;
 		
 		VFSLeaf video = getMasterVideoFile(meta.getVideoResource());
 		if(video != null) {
@@ -887,39 +948,7 @@ public class VideoManagerImpl implements VideoManager {
 		}	
 	}
 	
-	@Override
-	public boolean importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive) {
-		OLATResource videoResource = repoEntry.getOlatResource();
-		// 1) unzip archive
-		VFSContainer baseContainer= FileResourceManager.getInstance().getFileResourceRootImpl(videoResource);
-		ZipUtil.unzip(exportArchive, baseContainer);
-		exportArchive.delete();
-		
-		// 2) update metadata from the repo entry export
-		LocalFolderImpl repoentryContainer = (LocalFolderImpl) baseContainer.resolve(DIRNAME_REPOENTRY); 
-		if (repoentryContainer != null) {
-			// repo metadata
-			RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(repoentryContainer.getBasefile());
-			importExport.setRepoEntryPropertiesFromImport(repoEntry);
-			// video metadata
-			VFSItem videoMetaFile = repoentryContainer.resolve(FILENAME_VIDEO_METADATA_XML); 
-			if(videoMetaFile instanceof VFSLeaf) {
-				VideoMeta videoMeta = VideoMetaXStream.fromXml((VFSLeaf)videoMetaFile);
-				videoMetadataDao.copyVideoMetadata(repoEntry, videoMeta);
-			}
-			// now delete the import folder, not used anymore
-			repoentryContainer.delete();
-		}
-		
-		// 3) Set poster image for repo entry
-		VFSContainer masterContainer = getMasterContainer(videoResource);
-		VFSLeaf posterImage = (VFSLeaf)masterContainer.resolve(FILENAME_POSTER_JPG);
-		if (posterImage != null) {
-			repositoryManager.setImage(posterImage, repoEntry);
-		}
 
-		return true;
-	}
 
 	@Override
 	public VideoTranscoding updateVideoTranscoding(VideoTranscoding videoTranscoding) {
