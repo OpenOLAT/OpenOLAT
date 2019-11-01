@@ -206,9 +206,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 
 	@Override
 	protected void cleanUp() {
-		removeAsListenerAndDispose(bulkAssessmentToolCtrl);
 		removeAsListenerAndDispose(assessmentCtrl);
-		bulkAssessmentToolCtrl = null;
 		assessmentCtrl = null;
 		super.cleanUp();
 	}
