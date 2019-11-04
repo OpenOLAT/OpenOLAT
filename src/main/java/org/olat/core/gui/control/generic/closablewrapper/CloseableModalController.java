@@ -181,10 +181,8 @@ public class CloseableModalController extends DefaultController {
 		getWindowControl().pop();
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
+	@Override
 	protected void doDispose() {
-		//
+		getWindowControl().removeModalDialog(myContent);
 	}
 }

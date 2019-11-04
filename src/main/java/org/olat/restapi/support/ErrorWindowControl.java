@@ -50,7 +50,12 @@ public class ErrorWindowControl implements WindowControl {
 
 	@Override
 	public void pushAsModalDialog(Component comp) {/* */}
-	
+
+	@Override
+	public boolean removeModalDialog(Component comp) {
+		return false;
+	}
+
 	@Override
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {/* */}
 

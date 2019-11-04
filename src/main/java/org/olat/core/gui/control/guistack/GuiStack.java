@@ -43,6 +43,8 @@ public interface GuiStack {
 	 */
 	public void pushModalDialog(Component content);
 	
+	public boolean removeModalDialog(Component content);
+	
 	/**
 	 * 
 	 * @param content The component to push as callout window

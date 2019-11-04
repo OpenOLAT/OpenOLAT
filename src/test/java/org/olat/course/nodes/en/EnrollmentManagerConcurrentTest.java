@@ -366,6 +366,12 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
   /////////////////////////////////////
 	public void pushToMainArea(Component comp){}
 	public void pushAsModalDialog(Component comp){}
+	
+	@Override
+	public boolean removeModalDialog(Component comp) {
+		return false;
+	}
+
 	@Override
 	public void pushFullScreen(Controller ctrl, String bodyClass) {/* */}
 	@Override

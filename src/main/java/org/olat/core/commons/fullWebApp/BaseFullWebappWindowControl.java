@@ -60,6 +60,13 @@ class BaseFullWebappWindowControl implements WindowControl {
 	public void pushAsModalDialog(Component newModalDialog) {
 		webappCtrl.getCurrentGuiStack().pushModalDialog(newModalDialog);
 	}
+	
+	
+
+	@Override
+	public boolean removeModalDialog(Component comp) {
+		return webappCtrl.getCurrentGuiStack().removeModalDialog(comp);
+	}
 
 	@Override
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings) {
