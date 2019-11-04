@@ -49,6 +49,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableReduceEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableSearchEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SelectionEvent;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlexiCellRenderer;
@@ -131,12 +132,15 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	protected FlexiTableElement membersTable;
 	protected MemberListTableModel memberListModel;
 	protected final TooledStackedPanel toolbarPanel;
-	private FormLink editButton, mailButton, removeButton;
+	private FormLink editButton;
+	private FormLink mailButton;
+	private FormLink removeButton;
 	
 	private ToolsController toolsCtrl;
 	protected CloseableModalController cmc;
 	private ContactFormController contactCtrl;
-	private DialogBoxController confirmSendMailBox;
+	private DialogBoxController confirmSendMailChangesBox;
+	private DialogBoxController confirmSendMailGraduatesBox;
 	private UserInfoMainController visitingCardCtrl;
 	private EditMembershipController editMembersCtrl;
 	private MemberLeaveConfirmationController leaveDialogBox;
@@ -368,11 +372,11 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				}
 			} else if(event instanceof FlexiTableSearchEvent) {
 				String cmd = event.getCommand();
-				if(FlexiTableSearchEvent.SEARCH.equals(event.getCommand()) || FlexiTableSearchEvent.QUICK_SEARCH.equals(event.getCommand())) {
+				if(FlexiTableReduceEvent.SEARCH.equals(event.getCommand()) || FlexiTableReduceEvent.QUICK_SEARCH.equals(event.getCommand())) {
 					FlexiTableSearchEvent se = (FlexiTableSearchEvent)event;
 					String search = se.getSearch();
 					doSearch(search);
-				} else if(FlexiTableSearchEvent.RESET.getCommand().equals(cmd)) {
+				} else if(FormEvent.RESET.getCommand().equals(cmd)) {
 					doResetSearch();
 				}
 			}
@@ -441,15 +445,19 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				MemberPermissionChangeEvent e = (MemberPermissionChangeEvent)event;
 				doConfirmChangePermission(ureq, e, null);
 			}
-		} else if(confirmSendMailBox == source) {
+		} else if(confirmSendMailChangesBox == source) {
 			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
-			MailConfirmation confirmation = (MailConfirmation)confirmSendMailBox.getUserObject();
+			MailConfirmation confirmation = (MailConfirmation)confirmSendMailChangesBox.getUserObject();
 			MemberPermissionChangeEvent e =confirmation.getE();
 			if(e.getMember() != null) {
 				doChangePermission(ureq, e, sendMail);
 			} else {
 				doChangePermission(ureq, e, confirmation.getMembers(), sendMail);
 			}
+		} else if(confirmSendMailGraduatesBox == source) {
+			boolean sendMail = DialogBoxUIFactory.isYesEvent(event) || DialogBoxUIFactory.isOkEvent(event);
+			GraduationConfirmation confirmation = (GraduationConfirmation)confirmSendMailGraduatesBox.getUserObject();
+			doGraduate(confirmation.getRows(), sendMail);
 		} else if (source == contactCtrl) {
 			if(cmc != null) {
 				cmc.deactivate();
@@ -602,8 +610,8 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				doChangePermission(ureq, e, members, true);
 			}
 		} else {
-			confirmSendMailBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.send.mail"), confirmSendMailBox);
-			confirmSendMailBox.setUserObject(new MailConfirmation(e, members));
+			confirmSendMailChangesBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.send.mail"), confirmSendMailChangesBox);
+			confirmSendMailChangesBox.setUserObject(new MailConfirmation(e, members));
 		}
 	}
 	
@@ -680,12 +688,23 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		listenTo(cmc);
 	}
 	
-	protected void doGraduate(List<MemberRow> members) {
+	protected void doConfirmGraduate(UserRequest ureq, List<MemberRow> members) {
+		boolean mailMandatory = groupModule.isMandatoryEnrolmentEmail(ureq.getUserSession().getRoles());
+		if(mailMandatory) {
+			doGraduate(members, true);
+		} else {
+			confirmSendMailGraduatesBox = activateYesNoDialog(ureq, null, translate("dialog.modal.bg.send.mail"), confirmSendMailGraduatesBox);
+			confirmSendMailGraduatesBox.setUserObject(new GraduationConfirmation(members));
+		}
+	}
+	
+	protected void doGraduate(List<MemberRow> members, boolean sendEmail) {
+		MailPackage sendmailPackage = new MailPackage(sendEmail);
 		if(businessGroup != null) {
 			List<Long> identityKeys = getMemberKeys(members);
 			List<Identity> identitiesToGraduate = securityManager.loadIdentityByKeys(identityKeys);
 			businessGroupService.moveIdentityFromWaitingListToParticipant(getIdentity(), identitiesToGraduate,
-					businessGroup, null);
+					businessGroup, sendmailPackage);
 		} else {
 			Map<Long, BusinessGroup> groupsMap = new HashMap<>();
 			Map<BusinessGroup, List<Identity>> graduatesMap = new HashMap<>();
@@ -716,7 +735,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				BusinessGroup fullGroup = entry.getKey();
 				List<Identity> identitiesToGraduate = entry.getValue();
 				businessGroupService.moveIdentityFromWaitingListToParticipant(getIdentity(), identitiesToGraduate,
-						fullGroup, null);
+						fullGroup, sendmailPackage);
 			}
 		}
 		reloadModel();
@@ -841,6 +860,18 @@ public abstract class AbstractMemberListController extends FormBasicController i
 		row.setChatLink(chatLink);
 	}
 	
+	private class GraduationConfirmation {
+		private final List<MemberRow> rows;
+		
+		public GraduationConfirmation(List<MemberRow> rows) {
+			this.rows = new ArrayList<>(rows);
+		}
+
+		public List<MemberRow> getRows() {
+			return rows;
+		}
+	}
+	
 	private class MailConfirmation {
 		private final List<Identity> members;
 		private final MemberPermissionChangeEvent e;
@@ -924,7 +955,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 				Link link = (Link)source;
 				String cmd = link.getCommand();
 				if(TABLE_ACTION_GRADUATE.equals(cmd)) {
-					doGraduate(Collections.singletonList(row));
+					doConfirmGraduate(ureq, Collections.singletonList(row));
 				} else if(TABLE_ACTION_EDIT.equals(cmd)) {
 					openEdit(ureq, row);
 				} else if(TABLE_ACTION_REMOVE.equals(cmd)) {

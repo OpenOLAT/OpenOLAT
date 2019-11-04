@@ -1343,7 +1343,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 			if (!businessGroupRelationDAO.hasRole(identity, currBusinessGroup, GroupRoles.participant.name()) ) {
 				// Identity is not in participant-list => move identity from waiting-list to participant-list
 				addParticipant(ureqIdentity, ureqRoles, identity, currBusinessGroup, mailing, events);
-				removeFromWaitingList(ureqIdentity, identity, currBusinessGroup, mailing, events);
+				removeFromWaitingList(ureqIdentity, identity, currBusinessGroup, null, events);
 				response.getAddedIdentities().add(identity);
 				// notification mail is handled in controller
 			} else {
