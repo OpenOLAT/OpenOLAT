@@ -224,7 +224,7 @@ public class GTAIdentityListCourseNodeController extends IdentityListCourseNodeC
 		TaskList taskList = gtaManager.getTaskList(getCourseRepositoryEntry(), (GTACourseNode)assessableCourseNode);
 		Task task = gtaManager.getTask(assessedIdentity, taskList);
 		if(task != null) {
-			gtaManager.updateTask(task, TaskProcess.graded, (GTACourseNode)assessableCourseNode, Role.coach);
+			gtaManager.updateTask(task, TaskProcess.graded, (GTACourseNode)assessableCourseNode, false, getIdentity(), Role.coach);
 		}
 	}
 

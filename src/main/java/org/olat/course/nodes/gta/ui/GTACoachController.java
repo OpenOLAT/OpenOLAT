@@ -391,12 +391,11 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		
 		if(revisions) {
 			if(GTAType.individual.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-				UserCourseEnvironment assessedUserCourseEnv = getAssessedUserCourseEnvironment();
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, gtaNode, coachCourseEnv, assessedGroup, assessedIdentity, assessedUserCourseEnv, taskListEventResource);
+					courseEnv, assignedTask, gtaNode, coachCourseEnv, null, assessedIdentity, taskListEventResource);
 			} else {
 				revisionDocumentsCtrl = new GTACoachRevisionAndCorrectionsController(ureq, getWindowControl(),
-					courseEnv, assignedTask, gtaNode, coachCourseEnv, assessedGroup, null, null, taskListEventResource);
+					courseEnv, assignedTask, gtaNode, coachCourseEnv, assessedGroup, null, taskListEventResource);
 			}
 			listenTo(revisionDocumentsCtrl);
 			mainVC.put("revisionDocs", revisionDocumentsCtrl.getInitialComponent());
@@ -497,7 +496,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			task = gtaManager.getTask(assessedIdentity, taskList);
 		}
 		if(task != null) {
-			task = gtaManager.updateTask(task, TaskProcess.graded, gtaNode, Role.coach);
+			gtaManager.updateTask(task, TaskProcess.graded, gtaNode, false, getIdentity(), Role.coach);
 			cleanUpProcess();
 			process(ureq);
 		}
@@ -512,7 +511,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			task = gtaManager.getTask(assessedIdentity, taskList);
 		}
 		if(task != null && task.getTaskStatus() == TaskProcess.graded) {
-			task = gtaManager.updateTask(task, TaskProcess.grading, gtaNode, Role.coach);
+			gtaManager.updateTask(task, TaskProcess.grading, gtaNode, false, getIdentity(), Role.coach);
 			cleanUpProcess();
 			process(ureq);
 		}
@@ -667,7 +666,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 			task = gtaManager.createAndPersistTask(null, reloadedTaskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
 		}
 		
-		gtaManager.reviewedTask(task, gtaNode, Role.coach);
+		gtaManager.reviewedTask(task, gtaNode, getIdentity(), Role.coach);
 		showInfo("coach.documents.successfully.reviewed");
 		gtaManager.log("Review", "documents reviewed", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
@@ -687,7 +686,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	}
 	
 	private void doRevisions(UserRequest ureq, Task task) {
-		gtaManager.updateTask(task, TaskProcess.revision, 1, gtaNode, Role.coach);
+		gtaManager.updateTask(task, TaskProcess.revision, 1, gtaNode, false, getIdentity(), Role.coach);
 		gtaManager.log("Review", "need revision", task, getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 		
 		cleanUpProcess();
@@ -743,7 +742,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		}
 		
 		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;
-		task = gtaManager.collectTask(task, gtaNode, numOfDocs);
+		task = gtaManager.collectTask(task, gtaNode, numOfDocs, getIdentity());
 		showInfo("run.documents.successfully.submitted");
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUMBIT_TASK,
@@ -755,7 +754,6 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 		
 		cleanUpProcess();
 		process(ureq);
-		doUpdateAttempts();
 	}
 	
 	private void doConfirmBackToSubmission(UserRequest ureq, Task assignedTask) {
@@ -777,7 +775,7 @@ public class GTACoachController extends GTAAbstractController implements Assessm
 	private void doBackToSubmission(UserRequest ureq, Task task) {
 		TaskProcess submit = gtaManager.previousStep(TaskProcess.review, gtaNode);//only submit allowed
 		if(submit == TaskProcess.submit) {
-			task = gtaManager.updateTask(task, submit, gtaNode, Role.coach);
+			task = gtaManager.updateTask(task, submit, gtaNode, false, getIdentity(), Role.coach);
 			
 			gtaManager.log("Back to submission", "revert status of task back to submission", task,
 					getIdentity(), assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);

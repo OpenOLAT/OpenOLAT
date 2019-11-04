@@ -218,9 +218,9 @@ public class GTAParticipantController extends GTAAbstractController implements A
 	private Task assignTaskAutomatically(UserRequest ureq, Task assignedTask) {
 		AssignmentResponse response;
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
-			response = gtaManager.assignTaskAutomatically(taskList, assessedGroup, courseEnv, gtaNode);
+			response = gtaManager.assignTaskAutomatically(taskList, assessedGroup, courseEnv, gtaNode, getIdentity());
 		} else {
-			response = gtaManager.assignTaskAutomatically(taskList, assessedIdentity, courseEnv, gtaNode);
+			response = gtaManager.assignTaskAutomatically(taskList, assessedIdentity, courseEnv, gtaNode, getIdentity());
 		}
 		
 		if(response == null || response.getStatus() == AssignmentResponse.Status.error) {
@@ -376,7 +376,7 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			TaskProcess firstStep = gtaManager.firstStep(gtaNode);
 			task = gtaManager.createTask(null, taskList, firstStep, assessedGroup, assessedIdentity, gtaNode);
 		}
-		task = gtaManager.submitTask(task, gtaNode, numOfDocs, Role.user);
+		task = gtaManager.submitTask(task, gtaNode, numOfDocs, getIdentity(), Role.user);
 		showInfo("run.documents.successfully.submitted");
 		
 		TaskMultiUserEvent event = new TaskMultiUserEvent(TaskMultiUserEvent.SUMBIT_TASK,
@@ -389,7 +389,6 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		
 		cleanUpProcess();
 		process(ureq);
-		doUpdateAttempts();
 
 		//do send e-mail
 		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION)) {

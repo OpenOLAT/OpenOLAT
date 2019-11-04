@@ -86,6 +86,7 @@ import org.olat.course.nodes.gta.model.TaskListImpl;
 import org.olat.course.nodes.gta.model.TaskRevisionDateImpl;
 import org.olat.course.nodes.gta.ui.events.SubmitEvent;
 import org.olat.course.run.environment.CourseEnvironment;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
@@ -94,7 +95,6 @@ import org.olat.group.area.BGAreaManager;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.modules.ModuleConfiguration;
-import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.Role;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.edusharing.EdusharingService;
@@ -130,8 +130,6 @@ public class GTAManagerImpl implements GTAManager {
 	private GTAIdentityMarkDAO gtaMarkDao;
 	@Autowired
 	private BGAreaManager areaManager;
-	@Autowired
-	private AssessmentService assessmentService;
 	@Autowired
 	private EdusharingService edusharingService;
 	@Autowired
@@ -950,17 +948,17 @@ public class GTAManagerImpl implements GTAManager {
 	}
 	
 	@Override
-	public AssignmentResponse assignTaskAutomatically(TaskList taskList, BusinessGroup assessedGroup, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		return assignTaskAutomatically(taskList, assessedGroup, null, courseEnv, cNode);
+	public AssignmentResponse assignTaskAutomatically(TaskList taskList, BusinessGroup assessedGroup, CourseEnvironment courseEnv, GTACourseNode cNode, Identity doerIdentity) {
+		return assignTaskAutomatically(taskList, assessedGroup, null, courseEnv, cNode, doerIdentity);
 	}
 	
 	@Override
-	public AssignmentResponse assignTaskAutomatically(TaskList taskList, Identity assessedIdentity, CourseEnvironment courseEnv, GTACourseNode cNode) {
-		return assignTaskAutomatically(taskList, null, assessedIdentity, courseEnv, cNode);
+	public AssignmentResponse assignTaskAutomatically(TaskList taskList, Identity assessedIdentity, CourseEnvironment courseEnv, GTACourseNode cNode, Identity doerIdentity) {
+		return assignTaskAutomatically(taskList, null, assessedIdentity, courseEnv, cNode, doerIdentity);
 	}
 	
 	private AssignmentResponse assignTaskAutomatically(TaskList tasks, BusinessGroup businessGroup, Identity identity,
-			CourseEnvironment courseEnv, GTACourseNode cNode) {
+			CourseEnvironment courseEnv, GTACourseNode cNode, Identity doerIdentity) {
 
 		Task currentTask;
 		if(businessGroup != null) {
@@ -1001,7 +999,7 @@ public class GTAManagerImpl implements GTAManager {
 					task = dbInstance.getCurrentEntityManager().merge(task);
 				}	
 				dbInstance.commit();
-				syncAssessmentEntry(task, cNode, Role.user);
+				syncAssessmentEntry(task, cNode, false, doerIdentity, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
 		} else {
@@ -1009,7 +1007,7 @@ public class GTAManagerImpl implements GTAManager {
 				((TaskImpl)currentTask).setTaskStatus(TaskProcess.submit);
 			}
 			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
-			syncAssessmentEntry((TaskImpl)currentTask, cNode, Role.user);
+			syncAssessmentEntry((TaskImpl)currentTask, cNode, false, doerIdentity, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		
@@ -1096,22 +1094,22 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
-	public AssignmentResponse selectTask(Identity identity, TaskList tasks, GTACourseNode cNode, File taskFile) {
+	public AssignmentResponse selectTask(Identity identity, TaskList tasks, GTACourseNode cNode, File taskFile, Identity doerIdentity) {
 		if(!GTAType.individual.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			return AssignmentResponse.ERROR;
 		}
-		return selectTask(identity, null, tasks, cNode, taskFile);
+		return selectTask(identity, null, tasks, cNode, taskFile, doerIdentity);
 	}
 	
 	@Override
-	public AssignmentResponse selectTask(BusinessGroup businessGroup, TaskList tasks, GTACourseNode cNode, File taskFile) {
+	public AssignmentResponse selectTask(BusinessGroup businessGroup, TaskList tasks, GTACourseNode cNode, File taskFile, Identity doerIdentity) {
 		if(!GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
 			return AssignmentResponse.ERROR;
 		}
-		return selectTask(null, businessGroup, tasks, cNode, taskFile);
+		return selectTask(null, businessGroup, tasks, cNode, taskFile, doerIdentity);
 	}
 	
-	private AssignmentResponse selectTask(Identity identity, BusinessGroup businessGroup, TaskList tasks, GTACourseNode cNode, File taskFile) {
+	private AssignmentResponse selectTask(Identity identity, BusinessGroup businessGroup, TaskList tasks, GTACourseNode cNode, File taskFile, Identity doerIdentity) {
 		Task currentTask;
 		if(businessGroup != null) {
 			currentTask = getTask(businessGroup, tasks);
@@ -1132,7 +1130,7 @@ public class GTAManagerImpl implements GTAManager {
 				TaskImpl task = createTask(taskName, reloadedTasks, nextStep, businessGroup, identity, cNode);
 				task.setAssignmentDate(new Date());
 				dbInstance.getCurrentEntityManager().persist(task);
-				syncAssessmentEntry(task, cNode, Role.user);
+				syncAssessmentEntry(task, cNode, false, doerIdentity, Role.user);
 				response = new AssignmentResponse(task, Status.ok);
 			}
 			dbInstance.commit();
@@ -1145,7 +1143,7 @@ public class GTAManagerImpl implements GTAManager {
 				}
 			}
 			currentTask = dbInstance.getCurrentEntityManager().merge(currentTask);
-			syncAssessmentEntry((TaskImpl)currentTask, cNode, Role.user);
+			syncAssessmentEntry((TaskImpl)currentTask, cNode, false, doerIdentity, Role.user);
 			response = new AssignmentResponse(currentTask, Status.ok);
 		}
 		return response;
@@ -1375,7 +1373,7 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
-	public Task nextStep(Task task, GTACourseNode cNode, Role by) {
+	public Task nextStep(Task task, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		TaskProcess currentStep = taskImpl.getTaskStatus();
 		//cascade through the possible steps
@@ -1383,7 +1381,7 @@ public class GTAManagerImpl implements GTAManager {
 		taskImpl.setTaskStatus(nextStep);
 		TaskImpl mergedTask = dbInstance.getCurrentEntityManager().merge(taskImpl);
 		dbInstance.commit();//make the thing definitiv
-		syncAssessmentEntry(mergedTask, cNode, by);
+		syncAssessmentEntry(mergedTask, cNode, incrementUserAttempts, doerIdentity, by);
 		return mergedTask;
 	}
 	
@@ -1534,23 +1532,23 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
-	public Task collectTask(Task task, GTACourseNode cNode, int numOfDocs) {
+	public Task collectTask(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity) {
 		TaskProcess review = nextStep(TaskProcess.submit, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setCollectionDate(new Date());
 		taskImpl.setCollectionNumOfDocs(numOfDocs);
-		return updateTask(task, review, cNode, Role.coach);
+		return updateTask(task, review, cNode, true, doerIdentity, Role.coach);
 	}
 
 	@Override
-	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs, Role by) {
+	public Task submitTask(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity, Role by) {
 		TaskProcess review = nextStep(TaskProcess.submit, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionDate(new Date());
 		taskImpl.setSubmissionNumOfDocs(numOfDocs);
 		taskImpl.setCollectionDate(null);
 		taskImpl.setCollectionNumOfDocs(null);
-		return updateTask(task, review, cNode, by);
+		return updateTask(task, review, cNode, true, doerIdentity, by);
 	}
 
 	@Override
@@ -1558,15 +1556,15 @@ public class GTAManagerImpl implements GTAManager {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setAllowResetDate(new Date());
 		taskImpl.setAllowResetIdentity(allower);
-		return updateTask(task, task.getTaskStatus(), cNode, Role.coach);
+		return updateTask(task, task.getTaskStatus(), cNode, false, allower, Role.coach);
 	}
 	
 	@Override
-	public Task resetTask(Task task, GTACourseNode cNode, CourseEnvironment courseEnv) {
+	public Task resetTask(Task task, GTACourseNode cNode, CourseEnvironment courseEnv, Identity doerIdentity) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setTaskName(null);
 		taskImpl.setAllowResetDate(null);
-		Task updatedTask = updateTask(task, TaskProcess.assignment, cNode, Role.user);
+		Task updatedTask = updateTask(task, TaskProcess.assignment, cNode, false, doerIdentity, Role.user);
 		
 		File submissionDir = null;
 		if(updatedTask.getBusinessGroup() != null) {
@@ -1581,38 +1579,38 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
-	public Task resetTaskRefused(Task task, GTACourseNode cNode) {
+	public Task resetTaskRefused(Task task, GTACourseNode cNode, Identity doerIdentity) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setAllowResetDate(null);
 		taskImpl.setAllowResetIdentity(null);
-		return updateTask(task, task.getTaskStatus(), cNode, Role.user);
+		return updateTask(task, task.getTaskStatus(), cNode, false, doerIdentity, Role.user);
 	}
 
 	@Override
-	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Role by) {
+	public Task submitRevisions(Task task, GTACourseNode cNode, int numOfDocs, Identity doerIdentity, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setSubmissionRevisionsDate(new Date());
 		taskImpl.setSubmissionRevisionsNumOfDocs(numOfDocs);
 		//log the date
 		createAndPersistTaskRevisionDate(taskImpl, taskImpl.getRevisionLoop(), TaskProcess.correction);
-		return updateTask(taskImpl, TaskProcess.correction, cNode, by);
+		return updateTask(taskImpl, TaskProcess.correction, cNode, true, doerIdentity, by);
 	}
 	
 	@Override
-	public Task reviewedTask(Task task, GTACourseNode cNode, Role by) {
+	public Task reviewedTask(Task task, GTACourseNode cNode, Identity doerIdentity, Role by) {
 		TaskProcess solution = nextStep(TaskProcess.correction, cNode);
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setAcceptationDate(new Date());
-		return updateTask(taskImpl, solution, cNode, by);
+		return updateTask(taskImpl, solution, cNode, false, doerIdentity, by);
 	}
 
 	@Override
-	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, Role by) {
+	public Task updateTask(Task task, TaskProcess newStatus, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setTaskStatus(newStatus);
 		syncDates(taskImpl, newStatus);
 		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
-		syncAssessmentEntry(taskImpl, cNode, by);
+		syncAssessmentEntry(taskImpl, cNode, incrementUserAttempts, doerIdentity, by);
 		
 		// mark the publishers
 		OLATResource resource = taskImpl.getTaskList().getEntry().getOlatResource();
@@ -1656,14 +1654,14 @@ public class GTAManagerImpl implements GTAManager {
 	}
 
 	@Override
-	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode, Role by) {
+	public Task updateTask(Task task, TaskProcess newStatus, int iteration, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by) {
 		TaskImpl taskImpl = (TaskImpl)task;
 		taskImpl.setTaskStatus(newStatus);
 		taskImpl.setRevisionLoop(iteration);
 		taskImpl = dbInstance.getCurrentEntityManager().merge(taskImpl);
 		//log date
 		createAndPersistTaskRevisionDate(taskImpl, iteration, newStatus);
-		syncAssessmentEntry(taskImpl, cNode, by);
+		syncAssessmentEntry(taskImpl, cNode, incrementUserAttempts, doerIdentity, by);
 		return taskImpl;
 	}
 
@@ -1713,31 +1711,27 @@ public class GTAManagerImpl implements GTAManager {
 		return assessmentStatus;
 	}
 	
-	private void syncAssessmentEntry(TaskImpl taskImpl, GTACourseNode cNode, Role by) {
+	private void syncAssessmentEntry(TaskImpl taskImpl, GTACourseNode cNode, boolean incrementUserAttempts, Identity doerIdentity, Role by) {
 		if(taskImpl == null || taskImpl.getTaskStatus() == null || cNode == null) return;
 		
 		TaskList taskList = getTaskList(taskImpl);
 		RepositoryEntry courseRepoEntry = taskList.getEntry();
+		ICourse course = CourseFactory.loadCourse(courseRepoEntry);
 		AssessmentEntryStatus assessmentStatus = convertToAssessmentEntrystatus(taskImpl, cNode);
 		if(GTAType.group.name().equals(cNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			//update whole group
-			assessmentService.updateAssessmentEntries(taskImpl.getBusinessGroup(), courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
-			dbInstance.commit();
-
-			ICourse course = CourseFactory.loadCourse(courseRepoEntry);
 			List<Identity> assessedIdentities = businessGroupRelationDao.getMembers(taskImpl.getBusinessGroup(), GroupRoles.participant.name());
 			for(Identity assessedIdentity:assessedIdentities) {
 				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-				cNode.updateLastModifications(userCourseEnv, assessedIdentity, by);
+				AssessmentEvaluation eval = cNode.getUserScoreEvaluation(userCourseEnv);
+				eval = new AssessmentEvaluation(eval, assessmentStatus);
+				cNode.updateUserScoreEvaluation(eval, userCourseEnv, doerIdentity, incrementUserAttempts, by);
 			}
 		} else {
 			Identity assessedIdentity = taskImpl.getIdentity();
-			assessmentService.updateAssessmentEntry(assessedIdentity, courseRepoEntry, cNode.getIdent(), null, assessmentStatus);
-			dbInstance.commit();
-
-			ICourse course = CourseFactory.loadCourse(courseRepoEntry);
 			UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
-			cNode.updateLastModifications(userCourseEnv, taskImpl.getIdentity(), by);
+			AssessmentEvaluation eval = cNode.getUserScoreEvaluation(userCourseEnv);
+			eval = new AssessmentEvaluation(eval, assessmentStatus);
+			cNode.updateUserScoreEvaluation(eval, userCourseEnv, doerIdentity, incrementUserAttempts, by);
 		}
 	}
 

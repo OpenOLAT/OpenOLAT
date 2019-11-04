@@ -58,7 +58,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class GTACoachedParticipantGradingController extends BasicController {
 	
-	private final Link assessmentFormButton, reopenAssessmentButton;
+	private final Link assessmentFormButton;
+	private final Link reopenAssessmentButton;
 	private final VelocityContainer mainVC;
 	
 	private CloseableModalController cmc;
@@ -148,7 +149,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	}
 	
 	private void doReopenAssessment(UserRequest ureq) {
-		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading, gtaNode, Role.coach);
+		assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.grading, gtaNode, false, getIdentity(), Role.coach);
 		fireEvent(ureq, Event.CHANGED_EVENT);
 	}
 	
@@ -165,7 +166,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 				TaskList taskList = gtaManager.createIfNotExists(courseEntry, gtaNode);
 				assignedTask = gtaManager.createTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
 			} else {
-				assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode, Role.coach);
+				assignedTask = gtaManager.updateTask(assignedTask, TaskProcess.graded, gtaNode, false, getIdentity(), Role.coach);
 			}
 			fireEvent(ureq, Event.CHANGED_EVENT);
 		}

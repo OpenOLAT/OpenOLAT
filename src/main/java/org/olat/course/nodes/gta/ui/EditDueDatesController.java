@@ -152,7 +152,7 @@ public class EditDueDatesController extends FormBasicController {
 			
 			TaskProcess submit = gtaManager.previousStep(TaskProcess.review, gtaNode);//only submit allowed
 			if(submit == TaskProcess.submit) {
-				task = gtaManager.updateTask(task, submit, gtaNode, Role.coach);
+				task = gtaManager.updateTask(task, submit, gtaNode, false, getIdentity(), Role.coach);
 				gtaManager.log("Back to submission", "revert status of task back to submission", task, getIdentity(),
 						assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.coach);
 			}

@@ -155,7 +155,7 @@ public class ConvertToGTACourseNode {
 			for(Property sample:samples) {
 				File taskFile = new File(gtaskDirectory, sample.getStringValue());
 				Identity id = securityManager.loadIdentityByKey(sample.getIdentity().getKey());
-				gtaManager.selectTask(id, taskList, gtaNode, taskFile);
+				gtaManager.selectTask(id, taskList, gtaNode, taskFile, id);
 			}
 		}
 		
@@ -249,12 +249,12 @@ public class ConvertToGTACourseNode {
 				if(task == null) {
 					gtaManager.createTask(null, taskList, TaskProcess.graded, null, assessedIdentity, gtaNode);
 				} else {
-					gtaManager.updateTask(task, TaskProcess.graded, gtaNode, Role.auto);
+					gtaManager.updateTask(task, TaskProcess.graded, gtaNode, false, null, Role.auto);
 				}
 			}
 			
 			if(assessmentData.getAttempts() != null) {
-				assessmentMgr.saveNodeAttempts(gtaNode, null, assessedIdentity, assessmentData.getAttempts().intValue(), Role.auto);
+				assessmentMgr.saveNodeAttempts(gtaNode, null, assessedIdentity, assessmentData.getAttempts(), Role.auto);
 			}
 			
 			if(StringHelper.containsNonWhitespace(assessmentData.getCoachComment())) {
@@ -368,7 +368,7 @@ public class ConvertToGTACourseNode {
 		if(task == null) {
 			gtaManager.createTask(null, taskList, process, null, assessedIdentity, gtaNode);
 		} else {
-			gtaManager.updateTask(task, process, gtaNode, Role.auto);
+			gtaManager.updateTask(task, process, gtaNode, false, null, Role.auto);
 		}
 	}
 	

@@ -446,7 +446,7 @@ class GTANotifications {
 		}
 		
 		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_REVISION_PERIOD)) {
-			task = checkRevisionStep(assessedIdentity, null, task);
+			task = checkRevisionStep(task);
 			if(task != null && notInStep(task, TaskProcess.assignment, TaskProcess.submit, TaskProcess.review)) {
 				int currentIteration = task.getRevisionLoop();
 				for(int i=1; i<=currentIteration; i++) {
@@ -733,9 +733,8 @@ class GTANotifications {
 			DueDate dueDate = gtaManager.getSubmissionDueDate(task, assessedIdentity, assessedGroup, gtaNode, re, true);
 			if(dueDate != null && dueDate.getDueDate() != null && dueDate.getDueDate().before(new Date())) {
 				int numOfDocs = getNumberOfSubmittedDocuments(assessedIdentity, assessedGroup);
-				task = gtaManager.submitTask(task, gtaNode, numOfDocs, Role.auto);
+				task = gtaManager.submitTask(task, gtaNode, numOfDocs, null, Role.auto);
 				gtaManager.log("Submit", (SubmitEvent)null, task, null, assessedIdentity, assessedGroup, courseEnv, gtaNode, Role.auto);
-				doUpdateAttempts(assessedIdentity, assessedGroup);
 			}
 		}
 		return task;
@@ -783,14 +782,13 @@ class GTANotifications {
 	 * @param task The task
 	 * @return An updated task if the status as automatically changed
 	 */
-	private Task checkRevisionStep(Identity assessedIdentity, BusinessGroup assessedGroup, Task task) {
+	private Task checkRevisionStep(Task task) {
 		if(task != null) {
 			if(task.getTaskStatus() == TaskProcess.revision
 					&& task.getRevisionsDueDate() != null
 					&& task.getRevisionsDueDate().compareTo(new Date()) < 0) {
 				//push to the next step
-				task = gtaManager.nextStep(task, gtaNode, Role.auto);
-				doUpdateAttempts(assessedIdentity, assessedGroup);
+				task = gtaManager.nextStep(task, gtaNode, true, null, Role.auto);
 			}
 		}
 		return task;
@@ -816,21 +814,6 @@ class GTANotifications {
 			}
 		}
 		return false;
-	}
-	
-	private void doUpdateAttempts(Identity assessedIdentity, BusinessGroup assessedGroup) {
-		ICourse course = CourseFactory.loadCourse(courseEnv.getCourseGroupManager().getCourseEntry());
-		if(GTAType.group.name().equals(gtaNode.getModuleConfiguration().getStringValue(GTACourseNode.GTASK_TYPE))) {
-			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
-			for(Identity identity:identities) {
-				UserCourseEnvironment uce = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(uce, Role.auto);
-			}
-		} else {
-			UserCourseEnvironment assessedUserCourseEnv = AssessmentHelper
-					.createAndInitUserCourseEnvironment(assessedIdentity, course);
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv, Role.auto);
-		}
 	}
 	
 	private String getAuthor(File file, VFSContainer container) {

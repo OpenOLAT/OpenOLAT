@@ -60,7 +60,7 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 		TaskList taskList = gtaManager.getTaskList(getCourseRepositoryEntry(), (GTACourseNode)courseNode);
 		Task task = gtaManager.getTask(assessedIdentity, taskList);
 		if(task != null && task.getTaskStatus() == TaskProcess.graded) {
-			gtaManager.updateTask(task, TaskProcess.grading, (GTACourseNode)courseNode, Role.coach);
+			gtaManager.updateTask(task, TaskProcess.grading, (GTACourseNode)courseNode, false, getIdentity(), Role.coach);
 		}
 	}
 
@@ -71,7 +71,7 @@ public class GTAIdentityListCourseNodeToolsController extends AbstractToolsContr
 		TaskList taskList = gtaManager.getTaskList(getCourseRepositoryEntry(), (GTACourseNode)courseNode);
 		Task task = gtaManager.getTask(assessedIdentity, taskList);
 		if(task != null) {
-			gtaManager.updateTask(task, TaskProcess.graded, (GTACourseNode)courseNode, Role.coach);
+			gtaManager.updateTask(task, TaskProcess.graded, (GTACourseNode)courseNode, false, getIdentity(), Role.coach);
 		}
 	}
 }

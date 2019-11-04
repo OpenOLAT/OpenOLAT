@@ -55,9 +55,6 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
 import org.olat.core.util.vfs.VFSContainer;
-import org.olat.course.CourseFactory;
-import org.olat.course.ICourse;
-import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.nodes.GTACourseNode;
 import org.olat.course.nodes.gta.GTAManager;
 import org.olat.course.nodes.gta.GTAType;
@@ -341,7 +338,7 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 		}
 		
 		int numOfDocs = submittedDocuments == null ? 0 : submittedDocuments.length;
-		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs, Role.user);
+		assignedTask = gtaManager.submitRevisions(assignedTask, gtaNode, numOfDocs, getIdentity(), Role.user);
 		gtaManager.log("Revision", "revision submitted", assignedTask,
 				getIdentity(), getIdentity(), assessedGroup, courseEnv, gtaNode, Role.user);
 		
@@ -349,18 +346,6 @@ public class GTAParticipantRevisionAndCorrectionsController extends BasicControl
 				assessedGroup == null ? getIdentity() : null, assessedGroup, getIdentity());
 		CoordinatorManager.getInstance().getCoordinator().getEventBus()
 			.fireEventToListenersOf(event, taskListEventResource);
-	
-		if(businessGroupTask) {
-			List<Identity> identities = businessGroupService.getMembers(assessedGroup, GroupRoles.participant.name());
-			ICourse course = CourseFactory.loadCourse(courseEnv.getCourseResourceableId());
-
-			for(Identity identity:identities) {
-				UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(identity, course);
-				gtaNode.incrementUserAttempts(userCourseEnv, Role.user);
-			}
-		} else {
-			gtaNode.incrementUserAttempts(assessedUserCourseEnv, Role.user);
-		}
 		
 		//do send e-mail
 		if(config.getBooleanSafe(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION)) {
