@@ -81,7 +81,8 @@ public class MSResultDetailsController extends BasicController {
 		boolean pointsFromEvaluationForm = MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_SUM.equals(scoreConfig)
 				|| MSCourseNode.CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig);
 		if (pointsFromEvaluationForm) {
-			String scaleConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE);
+			String scaleConfig = config.getStringValue(MSCourseNode.CONFIG_KEY_EVAL_FORM_SCALE,
+					MSCourseNode.CONFIG_DEFAULT_EVAL_FORM_SCALE);
 			float scale = Float.parseFloat(scaleConfig);
 
 			List<RubricStatistic> statistics = msService.getRubricStatistics(session);
