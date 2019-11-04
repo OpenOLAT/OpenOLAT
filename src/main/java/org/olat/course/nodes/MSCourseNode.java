@@ -380,7 +380,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 	private MinMax getMinMax() {
 		ModuleConfiguration config = getModuleConfiguration();
 		String scoreConfig = config.getStringValue(CONFIG_KEY_SCORE);
-		String scaleConfig = config.getStringValue(CONFIG_KEY_EVAL_FORM_SCALE);
+		String scaleConfig = config.getStringValue(CONFIG_KEY_EVAL_FORM_SCALE, CONFIG_DEFAULT_EVAL_FORM_SCALE);
 		
 		if (CONFIG_VALUE_SCORE_MANUAL.equals(scoreConfig)) {
 			Float min = (Float) config.get(CONFIG_KEY_SCORE_MIN);
@@ -633,7 +633,7 @@ public class MSCourseNode extends AbstractAccessableCourseNode implements Persis
 		Float score = null;
 		ModuleConfiguration config = getModuleConfiguration();
 		String scoreConfig = config.getStringValue(CONFIG_KEY_SCORE);
-		String scaleConfig = config.getStringValue(CONFIG_KEY_EVAL_FORM_SCALE);
+		String scaleConfig = config.getStringValue(CONFIG_KEY_EVAL_FORM_SCALE, CONFIG_DEFAULT_EVAL_FORM_SCALE);
 		float scale = Float.parseFloat(scaleConfig);
 		if (CONFIG_VALUE_SCORE_EVAL_FORM_AVG.equals(scoreConfig)) {
 			score = msService.calculateScoreByAvg(session);
