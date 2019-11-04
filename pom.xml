@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.openolat</groupId>
 	<artifactId>openolat-lms</artifactId>
-	<version>14.1-m2</version>
+	<version>14.1-m3</version>
 	<!-- need to override packaging on command line `mvn jar:jar` to stay in sync with upstream
 	     and for selenium tests -->
 	<packaging>jar</packaging>
