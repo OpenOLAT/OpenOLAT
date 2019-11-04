@@ -228,7 +228,7 @@ public class CurriculumElementResourceListController extends FormBasicController
 	}
 	
 	private void doChooseResources(UserRequest ureq) {
-		if(repoSearchCtr != null) return;
+		if(guardModalController(repoSearchCtr)) return;
 		
 		Roles roles = ureq.getUserSession().getRoles();
 		boolean adminSearch = roles.hasRole(OrganisationRoles.administrator)

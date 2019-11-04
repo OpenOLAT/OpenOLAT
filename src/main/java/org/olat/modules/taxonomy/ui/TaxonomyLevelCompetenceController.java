@@ -259,7 +259,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 	}
 	
 	private void doSelectTaxonomyLevelCompetence(UserRequest ureq, TaxonomyLevelCompetenceRow row) {
-		if(editCompetenceCtrl != null) return;
+		if(guardModalController(editCompetenceCtrl)) return;
 
 		TaxonomyCompetence competence = row.getCompetence();
 		editCompetenceCtrl = new EditTaxonomyCompetenceController(ureq, getWindowControl(), competence);
@@ -284,7 +284,7 @@ public class TaxonomyLevelCompetenceController extends FormBasicController {
 	}
 
 	private void doSearchUsersToAdd(UserRequest ureq, TaxonomyCompetenceTypes comptenceType) {
-		if(userSearchCtrl != null) return;
+		if(guardModalController(userSearchCtrl)) return;
 
 		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
 		userSearchCtrl.setUserObject(comptenceType);

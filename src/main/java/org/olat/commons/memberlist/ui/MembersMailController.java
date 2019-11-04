@@ -414,7 +414,7 @@ public class MembersMailController extends FormBasicController {
 	}
 
 	private void doChooseMember(UserRequest ureq) {
-		if(selectMemberCtrl != null || cmc != null) return;
+		if(guardModalController(selectMemberCtrl)) return;
 		
 		List<Member> owners = ownerList;
 		List<Member> coaches = coachList;

@@ -216,7 +216,7 @@ public class GoToOrganizerListAdminController extends FormBasicController implem
 	}
 	
 	private void doEdit(UserRequest ureq, GoToOrganizer organizer) {
-		if(editOrganizerNameController != null) return;
+		if(guardModalController(editOrganizerNameController)) return;
 		
 		editOrganizerNameController = new EditOrganizerNameController(ureq, getWindowControl(), organizer);
 		listenTo(editOrganizerNameController);
@@ -228,7 +228,7 @@ public class GoToOrganizerListAdminController extends FormBasicController implem
 	}
 	
 	private void doAddOrganizer(UserRequest ureq) {
-		if(loginOrganizerController != null) return;
+		if(guardModalController(loginOrganizerController)) return;
 		
 		loginOrganizerController = new LoginOrganizerController(ureq, getWindowControl());
 		listenTo(loginOrganizerController);
@@ -240,7 +240,7 @@ public class GoToOrganizerListAdminController extends FormBasicController implem
 	}
 	
 	private void doRenewOrganizer(UserRequest ureq, GoToOrganizer organizer) {
-		if(loginOrganizerController != null) return;
+		if(guardModalController(loginOrganizerController)) return;
 		
 		loginOrganizerController = new LoginOrganizerController(ureq, getWindowControl(), organizer);
 		listenTo(loginOrganizerController);

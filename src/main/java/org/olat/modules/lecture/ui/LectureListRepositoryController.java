@@ -309,7 +309,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	}
 
 	private void doEditLectureBlock(UserRequest ureq, LectureBlockRow row) {
-		if(editLectureCtrl != null) return;
+		if(guardModalController(editLectureCtrl)) return;
 		
 		LectureBlock block = lectureService.getLectureBlock(row);
 		boolean readOnly = lectureManagementManaged || !secCallback.canNewLectureBlock();
@@ -322,7 +322,7 @@ public class LectureListRepositoryController extends FormBasicController {
 	}
 
 	private void doAddLectureBlock(UserRequest ureq) {
-		if(editLectureCtrl != null || !secCallback.canNewLectureBlock()) return;
+		if(guardModalController(editLectureCtrl) || !secCallback.canNewLectureBlock()) return;
 		
 		editLectureCtrl = new EditLectureBlockController(ureq, getWindowControl(), entry);
 		listenTo(editLectureCtrl);

@@ -204,7 +204,7 @@ public class GoToMeetingsEditController extends FormBasicController {
 	}
 
 	private void doAddTraining(UserRequest ureq) {
-		if(editTrainingController != null) return;
+		if(guardModalController(editTrainingController)) return;
 		
 		editTrainingController = new EditTrainingController(ureq, getWindowControl(), entry, subIdent, businessGroup);
 		listenTo(editTrainingController);
@@ -216,7 +216,7 @@ public class GoToMeetingsEditController extends FormBasicController {
 	}
 	
 	private void doEditTraining(UserRequest ureq, GoToMeeting meeting) {
-		if(editTrainingController != null) return;
+		if(guardModalController(editTrainingController)) return;
 		
 		editTrainingController = new EditTrainingController(ureq, getWindowControl(), meeting);
 		listenTo(editTrainingController);

@@ -523,7 +523,7 @@ public abstract class AbstractMemberListController extends FormBasicController i
 	}
 	
 	protected void openEdit(UserRequest ureq, MemberRow member) {
-		if(editSingleMemberCtrl != null) return;
+		if(guardModalController(editSingleMemberCtrl)) return;
 		
 		Identity identity = securityManager.loadIdentityByKey(member.getIdentityKey());
 		editSingleMemberCtrl = new EditSingleMembershipController(ureq, getWindowControl(), identity, repoEntry, businessGroup, false, overrideManaged);

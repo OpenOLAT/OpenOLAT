@@ -340,7 +340,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void doImportCurriculum(UserRequest ureq) {
-		if(importCurriculumCtrl != null) return;
+		if(guardModalController(importCurriculumCtrl)) return;
 
 		importCurriculumCtrl = new ImportCurriculumController(ureq, getWindowControl());
 		listenTo(importCurriculumCtrl);
@@ -351,7 +351,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	}
 	
 	private void doNewCurriculum(UserRequest ureq) {
-		if(newCurriculumCtrl != null) return;
+		if(guardModalController(newCurriculumCtrl)) return;
 
 		newCurriculumCtrl = new EditCurriculumController(ureq, getWindowControl(), secCallback);
 		listenTo(newCurriculumCtrl);

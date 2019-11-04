@@ -284,7 +284,7 @@ public class CurriculumElementUserManagementController extends FormBasicControll
 	}
 	
 	private void doSearchMember(UserRequest ureq, CurriculumRoles role) {
-		if(userSearchCtrl != null) return;
+		if(guardModalController(userSearchCtrl)) return;
 
 		userSearchCtrl = new UserSearchController(ureq, getWindowControl(), true, true, false);
 		userSearchCtrl.setUserObject(role);

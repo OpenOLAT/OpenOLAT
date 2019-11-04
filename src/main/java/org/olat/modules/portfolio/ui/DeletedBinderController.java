@@ -162,7 +162,7 @@ public class DeletedBinderController extends BinderListController {
 	}
 
 	private void doConfirmDelete(UserRequest ureq) {
-		if(deleteBinderCtrl != null) return;
+		if(guardModalController(deleteBinderCtrl)) return;
 		
 		List<BinderRow> rows = getSelectedRows();
 		if(rows.isEmpty()) {

@@ -173,7 +173,7 @@ public class GTACoachedParticipantGradingController extends BasicController {
 	}
 
 	private void doOpenAssessmentForm(UserRequest ureq) {
-		if(assessmentForm != null) return;//already open
+		if(guardModalController(assessmentForm)) return;//already open
 		
 		RepositoryEntry courseEntry = CourseFactory.loadCourse(courseOres).getCourseEnvironment().getCourseGroupManager().getCourseEntry();
 

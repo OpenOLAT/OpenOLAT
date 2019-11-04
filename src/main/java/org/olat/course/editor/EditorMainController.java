@@ -759,7 +759,7 @@ public class EditorMainController extends MainLayoutBasicController implements G
 	}
 	
 	private void doMove(UserRequest ureq, ICourse course, boolean copy) {
-		if(moveCopyController != null) return;
+		if(guardModalController(moveCopyController)) return;
 		
 		TreeNode tn = menuTree.getSelectedNode();
 		if (tn == null) {

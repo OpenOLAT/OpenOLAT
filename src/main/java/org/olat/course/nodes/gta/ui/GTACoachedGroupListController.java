@@ -226,7 +226,7 @@ public class GTACoachedGroupListController extends GTACoachedListController {
 	}
 	
 	private void doEditDueDate(UserRequest ureq, CoachedGroupRow row) {
-		if(editDueDatesCtrl != null) return;
+		if(guardModalController(editDueDatesCtrl)) return;
 		
 		Task task;
 		BusinessGroup assessedGroup = row.getBusinessGroup();

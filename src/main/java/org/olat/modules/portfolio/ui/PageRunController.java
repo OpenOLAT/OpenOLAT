@@ -612,7 +612,7 @@ public class PageRunController extends BasicController implements TooledControll
 	}
 	
 	private void doEditMetadata(UserRequest ureq) {
-		if(editMetadataCtrl != null) return;
+		if(guardModalController(editMetadataCtrl)) return;
 		
 		removeAsListenerAndDispose(editMetadataCtrl);
 		

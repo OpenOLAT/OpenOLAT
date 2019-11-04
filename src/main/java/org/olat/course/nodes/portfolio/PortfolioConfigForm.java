@@ -231,7 +231,7 @@ public class PortfolioConfigForm extends FormBasicController {
 	}
 	
 	private void doChangeTemplate(UserRequest ureq) {
-		if(searchController != null) return;
+		if(guardModalController(searchController)) return;
 		if (isDirty) {
 			showWarning("form.dirty");
 			return;

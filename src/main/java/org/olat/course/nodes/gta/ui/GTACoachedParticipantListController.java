@@ -392,7 +392,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	private void doEditDueDate(UserRequest ureq, CoachedIdentityRow row) {
-		if(editDueDatesCtrl != null) return;
+		if(guardModalController(editDueDatesCtrl)) return;
 		
 		Task task;
 		Identity assessedIdentity = securityManager.loadIdentityByKey(row.getIdentity().getIdentityKey());
@@ -416,7 +416,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 	}
 	
 	private void doEditMultipleDueDates(UserRequest ureq, List<CoachedIdentityRow> rows) {
-		if(editMultipleDueDatesCtrl != null) return;
+		if(guardModalController(editMultipleDueDatesCtrl)) return;
 		
 		if(rows.isEmpty()) {
 			showWarning("error.atleast.task");

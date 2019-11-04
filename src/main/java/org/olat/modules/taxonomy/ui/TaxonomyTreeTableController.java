@@ -346,7 +346,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private void doAssignType(UserRequest ureq) {
-		if(typeLevelCtrl != null) return;
+		if(guardModalController(typeLevelCtrl)) return;
 		
 		List<TaxonomyLevel> levelsToMerge = getSelectedTaxonomyLevels(TaxonomyLevelManagedFlag.type);
 		if(levelsToMerge.isEmpty()) {
@@ -363,7 +363,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private void doMerge(UserRequest ureq) {
-		if(mergeCtrl != null) return;
+		if(guardModalController(mergeCtrl)) return;
 		
 		List<TaxonomyLevel> levelsToMerge = getSelectedTaxonomyLevels(TaxonomyLevelManagedFlag.delete);
 		if(levelsToMerge.isEmpty()) {
@@ -404,7 +404,7 @@ public class TaxonomyTreeTableController extends FormBasicController implements 
 	}
 	
 	private void doCreateTaxonomyLevel(UserRequest ureq, TaxonomyLevel parentLevel) {
-		if(createTaxonomyLevelCtrl != null) return;
+		if(guardModalController(createTaxonomyLevelCtrl)) return;
 
 		createTaxonomyLevelCtrl = new EditTaxonomyLevelController(ureq, getWindowControl(), parentLevel, taxonomy);
 		listenTo(createTaxonomyLevelCtrl);

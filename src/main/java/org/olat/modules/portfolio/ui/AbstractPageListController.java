@@ -804,7 +804,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	protected void doEditAssignment(UserRequest ureq, PortfolioElementRow row) {
-		if(editAssignmentCtrl != null) return;
+		if(guardModalController(editAssignmentCtrl)) return;
 		
 		Assignment assignment = row.getAssignment();
 		editAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), assignment);
@@ -817,7 +817,7 @@ implements Activateable2, TooledController, FlexiTableComponentDelegate {
 	}
 	
 	private void doMoveAssignment(UserRequest ureq, PortfolioElementRow row) {
-		if(moveAssignmentCtrl != null) return;
+		if(guardModalController(moveAssignmentCtrl)) return;
 		
 		Assignment assignment = row.getAssignment();
 		moveAssignmentCtrl = new AssignmentMoveController(ureq, getWindowControl(), assignment, row.getSection());

@@ -206,7 +206,7 @@ public class RelationRolesAdminController extends FormBasicController {
 	}
 	
 	private void doAddRole(UserRequest ureq) {
-		if(editRoleCtrl != null) return;
+		if(guardModalController(editRoleCtrl)) return;
 		
 		editRoleCtrl = new EditRelationRoleController(ureq, getWindowControl());
 		listenTo(editRoleCtrl);
@@ -217,7 +217,7 @@ public class RelationRolesAdminController extends FormBasicController {
 	}
 	
 	private void doEditRole(UserRequest ureq, RelationRoleRow row) {
-		if(editRoleCtrl != null) return;
+		if(guardModalController(editRoleCtrl)) return;
 		
 		RelationRole role = identityRelationsService.getRole(row.getKey());
 		if(role == null) {

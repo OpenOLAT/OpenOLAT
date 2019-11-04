@@ -85,7 +85,7 @@ public class CloseableModalController extends DefaultController {
 		 this(wControl, closeButtonText, modalContent, displayAsOverlay, title, true);
 	}
 
-	public CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean showCloseIcon) {
+	private CloseableModalController(WindowControl wControl, String closeButtonText, Component modalContent, boolean showCloseIcon) {
 		 this(wControl, closeButtonText, modalContent, true, null, showCloseIcon);
 	}
 

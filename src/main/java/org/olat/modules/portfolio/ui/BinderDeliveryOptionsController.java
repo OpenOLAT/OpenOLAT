@@ -177,7 +177,7 @@ public class BinderDeliveryOptionsController extends FormBasicController impleme
 	}
 
 	private void doConfirmDeleteOption(UserRequest ureq) {
-		if(deleteOptionCtrl != null) return;
+		if(guardModalController(deleteOptionCtrl)) return;
 		
 		deleteOptionCtrl = new ConfirmDeleteOptionController(ureq, getWindowControl());
 		listenTo(deleteOptionCtrl);

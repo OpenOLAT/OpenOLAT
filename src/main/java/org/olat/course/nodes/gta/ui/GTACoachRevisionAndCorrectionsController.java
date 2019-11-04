@@ -323,7 +323,7 @@ public class GTACoachRevisionAndCorrectionsController extends BasicController im
 	}
 	
 	private void doConfirmReturnToRevisions(UserRequest ureq) {
-		if(confirmReturnToRevisionsCtrl != null) return;
+		if(guardModalController(confirmReturnToRevisionsCtrl)) return;
 		
 		confirmReturnToRevisionsCtrl = new ConfirmRevisionsController(ureq, getWindowControl(), assignedTask,
 				assessedIdentity, assessedGroup, gtaNode, courseEnv);

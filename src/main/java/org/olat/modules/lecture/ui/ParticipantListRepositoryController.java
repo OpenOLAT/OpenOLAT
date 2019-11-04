@@ -290,7 +290,7 @@ public class ParticipantListRepositoryController extends FormBasicController {
 	}
 	
 	private void doEdit(UserRequest ureq, ParticipantRow row) {
-		if(editRateCtrl != null) return;
+		if(guardModalController(editRateCtrl)) return;
 		
 		Identity identity = securityManager.loadIdentityByKey(row.getIdentityKey());
 		editRateCtrl = new EditParticipantSummaryController(ureq, getWindowControl(), entry, identity, rateEnabled, defaultRate);

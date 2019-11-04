@@ -708,7 +708,7 @@ public class RepositoryEntryDetailsController extends FormBasicController {
 	}
 	
 	protected void doOpenComments(UserRequest ureq) {
-		if(commentsCtrl != null) return;
+		if(guardModalController(commentsCtrl)) return;
 		
 		boolean anonym = ureq.getUserSession().getRoles().isGuestOnly();
 		CommentAndRatingSecurityCallback secCallback = new CommentAndRatingDefaultSecurityCallback(getIdentity(), false, anonym);

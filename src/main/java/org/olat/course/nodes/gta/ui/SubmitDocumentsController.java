@@ -386,7 +386,7 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	}
 	
 	private void doView(UserRequest ureq, String filename) {
-		if(viewDocCtrl != null) return;
+		if(guardModalController(viewDocCtrl)) return;
 		
 		viewDocCtrl = new SinglePageController(ureq, getWindowControl(), documentsContainer, filename, false);
 		listenTo(viewDocCtrl);
@@ -463,7 +463,7 @@ class SubmitDocumentsController extends FormBasicController implements Activatea
 	}
 	
 	private void doOpenDocumentUpload(UserRequest ureq) {
-		if(uploadCtrl != null) return;
+		if(guardModalController(uploadCtrl)) return;
 		
 		if(maxDocs > 0 && maxDocs <= model.getRowCount()) {
 			showWarning("error.max.documents");

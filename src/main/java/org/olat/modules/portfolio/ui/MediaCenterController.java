@@ -527,7 +527,7 @@ public class MediaCenterController extends FormBasicController
 	}
 
 	private void doCreateFile(UserRequest ureq) {
-		if(createFileCtrl != null) return;
+		if(guardModalController(createFileCtrl)) return;
 		
 		createFileCtrl = new CreateFileMediaController(ureq, getWindowControl(), editableFileTypes);
 		listenTo(createFileCtrl);
@@ -539,7 +539,7 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void doAddMedia(UserRequest ureq, String titleKey) {
-		if(mediaUploadCtrl != null) return;
+		if(guardModalController(mediaUploadCtrl)) return;
 		
 		mediaUploadCtrl = new MediaUploadController(ureq, getWindowControl());
 		listenTo(mediaUploadCtrl);
@@ -551,7 +551,7 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void doAddTextMedia(UserRequest ureq) {
-		if(textUploadCtrl != null) return;
+		if(guardModalController(textUploadCtrl)) return;
 		
 		textUploadCtrl = new CollectTextMediaController(ureq, getWindowControl());
 		listenTo(textUploadCtrl);
@@ -563,7 +563,7 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void doAddCitationMedia(UserRequest ureq) {
-		if(citationUploadCtrl != null) return;
+		if(guardModalController(citationUploadCtrl)) return;
 		
 		citationUploadCtrl = new CollectCitationMediaController(ureq, getWindowControl());
 		listenTo(citationUploadCtrl);
@@ -575,7 +575,7 @@ public class MediaCenterController extends FormBasicController
 	}
 	
 	private void doChooseArtefactV1(UserRequest ureq) {
-		if(importArtefactv1Ctrl != null) return;
+		if(guardModalController(importArtefactv1Ctrl)) return;
 		
 		importArtefactv1Ctrl = new EPArtefactPoolRunController(ureq, this.getWindowControl(), true, false, true);
 		listenTo(importArtefactv1Ctrl);

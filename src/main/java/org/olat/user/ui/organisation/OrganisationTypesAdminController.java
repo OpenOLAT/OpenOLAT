@@ -161,7 +161,7 @@ public class OrganisationTypesAdminController extends FormBasicController implem
 	}
 
 	private void doAddRootType(UserRequest ureq) {
-		if(rootTypeCtrl != null) return;
+		if(guardModalController(rootTypeCtrl)) return;
 		
 		rootTypeCtrl = new EditOrganisationTypeController(ureq, getWindowControl(), null);
 		listenTo(rootTypeCtrl);
@@ -172,7 +172,7 @@ public class OrganisationTypesAdminController extends FormBasicController implem
 	}
 	
 	private void doEditType(UserRequest ureq, OrganisationType type) {
-		if(editTypeCtrl != null) return;
+		if(guardModalController(editTypeCtrl)) return;
 		
 		OrganisationType reloadedType = organisationService.getOrganisationType(type);
 		editTypeCtrl = new EditOrganisationTypeController(ureq, getWindowControl(), reloadedType);

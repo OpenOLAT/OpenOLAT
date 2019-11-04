@@ -276,7 +276,7 @@ public class MediaDetailsController extends FormBasicController implements Activ
 	}
 	
 	private void doEdit(UserRequest ureq) {
-		if(mediaEditCtrl != null) return;
+		if(guardModalController(mediaEditCtrl)) return;
 		
 		mediaEditCtrl = handler.getEditMediaController(ureq, getWindowControl(), media);
 		listenTo(mediaEditCtrl);

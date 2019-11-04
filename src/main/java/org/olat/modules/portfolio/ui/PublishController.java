@@ -352,7 +352,7 @@ public class PublishController extends BasicController implements TooledControll
 	}
 	
 	private void doAddInvitationEmail(UserRequest ureq) {
-		if(addInvitationEmailCtrl != null) return;
+		if(guardModalController(addInvitationEmailCtrl)) return;
 		
 		addInvitationEmailCtrl = new InvitationEmailController(ureq, getWindowControl(), binder);
 		listenTo(addInvitationEmailCtrl);
@@ -364,7 +364,7 @@ public class PublishController extends BasicController implements TooledControll
 	}
 	
 	private void doAddInvitation(UserRequest ureq, String email) {
-		if(addInvitationCtrl != null) return;
+		if(guardModalController(addInvitationCtrl)) return;
 		
 		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder, email, null);
 		listenTo(addInvitationCtrl);
@@ -393,7 +393,7 @@ public class PublishController extends BasicController implements TooledControll
 	}
 	
 	private void doEditInvitation(UserRequest ureq, Identity invitee) {
-		if(addInvitationCtrl != null) return;
+		if(guardModalController(addInvitationCtrl)) return;
 
 		addInvitationCtrl = new InvitationEditRightsController(ureq, getWindowControl(), binder, invitee);
 		listenTo(addInvitationCtrl);
@@ -457,7 +457,7 @@ public class PublishController extends BasicController implements TooledControll
 	}
 	
 	private void doEditAccessRights(UserRequest ureq, PortfolioElement element, Identity member) {
-		if(editAccessRightsCtrl != null) return;
+		if(guardModalController(editAccessRightsCtrl)) return;
 		
 		boolean canEdit = secCallback.canEditAccessRights(element);
 		editAccessRightsCtrl = new AccessRightsEditController(ureq, getWindowControl(), binder, member, canEdit);

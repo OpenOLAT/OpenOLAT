@@ -544,7 +544,7 @@ public class BinderListController extends FormBasicController
 	}
 
 	private void doNewBinder(UserRequest ureq) {
-		if(newBinderCtrl != null) return;
+		if(guardModalController(newBinderCtrl)) return;
 		
 		newBinderCtrl = new BinderMetadataEditController(ureq, getWindowControl(), null);
 		listenTo(newBinderCtrl);
@@ -556,7 +556,7 @@ public class BinderListController extends FormBasicController
 	}
 
 	private void doNewBinderFromTemplate(UserRequest ureq) {
-		if(searchTemplateCtrl != null) return;
+		if(guardModalController(searchTemplateCtrl)) return;
 
 		String title = translate("create.empty.binder.from.template");
 		String commandLabel = translate("create.binder.selectTemplate");
@@ -582,7 +582,7 @@ public class BinderListController extends FormBasicController
 	}
 	
 	private void doNewBinderFromCourse(UserRequest ureq) {
-		if(searchCourseTemplateCtrl != null) return;
+		if(guardModalController(searchCourseTemplateCtrl)) return;
 
 		removeAsListenerAndDispose(searchCourseTemplateCtrl);
 		searchCourseTemplateCtrl = new CourseTemplateSearchController(ureq, getWindowControl());			
@@ -707,7 +707,7 @@ public class BinderListController extends FormBasicController
 	}
 	
 	private void doEditBinderMetadata(UserRequest ureq, BinderRow row) {
-		if(binderMetadataCtrl != null) return;
+		if(guardModalController(binderMetadataCtrl)) return;
 		
 		Binder reloadedBinder = portfolioService.getBinderByKey(row.getKey());
 		binderMetadataCtrl = new BinderMetadataEditController(ureq, getWindowControl(), reloadedBinder);
@@ -720,7 +720,7 @@ public class BinderListController extends FormBasicController
 	}
 	
 	private void doConfirmMoveToTrashBinder(UserRequest ureq, BinderRow row) {
-		if(moveBinderToTrashCtrl != null) return;
+		if(guardModalController(moveBinderToTrashCtrl)) return;
 		
 		BinderStatistics stats = portfolioService.getBinderStatistics(row);
 		moveBinderToTrashCtrl = new ConfirmMoveBinderToTrashController(ureq, getWindowControl(), stats);
@@ -741,7 +741,7 @@ public class BinderListController extends FormBasicController
 	}
 	
 	private void doConfirmDeleteBinder(UserRequest ureq, BinderRow row) {
-		if(moveBinderToTrashCtrl != null) return;
+		if(guardModalController(moveBinderToTrashCtrl)) return;
 		
 		BinderStatistics stats = portfolioService.getBinderStatistics(row);
 		deleteBinderCtrl = new ConfirmDeleteBinderController(ureq, getWindowControl(), stats);

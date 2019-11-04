@@ -299,7 +299,7 @@ public class GoToMeetingController extends BasicController {
 	}
 	
 	private void doOpenRecordings(UserRequest ureq) {
-		if(recordingsCtrl != null) return;
+		if(guardModalController(recordingsCtrl)) return;
 		
 		recordingsCtrl = new GoToRecordingsController(ureq, getWindowControl(), meeting);
 		listenTo(recordingsCtrl);

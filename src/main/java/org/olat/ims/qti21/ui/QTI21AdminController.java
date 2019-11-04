@@ -235,7 +235,7 @@ public class QTI21AdminController extends FormBasicController {
 	}
 
 	private void doValidate(UserRequest ureq) {
-		if(validationCtrl != null) return;
+		if(guardModalController(validationCtrl)) return;
 		
 		validationCtrl = new ValidationXmlSignatureController(ureq, getWindowControl());
 		listenTo(validationCtrl);

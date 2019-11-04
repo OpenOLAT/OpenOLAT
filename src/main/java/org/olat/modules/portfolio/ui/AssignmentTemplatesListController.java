@@ -194,7 +194,7 @@ public class AssignmentTemplatesListController extends FormBasicController imple
 	}
 	
 	private void doCreateNewPage(UserRequest ureq) {
-		if(newPageCtrl != null) return;
+		if(guardModalController(newPageCtrl)) return;
 		
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, (Section)null, true);
 		listenTo(newPageCtrl);
@@ -206,7 +206,7 @@ public class AssignmentTemplatesListController extends FormBasicController imple
 	}
 	
 	private void doCreateNewPage(UserRequest ureq, Assignment assignment) {
-		if(newPageCtrl != null) return;
+		if(guardModalController(newPageCtrl)) return;
 		
 		newPageCtrl = new PageMetadataEditController(ureq, getWindowControl(), secCallback, binder, false, assignment, true);
 		listenTo(newPageCtrl);

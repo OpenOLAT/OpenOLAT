@@ -286,7 +286,7 @@ public class AppealListRepositoryController extends FormBasicController {
 	}
 	
 	private void doEditAppeal(UserRequest ureq, LectureBlockRollCall rollCall) {
-		if(appealCtrl != null || !secCallback.canApproveAppeal()) return;
+		if(guardModalController(appealCtrl) || !secCallback.canApproveAppeal()) return;
 		
 		appealCtrl = new EditAppealController(ureq, getWindowControl(), rollCall);
 		listenTo(appealCtrl);
@@ -298,7 +298,7 @@ public class AppealListRepositoryController extends FormBasicController {
 	}
 	
 	private void doEditAppeals(UserRequest ureq, List<LectureBlockRollCall> rollCalls) {
-		if(appealCtrl != null || !secCallback.canApproveAppeal()) return;
+		if(guardModalController(appealCtrl) || !secCallback.canApproveAppeal()) return;
 		
 		if(rollCalls.isEmpty()) {
 			showWarning("warning.choose.at.least.one.appeal");

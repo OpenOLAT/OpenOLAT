@@ -179,6 +179,10 @@ public abstract class BasicController extends DefaultController {
 			controller.dispose();
 		}
 	}
+	
+	protected boolean guardModalController(Controller controller) {
+		return controller != null && !controller.isDisposed();
+	}
 
 	/**
 	 * convenience method: registers a mapper which will be automatically

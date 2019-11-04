@@ -307,7 +307,7 @@ public class PageEditorController extends BasicController {
 	}
 
 	private void doAddElement(UserRequest ureq, EditorFragment refenceFragment, PageElementHandler handler, PageElementTarget target, int column) {
-		if(addCtrl != null) return;
+		if(guardModalController(addCtrl)) return;
 		
 		if(handler instanceof InteractiveAddPageElementHandler) {
 			InteractiveAddPageElementHandler interactiveHandler = (InteractiveAddPageElementHandler)handler;

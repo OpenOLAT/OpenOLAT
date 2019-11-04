@@ -477,7 +477,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void doNewCurriculumElement(UserRequest ureq) {
-		if(newElementCtrl != null) return;
+		if(guardModalController(newElementCtrl)) return;
 
 		newElementCtrl = new EditCurriculumElementController(ureq, getWindowControl(), null, curriculum, secCallback);
 		listenTo(newElementCtrl);
@@ -661,7 +661,7 @@ public class CurriculumComposerController extends FormBasicController implements
 	}
 	
 	private void doConfirmDelete(UserRequest ureq, CurriculumElementRow row) {
-		if(confirmDeleteCtrl != null) return;
+		if(guardModalController(confirmDeleteCtrl)) return;
 		
 		confirmDeleteCtrl = new ConfirmCurriculumElementDeleteController(ureq, getWindowControl(), row);
 		listenTo(confirmDeleteCtrl);

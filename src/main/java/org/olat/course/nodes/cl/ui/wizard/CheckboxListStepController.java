@@ -192,7 +192,7 @@ public class CheckboxListStepController extends StepFormBasicController {
 	}
 
 	private void doOpenEdit(UserRequest ureq, Checkbox checkbox, boolean newCheckbox, String title) {
-		if(editCtrl != null) return;
+		if(guardModalController(editCtrl)) return;
 		
 		editCtrl = new CheckboxEditController(ureq, getWindowControl(), courseOres, checkbox, newCheckbox, true);
 		listenTo(editCtrl);

@@ -208,7 +208,7 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 	}
 	
 	private void doSelectDocument(UserRequest ureq) {
-		if(addDocumentCtrl != null) return;
+		if(guardModalController(addDocumentCtrl)) return;
 
 		addDocumentCtrl = new AddAssignmentDocumentController(ureq, getWindowControl());
 		listenTo(addDocumentCtrl);
@@ -236,7 +236,7 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 	}
 	
 	private void doSelectForm(UserRequest ureq) {
-		if(searchFormCtrl != null) return;
+		if(guardModalController(searchFormCtrl)) return;
 
 		searchFormCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq, 
 					EvaluationFormResource.TYPE_NAME, translate("select.form"));
@@ -255,7 +255,7 @@ public class AssignmentTemplatesEditController extends FormBasicController {
 	}
 	
 	private void doEditAssignment(UserRequest ureq, Assignment assignment) {
-		if(editAssignmentCtrl != null) return;
+		if(guardModalController(editAssignmentCtrl)) return;
 		
 		editAssignmentCtrl = new AssignmentEditController(ureq, getWindowControl(), assignment,
 				AssignmentEditController.templatesTypes, 1);

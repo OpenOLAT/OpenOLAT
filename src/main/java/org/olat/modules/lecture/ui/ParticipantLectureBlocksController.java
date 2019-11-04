@@ -351,7 +351,7 @@ public class ParticipantLectureBlocksController extends FormBasicController {
 	}
 	
 	private void doAppeal(UserRequest ureq, LectureBlockAndRollCall row) {
-		if(appealCtrl != null) return;
+		if(guardModalController(appealCtrl)) return;
 		
 		LectureBlock block = lectureService.getLectureBlock(row.getLectureBlockRef());
 		List<Identity> teachers = lectureService.getTeachers(block);

@@ -572,7 +572,7 @@ public class AbsenceNoticesListController extends FormBasicController {
 	}
 	
 	private void doContactTeachers(UserRequest ureq, AbsenceNoticeRow row) {
-		if(contactTeachersCtrl != null) return;
+		if(guardModalController(contactTeachersCtrl)) return;
 
 		List<Identity> teachers = row.getTeachers();
 		if(teachers.isEmpty()) {

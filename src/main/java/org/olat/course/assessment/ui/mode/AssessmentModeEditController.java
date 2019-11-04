@@ -772,7 +772,7 @@ public class AssessmentModeEditController extends FormBasicController {
 	}
 	
 	private void doChooseElements(UserRequest ureq) {
-		if(chooseElementsCtrl != null) return;
+		if(guardModalController(chooseElementsCtrl)) return;
 
 		chooseElementsCtrl = new ChooseElementsController(ureq, getWindowControl(), elementKeys, courseOres);
 		listenTo(chooseElementsCtrl);
@@ -784,7 +784,7 @@ public class AssessmentModeEditController extends FormBasicController {
 	}
 	
 	private void doChooseStartElement(UserRequest ureq) {
-		if(chooseElementsCtrl != null) return;
+		if(guardModalController(chooseElementsCtrl)) return;
 		
 		List<String> allowedKeys = courseElementsRestrictionEl.isAtLeastSelected(1)
 				? new ArrayList<>(elementKeys) : null;
@@ -798,7 +798,7 @@ public class AssessmentModeEditController extends FormBasicController {
 	}
 	
 	private void doChooseAreas(UserRequest ureq) {
-		if(areaChooseCtrl != null) return;
+		if(guardModalController(areaChooseCtrl)) return;
 
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		CourseGroupManager groupManager = course.getCourseEnvironment().getCourseGroupManager();
@@ -812,7 +812,7 @@ public class AssessmentModeEditController extends FormBasicController {
 	}
 	
 	private void doChooseGroups(UserRequest ureq) {
-		if(groupChooseCtrl != null) return;
+		if(guardModalController(groupChooseCtrl)) return;
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		CourseGroupManager groupManager = course.getCourseEnvironment().getCourseGroupManager();
@@ -826,7 +826,7 @@ public class AssessmentModeEditController extends FormBasicController {
 	}
 	
 	private void doChooseCurriculumElements(UserRequest ureq) {
-		if(curriculumElementChooseCtrl != null) return;
+		if(guardModalController(curriculumElementChooseCtrl)) return;
 		
 		ICourse course = CourseFactory.loadCourse(courseOres);
 		CourseGroupManager groupManager = course.getCourseEnvironment().getCourseGroupManager();

@@ -172,7 +172,7 @@ public class VersionMaintenanceForm extends FormBasicController implements Progr
 	}
 	
 	private void doOpenOrphansList(UserRequest ureq) {
-		if(orphansController  != null) return;
+		if(guardModalController(orphansController)) return;
 		
 		orphansController = new VersionsDeletedFileController(ureq, getWindowControl());			
 		listenTo(orphansController);

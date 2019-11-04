@@ -699,7 +699,7 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doConfirmCloseLectureBlock(UserRequest ureq) {
-		if(closeRollCallCtrl != null) return;
+		if(guardModalController(closeRollCallCtrl)) return;
 		
 		closeRollCallCtrl = new CloseRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
 		listenTo(closeRollCallCtrl);
@@ -710,7 +710,7 @@ public class TeacherRollCallController extends FormBasicController {
 	}
 	
 	private void doConfirmCancelLectureBlock(UserRequest ureq) {
-		if(cancelRollCallCtrl != null) return;
+		if(guardModalController(cancelRollCallCtrl)) return;
 		
 		cancelRollCallCtrl = new CancelRollCallConfirmationController(ureq, getWindowControl(), lectureBlock, secCallback);
 		listenTo(cancelRollCallCtrl);
