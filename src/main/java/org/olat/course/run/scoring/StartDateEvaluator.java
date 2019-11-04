@@ -19,30 +19,23 @@
  */
 package org.olat.course.run.scoring;
 
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.StatusEvaluator.Blocker;
+
 /**
  * 
- * Initial date: 16 Sep 2019<br>
+ * Initial date: 4 Nov 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AccountingEvaluators {
+public interface StartDateEvaluator {
 
-	public StartDateEvaluator getStartDateEvaluator();
-
-	public ObligationEvaluator getObligationEvaluator();
-
-	public DurationEvaluator getDurationEvaluator();
-	
-	public ScoreEvaluator getScoreEvaluator();
-
-	public PassedEvaluator getPassedEvaluator();
-
-	public LastModificationsEvaluator getLastModificationsEvaluator();
-
-	public CompletionEvaluator getCompletionEvaluator();
-
-	public StatusEvaluator getStatusEvaluator();
-
-	public FullyAssessedEvaluator getFullyAssessedEvaluator();
+	/**
+	 * My block the start of the evaluation.
+	 *
+	 * @param courseNode 
+	 * @param blocker
+	 */
+	public void evaluate(CourseNode courseNode, Blocker blocker);
 
 }

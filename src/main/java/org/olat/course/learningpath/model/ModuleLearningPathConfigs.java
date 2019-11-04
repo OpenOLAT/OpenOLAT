@@ -24,12 +24,15 @@ import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.C
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_DURATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_OBLIGATION;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_SCORE_CUT_VALUE;
+import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_START;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_KEY_TRIGGER;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_CONFIRMED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_NODE_VISITED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_PASSED;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_SCORE;
 import static org.olat.course.learningpath.ui.LearningPathNodeConfigController.CONFIG_VALUE_TRIGGER_STATUS_DONE;
+
+import java.util.Date;
 
 import org.olat.core.util.StringHelper;
 import org.olat.course.learningpath.LearningPathConfigs;
@@ -79,6 +82,11 @@ public class ModuleLearningPathConfigs implements LearningPathConfigs {
 	public AssessmentObligation getObligation() {
 		String value = moduleConfiguration.getStringValue(CONFIG_KEY_OBLIGATION, CONFIG_DEFAULT_OBLIGATION);
 		return AssessmentObligation.valueOf(value);
+	}
+
+	@Override
+	public Date getStartDate() {
+		return moduleConfiguration.getDateValue(CONFIG_KEY_START);
 	}
 
 	@Override

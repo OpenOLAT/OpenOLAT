@@ -28,6 +28,7 @@ package org.olat.course.run.scoring;
 public class AccountingEvaluatorsBuilder {
 	
 	private static AccountingEvaluators CONVENTIONAL = builder()
+			.withStartDateEvaluator(AccountingEvaluatorsFactory.createNoBlockingStartDateEvaluator())
 			.withObligationEvaluator(AccountingEvaluatorsFactory.createNullObligationEvaluator())
 			.withDurationEvaluator(AccountingEvaluatorsFactory.createNullDurationEvaluator())
 			.withScoreEvaluator(AccountingEvaluatorsFactory.createUnchangingScoreEvaluator())
@@ -38,6 +39,7 @@ public class AccountingEvaluatorsBuilder {
 			.withLastModificationsEvaluator(AccountingEvaluatorsFactory.createUnchangingLastModificationsEvaluator())
 			.build();
 	
+	private StartDateEvaluator startDateEvaluator;
 	private ObligationEvaluator obligationEvaluator;
 	private DurationEvaluator durationEvaluator;
 	private ScoreEvaluator scoreEvaluator;
@@ -49,6 +51,11 @@ public class AccountingEvaluatorsBuilder {
 	
 	private AccountingEvaluatorsBuilder() {
 		//
+	}
+	
+	public AccountingEvaluatorsBuilder withStartDateEvaluator(StartDateEvaluator startDateEvaluator) {
+		this.startDateEvaluator = startDateEvaluator;
+		return this;
 	}
 	
 	public AccountingEvaluatorsBuilder withObligationEvaluator(ObligationEvaluator obligationEvaluator) {
@@ -93,6 +100,9 @@ public class AccountingEvaluatorsBuilder {
 	
 	public AccountingEvaluators build() {
 		AccountingEvaluatorsImpl impl = new AccountingEvaluatorsImpl();
+		impl.startDateEvaluator = this.startDateEvaluator != null 
+				? this.startDateEvaluator
+				: AccountingEvaluatorsFactory.createNoBlockingStartDateEvaluator();
 		impl.obligationEvaluator = this.obligationEvaluator != null 
 				? this.obligationEvaluator
 				: AccountingEvaluatorsFactory.createNullObligationEvaluator();
@@ -130,6 +140,7 @@ public class AccountingEvaluatorsBuilder {
 	
 	private static class AccountingEvaluatorsImpl implements AccountingEvaluators {
 		
+		private StartDateEvaluator startDateEvaluator;
 		private ObligationEvaluator obligationEvaluator;
 		private DurationEvaluator durationEvaluator;
 		private ScoreEvaluator scoreEvaluator;
@@ -138,6 +149,11 @@ public class AccountingEvaluatorsBuilder {
 		private StatusEvaluator statusEvaluator;
 		private FullyAssessedEvaluator fullyAssessedEvaluator;
 		private LastModificationsEvaluator lastModificationsEvaluator;
+
+		@Override
+		public StartDateEvaluator getStartDateEvaluator() {
+			return startDateEvaluator;
+		}
 
 		@Override
 		public ObligationEvaluator getObligationEvaluator() {

@@ -17,32 +17,32 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.run.scoring;
+package org.olat.course.learningpath.evaluation;
+
+import java.util.Date;
+
+import org.olat.core.CoreSpringFactory;
+import org.olat.course.learningpath.LearningPathService;
+import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.StartDateEvaluator;
+import org.olat.course.run.scoring.StatusEvaluator.Blocker;
 
 /**
  * 
- * Initial date: 16 Sep 2019<br>
+ * Initial date: 4 Nov 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface AccountingEvaluators {
+public class ConfigStartDateEvaluator implements StartDateEvaluator {
 
-	public StartDateEvaluator getStartDateEvaluator();
-
-	public ObligationEvaluator getObligationEvaluator();
-
-	public DurationEvaluator getDurationEvaluator();
-	
-	public ScoreEvaluator getScoreEvaluator();
-
-	public PassedEvaluator getPassedEvaluator();
-
-	public LastModificationsEvaluator getLastModificationsEvaluator();
-
-	public CompletionEvaluator getCompletionEvaluator();
-
-	public StatusEvaluator getStatusEvaluator();
-
-	public FullyAssessedEvaluator getFullyAssessedEvaluator();
+	@Override
+	public void evaluate(CourseNode courseNode, Blocker blocker) {
+		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
+		Date startDate = learningPathService.getConfigs(courseNode).getStartDate();
+		Date now = new Date();
+		if (startDate != null && startDate.after(now)) {
+			blocker.block();
+		}
+	}
 
 }

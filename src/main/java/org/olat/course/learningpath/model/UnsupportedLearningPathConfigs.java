@@ -19,6 +19,8 @@
  */
 package org.olat.course.learningpath.model;
 
+import java.util.Date;
+
 import org.olat.course.learningpath.LearningPathConfigs;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
@@ -44,6 +46,11 @@ public class UnsupportedLearningPathConfigs implements LearningPathConfigs {
 	@Override
 	public AssessmentObligation getObligation() {
 		return AssessmentObligation.optional;
+	}
+
+	@Override
+	public Date getStartDate() {
+		return null;
 	}
 	
 	@Override

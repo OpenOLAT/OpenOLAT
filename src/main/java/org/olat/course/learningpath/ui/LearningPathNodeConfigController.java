@@ -22,10 +22,12 @@ package org.olat.course.learningpath.ui;
 import static org.olat.core.gui.components.util.KeyValues.entry;
 
 import java.util.Arrays;
+import java.util.Date;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
+import org.olat.core.gui.components.form.flexible.elements.DateChooser;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
@@ -53,6 +55,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	public static final String CONFIG_KEY_DURATION = "duration";
 	public static final String CONFIG_KEY_OBLIGATION = "obligation";
 	public static final String CONFIG_DEFAULT_OBLIGATION = AssessmentObligation.mandatory.name();
+	public static final String CONFIG_KEY_START = "start.date";
 	public static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
 	public static final String CONFIG_VALUE_TRIGGER_NONE = "none";
 	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = "nodeVisited";
@@ -65,6 +68,7 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	
 	private TextElement durationEl;
 	private SingleSelection obligationEl;
+	private DateChooser startDateEl;
 	private SingleSelection triggerEl;
 	private TextElement scoreCutEl;
 
@@ -96,6 +100,10 @@ public class LearningPathNodeConfigController extends FormBasicController {
 			obligationEl.select(obligationKey, true);
 		}
 		obligationEl.setVisible(ctrlConfig.isObligationVisible());
+		
+		Date startDate = moduleConfigs.getDateValue(CONFIG_KEY_START);
+		startDateEl = uifactory.addDateChooser("config.start.date", startDate, formLayout);
+		startDateEl.setDateChooserTimeEnabled(true);
 		
 		KeyValues triggerKV = getTriggerKV();
 		triggerEl = uifactory.addRadiosVertical("config.trigger", formLayout,
@@ -206,6 +214,9 @@ public class LearningPathNodeConfigController extends FormBasicController {
 				? obligationEl.getSelectedKey()
 				: CONFIG_DEFAULT_OBLIGATION;
 		moduleConfigs.setStringValue(CONFIG_KEY_OBLIGATION, obligation);
+		
+		Date startDate = startDateEl.getDate();
+		moduleConfigs.setDateValue(CONFIG_KEY_START, startDate);
 		
 		String trigger = triggerEl.isOneSelected()
 				? triggerEl.getSelectedKey()

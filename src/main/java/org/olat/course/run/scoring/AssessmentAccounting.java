@@ -154,6 +154,9 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		AccountingEvaluators evaluators = courseAssessmentService.getEvaluators(courseNode, courseConfig);
 		
+		StartDateEvaluator startDateEvaluator = evaluators.getStartDateEvaluator();
+		startDateEvaluator.evaluate(courseNode, blocker);
+		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
 		AssessmentObligation obligation = obligationEvaluator.getObligation(result, courseNode);
 		result.setObligation(obligation);

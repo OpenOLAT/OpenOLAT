@@ -19,6 +19,8 @@
  */
 package org.olat.course.learningpath;
 
+import java.util.Date;
+
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 
@@ -35,6 +37,8 @@ public interface LearningPathConfigs {
 	public void setDuration(Integer duration);
 
 	public AssessmentObligation getObligation();
+	
+	public Date getStartDate();
 	
 	public FullyAssessedResult isFullyAssessedOnNodeVisited();
 	
