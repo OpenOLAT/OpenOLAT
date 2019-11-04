@@ -197,14 +197,14 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
 		if (isNewNode) {
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_OWNER, true);
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_COACH, true);
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_OWNER, false);
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_COACH, false);
 			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_PARTICIPANT, true);
-			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_GUEST, true);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_OWNER, true);
+			config.setBooleanEntry(CONFIG_KEY_EXECUTION_BY_GUEST, false);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_OWNER, false);
 			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_COACH, true);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_PARTICIPANT, true);
-			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_GUEST, true);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_PARTICIPANT, false);
+			config.setBooleanEntry(CONFIG_KEY_REPORT_FOR_GUEST, false);
 		}
 		config.setConfigurationVersion(CURRENT_VERSION);
 	}
