@@ -486,9 +486,9 @@ public class LectureListRepositoryController extends FormBasicController {
 			
 			LectureBlock lectureBlock = row.getLectureBlock();
 
-			if(lectureBlock.getStatus() == LectureBlockStatus.cancelled
+			if(secCallback.canReopenLectureBlock() && (lectureBlock.getStatus() == LectureBlockStatus.cancelled
 					|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.closed
-					|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.autoclosed) {
+					|| lectureBlock.getRollCallStatus() == LectureRollCallStatus.autoclosed)) {
 				reopenLink = LinkFactory.createLink("reopen.lecture.blocks", "reopen", getTranslator(), mainVC, this, Link.LINK);
 				reopenLink.setIconLeftCSS("o_icon o_icon-fw o_icon_reopen");
 			}

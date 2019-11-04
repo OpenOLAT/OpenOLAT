@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.Tracing;
@@ -65,10 +66,13 @@ public class FeedViewHelper {
 	
 	// display 5 items per default
 	private int itemsPerPage = 5;
+	private Roles roles;
 	private Identity identity;
 	private Translator translator;
 	private Locale locale;
-	private String baseUri, feedUrl, nodeId;
+	private String baseUri;
+	private String feedUrl;
+	private String nodeId;
 	private Long courseId;
 	private static final String MEDIA_DIR = Path.MEDIA_DIR;
 	// Per default show the first page
@@ -82,12 +86,13 @@ public class FeedViewHelper {
 	 * @param feed
 	 * @param locale
 	 */
-	public FeedViewHelper(Feed feed, Identity identity, Translator translator, Long courseId, String nodeId) {
+	public FeedViewHelper(Feed feed, Identity identity, Roles roles, Translator translator, Long courseId, String nodeId) {
 		this.identity = identity;
 		this.translator = translator;
 		this.locale = translator.getLocale();
 		this.courseId = courseId;
 		this.nodeId = nodeId;
+		this.roles = roles;
 		this.setURIs(feed);
 	}
 
@@ -97,9 +102,9 @@ public class FeedViewHelper {
 	 * @param feed
 	 * @param identityKey
 	 */
-	FeedViewHelper(Feed feed, Identity identity, Long courseId, String nodeId) {
+	FeedViewHelper(Feed feed, Identity identity, Roles roles, Long courseId, String nodeId) {
 		this.identity = identity;
-		
+		this.roles = roles;
 		this.courseId = courseId;
 		this.nodeId = nodeId;
 		this.setURIs(feed);
@@ -111,7 +116,7 @@ public class FeedViewHelper {
 	 * @param feed 
 	 */
 	public void setURIs(Feed feed) {
-		baseUri = FeedManager.getInstance().getFeedBaseUri(feed, identity, courseId, nodeId);
+		baseUri = FeedManager.getInstance().getFeedBaseUri(feed, identity, roles, courseId, nodeId);
 		// Set feed base URI for internal feeds
 		if (feed.isInternal()) {
 			feedUrl = baseUri + "/" + FeedManager.RSS_FEED_NAME;

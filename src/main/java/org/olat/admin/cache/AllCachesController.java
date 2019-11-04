@@ -33,6 +33,8 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.Configuration;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.stats.Stats;
 import org.olat.core.CoreSpringFactory;
@@ -201,13 +203,15 @@ public class AllCachesController extends BasicController {
 			
 			this.cname = cname;
 			
-			binary = cache.getCacheConfiguration().storeAsBinary().enabled();
+			Configuration configuration = cache.getCacheConfiguration();
+			
+			binary = configuration.memory().storageType() == StorageType.BINARY;
 			hits = stats.getHits();
 			misses = stats.getMisses();
 			size = cache.getAdvancedCache().size();
 			maxIdle = cache.getCacheConfiguration().expiration().maxIdle();
 			lifespan = cache.getCacheConfiguration().expiration().lifespan();
-			maxEntries = cache.getCacheConfiguration().eviction().maxEntries();
+			maxEntries = configuration.memory().size();
 			cacheMode = cache.getCacheConfiguration().clustering().cacheModeString();
 		}
 		

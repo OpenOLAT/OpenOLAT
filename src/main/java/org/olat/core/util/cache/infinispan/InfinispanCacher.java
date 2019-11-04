@@ -28,6 +28,7 @@ package org.olat.core.util.cache.infinispan;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.StorageType;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.eviction.EvictionType;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -75,16 +76,22 @@ public class InfinispanCacher implements Cacher {
 			long maxIdle = 900000l;
 			
 			ConfigurationBuilder builder = new ConfigurationBuilder();
-			builder.eviction().strategy(EvictionStrategy.LRU);
-			builder.eviction().type(EvictionType.COUNT).size(maxEntries);
-			builder.expiration().maxIdle(maxIdle);
-			builder.transaction().transactionMode(TransactionMode.NON_TRANSACTIONAL);
-			builder.dataContainer().storeAsBinary().storeValuesAsBinary(false);
-			builder.locking().concurrencyLevel(1000);
-			builder.locking().useLockStriping(false);
-			builder.locking().lockAcquisitionTimeout(15000);
-			builder.locking().isolationLevel(IsolationLevel.READ_COMMITTED);
-			builder.jmxStatistics().enable();
+			builder.memory()
+				.evictionStrategy(EvictionStrategy.REMOVE)
+				.evictionType(EvictionType.COUNT)
+				.storageType(StorageType.OBJECT)
+				.size(maxEntries);
+			builder.expiration()
+				.maxIdle(maxIdle);
+			builder.transaction()
+				.transactionMode(TransactionMode.NON_TRANSACTIONAL);
+			builder.locking()
+				.concurrencyLevel(1000)
+				.useLockStriping(false)
+				.lockAcquisitionTimeout(15000)
+				.isolationLevel(IsolationLevel.READ_COMMITTED);
+			builder.jmxStatistics()
+				.enable();
 			Configuration configurationOverride = builder.build();
 			cacheManager.defineConfiguration(cacheName, configurationOverride);
 		}

@@ -87,7 +87,7 @@ public class FeedPeekviewController extends BasicController implements Controlle
 		} else {
 			peekviewVC.contextPut("wrapperCssClass", wrapperCssClass != null ? wrapperCssClass : "");
 			// add gui helper
-			FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), getTranslator(), courseId, nodeId);
+			FeedViewHelper helper = new FeedViewHelper(feed, getIdentity(), ureq.getUserSession().getRoles(), getTranslator(), courseId, nodeId);
 			peekviewVC.contextPut("helper", helper);
 			// add items, only as many as configured
 			List<Item> allItems = FeedManager.getInstance().loadFilteredAndSortedItems(feed, Collections.emptyList(), callback, getIdentity());

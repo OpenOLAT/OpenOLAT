@@ -120,6 +120,7 @@ import org.olat.modules.portfolio.model.SynchedBinder;
 import org.olat.modules.portfolio.ui.PortfolioHomeController;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
+import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.resource.OLATResource;
 import org.olat.resource.OLATResourceManager;
@@ -186,6 +187,8 @@ public class PortfolioServiceImpl implements PortfolioService {
 
 	@Autowired
 	private RepositoryService repositoryService;
+	@Autowired
+	private RepositoryManager repositoryManager;
 	@Autowired
 	private EvaluationFormManager evaluationFormManager;
 	@Autowired
@@ -258,14 +261,22 @@ public class PortfolioServiceImpl implements PortfolioService {
 			List<Assignment> transientAssignments = ((SectionImpl)transientSection).getAssignments();
 			for(Assignment transientAssignment:transientAssignments) {
 				if(transientAssignment != null) {
+					
+					RepositoryEntry formEntry = null;
+					if(transientAssignment.getAssignmentType() == AssignmentType.form) {
+						formEntry = loadImportedFormEntry(transientAssignment);
+						if(formEntry == null) {
+							continue;
+						}
+					}
+
 					File newStorage = portfolioFileStorage.generateAssignmentSubDirectory();
 					String storage = portfolioFileStorage.getRelativePath(newStorage);
-					
 					assignmentDao.createAssignment(transientAssignment.getTitle(), transientAssignment.getSummary(),
 							transientAssignment.getContent(), storage, transientAssignment.getAssignmentType(),
 							transientAssignment.isTemplate(), transientAssignment.getAssignmentStatus(), section, null,
 							transientAssignment.isOnlyAutoEvaluation(), transientAssignment.isReviewerSeeAutoEvaluation(),
-							transientAssignment.isAnonymousExternalEvaluation(), transientAssignment.getFormEntry());
+							transientAssignment.isAnonymousExternalEvaluation(), formEntry);
 					//copy attachments
 					File templateDirectory = portfolioFileStorage.getAssignmentDirectory(transientAssignment);
 					if(copy && templateDirectory != null) {
@@ -275,6 +286,19 @@ public class PortfolioServiceImpl implements PortfolioService {
 			}
 		}
 		return binder;
+	}
+	
+	private RepositoryEntry loadImportedFormEntry(Assignment transientAssignment) {
+		try {
+			RepositoryEntry formEntry = transientAssignment.getFormEntry();
+			if(formEntry != null) {
+				formEntry = repositoryManager.lookupRepositoryEntryBySoftkey(formEntry.getSoftkey(), false);
+			}
+			return formEntry;
+		} catch (Exception e) {
+			log.error("", e);
+			return null;
+		}
 	}
 
 	@Override

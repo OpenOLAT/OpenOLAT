@@ -53,7 +53,8 @@ public class LecturesMainController extends MainLayoutBasicController implements
 		content.setNeverDisposeRootController(true);
 		content.setToolbarAutoEnabled(true);
 		
-		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager);
+		// TODO principal
+		LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(true, false, false, LectureRoles.lecturemanager, false);
 		lectureCoochingCtrl = new LecturesCoachingController(ureq, getWindowControl(), content, secCallback);
 		listenTo(lectureCoochingCtrl);
 		

@@ -28,6 +28,7 @@ import org.olat.core.gui.components.form.flexible.elements.FileElement;
 import org.olat.core.gui.media.MediaResource;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.id.Roles;
 import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.coordinate.LockResult;
 import org.olat.core.util.vfs.Quota;
@@ -297,7 +298,7 @@ public abstract class FeedManager {
 	 * @param idKey
 	 * @return The base URI of the (RSS) feed
 	 */
-	public abstract String getFeedBaseUri(Feed feed, Identity identity, Long courseId, String nodeId);
+	public abstract String getFeedBaseUri(Feed feed, Identity identity, Roles roles, Long courseId, String nodeId);
 
 	/**
 	 * Creates the RSS feed resource.
@@ -307,7 +308,7 @@ public abstract class FeedManager {
 	 * @param identityKey
 	 * @return The RSS feed as a MediaResource
 	 */
-	public abstract MediaResource createFeedFile(OLATResourceable feed, Identity identity, Long courseId, String nodeId);
+	public abstract MediaResource createFeedFile(OLATResourceable feed, Identity identity, Roles roles, Long courseId, String nodeId);
 
 	/**
 	 * Creates and returns a zip-file media resource of the given feed resource

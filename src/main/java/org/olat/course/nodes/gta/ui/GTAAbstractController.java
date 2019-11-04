@@ -411,7 +411,7 @@ public abstract class GTAAbstractController extends BasicController implements G
 		// need an instantiated to go further (import for optional tasks)
 		if(assignedTask != null && assignedTask.getRevisionsDueDate() != null) {
 			Date date =  assignedTask.getRevisionsDueDate();
-			String dateAsString = formatDueDate(new DueDate(false, date), false);
+			String dateAsString = formatDueDate(new DueDate(false, date), true);
 			mainVC.contextPut("revisionDueDate", dateAsString);	
 			if(assignedTask.getTaskStatus() == TaskProcess.revision
 					&& date.compareTo(new Date()) < 0) {

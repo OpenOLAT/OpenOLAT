@@ -18,7 +18,6 @@ A sophisticated modular toolkit provides course authors with a wide range of did
     * [Compress javascript and CSS](#compress-javascript-and-css)
     * [REST API](#rest-api)
     * [Automated tests](#automated-tests)
-    * [Experimental: setting up OpenOlat on Eclipse with an Application Server](#experimental-setting-up-openolat-on-eclipse-with-an-application-server)
 
 ## Licensing
 
@@ -381,72 +380,4 @@ mvn clean verify -DskipTests=true -DskipSeleniumTests=true -Ptomcat
 
 Run single test as JUnit Test in Eclipse
 
-### Experimental: setting up OpenOlat on Eclipse with an Application Server
-
-OpenOlat supports only Apache Tomcat officially, but it can also run on other application
-servers like JBoss AS / Wildfly. This section is intended for people who have
-some minimal experience with these servers and can install a JDBC driver, set some
-JMS resources...
-
-As of OpenOlat 10, we need WildFly because of JPA 2.1 (Hibernate 5.2.x)
-
-The beginning of the installation is the same as Tomcat as described above. To create
- your eclipse project, use these commands instead of the default one:
-
-```bash
- mvn eclipse:clean eclipse:eclipse -P-tomcat,wildfly
-```
-     
-#### Configuration WildFly (JBoss AS 10.1)
-
-We need Hibernate 5.2, you need to use the tutorial to update the version of hibernate
-in Widlfly: http://docs.jboss.org/hibernate/orm/5.2/topical/html_single/wildfly/Wildfly.html
-
-Define a JDBC connection pool in your standalone.xml configuration with a jndi-name like:
-`java:jboss/datasources/OpenOLATDS` and set this JNDI name in olat.local.properties set
-the following properties:
-
-```
-db.source=jndi
-db.jndi=java:jboss/datasources/OpenOLATDS
-cluster.mode=Cluster
-```
-
-The cluster mode will disable the hibernate cache
-
-Create a queue with a jndi-name like this:
-
-```
-java:jboss/exported/jms/queue/searchQueue
-```
-
-and a topic:
-
-```
-java:jboss/exported/jms/topic/sysbus
-```
-
-in olat.local.properties set the following properties:
-
-```
-jms.provider=jndi
-jms.broker.jndi=java:/ConnectionFactory
-sysbus.broker.jndi=java:jboss/exported/jms/topic/sysbus
-search.broker.jndi=java:jboss/exported/jms/queue/searchQueue
-index.broker.jndi=java:jboss/exported/jms/queue/indexQueue
-certificate.broker.jndi=java:jboss/exported/jms/queue/certificateQueue
-```
-
-The following features are delegated to the application server
-
-| State | Feature |
-| --- | --- |
-| OK | JDBC Connections |
-| OK | JMS |
-| OK | JAX-RS (restapi) |
-| OK | JAX-WS (vitero, openmeetings) |
-| x | Mail |
-| x | LDAP Connection |
-| OK | Hibernate/JPA (only JBoss AS, we depend on Hibernate) |
-| OK | Caching (for JPA second level cache for example) |
 

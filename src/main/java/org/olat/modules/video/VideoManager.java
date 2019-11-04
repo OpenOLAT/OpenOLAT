@@ -31,7 +31,6 @@ import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.fileresource.types.ResourceEvaluation;
 import org.olat.modules.video.manager.VideoExportMediaResource;
 import org.olat.modules.video.model.TranscodingCount;
-import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.ui.VideoChapterTableRow;
 import org.olat.repository.RepositoryEntry;
 import org.olat.resource.OLATResource;
@@ -250,7 +249,7 @@ public interface VideoManager {
 	 *            The repository entry that represents the video in the repository
 	 * @param masterVideo The video file to be added to the repository. Must be an mp4 file.
 	 */
-	public boolean importFromMasterFile(RepositoryEntry repoEntry, VFSLeaf masterVideo);
+	public VideoMeta importFromMasterFile(RepositoryEntry repoEntry, VFSLeaf masterVideo);
 
 	/**
 	 * Import the given export archive to the resource on disk
@@ -261,7 +260,7 @@ public interface VideoManager {
 	 *            The archive to be added to the repository. The archive must be
 	 *            created by the video export feature.
 	 */
-	public boolean importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive);
+	public VideoMeta importFromExportArchive(RepositoryEntry repoEntry, VFSLeaf exportArchive);
 
 	/**
 	 * Update video transcoding
@@ -371,8 +370,6 @@ public interface VideoManager {
 	
 	public long getVideoFrameCount(VFSLeaf videoFile);
 	
-	public VFSLeaf getMasterVideo(OLATResource videoResource);
-	
 	public VFSLeaf downloadTmpVideo(OLATResource videoResource, VideoMeta videoMetadata);
 	
 	/**
@@ -388,7 +385,7 @@ public interface VideoManager {
 	 *
 	 * @return the all video resources metadata
 	 */
-	public List<VideoMetaImpl> getAllVideoResourcesMetadata();
+	public List<VideoMeta> getAllVideoResourcesMetadata();
 	
 	/**
 	 * Gets the video meta data.
@@ -396,7 +393,7 @@ public interface VideoManager {
 	 * @param videoResource the video resource
 	 * @return the video meta data
 	 */
-	public VideoMetaImpl getVideoMetadata(OLATResource videoResource);
+	public VideoMeta getVideoMetadata(OLATResource videoResource);
 
 	/**
 	 * Exchange poster of the new resource.
@@ -411,7 +408,14 @@ public interface VideoManager {
 	 * @param videoResource the OLATResource
 	 * @param uploadVideo the upload video
 	 */
-	public void updateVideoMetadata(OLATResource videoResource, VFSLeaf uploadVideo);
+	public VideoMeta updateVideoMetadata(OLATResource videoResource, VFSLeaf uploadVideo);
+	
+	/**
+	 * This method can repair old formats like zip, mov...
+	 * @param meta
+	 * @return
+	 */
+	public VideoMeta checkUnkownVideoFormat(VideoMeta meta);
 	
 	/**
 	 * Only for downloadable URL.

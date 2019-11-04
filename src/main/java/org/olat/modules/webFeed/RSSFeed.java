@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.commons.services.notifications.PersonalRSSServlet;
 import org.olat.core.id.Identity;
+import org.olat.core.id.Roles;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.modules.webFeed.manager.FeedManager;
 
@@ -53,12 +54,12 @@ public class RSSFeed extends SyndFeedImpl {
 	 * Constructor. The identityKey is needed to generate personal URLs for the
 	 * corresponding user.
 	 */
-	public RSSFeed(Feed feed, Identity identity, Long courseId, String nodeId) {
+	public RSSFeed(Feed feed, Identity identity, Roles roles, Long courseId, String nodeId) {
 		super();
 
 		// This helper object is required for generating the appropriate URLs for
 		// the given user (identity)
-		FeedViewHelper helper = new FeedViewHelper(feed, identity, courseId, nodeId);
+		FeedViewHelper helper = new FeedViewHelper(feed, identity, roles, courseId, nodeId);
 
 		setFeedType("rss_2.0");
 		setEncoding(PersonalRSSServlet.DEFAULT_ENCODING);

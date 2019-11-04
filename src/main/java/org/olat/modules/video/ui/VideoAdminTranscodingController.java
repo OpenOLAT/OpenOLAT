@@ -41,10 +41,10 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.StaticFlex
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.modules.video.VideoManager;
+import org.olat.modules.video.VideoMeta;
 import org.olat.modules.video.VideoModule;
 import org.olat.modules.video.VideoTranscoding;
 import org.olat.modules.video.model.TranscodingCount;
-import org.olat.modules.video.model.VideoMetaImpl;
 import org.olat.modules.video.ui.TranscodingTableModel.TranscodingCols;
 import org.olat.resource.OLATResource;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,9 +72,9 @@ public class VideoAdminTranscodingController extends FormBasicController {
 		super(ureq, wControl, "transcoding_admin");
 		nativeResolutions = new HashMap<>();
 		
-		List<VideoMetaImpl> olatresources = videoManager.getAllVideoResourcesMetadata();
+		List<VideoMeta> olatresources = videoManager.getAllVideoResourcesMetadata();
 		//cache native resolutions
-		for (VideoMetaImpl videoResource : olatresources) {
+		for (VideoMeta videoResource : olatresources) {
 			nativeResolutions.put(videoResource.getVideoResource(), videoResource.getHeight());
 		}
 

@@ -284,8 +284,12 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 		if (path.isFeedType()) {
 			// Only create feed if modified. Send not modified response else.
 			Identity identity = null;
+			Roles roles = null;
 			if(path.getIdentityKey() != null) {
 				identity = securityManager.loadIdentityByKey(path.getIdentityKey());
+				roles = securityManager.getRoles(identity);
+			} else {
+				roles = Roles.guestRoles();
 			}
 			long sinceModifiedMillis = request.getDateHeader("If-Modified-Since");
 			
@@ -309,7 +313,7 @@ public class FeedMediaDispatcher implements Dispatcher, GenericEventListener {
 					return;
 				}
 			} else {
-				resource = feedManager.createFeedFile(feed, identity, path.getCourseId(), path.getNodeId());
+				resource = feedManager.createFeedFile(feed, identity, roles, path.getCourseId(), path.getNodeId());
 			}
 		} else if (path.isItemType()) {
 			resource = feedManager.createItemMediaFile(feed, path.getItemId(), path.getItemFileName());

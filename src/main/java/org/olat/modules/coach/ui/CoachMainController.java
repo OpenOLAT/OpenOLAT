@@ -188,7 +188,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Lectures", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(false, false, true, LectureRoles.teacher);
+				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(false, false, true, LectureRoles.teacher, false);
 				lecturesTeacherCtrl = new LecturesCoachingController(ureq, bwControl, content, secCallback);
 				listenTo(lecturesTeacherCtrl);
 			}
@@ -198,7 +198,7 @@ public class CoachMainController extends MainLayoutBasicController implements Ac
 				OLATResourceable ores = OresHelper.createOLATResourceableInstance("Classes", 0l);
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrapBusinessPath(ores));
 				WindowControl bwControl = BusinessControlFactory.getInstance().createBusinessWindowControl(ores, null, getWindowControl());
-				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(false, true, false, LectureRoles.mastercoach);
+				LecturesSecurityCallback secCallback = LecturesSecurityCallbackFactory.getSecurityCallback(false, true, false, LectureRoles.mastercoach, false);
 				lecturesMasterCoachCtrl = new LecturesCoachingController(ureq, bwControl, content, secCallback);
 				listenTo(lecturesMasterCoachCtrl);
 			}
