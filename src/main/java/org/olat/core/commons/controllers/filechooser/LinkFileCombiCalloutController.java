@@ -383,7 +383,8 @@ public class LinkFileCombiCalloutController extends BasicController {
 	 * @param newModalContentController
 	 */
 	private void displayModal(Controller newModalContentController) {
-		if (guardModalController(newModalContentController)) return;
+		if (newModalContentController == null) return;
+		
 		currentModalController = newModalContentController;
 		listenTo(currentModalController);
 		cmc = new CloseableModalController(getWindowControl(), "close", newModalContentController.getInitialComponent());
