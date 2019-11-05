@@ -40,9 +40,11 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
+import org.olat.course.run.scoring.StatusCompletionEvaluator;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -53,15 +55,17 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class LearningPathListController extends FormBasicController {
+	
+	private static final StatusCompletionEvaluator STATUS_COMPLETION_EVALUATOR = new StatusCompletionEvaluator();
 
 	private FlexiTableElement tableEl;
 	private LearningPathDataModel dataModel;
 	
 	private final UserCourseEnvironment userCourseEnv;
 	
-	public LearningPathListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnvironment) {
+	public LearningPathListController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv) {
 		super(ureq, wControl, LAYOUT_BAREBONE);
-		this.userCourseEnv = userCourseEnvironment;
+		this.userCourseEnv = userCourseEnv;
 		initForm(ureq);
 	}
 	
@@ -133,20 +137,31 @@ public class LearningPathListController extends FormBasicController {
 	}
 
 	private LearningPathRow forgeRow(LearningPathTreeNode treeNode, LearningPathRow parent) {
-		ProgressBar progressBar = null;
-		boolean hasCompletion = !Mode.none.equals(courseAssessmentService.getAssessmentConfig(treeNode.getCourseNode()).getCompletionMode());
-		if (hasCompletion) {
-			progressBar = new ProgressBar("progress-" + treeNode.getIdent());
-			float actual = treeNode.getCompletion() != null? treeNode.getCompletion().floatValue(): 0.0f;
-			progressBar.setActual(actual);
-			progressBar.setMax(1.0f);
-			progressBar.setWidthInPercent(true);
-			progressBar.setPercentagesEnabled(true);
-			progressBar.setLabelAlignment(LabelAlignment.none);
-		}
+		ProgressBar progressBar = new ProgressBar("progress-" + treeNode.getIdent());
+		progressBar.setMax(1.0f);
+		progressBar.setWidthInPercent(true);
+		progressBar.setPercentagesEnabled(true);
+		progressBar.setLabelAlignment(LabelAlignment.none);
+		float actual = getActual(treeNode);
+		progressBar.setActual(actual);
 		LearningPathRow row = new LearningPathRow(treeNode, progressBar);
 		row.setParent(parent);
 		return row;
+	}
+
+	private float getActual(LearningPathTreeNode treeNode) {
+		float actual = 0;
+		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(treeNode.getCourseNode());
+		boolean hasCompletion = !Mode.none.equals(assessmentConfig.getCompletionMode());
+		if (hasCompletion) {
+			actual = treeNode.getCompletion() != null ? treeNode.getCompletion().floatValue() : 0.0f;
+		} else {
+			Double statusCompletion = STATUS_COMPLETION_EVALUATOR.getCompletion(treeNode.getFullyAssessed(),
+					treeNode.getAssessmentStatus());
+			actual = statusCompletion != null? statusCompletion.floatValue(): 0;
+			
+		}
+		return actual;
 	}
 
 	@Override

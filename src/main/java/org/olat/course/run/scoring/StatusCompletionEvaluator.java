@@ -37,9 +37,11 @@ public class StatusCompletionEvaluator implements CompletionEvaluator {
 	}
 
 	public Double getCompletion(AssessmentEvaluation evaluation) {
-		if (evaluation.getFullyAssessed() != null && evaluation.getFullyAssessed().booleanValue()) return 1.0;
-		
-		AssessmentEntryStatus assessmentStatus = evaluation.getAssessmentStatus();
+		return getCompletion(evaluation.getFullyAssessed(), evaluation.getAssessmentStatus());
+	}
+	
+	public Double getCompletion(Boolean fullyAssessed, AssessmentEntryStatus assessmentStatus) {
+		if (fullyAssessed != null && fullyAssessed.booleanValue()) return 1.0;
 		if (assessmentStatus == null) return 0.0;
 		
 		switch (assessmentStatus) {
