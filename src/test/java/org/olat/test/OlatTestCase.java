@@ -72,9 +72,6 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	private static boolean oracleConfigured = false;
 	private static boolean started = false;
 	private static SimpleSmtpServer dumbster;
-
-	@Autowired
-	protected DB dbInstance;
 	private static long timestamp;
 	
 	@Rule public TestName currentTestName = new TestName();
