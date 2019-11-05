@@ -298,6 +298,25 @@
 			</property>
 	</bean>
 	
+	<bean class="org.olat.core.extensions.action.GenericActionExtension"  init-method="initExtensionPoints">
+		<property name="order" value="7171" />
+		<property name="actionController">	
+			<bean class="org.olat.core.gui.control.creator.AutoCreator" scope="prototype">
+				<property name="className" value="org.olat.admin.sysinfo.SchedulerController"/>
+			</bean>
+		</property>
+		<property name="navigationKey" value="scheduler" />
+		<property name="parentTreeNodeIdentifier" value="systemParent" /> 
+		<property name="translationPackage" value="org.olat.admin"/>
+		<property name="i18nActionKey" value="menu.scheduler"/>
+		<property name="i18nDescriptionKey" value="menu.scheduler.alt"/>
+		<property name="extensionPoints">
+			<list>	
+				<value>org.olat.admin.SystemAdminMainController</value>		
+			</list>
+		</property>
+	</bean>
+	
 	<!-- System / cluster -->
 	<bean class="org.olat.commons.coordinate.cluster.jms.ClusterActionExtension"  init-method="initExtensionPoints">
 			<property name="clusterMode" value="${cluster.mode}"/>
