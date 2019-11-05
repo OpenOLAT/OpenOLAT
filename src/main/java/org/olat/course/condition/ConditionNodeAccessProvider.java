@@ -26,6 +26,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
+import org.olat.course.ICourse;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.nodeaccess.NodeAccessProvider;
 import org.olat.course.nodes.AbstractAccessableCourseNode;
@@ -116,6 +117,11 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	@Override
 	public void onStatusUpdated(CourseNode courseNode, UserCourseEnvironment userCourseEnv,
 			AssessmentEntryStatus status, Role by) {
+		// nothing to do
+	}
+
+	@Override
+	public void onCoursePublished(ICourse course) {
 		// nothing to do
 	}
 

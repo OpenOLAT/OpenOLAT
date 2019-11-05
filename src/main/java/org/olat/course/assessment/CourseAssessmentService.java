@@ -28,6 +28,7 @@ import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.config.CourseConfig;
@@ -317,5 +318,12 @@ public interface CourseAssessmentService {
 			TooledStackedPanel stackPanel, CourseNode courseNode, RepositoryEntry courseEntry, BusinessGroup group,
 			UserCourseEnvironment coachCourseEnv, AssessmentToolContainer toolContainer,
 			AssessmentToolSecurityCallback assessmentCallback);
+
+	/**
+	 * Recalculates all AssessmentEvaluation of all users in the course.
+	 *
+	 * @param course
+	 */
+	public void evaluateAll(ICourse course);
 
 }

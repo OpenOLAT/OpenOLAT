@@ -27,12 +27,17 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.logging.log4j.Logger;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.components.stack.TooledStackedPanel;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
+import org.olat.core.logging.Tracing;
+import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.handler.AssessmentConfig;
@@ -42,12 +47,15 @@ import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.Role;
@@ -67,8 +75,10 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class CourseAssessmentServiceImpl implements CourseAssessmentService, NodeVisitedListener {
+
+	private static final Logger log = Tracing.createLoggerFor(CourseAssessmentServiceImpl.class);
 	
-	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;	
+	private static final String NON_ASSESSMENT_TYPE = NonAssessmentHandler.NODE_TYPE;
 	
 	@Autowired
 	private List<AssessmentHandler> loadedAssessmentHandlers;
@@ -327,6 +337,31 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
 		am.updateLastVisited(courseNode, assessedIdentity, new Date());
 		return false;
+	}
+
+	@Override
+	public void evaluateAll(ICourse course) {
+		log.debug("Evaluate all score accountings for course {}", course);
+		CourseEnvironment courseEnv = course.getCourseEnvironment();
+		CoursePropertyManager pm = courseEnv.getCoursePropertyManager();
+		List<Identity> assessedIdentities = pm.getAllIdentitiesWithCourseAssessmentData(null);
+		
+		int count = 0;
+		for(Identity assessedIdentity: assessedIdentities) {
+			evaluateAll(courseEnv, assessedIdentity);
+			log.debug("Evaluated score accounting in course {} for {}", course, assessedIdentity);
+			if(++count % 10 == 0) {
+				DBFactory.getInstance().commitAndCloseSession();
+			}
+		}
+		DBFactory.getInstance().commitAndCloseSession();
+	}
+
+	private void evaluateAll(CourseEnvironment courseEnv, Identity assessedIdentity) {
+		IdentityEnvironment identityEnv = new IdentityEnvironment();
+		identityEnv.setIdentity(assessedIdentity);
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
+		userCourseEnv.getScoreAccounting().evaluateAll(true);
 	}
 
 }

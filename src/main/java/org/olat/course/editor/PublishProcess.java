@@ -36,13 +36,13 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.ObjectCloner;
@@ -61,6 +61,7 @@ import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.Structure;
 import org.olat.course.editor.PublishStepCatalog.CategoryLabel;
+import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.CourseNodeConfiguration;
 import org.olat.course.nodes.CourseNodeFactory;
@@ -499,6 +500,9 @@ public class PublishProcess {
 		
 		//commit all changes before sending an event
 		DBFactory.getInstance().commitAndCloseSession();
+		
+		NodeAccessService nodeAccessService = CoreSpringFactory.getImpl(NodeAccessService.class);
+		nodeAccessService.onCoursePublished(course);
 		
 		/*
 		 * broadcast event
