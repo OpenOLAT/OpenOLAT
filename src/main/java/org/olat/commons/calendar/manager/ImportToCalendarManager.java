@@ -42,7 +42,6 @@ import org.olat.commons.calendar.model.ImportedToCalendar;
 import org.olat.commons.calendar.model.Kalendar;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
-import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.logging.Tracing;
@@ -81,50 +80,14 @@ public class ImportToCalendarManager {
 	@Autowired
 	private ImportedToCalendarDAO importedToCalendarDao;
 	
-	/**
-	 * Method used by the cron job
-	 * @return
-	 */
-	public boolean updateCalendarIn() {
-		List<ImportedToCalendar> importedToCalendars = importedToCalendarDao.getImportedToCalendars();
-		log.info(Tracing.M_AUDIT, "Begin to update " + importedToCalendars.size() + " calendars.");
-		
-		//make a full check only every 10 runs
-		boolean check = counter.incrementAndGet() % 10 == 0;
-
-		int count = 0;
-		for(ImportedToCalendar importedToCalendar:importedToCalendars) {
-			String type = importedToCalendar.getToType();
-			String id = importedToCalendar.getToCalendarId();
-			String importUrl = importedToCalendar.getUrl();
-			if(check || check(importedToCalendar)) {
-				try(InputStream in = new URL(importUrl).openStream()) {
-					Kalendar cal = calendarManager.getCalendar(type, id);
-					if(calendarManager.synchronizeCalendarFrom(in, importUrl, cal)) {
-						log.info(Tracing.M_AUDIT, "Updated successfully calendar: " + type + " / " + id);
-					} else {
-						log.info(Tracing.M_AUDIT, "Failed to update calendar: " + type + " / " + id);
-					}
-				} catch(Exception ex) {
-					log.warn("Cannot synchronize calendar (" + importedToCalendar.getKey() + ") from url: " + importUrl, ex);
-				}
-			} else {
-				log.info(Tracing.M_AUDIT, "Delete imported calendar because of missing resource: " + type + " " + id + " with URL: " + importUrl);
-				deleteImportedCalendars(type, id);
-			}
-			
-			if(count++ % 20 == 0) {
-				DBFactory.getInstance().commit();
-				
-				try {
-					Thread.sleep(1000);// sleep to don't overload the system
-				} catch (InterruptedException e) {
-					log.error("", e);
-				}
-			}
-		}
-		return false;
+	protected List<ImportedToCalendar> getImportedToCalendars() {
+		return importedToCalendarDao.getImportedToCalendars();
 	}
+	
+	protected boolean check() {
+		return counter.incrementAndGet() % 10 == 0;
+	}
+	
 	public void deleteImportedCalendarsAndEvents(Kalendar cal) {
 		List<ImportedToCalendar> importedToCalendars = importedToCalendarDao
 				.getImportedToCalendars(cal.getCalendarID(), cal.getType());
@@ -156,7 +119,7 @@ public class ImportToCalendarManager {
 		importedToCalendarDao.delete(importedToCalendar);
 	}
 	
-	private boolean check(ImportedToCalendar importedToCalendar) {
+	protected boolean check(ImportedToCalendar importedToCalendar) {
 		String id = importedToCalendar.getToCalendarId();
 		String type = importedToCalendar.getToType();
 		if(CalendarManager.TYPE_USER.equals(type)) {
@@ -238,7 +201,7 @@ public class ImportToCalendarManager {
 		deleteImportedCalendars(CalendarManager.TYPE_COURSE, course.getResourceableId().toString());
 	}
 
-	private void deleteImportedCalendars(String type, String id) {
+	protected void deleteImportedCalendars(String type, String id) {
 		List<ImportedToCalendar> importedToCalendars = importedToCalendarDao.getImportedToCalendars(id, type);
 		for(ImportedToCalendar importedToCalendar:importedToCalendars) {
 			importedToCalendarDao.delete(importedToCalendar);	
