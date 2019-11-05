@@ -27,6 +27,7 @@
 package org.olat.commons.calendar;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -44,13 +45,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.commons.calendar.model.CalendarFileInfos;
 import org.olat.commons.calendar.model.CalendarUserConfiguration;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.OLATRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.i18n.I18nManager;
@@ -119,29 +120,34 @@ public class ICalServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-	throws IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) {
 		String requestUrl = request.getPathInfo();
 		try {
 			//log need a session before the response is committed
 			request.getSession();
-			if (log.isDebugEnabled()) {
-				log.debug("doGet pathInfo=" + requestUrl);
-			}
+			log.debug("doGet pathInfo={}", requestUrl);
 			if ((requestUrl == null) || (requestUrl.equals(""))) {
 				return; // error
 			}
 
 			getIcalDocument(requestUrl, request, response);
 		} catch (ValidationException e) {
-			log.warn("Validation Error when generate iCal stream for path::" + request.getPathInfo(), e);
-			response.sendError(HttpServletResponse.SC_CONFLICT);
+			log.warn("Validation Error when generate iCal stream for path::{}", request.getPathInfo(), e);
+			sendError(response, HttpServletResponse.SC_CONFLICT);
 		} catch (IOException e) {
-			log.warn("IOException Error when generate iCal stream for path::" + request.getPathInfo(), e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			log.warn("IOException Error when generate iCal stream for path::{}", request.getPathInfo(), e);
+			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		} catch (Exception e) {
 			log.warn("Unknown Error in icalservlet", e);
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			sendError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	private void sendError(HttpServletResponse response, int status) {
+		try {
+			response.sendError(status);
+		} catch (IOException e) {
+			log.error("", e);
 		}
 	}
   
@@ -195,7 +201,7 @@ public class ICalServlet extends HttpServlet {
 			calendarID = userName;
 		} else {
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, requestUrl);
-			log.warn("Type not supported: " + pathInfo);
+			log.warn("Type not supported: {}", pathInfo);
 			return;
 		}
 		
@@ -212,7 +218,7 @@ public class ICalServlet extends HttpServlet {
 			CalendarUserConfiguration config = calendarManager.getCalendarUserConfiguration(Long.parseLong(userName));
 			String savedToken = config == null ? null : config.getToken();
 			if (authToken == null || savedToken == null || !savedToken.equals(authToken)) {
-				log.warn("Authenticity Check failed for the ical feed path: " + pathInfo);
+				log.warn("Authenticity Check failed for the ical feed path: {}", pathInfo);
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, requestUrl);
 			} else {
 				generateAggregatedCalendar(config.getIdentity(), request, response);
@@ -228,7 +234,7 @@ public class ICalServlet extends HttpServlet {
 				savedToken = calendarManager.getCalendarToken(calendarType, calendarID, userName);
 			}
 			if (authToken == null || savedToken == null || !savedToken.equals(authToken)) {
-				log.warn("Authenticity Check failed for the ical feed path: " + pathInfo);
+				log.warn("Authenticity Check failed for the ical feed path: {}", pathInfo);
 				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, requestUrl);
 			} else {
 				// read and return the calendar file
@@ -263,9 +269,9 @@ public class ICalServlet extends HttpServlet {
 			Object pobject = propIter.next();
 			if(pobject instanceof Property) {
 				Property property = (Property)pobject;
-				if(Version.VERSION.equals(property.getName())) {
+				if(Property.VERSION.equals(property.getName())) {
 					//we force version 2.0
-				} else if(Version.CALSCALE.equals(property.getName())) {
+				} else if(Property.CALSCALE.equals(property.getName())) {
 					out.write(property.toString());
 					calScale = true;
 				} else {
@@ -376,7 +382,7 @@ public class ICalServlet extends HttpServlet {
 					if(vTimeZone != null) {
 						out.write(vTimeZone.toString());
 					}
-				} catch (IOException | ParserException e) {
+				} catch (Exception e) {
 					log.error("", e);
 				}
 			}
@@ -540,7 +546,7 @@ public class ICalServlet extends HttpServlet {
 								event.getProperties().add(urlProperty);
 								break;
 							} catch (URISyntaxException e) {
-								log.error("Invalid URL:" + uri);
+								log.error("Invalid URL:{}", uri);
 							}
 						}
 					}
@@ -553,18 +559,27 @@ public class ICalServlet extends HttpServlet {
      * Load the VTimeZone for Outlook. ical4j use a static map to reuse the TimeZone objects, we need to load
      * and save our specialized TimeZone in a separate map.
      */
-    private VTimeZone getOutlookVTimeZone(final String id) throws IOException, ParserException {
-    	return outlookVTimeZones.computeIfAbsent(id, (timeZoneId) -> {
+    private VTimeZone getOutlookVTimeZone(final String id) {
+    	return outlookVTimeZones.computeIfAbsent(id, timeZoneId -> {
         	try {
 				URL resource = ResourceLoader.getResource("zoneinfo-outlook/" + id + ".ics");
-				CalendarBuilder builder = new CalendarBuilder();
-				Calendar calendar = builder.build(resource.openStream());
-				return (VTimeZone)calendar.getComponent(Component.VTIMEZONE);
+				Calendar calendar = buildCalendar(resource);
+				return calendar == null ? null : (VTimeZone)calendar.getComponent(Component.VTIMEZONE);
 			} catch (Exception e) {
 				log.error("", e);
 				return null;
 			}
     	});
+    }
+    
+    private Calendar buildCalendar(URL resource) {
+    	CalendarBuilder builder = new CalendarBuilder();
+    	try(InputStream in = resource.openStream()) {
+    		return builder.build(in);
+    	} catch(IOException | ParserException e) {
+    		log.error("", e);
+    		return null;
+    	}
     }
     
     private enum Agent {

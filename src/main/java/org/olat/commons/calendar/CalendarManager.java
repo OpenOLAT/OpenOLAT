@@ -27,6 +27,7 @@ package org.olat.commons.calendar;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URLConnection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -409,6 +410,14 @@ public interface CalendarManager {
 	 * @return
 	 */
 	public Kalendar buildKalendarFrom(InputStream calendarContent, String calType,  String calId);
+	
+	/**
+	 * Create an URL connection with default settings like time out.
+	 * 
+	 * @param url The URL as string
+	 * @return A connection or null
+	 */
+	public URLConnection getURLConnection(String url);
 	
 	/**
 	 * Synchronize the event of the calendar stream to the target calendar,

@@ -293,16 +293,19 @@ public class GenericSelectionPropertyHandler extends AbstractUserPropertyHandler
 	@Override
 	public String getUserPropertyAsHTML(User user, Locale locale) {
 		String val = super.getInternalValue(user);// don't want "no selection" key
-		StringBuilder htmlValue = new StringBuilder();
+		StringBuilder htmlValue = new StringBuilder(64);
 		Translator trans = Util.createPackageTranslator(this.getClass(), locale);
-		if (isMultiSelect()) {
-			for (String value : val.split(KEY_DELIMITER)) {
-				if(StringHelper.containsNonWhitespace(value)) {
-					htmlValue.append(trans.translate(value)).append(" ");
+		if(val != null) {
+			if (isMultiSelect()) {
+				for (String value : val.split(KEY_DELIMITER)) {
+					if(StringHelper.containsNonWhitespace(value)) {
+						if(htmlValue.length() > 0) htmlValue.append(" ");
+						htmlValue.append(trans.translate(value));
+					}
 				}
+			} else if(locale != null) {
+				htmlValue.append(trans.translate(val));
 			}
-		} else if(val != null && locale != null) {
-			htmlValue.append(trans.translate(val));
 		}
 		return htmlValue.toString();
 	}

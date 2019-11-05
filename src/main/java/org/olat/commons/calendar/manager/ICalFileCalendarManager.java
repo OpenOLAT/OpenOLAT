@@ -32,10 +32,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -164,6 +167,17 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		// initialize timezone
 		tz = calendarModule.getDefaultTimeZone();
 		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "calendar");
+	}
+	
+	public URLConnection getURLConnection(String url) {
+		try {
+			URLConnection conn = new URL(url).openConnection();
+			conn.setConnectTimeout(15000);
+			return conn;
+		} catch (IOException e) {
+			log.error("Cannot open URL connection for: {}", url, e);
+			return null;
+		}
 	}
 	
 	/**
