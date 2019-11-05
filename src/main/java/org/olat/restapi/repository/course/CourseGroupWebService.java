@@ -51,6 +51,8 @@ import org.olat.core.util.vfs.Quota;
 import org.olat.core.util.vfs.QuotaManager;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.core.util.vfs.VFSManager;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
@@ -212,7 +214,8 @@ public class CourseGroupWebService {
 	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
 	public Response putNewGroup(GroupVO group, @Context HttpServletRequest request) {
-		if(!RestSecurityHelper.isGroupManager(request)) {
+		ICourse icourse = CourseFactory.loadCourse(course.getResourceableId());
+		if(!RestSecurityHelper.isGroupManager(request) && !RestSecurityHelper.isOwnerGrpManager(icourse, request)) {
 			return Response.serverError().status(Status.UNAUTHORIZED).build();
 		} else if(course == null) {
 			return Response.serverError().status(Status.NOT_FOUND).build();

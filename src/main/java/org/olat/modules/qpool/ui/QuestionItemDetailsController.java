@@ -54,6 +54,7 @@ import org.olat.group.model.BusinessGroupSelectionEvent;
 import org.olat.group.ui.main.SelectBusinessGroupController;
 import org.olat.ims.qti.QTIConstants;
 import org.olat.modules.qpool.Pool;
+import org.olat.modules.qpool.QPoolItemEditorController;
 import org.olat.modules.qpool.QPoolSPI;
 import org.olat.modules.qpool.QPoolSecurityCallback;
 import org.olat.modules.qpool.QPoolService;
@@ -132,6 +133,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 	private final int numberOfItems;
 	private Boolean showMetadatas;
 	private LockResult lock;
+	private boolean valid = true;
 	private boolean questionEdited = false;
 	
 	@Autowired
@@ -195,9 +197,12 @@ public class QuestionItemDetailsController extends BasicController implements To
 			showWarning("locked.readonly", new String[] {displayName});
 		}
 		
+		
 		if (spi != null) {
 			if (canEditContent) {
-				questionCtrl = spi.getEditableController(ureq, getWindowControl(), item);
+				QPoolItemEditorController editQuestionCtrl = spi.getEditableController(ureq, getWindowControl(), item);
+				valid = editQuestionCtrl.isValid();
+				questionCtrl = editQuestionCtrl;
 			} else {
 				questionCtrl = spi.getReadOnlyController(ureq, getWindowControl(), item);
 			}
@@ -211,7 +216,11 @@ public class QuestionItemDetailsController extends BasicController implements To
 		listenTo(questionCtrl);
 
 		if(mainVC != null) {
-			mainVC.put("type_specifics", questionCtrl.getInitialComponent());
+			if(valid) {
+				mainVC.put("type_specifics", questionCtrl.getInitialComponent());
+			} else {
+				mainVC.contextPut("corrupted", Boolean.TRUE);
+			}
 		}
 	}
 
@@ -247,7 +256,7 @@ public class QuestionItemDetailsController extends BasicController implements To
 		copyItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_copy");
 		commandDropdown.addComponent(copyItemLink);
 		
-		if (QTIConstants.QTI_12_FORMAT.equals(metadatasCtrl.getItem().getFormat())) {
+		if (QTIConstants.QTI_12_FORMAT.equals(metadatasCtrl.getItem().getFormat()) && valid) {
 			convertItemLink = LinkFactory.createToolLink("convert", translate("convert.item"), this);
 			convertItemLink.setIconLeftCSS("o_icon o_icon-fw o_icon_qitem_convert");
 			commandDropdown.addComponent(convertItemLink);

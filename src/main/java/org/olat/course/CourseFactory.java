@@ -32,11 +32,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.zip.ZipOutputStream;
@@ -73,7 +71,6 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.OLATRuntimeException;
 import org.olat.core.logging.Tracing;
-import org.olat.core.util.CodeHelper;
 import org.olat.core.util.ExportUtil;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.Formatter;
@@ -81,7 +78,6 @@ import org.olat.core.util.ObjectCloner;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
-import org.olat.core.util.WebappHelper;
 import org.olat.core.util.ZipUtil;
 import org.olat.core.util.cache.CacheWrapper;
 import org.olat.core.util.coordinate.CoordinatorManager;
@@ -474,8 +470,8 @@ public class CourseFactory {
 			// copy course folder
 			VFSContainer sourceCourseContainer = sourceCourse.getIsolatedCourseBaseContainer();
 			if (sourceCourseContainer.exists()) {
-				targetCourse.getIsolatedCourseBaseContainer()
-					.copyContentOf(sourceCourseContainer);
+				VFSContainer targetCourseContainer = targetCourse.getIsolatedCourseBaseContainer();
+				targetCourseContainer.copyContentOf(sourceCourseContainer);
 			}
 
 			// copy folder nodes directories
@@ -549,40 +545,6 @@ public class CourseFactory {
 			} else if (currentNode.getCourseNode() instanceof COCourseNode) {
 				currentNode.getCourseNode().updateModuleConfigDefaults(true);
 			}
-		}
-	}
-
-	/**
-	 * Exports an entire course to a zip file.
-	 *
-	 * @param sourceRes
-	 * @param fTargetZIP
-	 * @return true if successfully exported, false otherwise.
-	 */
-	public static void exportCourseToZIP(OLATResourceable sourceRes, File fTargetZIP, boolean runtimeDatas, boolean backwardsCompatible) {
-		PersistingCourseImpl sourceCourse = (PersistingCourseImpl) loadCourse(sourceRes);
-
-		// add files to ZIP
-		File fExportDir = new File(WebappHelper.getTmpDir(), CodeHelper.getUniqueID());
-		fExportDir.mkdirs();
-		log.info("Export folder: " + fExportDir);
-		try {
-			synchronized (sourceCourse) { //o_clusterNOK - cannot be solved with doInSync since could take too long (leads to error: "Lock wait timeout exceeded")
-				OLATResource courseResource = sourceCourse.getCourseEnvironment().getCourseGroupManager().getCourseResource();
-				sourceCourse.exportToFilesystem(courseResource, fExportDir, runtimeDatas, backwardsCompatible);
-			}
-			Set<String> fileSet = new HashSet<String>();
-			String[] files = fExportDir.list();
-			for (int i = 0; i < files.length; i++) {
-				fileSet.add(files[i]);
-			}
-			ZipUtil.zip(fileSet, fExportDir, fTargetZIP, false);
-		} catch (Exception e) {
-			log.warn("exportCourseToZIP failed: ", e);
-			throw e; // throw to let the GUI notify the user about the exception
-		} finally {
-			log.info("Delete export folder: " + fExportDir);
-			FileUtils.deleteDirsAndFiles(fExportDir, true, true);
 		}
 	}
 

@@ -78,7 +78,7 @@
 		<apache.log4j>2.12.0</apache.log4j>
 		<io.jsonwebtoken>0.10.7</io.jsonwebtoken>
 		<io.undertow>2.0.23.Final</io.undertow>
-		<jackson.version>2.9.9</jackson.version>
+		<jackson.version>2.9.10</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.6</org.postgresql.version>
 		<org.infinispan.version>9.2.3.Final</org.infinispan.version>
@@ -1393,8 +1393,8 @@
 						<configuration>
 							<target>
 								<mkdir dir="${project.build.directory}/downloads" />
-								<get src="https://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/8.0.24/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
-								<unzip src="${project.build.directory}/downloads/apache-tomcat-arq-8.0.24.zip" dest="${project.build.directory}/arq-apache-tomcat-8.0.24" />
+								<get src="https://nexus.openolat.org/nexus/content/repositories/openolat/org/apache/tomcat/apache-tomcat-arq/8.5.45/apache-tomcat-arq-8.5.45.zip" dest="${project.build.directory}/downloads" verbose="true" skipexisting="true" />
+								<unzip src="${project.build.directory}/downloads/apache-tomcat-arq-8.5.45.zip" dest="${project.build.directory}/arq-apache-tomcat-8.5.45" />
 							</target>
 						</configuration>
 					</execution> 
@@ -1962,7 +1962,12 @@
 		<dependency>
 			<groupId>org.jcodec</groupId>
 			<artifactId>jcodec</artifactId>
-			<version>0.1.6-3</version>
+			<version>0.2.3</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jcodec</groupId>
+			<artifactId>jcodec-javase</artifactId>
+			<version>0.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mnode.ical4j</groupId>
@@ -1999,7 +2004,7 @@
 		<dependency>
 			<groupId>org.openolat</groupId>
 			<artifactId>viterows</artifactId>
-			<version>9.1.1</version>
+			<version>9.1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openolat</groupId>
@@ -2590,7 +2595,7 @@
         <dependency>
         	<groupId>com.fasterxml.jackson.core</groupId>
         	<artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}.2</version>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
         	<groupId>com.fasterxml.jackson.dataformat</groupId>

@@ -68,6 +68,8 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	private boolean curriculumElementFoldersEnabled;
 	@Value("${webdav.prepend.course.reference.to.title:false}")
 	private boolean prependCourseReferenceToTitle;
+	@Value("${webdav.basic.authentication.black.list}")
+	private String basicAuthenticationBlackList;
 
 	@Value("${webdav.learners.bookmarks.enabled:true}")
 	private boolean enableLearnersBookmarksCourse;
@@ -218,6 +220,17 @@ public class WebDAVModule extends AbstractSpringModule implements ConfigOnOff {
 	public void setPrependCourseReferenceToTitle(boolean enabled) {
 		this.prependCourseReferenceToTitle = enabled;
 		setStringProperty(PREPEND_COURSE_REFERENCE_TO_TITLE, enabled ? "true" : "false", true);
+	}
+
+	public String[] getBasicAuthenticationBlackList() {
+		if(StringHelper.containsNonWhitespace(basicAuthenticationBlackList)) {
+			return basicAuthenticationBlackList.split("[,]");
+		}
+		return new String[0];
+	}
+
+	public void setBasicAuthenticationBlackList(String basicAuthenticationBlackList) {
+		this.basicAuthenticationBlackList = basicAuthenticationBlackList;
 	}
 
 	/**

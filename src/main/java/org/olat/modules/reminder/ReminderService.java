@@ -20,6 +20,7 @@
 package org.olat.modules.reminder;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.List;
 
 import org.olat.core.id.Identity;
@@ -85,7 +86,7 @@ public interface ReminderService {
 	
 	public ReminderRules toRules(String rulesXml);
 	
-	public void exportReminders(RepositoryEntry entry, File fExportedDataDir);
+	public void exportReminders(RepositoryEntryRef entry, OutputStream fExportedDataDir);
 	
 	/**
 	 * The reminders are not persisted and not converted to any new course, group...

@@ -52,6 +52,9 @@ import org.olat.restapi.support.vo.GroupVO;
 import org.olat.restapi.support.vo.GroupVOes;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import io.swagger.v3.oas.annotations.Parameter;
+
+
 /**
  * 
  * Description:<br>
@@ -91,8 +94,8 @@ public class MyGroupWebService {
 	 */
 	@GET
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getUserGroupList(@QueryParam("start") @DefaultValue("0") Integer start, @QueryParam("limit") @DefaultValue("25") Integer limit,
-			@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
+	public Response getUserGroupList(@QueryParam("start") @Parameter(description = "The first result") @DefaultValue("0") Integer start, @QueryParam("limit") @Parameter(description = "The maximum results")  @DefaultValue("25") Integer limit,
+			@QueryParam("externalId") @Parameter(description = "Search with an external ID") String externalId, @QueryParam("managed") @Parameter(description = "(true / false) Search only managed / not managed groups") Boolean managed,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 
 		return getGroupList(start, limit, externalId, managed, true, true, httpRequest, request);
@@ -116,8 +119,8 @@ public class MyGroupWebService {
 	@GET
 	@Path("owner")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response getOwnedGroupList(@QueryParam("start") @DefaultValue("0") Integer start, @QueryParam("limit") @DefaultValue("25") Integer limit,
-			@QueryParam("externalId") String externalId, @QueryParam("managed") Boolean managed,
+	public Response getOwnedGroupList(@QueryParam("start") @Parameter(description = "The first result") @DefaultValue("0") Integer start, @QueryParam("limit") @Parameter(description = "The maximum results") @DefaultValue("25") Integer limit,
+			@QueryParam("externalId") @Parameter(description = "Search with an external ID") String externalId, @QueryParam("managed") @Parameter(description = "(true / false) Search only managed / not managed groups") Boolean managed,
 			@Context HttpServletRequest httpRequest, @Context Request request) {
 		return getGroupList(start, limit, externalId, managed, true, false, httpRequest, request);
 	}

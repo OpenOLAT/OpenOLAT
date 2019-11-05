@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.olat.basesecurity.OrganisationModule;
+import org.olat.basesecurity.OrganisationService;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
@@ -99,10 +101,15 @@ public class CurriculumListManagerController extends FormBasicController impleme
 	
 	private int counter = 0;
 	private final Roles roles;
+	private final boolean isMultiOrganisations;
 	private final CurriculumSecurityCallback secCallback;
 
 	@Autowired
 	private CurriculumService curriculumService;
+	@Autowired
+	private OrganisationModule organisationModule;
+	@Autowired
+	private OrganisationService organisationService;
 	
 	public CurriculumListManagerController(UserRequest ureq, WindowControl wControl, TooledStackedPanel toolbarPanel,
 			CurriculumSecurityCallback secCallback) {
@@ -111,6 +118,7 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		this.secCallback = secCallback;
 		roles = ureq.getUserSession().getRoles();
 		toolbarPanel.addListener(this);
+		isMultiOrganisations = organisationService.isMultiOrganisations();
 
 		initForm(ureq);
 		loadModel(null, true);
@@ -136,6 +144,9 @@ public class CurriculumListManagerController extends FormBasicController impleme
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.displayName, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.identifier, "select"));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, CurriculumCols.externalId, "select"));
+		if(organisationModule.isEnabled()) {
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(isMultiOrganisations, CurriculumCols.organisation));
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CurriculumCols.numOfElements));
 		DefaultFlexiColumnModel editCol = new DefaultFlexiColumnModel("edit.icon", CurriculumCols.edit.ordinal(), "edit",
 				new BooleanCellRenderer(new StaticFlexiCellRenderer(translate("edit"), "edit"),

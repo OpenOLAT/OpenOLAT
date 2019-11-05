@@ -36,7 +36,6 @@ import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.folder.CourseContainerOptions;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.tree.CourseEditorTreeModel;
-import org.olat.resource.OLATResource;
 
 /**
  * Description:<BR/>

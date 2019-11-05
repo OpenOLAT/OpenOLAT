@@ -293,6 +293,12 @@ public class OrganisationServiceImpl implements OrganisationService, Initializin
 	}
 	
 	@Override
+	public boolean isMultiOrganisations() {
+		// TODO Auto-generated method stub
+		return  organisationDao.count(OrganisationStatus.notDelete()) > 1;
+	}
+
+	@Override
 	public List<Organisation> getOrganisations(OrganisationStatus[] status) {
 		return organisationDao.find(status);
 	}

@@ -364,7 +364,9 @@ public class AccessConfigurationController extends FormBasicController {
 	public void invalidateBookings() {
 		for(AccessInfo info:confControllers) {
 			Offer offer = info.getLink().getOffer();
-			acService.deleteOffer(offer);
+			if(offer.getKey() != null) {
+				acService.deleteOffer(offer);
+			}
 		}
 		confControllers.clear();
 		

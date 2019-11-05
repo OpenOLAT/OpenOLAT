@@ -42,6 +42,8 @@ import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.id.Identity;
 import org.olat.core.util.StringHelper;
+import org.olat.course.assessment.AssessmentMode;
+import org.olat.course.assessment.manager.AssessmentModeDAO;
 import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.curriculum.CurriculumRoles;
 import org.olat.modules.lecture.LectureBlock;
@@ -78,6 +80,8 @@ public class LectureBlockDAO {
 	private DB dbInstance;
 	@Autowired
 	private GroupDAO groupDao;
+	@Autowired
+	private AssessmentModeDAO assessmentModeDao;
 	
 	public LectureBlock createLectureBlock(RepositoryEntry entry) {
 		LectureBlockImpl block = new LectureBlockImpl();
@@ -125,6 +129,11 @@ public class LectureBlockDAO {
 	public int delete(LectureBlock lectureBlock) {
 		LectureBlock reloadedBlock = dbInstance.getCurrentEntityManager()
 			.getReference(LectureBlockImpl.class, lectureBlock.getKey());
+		
+		AssessmentMode assessmentMode = assessmentModeDao.getAssessmentModeByLecture(reloadedBlock);
+		if(assessmentMode != null) {
+			assessmentModeDao.delete(assessmentMode);
+		}
 		
 		//delete lecture block to group
 		String deleteToGroup = "delete from lectureblocktogroup blocktogroup where blocktogroup.lectureBlock.key=:lectureBlockKey";
@@ -180,9 +189,8 @@ public class LectureBlockDAO {
 	public List<LectureBlock> searchLectureBlocks(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder(2048);
 		sb.append("select distinct block from lectureblock block")
-		  .append(" inner join block.teacherGroup tGroup")
-		  .append(" inner join tGroup.members membership")
-		  .append(" inner join fetch block.entry entry");
+		  .append(" inner join fetch block.entry entry")
+		  .append(" inner join fetch entry.olatResource oRes");
 		addSearchParametersToQuery(sb, searchParams);
 		sb.and()
 		  .append(" exists (select config.key from lectureentryconfig config")
@@ -198,8 +206,6 @@ public class LectureBlockDAO {
 	public List<LectureBlockRef> searchAssessedLectureBlocks(LecturesBlockSearchParameters searchParams) {
 		QueryBuilder sb = new QueryBuilder(512);
 		sb.append("select distinct block.key from lectureblock block")
-		  .append(" inner join block.teacherGroup tGroup")
-		  .append(" inner join tGroup.members membership")
 		  .append(" inner join courseassessmentmode mode on (mode.lectureBlock.key=block.key)")
 		  .append(" inner join block.entry entry");
 		addSearchParametersToQuery(sb, searchParams);
@@ -588,9 +594,9 @@ public class LectureBlockDAO {
 		}
 		if(searchParams.getManager() != null) {
 			sb.and()
-			  .append(" exists (select membership.key from repoentrytogroup as rel, bgroupmember as membership")
-	          .append("   where rel.entry.key=entry.key and rel.group.key=membership.group.key and membership.identity.key=:managerKey")
-	          .append("   and membership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.lecturemanager, GroupRoles.owner.name())
+			  .append(" exists (select managerMembership.key from repoentrytogroup as rel, bgroupmember as managerMembership")
+	          .append("   where rel.entry.key=entry.key and rel.group.key=managerMembership.group.key and managerMembership.identity.key=:managerKey")
+	          .append("   and managerMembership.role ").in(OrganisationRoles.administrator, OrganisationRoles.learnresourcemanager, OrganisationRoles.lecturemanager, GroupRoles.owner.name())
 	          .append(" )");
 		}
 		if(searchParams.getMasterCoach() != null) {
@@ -610,7 +616,7 @@ public class LectureBlockDAO {
 		if(searchParams.getTeacher() != null) {
 			sb.and()
 			  .append(" exists (select teachership.key from bgroupmember teachership where")
-			  .append("  teachership.group.key=tGroup.key and teachership.identity.key=:teacherKey")
+			  .append("  teachership.group.key=block.teacherGroup.key and teachership.identity.key=:teacherKey")
 			  .append(" )");
 		}
 	}

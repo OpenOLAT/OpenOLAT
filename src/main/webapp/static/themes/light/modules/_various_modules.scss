@@ -68,29 +68,38 @@ a.o_chelp {
 .o_singlepage {
 	.o_edit {
 		position: absolute;
-		top: $padding-large-vertical;
+		top: 0;
 		right: $padding-base-horizontal + $padding-xs-horizontal + $line-height-computed;
  	}
 }
 /* the clone controller is used to pop content out of the window into another window. */
 .o_content_popup {
 	position: absolute;
-	top: $padding-large-vertical;
+	top: 0;
 	right: $padding-base-horizontal;
 }
 
 /* content packaging module */
 .o_module_cp_wrapper {
+	position: relative;
 	.o_tools {
 		position: absolute;
-		top: $padding-large-vertical;
-		right: $padding-base-horizontal;
+		top: 0;
+		right: 0;
 		text-align: right;
 		vertical-align: middle;
 		.o_search_wrapper {
 			display: inline-block;
 			position: relative;
 			top: -2px;
+			/* remove space around search icon */
+			.form-group {
+				margin-bottom: 0;
+			}
+			.form-control-static {
+				padding-top: 0;
+				padding-bottom: 0;				
+			}
 	 	}
 	}
 }

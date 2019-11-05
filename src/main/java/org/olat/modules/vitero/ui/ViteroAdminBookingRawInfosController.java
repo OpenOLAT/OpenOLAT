@@ -26,8 +26,10 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.Formatter;
+import org.olat.modules.vitero.ViteroModule;
 import org.olat.modules.vitero.model.ViteroBooking;
 import org.olat.modules.vitero.model.ViteroGroup;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -43,18 +45,18 @@ public class ViteroAdminBookingRawInfosController extends FormBasicController {
 	private final ViteroGroup group;
 	private final ViteroBooking booking;
 	private final Formatter formatter;
-	private static final String[] autoSignInKeys = new String[]{"on"};
-	private final String[] autoSignInValues;
+	private static final String[] onKeys = new String[]{"on"};
+
+	
+	@Autowired
+	private ViteroModule viteroModule;
 	
 	public ViteroAdminBookingRawInfosController(UserRequest ureq, WindowControl wControl, ViteroBooking booking,
 			ViteroGroup group) {
 		super(ureq, wControl);
-		
 		this.group = group;
 		this.booking = booking;
-		this.formatter = Formatter.getInstance(getLocale());
-		autoSignInValues = new String[]{ translate("enabled") };
-		
+		formatter = Formatter.getInstance(getLocale());
 		initForm(ureq);
 	}
 
@@ -75,10 +77,18 @@ public class ViteroAdminBookingRawInfosController extends FormBasicController {
 			name = name.substring(0, sepIndex);
 		}
 		uifactory.addStaticTextElement("group.name", name, formLayout);
+		
+		String[] enabledValues = new String[]{translate("enabled")};
+		MultipleSelectionElement inspireEl = uifactory.addCheckboxesHorizontal("option.inspire", formLayout, onKeys, enabledValues);
+		inspireEl.setVisible(viteroModule.isInspire());
+		if(viteroModule.isInspire() && booking.isInspire()) {
+			inspireEl.select(onKeys[0], true);
+		}
+		inspireEl.setEnabled(false);
 
-		MultipleSelectionElement autoSignIn = uifactory.addCheckboxesHorizontal("booking.autoSignIn", formLayout, autoSignInKeys, autoSignInValues);
+		MultipleSelectionElement autoSignIn = uifactory.addCheckboxesHorizontal("booking.autoSignIn", formLayout, onKeys, enabledValues);
 		if(booking.isAutoSignIn()) {
-			autoSignIn.select(autoSignInKeys[0], true);
+			autoSignIn.select(onKeys[0], true);
 		}
 		autoSignIn.setEnabled(false);
 	}

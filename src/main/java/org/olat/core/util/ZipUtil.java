@@ -836,6 +836,44 @@ public class ZipUtil {
 	}
 	
 	/**
+	 * Add a directory to a zip stream. The files path are relative to the
+	 * specified directory. The name of the directory is not part of
+	 * the path of its files.
+	 * 
+	 * @param path The path
+	 * @param directory The directory to zip
+	 * @param exportStream The stream
+	 */
+	public static void addPathToZip(final String path, final Path directory, final ZipOutputStream exportStream) {
+		try {
+			Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					if(!attrs.isDirectory()) {
+						Path relativeFile = directory.relativize(file);
+						String name = relativeFile.toString();
+						if(StringHelper.containsNonWhitespace(path)) {
+							name = path + "/" + name;
+						}
+						exportStream.putNextEntry(new ZipEntry(name));
+						
+						try(InputStream in=Files.newInputStream(file)) {
+							FileUtils.cpio(in, exportStream, "");
+						} catch (Exception e) {
+							log.error("", e);
+						}
+						
+						exportStream.closeEntry();
+					}
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (IOException e) {
+			log.error("", e);
+		}
+	}
+	
+	/**
 	 * Zip all files under a certain root directory. (with compression)
 	 * 
 	 * @param rootFile

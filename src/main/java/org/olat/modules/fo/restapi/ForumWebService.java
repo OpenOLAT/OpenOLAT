@@ -86,6 +86,12 @@ import org.olat.restapi.support.vo.FileVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -233,8 +239,11 @@ public class ForumWebService {
 	@Operation(summary = "Put threads",
 	description = "Creates a new thread in the forum of the course node.")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response newThreadToForum(@QueryParam("title") String title,
-			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
+
+	@Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+	public Response newThreadToForum(@QueryParam("title") @Parameter(description = "The title for the first post in the thread") String title,
+			@QueryParam("body") String body, @QueryParam("authorKey") @Parameter(description = "The author user key (optional)") Long authorKey,
+
 			@Context HttpServletRequest httpRequest) {
 
 		Identity author = getMessageAuthor(authorKey, httpRequest);
@@ -271,9 +280,19 @@ public class ForumWebService {
 	@Path("posts/{threadKey}")
 	@Operation(summary = "Get posts",
 	description = "Retrieves the messages in the thread.")
-	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @DefaultValue("0") Integer start,
-			@QueryParam("limit") @DefaultValue("25") Integer limit, @QueryParam("orderBy") @DefaultValue("creationDate") String orderBy,
-			@QueryParam("asc") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
+	@ApiResponses(value = {
+			@ApiResponse(responseCode = "200", description = "Ok.",
+					content = {
+							@Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = MessageVO.class))),
+							@Content(mediaType = "application/xml", array = @ArraySchema(schema = @Schema(implementation = MessageVO.class)))
+						} 
+			),
+			@ApiResponse(responseCode = "401", description = "The roles of the authenticated user are not sufficient."),
+			@ApiResponse(responseCode = "404", description = "The author, forum or message not found.")}
+		)
+	public Response getMessages( @PathParam("threadKey") Long threadKey, @QueryParam("start") @Parameter(description = "Set the date for the earliest thread") @DefaultValue("0") Integer start,
+			@QueryParam("limit")@Parameter(description = "Limit the amount of threads to be returned.") @DefaultValue("25") Integer limit, @QueryParam("orderBy")@Parameter(description = "orderBy (value name,creationDate)") @DefaultValue("creationDate") String orderBy,
+			@QueryParam("asc") @Parameter(description = "Determine the type of order.") @DefaultValue("true") Boolean asc, @Context HttpServletRequest httpRequest, @Context UriInfo uriInfo,
 			@Context Request request) {
 		
 		if(forum == null) {
@@ -347,8 +366,8 @@ public class ForumWebService {
 	description = "Creates a new reply in the forum of the course node.")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") String title,
-			@QueryParam("body") String body, @QueryParam("authorKey") Long authorKey,
+	public Response replyToPost(@PathParam("messageKey") Long messageKey, @QueryParam("title") @Parameter(description = "The title for the first post in the thread") String title,
+			@QueryParam("body") @Parameter(description = "The body for the first post in the thread") String body, @QueryParam("authorKey") @Parameter(description = "The author user key (optional)") Long authorKey,
 			@Context HttpServletRequest httpRequest, @Context UriInfo uriInfo) {
 		ServletUtil.printOutRequestHeaders(httpRequest);
 		return replyToPost(messageKey, new ReplyVO(title, body), authorKey, httpRequest, uriInfo);

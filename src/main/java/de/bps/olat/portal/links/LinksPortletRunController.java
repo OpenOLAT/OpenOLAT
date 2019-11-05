@@ -268,9 +268,9 @@ public class LinksPortletRunController extends BasicController {
 				
 				for (PortletLink link : portletsForInst.getLinks()) {
 					String linkID = link.getIdentifier();
-					LinkFactory.createCustomLink(LINKID + linkID, "inst" + inst, link.getTitle(), Link.LINK + Link.NONTRANSLATED, editorVC, this);
+					LinkFactory.createCustomLink(LINKID + linkID, "inst" + inst, link.getTitle(), Link.LINK | Link.NONTRANSLATED, editorVC, this);
 					// add remove-links
-					LinkFactory.createCustomLink(LINKDEL + linkID, "inst" + inst, "-", Link.BUTTON_XSMALL + Link.NONTRANSLATED, editorVC, this);					
+					LinkFactory.createCustomLink(LINKDEL + linkID, "inst" + inst, "-", Link.BUTTON_XSMALL | Link.NONTRANSLATED, editorVC, this);					
 					instLinksIdentifiers.add(linkID);
 				}
 				allInstWithLinkIds.put(instCount, instLinksIdentifiers);

@@ -26,7 +26,6 @@ import java.util.List;
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
@@ -68,7 +67,7 @@ public class VideoAdminErrorController extends FormBasicController {
 	private TranscodingQueueTableModel tableModel;
 	private FlexiTableElement tableEl;
 	private FormLink refreshButton;
-	private CloseableModalController closeableModalController;
+	private CloseableModalController cmc;
 	private HomePageDisplayController homePageDisplayController;
 
 	
@@ -85,9 +84,19 @@ public class VideoAdminErrorController extends FormBasicController {
 	@Autowired
 	private RepositoryHandlerFactory repositoryHandlerFactory;
 
-	
 	public VideoAdminErrorController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl,"transcoding_queue");
+		initForm(ureq);
+		loadModel();
+	}
+	
+
+	@Override
+	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		setFormTitle("number.transcodings");
+		setFormDescription("number.transcodings");
+		setFormContextHelp("Portfolio template: Administration and editing#configuration");
+		
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.resid));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.displayname));
@@ -100,27 +109,22 @@ public class VideoAdminErrorController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(TranscodingQueueTableCols.delete));
 		tableModel = new TranscodingQueueTableModel(columnsModel, getTranslator());
 		
-		initForm(ureq);
+		tableEl = uifactory.addTableElement(getWindowControl(), "queue", tableModel, getTranslator(), flc);
+		tableEl.setCustomizeColumns(false);
+		tableEl.setNumOfRowsEnabled(false);
+		
+		refreshButton = uifactory.addFormLink("button.refresh", flc, Link.BUTTON);
+		refreshButton.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
 	}
 	
-
-	@Override
-	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		setFormTitle("number.transcodings");
-		setFormDescription("number.transcodings");
-		setFormContextHelp("Portfolio template: Administration and editing#configuration");
-		initTable();
-	}
-	
-	private void initTable () {
+	private void loadModel() {
 		List<VideoTranscoding> videoTranscodings = videoManager.getFailedVideoTranscodings();
 		List<TranscodingQueueTableRow> rows = new ArrayList<>();
 		
 		for (VideoTranscoding videoTranscoding : videoTranscodings) {
-
 			String title = videoManager.getDisplayTitleForResolution(videoTranscoding.getResolution(), getTranslator());
 			String resid = String.valueOf(videoTranscoding.getVideoResource().getResourceableId());
-			FormLink resourceLink = uifactory.addFormLink("res_" + counter++, "viewResource", resid, resid, flc, Link.LINK + Link.NONTRANSLATED);
+			FormLink resourceLink = uifactory.addFormLink("res_" + counter++, "viewResource", resid, null, flc, Link.LINK | Link.NONTRANSLATED);
 			resourceLink.setUserObject(videoTranscoding);
 			FormLink deleteLink = uifactory.addFormLink("del_" + counter++, "deleteQuality", "quality.delete", "quality.delete", flc, Link.LINK);
 			deleteLink.setUserObject(videoTranscoding);
@@ -147,7 +151,7 @@ public class VideoAdminErrorController extends FormBasicController {
 			String initialAuthor = videoRe.getInitialAuthor();
 			String fullName = userManager.getUserDisplayName(initialAuthor);
 			FormLink authorLink = uifactory.addFormLink("author_" + counter++, "viewAuthor",
-					fullName, fullName, flc, Link.LINK + Link.NONTRANSLATED);
+					fullName, null, flc, Link.LINK | Link.NONTRANSLATED);
 			authorLink.setUserObject(initialAuthor);
 			Date creationDate = videoTranscoding.getCreationDate();
 			TranscodingQueueTableRow transcodingrow = new TranscodingQueueTableRow(resourceLink, displayname, creationDate, authorLink,
@@ -158,30 +162,15 @@ public class VideoAdminErrorController extends FormBasicController {
 			rows.add(transcodingrow);
 		}
 		tableModel.setObjects(rows);
-		
-		if (flc.hasFormComponent(tableEl)){
-			flc.remove(tableEl);
-		}
-		if (flc.hasFormComponent(refreshButton)){
-			flc.remove(refreshButton);
-		}
-		
-		tableEl = uifactory.addTableElement(getWindowControl(), "queue", tableModel, getTranslator(), flc);
-		tableEl.setCustomizeColumns(false);
-		tableEl.setNumOfRowsEnabled(false);
-		
-		refreshButton = uifactory.addFormLink("button.refresh", flc, Link.BUTTON);
-		refreshButton.setIconLeftCSS("o_icon o_icon_refresh o_icon-fw");
-	}
-
-	@Override
-	public void event(UserRequest ureq, Component source, Event event) {
-		super.event(ureq, source, event);
+		tableEl.reset(true, true, true);
 	}
 	
 	@Override
 	protected void event(UserRequest ureq, Controller source, Event event) {
-		if (source == homePageDisplayController || source == closeableModalController){
+		if (source == homePageDisplayController) {
+			cmc.deactivate();
+			cleanUp();
+		} else if(source == cmc) {
 			cleanUp();
 		}
 		super.event(ureq, source, event);
@@ -189,32 +178,35 @@ public class VideoAdminErrorController extends FormBasicController {
 	
 	@Override
 	protected void formInnerEvent(UserRequest ureq, FormItem source, FormEvent event) {
-		if (source instanceof FormLink && ((FormLink) source).getCmd().equals("deleteQuality")) {
+		if(refreshButton == source) {
+			loadModel();
+		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("deleteQuality")) {
 			FormLink link = (FormLink) source;
 			VideoTranscoding videoTranscoding = (VideoTranscoding) link.getUserObject();
 			videoManager.deleteVideoTranscoding(videoTranscoding);
+			loadModel();
 		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("viewAuthor")) {
 			showUserInfo(ureq, baseSecurity.findIdentityByName((String) source.getUserObject()));
 		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("retranscode")) {
 			FormLink link = (FormLink) source;
 			VideoTranscoding videoTranscoding = (VideoTranscoding) link.getUserObject();
 			videoManager.retranscodeFailedVideoTranscoding(videoTranscoding);
+			loadModel();
 		} else if (source instanceof FormLink && ((FormLink) source).getCmd().equals("viewResource")) {
 			FormLink link = (FormLink) source;
 			VideoTranscoding videoTranscoding = (VideoTranscoding) link.getUserObject();
 			launch(ureq, videoTranscoding);
 		}
-		initTable();
 	}
 
 	@Override
 	protected void formOK(UserRequest ureq) {
-		
+		//
 	}
 
 	@Override
 	protected void doDispose() {
-		
+		//
 	}
 	
 	protected void launch(UserRequest ureq, VideoTranscoding videoTranscoding) {
@@ -239,21 +231,19 @@ public class VideoAdminErrorController extends FormBasicController {
 	 * @param ureq
 	 */
 	public void showUserInfo(UserRequest ureq, Identity userID) {
-		
 		homePageDisplayController = new HomePageDisplayController(ureq, getWindowControl(), userID, new HomePageConfig());
+		listenTo(homePageDisplayController);
 		
-		closeableModalController = new CloseableModalController(getWindowControl(), translate("close"), 
+		cmc = new CloseableModalController(getWindowControl(), translate("close"), 
 				homePageDisplayController.getInitialComponent(), true, translate("video.contact"));
-		listenTo(closeableModalController);
-		
-		closeableModalController.activate();
+		listenTo(cmc);
+		cmc.activate();
 	}
 	
 	private void cleanUp(){
-		closeableModalController.deactivate();
-		removeAsListenerAndDispose(closeableModalController);
-		closeableModalController = null;
+		removeAsListenerAndDispose(homePageDisplayController);
+		removeAsListenerAndDispose(cmc);
 		homePageDisplayController = null;
+		cmc = null;
 	}
-
 }

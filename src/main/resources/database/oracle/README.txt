@@ -1,3 +1,14 @@
+EXPERIMENTAL
+============
+
+Oracle support is experimental. The database schema is available and 
+updated for historic reason, however running OpenOlat with Oracle is 
+largely untested. Do not use it for production before you tested the 
+entire application. We are interested in adding Oracle to our list of
+fully supported and recommended database, contact us if you want to 
+sponsor this compatibility. 
+
+
 Oracle Database Support
 =======================
 

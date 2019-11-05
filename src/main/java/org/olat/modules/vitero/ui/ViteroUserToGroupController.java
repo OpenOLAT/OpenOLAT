@@ -100,7 +100,7 @@ public class ViteroUserToGroupController extends BasicController {
 		mainVC = createVelocityContainer("user_admin");
 
 		TableGuiConfiguration tableConfig = new TableGuiConfiguration();
-		tableConfig.setTableEmptyMessage(translate("vc.table.empty"));
+		tableConfig.setTableEmptyMessage(translate("users.empty"));
 		
 		Translator trans = UserManager.getInstance().getPropertyHandlerTranslator(getTranslator());
 		tableCtr = new TableController(tableConfig, ureq, getWindowControl(), trans, true);

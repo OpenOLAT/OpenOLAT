@@ -37,18 +37,19 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.modules.bc.FolderConfig;
 import org.olat.core.commons.services.vfs.VFSRepositoryModule;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.AssertException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.logging.activity.ThreadLocalUserActivityLogger;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.vfs.filters.VFSItemFilter;
 import org.olat.core.util.vfs.filters.VFSSystemItemFilter;
+import org.olat.core.util.vfs.filters.VFSVersionsItemFilter;
 
 /**
  * Description:<br>
@@ -161,6 +162,7 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 	 */
 	private VFSStatus copyFrom(VFSItem source, boolean checkQuota) {
 		if (source.canCopy() != VFSConstants.YES) {
+			log.warn("Cannot copy file {} security denied", source);
 			return VFSConstants.NO_SECURITY_DENIED;
 		}
 		
@@ -168,26 +170,32 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 		File basefile = getBasefile();
 
 		// check if there is already an item with the same name...
-		if (resolve(sourcename) != null)
+		if (resolve(sourcename) != null) {
+			log.warn("Cannot copy file {} name already used", sourcename);
 			return VFSConstants.ERROR_NAME_ALREDY_USED;
+		}
 		
 		// add either file bla.txt or folder blu as a child of this folder
 		if (source instanceof VFSContainer) {
 			// copy recursively
 			VFSContainer sourcecontainer = (VFSContainer)source;
 			// check if this is a containing container...
-			if (VFSManager.isSelfOrParent(sourcecontainer, this))
+			if (VFSManager.isSelfOrParent(sourcecontainer, this)) {
+				log.warn("Cannot copy file {}  overlapping", this);
 				return VFSConstants.ERROR_OVERLAPPING;
+			}
 			
 			// "copy" the container means creating a folder with that name
 			// and let the children copy
 
 			// create the folder
 			LocalFolderImpl rootcopyfolder = new LocalFolderImpl(new File(basefile, sourcename), this);
-			List<VFSItem> children = sourcecontainer.getItems();
+			List<VFSItem> children = sourcecontainer.getItems(new VFSVersionsItemFilter());
 			for (VFSItem chd:children) {
 				VFSStatus status = rootcopyfolder.copyFrom(chd, false);
-				if (status != VFSConstants.SUCCESS) return status;
+				if (status != VFSConstants.SUCCESS) {
+					log.warn("Cannot copy file {} with status {}", chd, status);
+				}
 			}
 		} else if (source instanceof VFSLeaf) {
 			// copy single item
@@ -195,8 +203,10 @@ public class LocalFolderImpl extends LocalImpl implements VFSContainer {
 			// check quota
 			if (checkQuota) {
 				long quotaLeft = VFSManager.getQuotaLeftKB(this);
-				if(quotaLeft != Quota.UNLIMITED && quotaLeft < (s.getSize() / 1024))
+				if(quotaLeft != Quota.UNLIMITED && quotaLeft < (s.getSize() / 1024)) {
+					log.warn("Cannot copy file {} quota exceeded {}", s, quotaLeft);
 					return VFSConstants.ERROR_QUOTA_EXCEEDED;
+				}
 			}
 			
 			File fTarget = new File(basefile, sourcename);

@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.Level;
 import org.olat.core.gui.components.form.flexible.elements.SingleSelection;
 import org.olat.core.gui.components.form.flexible.elements.TextElement;
 import org.olat.core.gui.translator.Translator;
@@ -77,7 +78,7 @@ public class MetaUIFactory {
 		for(QEducationalContext level:levels) {
 			contextKeys[count] = level.getKey().toString();
 			String i18nKey = "item.level." + level.getLevel().toLowerCase();
-			String translation = translator.translate(i18nKey);
+			String translation = translator.translate(i18nKey, null, Level.OFF);
 			if(i18nKey.equals(translation) || translation.length() > 256) {
 				translation = level.getLevel();
 			}

@@ -228,7 +228,8 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 		listenTo(accessibilityCondContr);
 
 		DeliveryOptions deliveryOptions = (DeliveryOptions)config.get(CONFIG_DELIVERY_OPTIONS);
-		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions, "Knowledge Transfer#_scorm_layout" , parentConfig);
+		deliveryOptionsCtrl = new DeliveryOptionsConfigurationController(ureq, getWindowControl(), deliveryOptions,
+				"Course Element: SCORM Learning Content#_scorm_layout", parentConfig);
 		listenTo(deliveryOptionsCtrl);
 
 		main.setContent(cpConfigurationVc);
@@ -346,6 +347,7 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	/**
 	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
 	 */
+	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
 		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityCondContr.getWrappedDefaultAccessConditionVC(translate(NLS_CONDITION_ACCESSIBILITY_TITLE)));
@@ -401,14 +403,17 @@ public class ScormEditController extends ActivateableTabbableDefaultController i
 	/**
 	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
 	 */
+	@Override
 	protected void doDispose() {
     //child controllers registered with listenTo() get disposed in BasicController
 	}
 
+	@Override
 	public String[] getPaneKeys() {
 		return paneKeys;
 	}
 
+	@Override
 	public TabbedPane getTabbedPane() {
 		return myTabbedPane;
 	}

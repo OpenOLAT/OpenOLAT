@@ -43,6 +43,7 @@ import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.helpers.Settings;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
+import org.olat.core.util.CodeHelper;
 import org.olat.core.util.WebappHelper;
 import org.olat.core.util.event.FrameworkStartupEventChannel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +75,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 
 	@Autowired
 	protected DB dbInstance;
+	private static long timestamp;
 	
 	@Rule public TestName currentTestName = new TestName();
 	
@@ -94,6 +96,7 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
 	@Before
 	public void printBanner() {
+		timestamp = System.nanoTime();
 		log.info("Method run: " + currentTestName.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
 		
 		if(started) {
@@ -126,7 +129,8 @@ public abstract class OlatTestCase extends AbstractJUnit4SpringContextTests {
 	
 	@After
 	public void closeConnectionAfter() {
-		log.info("Method test finished: " + currentTestName.getMethodName() + "(" + this.getClass().getCanonicalName() + ")");
+		long time = CodeHelper.nanoToMilliTime(timestamp);
+		log.info("Method test finished: {} ({}) takes (ms): {}", currentTestName.getMethodName(), this.getClass().getCanonicalName(), time);
 		try {
 			DBFactory.getInstance().commitAndCloseSession();
 		} catch (Exception e) {

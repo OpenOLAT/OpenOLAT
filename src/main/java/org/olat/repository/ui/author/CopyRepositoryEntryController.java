@@ -104,7 +104,7 @@ public class CopyRepositoryEntryController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		if (!StringHelper.containsNonWhitespace(displayNameElement.getValue())) {
 			displayNameElement.setErrorKey("cif.error.displayname.empty", new String[] {});
@@ -115,6 +115,6 @@ public class CopyRepositoryEntryController extends FormBasicController {
 			displayNameElement.clearError();
 		}
 
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 }

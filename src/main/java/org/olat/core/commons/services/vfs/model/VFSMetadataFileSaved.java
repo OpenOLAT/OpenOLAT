@@ -51,6 +51,8 @@ public class VFSMetadataFileSaved implements Persistable {
 	private Date fileLastModified;
 	@Column(name="f_size", nullable=false, insertable=true, updatable=true)
 	private long fileSize;
+	@Column(name="f_deleted", nullable=false, insertable=true, updatable=true)
+	private boolean deleted;
 	@Column(name="f_filename", nullable=false, insertable=false, updatable=false)
 	private String filename;
 	@Column(name="f_relative_path", nullable=false, insertable=false, updatable=false)
@@ -97,6 +99,14 @@ public class VFSMetadataFileSaved implements Persistable {
 		this.relativePath = relativePath;
 	}
 	
+	public boolean isDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(boolean deleted) {
+		this.deleted = deleted;
+	}
+
 	@Override
 	public int hashCode() {
 		return getKey().hashCode();

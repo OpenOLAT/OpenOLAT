@@ -7,6 +7,7 @@
  *  @date Mar. 2016
  */
 (function($) {
+	"use strict";
     $.fn.paint = function(options) {
     	var paint = this.data("data-oo-paint");
     	if(typeof paint === "undefined") {
@@ -32,7 +33,6 @@
 	
 		var sketchId = jQuery(this.divPanel).attr('id');
 		var sketch = document.querySelector('#' + sketchId);
-		var sketch_style = getComputedStyle(sketch);
 	
 		var canvas_small = document.getElementById('brush_size');
 		var context_small = canvas_small.getContext('2d');
@@ -51,7 +51,6 @@
 
 		var mouse = { x: 0, y: 0, out_x: 0, out_y: 0, paint: false, leave: false};
 		var start_mouse = {x: 0, y: 0};
-		var last_mouse = {x: 0, y: 0};
 	
 		var sprayIntervalID;
 	
@@ -59,7 +58,6 @@
 		var ppts = [];
 	
 		//undo array
-		var undo_arr = [];// NEWTHING
 		var undo_count = 0;// NEWTHING
 		var empty_canv; // NEWTHING
 	
@@ -83,13 +81,7 @@
 	
 		/* Mouse Capturing Work */
 		jQuery(tmp_canvas).on('mousemove touchmove', function(e) {
-			if(typeof e.offsetX == 'undefined' && typeof e.layerX == 'undefined') {
-				mouse.x = e.originalEvent.layerX;
-				mouse.y = e.originalEvent.layerY;
-			} else {
-				mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
-				mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
-			}
+			copyEventCoordinateToMouse(e, tmp_canvas);
 		});
 		
 		/* Mouse Capturing Work out of the canvas */
@@ -102,13 +94,7 @@
 		});
 	
 		jQuery(this.canvas).on('mousemove touchmove', function(e) {
-			if(typeof e.offsetX == 'undefined' && typeof e.layerX == 'undefined') {
-				mouse.x = e.originalEvent.layerX;
-				mouse.y = e.originalEvent.layerY;
-			} else {
-				mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
-				mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
-			}
+			copyEventCoordinateToMouse(e, this.canvas);
 		});
 	
 		//NEWTHING
@@ -138,22 +124,15 @@
 		drawBrush();
 	
 		empty_canv = this.canvas.toDataURL(); //NEWTHING
-		undo_arr.push(empty_canv); //NEWTHING
-		
+
 		jQuery(tmp_canvas).on('mousedown touchstart', function(e) {
+
 			if(isDoubleTouch(e) || isRightClick(e)) {
 				return;
 			}
-			
 			jQuery(tmp_canvas).on('mousemove touchmove', onPaint);
-	
-			if(typeof e.offsetX == 'undefined' && typeof e.layerX == 'undefined') {
-				mouse.x = e.originalEvent.layerX;
-				mouse.y = e.originalEvent.layerY;
-			} else {
-				mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
-				mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
-			}
+
+			copyEventCoordinateToMouse(e, tmp_canvas);
 			
 			mouse.paint = true;
 			start_mouse.x = mouse.x;
@@ -191,6 +170,23 @@
 			jQuery(document).off("mouseup touchend");
 		});
 		
+		var copyEventCoordinateToMouse = function(e, canvasElement) {
+			if(typeof e.offsetX == 'undefined' && typeof e.layerX == 'undefined') {
+				if((typeof e.originalEvent.layerX == 'undefined') && e.originalEvent.touches !== 'undefined' && e.originalEvent.touches.length > 0) {
+					var te = e.originalEvent.touches[0];
+					var canvasOffset = jQuery(canvasElement).offset();
+					mouse.x = te.pageX - canvasOffset.left;
+					mouse.y = te.pageY - canvasOffset.top;
+				} else {
+					mouse.x = e.originalEvent.layerX;
+					mouse.y = e.originalEvent.layerY;
+				}
+			} else {
+				mouse.x = typeof e.offsetX !== 'undefined' ? e.offsetX : e.layerX;
+				mouse.y = typeof e.offsetY !== 'undefined' ? e.offsetY : e.layerY;
+			}
+		}
+		
 		var stopPainting = function() {
 			jQuery(tmp_canvas).off('mousemove touchmove', onPaint);
 			
@@ -209,7 +205,6 @@
 			
 			var image = canvas.toDataURL();
 			jQuery('#' + inputHolderId).val(image);
-			undo_arr.push(image);
 			undo_count = 0; //NEWTHING
 		}
 		
@@ -289,6 +284,7 @@
 				return;
 			}
 			
+			
 			// Tmp canvas is always cleared up before drawing.
 			tmp_ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
 			
@@ -311,7 +307,7 @@
 					var c = (ptx + nextPtx) / 2;
 					var d = (pty + nextPty) / 2;
 					tmp_ctx.quadraticCurveTo(ptx, pty, c, d);
-					stopped = false;
+					
 				} else {
 					tmp_ctx.stroke();
 					stopped = true;
@@ -390,7 +386,7 @@
 			tmp_ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
 			tmp_ctx.closePath();
 			tmp_ctx.stroke();
-		};
+		}
 	
 		var onErase = function() {
 			// Saving all the points in an array
@@ -452,17 +448,6 @@
 		        tmp_ctx.fillRect(x, y, 1, 1);
 		    }
 		};
-
-		var UndoFunc = function(count) {
-			var number = undo_arr.length;
-			var img_data = undo_arr[number - (count + 1)];
-			var undo_img = new Image();
-			
-			undo_img.src = img_data.toString();
-			
-			ctx.clearRect(0, 0, tmp_canvas.width, tmp_canvas.height);
-			ctx.drawImage(undo_img, 0, 0);
-		};
 		
 		function isDoubleTouch(e) {
 			try {
@@ -479,7 +464,6 @@
 		
 		function isRightClick(e) {
 			try {
-				console.log(e);
 				if(!(typeof e == "undefined")
 						&& !(typeof e.which == "undefined")
 						&& (e.which == 2 || e.which == 3)) {
@@ -513,6 +497,6 @@
 			} else if ( tool == 'spray' ) {
 				generateSprayParticles();
 			}
-		};
+		}
 	}
 }(jQuery));

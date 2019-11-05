@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
 import org.olat.core.gui.components.form.flexible.elements.DateChooser;
@@ -39,10 +38,12 @@ import org.olat.core.helpers.Settings;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.group.BusinessGroup;
+import org.olat.modules.vitero.ViteroModule;
 import org.olat.modules.vitero.manager.ViteroManager;
 import org.olat.modules.vitero.manager.VmsNotAvailableException;
 import org.olat.modules.vitero.model.ViteroBooking;
 import org.olat.modules.vitero.model.ViteroStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -54,14 +55,17 @@ import org.olat.modules.vitero.model.ViteroStatus;
  * @author srosse, stephane.rosse@frentix.com, http://www.frentix.com
  */
 public class ViteroBookingEditController extends FormBasicController {
+
+	private static final String[] enabledKeys = new String[]{"on"};
 	
+
 	private TextElement groupName;
 	private DateChooser beginChooser;
 	private DateChooser endChooser;
 	private SingleSelection beginBufferEl;
 	private SingleSelection endBufferEl;
 	private SingleSelection roomSizeEl;
-	
+	private MultipleSelectionElement inspireEl;
 	private MultipleSelectionElement autoSignIn;
 	
 	private static final String[] bufferKeys = new String[]{"0", "15", "30", "45", "60"};
@@ -74,7 +78,11 @@ public class ViteroBookingEditController extends FormBasicController {
 	private final OLATResourceable ores;
 	private final String subIdentifier;
 	private final ViteroBooking booking;
-	private final ViteroManager viteroManager;
+	
+	@Autowired
+	private ViteroModule viteroModule;
+	@Autowired
+	private ViteroManager viteroManager;
 	
 	public ViteroBookingEditController(UserRequest ureq, WindowControl wControl, BusinessGroup group, OLATResourceable ores,
 			String subIdentifier, ViteroBooking booking) {
@@ -84,7 +92,6 @@ public class ViteroBookingEditController extends FormBasicController {
 		this.ores = ores;
 		this.subIdentifier = subIdentifier; 
 		this.booking = booking;
-		viteroManager = (ViteroManager)CoreSpringFactory.getBean("viteroManager");
 		
 		List<Integer> sizes;
 		try {
@@ -156,6 +163,14 @@ public class ViteroBookingEditController extends FormBasicController {
 		}
 		roomSizeEl.setEnabled(editable);
 		
+		String[] enabledValues = new String[]{translate("enabled")};
+		inspireEl = uifactory.addCheckboxesHorizontal("option.inspire", formLayout, enabledKeys, enabledValues);
+		inspireEl.setVisible(viteroModule.isInspire());
+		if(viteroModule.isInspire() && booking.isInspire()) {
+			inspireEl.select(enabledKeys[0], true);
+		}
+		inspireEl.setEnabled(editable);
+		
 		autoSignIn = uifactory.addCheckboxesHorizontal("booking.autoSignIn", formLayout, autoSignInKeys, autoSignInValues);
 		if(booking.isAutoSignIn()) {
 			autoSignIn.select(autoSignInKeys[0], true);
@@ -188,7 +203,7 @@ public class ViteroBookingEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		String name = groupName.getValue();
 		groupName.clearError();
@@ -207,10 +222,10 @@ public class ViteroBookingEditController extends FormBasicController {
 			beginChooser.clearError();
 			if(begin == null) {
 				beginChooser.setErrorKey("form.legende.mandatory", null);
-				allOk = false;
+				allOk &= false;
 			} else if(new Date().after(begin)) {
 				beginChooser.setErrorKey("error.bookingInPast", null);
-				allOk = false;
+				allOk &= false;
 			}
 		}
 		
@@ -219,13 +234,10 @@ public class ViteroBookingEditController extends FormBasicController {
 			endChooser.clearError();
 			if(end == null) {
 				endChooser.setErrorKey("form.legende.mandatory", null);
-				allOk = false;
-			} else if(new Date().after(begin)) {
+				allOk &= false;
+			} else if(new Date().after(begin) || end.before(begin)) {
 				beginChooser.setErrorKey("error.bookingInPast", null);
-				allOk = false;
-			} else if(end.before(begin)) {
-				beginChooser.setErrorKey("error.bookingInPast", null);
-				allOk = false;
+				allOk &= false;
 			}
 		}
 		
@@ -235,7 +247,7 @@ public class ViteroBookingEditController extends FormBasicController {
 			allOk = false;
 		}
 		
-		return allOk && super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -269,6 +281,9 @@ public class ViteroBookingEditController extends FormBasicController {
 		
 		boolean auto = autoSignIn.isMultiselect() && autoSignIn.isSelected(0);
 		booking.setAutoSignIn(auto);
+		
+		boolean inspire = inspireEl.isVisible() && inspireEl.isAtLeastSelected(1);
+		booking.setInspire(inspire);
 		
 		try {
 			if(booking.getBookingId() >= 0) {

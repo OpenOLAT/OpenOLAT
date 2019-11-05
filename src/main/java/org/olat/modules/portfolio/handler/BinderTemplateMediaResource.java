@@ -131,7 +131,7 @@ public class BinderTemplateMediaResource implements MediaResource {
 			OLATResource resource = templateEntry.getOlatResource();
 			File baseContainer= FileResourceManager.getInstance().getFileResource(resource);
 			RepositoryEntryImportExport importExport = new RepositoryEntryImportExport(templateEntry, baseContainer);
-			importExport.exportDoExportProperties(zout);
+			importExport.exportDoExportProperties("", zout);
 		} catch (Exception e) {
 			log.error("", e);
 		}

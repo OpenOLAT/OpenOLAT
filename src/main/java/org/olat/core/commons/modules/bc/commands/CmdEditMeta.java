@@ -26,6 +26,8 @@
 
 package org.olat.core.commons.modules.bc.commands;
 
+import java.util.List;
+
 import org.olat.core.commons.modules.bc.FolderEvent;
 import org.olat.core.commons.modules.bc.components.FolderComponent;
 import org.olat.core.commons.modules.bc.components.ListRenderer;
@@ -87,8 +89,8 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 			UserRequest ureq, WindowControl wControl, Translator trans) {
 		this.translator = trans;
 		this.folderComponent = fComponent;
-		String pos = ureq.getParameter(ListRenderer.PARAM_EDTID);
-		if (!StringHelper.containsNonWhitespace(pos)) {
+		String posString = ureq.getParameter(ListRenderer.PARAM_EDTID);
+		if (!StringHelper.isLong(posString)) {
 			// somehow parameter did not make it to us
 			status = FolderCommandStatus.STATUS_FAILED;
 			getWindowControl().setError(translator.translate("failed"));
@@ -97,7 +99,16 @@ public class CmdEditMeta extends BasicController implements FolderCommand {
 		
 		status = FolderCommandHelper.sanityCheck(wControl, fComponent);
 		if(status == FolderCommandStatus.STATUS_SUCCESS) {
-			currentItem = fComponent.getCurrentContainerChildren().get(Integer.parseInt(pos));
+			int pos = Integer.parseInt(posString);
+			List<VFSItem> children = fComponent.getCurrentContainerChildren();
+			if(pos >= 0 && pos < children.size()) {
+				currentItem = children.get(pos);
+			} else {
+				status = FolderCommandStatus.STATUS_FAILED;
+				getWindowControl().setWarning(translator.translate("warning.file.not.found"));
+				fComponent.updateChildren();
+				return null;
+			}
 		}
 		if(status == FolderCommandStatus.STATUS_FAILED) {
 			return null;

@@ -169,21 +169,23 @@ public class InfoMessageFrontendManagerImpl implements InfoMessageFrontendManage
 	
 	private VFSContainer getResourceContainer(OLATResourceable ores) {
 		VFSContainer root = getStoragePath();
-		String type = ores.getResourceableTypeName().toLowerCase();
-		VFSItem typePath = root.resolve(type);
-		if(typePath == null) {
-			typePath = root.createChildContainer(type);
-		}
-		String id = ores.getResourceableId().toString();
-		if(typePath instanceof VFSContainer) {
-			VFSContainer typeContainer = (VFSContainer)typePath;
-			VFSItem resourceItem = typeContainer.resolve(id);
-			if(resourceItem == null) {
-				resourceItem = typeContainer.createChildContainer(id);
+		if(ores != null && ores.getResourceableTypeName() != null) {
+			String type = ores.getResourceableTypeName().toLowerCase();
+			VFSItem typePath = root.resolve(type);
+			if(typePath == null) {
+				typePath = root.createChildContainer(type);
 			}
-			
-			if(resourceItem instanceof VFSContainer) {
-				return (VFSContainer)resourceItem;
+			String id = ores.getResourceableId().toString();
+			if(typePath instanceof VFSContainer) {
+				VFSContainer typeContainer = (VFSContainer)typePath;
+				VFSItem resourceItem = typeContainer.resolve(id);
+				if(resourceItem == null) {
+					resourceItem = typeContainer.createChildContainer(id);
+				}
+				
+				if(resourceItem instanceof VFSContainer) {
+					return (VFSContainer)resourceItem;
+				}
 			}
 		}
 		return null;

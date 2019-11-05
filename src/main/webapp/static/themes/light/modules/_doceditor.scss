@@ -61,7 +61,8 @@ body.o_doceditor_body {
 	.o_collabora, .o_onlyoffice, .o_office365 {
 		iframe {
 			width: 100%;
-			height: calc(100vh - 65px);
+			height: calc(100vh - 61px);
+			height: calc(var(--doceditorvh, 1vh) * 100 - 61px);
 			margin-top: 10px;
 			border-width: 0px;
 		}
@@ -72,6 +73,7 @@ body.o_doceditor_body {
 			iframe {
 				width: 100%;
 				height: calc(100vh - 321px);  // editor selection is not taken
+				height: calc(var(--doceditorvh, 1vh) * 100 - 321px);
 				margin-top: 10px;
 				margin-bottom: 10px;
 				border-width: 1px;
@@ -83,6 +85,7 @@ body.o_doceditor_body {
 			iframe {
 				width: 100%;
 				height: calc(100vh - 276px); // editor selection is not taken
+				height: calc(var(--doceditorvh, 1vh) * 100 - 276px);
 				margin-top: 10px;
 				margin-bottom: 25px;
 				border-width: 1px;

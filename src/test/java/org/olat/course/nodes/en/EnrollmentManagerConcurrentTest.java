@@ -41,7 +41,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
@@ -311,76 +310,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 	}
 	
 	
-	@Test @Ignore
-	public void testConcurrentEnrollmentWithWaitingList_big() {
-		List<Identity> ids = new ArrayList<>(100);	
-		for(int i=0; i<100; i++) {
-			Identity id = JunitTestHelper.createAndPersistIdentityAsUser("enroll-a-" + i + "-" + UUID.randomUUID().toString());
-			ids.add(id);
-		}
-		
-		Identity author = JunitTestHelper.createAndPersistIdentityAsAuthor("enroller");
-		RepositoryEntry addedEntry = JunitTestHelper.deployBasicCourse(author);
-		
-		ENCourseNode enNode1 = new ENCourseNode();
-		ENCourseNode enNode2 = new ENCourseNode();
-		ENCourseNode enNode3 = new ENCourseNode();
-		ENCourseNode enNode4 = new ENCourseNode();
-		ENCourseNode enNode5 = new ENCourseNode();
-
-		CourseEnvironment cenv = CourseFactory.loadCourse(addedEntry).getCourseEnvironment();
-		BusinessGroup group1 = businessGroupService.createBusinessGroup(author, "Enrollment 1", "Enroll 1", new Integer(1), new Integer(8), true, true, addedEntry);
-		BusinessGroup group2 = businessGroupService.createBusinessGroup(author, "Enrollment 2", "Enroll 2", new Integer(1), new Integer(10), true, true, addedEntry);
-		BusinessGroup group3 = businessGroupService.createBusinessGroup(author, "Enrollment 3", "Enroll 3", new Integer(1), new Integer(4), true, true, addedEntry);
-		BusinessGroup group4 = businessGroupService.createBusinessGroup(author, "Enrollment 4", "Enroll 4", new Integer(1), new Integer(10), true, true, addedEntry);
-		BusinessGroup group5 = businessGroupService.createBusinessGroup(author, "Enrollment 5", "Enroll 5", new Integer(1), new Integer(9), true, true, addedEntry);
-		dbInstance.commitAndCloseSession();
-
-		EnrollThread[] threads = new EnrollThread[100];
-		
-		final CountDownLatch doneSignal = new CountDownLatch(ids.size());
-		int t = 0;
-		for(int i=0; i<30; i++) {
-			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group1, enNode1, cenv, doneSignal);
-		}
-		for(int i=30; i<50; i++) {
-			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group2, enNode2, cenv, doneSignal);
-		}
-		for(int i=50; i<70; i++) {
-			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group3, enNode3, cenv, doneSignal);
-		}
-		for(int i=70; i<90; i++) {
-			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group4, enNode4, cenv, doneSignal);
-		}
-		for(int i=90; i<100; i++) {
-			threads[t++] = new EnrollThread(ids.get(i), addedEntry, group5, enNode5, cenv, doneSignal);
-		}
-		
-		for(EnrollThread thread:threads) {
-			thread.start();
-		}
-
-		try {
-			boolean interrupt = doneSignal.await(360, TimeUnit.SECONDS);
-			assertTrue("Test takes too long (more than 10s)", interrupt);
-		} catch (InterruptedException e) {
-			fail("" + e.getMessage());
-		}
-		
-		dbInstance.commitAndCloseSession();
-
-		List<Identity> enrolled_1_Ids = businessGroupService.getMembers(group1, GroupRoles.participant.name());
-		Assert.assertEquals(8, enrolled_1_Ids.size());
-		List<Identity> enrolled_2_Ids = businessGroupService.getMembers(group2, GroupRoles.participant.name());
-		Assert.assertEquals(10, enrolled_2_Ids.size());
-		List<Identity> enrolled_3_Ids = businessGroupService.getMembers(group3, GroupRoles.participant.name());
-		Assert.assertEquals(4, enrolled_3_Ids.size());
-		List<Identity> enrolled_4_Ids = businessGroupService.getMembers(group4, GroupRoles.participant.name());
-		Assert.assertEquals(10, enrolled_4_Ids.size());
-		List<Identity> enrolled_5_Ids = businessGroupService.getMembers(group5, GroupRoles.participant.name());
-		Assert.assertEquals(9, enrolled_5_Ids.size());
-	}
-
+	
 	private class EnrollThread extends Thread {
 		private final ENCourseNode enNode;
 		private final Identity identity;

@@ -93,4 +93,35 @@ public class QuestionPoolAdminPage {
 		return this;
 	}
 	
+	public QuestionPoolAdminPage selectLevels() {
+		By levelsBy = By.xpath("//div[contains(@class,'o_segments')]/a[contains(@onclick,'segment.educational.context')]");
+		OOGraphene.waitElement(levelsBy, browser);
+		browser.findElement(levelsBy).click();
+		return this;
+	}
+	
+	public QuestionPoolAdminPage addLevel(String name) {
+		By addLevelBy = By.cssSelector("a.btn.o_sel_add_level");
+		OOGraphene.waitElement(addLevelBy, browser);
+		browser.findElement(addLevelBy).click();
+		
+		OOGraphene.waitModalDialog(browser);
+		
+		By nameBy = By.cssSelector("fieldset.o_sel_edit_level_form div.o_sel_level_name input[type='text']");
+		OOGraphene.waitElement(nameBy, browser);
+		browser.findElement(nameBy).sendKeys(name);
+		
+		By saveBy = By.cssSelector("fieldset.o_sel_edit_level_form button.btn.btn-primary");
+		browser.findElement(saveBy).click();
+		OOGraphene.waitBusy(browser);
+		OOGraphene.waitModalDialogDisappears(browser);
+		return this;
+	}
+	
+	public QuestionPoolAdminPage assertLevelInList(String level) {
+		By levelBy = By.xpath("//div[contains(@class,'o_table_flexi')]/table//td[text()[contains(.,'" + level + "')]]");
+		OOGraphene.waitElement(levelBy, browser);
+		return this;
+	}
+	
 }

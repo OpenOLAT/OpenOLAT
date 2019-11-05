@@ -64,6 +64,8 @@ import org.olat.restapi.support.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -203,8 +205,8 @@ public class CertificationWebService {
 	@PUT
 	@Path("{identityKey}")
 	public Response putCertificate(@PathParam("identityKey") Long identityKey, @PathParam("resourceKey") Long resourceKey,
-			@QueryParam("score") Float score, @QueryParam("passed") Boolean passed,
-			@QueryParam("creationDate") String creationDate,
+			@QueryParam("score")@Parameter(description = "The score which appears in the certificate") Float score, @QueryParam("passed") @Parameter(description = "The passed/failed which appears in the certificate (true/false)")  Boolean passed,
+			@QueryParam("creationDate") @Parameter(description = "The date of the certification") String creationDate,
 			@Context HttpServletRequest request) {
 		Identity assessedIdentity = securityManager.loadIdentityByKey(identityKey);
 		if(assessedIdentity == null) {

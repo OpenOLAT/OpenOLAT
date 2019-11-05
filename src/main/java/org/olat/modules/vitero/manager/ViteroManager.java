@@ -42,6 +42,7 @@ import javax.activation.FileDataSource;
 import javax.annotation.PostConstruct;
 import javax.ws.rs.core.UriBuilder;
 import javax.xml.soap.SOAPElement;
+import javax.xml.soap.SOAPFaultElement;
 import javax.xml.ws.BindingProvider;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.Handler;
@@ -78,8 +79,6 @@ import org.olat.user.DisplayPortraitManager;
 import org.olat.user.UserDataDeletable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.w3c.dom.Node;
-import org.w3c.dom.Text;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.CompactWriter;
@@ -232,10 +231,7 @@ public class ViteroManager implements UserDataDeletable {
 		cal.add(Calendar.MINUTE, booking.getEndBuffer());
 		Date end = cal.getTime();
 		
-		if(start.before(now) && end.after(now)) {
-			return true;
-		}
-		return false;
+		return(start.before(now) && end.after(now));
 	}
 	
 	public String getURLToBooking(Identity identity, ViteroBooking booking)
@@ -1040,6 +1036,8 @@ public class ViteroManager implements UserDataDeletable {
 		booking.setEnd(cal.getTime());
 		booking.setEndBuffer(15);
 		
+		booking.setInspire(viteroModule.isInspire());
+		
 		List<Integer> roomSizes = getLicencedRoomSizes();
 		if(!roomSizes.isEmpty()) {
 			booking.setRoomSize(roomSizes.get(0));
@@ -1078,6 +1076,9 @@ public class ViteroManager implements UserDataDeletable {
 			newBooking.setTimezone(viteroModule.getTimeZoneId());
 			if(StringHelper.containsNonWhitespace(vBooking.getEventName())) {
 				newBooking.setEventname(vBooking.getEventName());
+			}
+			if(viteroModule.isInspire()) {
+				newBooking.setInspire(Boolean.TRUE);
 			}
 			createRequest.setBooking(newBooking);
 
@@ -1302,7 +1303,7 @@ public class ViteroManager implements UserDataDeletable {
 	throws VmsNotAvailableException {
 		ViteroBooking booking = null;
 		List<Property> properties = propertyManager.listProperties(null, group, ores, VMS_CATEGORY, Integer.toString(bookingId));
-		if(properties.size() > 0) {
+		if(!properties.isEmpty()) {
 			Property property = properties.get(0);
 			String propIdentifier = property.getStringValue();
 			if((propIdentifier == null || subIdentifier == null)
@@ -1386,7 +1387,7 @@ public class ViteroManager implements UserDataDeletable {
 		//check if vms user with an openolat login exists on vms server
 		//without the need authentication object in openolat.
 		List<Usertype> users = getCustomersUsers();
-		if(users != null && users.size() > 0) {
+		if(users != null && !users.isEmpty()) {
 			for(Usertype user:users) {
 				String vmsUsername = user.getUsername();
 				if(vmsUsername.startsWith(prefix)) {
@@ -1483,45 +1484,44 @@ public class ViteroManager implements UserDataDeletable {
 	//Utilities
 	private final ErrorCode handleAxisFault(final SOAPFaultException f) 
 	throws VmsNotAvailableException {
-		if(f.getFault() != null) {
-			String errorCode = extractErrorCode(f.getFault());
-			if(StringHelper.isLong(errorCode)) {
-				int code = Integer.parseInt(errorCode);
-				return ErrorCode.find(code);
+		try {
+			if(f.getFault() != null) {
+				ErrorCode errorCode = extractErrorCode(f.getFault());
+				if(errorCode != null) {
+					return errorCode;
+				}
+				return ErrorCode.unkown;
+			} else if (f.getCause() instanceof SocketTimeoutException) {
+				throw new VmsNotAvailableException(f);
 			}
-			return ErrorCode.unkown;
-		} else if (f.getCause() instanceof SocketTimeoutException) {
-			throw new VmsNotAvailableException(f);
+		} catch (Exception e) {
+			log.error("Cannot extract error", f);
 		}
 		return ErrorCode.unkown;
 	}
 	
-	private String extractErrorCode(SOAPElement element) {
+	private ErrorCode extractErrorCode(SOAPElement element) {
 		if(element == null) return null;
 		
-		for(Iterator<?> it=element.getChildElements(); it.hasNext(); ) {
-			Object childElement = it.next();
-			if(childElement instanceof SOAPElement) {
-				SOAPElement soapElement = (SOAPElement)childElement;
-				String nodeName = soapElement.getNodeName();
-				if("errorCode".equals(nodeName)) {
-					return extractText(soapElement);
-				} else {
-					String code = extractErrorCode(soapElement);
-					if(code != null) {
-						return code;
-					}
+		try {
+			ErrorCode[] codes = ErrorCode.values();
+			int numOfErrorCode = codes.length;
+			for(Iterator<?> it=element.getChildElements(); it.hasNext(); ) {
+				Object childElement = it.next();
+				if(childElement instanceof SOAPFaultElement) {
+					SOAPFaultElement fault = (SOAPFaultElement)childElement;
+					String fContent = fault.getTextContent();
+					if(StringHelper.containsNonWhitespace(fContent) && Character.isDigit(fContent.charAt(fContent.length() - 1))) {
+						for(int i=numOfErrorCode; i-->0; ) {
+							if(fContent.endsWith(codes[i].codeString())) {
+								return codes[i];
+							}
+						}
+					}	
 				}
 			}
-		}
-		return null;
-	}
-	
-	private String extractText(SOAPElement errorCodeEl) {
-		for(Node node=errorCodeEl.getFirstChild(); node != null; node=node.getNextSibling()) {
-			if(node instanceof Text && StringHelper.containsNonWhitespace(node.getNodeValue())) {
-				return node.getNodeValue();
-			}
+		} catch (Exception e) {
+			log.error("", e);
 		}
 		return null;
 	}
@@ -1548,7 +1548,7 @@ public class ViteroManager implements UserDataDeletable {
 	private final List<ViteroBooking> convert(List<Booking_Type> bookings) {
 		List<ViteroBooking> viteroBookings = new ArrayList<>();
 		
-		if(bookings != null && bookings.size() > 0) {
+		if(bookings != null && !bookings.isEmpty()) {
 			for(Booking_Type b:bookings) {
 				viteroBookings.add(convert(b));
 			}
@@ -1573,6 +1573,7 @@ public class ViteroManager implements UserDataDeletable {
 		vb.setStartBuffer(booking.getStartbuffer());
 		vb.setEnd(parse(booking.getEnd()));
 		vb.setEndBuffer(booking.getEndbuffer());
+		vb.setInspire(booking.isInspire());
 		return vb;
 	}
 	

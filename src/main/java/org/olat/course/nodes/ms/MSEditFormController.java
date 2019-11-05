@@ -93,25 +93,23 @@ public class MSEditFormController extends FormBasicController {
 	private String[] passedTypeValues;
 
 	private  static final String scoreRex = "^[0-9]+(\\.[0-9]+)?$";
-	/**
-	 * Creates this controller.
-	 * 
-	 * @param ureq
-	 * @param wControl
-	 * @param modConfig
-	 */
+
+	private final String title;
+	private final String helpUrl;
+	
+	
 	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig) {
-		this(ureq, wControl, modConfig, false);
+		this(ureq, wControl, modConfig, null, null);
 	}
-
-	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, boolean confirmationEmailConf) {
-		super(ureq, wControl, FormBasicController.LAYOUT_BAREBONE);
-		this.confirmationEmailConf = confirmationEmailConf;
-
+	
+	public MSEditFormController(UserRequest ureq, WindowControl wControl, ModuleConfiguration modConfig, String title,
+			String helpUrl) {
+		super(ureq, wControl, FormBasicController.LAYOUT_DEFAULT);
 		this.modConfig = modConfig;
-		this.trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
-
-		this.passedTypeValues = new String[] { translate("form.passedtype.cutval"), translate("form.passedtype.manual") };
+		this.title = title;
+		this.helpUrl = helpUrl;
+		trueFalseKeys = new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString() };
+		passedTypeValues = new String[] { translate("form.passedtype.cutval"), translate("form.passedtype.manual") };
 		initForm(ureq);
 	}
 
@@ -160,6 +158,12 @@ public class MSEditFormController extends FormBasicController {
 	 */
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
+		if (StringHelper.containsNonWhitespace(title)) {
+			setFormTitle("form.title", new String[] {title});
+		}
+		if (StringHelper.containsNonWhitespace(helpUrl)) {
+			setFormContextHelp(helpUrl);
+		}
 		formLayout.setElementCssClass("o_sel_course_ms_form");
 
 		// Create the "score granted" field...

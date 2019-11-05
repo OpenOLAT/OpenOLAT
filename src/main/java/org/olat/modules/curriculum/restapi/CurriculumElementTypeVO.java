@@ -26,6 +26,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.olat.modules.curriculum.CurriculumElementType;
 import org.olat.modules.curriculum.CurriculumElementTypeManagedFlag;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * 
  * Initial date: 16 mai 2018<br>
@@ -42,6 +44,18 @@ public class CurriculumElementTypeVO {
 	private String description;
 	private String cssClass;
 	private String externalId;
+	@Schema(required = true, description = "Action to be performed on managedFlagsString", allowableValues = { 
+			"all",
+			 "identifier(all)",
+			 "displayName(all)",
+			 "cssClass(all)",
+			 "description(all)",
+			 "externalId(all)",
+			 "calendars(all)",
+			 "lectures(all)",
+			 "subTypes(all)",
+			 "copy(all)",
+			 "delete(all)"})
 	private String managedFlagsString;
 	private String calendars;
 	

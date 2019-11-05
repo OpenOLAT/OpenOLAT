@@ -31,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormLayoutContainer;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
-import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.user.ChangePasswordForm;
 import org.olat.user.UserManager;
@@ -60,6 +59,7 @@ public class RegistrationAdditionalForm extends FormBasicController {
 	public RegistrationAdditionalForm(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, Util.createPackageTranslator(ChangePasswordForm.class, ureq.getLocale()));
 		userPropertyHandlers = userManager.getUserPropertyHandlersFor(USERPROPERTIES_FORM_IDENTIFIER, false);
+		setTranslator(userManager.getPropertyHandlerTranslator(getTranslator()));
 		initForm(ureq);
 	}
 	
@@ -78,14 +78,10 @@ public class RegistrationAdditionalForm extends FormBasicController {
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		setFormTitle("step.add.reg.title");
 
-		Translator tr = Util.createPackageTranslator(UserPropertyHandler.class,getLocale(), getTranslator());
-		
 		// Add all available user fields to this form
 		for (UserPropertyHandler userPropertyHandler : userPropertyHandlers) {
 			if (userPropertyHandler == null) continue;
-			
 			FormItem fi = userPropertyHandler.addFormItem(getLocale(), null, USERPROPERTIES_FORM_IDENTIFIER, false, formLayout);
-			fi.setTranslator(tr);
 			propFormItems.put(userPropertyHandler.getName(), fi);
 		}
 

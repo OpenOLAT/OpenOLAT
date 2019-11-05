@@ -30,7 +30,6 @@
 </div>
 #if(($existsCol1 && $r.visible("col1")) || ($existsCol2 && $r.visible("col2")))
 <script>
-/* <![CDATA[ */
 jQuery().ready(function() {
 	// Main vertical splitter, anchored to the browser window
 #if($existsCol1 && $r.visible("col1"))
@@ -42,7 +41,7 @@ jQuery().ready(function() {
 	    	var leftCol = jQuery('#o_main_left');
 			var newEmWidth = Math.round(leftCol.width() / o_info.emPxFactor);
 			leftCol.width(newEmWidth + 'em');
-			jQuery.post('$r.commandURI("saveCol1Width")' + newEmWidth);
+			$r.openNoResponseJavaScriptCommand("saveCol1Width"), "newEmWidth", newEmWidth);
 	    }
 	});
 
@@ -141,11 +140,10 @@ jQuery().ready(function() {
 	    	var rightCol = jQuery('#o_main_right');
 			var newEmWidth = Math.round(rightCol.width() / o_info.emPxFactor);
 			rightCol.width(newEmWidth + 'em');
-			jQuery.post('$r.commandURI("saveCol2Width")' + newEmWidth);
+			$r.openNoResponseJavaScriptCommand("saveCol2Width"), "newEmWidth", newEmWidth);
 	    }
 	});
 #end
 });
-/* ]]> */
 </script>
 #end

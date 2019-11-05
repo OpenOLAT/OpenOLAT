@@ -95,7 +95,7 @@ public class VFSMetadataDAO {
 	 * @param element The curriculum element
 	 * @return The materialized path of the specified element
 	 */
-	private String getMaterializedPathKeys(VFSMetadataImpl parent, VFSMetadataImpl element) {
+	protected String getMaterializedPathKeys(VFSMetadataImpl parent, VFSMetadataImpl element) {
 		if(parent != null) {
 			String parentPathOfKeys = parent.getMaterializedPathKeys();
 			if(parentPathOfKeys == null || "/".equals(parentPathOfKeys)) {
@@ -288,8 +288,16 @@ public class VFSMetadataDAO {
 			.executeUpdate();
 	}
 	
+	/**
+	 * Update existing files only.
+	 * 
+	 * @param fileSize The new file size (mandatory)
+	 * @param lastModified The modification date (mandatory)
+	 * @param relativePath The path to the file
+	 * @param filename The name of the file
+	 */
 	public void updateMetadata(long fileSize, Date lastModified, String relativePath, String filename) {
-		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=:lastModified, fileSize=:fileSize where filename=:filename and relativePath=:relativePath";
+		String updateQuery = "update vfsmetadatafilesaved set fileLastModified=:lastModified, fileSize=:fileSize, deleted=false where filename=:filename and relativePath=:relativePath";
 		dbInstance.getCurrentEntityManager()
 			.createQuery(updateQuery)
 			.setParameter("filename", filename)

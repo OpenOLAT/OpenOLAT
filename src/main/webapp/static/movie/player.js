@@ -143,6 +143,8 @@ var BPlayer = {
 			  .attr({id : 'mediaelementplayercss', type : 'text/css', rel : 'stylesheet'})
 			  .attr('href', mediaElementcss);
 		}
+
+		BPlayer._loadNanooResize(domId, frameName, config);
 		
 		var poster = "<div id='" + frameName + "' class='mejs__container' role='application' style='width:" + config.width + "px; height:" + config.height + "px; overflow:hidden; overflow-x:hidden; overflow-y:hidden;'>"
 			       + "<div class='mejs__layers'>"
@@ -150,8 +152,9 @@ var BPlayer = {
 		           + "<div class='mejs__overlay mejs__layer mejs__overlay-play' style='width: 100%; height: 100%; z-index:10;'><div class='mejs__overlay-button' style='z-index:10;' role='button' tabindex='0' aria-label='Play' aria-pressed='false'></div></div>"
 		           + "</div>"
 		           + "</div>";
-		jQuery('#' + domId).append(jQuery(poster));
-		jQuery('#' + domId).css("border", "none");
+		var jDomEl = jQuery('#' + domId);
+		jDomEl.append(jQuery(poster));
+		jDomEl.css("border", "none");
 		jQuery('#' + domId + ' div.mejs__overlay-button').on('click', function(el, index) {
 			var cloneConfig = {
 				file: config.file,
@@ -168,6 +171,8 @@ var BPlayer = {
 			jQuery('#' + frameName).remove();
 		}
 		
+		BPlayer._loadNanooResize(domId, frameName, config);
+
 		var url = config.file;
 		var parts = url.split('?');
 		var nanooId = parts[0].substring(url.lastIndexOf('/') + 1);
@@ -181,8 +186,43 @@ var BPlayer = {
 		           + '" style="width:' + config.width + 'px; height:' + config.height + 'px; overflow:hidden;"'
 		           + ' frameborder="0" allow="fullscreen" allowfullscreen="true"'
 		           + '></iframe>';
-		jQuery('#' + domId).append(jQuery(iframe));
-		jQuery('#' + domId).css("border", "none");
+		var jDomEl = jQuery('#' + domId);
+		jDomEl.append(jQuery(iframe));
+		jDomEl.css("border", "none");
+	},
+	
+	_loadNanooResize : function(domId, frameName, config) {
+		try {
+			var jDomEl = jQuery('#' + domId);
+			var parentContainer = jDomEl.parent("p , div");
+			if(parentContainer.length == 1 && typeof config.width !== "undefined" && typeof config.height !== "undefined") {
+				var containerWidth =  jQuery(parentContainer).width();
+				var originalWidth = config.width;
+				var originalHeight = config.height;
+				if(containerWidth < originalWidth) {
+					var ratio = originalHeight / originalWidth;
+					var tw = containerWidth;
+					var th = ((containerWidth * ratio)|0);
+					config.width = tw;
+					config.height = th;
+				}
+				
+				jQuery(window).resize(function() {
+					var container = jQuery('#' + domId).parent("p , div");
+					var cWidth =  jQuery(container).width();
+					if(cWidth < originalWidth) {
+						var ratio = originalHeight / originalWidth;
+						var tw = cWidth;
+						var th = ((cWidth * ratio)|0);
+						jQuery('#' + frameName)
+							.width(tw + "px")
+							.height(th + "px");
+					}
+				}).trigger('resize');
+			}
+		} catch(e) {
+			if(window.console) console.log(e);
+		}
 	},
 
 	/*

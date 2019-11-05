@@ -30,5 +30,7 @@ import org.olat.core.gui.control.Controller;
 public interface QPoolItemEditorController extends Controller {
 	
 	public QuestionItem getItem();
+	
+	public boolean isValid();
 
 }

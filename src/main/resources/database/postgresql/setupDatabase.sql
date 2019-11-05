@@ -3760,7 +3760,7 @@ alter table o_vfs_metadata add constraint fmeta_to_lic_type_idx foreign key (fk_
 create index idx_fmeta_to_lic_type_idx on o_vfs_metadata (fk_license_type);
 alter table o_vfs_metadata add constraint fmeta_to_parent_idx foreign key (fk_parent) references o_vfs_metadata (id);
 create index idx_fmeta_to_parent_idx on o_vfs_metadata (fk_parent);
-create index f_m_rel_path_idx on o_vfs_metadata (f_relative_path);
+create index f_m_rel_path_idx on o_vfs_metadata (f_relative_path varchar_pattern_ops);
 create index f_m_file_idx on o_vfs_metadata (f_relative_path,f_filename);
 create index f_m_uuid_idx on o_vfs_metadata (f_uuid);
 

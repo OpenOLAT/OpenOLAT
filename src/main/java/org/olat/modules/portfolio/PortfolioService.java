@@ -165,6 +165,12 @@ public interface PortfolioService {
 	
 	public boolean hasBinderAssignmentTemplate(BinderRef binder);
 	
+	/**
+	 * Return the list of assignments used in the pages of the specified user.
+	 * 
+	 * @param assignee The user
+	 * @return A list of assignments with their page
+	 */
 	public List<Assignment> searchOwnedAssignments(IdentityRef assignee);
 	
 	public boolean isAssignmentInUse(Assignment assignment);

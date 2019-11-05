@@ -22,7 +22,7 @@ package org.olat.modules.qpool.ui.admin;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.CoreSpringFactory;
+import org.apache.logging.log4j.Level;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.FormItemContainer;
@@ -53,6 +53,7 @@ import org.olat.core.util.i18n.ui.SingleKeyTranslatorController;
 import org.olat.modules.qpool.QPoolService;
 import org.olat.modules.qpool.model.QEducationalContext;
 import org.olat.modules.qpool.ui.QuestionsController;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -74,12 +75,11 @@ public class QEducationalContextsAdminController extends FormBasicController {
 	private DialogBoxController confirmDeleteCtrl;
 	private SingleKeyTranslatorController singleKeyTrnsCtrl;
 	
-	private final QPoolService qpoolService;
+	@Autowired
+	private QPoolService qpoolService;
 	
 	public QEducationalContextsAdminController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl, null, "levels_admin", Util.createPackageTranslator(QuestionsController.class, ureq.getLocale()));
-
-		qpoolService = CoreSpringFactory.getImpl(QPoolService.class);
 		initForm(ureq);
 		reloadModel();
 	}
@@ -106,6 +106,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 		tableEl.setCustomizeColumns(false);
 		
 		createType = uifactory.addFormLink("create.level", formLayout, Link.BUTTON);
+		createType.setElementCssClass("o_sel_add_level");
 	}
 	
 	private void reloadModel() {
@@ -291,7 +292,7 @@ public class QEducationalContextsAdminController extends FormBasicController {
 				case level: return level.getLevel();
 				case levelI18n: {
 					String i18nKey = "item.level." + level.getLevel().toLowerCase();
-					String translation = getTranslator().translate(i18nKey);
+					String translation = getTranslator().translate(i18nKey, null, Level.OFF);
 					if(i18nKey.equals(translation) || translation.length() > 256) {
 						return level.getLevel();
 					}

@@ -76,6 +76,7 @@ import org.olat.restapi.security.RestSecurityHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 /**
@@ -207,12 +208,12 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	 */
 	@PUT
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response attachForum(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId") String parentNodeId,
-			@QueryParam("position") Integer position, @QueryParam("shortTitle") @DefaultValue("undefined") String shortTitle,
-			@QueryParam("longTitle") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @DefaultValue("undefined") String objectives,
-			@QueryParam("visibilityExpertRules") String visibilityExpertRules, @QueryParam("accessExpertRules") String accessExpertRules,
-			@QueryParam("moderatorExpertRules") String moderatorExpertRules, @QueryParam("posterExpertRules") String posterExpertRules,
-			@QueryParam("readerExpertRules") String readerExpertRules, @Context HttpServletRequest request) {
+	public Response attachForum(@PathParam("courseId") Long courseId, @QueryParam("parentNodeId")  @Parameter(description = "The node's id which will be the parent of this single page") String parentNodeId,
+			@QueryParam("position")  @Parameter(description = "The node's position relative to its sibling nodes (optional)") Integer position, @QueryParam("shortTitle")  @Parameter(description = "The node short title") @DefaultValue("undefined") String shortTitle,
+			@QueryParam("longTitle")  @Parameter(description = "The node long title") @DefaultValue("undefined") String longTitle, @QueryParam("objectives") @Parameter(description = "The node learning objectives") @DefaultValue("undefined") String objectives,
+			@QueryParam("visibilityExpertRules") @Parameter(description = "The rules to view the node (optional)") String visibilityExpertRules, @QueryParam("accessExpertRules") @Parameter(description = "The rules to access the node (optional)") String accessExpertRules,
+			@QueryParam("moderatorExpertRules") @Parameter(description = "The rules to moderate the node (optional)") String moderatorExpertRules, @QueryParam("posterExpertRules") @Parameter(description = "The rules to post the node (optional)") String posterExpertRules,
+			@QueryParam("readerExpertRules") @Parameter(description = "The rules to read the node (optional)") String readerExpertRules, @Context HttpServletRequest request) {
 		ForumCustomConfig config = new ForumCustomConfig(moderatorExpertRules, posterExpertRules, readerExpertRules);
 		return attach(courseId, parentNodeId, "fo", position, shortTitle, longTitle, objectives, visibilityExpertRules, accessExpertRules, config, request);
 	}
@@ -316,8 +317,8 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("{nodeId}/thread")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response newThreadToForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @QueryParam("title") String title,
-			@QueryParam("body") String body, @QueryParam("identityName") String identityName, @QueryParam("sticky") Boolean isSticky,
+	public Response newThreadToForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @QueryParam("title")@Parameter(description = "The title for the first post in the thread") String title,
+			@QueryParam("body") @Parameter(description = "The body for the first post in the thread") String body, @QueryParam("identityName") @Parameter(description = "The author identity name (optional)")String identityName, @QueryParam("sticky")@Parameter(description = "Creates sticky thread.") Boolean isSticky,
 			@Context HttpServletRequest request) {
 		
 		return addMessage(courseId, nodeId, null, title, body, identityName, isSticky, request);
@@ -345,8 +346,8 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 	@PUT
 	@Path("{nodeId}/message")
 	@Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-	public Response newMessageToForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @QueryParam("parentMessageId") Long parentMessageId, @QueryParam("title") String title,
-			@QueryParam("body") String body, @QueryParam("identityName") String identityName, @Context HttpServletRequest request) {
+	public Response newMessageToForum(@PathParam("courseId") Long courseId, @PathParam("nodeId") String nodeId, @QueryParam("parentMessageId") @Parameter(description = "The id of the parent message") Long parentMessageId, @QueryParam("title") @Parameter(description = "The title for the first post in the thread") String title,
+			@QueryParam("body") @Parameter(description = "The body for the first post in the thread") String body, @QueryParam("identityName") @Parameter(description = "The author identity name (optional)") String identityName, @Context HttpServletRequest request) {
 		
 		if(parentMessageId == null || parentMessageId == 0L) {
 			return Response.serverError().status(Status.NOT_FOUND).build();

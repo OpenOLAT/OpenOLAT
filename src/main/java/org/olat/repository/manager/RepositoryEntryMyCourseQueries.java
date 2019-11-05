@@ -276,7 +276,7 @@ public class RepositoryEntryMyCourseQueries implements MyCourseRepositoryQuery {
 		if (StringHelper.containsNonWhitespace(author)) { // fuzzy author search
 			author = PersistenceHelper.makeFuzzyQueryString(author);
 
-			sb.append(" and v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership, ")
+			sb.append(" and (v.key in (select rel.entry.key from repoentrytogroup as rel, bgroupmember as membership, ")
 			     .append(IdentityImpl.class.getName()).append(" as identity, ").append(UserImpl.class.getName()).append(" as user")
 		         .append("    where rel.group.key=membership.group.key and membership.identity.key=identity.key and user.identity.key=identity.key")
 		         .append("      and membership.role='").append(GroupRoles.owner.name()).append("'")
@@ -286,7 +286,9 @@ public class RepositoryEntryMyCourseQueries implements MyCourseRepositoryQuery {
 			PersistenceHelper.appendFuzzyLike(sb, "user.lastName", "author", dbInstance.getDbVendor());
 			sb.append(" or ");
 			PersistenceHelper.appendFuzzyLike(sb, "identity.name", "author", dbInstance.getDbVendor());
-			sb.append(" ))");
+			sb.append(" )) or");
+			PersistenceHelper.appendFuzzyLike(sb, "v.authors", "author", dbInstance.getDbVendor());
+			sb.append(" )");
 		}
 
 		String text = params.getText();

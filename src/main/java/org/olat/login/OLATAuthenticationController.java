@@ -41,7 +41,6 @@ import org.olat.core.gui.control.generic.dtabs.Activateable2;
 import org.olat.core.id.Identity;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
-import org.olat.core.logging.OLATSecurityException;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.UserSession;
@@ -125,16 +124,11 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		putInitialPanel(loginComp);
 	}
 
-	/**
-	 * @see org.olat.login.auth.AuthenticationController#changeLocale(java.util.Locale)
-	 */
+	@Override
 	public void changeLocale(Locale newLocale) {
 		setLocale(newLocale, true);
 	}
-	
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest, org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
+
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		if (source == registerLink) {
@@ -159,21 +153,20 @@ public class OLATAuthenticationController extends AuthenticationController imple
 	
 	protected void openChangePassword(UserRequest ureq, String initialEmail) {
 		// double-check if allowed first
-		if (!userModule.isAnyPasswordChangeAllowed()) {
-			throw new OLATSecurityException("chose password to be changed, but disallowed by config");
+		if (userModule.isAnyPasswordChangeAllowed()) {
+			removeAsListenerAndDispose(cmc);
+			removeAsListenerAndDispose(subController);
+			
+			subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
+			listenTo(subController);
+			
+			String title = ((PwChangeController)subController).getWizardTitle();
+			cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
+			listenTo(cmc);
+			cmc.activate();
+		} else {
+			showWarning("warning.not.allowed.to.change.pwd", new String[]  {WebappHelper.getMailConfig("mailSupport") });
 		}
-
-		removeAsListenerAndDispose(cmc);
-		removeAsListenerAndDispose(subController);
-		
-		subController = new PwChangeController(ureq, getWindowControl(), initialEmail, true);
-		listenTo(subController);
-		
-		String title = ((PwChangeController)subController).getWizardTitle();
-		cmc = new CloseableModalController(getWindowControl(), translate("close"), subController.getInitialComponent(), true, title);
-		listenTo(cmc);
-		
-		cmc.activate();
 	}
 
 	@Override
@@ -274,9 +267,6 @@ public class OLATAuthenticationController extends AuthenticationController imple
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
 		//

@@ -242,7 +242,10 @@ public class AssessmentTestFormItem extends AssessmentObjectFormItem {
 			} 
 			if(event != null) {
 				getRootForm().fireFormEvent(ureq, event);
-				component.setDirty(true);
+				if(event.getEvent() != QTIWorksAssessmentTestEvent.Event.tmpResponse
+						&& event.getEvent() != QTIWorksAssessmentTestEvent.Event.mark) {
+					component.setDirty(true);
+				}
 			}
 		}
 	}
