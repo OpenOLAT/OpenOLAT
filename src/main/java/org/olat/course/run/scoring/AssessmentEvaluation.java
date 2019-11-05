@@ -51,32 +51,36 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	private final Date lastUserModified;
 	private final Date lastCoachModified;
 	private final Date assessmentDone;
+	private final Date fullyAssessedDate;
+	private final Date firstVisit;
+	private final Date lastVisit;
 
 	public AssessmentEvaluation(Float score, Boolean passed) {
 		this(score, passed, null, null);
 	}
-	
+
 	public AssessmentEvaluation(final Float score, final Boolean passed, final Boolean fullyAssessed) {
 		this(score, passed, fullyAssessed, null);
 	}
-	
+
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, null, null, null, fullyAssessed, null, null, assessmentID, null, null, -1, null, null,
-				null, null, null, null, null);
+		this(score, passed, null, null, null, null, fullyAssessed, null, null, null, assessmentID, null, null, -1, null,
+				null, null, null, null, null, null, null, null);
 	}
-	
+
 	public AssessmentEvaluation(Date lastModified, Date lastUserModified, Date lastCoachModified) {
-		this(null, null, null, null, null, null, null, null, null, null, null, null, -1, lastModified, lastUserModified,
-				lastCoachModified, null, null, null, null);
+		this(null, null, null, null, null, null, null, null, null, null, null, null, null, -1, lastModified,
+				lastUserModified, lastCoachModified, null, null, null, null, null, null);
 	}
-	
+
 	public AssessmentEvaluation(Float score, Boolean passed, Integer attempts, Double completion,
 			AssessmentEntryStatus assessmentStatus, Boolean userVisibility, Boolean fullyAssessed,
-			Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID, String comment,
-			String coachComment, int numOfAssessmentDocs, Date lastModified, Date lastUserModified,
+			Date fullyAssessedDate, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID,
+			String comment, String coachComment, int numOfAssessmentDocs, Date lastModified, Date lastUserModified,
 			Date lastCoachModified, Date assessmentDone, Date startDate, AssessmentObligation obligation,
-			Integer duration) {
-		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, currentRunCompletion, runStatus, assessmentID);
+			Integer duration, Date firstVisit, Date lastVisit) {
+		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, currentRunCompletion, runStatus,
+				assessmentID);
 		this.attempts = attempts;
 		this.completion = completion;
 		this.comment = comment;
@@ -86,9 +90,12 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		this.lastUserModified = lastUserModified;
 		this.lastCoachModified = lastCoachModified;
 		this.assessmentDone = assessmentDone;
+		this.fullyAssessedDate = fullyAssessedDate;
 		this.startDate = startDate;
 		this.obligation = obligation;
 		this.duration = duration;
+		this.firstVisit = firstVisit;
+		this.lastVisit = lastVisit;
 	}
 	
 	/**
@@ -99,10 +106,10 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	 */
 	public AssessmentEvaluation(AssessmentEvaluation eval, AssessmentEntryStatus assessmentStatus) {
 		this(eval.getScore(), eval.getPassed(), eval.getAttempts(), null, assessmentStatus,
-				eval.getUserVisible(), eval.getFullyAssessed(), eval.getCurrentRunCompletion(),
+				eval.getUserVisible(), eval.getFullyAssessed(), eval.getFullyAssessedDate(), eval.getCurrentRunCompletion(),
 				eval.getCurrentRunStatus(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1,
 				eval.getLastModified(), eval.getLastUserModified(), eval.getLastCoachModified(), eval.getAssessmentDone(),
-				eval.getStartDate(), eval.getObligation(), eval.getDuration());
+				eval.getStartDate(), eval.getObligation(), eval.getDuration(), eval.getFirstVisit(), eval.getLastVisit());
 	}
 
 	public Date getStartDate() {
@@ -148,9 +155,21 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	public Date getLastCoachModified() {
 		return lastCoachModified;
 	}
+	
+	public Date getFullyAssessedDate() {
+		return fullyAssessedDate;
+	}
 
 	public Date getAssessmentDone() {
 		return assessmentDone;
+	}
+
+	public Date getFirstVisit() {
+		return firstVisit;
+	}
+
+	public Date getLastVisit() {
+		return lastVisit;
 	}
 
 	public static final AssessmentEvaluation toAssessmentEvaluation(AssessmentEntry entry, AssessmentConfig assessmentConfig) {
@@ -188,9 +207,10 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		}
 		
 		return new AssessmentEvaluation(score, passed, attempts, completion, entry.getAssessmentStatus(),
-				entry.getUserVisibility(), entry.getFullyAssessed(), currentRunCompletion, runStatus, entry.getAssessmentId(),
-				comment, entry.getCoachComment(), entry.getNumberOfAssessmentDocuments(),
-				entry.getLastModified(), entry.getLastUserModified(), entry.getLastCoachModified(),
-				entry.getAssessmentDone(), entry.getStartDate(), entry.getObligation(), entry.getDuration());
+				entry.getUserVisibility(), entry.getFullyAssessed(), entry.getFullyAssessedDate(), currentRunCompletion,
+				runStatus, entry.getAssessmentId(), comment, entry.getCoachComment(),
+				entry.getNumberOfAssessmentDocuments(), entry.getLastModified(), entry.getLastUserModified(),
+				entry.getLastCoachModified(), entry.getAssessmentDone(), entry.getStartDate(), entry.getObligation(),
+				entry.getDuration(), entry.getFirstVisit(), entry.getLastVisit());
 	}
 }

@@ -40,9 +40,9 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	private LearningPathRow parent;
 	private boolean hasChildren;
 	
-	public LearningPathRow(LearningPathTreeNode learningPathNode, Component progressBar2) {
+	public LearningPathRow(LearningPathTreeNode learningPathNode, Component progressBar) {
 		this.learningPathNode = learningPathNode;
-		this.progressBar = progressBar2;
+		this.progressBar = progressBar;
 	}
 
 	@Override
@@ -72,6 +72,14 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	public Date getDateDone() {
 		return learningPathNode.getAssessmentDone();
 	}
+	
+	public Date getFullyAssessedDate() {
+		return learningPathNode.getFullyAssessedDate();
+	}
+	
+	public Date getStartDate() {
+		return learningPathNode.getStartDate();
+	}
 
 	public AssessmentObligation getObligation() {
 		return learningPathNode.getObligation();
@@ -79,6 +87,14 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 
 	public Integer getDuration() {
 		return learningPathNode.getDuration();
+	}
+	
+	public Date getFirstVisit() {
+		return learningPathNode.getFirstVisit();
+	}
+	
+	public Date getLastVisit() {
+		return learningPathNode.getLastVisit();
 	}
 
 	public Component getProgressBar() {

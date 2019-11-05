@@ -76,10 +76,17 @@ public class LearningPathListController extends FormBasicController {
 		intendedNodeRenderer.setIndentationEnabled(false);
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(intendedNodeRenderer);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.node, nodeRenderer));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.status));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.dateDone));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.start));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.obligation));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.duration));
+		DefaultFlexiColumnModel firstVisitColumnModel = new DefaultFlexiColumnModel(LearningPathCols.firstVisit);
+		firstVisitColumnModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(firstVisitColumnModel);
+		DefaultFlexiColumnModel lastVisitColumnModel = new DefaultFlexiColumnModel(LearningPathCols.lastVisit);
+		lastVisitColumnModel.setDefaultVisible(false);
+		columnsModel.addFlexiColumnModel(lastVisitColumnModel);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.status));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.fullyAssessedDate));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.progress));
 
 		dataModel = new LearningPathDataModel(columnsModel);

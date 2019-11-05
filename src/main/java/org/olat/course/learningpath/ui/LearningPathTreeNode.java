@@ -43,13 +43,9 @@ public class LearningPathTreeNode extends CourseTreeNode {
 		super(courseNode, treeLevel);
 		this.assessmentEvaluation = assessmentEvaluation;
 	}
-
-	public AssessmentEntryStatus getAssessmentStatus() {
-		return assessmentEvaluation != null? assessmentEvaluation.getAssessmentStatus(): null;
-	}
-
-	public Boolean getFullyAssessed() {
-		return assessmentEvaluation != null? assessmentEvaluation.getFullyAssessed(): null;
+	
+	public Date getStartDate() {
+		return assessmentEvaluation != null? assessmentEvaluation.getStartDate(): null;
 	}
 
 	public Integer getDuration() {
@@ -59,13 +55,33 @@ public class LearningPathTreeNode extends CourseTreeNode {
 	public AssessmentObligation getObligation() {
 		return assessmentEvaluation != null? assessmentEvaluation.getObligation(): null;
 	}
+	
+	public Date getFirstVisit() {
+		return assessmentEvaluation != null? assessmentEvaluation.getFirstVisit(): null;
+	}
+	
+	public Date getLastVisit() {
+		return assessmentEvaluation != null? assessmentEvaluation.getLastVisit(): null;
+	}
 
-	public Double getCompletion() {
-		return assessmentEvaluation != null? assessmentEvaluation.getCompletion(): null;
+	public AssessmentEntryStatus getAssessmentStatus() {
+		return assessmentEvaluation != null? assessmentEvaluation.getAssessmentStatus(): null;
 	}
 
 	public Date getAssessmentDone() {
 		return assessmentEvaluation != null? assessmentEvaluation.getAssessmentDone(): null;
+	}
+
+	public Boolean getFullyAssessed() {
+		return assessmentEvaluation != null? assessmentEvaluation.getFullyAssessed(): null;
+	}
+	
+	public Date getFullyAssessedDate() {
+		return assessmentEvaluation != null? assessmentEvaluation.getFullyAssessedDate(): null;
+	}
+
+	public Double getCompletion() {
+		return assessmentEvaluation != null? assessmentEvaluation.getCompletion(): null;
 	}
 	
 }

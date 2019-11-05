@@ -66,8 +66,8 @@ public class CumulatingDurationEvaluatorTest {
 	}
 	
 	private AssessmentEvaluation createAssessmentEvaluation(AssessmentObligation obligation, Integer duration) {
-		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, 0, null,
-				null, null, null, null, obligation, duration);
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, null, 0, null,
+				null, null, null, null, obligation, duration, null, null);
 	}
 
 }
