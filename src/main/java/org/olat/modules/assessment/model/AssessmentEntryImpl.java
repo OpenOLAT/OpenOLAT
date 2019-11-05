@@ -124,6 +124,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	private Boolean fullyAssessed;
 	@Column(name="a_date_fully_assessed", nullable=true, insertable=true, updatable=true)
 	private Date fullyAssessedDate;
+	@Column(name="a_date_start", nullable=true, insertable=true, updatable=true)
+	private Date startDate;
 	@Enumerated(EnumType.STRING)
 	@Column(name="a_obligation", nullable=true, insertable=true, updatable=true)
 	private AssessmentObligation obligation;
@@ -300,6 +302,16 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	@Override
 	public Date getFullyAssessedDate() {
 		return fullyAssessedDate;
+	}
+
+	@Override
+	public Date getStartDate() {
+		return startDate;
+	}
+
+	@Override
+	public void setStartDate(Date startDate) {
+		this.startDate = startDate;
 	}
 
 	@Override

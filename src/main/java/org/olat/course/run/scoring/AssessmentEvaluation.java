@@ -38,6 +38,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	
 	public static final AssessmentEvaluation EMPTY_EVAL = new AssessmentEvaluation((Float)null, (Boolean)null);
 	
+	private final Date startDate;
 	private final Integer duration;
 	private final AssessmentObligation obligation;
 	private final Double completion;
@@ -60,18 +61,21 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, null, null, null, fullyAssessed, null, null, assessmentID, null, null, -1, null, null, null, null, null, null);
+		this(score, passed, null, null, null, null, fullyAssessed, null, null, assessmentID, null, null, -1, null, null,
+				null, null, null, null, null);
 	}
 	
 	public AssessmentEvaluation(Date lastModified, Date lastUserModified, Date lastCoachModified) {
-		this(null, null, null, null, null, null, null, null, null, null, null, null, -1, lastModified, lastUserModified, lastCoachModified, null, null, null);
+		this(null, null, null, null, null, null, null, null, null, null, null, null, -1, lastModified, lastUserModified,
+				lastCoachModified, null, null, null, null);
 	}
 	
 	public AssessmentEvaluation(Float score, Boolean passed, Integer attempts, Double completion,
 			AssessmentEntryStatus assessmentStatus, Boolean userVisibility, Boolean fullyAssessed,
 			Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID, String comment,
 			String coachComment, int numOfAssessmentDocs, Date lastModified, Date lastUserModified,
-			Date lastCoachModified, Date assessmentDone, AssessmentObligation obligation, Integer duration) {
+			Date lastCoachModified, Date assessmentDone, Date startDate, AssessmentObligation obligation,
+			Integer duration) {
 		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, currentRunCompletion, runStatus, assessmentID);
 		this.attempts = attempts;
 		this.completion = completion;
@@ -82,6 +86,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		this.lastUserModified = lastUserModified;
 		this.lastCoachModified = lastCoachModified;
 		this.assessmentDone = assessmentDone;
+		this.startDate = startDate;
 		this.obligation = obligation;
 		this.duration = duration;
 	}
@@ -97,7 +102,11 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 				eval.getUserVisible(), eval.getFullyAssessed(), eval.getCurrentRunCompletion(),
 				eval.getCurrentRunStatus(), eval.getAssessmentID(), eval.getComment(), eval.getCoachComment(), -1,
 				eval.getLastModified(), eval.getLastUserModified(), eval.getLastCoachModified(), eval.getAssessmentDone(),
-				eval.getObligation(), eval.getDuration());
+				eval.getStartDate(), eval.getObligation(), eval.getDuration());
+	}
+
+	public Date getStartDate() {
+		return startDate;
 	}
 
 	public Integer getDuration() {
@@ -182,6 +191,6 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 				entry.getUserVisibility(), entry.getFullyAssessed(), currentRunCompletion, runStatus, entry.getAssessmentId(),
 				comment, entry.getCoachComment(), entry.getNumberOfAssessmentDocuments(),
 				entry.getLastModified(), entry.getLastUserModified(), entry.getLastCoachModified(),
-				entry.getAssessmentDone(), entry.getObligation(), entry.getDuration());
+				entry.getAssessmentDone(), entry.getStartDate(), entry.getObligation(), entry.getDuration());
 	}
 }

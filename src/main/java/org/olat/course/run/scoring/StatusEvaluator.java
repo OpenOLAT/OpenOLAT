@@ -35,17 +35,4 @@ public interface StatusEvaluator {
 
 	public AssessmentEntryStatus getStatus(AssessmentEvaluation currentEvaluation, List<AssessmentEvaluation> children);
 	
-	public static class Blocker {
-		
-		private boolean blocked = false;
-		
-		public boolean isBlocked() {
-			return blocked;
-		}
-		
-		public void block() {
-			blocked = true;
-		}
-	}
-	
 }

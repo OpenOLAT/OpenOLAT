@@ -22,6 +22,7 @@ package org.olat.course.nodes.st.assessment;
 import java.util.List;
 
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 

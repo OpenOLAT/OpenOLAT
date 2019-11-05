@@ -19,16 +19,27 @@
  */
 package org.olat.course.run.scoring;
 
-import org.olat.course.nodes.CourseNode;
+import java.util.Date;
 
-/**
- * 
- * Initial date: 4 Nov 2019<br>
- * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
- *
- */
-public interface StartDateEvaluator {
-
-	public void evaluate(CourseNode courseNode, Blocker blocker);
-
+public class Blocker {
+	
+	private boolean blocked = false;
+	private Date startDate = null;
+	
+	public boolean isBlocked() {
+		return blocked;
+	}
+	
+	public void block() {
+		blocked = true;
+	}
+	
+	public void block(Date startDate) {
+		this.startDate = startDate;
+		block();
+	}
+	
+	public Date getStartDate() {
+		return startDate;
+	}
 }

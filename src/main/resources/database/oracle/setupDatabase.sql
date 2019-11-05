@@ -1,6 +1,4 @@
 -- tables
-
-
 CREATE TABLE o_forum (
   forum_id number(20) NOT NULL,
   version number(20) NOT NULL,
@@ -1331,12 +1329,11 @@ create table o_as_entry (
    a_score decimal default null,
    a_passed number default null,
    a_status varchar2(16 char) default null,
+   a_date_done date,
    a_details varchar2(1024 char) default null,
    a_user_visibility number default 1,
    a_fully_assessed number default null,
    a_date_fully_assessed date,
-   a_duration number(20),
-   a_obligation varchar(50),
    a_assessment_id number(20) default null,
    a_completion float,
    a_current_run_completion decimal,
@@ -1344,10 +1341,12 @@ create table o_as_entry (
    a_comment clob,
    a_coach_comment clob,
    a_num_assessment_docs number(20) default 0 not null,
+   a_date_start date,
+   a_duration number(20),
+   a_obligation varchar(50),
    a_first_visit date,
    a_last_visit date,
    a_num_visits number(20),
-   a_date_done date,
    fk_entry number(20) not null,
    a_subident varchar2(64 char),
    fk_reference_entry number(20),

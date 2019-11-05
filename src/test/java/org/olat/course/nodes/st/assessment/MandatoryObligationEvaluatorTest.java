@@ -76,7 +76,7 @@ public class MandatoryObligationEvaluatorTest {
 	}
 
 	private AssessmentEvaluation getAssessmentEvaluation(AssessmentObligation obligation) {
-		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, 0, null, null, null, null, obligation, null);
+		return new AssessmentEvaluation(null, null, null, null, null, null, null, null, null, null, null, null, 0, null, null, null, null, null, obligation, null);
 	}
 	
 }

@@ -22,10 +22,11 @@ package org.olat.course.learningpath.evaluation;
 import java.util.Date;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.util.DateUtils;
 import org.olat.course.learningpath.LearningPathService;
 import org.olat.course.nodes.CourseNode;
+import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.StartDateEvaluator;
-import org.olat.course.run.scoring.StatusEvaluator.Blocker;
 
 /**
  * 
@@ -37,12 +38,22 @@ public class ConfigStartDateEvaluator implements StartDateEvaluator {
 
 	@Override
 	public void evaluate(CourseNode courseNode, Blocker blocker) {
+		Date configStartDate = getConfigStartDate(courseNode);
+		evaluateDate(configStartDate, blocker);
+	}
+
+	private Date getConfigStartDate(CourseNode courseNode) {
 		LearningPathService learningPathService = CoreSpringFactory.getImpl(LearningPathService.class);
-		Date startDate = learningPathService.getConfigs(courseNode).getStartDate();
+		return learningPathService.getConfigs(courseNode).getStartDate();
+	}
+
+	Date evaluateDate(Date configStartDate, Blocker blocker) {
 		Date now = new Date();
-		if (startDate != null && startDate.after(now)) {
-			blocker.block();
+		if (configStartDate != null && configStartDate.after(now)) {
+			Date later = DateUtils.getLater(configStartDate, blocker.getStartDate());
+			blocker.block(later);
 		}
+		return configStartDate;
 	}
 
 }

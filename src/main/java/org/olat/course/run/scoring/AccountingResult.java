@@ -34,6 +34,7 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class AccountingResult extends AssessmentEvaluation {
 
 	private final AssessmentEvaluation origin;
+	private Date evaluatedStartDate;
 	private Integer evaluatedDuration;
 	private AssessmentObligation evaluatedObligation;
 	private Float evaluatedScore;
@@ -47,6 +48,7 @@ public class AccountingResult extends AssessmentEvaluation {
 	public AccountingResult(AssessmentEvaluation evaluation) {
 		super(evaluation, evaluation.getAssessmentStatus());
 		this.origin = evaluation;
+		this.evaluatedStartDate = origin.getStartDate();
 		this.evaluatedDuration = origin.getDuration();
 		this.evaluatedObligation = origin.getObligation();
 		this.evaluatedScore = origin.getScore();
@@ -58,6 +60,15 @@ public class AccountingResult extends AssessmentEvaluation {
 		this.evaluatedLastCoachModified = origin.getLastCoachModified();
 	}
 	
+	@Override
+	public Date getStartDate() {
+		return evaluatedStartDate;
+	}
+
+	public void setStartDate(Date startDate) {
+		this.evaluatedStartDate = startDate;
+	}
+
 	@Override
 	public Integer getDuration() {
 		return evaluatedDuration;
@@ -140,7 +151,8 @@ public class AccountingResult extends AssessmentEvaluation {
 	}
 
 	public boolean hasChanges() {
-		return !Objects.equals(origin.getDuration(), evaluatedDuration)
+		return !Objects.equals(origin.getStartDate(), evaluatedStartDate)
+				|| !Objects.equals(origin.getDuration(), evaluatedDuration)
 				|| !Objects.equals(origin.getObligation(), evaluatedObligation)
 				|| !Objects.equals(origin.getPassed(), evaluatedPassed)
 				|| !Objects.equals(origin.getScore(), evaluatedScore)

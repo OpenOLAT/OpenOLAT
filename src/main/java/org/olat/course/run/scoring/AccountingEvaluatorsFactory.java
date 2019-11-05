@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.olat.course.condition.interpreter.ConditionInterpreter;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.run.scoring.StatusEvaluator.Blocker;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;

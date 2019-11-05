@@ -37,7 +37,6 @@ import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.scoring.LastModificationsEvaluator.LastModifications;
-import org.olat.course.run.scoring.StatusEvaluator.Blocker;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -156,6 +155,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		
 		StartDateEvaluator startDateEvaluator = evaluators.getStartDateEvaluator();
 		startDateEvaluator.evaluate(courseNode, blocker);
+		result.setStartDate(blocker.getStartDate());
 		
 		ObligationEvaluator obligationEvaluator = evaluators.getObligationEvaluator();
 		AssessmentObligation obligation = obligationEvaluator.getObligation(result, courseNode);
@@ -228,6 +228,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private void update(CourseNode courseNode, AccountingResult result) {
 		AssessmentEntry entry = getOrCreateAssessmentEntry(courseNode);
 		
+		entry.setStartDate(result.getStartDate());
 		entry.setObligation(result.getObligation());
 		BigDecimal score = result.getScore() != null? new BigDecimal(result.getScore()): null;
 		entry.setScore(score);

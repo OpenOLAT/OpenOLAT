@@ -24,6 +24,7 @@ import java.util.List;
 import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.scoring.Blocker;
 import org.olat.course.run.scoring.StatusEvaluator;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.modules.assessment.model.AssessmentObligation;

@@ -19,6 +19,10 @@
  */
 package org.olat.modules.assessment.manager;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -34,6 +38,7 @@ import org.olat.group.manager.BusinessGroupDAO;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.model.AssessmentObligation;
 import org.olat.repository.RepositoryEntry;
 import org.olat.test.JunitTestHelper;
 import org.olat.test.OlatTestCase;
@@ -205,7 +210,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void setLastVisit() {
-		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-30");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
@@ -232,8 +237,34 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void setStart() {
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-31");
+		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
+		String subIdent = UUID.randomUUID().toString();
+		AssessmentEntry nodeAssessment = assessmentEntryDao
+				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, refEntry, 2.0f, Boolean.TRUE, null, null);
+		dbInstance.commitAndCloseSession();
+		
+		Date startDate = new GregorianCalendar(2014,1,1,1,1,2).getTime();
+		nodeAssessment.setStartDate(startDate);
+		Integer duration = 10;
+		nodeAssessment.setDuration(duration);
+		AssessmentObligation obligation = AssessmentObligation.optional;
+		nodeAssessment.setObligation(obligation);
+		nodeAssessment = assessmentEntryDao.updateAssessmentEntry(nodeAssessment);
+		dbInstance.commitAndCloseSession();
+		
+		AssessmentEntry reloadedEntry = assessmentEntryDao.loadAssessmentEntryById(nodeAssessment.getKey());
+		
+		assertThat(reloadedEntry.getStartDate()).isCloseTo(startDate, within(2, ChronoUnit.MINUTES).getValue());
+		Assert.assertEquals(duration, reloadedEntry.getDuration());
+		Assert.assertEquals(obligation, reloadedEntry.getObligation());
+	}
+	
+	@Test
 	public void setAssessmentDone() {
-		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-32");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
@@ -276,7 +307,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	
 	@Test
 	public void setFullyAssessedDate() {
-		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-6");
+		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-33");
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
