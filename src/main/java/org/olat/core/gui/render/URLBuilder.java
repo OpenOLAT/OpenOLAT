@@ -178,7 +178,11 @@ public class URLBuilder {
 	
 	public StringOutput buildHrefAndOnclick(StringOutput sb, String urlEnding, boolean ajaxEnabled, boolean dirtyCheck, boolean pushState, NameValuePair... commands) {
 		sb.append(" href=\"");
-		buildURI(sb, ajaxEnabled? AJAXFlags.MODE_TOBGIFRAME : AJAXFlags.MODE_NORMAL, commands);
+		if(ajaxEnabled) {
+			sb.append("javascript:;");
+		} else {
+			buildURI(sb, AJAXFlags.MODE_NORMAL, commands);
+		}
 		sb.append("\" onclick=\"");
 		if(ajaxEnabled) {
 			String escapedUrlEnding = StringHelper.escapeJavaScript(urlEnding);

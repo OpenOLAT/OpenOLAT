@@ -405,8 +405,7 @@ public class CourseEditorPageFragment {
 		Assert.assertNotNull(selectRow);
 		
 		//find the select in the row
-		WebElement selectLink = selectRow.findElement(By.xpath("//a[contains(@href,'rtbSelectLink')]"));
-		selectLink.click();
+		selectRow.findElement(By.xpath("//a[contains(@onclick,'rtbSelectLink')]")).click();
 		OOGraphene.waitBusy(browser);
 		
 		//double check that the resource is selected (search the preview link)

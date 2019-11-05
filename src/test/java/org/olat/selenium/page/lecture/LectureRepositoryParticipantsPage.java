@@ -51,7 +51,7 @@ public class LectureRepositoryParticipantsPage {
 	 * @return Itself
 	 */
 	public LectureRepositoryParticipantsPage editParticipant(UserVO participant) {
-		By editBy = By.xpath("//div[contains(@class,'o_sel_lecture_participants_overview')]//table//tr[td[contains(text(),'" + participant.getFirstName() + "')]]/td/a[contains(@href,'edit')]");
+		By editBy = By.xpath("//div[contains(@class,'o_sel_lecture_participants_overview')]//table//tr[td[contains(text(),'" + participant.getFirstName() + "')]]/td/a[contains(@onclick,'edit')]");
 		OOGraphene.waitElement(editBy, browser);
 		browser.findElement(editBy).click();
 		OOGraphene.waitModalDialog(browser);

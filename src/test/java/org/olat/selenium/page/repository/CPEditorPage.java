@@ -65,7 +65,7 @@ public class CPEditorPage {
 		//confirm
 		By popup = By.cssSelector("div.modal-dialog");
 		OOGraphene.waitElement(popup, 2, browser);
-		By deleteMenuAndFileBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@href,'link_0')]");
+		By deleteMenuAndFileBy = By.xpath("//div[contains(@class,'modal-dialog')]//a[contains(@onclick,'link_0')]");
 		browser.findElement(deleteMenuAndFileBy).click();
 		OOGraphene.waitBusy(browser);	
 		return this;

@@ -81,7 +81,7 @@ public class QuestionPoolPage {
 	 * @return Itself
 	 */
 	public QuestionPoolPage selectQuestionInList(String title) {
-		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + title + "')]]]/td/a[contains(@href,'select-item')]");
+		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + title + "')]]]/td/a[contains(@onclick,'select-item')]");
 		OOGraphene.waitElement(rowBy, browser);
 		browser.findElement(rowBy).click();
 		OOGraphene.waitBusy(browser);
@@ -164,7 +164,7 @@ public class QuestionPoolPage {
 	}
 	
 	public QuestionPoolPage openQuickView(String title) {
-		By quickViewBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + title + "')]]]/td/a[contains(@href,'quick-view')]");
+		By quickViewBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + title + "')]]]/td/a[contains(@onclick,'quick-view')]");
 		OOGraphene.waitElement(quickViewBy, browser);
 		browser.findElement(quickViewBy).click();
 		

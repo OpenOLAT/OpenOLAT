@@ -82,7 +82,7 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage selectTask(int pos) {
-		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//td//a[contains(@href,'select')]");
+		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//td//a[contains(@onclick,'select')]");
 		List<WebElement> assignementEls = browser.findElements(taskBy);
 		Assert.assertTrue(pos < assignementEls.size());
 		assignementEls.get(pos).click();
@@ -91,7 +91,7 @@ public class GroupTaskPage {
 	}
 	
 	public GroupTaskPage selectTask(String name) {
-		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//tr[td[contains(text(),'" + name + "')]]/td//a[contains(@href,'select')]");
+		By taskBy = By.xpath("//div[@id='o_step_assignement_content']//table//tr[td[contains(text(),'" + name + "')]]/td//a[contains(@onclick,'select')]");
 		OOGraphene.clickAndWait(taskBy, browser);
 		OOGraphene.waitAndCloseBlueMessageWindow(browser);
 		return this;

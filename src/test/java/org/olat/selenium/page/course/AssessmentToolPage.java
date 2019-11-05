@@ -93,7 +93,7 @@ public class AssessmentToolPage {
 	 * @return Itself
 	 */
 	public AssessmentToolPage selectUsersCourseNode(String nodeTitle) {
-		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/span[contains(text(),'" + nodeTitle + "')]]/td/a[contains(@href,'cmd.select.node')]");
+		By rowsBy = By.xpath("//div[contains(@class,'o_table_wrapper')]//table//tr[td/span[contains(text(),'" + nodeTitle + "')]]/td/a[contains(@onclick,'cmd.select.node')]");
 		List<WebElement> rowEls = browser.findElements(rowsBy);
 		Assert.assertEquals(1, rowEls.size());
 		rowEls.get(0).click();

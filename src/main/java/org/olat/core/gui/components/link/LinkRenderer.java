@@ -180,12 +180,13 @@ public class LinkRenderer extends DefaultComponentRenderer {
 						log.error("", e);
 					}
 				} else {
-					sb.append("href=\"javascript:")
+					sb.append("href=\"javascript:;\" onclick=\"")
 					  .append(FormJSHelper.getJSFnCallFor(flexiLink.getRootForm(), elementId, 1))
-					  .append(";\" ");
+					  .append(";");
 					if(link.isForceFlexiDirtyFormWarning()) {
-						sb.append("onclick=\"return o2cl_dirtyCheckOnly();\" ");
+						sb.append(" return o2cl_dirtyCheckOnly();");
 					}
+					sb.append("\" ");
 				}
 			} else if(link.isPopup()) {
 				try(StringOutput href = new StringOutput()) {

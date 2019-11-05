@@ -224,7 +224,8 @@ public class QuestionPoolTest extends Deployments {
 		questionPool
 			.selectMyQuestions()
 			.newQuestion(questionTitle, QTI21QuestionType.mc)
-			.metadata().openGeneral()
+			.metadata()
+			.openGeneral()
 			.setGeneralMetadata("New topic", "One for question pool", "Primary School",
 					"Interessant", "Add. infos", "Wide coverage", "formative")
 			.saveGeneralMetadata();

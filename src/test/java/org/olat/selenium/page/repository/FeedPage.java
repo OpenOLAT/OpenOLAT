@@ -78,7 +78,7 @@ public class FeedPage {
 	 */
 	public FeedPage newExternalPodcast(String title, String url) {
 		//click the button to create an external feed
-		By lastButton = By.xpath("//div[contains(@class,'o_podcast_no_episodes')]//a[contains(@href,'feed.make.external')]");
+		By lastButton = By.xpath("//div[contains(@class,'o_podcast_no_episodes')]//a[contains(@onclick,'feed.make.external')]");
 		return newExternalFeed(lastButton, title, url);
 	}
 	
@@ -89,7 +89,7 @@ public class FeedPage {
 	 */
 	public FeedPage newExternalBlog(String title, String url) {
 		//click the button to create an external feed
-		By lastButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@href,'feed.make.external')]");
+		By lastButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@onclick,'feed.make.external')]");
 		return newExternalFeed(lastButton, title, url);
 	}
 	
@@ -123,7 +123,7 @@ public class FeedPage {
 	
 	public FeedPage newBlog() {
 		//click the button to create a feed
-		By feedButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@href,'feed.make.internal')]");
+		By feedButton = By.xpath("//div[contains(@class,'o_blog_no_posts')]//a[contains(@onclick,'feed.make.internal')]");
 		browser.findElement(feedButton).click();
 		OOGraphene.waitModalDialog(browser);
 		return this;

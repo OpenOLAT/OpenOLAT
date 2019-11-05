@@ -75,7 +75,7 @@ public class DialogPage {
 	}
 	
 	public ForumPage openForum(String filename) {
-		By openForumBy = By.xpath("//table//tr[td/a[contains(text(),'" + filename + "')]]/td/a[contains(@href,'forum')]");
+		By openForumBy = By.xpath("//table//tr[td/a[contains(text(),'" + filename + "')]]/td/a[contains(@onclick,'forum')]");
 		browser.findElement(openForumBy).click();
 		OOGraphene.waitBusy(browser);
 		By forumBy = By.cssSelector("div.o_sel_dialog div.o_sel_forum");
