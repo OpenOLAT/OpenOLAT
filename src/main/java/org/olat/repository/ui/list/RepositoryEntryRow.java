@@ -192,6 +192,8 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		this.name = name;
 	}
 
+	public String getShortenedDescription() { return shortenedDescription;  }
+
 	/**
 	 * Is member if the row as some type of access control
 	 * @return
