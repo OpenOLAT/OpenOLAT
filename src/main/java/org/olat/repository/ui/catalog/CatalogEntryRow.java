@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryLight;
@@ -72,17 +72,7 @@ public class CatalogEntryRow implements RepositoryEntryRef, RepositoryEntryLight
 		key = view.getKey();
 		name = view.getDisplayname();
 		authors = view.getAuthors();
-		if(view.getDescription() != null) {
-			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(view.getDescription());
-			if(shortDesc.length() > 255) {
-				shortenedDescription = shortDesc.substring(0, 255);
-			} else {
-				shortenedDescription = shortDesc;
-			}
-		} else {
-			shortenedDescription = "";
-		}
-
+		shortenedDescription = StringHelper.truncateText(view.getDescription());
 		creationDate = view.getCreationDate();
 		
 		externalId = view.getExternalId();

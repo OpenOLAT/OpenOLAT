@@ -204,4 +204,23 @@ public class StringHelperTest {
 		String csv = StringHelper.formatAsEscapedCSVString(entries);
 		Assert.assertEquals("Hell\"\"o\"\",\"Test,dru,\",Final", csv);
 	}
+
+  	@Test
+  	public void truncateText() {
+		Assert.assertEquals(StringHelper.truncateText("foobar"), "foobar");
+  	}
+
+    @Test
+    public void truncateText_null() {
+        Assert.assertEquals(StringHelper.truncateText(null), "");
+    }
+
+    @Test
+    public void truncateText_long() {
+	    Assert.assertEquals(
+        	StringHelper.truncateText(
+        			"Destination event Execute Pending What I Ideate Conceptualize discovered was Brand Goals the Fyre manner Understand Festival. A a unique music, art revenue in and food capture brand festival taking allows to place on 360 methodology the private Festival. Our island of for Fyre Fyre Cay."),
+				"Destination event Execute Pending What I Ideate Conceptualize discovered was Brand Goals the Fyre manner Understand Festival. A a unique music, art revenue in and food capture brand festival taking allows to place on 360 methodology the private Festival. ");
+	}
+
 }

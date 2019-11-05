@@ -25,7 +25,7 @@ import java.util.List;
 import org.olat.core.commons.services.license.License;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
-import org.olat.core.util.filter.FilterFactory;
+import org.olat.core.util.StringHelper;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.repository.RepositoryEntryAuthorView;
 import org.olat.repository.RepositoryEntryLight;
@@ -94,16 +94,7 @@ public class AuthoringEntryRow implements RepositoryEntryRef, RepositoryEntryLig
 		author = fullnameAuthor;
 		authors = view.getAuthors();
 		location = view.getLocation();
-		if(view.getDescription() != null) {
-			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(view.getDescription());
-			if(shortDesc.length() > 255) {
-				shortenedDescription = shortDesc.substring(0, 255);
-			} else {
-				shortenedDescription = shortDesc;
-			}
-		} else {
-			shortenedDescription = "";
-		}
+		shortenedDescription = StringHelper.truncateText(view.getDescription());
 
 		lastUsage = view.getLastUsage();
 		creationDate = view.getCreationDate();
