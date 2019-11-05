@@ -54,7 +54,6 @@ import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.filter.impl.HtmlScanner;
 import org.olat.core.util.filter.FilterFactory;
-import org.olat.core.util.filter.impl.NekoHTMLScanner;
 import org.olat.core.util.filter.impl.OWASPAntiSamyXSSFilter;
 import org.olat.user.UserManager;
 

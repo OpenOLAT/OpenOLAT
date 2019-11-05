@@ -61,16 +61,6 @@ public interface ICourse extends OLATResourceable {
 	 * @return The course editor tree model for this course
 	 */
 	public CourseEditorTreeModel getEditorTreeModel();
-		
-	/**
-	 * Export course to file system.
-	 * @param originalCourseResource The original resource
-	 * @param exportDirectory The directory to export files to.
-	 * @param runtimeDatas Export with runtime datas (true add archives of the groups...)
-	 * @param backwardsCompatible Export in a format compatible with older OpenOLAT version
-	 * @param foldersToCleanup Can add there folders which need to be clean up after the export
-	 */
-	public void exportToFilesystem(OLATResource originalCourseResource, File exportDirectory, boolean runtimeDatas, boolean backwardsCompatible);
 	
 	public void postCopy(CourseEnvironmentMapper envMapper, ICourse sourceCourse);
 	
