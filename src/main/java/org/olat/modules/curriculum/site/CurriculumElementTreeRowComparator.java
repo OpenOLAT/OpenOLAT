@@ -69,7 +69,7 @@ public class CurriculumElementTreeRowComparator extends FlexiTreeNodeComparator 
 			} else {
 				c = Long.compare(pos1.longValue(), pos2.longValue());
 			}
-		} else if(parentKey1 != null && parentKey2 != null) {
+		} else if(parentKey1 != null && parentKey2 != null && c1.getParent() != null && c2.getParent() != null) {
 			// This case is usually not possible
 			CurriculumElementRow p1 = c1.getParent();
 			CurriculumElementRow p2 = c2.getParent();
