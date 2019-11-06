@@ -62,7 +62,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<targetJdk>1.8</targetJdk>
-		<org.springframework.version>5.2.0.RELEASE</org.springframework.version>
+		<org.springframework.version>5.2.1.RELEASE</org.springframework.version>
 		<org.hibernate.version>5.4.8.Final</org.hibernate.version>
 		<apache.cxf>3.3.4</apache.cxf>
 		<apache.pdfbox>2.0.17</apache.pdfbox>
@@ -1953,7 +1953,7 @@
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-css</artifactId>
-			<version>1.11</version>
+			<version>1.12</version>
 			<exclusions>
 				<exclusion>
 					<groupId>xml-apis</groupId>
@@ -1968,7 +1968,7 @@
 		<dependency>
 			<groupId>org.apache.xmlgraphics</groupId>
 			<artifactId>batik-util</artifactId>
-			<version>1.11</version>
+			<version>1.12</version>
 		</dependency>
 		<dependency>
 			<groupId>de.java2html</groupId>
