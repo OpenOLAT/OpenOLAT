@@ -73,7 +73,7 @@ public class RepositoryEntryQueries {
 
 		QueryBuilder query = new QueryBuilder(2048);
 		if(Number.class.equals(type)) {
-			query.append("select count(v.key) from repositoryentry v ");
+			query.append("select count(distinct v.key) from repositoryentry v ");
 			query.append(" inner join v.olatResource as res");
 		} else if(params.getParentEntry() != null) {
 			query.append("select distinct v from ").append(CatalogEntry.class.getName()).append(" cei ")
