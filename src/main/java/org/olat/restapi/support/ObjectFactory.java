@@ -186,10 +186,10 @@ public class ObjectFactory {
 	public static CourseConfigVO getConfig(ICourse course) {
 		CourseConfigVO vo = new CourseConfigVO();
 		CourseConfig config = course.getCourseEnvironment().getCourseConfig();
-		vo.setCalendar(new Boolean(config.isCalendarEnabled()));
-		vo.setChat(new Boolean(config.isChatEnabled()));
+		vo.setCalendar(Boolean.valueOf(config.isCalendarEnabled()));
+		vo.setChat(Boolean.valueOf(config.isChatEnabled()));
 		vo.setCssLayoutRef(config.getCssLayoutRef());
-		vo.setEfficencyStatement(new Boolean(config.isEfficencyStatementEnabled()));
+		vo.setEfficencyStatement(Boolean.valueOf(config.isEfficencyStatementEnabled()));
 		vo.setGlossarySoftkey(config.getGlossarySoftKey());
 		vo.setSharedFolderSoftKey(config.getSharedFolderSoftkey());
 		return vo;
