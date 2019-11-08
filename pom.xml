@@ -73,7 +73,7 @@
 		<jackson.version>2.9.10</jackson.version>
 		<org.mysql.version>5.1.46</org.mysql.version>
 		<org.postgresql.version>42.2.8</org.postgresql.version>
-		<org.infinispan.version>9.2.3.Final</org.infinispan.version>
+		<org.infinispan.version>10.0.1.Final</org.infinispan.version>
 		<lucene.version>7.7.0</lucene.version>
 		<version.selenium>3.141.59</version.selenium>
 		<version.drone>2.5.1</version.drone>
@@ -482,10 +482,6 @@
 							<groupId>org.rhq.helpers</groupId>
 							<artifactId>rhq-pluginAnnotations</artifactId>
 						</exclusion>
-						<exclusion>
-							<groupId>org.jgroups</groupId>
-							<artifactId>jgroups</artifactId>
-						</exclusion>
 					</exclusions>
 				</dependency>
 		
@@ -654,10 +650,6 @@
 						<exclusion>
 							<groupId>org.rhq.helpers</groupId>
 							<artifactId>rhq-pluginAnnotations</artifactId>
-						</exclusion>
-						<exclusion>
-							<groupId>org.jgroups</groupId>
-							<artifactId>jgroups</artifactId>
 						</exclusion>
 					</exclusions>
 				</dependency>
@@ -2057,10 +2049,6 @@
 				<exclusion>
 					<groupId>org.rhq.helpers</groupId>
 					<artifactId>rhq-pluginAnnotations</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.jgroups</groupId>
-					<artifactId>jgroups</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
