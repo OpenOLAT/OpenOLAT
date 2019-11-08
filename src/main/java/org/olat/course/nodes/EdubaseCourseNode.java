@@ -54,7 +54,7 @@ public class EdubaseCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = -2370512428049915735L;
 	
-	private static final String TYPE = "edubase";
+	public static final String TYPE = "edubase";
 	
 	public static final int CURRENT_VERSION = 1;
 	public static final String CONFIG_DESCRIPTION_ENABLED = "descriptionEnabled";
