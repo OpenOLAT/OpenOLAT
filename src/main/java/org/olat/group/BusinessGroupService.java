@@ -337,7 +337,7 @@ public interface BusinessGroupService {
 	
 	public void removeResource(RepositoryEntry resource);
 	
-	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults);
+	public List<RepositoryEntry> findRepositoryEntries(Collection<? extends BusinessGroupRef> groups, int firstResult, int maxResults);
 	
 	/**
 	 * Same as above but do a better caching

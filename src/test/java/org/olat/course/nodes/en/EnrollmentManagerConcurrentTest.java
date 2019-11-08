@@ -187,7 +187,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		assertTrue("bgWithWaitingList is null",bgWithWaitingList != null);
 		log.info("userCourseEnv=" + userCourseEnv);
 		log.info("userCourseEnv.getCourseEnvironment()=" + userCourseEnv.getCourseEnvironment());
-		enrollmentManager.doEnroll(wg1, wg1Roles, bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator,
+		enrollmentManager.doEnroll(userCourseEnv, wg1Roles, bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator,
 				new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
 		int participantsCounter = businessGroupService.countMembers(bgWithWaitingList, GroupRoles.participant.name());
@@ -197,7 +197,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		ienv.setIdentity(wg2);
 		userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);
 		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		enrollmentManager.doEnroll(wg2, wg2Roles, bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator,
+		enrollmentManager.doEnroll(userCourseEnv, wg2Roles, bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator,
 				new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());	
 		assertTrue("Enrollment failed, user='wg2'", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
@@ -208,7 +208,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		ienv.setIdentity(wg3);
 		userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);
 		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		enrollmentManager.doEnroll(wg3, wg3Roles, bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator,
+		enrollmentManager.doEnroll(userCourseEnv, wg3Roles, bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator,
 				new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, userCourseEnv.getCourseEnvironment().getCourseGroupManager());		
 		assertFalse("Wrong enrollment, user='wg3' is in PartipiciantGroup, must be on waiting-list", businessGroupService.isIdentityInBusinessGroup(wg3,bgWithWaitingList));	
 		assertFalse("Wrong enrollment, user='wg3' is in PartipiciantGroup, must be on waiting-list", businessGroupService.hasRoles(wg3, bgWithWaitingList, GroupRoles.participant.name()));
@@ -224,7 +224,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		ienv.setIdentity(wg2);
 		userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);
 		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		enrollmentManager.doCancelEnrollment(wg2,bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator);		
+		enrollmentManager.doCancelEnrollment(userCourseEnv,bgWithWaitingList, addedEntry, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator);
 		assertFalse("Cancel enrollment failed, user='wg2' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg3'", businessGroupService.isIdentityInBusinessGroup(wg3,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg1'", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
@@ -237,7 +237,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		ienv.setIdentity(wg1);
 		userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);
 		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		enrollmentManager.doCancelEnrollment(wg1,bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator);		
+		enrollmentManager.doCancelEnrollment(userCourseEnv,bgWithWaitingList, addedEntry, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator);
 		assertFalse("Cancel enrollment failed, user='wg2' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertFalse("Cancel enrollment failed, user='wg1' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
 		assertTrue("Enrollment failed, user='wg3'", businessGroupService.isIdentityInBusinessGroup(wg3,bgWithWaitingList));	
@@ -250,7 +250,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		ienv.setIdentity(wg3);
 		userCourseEnv = new UserCourseEnvironmentImpl(ienv, cenv);
 		coursePropertyManager = userCourseEnv.getCourseEnvironment().getCoursePropertyManager();
-		enrollmentManager.doCancelEnrollment(wg3,bgWithWaitingList, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator);		
+		enrollmentManager.doCancelEnrollment(userCourseEnv,bgWithWaitingList, addedEntry, enNode, coursePropertyManager,this /*WindowControl mock*/,testTranslator);
 		assertFalse("Cancel enrollment failed, user='wg3' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg3,bgWithWaitingList));	
 		assertFalse("Cancel enrollment failed, user='wg2' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg2,bgWithWaitingList));	
 		assertFalse("Cancel enrollment failed, user='wg1' is still participants.", businessGroupService.isIdentityInBusinessGroup(wg1,bgWithWaitingList));	
@@ -348,7 +348,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 				ThreadLocalUserActivityLogger.addLoggingResourceInfo(LoggingResourceable.wrap(group));
 
 				sleep(Math.round(new Random().nextDouble() * 100l));
-				enrollmentManager.doEnroll(identity, Roles.userRoles(), group, enNode, coursePropertyManager, EnrollmentManagerConcurrentTest.this /*WindowControl mock*/, testTranslator,
+				enrollmentManager.doEnroll(userCourseEnv, Roles.userRoles(), group, enNode, coursePropertyManager, EnrollmentManagerConcurrentTest.this /*WindowControl mock*/, testTranslator,
 						new ArrayList<Long>()/*enrollableGroupNames*/, new ArrayList<Long>()/*enrollableAreaNames*/, courseGroupManager);
 				DBFactory.getInstance().commit();
 			} catch (Exception e) {
@@ -364,19 +364,28 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 	
 	// Implements interface WindowControl
   /////////////////////////////////////
+	@Override
 	public void pushToMainArea(Component comp){}
+	@Override
 	public void pushAsModalDialog(Component comp){}
 	@Override
 	public void pushFullScreen(Controller ctrl, String bodyClass) {/* */}
 	@Override
 	public void pushAsCallout(Component comp, String targetId, CalloutSettings settings){}
+	@Override
 	public void pop(){}
+	@Override
 	public void setInfo(String string){}
+	@Override
 	public void setError(String string){}
+	@Override
 	public void setWarning(String string){}
 	public DTabs getDTabs(){return null;}
+	@Override
 	public WindowControlInfo getWindowControlInfo(){return null;}
+	@Override
 	public void makeFlat(){}
+	@Override
 	public BusinessControl getBusinessControl() {
 		
 		BusinessControl control = new BusinessControl() {
@@ -427,6 +436,7 @@ public class EnrollmentManagerConcurrentTest extends OlatTestCase implements Win
 		
 	}
 
+	@Override
 	public WindowBackOffice getWindowBackOffice() {
 		return null;
 	};

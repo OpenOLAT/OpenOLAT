@@ -98,6 +98,10 @@ public class BusinessGroupModifiedEvent extends MultiUserEvent {
 	public boolean isSender(IdentityRef identity) {
 		return senderKey != null && identity != null && senderKey.equals(identity.getKey());
 	}
+	
+	public Long getSenderKey() {
+		return senderKey;
+	}
 
 	/**
 	 * @return The key of the affected identity

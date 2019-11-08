@@ -27,11 +27,14 @@ package org.olat.course.nodes;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.olat.core.CoreSpringFactory;
+import org.olat.core.commons.persistence.DBFactory;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
 import org.olat.core.gui.control.Controller;
@@ -40,6 +43,7 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.control.generic.tabbable.TabbableController;
 import org.olat.core.gui.translator.PackageTranslator;
 import org.olat.core.gui.translator.Translator;
+import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
@@ -49,10 +53,12 @@ import org.olat.course.condition.ConditionEditController;
 import org.olat.course.editor.ConditionAccessEditConfig;
 import org.olat.course.editor.CourseEditorEnv;
 import org.olat.course.editor.NodeEditController;
+import org.olat.course.editor.PublishEvents;
 import org.olat.course.editor.StatusDescription;
 import org.olat.course.export.CourseEnvironmentMapper;
 import org.olat.course.nodes.en.ENEditController;
 import org.olat.course.nodes.en.ENRunController;
+import org.olat.course.nodes.en.EnrollmentManager;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.properties.PersistingCoursePropertyManager;
 import org.olat.course.run.navigation.NodeRunConstructionResult;
@@ -78,6 +84,8 @@ import org.olat.resource.OLATResource;
 public class ENCourseNode extends AbstractAccessableCourseNode {
 	private static final String PACKAGE = Util.getPackageName(ENCourseNode.class);
 	private static final String PACKAGE_COND = Util.getPackageName(ConditionEditController.class);
+	
+	public static final String TYPE = "en";
 
 	/**
 	 * property name for the initial enrollment date will be set only the first
@@ -89,8 +97,6 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 	 * user enrolls to this node.
 	 */
 	public static final String PROPERTY_RECENT_ENROLLMENT_DATE = "recentEnrollmentDate";
-
-	private static final String TYPE = "en";
 
 	/**
 	 * property name for the initial waiting-list date will be set only the first
@@ -475,6 +481,23 @@ public class ENCourseNode extends AbstractAccessableCourseNode {
 			}
 			config.setConfigurationVersion(CURRENT_CONFIG_VERSION);
 		}
+	}
+	
+	@Override
+	public void updateOnPublish(Locale locale, ICourse course, Identity publisher, PublishEvents publishEvents) {
+		EnrollmentManager enrollmentManager = CoreSpringFactory.getImpl(EnrollmentManager.class);
+		CoursePropertyManager pm = course.getCourseEnvironment().getCoursePropertyManager();
+		List<Identity> assessedUsers = pm.getAllIdentitiesWithCourseAssessmentData(null);
+		
+		int count = 0;
+		for(Identity assessedIdentity: assessedUsers) {
+			enrollmentManager.syncAssessmentStatus(course, Collections.singletonList(this), assessedIdentity, publisher);
+			if(++count % 10 == 0) {
+				DBFactory.getInstance().commitAndCloseSession();
+			}
+		}
+		DBFactory.getInstance().commitAndCloseSession();
+		super.updateOnPublish(locale, course, publisher, publishEvents);
 	}
 	
 }

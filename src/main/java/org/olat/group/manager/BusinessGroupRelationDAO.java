@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.TypedQuery;
 
@@ -36,7 +37,6 @@ import org.olat.basesecurity.manager.GroupDAO;
 import org.olat.basesecurity.model.GroupMembershipImpl;
 import org.olat.basesecurity.model.IdentityRefImpl;
 import org.olat.core.commons.persistence.DB;
-import org.olat.core.commons.persistence.PersistenceHelper;
 import org.olat.core.id.Identity;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
@@ -538,7 +538,7 @@ public class BusinessGroupRelationDAO {
 				.getResultList();
 	}
 	
-	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
+	public List<RepositoryEntry> findRepositoryEntries(Collection<? extends BusinessGroupRef> groups, int firstResult, int maxResults) {
 		if(groups == null || groups.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -558,7 +558,7 @@ public class BusinessGroupRelationDAO {
 			query.setMaxResults(maxResults);
 		}
 		
-		List<Long> groupKeys = PersistenceHelper.toKeys(groups);
+		List<Long> groupKeys = groups.stream().map(BusinessGroupRef::getKey).collect(Collectors.toList());
 		query.setParameter("groupKeys", groupKeys);
 		return query.getResultList();
 	}

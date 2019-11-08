@@ -1671,7 +1671,7 @@ public class BusinessGroupServiceImpl implements BusinessGroupService {
 	}
 
 	@Override
-	public List<RepositoryEntry> findRepositoryEntries(Collection<BusinessGroup> groups, int firstResult, int maxResults) {
+	public List<RepositoryEntry> findRepositoryEntries(Collection<? extends BusinessGroupRef> groups, int firstResult, int maxResults) {
 		return businessGroupRelationDAO.findRepositoryEntries(groups, firstResult, maxResults);
 	}
 

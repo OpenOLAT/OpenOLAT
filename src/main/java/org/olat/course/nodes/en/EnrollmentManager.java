@@ -28,18 +28,26 @@ package org.olat.course.nodes.en;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
+import javax.annotation.PostConstruct;
+
+import org.apache.logging.log4j.Logger;
+import org.olat.basesecurity.BaseSecurity;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityRef;
 import org.olat.core.commons.persistence.DB;
+import org.olat.core.gui.control.Event;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
+import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
+import org.olat.core.util.coordinate.CoordinatorManager;
+import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.mail.MailBundle;
 import org.olat.core.util.mail.MailContext;
@@ -49,16 +57,31 @@ import org.olat.core.util.mail.MailManager;
 import org.olat.core.util.mail.MailPackage;
 import org.olat.core.util.mail.MailTemplate;
 import org.olat.core.util.mail.MailerResult;
+import org.olat.core.util.resource.OresHelper;
+import org.olat.core.util.tree.TreeVisitor;
+import org.olat.course.CourseFactory;
+import org.olat.course.ICourse;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.groupsandrights.CourseGroupManager;
+import org.olat.course.nodes.CollectingVisitor;
+import org.olat.course.nodes.CourseNode;
 import org.olat.course.nodes.ENCourseNode;
 import org.olat.course.properties.CoursePropertyManager;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.course.run.userview.UserCourseEnvironment;
+import org.olat.course.run.userview.UserCourseEnvironmentImpl;
 import org.olat.group.BusinessGroup;
+import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.model.BusinessGroupRefImpl;
 import org.olat.group.model.EnrollState;
 import org.olat.group.model.SearchBusinessGroupParams;
 import org.olat.group.ui.BGMailHelper;
+import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
+import org.olat.modules.ModuleConfiguration;
+import org.olat.modules.assessment.Role;
+import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.properties.Property;
 import org.olat.repository.RepositoryEntry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,7 +98,7 @@ import org.springframework.stereotype.Service;
  * @author Christian Guretzki
  */
 @Service("enrollmentManager")
-public class EnrollmentManager {
+public class EnrollmentManager implements GenericEventListener {
 	
 	private static final Logger log = Tracing.createLoggerFor(EnrollmentManager.class);
 
@@ -87,13 +110,26 @@ public class EnrollmentManager {
 	private BGAreaManager areaManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
+	@Autowired
+	private BaseSecurity securityManager;
+	@Autowired
+	private CoordinatorManager coordinatorManager;
 
+	@PostConstruct
+	public void registerForEvents() {
+		coordinatorManager.getCoordinator().getEventBus().registerFor(this, null,
+				OresHelper.lookupType(RepositoryEntry.class));
+	}
 
-	public EnrollStatus doEnroll(Identity identity, Roles roles, BusinessGroup group, ENCourseNode enNode, CoursePropertyManager coursePropertyManager,
+	public EnrollStatus doEnroll(UserCourseEnvironment userCourseEnv, Roles roles, BusinessGroup group, ENCourseNode enNode, CoursePropertyManager coursePropertyManager,
 			WindowControl wControl, Translator trans, List<Long> groupKeys, List<Long> areaKeys, CourseGroupManager cgm) {
+		log.debug("doEnroll");
 		
+		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+
 		final EnrollStatus enrollStatus = new EnrollStatus();
-		if (log.isDebugEnabled()) log.debug("doEnroll");
 		// check if the user is able to be enrolled
 		int groupsEnrolledCount = getBusinessGroupsWhereEnrolled(identity, groupKeys, areaKeys, cgm.getCourseEntry()).size();
 		int waitingListCount = getBusinessGroupsWhereInWaitingList(identity, groupKeys, areaKeys).size();
@@ -121,21 +157,25 @@ public class EnrollmentManager {
 		} else {
 			enrollStatus.setErrorMessage(trans.translate("error.group.already.enrolled"));
 		}
-		if (log.isDebugEnabled()) log.debug("doEnroll finished");
+		syncAssessmentStatus(cgm.getCourseEntry(), enNode, userCourseEnv, identity, Role.user);
+		log.debug("doEnroll finished");
 		return enrollStatus;
 	}
 
-	public void doCancelEnrollment(final Identity identity, final BusinessGroup enrolledGroup, final ENCourseNode enNode,
-			final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
-		if (log.isDebugEnabled()) log.debug("doCancelEnrollment");
+	public void doCancelEnrollment(UserCourseEnvironment userCourseEnv, final BusinessGroup enrolledGroup, RepositoryEntry courseEntry,
+			final ENCourseNode enNode, final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
+		log.debug("doCancelEnrollment");
+		
+		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		
 		// 1. Remove group membership, fire events, do loggin etc.
 		// Remove participant. This will also check if a waiting-list with auto-close-ranks is configurated
 		// and move the users accordingly
 		MailPackage doNotSendmailPackage = new MailPackage(false);
 		businessGroupService.removeParticipants(identity, Collections.singletonList(identity), enrolledGroup, doNotSendmailPackage);
 		log.info(identity.getKey() + " doCancelEnrollment in group " + enrolledGroup);
+		syncAssessmentStatus(courseEntry, enNode, userCourseEnv, identity, Role.user);
 
-		log.info(identity.getKey() + " doCancelEnrollment in group " + enrolledGroup);
 		// 2. Remove enrollmentdate property
 		// only remove last time date, not firsttime
 		Property lastTime = coursePropertyManager.findCourseNodeProperty(enNode, identity, null, ENCourseNode.PROPERTY_RECENT_ENROLLMENT_DATE);
@@ -155,10 +195,13 @@ public class EnrollmentManager {
 		MailHelper.printErrorsAndWarnings(result, wControl, false, trans.getLocale());
 	}
 
-	public void doCancelEnrollmentInWaitingList(final Identity identity, final BusinessGroup enrolledWaitingListGroup, final ENCourseNode enNode,
-			final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
+	public void doCancelEnrollmentInWaitingList(UserCourseEnvironment userCourseEnv, final BusinessGroup enrolledWaitingListGroup, RepositoryEntry courseEntry,
+			final ENCourseNode enNode, final CoursePropertyManager coursePropertyManager, WindowControl wControl, Translator trans) {
+		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		
 		// 1. Remove group membership, fire events, do loggin etc.
 		businessGroupService.removeFromWaitingList(identity, Collections.singletonList(identity), enrolledWaitingListGroup, null);
+		syncAssessmentStatus(courseEntry, enNode, userCourseEnv, identity, Role.user);
 		
 		// 2. Remove enrollmentdate property
 		// only remove last time date, not firsttime
@@ -439,6 +482,134 @@ public class EnrollmentManager {
 		}
 		MailHelper.printErrorsAndWarnings(result, wControl, false, trans.getLocale());
 		return true;
+	}
+	
+	public void syncAssessmentStatus(ICourse course, List<CourseNode> courseNodes, Identity identity, Identity doer) {
+		if (identity == null) return;
+		
+		IdentityEnvironment identityEnvironment = new IdentityEnvironment();
+		identityEnvironment.setIdentity(identity);
+		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnvironment, course.getCourseEnvironment());
+		RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
+		
+		for (CourseNode courseNode : courseNodes) {
+			if (doer == null) {
+				syncAssessmentStatus(courseEntry, courseNode, userCourseEnv, null, Role.coach);
+			} else if (doer.getKey().equals(identity.getKey())) {
+				syncAssessmentStatus(courseEntry, courseNode, userCourseEnv, identity, Role.user);
+			} else {
+				syncAssessmentStatus(courseEntry, courseNode, userCourseEnv, doer, Role.coach);
+			}
+		}
+	}
+	
+	private void syncAssessmentStatus(RepositoryEntry courseEntry, CourseNode courseNode, UserCourseEnvironment userCourseEnv,
+			Identity coachingIdentity, Role by) {
+		if (!userCourseEnv.isParticipant()) return;
+		
+		ICourse course = CourseFactory.loadCourse(courseEntry);
+		CourseGroupManager courseGroupManager = course.getCourseEnvironment().getCourseGroupManager();
+		
+		ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
+		List<Long> groupKeys = moduleConfig.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
+		if(groupKeys == null || groupKeys.isEmpty()) {
+			String groupNamesConfig = (String)moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
+			groupKeys = businessGroupService.toGroupKeys(groupNamesConfig, courseGroupManager.getCourseEntry());
+		}
+
+		List<Long> areaKeys = moduleConfig.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
+		if(areaKeys == null || areaKeys.isEmpty()) {
+			String areaInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
+			areaKeys = areaManager.toAreaKeys(areaInitVal, courseGroupManager.getCourseResource());
+		}
+		
+		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
+		int groupsEnrolledCount = getBusinessGroupsWhereEnrolled(identity, groupKeys, areaKeys, courseGroupManager.getCourseEntry()).size();
+		int waitingListCount = getBusinessGroupsWhereInWaitingList(identity, groupKeys, areaKeys).size();
+		boolean isDone = (groupsEnrolledCount + waitingListCount) > 0;
+		AssessmentEntryStatus assessmentEntryStatus = isDone? AssessmentEntryStatus.done: AssessmentEntryStatus.notStarted;
+		
+		AssessmentEvaluation assessmentEvaluation = courseAssessmentService.getAssessmentEvaluation(courseNode, userCourseEnv);
+		if (!assessmentEntryStatus.equals(assessmentEvaluation.getAssessmentStatus())) {
+			AssessmentEvaluation statusModified = new AssessmentEvaluation(assessmentEvaluation, assessmentEntryStatus);
+			courseAssessmentService.updateScoreEvaluation(courseNode, statusModified, userCourseEnv, coachingIdentity, false, by);
+		}
+	}
+
+	@Override
+	public void event(Event event) {
+		if (event instanceof BusinessGroupModifiedEvent) {
+			try {
+				BusinessGroupModifiedEvent bgmEvent = (BusinessGroupModifiedEvent) event;
+				if (BusinessGroupModifiedEvent.IDENTITY_ADDED_EVENT.equals(bgmEvent.getCommand())
+						|| BusinessGroupModifiedEvent.IDENTITY_REMOVED_EVENT.equals(bgmEvent.getCommand())) {
+					Long modifiedGroupKey = bgmEvent.getModifiedGroupKey();
+					Long identityKey = bgmEvent.getAffectedIdentityKey();
+					Identity identity = identityKey != null? securityManager.loadIdentityByKey(identityKey): null;
+					Long senderKey = bgmEvent.getSenderKey();
+					Identity sender = senderKey != null? securityManager.loadIdentityByKey(senderKey): null;
+					BusinessGroupRef businessGroupRef = new BusinessGroupRefImpl(modifiedGroupKey);
+					List<RepositoryEntry> entries = businessGroupService
+							.findRepositoryEntries(Collections.singletonList(businessGroupRef), 0, -1);
+					for (RepositoryEntry entry : entries) {
+						ICourse course = CourseFactory.loadCourse(entry);
+						if (course != null ) {
+							List<CourseNode> courseNodes = getENNodesOfGroup(course, modifiedGroupKey);
+							if (!courseNodes.isEmpty()) {
+								syncAssessmentStatus(course, courseNodes, identity, sender);
+							}
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		} 
+	}
+
+	private List<CourseNode> getENNodesOfGroup(ICourse course, Long modifiedGroupKey) {
+		ENGroupPredicate enGroupPredicate = new ENGroupPredicate(modifiedGroupKey, course.getCourseEnvironment().getCourseGroupManager());
+		CollectingVisitor visitor = CollectingVisitor.testing(enGroupPredicate);
+		TreeVisitor tv = new TreeVisitor(visitor, course.getRunStructure().getRootNode(), true);
+		tv.visitAll();
+		return visitor.getCourseNodes();
+	}
+	
+	private final class ENGroupPredicate implements Predicate<CourseNode> {
+		
+		private final Long groupKey;
+		private final CourseGroupManager courseGroupManager;
+
+		public ENGroupPredicate(Long groupKey, CourseGroupManager courseGroupManager) {
+			this.groupKey = groupKey;
+			this.courseGroupManager = courseGroupManager;
+		}
+
+		@Override
+		public boolean test(CourseNode courseNode) {
+			if (courseNode instanceof ENCourseNode) {
+				ModuleConfiguration moduleConfig = courseNode.getModuleConfiguration();
+				List<Long> groupKeys = moduleConfig.getList(ENCourseNode.CONFIG_GROUP_IDS, Long.class);
+				if (groupKeys == null || groupKeys.isEmpty()) {
+					String groupNamesConfig = (String)moduleConfig.get(ENCourseNode.CONFIG_GROUPNAME);
+					groupKeys = businessGroupService.toGroupKeys(groupNamesConfig, courseGroupManager.getCourseEntry());
+				}
+				if (groupKeys.contains(groupKey)) {
+					return true;
+				}
+
+				List<Long> areaKeys = moduleConfig.getList(ENCourseNode.CONFIG_AREA_IDS, Long.class);
+				if(areaKeys == null || areaKeys.isEmpty()) {
+					String areaInitVal = (String) moduleConfig.get(ENCourseNode.CONFIG_AREANAME);
+					areaKeys = areaManager.toAreaKeys(areaInitVal, courseGroupManager.getCourseResource());
+				}
+				if (areaKeys.contains(groupKey)) {
+					return true;
+				}
+			}
+			return false;
+		}
+
 	}
 
 }

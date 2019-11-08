@@ -64,6 +64,7 @@ import org.olat.group.BusinessGroupService;
 import org.olat.group.area.BGAreaManager;
 import org.olat.group.ui.edit.BusinessGroupModifiedEvent;
 import org.olat.modules.ModuleConfiguration;
+import org.olat.repository.RepositoryEntry;
 import org.olat.util.logging.activity.LoggingResourceable;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -193,8 +194,10 @@ public class ENRunController extends BasicController implements GenericEventList
 						log.debug("CMD_ENROLL_IN_GROUP ureq.getComponentID()=" + ureq.getComponentID() + "  ureq.getComponentTimestamp()=" + ureq.getComponentTimestamp());
 					}
 
-					EnrollStatus enrollStatus = enrollmentManager.doEnroll(ureq.getIdentity(), ureq.getUserSession().getRoles(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator(),
-							                                                   enrollableGroupKeys, enrollableAreaKeys, courseGroupManager);
+					EnrollStatus enrollStatus = enrollmentManager.doEnroll(userCourseEnv,
+							ureq.getUserSession().getRoles(), choosenGroup, enNode, coursePropertyManager,
+							getWindowControl(), getTranslator(), enrollableGroupKeys, enrollableAreaKeys,
+							courseGroupManager);
 					if (enrollStatus.isEnrolled() || enrollStatus.isInWaitingList() ) {
 						//OK
 					} else {
@@ -214,12 +217,14 @@ public class ENRunController extends BasicController implements GenericEventList
 					BusinessGroup choosenGroup = businessGroupService.loadBusinessGroup(choosenGroupKey);
 					addLoggingResourceable(LoggingResourceable.wrap(choosenGroup));
 
-					List<String> roles = businessGroupService
-							.getIdentityRolesInBusinessGroup(getIdentity(), choosenGroup);
- 					if (roles.contains(GroupRoles.waiting.name())) {
-						enrollmentManager.doCancelEnrollmentInWaitingList(ureq.getIdentity(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator());
-					} else if(roles.contains(GroupRoles.participant.name())) {
-						enrollmentManager.doCancelEnrollment(ureq.getIdentity(), choosenGroup, enNode, coursePropertyManager, getWindowControl(), getTranslator());
+					List<String> roles = businessGroupService.getIdentityRolesInBusinessGroup(getIdentity(), choosenGroup);
+					RepositoryEntry courseEntry = courseGroupManager.getCourseEntry();
+					if (roles.contains(GroupRoles.waiting.name())) {
+						enrollmentManager.doCancelEnrollmentInWaitingList(userCourseEnv, choosenGroup, courseEntry,
+								enNode, coursePropertyManager, getWindowControl(), getTranslator());
+					} else if (roles.contains(GroupRoles.participant.name())) {
+						enrollmentManager.doCancelEnrollment(userCourseEnv, choosenGroup, courseEntry, enNode,
+								coursePropertyManager, getWindowControl(), getTranslator());
 					}
 
 					// fire event to indicate runmaincontroller that the menuview is to update
