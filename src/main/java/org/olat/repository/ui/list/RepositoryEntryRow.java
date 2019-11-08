@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
-import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.repository.RepositoryEntryMyView;
@@ -93,16 +92,7 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		externalId = entry.getExternalId();
 		externalRef = entry.getExternalRef();
 		name = entry.getDisplayname();
-		if(entry.getDescription() != null) {
-			String shortDesc = FilterFactory.getHtmlTagsFilter().filter(entry.getDescription());
-			if(shortDesc.length() > 255) {
-				shortenedDescription = shortDesc.substring(0, 255);
-			} else {
-				shortenedDescription = shortDesc;
-			}
-		} else {
-			shortenedDescription = "";
-		}
+		shortenedDescription = StringHelper.truncateText(entry.getDescription());
 		setOLATResourceable(OresHelper.clone(entry.getOlatResource()));
 		authors = entry.getAuthors();
 		location = entry.getLocation();
