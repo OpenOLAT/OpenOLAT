@@ -1,0 +1,19 @@
+#if($readonly)
+	#if($r.isNotNull($filename))
+		<div class="o_clearfix o_evaluation_fileupload">
+			#if($r.isNotNull($thumbUri))
+				<div class="o_evaluation_thumb">
+					<img src="$thumbUri/$filename"/>
+				</div>
+			#end
+			<div class="o_evaluation_filename">
+				<a href="$mapperUri/$filename" target="_blank">
+					<i class="o_icon $iconCss"></i> $filename
+				</a>
+				<span class="o_size">($filesize)</span>
+			</div>
+		</div>
+	#end
+#else
+	$r.render("$fileUpload")
+#end

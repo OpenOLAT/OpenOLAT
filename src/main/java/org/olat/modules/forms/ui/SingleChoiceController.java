@@ -120,7 +120,7 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 	}
 
 	@Override
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses) {
 		response = responses.getResponse(session, singleChoice.getId());
 		if (response != null) {
 			for (Choice choice: singleChoice.getChoices().asList()) {
@@ -132,7 +132,7 @@ public class SingleChoiceController extends FormBasicController implements Evalu
 	}
 
 	@Override
-	public void saveResponse(EvaluationFormSession session) {
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session) {
 		if (singleChoiceEl.isOneSelected()) {
 			String stringValue = singleChoiceEl.getSelectedKey();
 			if (response == null) {
