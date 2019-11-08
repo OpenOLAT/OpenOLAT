@@ -19,6 +19,8 @@
  */
 package org.olat.course.config.ui;
 
+import java.util.Optional;
+
 import org.olat.commons.calendar.CalendarManager;
 import org.olat.commons.calendar.CalendarModule;
 import org.olat.commons.calendar.ui.events.CalendarGUIModifiedEvent;
@@ -58,6 +60,8 @@ import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
 import org.olat.repository.controllers.ReferencableEntriesSearchController;
 import org.olat.repository.ui.settings.ReloadSettingsEvent;
+import org.olat.resource.references.Reference;
+import org.olat.resource.references.ReferenceManager;
 import org.olat.user.UserManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -103,6 +107,8 @@ public class CourseToolbarController extends FormBasicController {
 	private CalendarModule calendarModule;
 	@Autowired
 	private RepositoryManager repositoryManager;
+	@Autowired
+	private ReferenceManager referenceManager;
 	
 	public CourseToolbarController(UserRequest ureq, WindowControl wControl,
 			RepositoryEntry entry, CourseConfig courseConfig) {
@@ -404,8 +410,9 @@ public class CourseToolbarController extends FormBasicController {
 		boolean updateBlog = courseConfig.isBlogEnabled() != enableBlog;
 		courseConfig.setBlogEnabled(enableBlog && toolbarEnabled);
 		boolean blogSelected = enableBlog && blogEntry != null;
-		String blogSoftKey = blogSelected? blogEntry.getSoftkey(): null;;
+		String blogSoftKey = blogSelected? blogEntry.getSoftkey(): null;
 		courseConfig.setBlogSoftKey(blogSoftKey);
+		doUpdateBlogReference(course, blogSelected);
 		
 		boolean enableForum = forumEl.isSelected(0);
 		boolean updateForum = courseConfig.isForumEnabled() != enableForum;
@@ -543,6 +550,25 @@ public class CourseToolbarController extends FormBasicController {
 		cmc = new CloseableModalController(getWindowControl(), translate("close"),
 				blogSearchCtrl.getInitialComponent(), true, translate("blog.select.title"));
 		cmc.activate();
+	}
+
+	private void doUpdateBlogReference(ICourse course, boolean blogSelected) {
+		Optional<Reference> reference = referenceManager.getReferences(course).stream()
+			.filter(ref -> ref.getUserdata().equals("blog"))
+			.findAny();
+		if (blogSelected) {
+			if (reference.isPresent()) {
+				if (!reference.get().getTarget().equals(blogEntry.getOlatResource())) {
+					// User selected other blog (replaced)
+					referenceManager.delete(reference.get());
+					referenceManager.addReference(course, blogEntry.getOlatResource(), "blog");
+				}
+			} else {
+				referenceManager.addReference(course, blogEntry.getOlatResource(), "blog");
+			}
+		} else if(!blogSelected && reference.isPresent()) {
+			referenceManager.delete(reference.get());
+		}
 	}
 
 }
