@@ -252,7 +252,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	@Override
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses) {
 		for (SliderWrapper sliderWrapper: sliderWrappers) {
 			EvaluationFormResponse response = responses.getResponse(session, sliderWrapper.getId());
 			if (response != null) {
@@ -309,7 +309,7 @@ public class RubricController extends FormBasicController implements EvaluationF
 	}
 
 	@Override
-	public void saveResponse(EvaluationFormSession session) {
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session) {
 		for (SliderWrapper sliderWrapper: sliderWrappers) {
 			boolean noResponseSelected = sliderWrapper.getNoResponseEl() != null && sliderWrapper.getNoResponseEl().isOneSelected();
 			if (noResponseSelected) {

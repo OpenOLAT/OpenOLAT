@@ -78,12 +78,12 @@ public class EvaluationFormResponseControllerElement implements EvaluationFormEx
 	
 	@Override
 	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
-		controller.initResponse(session, responses);;
+		controller.initResponse(null, session, responses);;
 	}
 
 	@Override
 	public void saveResponse(EvaluationFormSession session) {
-		controller.saveResponse(session);
+		controller.saveResponse(null, session);
 	}
 
 	@Override

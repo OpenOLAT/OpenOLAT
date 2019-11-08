@@ -190,7 +190,7 @@ public class SessionInformationsController extends FormBasicController implement
 	}
 
 	@Override
-	public void initResponse(EvaluationFormSession session, EvaluationFormResponses responses) {
+	public void initResponse(UserRequest ureq, EvaluationFormSession session, EvaluationFormResponses responses) {
 		for (SessionInformationWrapper wrapper: sessionInformationWrappers) {
 			String value = SessionInformationsUIFactory.getValue(wrapper.getInformationType(), session);
 			if (StringHelper.containsNonWhitespace(value)) {
@@ -200,7 +200,7 @@ public class SessionInformationsController extends FormBasicController implement
 	}
 
 	@Override
-	public void saveResponse(EvaluationFormSession session) {
+	public void saveResponse(UserRequest ureq, EvaluationFormSession session) {
 		EvaluationFormSession reloadedSession = evaluationFormManager.loadSessionByKey(session);
 		if (reloadedSession != null) {
 			SessionInformationWrapper emailWrapper = getWrapper(InformationType.USER_EMAIL); 
