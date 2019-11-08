@@ -55,7 +55,7 @@ public class Card2BrainCourseNode extends AbstractAccessableCourseNode {
 
 	private static final long serialVersionUID = -7338962050297071079L;
 	
-	private static final String TYPE = "card2brain";
+	public static final String TYPE = "card2brain";
 	
 	public static final String CONFIG_FLASHCARD_ALIAS = "flashcardAlias";
 	public static final String CONFIG_ENABLE_PRIVATE_LOGIN = "enablePrivateLogin";
