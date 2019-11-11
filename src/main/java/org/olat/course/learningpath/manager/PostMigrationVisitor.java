@@ -17,30 +17,36 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.course.learningpath;
+package org.olat.course.learningpath.manager;
 
-import org.olat.core.gui.UserRequest;
-import org.olat.core.gui.control.Controller;
-import org.olat.core.gui.control.WindowControl;
+import org.olat.core.util.nodes.INode;
+import org.olat.core.util.tree.Visitor;
+import org.olat.course.learningpath.LearningPathNodeHandler;
 import org.olat.course.nodes.CourseNode;
-import org.olat.course.nodes.CourseNodeProvider;
-import org.olat.repository.RepositoryEntry;
+import org.olat.course.tree.CourseEditorTreeNode;
 
 /**
  * 
- * Initial date: 28 Aug 2019<br>
+ * Initial date: 11 Nov 2019<br>
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public interface LearningPathNodeHandler extends CourseNodeProvider {
-	
-	public boolean isSupported();
-	
-	public LearningPathConfigs getConfigs(CourseNode courseNode);
-	
-	public Controller createConfigEditController(UserRequest ureq, WindowControl wControl, RepositoryEntry courseEntry,
-			CourseNode courseNode);
+public class PostMigrationVisitor implements Visitor {
 
-	public void onMigrated(CourseNode courseNode);
+	private final LearningPathRegistry registry;
+
+	public PostMigrationVisitor(LearningPathRegistry registry) {
+		this.registry = registry;
+	}
+
+	@Override
+	public void visit(INode node) {
+		if (node instanceof CourseEditorTreeNode) {
+			CourseEditorTreeNode courseEditorTreeNode = (CourseEditorTreeNode)node;
+			CourseNode courseNode = courseEditorTreeNode.getCourseNode();
+			LearningPathNodeHandler lpHandler = registry.getLearningPathNodeHandler(courseNode);
+			lpHandler.onMigrated(courseNode);
+		}
+	}
 
 }

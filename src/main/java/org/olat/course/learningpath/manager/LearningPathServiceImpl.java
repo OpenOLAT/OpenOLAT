@@ -67,7 +67,17 @@ public class LearningPathServiceImpl implements LearningPathService {
 	public RepositoryEntry migrate(RepositoryEntry courseEntry, Identity identity) {
 		String displayname = courseEntry.getDisplayname() + " (copy)";
 		RepositoryEntry lpEntry = respositoryService.copy(courseEntry, identity, displayname);
-		CourseFactory.loadCourse(lpEntry).getCourseConfig().setNodeAccessType(LearningPathNodeAccessProvider.TYPE);
+		
+		ICourse course = CourseFactory.loadCourse(lpEntry);
+		course = CourseFactory.openCourseEditSession(course.getResourceableId());
+		
+		course.getCourseConfig().setNodeAccessType(LearningPathNodeAccessProvider.TYPE);
+		
+		TreeVisitor tv = new TreeVisitor(new PostMigrationVisitor(registry), course.getEditorTreeModel().getRootNode(), true);
+		tv.visitAll();
+		
+		CourseFactory.saveCourseEditorTreeModel(course.getResourceableId());
+		CourseFactory.closeCourseEditSession(course.getResourceableId(), true);
 		return lpEntry;
 	}
 	

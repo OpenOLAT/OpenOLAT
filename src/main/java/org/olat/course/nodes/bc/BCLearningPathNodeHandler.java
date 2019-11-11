@@ -66,4 +66,12 @@ public class BCLearningPathNodeHandler implements LearningPathNodeHandler {
 		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
 	}
 
+	@Override
+	public void onMigrated(CourseNode courseNode) {
+		if (courseNode instanceof BCCourseNode) {
+			BCCourseNode bcNode = (BCCourseNode)courseNode;
+			bcNode.removeCustomPreconditions();
+		}
+	}
+
 }

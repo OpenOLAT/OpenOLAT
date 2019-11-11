@@ -461,9 +461,13 @@ public class BCCourseNode extends AbstractAccessableCourseNode {
 				&& !preConditionDownloaders.isAssessmentMode()
 				&& !preConditionDownloaders.isAssessmentModeViewResults();
 			if (defaultPreconditions) {
-				preConditionDownloaders = null;
-				preConditionUploaders = null;
+				removeCustomPreconditions();
 			}
 		}
+	}
+	
+	public void removeCustomPreconditions() {
+		preConditionDownloaders = null;
+		preConditionUploaders = null;
 	}
 }

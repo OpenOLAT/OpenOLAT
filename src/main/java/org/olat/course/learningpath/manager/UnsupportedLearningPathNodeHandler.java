@@ -63,4 +63,9 @@ public class UnsupportedLearningPathNodeHandler implements LearningPathNodeHandl
 		return null;
 	}
 
+	@Override
+	public void onMigrated(CourseNode courseNode) {
+		//
+	}
+
 }

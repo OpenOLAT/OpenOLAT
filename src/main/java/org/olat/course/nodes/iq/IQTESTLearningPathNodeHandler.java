@@ -68,5 +68,10 @@ public class IQTESTLearningPathNodeHandler implements LearningPathNodeHandler {
 				.build();
 		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
 	}
+	
+	@Override
+	public void onMigrated(CourseNode courseNode) {
+		//
+	}
 
 }

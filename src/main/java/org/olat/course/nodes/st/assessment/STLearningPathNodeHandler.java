@@ -66,4 +66,9 @@ public class STLearningPathNodeHandler implements LearningPathNodeHandler {
 		return MessageUIFactory.createInfoMessage(ureq, wControl, null, translator.translate("no.configurations"));
 	}
 
+	@Override
+	public void onMigrated(CourseNode courseNode) {
+		//
+	}
+
 }

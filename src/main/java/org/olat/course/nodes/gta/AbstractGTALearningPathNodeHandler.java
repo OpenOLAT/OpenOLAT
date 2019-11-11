@@ -61,4 +61,9 @@ public abstract class AbstractGTALearningPathNodeHandler implements LearningPath
 		return new LearningPathNodeConfigController(ureq, wControl, courseEntry, courseNode.getModuleConfiguration(), ctrlConfig);
 	}
 
+	@Override
+	public void onMigrated(CourseNode courseNode) {
+		//
+	}
+
 }
