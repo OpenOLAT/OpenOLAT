@@ -50,12 +50,15 @@ public class FileCombiCalloutWindowController extends BasicController {
 		
 		chooseLink = LinkFactory.createLink("chooseLink", contentVC, this);
 		chooseLink.setIconLeftCSS("o_icon o_icon_browse o_icon-fw");
+		chooseLink.setElementCssClass("o_sel_filechooser_choose");
 
 		createLink = LinkFactory.createLink("createLink", contentVC, this);
 		createLink.setIconLeftCSS("o_icon o_icon_new_document o_icon-fw");
+		createLink.setElementCssClass("o_sel_filechooser_create");
 
 		uploadLink = LinkFactory.createLink("uploadLink", contentVC, this);
 		uploadLink.setIconLeftCSS("o_icon o_icon_upload o_icon-fw");
+		uploadLink.setElementCssClass("o_sel_filechooser_upload");
 
 		putInitialPanel(contentVC);
 	}

@@ -135,6 +135,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 		
 		// Button to edit or create the file
 		editLink = LinkFactory.createButtonSmall("command.edit", contentVC, this);
+		editLink.setElementCssClass("o_sel_filechooser_edit");
 		editLink.setPrimary(true);
 		editLink.setIconLeftCSS("o_icon o_icon-fw o_icon_edit");
 		
@@ -145,6 +146,7 @@ public class LinkFileCombiCalloutController extends BasicController {
 
 		// Callout button with the three links next to edit button
 		calloutTriggerLink = LinkFactory.createButtonSmall("calloutTriggerLink", contentVC, this);
+		calloutTriggerLink.setElementCssClass("o_sel_filechooser_new");
 
 		// Load file from configuration and update links
 		setRelFilePath(relFilePath);
