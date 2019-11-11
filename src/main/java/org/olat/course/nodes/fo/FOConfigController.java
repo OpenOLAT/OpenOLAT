@@ -128,6 +128,7 @@ public class FOConfigController extends FormBasicController {
 			
 			posterRolesEl = uifactory.addCheckboxesVertical("edit.poster", rightsCont, POSTER_KEYS,
 					translateAll(getTranslator(), POSTER_KEYS), 1);
+			posterRolesEl.setElementCssClass("o_sel_course_forum_poster");
 			posterRolesEl.select(POSTER_COACH, moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_COACH_POST_ALLOWED));
 			posterRolesEl.select(POSTER_PARTICIPANT,
 					moduleConfig.getBooleanSafe(FOCourseNode.CONFIG_PARTICIPANT_POST_ALLOWED));

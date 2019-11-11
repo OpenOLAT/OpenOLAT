@@ -727,43 +727,43 @@ class ForumNodeForumCallback implements ForumCallback {
 
 	@Override
 	public boolean mayOpenNewThread() {
-		if (isGuestOnly && !guestPostAllowed)
-			return false;
+		if (isGuestOnly && guestPostAllowed) return true;
+		
 		return isPoster || isModerator || isOlatAdmin;
 	}
 
 	@Override
 	public boolean mayReplyMessage() {
-		if (isGuestOnly && !guestPostAllowed)
-			return false;
+		if (isGuestOnly && guestPostAllowed) return true;
+		
 		return isPoster || isModerator || isOlatAdmin;
 	}
 
 	@Override
 	public boolean mayEditOwnMessage() {
-		if (isGuestOnly && !guestPostAllowed)
-			return false;
+		if (isGuestOnly && !guestPostAllowed) return false;
+		
 		return true;
 	}
 
 	@Override
 	public boolean mayDeleteOwnMessage() {
-		if (isGuestOnly && !guestPostAllowed)
-			return false;
+		if (isGuestOnly && !guestPostAllowed) return false;
+	
 		return true;
 	}
 
 	@Override
 	public boolean mayEditMessageAsModerator() {
-		if (isGuestOnly)
-			return false;
+		if (isGuestOnly) return false;
+		
 		return isModerator || isOlatAdmin;
 	}
 
 	@Override
 	public boolean mayDeleteMessageAsModerator() {
-		if (isGuestOnly)
-			return false;
+		if (isGuestOnly) return false;
+		
 		return isModerator || isOlatAdmin;
 	}
 
@@ -774,8 +774,8 @@ class ForumNodeForumCallback implements ForumCallback {
 
 	@Override
 	public boolean mayFilterForUser() {
-		if (isGuestOnly)
-			return false;
+		if (isGuestOnly) return false;
+		
 		return isModerator|| isOlatAdmin;
 	}
 
