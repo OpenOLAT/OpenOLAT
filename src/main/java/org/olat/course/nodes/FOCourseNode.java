@@ -94,15 +94,22 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	private static final Logger log = Tracing.createLoggerFor(FOCourseNode.class);
 
 	private static final long serialVersionUID = 2281715263255594865L;
+	
+	@SuppressWarnings("deprecation")
 	private static final String PACKAGE_FO = Util.getPackageName(FOCourseNodeRunController.class);
-	private static final String TYPE = "fo";
-	private Condition preConditionReader, preConditionPoster, preConditionModerator;
-	// null means no precondition / always accessible
-	public static final String FORUM_KEY = "forumKey";
 
-	/**
-	 * Default constructor to create a forum course node
-	 */
+	private static final String TYPE = "fo";
+	
+	private static final int CURRENT_VERSION = 4;
+	public static final String CONFIG_FORUM_KEY = "forumKey";
+	public static final String CONFIG_PSEUDONYM_POST_ALLOWED = "pseudonym.post.allowed";
+	public static final String CONFIG_PSEUDONYM_POST_DEFAULT = "pseudonym.post.default";
+	public static final String CONFIG_GUEST_POST_ALLOWED = "guest.post.allowed";
+
+	// null means no precondition / always accessible
+	private Condition preConditionReader, preConditionPoster, preConditionModerator;
+	
+	
 	public FOCourseNode() {
 		super(TYPE);
 		updateModuleConfigDefaults(true);
@@ -113,10 +120,6 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		preConditionModerator.setExpertMode(false);
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#createEditController(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.WindowControl, org.olat.course.ICourse)
-	 */
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, BreadcrumbPanel stackPanel, ICourse course, UserCourseEnvironment euce) {
 		updateModuleConfigDefaults(false);
@@ -151,15 +154,14 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		boolean defaultPseudonym = false;
 		boolean guestPostAllowed = false;
 		if(roles.isGuestOnly()) {
-			String config = getModuleConfiguration().getStringValue(FOCourseNodeEditController.GUEST_POST_ALLOWED);
+			String config = getModuleConfiguration().getStringValue(CONFIG_GUEST_POST_ALLOWED);
 			guestPostAllowed = "true".equals(config);
 		} else {
 			ForumModule forumModule = CoreSpringFactory.getImpl(ForumModule.class);
-			String config = getModuleConfiguration().getStringValue(FOCourseNodeEditController.PSEUDONYM_POST_ALLOWED);
-			pseudonymPostAllowed = forumModule.isAnonymousPostingWithPseudonymEnabled()
-					&& "true".equals(config);
+			String config = getModuleConfiguration().getStringValue(CONFIG_PSEUDONYM_POST_ALLOWED);
+			pseudonymPostAllowed = forumModule.isAnonymousPostingWithPseudonymEnabled() && "true".equals(config);
 			if(pseudonymPostAllowed) {
-				defaultPseudonym = getModuleConfiguration().getBooleanSafe(FOCourseNodeEditController.PSEUDONYM_POST_DEFAULT,
+				defaultPseudonym = getModuleConfiguration().getBooleanSafe(CONFIG_PSEUDONYM_POST_DEFAULT,
 						forumModule.isPseudonymForMessageEnabledByDefault());
 			}
 		}
@@ -185,7 +187,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 
 		Forum forum = null;	
 		List<Property> forumKeyProps = courseEnv.getCoursePropertyManager()
-				.findCourseNodeProperties(this, null, null, FORUM_KEY);
+				.findCourseNodeProperties(this, null, null, CONFIG_FORUM_KEY);
 		if(forumKeyProps == null || forumKeyProps.isEmpty()) {
 			forum = createForum(courseEnv);
 		} else if(forumKeyProps.size() == 1) {
@@ -203,7 +205,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 			@Override
 			public Forum execute() {
 				List<Property> forumKeyProps = courseEnv.getCoursePropertyManager()
-						.findCourseNodeProperties(FOCourseNode.this, null, null, FORUM_KEY);
+						.findCourseNodeProperties(FOCourseNode.this, null, null, CONFIG_FORUM_KEY);
 				Forum masterForum;
 				if(forumKeyProps.size() == 1) {
 					masterForum = loadForum(courseEnv, forumKeyProps.get(0));
@@ -248,12 +250,12 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 			public Forum execute() {
 				Forum forum;
 				CoursePropertyManager cpm = courseEnv.getCoursePropertyManager();
-				Property forumKeyProperty = cpm.findCourseNodeProperty(FOCourseNode.this, null, null, FORUM_KEY);			  
+				Property forumKeyProperty = cpm.findCourseNodeProperty(FOCourseNode.this, null, null, CONFIG_FORUM_KEY);
 				if (forumKeyProperty == null) {
-					// First call of forum, create new forum and save forum key as property			  	
+					// First call of forum, create new forum and save forum key as property
 					forum = fom.addAForum();
 					Long forumKey = forum.getKey();
-					forumKeyProperty = cpm.createCourseNodePropertyInstance(FOCourseNode.this, null, null, FORUM_KEY, null, forumKey, null, null);
+					forumKeyProperty = cpm.createCourseNodePropertyInstance(FOCourseNode.this, null, null, CONFIG_FORUM_KEY, null, forumKey, null, null);
 					cpm.saveProperty(forumKeyProperty);	
 				} else {
 					// Forum does already exist, load forum with key from properties
@@ -286,9 +288,6 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		nodeEval.setVisible(visible);
 	}
 
-	/**
-	 * Implementation of the previewController for forumnode
-	 */
 	@Override
 	public Controller createPreviewController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv, CourseNodeSecurityCallback nodeSecCallback) {
 		return new FOPreviewController(ureq, wControl, nodeSecCallback.getNodeEvaluation());
@@ -298,14 +297,13 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl, UserCourseEnvironment userCourseEnv,
 			CourseNodeSecurityCallback nodeSecCallback) {
 		if (nodeSecCallback.isAccessible()) {
-			// Create a forum peekview controller that shows the latest two messages		
+			// Create a forum peekview controller that shows the latest two messages
 			Forum theForum = loadOrCreateForum(userCourseEnv.getCourseEnvironment());
 			RepositoryEntry courseEntry = userCourseEnv.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-			return new FOPeekviewController(ureq, wControl, courseEntry, theForum, getIdent(), 3);		
-		} else {
-			// use standard peekview
-			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
+			return new FOPeekviewController(ureq, wControl, courseEntry, theForum, getIdent(), 3);
 		}
+		// use standard peekview
+		return super.createPeekViewRunController(ureq, wControl, userCourseEnv, nodeSecCallback);
 	}
 
 	/**
@@ -374,14 +372,8 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		this.preConditionReader = preConditionReader;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid()
-	 */
 	@Override
 	public StatusDescription isConfigValid() {
-		/*
-		 * first check the one click cache
-		 */
 		if(oneClickStatusCache!=null) {
 			return oneClickStatusCache[0];
 		}
@@ -389,9 +381,6 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		return StatusDescription.NOERROR;
 	}
 
-	/**
-	 * @see org.olat.course.nodes.CourseNode#isConfigValid(org.olat.course.run.userview.UserCourseEnvironment)
-	 */
 	@Override
 	public StatusDescription[] isConfigValid(CourseEditorEnv cev) {
 		oneClickStatusCache = null;
@@ -401,9 +390,6 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 		return oneClickStatusCache;
 	}
 	
-	/**
-	 * @see org.olat.course.nodes.CourseNode#getReferencedRepositoryEntry()
-	 */
 	@Override
 	public RepositoryEntry getReferencedRepositoryEntry() {
 		return null;
@@ -418,7 +404,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	public boolean archiveNodeData(Locale locale, ICourse course, ArchiveOptions options,
 			ZipOutputStream exportStream, String archivePath, String charset) {
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		Property forumKeyProperty = cpm.findCourseNodeProperty(this, null, null, FORUM_KEY);
+		Property forumKeyProperty = cpm.findCourseNodeProperty(this, null, null, CONFIG_FORUM_KEY);
 		if(forumKeyProperty == null) {
 			return false;
 		}
@@ -438,7 +424,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public String informOnDelete(Locale locale, ICourse course) {
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
-		Property forumKeyProperty = cpm.findCourseNodeProperty(this, null, null, FORUM_KEY);
+		Property forumKeyProperty = cpm.findCourseNodeProperty(this, null, null, CONFIG_FORUM_KEY);
 		if (forumKeyProperty == null) return null; // no forum created yet
 		return new PackageTranslator(PACKAGE_FO, locale).translate("warn.forumdelete");
 	}
@@ -453,7 +439,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 
 		// delete the forum, if there is one (is created on demand only)
 		CoursePropertyManager cpm = PersistingCoursePropertyManager.getInstance(course);
-		Property forumKeyProperty = cpm.findCourseNodeProperty(this, null, null, FORUM_KEY);
+		Property forumKeyProperty = cpm.findCourseNodeProperty(this, null, null, CONFIG_FORUM_KEY);
 		if (forumKeyProperty != null) {
 			Long forumKey = forumKeyProperty.getLongValue();
 			CoreSpringFactory.getImpl(ForumManager.class).deleteForum(forumKey); // delete the forum
@@ -472,32 +458,36 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public void updateModuleConfigDefaults(boolean isNewNode) {
 		ModuleConfiguration config = getModuleConfiguration();
+		int version = config.getConfigurationVersion();
+		
 		if(isNewNode) {
 			ForumModule forumModule = CoreSpringFactory.getImpl(ForumModule.class);
 			boolean pseudonymAllowed = forumModule.isAnonymousPostingWithPseudonymEnabled()
 					&& forumModule.isPseudonymForCourseEnabledByDefault();
-			config.setStringValue(FOCourseNodeEditController.PSEUDONYM_POST_ALLOWED, pseudonymAllowed ? "true" : "false");
+			config.setStringValue(CONFIG_PSEUDONYM_POST_ALLOWED, pseudonymAllowed ? "true" : "false");
 			boolean pseudonymDefault = pseudonymAllowed
 					&& forumModule.isPseudonymForMessageEnabledByDefault();
-			config.setStringValue(FOCourseNodeEditController.PSEUDONYM_POST_DEFAULT, pseudonymDefault ? "true" : "false");
-			config.setStringValue(FOCourseNodeEditController.GUEST_POST_ALLOWED, "false");
+			config.setStringValue(CONFIG_PSEUDONYM_POST_DEFAULT, pseudonymDefault ? "true" : "false");
+			config.setStringValue(CONFIG_GUEST_POST_ALLOWED, "false");
 		}
-		if (isNewNode || config.getConfigurationVersion() < 2) {
-			// use defaults for new course building blocks
+		if (isNewNode || version < 2) {
 			config.setBooleanEntry(NodeEditController.CONFIG_STARTPAGE, Boolean.FALSE.booleanValue());
-			config.setConfigurationVersion(2);
 		}
-		if (config.getConfigurationVersion() < 3) {
-			if(config.getStringValue(FOCourseNodeEditController.PSEUDONYM_POST_ALLOWED) == null) {
-				config.setStringValue(FOCourseNodeEditController.PSEUDONYM_POST_ALLOWED, "false");	
+		if (version < 3) {
+			if(config.getStringValue(CONFIG_PSEUDONYM_POST_ALLOWED) == null) {
+				config.setStringValue(CONFIG_PSEUDONYM_POST_ALLOWED, "false");	
 			}
-			if(config.getStringValue(FOCourseNodeEditController.GUEST_POST_ALLOWED) == null) {
-				config.setStringValue(FOCourseNodeEditController.GUEST_POST_ALLOWED, "false");
+			if(config.getStringValue(CONFIG_GUEST_POST_ALLOWED) == null) {
+				config.setStringValue(CONFIG_GUEST_POST_ALLOWED, "false");
 			}
-			config.setConfigurationVersion(3);
+		}
+		if (version < 4) {
+			
 		}
 		// else node is up-to-date - nothing to do
 		config.remove(NodeEditController.CONFIG_INTEGRATION);
+		
+		config.setConfigurationVersion(CURRENT_VERSION);
 	}
 	
 	@Override
@@ -616,12 +606,6 @@ class ReadOnlyForumCallback implements ForumCallback {
 	}
 }
 
-/**
- * 
- * Description:<br>
- * ForumCallback implementation.
- * 
- */
 class ForumNodeForumCallback implements ForumCallback {
 
 	private final NodeEvaluation ne;
@@ -661,18 +645,12 @@ class ForumNodeForumCallback implements ForumCallback {
 		return anonymousPostDefault;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayOpenNewThread()
-	 */
 	@Override
 	public boolean mayOpenNewThread() {
 		if (isGuestOnly && !guestPostAllowed) return false;
 		return ne.isCapabilityAccessible("poster") || ne.isCapabilityAccessible("moderator") || isOlatAdmin;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#mayReplyMessage()
-	 */
 	@Override
 	public boolean mayReplyMessage() {
 		if (isGuestOnly && !guestPostAllowed) return false;
@@ -714,14 +692,9 @@ class ForumNodeForumCallback implements ForumCallback {
 		return ne.isCapabilityAccessible("moderator") || isOlatAdmin;
 	}
 
-	/**
-	 * @see org.olat.modules.fo.ForumCallback#getSubscriptionContext()
-	 */
 	@Override
 	public SubscriptionContext getSubscriptionContext() {
-	// SubscriptionContext sc = new SubscriptionContext("coourseli", new
-	// Long(123), "subident", "Einfuehrung in die Blabla", "Knoten gugus");
-	// do not offer subscription to forums for guests
-		return (isGuestOnly ? null : subscriptionContext);
+		// do not offer subscription to forums for guests
+		return isGuestOnly ? null : subscriptionContext;
 	}
 }

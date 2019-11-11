@@ -475,7 +475,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 		}
 		
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
-		Property forumKeyProp = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.FORUM_KEY);
+		Property forumKeyProp = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.CONFIG_FORUM_KEY);
 		Forum forum = null;
 		if(forumKeyProp!=null) {
       // Forum does already exist, load forum with key from properties
@@ -546,7 +546,7 @@ public class ForumCourseNodeWebService extends AbstractCourseNodeWebService {
 			CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 			Forum forum = forumManager.addAForum();
 			Long forumKey = forum.getKey();
-			Property forumKeyProperty = cpm.createCourseNodePropertyInstance(newNode, null, null, FOCourseNode.FORUM_KEY, null, forumKey, null, null);
+			Property forumKeyProperty = cpm.createCourseNodePropertyInstance(newNode, null, null, FOCourseNode.CONFIG_FORUM_KEY, null, forumKey, null, null);
 			cpm.saveProperty(forumKeyProperty);
 			
 			// special rules

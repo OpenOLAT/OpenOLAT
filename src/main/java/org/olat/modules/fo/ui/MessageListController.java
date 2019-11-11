@@ -1411,7 +1411,7 @@ public class MessageListController extends BasicController implements GenericEve
 			// get start course
 			PropertyManager propertyManager = PropertyManager.getInstance();
 			Long forumResourceableId = forum.getResourceableId();
-			Property forumproperty = propertyManager.getPropertyByLongValue(forumResourceableId, FOCourseNode.FORUM_KEY);
+			Property forumproperty = propertyManager.getPropertyByLongValue(forumResourceableId, FOCourseNode.CONFIG_FORUM_KEY);
 			if (forumproperty != null) {
 				Long resourcetypeId = forumproperty.getResourceTypeId();
 				String resourcetypeName = forumproperty.getResourceTypeName();

@@ -115,7 +115,7 @@ public class FOCourseNodeIndexer extends ForumIndexer implements CourseNodeIndex
 		ForumManager fom = CoreSpringFactory.getImpl(ForumManager.class);
 		CoursePropertyManager cpm = course.getCourseEnvironment().getCoursePropertyManager();
 
-		Property forumKeyProperty = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.FORUM_KEY);
+		Property forumKeyProperty = cpm.findCourseNodeProperty(courseNode, null, null, FOCourseNode.CONFIG_FORUM_KEY);
 		// Check if forum-property exist
 		if (forumKeyProperty != null) {
 		  Long forumKey = forumKeyProperty.getLongValue();

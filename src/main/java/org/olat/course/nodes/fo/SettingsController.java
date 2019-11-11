@@ -70,7 +70,7 @@ public class SettingsController extends FormBasicController {
 			allowPseudonymEl.setLabel(null, null);
 			allowPseudonymEl.addActionListener(FormEvent.ONCHANGE);
 			
-			if("true".equals(foNode.getModuleConfiguration().getStringValue(FOCourseNodeEditController.PSEUDONYM_POST_ALLOWED))) {
+			if("true".equals(foNode.getModuleConfiguration().getStringValue(FOCourseNode.CONFIG_PSEUDONYM_POST_ALLOWED))) {
 				allowPseudonymEl.select(allowKeys[0], true);
 			}
 
@@ -81,7 +81,7 @@ public class SettingsController extends FormBasicController {
 			pseudonymAsDefaultEl.setLabel(null, null);
 			pseudonymAsDefaultEl.addActionListener(FormEvent.ONCHANGE);
 			
-			boolean defaultPseudonym = foNode.getModuleConfiguration().getBooleanSafe(FOCourseNodeEditController.PSEUDONYM_POST_DEFAULT,
+			boolean defaultPseudonym = foNode.getModuleConfiguration().getBooleanSafe(FOCourseNode.CONFIG_PSEUDONYM_POST_DEFAULT,
 					forumModule.isPseudonymForMessageEnabledByDefault());
 			if(defaultPseudonym) {
 				pseudonymAsDefaultEl.select(allowKeys[0], true);
@@ -94,7 +94,7 @@ public class SettingsController extends FormBasicController {
 		allowGuestEl.setElementCssClass("o_sel_course_forum_allow_guest");
 		allowGuestEl.setLabel(null, null);
 		allowGuestEl.addActionListener(FormEvent.ONCHANGE);
-		if("true".equals(foNode.getModuleConfiguration().getStringValue(FOCourseNodeEditController.GUEST_POST_ALLOWED))) {
+		if("true".equals(foNode.getModuleConfiguration().getStringValue(FOCourseNode.CONFIG_GUEST_POST_ALLOWED))) {
 			allowGuestEl.select(allowKeys[0], true);
 		}
 	}

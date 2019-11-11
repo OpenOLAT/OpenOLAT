@@ -55,11 +55,6 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private static final String PANE_TAB_SETTINGS = "pane.tab.settings";
 	private static final String[] paneKeys = { PANE_TAB_ACCESSIBILITY, PANE_TAB_SETTINGS };
 	
-	public static final String PSEUDONYM_POST_ALLOWED = "pseudonym.post.allowed";
-	/* Pseudonym is proposed as default */
-	public static final String PSEUDONYM_POST_DEFAULT = "pseudonym.post.default";
-	public static final String GUEST_POST_ALLOWED = "guest.post.allowed";
-	
 	private final FOCourseNode foNode;
 	private final VelocityContainer myContent;
 
@@ -67,13 +62,6 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 	private final ConditionEditController readerCondContr, posterCondContr, moderatorCondContr;
 	private TabbedPane myTabbedPane;
 
-	/**
-	 * Edit controller for form building blocks
-	 * 
-	 * @param ureq The user request
-	 * @param forumNode The forum node
-	 * @param course
-	 */
 	public FOCourseNodeEditController(UserRequest ureq, WindowControl wControl, FOCourseNode forumNode, ICourse course,
 			UserCourseEnvironment euce) {
 		super(ureq, wControl);
@@ -108,19 +96,11 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 		listenTo(settingsCtrl);
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.components.Component, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest ureq, Component source, Event event) {
 		//
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#event(org.olat.core.gui.UserRequest,
-	 *      org.olat.core.gui.control.Controller, org.olat.core.gui.control.Event)
-	 */
 	@Override
 	public void event(UserRequest urequest, Controller source, Event event) {
 		if (source == readerCondContr) {
@@ -144,19 +124,16 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 		} else if (source == settingsCtrl) {
 			if (event == Event.CHANGED_EVENT) {
 				String pseudoAllowed = settingsCtrl.isPseudonymPostAllowed() ? "true" : "false";
-				foNode.getModuleConfiguration().setStringValue(PSEUDONYM_POST_ALLOWED, pseudoAllowed);
+				foNode.getModuleConfiguration().setStringValue(FOCourseNode.CONFIG_PSEUDONYM_POST_ALLOWED, pseudoAllowed);
 				String defaultPseudo = settingsCtrl.isDefaultPseudonym() ? "true" : "false";
-				foNode.getModuleConfiguration().setStringValue(PSEUDONYM_POST_DEFAULT, defaultPseudo);
+				foNode.getModuleConfiguration().setStringValue(FOCourseNode.CONFIG_PSEUDONYM_POST_DEFAULT, defaultPseudo);
 				String guestAllowed = settingsCtrl.isGuestPostAllowed() ? "true" : "false";
-				foNode.getModuleConfiguration().setStringValue(GUEST_POST_ALLOWED, guestAllowed);
+				foNode.getModuleConfiguration().setStringValue(FOCourseNode.CONFIG_GUEST_POST_ALLOWED, guestAllowed);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.generic.tabbable.TabbableDefaultController#addTabs(org.olat.core.gui.components.TabbedPane)
-	 */
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
@@ -166,12 +143,9 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 		}
 	}
 
-	/**
-	 * @see org.olat.core.gui.control.DefaultController#doDispose(boolean)
-	 */
 	@Override
 	protected void doDispose() {
-		//child controllers registered with listenTo() get disposed in BasicController
+		//
 	}
 
 	@Override
