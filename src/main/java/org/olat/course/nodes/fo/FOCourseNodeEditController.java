@@ -52,48 +52,51 @@ import org.olat.course.tree.CourseEditorTreeModel;
 public class FOCourseNodeEditController extends ActivateableTabbableDefaultController implements ControllerEventListener {
 
 	private static final String PANE_TAB_ACCESSIBILITY = "pane.tab.accessibility";
-	private static final String PANE_TAB_SETTINGS = "pane.tab.settings";
-	private static final String[] paneKeys = { PANE_TAB_ACCESSIBILITY, PANE_TAB_SETTINGS };
+	private static final String PANE_TAB_CONFIG = "pane.tab.config";
+	private static final String[] paneKeys = { PANE_TAB_ACCESSIBILITY, PANE_TAB_CONFIG };
 	
-	private final FOCourseNode foNode;
-	private final VelocityContainer myContent;
-
-	private SettingsController settingsCtrl;
-	private final ConditionEditController readerCondContr, posterCondContr, moderatorCondContr;
 	private TabbedPane myTabbedPane;
+	private VelocityContainer accessibilityContent;
+
+	private FOConfigController configCtrl;
+	private ConditionEditController readerCondContr, posterCondContr, moderatorCondContr;
+
+	private final FOCourseNode foNode;
 
 	public FOCourseNodeEditController(UserRequest ureq, WindowControl wControl, FOCourseNode forumNode, ICourse course,
 			UserCourseEnvironment euce) {
 		super(ureq, wControl);
 		this.foNode = forumNode;
 		
-		myContent = createVelocityContainer("edit");		
+		if (forumNode.hasCustomPreConditions()) {
+			accessibilityContent = createVelocityContainer("edit");
+			CourseEditorTreeModel editorModel = course.getEditorTreeModel();
 
-		CourseEditorTreeModel editorModel = course.getEditorTreeModel();
-		// Reader precondition
-		Condition readerCondition = foNode.getPreConditionReader();
-		readerCondContr = new ConditionEditController(ureq, getWindowControl(), euce, readerCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, forumNode));		
-		listenTo(readerCondContr);
-		myContent.put("readerCondition", readerCondContr.getInitialComponent());
+			// Reader precondition
+			Condition readerCondition = foNode.getPreConditionReader();
+			readerCondContr = new ConditionEditController(ureq, getWindowControl(), euce, readerCondition,
+					AssessmentHelper.getAssessableNodes(editorModel, forumNode));
+			listenTo(readerCondContr);
+			accessibilityContent.put("readerCondition", readerCondContr.getInitialComponent());
 
-		// Poster precondition
-		Condition posterCondition = foNode.getPreConditionPoster();
-		posterCondContr = new ConditionEditController(ureq, getWindowControl(), euce, posterCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, forumNode));		
-		listenTo(posterCondContr);
-		myContent.put("posterCondition", posterCondContr.getInitialComponent());
+			// Poster precondition
+			Condition posterCondition = foNode.getPreConditionPoster();
+			posterCondContr = new ConditionEditController(ureq, getWindowControl(), euce, posterCondition,
+					AssessmentHelper.getAssessableNodes(editorModel, forumNode));
+			listenTo(posterCondContr);
+			accessibilityContent.put("posterCondition", posterCondContr.getInitialComponent());
 
-		// Moderator precondition
-		Condition moderatorCondition = foNode.getPreConditionModerator();
-		moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), euce, moderatorCondition,
-				AssessmentHelper.getAssessableNodes(editorModel, forumNode));		
-		listenTo(moderatorCondContr);
-		myContent.put("moderatorCondition", moderatorCondContr.getInitialComponent());
+			// Moderator precondition
+			Condition moderatorCondition = foNode.getPreConditionModerator();
+			moderatorCondContr = new ConditionEditController(ureq, getWindowControl(), euce, moderatorCondition,
+					AssessmentHelper.getAssessableNodes(editorModel, forumNode));
+			listenTo(moderatorCondContr);
+			accessibilityContent.put("moderatorCondition", moderatorCondContr.getInitialComponent());
+		}
 		
 		//Settings
-		settingsCtrl = new SettingsController(ureq, getWindowControl(), forumNode);
-		listenTo(settingsCtrl);
+		configCtrl = new FOConfigController(ureq, getWindowControl(), forumNode);
+		listenTo(configCtrl);
 	}
 
 	@Override
@@ -121,25 +124,19 @@ public class FOCourseNodeEditController extends ActivateableTabbableDefaultContr
 				foNode.setPreConditionModerator(cond);
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
-		} else if (source == settingsCtrl) {
-			if (event == Event.CHANGED_EVENT) {
-				String pseudoAllowed = settingsCtrl.isPseudonymPostAllowed() ? "true" : "false";
-				foNode.getModuleConfiguration().setStringValue(FOCourseNode.CONFIG_PSEUDONYM_POST_ALLOWED, pseudoAllowed);
-				String defaultPseudo = settingsCtrl.isDefaultPseudonym() ? "true" : "false";
-				foNode.getModuleConfiguration().setStringValue(FOCourseNode.CONFIG_PSEUDONYM_POST_DEFAULT, defaultPseudo);
-				String guestAllowed = settingsCtrl.isGuestPostAllowed() ? "true" : "false";
-				foNode.getModuleConfiguration().setStringValue(FOCourseNode.CONFIG_GUEST_POST_ALLOWED, guestAllowed);
-				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
-			}
+		} else if (source == configCtrl) {
+			fireEvent(urequest, event);
 		}
 	}
 
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), myContent);
-		if(settingsCtrl != null) {
-			tabbedPane.addTab(translate(PANE_TAB_SETTINGS), settingsCtrl.getInitialComponent());
+		if (accessibilityContent != null) {
+			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityContent);
+		}
+		if(configCtrl != null) {
+			tabbedPane.addTab(translate(PANE_TAB_CONFIG), configCtrl.getInitialComponent());
 		}
 	}
 
