@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import ch.uzh.lms.listener.LogoutListener;
 import org.olat.admin.user.tools.UserTool;
 import org.olat.admin.user.tools.UserToolCategory;
 import org.olat.admin.user.tools.UserToolExtension;
@@ -57,6 +58,9 @@ public class UserToolsMenuController extends BasicController implements Lockable
 	
 	@Autowired
 	private UserToolsModule userToolsModule;
+
+	@Autowired
+	private LogoutListener[] logoutListeners;
 	
 	public UserToolsMenuController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -140,6 +144,9 @@ public class UserToolsMenuController extends BasicController implements Lockable
 			String command = event.getCommand();
 			if (command.equals(ACTION_LOGOUT)) {
 				AuthHelper.doLogout(ureq);
+				for (LogoutListener logoutListener : logoutListeners) {
+					logoutListener.onLogout(ureq);
+				}
 			}
 		}
 	}
