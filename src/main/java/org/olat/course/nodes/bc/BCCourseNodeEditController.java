@@ -58,7 +58,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	static final String[] PANE_KEYS = { PANE_TAB_FOLDER };
 
 	private TabbedPane myTabbedPane;
-	private VelocityContainer accessabiliryContent;
+	private VelocityContainer accessibilityContent;
 
 	private BCCourseNodeConfigController configCtrl;
 	private ConditionEditController uploaderCondContr, downloaderCondContr;
@@ -71,7 +71,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 		this.bcNode = bcNode;
 		
 		if (bcNode.hasCustomPreConditions()) {
-			accessabiliryContent = createVelocityContainer("edit");
+			accessibilityContent = createVelocityContainer("edit");
 
 			// Uploader precondition
 			Condition uploadCondition = bcNode.getPreConditionUploaders();
@@ -83,11 +83,11 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 			CourseConfig courseConfig = course.getCourseConfig();
 			if(bcNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH, "").startsWith("/_sharedfolder")
 					&& courseConfig.isSharedFolderReadOnlyMount()) {
-				accessabiliryContent.contextPut("uploadable", false);
+				accessibilityContent.contextPut("uploadable", false);
 			} else {
-				accessabiliryContent.contextPut("uploadable", true);
+				accessibilityContent.contextPut("uploadable", true);
 			}
-			accessabiliryContent.put("uploadCondition", uploaderCondContr.getInitialComponent());
+			accessibilityContent.put("uploadCondition", uploaderCondContr.getInitialComponent());
 
 			// Uploader precondition
 			Condition downloadCondition = bcNode.getPreConditionDownloaders();
@@ -95,7 +95,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 					downloadCondition, AssessmentHelper
 							.getAssessableNodes(course.getEditorTreeModel(), bcNode));
 			listenTo(downloaderCondContr);
-			accessabiliryContent.put("downloadCondition", downloaderCondContr.getInitialComponent());
+			accessibilityContent.put("downloadCondition", downloaderCondContr.getInitialComponent());
 		}
 
 		configCtrl = new BCCourseNodeConfigController(ureq, wControl, bcNode, course);
@@ -122,11 +122,11 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 				fireEvent(urequest, NodeEditController.NODECONFIG_CHANGED_EVENT);
 			}
 		} else if (source == configCtrl){
-			if (accessabiliryContent != null) {
+			if (accessibilityContent != null) {
 				if(bcNode.getModuleConfiguration().getStringValue(BCCourseNode.CONFIG_SUBPATH, "").startsWith("/_sharedfolder")){
-					accessabiliryContent.contextPut("uploadable", false);
+					accessibilityContent.contextPut("uploadable", false);
 				} else {
-					accessabiliryContent.contextPut("uploadable", true);
+					accessibilityContent.contextPut("uploadable", true);
 				}
 			}
 			fireEvent(urequest, event);
@@ -136,8 +136,8 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 	@Override
 	public void addTabs(TabbedPane tabbedPane) {
 		myTabbedPane = tabbedPane;
-		if (accessabiliryContent != null) {
-			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessabiliryContent);
+		if (accessibilityContent != null) {
+			tabbedPane.addTab(translate(PANE_TAB_ACCESSIBILITY), accessibilityContent);
 		}
 		tabbedPane.addTab(translate(PANE_TAB_FOLDER), configCtrl.getInitialComponent());
 	}
@@ -149,7 +149,7 @@ public class BCCourseNodeEditController extends ActivateableTabbableDefaultContr
 
 	@Override
 	public String[] getPaneKeys() {
-		return accessabiliryContent != null? PANE_KEYS_CUSTOM_ACCESS: PANE_KEYS;
+		return accessibilityContent != null? PANE_KEYS_CUSTOM_ACCESS: PANE_KEYS;
 	}
 
 	@Override
