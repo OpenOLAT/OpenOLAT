@@ -100,7 +100,7 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	@SuppressWarnings("deprecation")
 	private static final String PACKAGE_FO = Util.getPackageName(FOCourseNodeRunController.class);
 
-	private static final String TYPE = "fo";
+	public static final String TYPE = "fo";
 
 	private static final int CURRENT_VERSION = 4;
 	public static final String CONFIG_FORUM_KEY = "forumKey";
@@ -541,22 +541,32 @@ public class FOCourseNode extends AbstractAccessableCourseNode {
 	 */
 	private void removeDefaultPreconditions() {
 		if (hasCustomPreConditions()) {
-			boolean defaultPreconditions = !preConditionModerator.isExpertMode()
-					&& preConditionModerator.isEasyModeCoachesAndAdmins()
-					&& !preConditionModerator.isEasyModeAlwaysAllowCoachesAndAdmins()
-					&& !preConditionModerator.isAssessmentMode() && !preConditionModerator.isAssessmentModeViewResults()
-					&& !preConditionPoster.isExpertMode() && !preConditionPoster.isEasyModeCoachesAndAdmins()
-					&& !preConditionPoster.isEasyModeAlwaysAllowCoachesAndAdmins()
-					&& !preConditionPoster.isAssessmentMode() && !preConditionPoster.isAssessmentModeViewResults()
-					&& !preConditionReader.isExpertMode() && !preConditionReader.isEasyModeCoachesAndAdmins()
-					&& !preConditionReader.isEasyModeAlwaysAllowCoachesAndAdmins()
-					&& !preConditionReader.isAssessmentMode() && !preConditionReader.isAssessmentModeViewResults();
+			boolean defaultPreconditions =
+					!preConditionModerator.isExpertMode()
+				&& preConditionModerator.isEasyModeCoachesAndAdmins()
+				&& !preConditionModerator.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionModerator.isAssessmentMode()
+				&& !preConditionModerator.isAssessmentModeViewResults()
+				&& !preConditionPoster.isExpertMode()
+				&& !preConditionPoster.isEasyModeCoachesAndAdmins()
+				&& !preConditionPoster.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionPoster.isAssessmentMode()
+				&& !preConditionPoster.isAssessmentModeViewResults()
+				&& !preConditionReader.isExpertMode()
+				&& !preConditionReader.isEasyModeCoachesAndAdmins()
+				&& !preConditionReader.isEasyModeAlwaysAllowCoachesAndAdmins()
+				&& !preConditionReader.isAssessmentMode()
+				&& !preConditionReader.isAssessmentModeViewResults();
 			if (defaultPreconditions) {
-				preConditionModerator = null;
-				preConditionPoster = null;
-				preConditionReader = null;
+				removeCustomPreconditions();
 			}
 		}
+	}
+
+	public void removeCustomPreconditions() {
+		preConditionModerator = null;
+		preConditionPoster = null;
+		preConditionReader = null;
 	}
 
 	@Override
