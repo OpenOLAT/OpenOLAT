@@ -3,9 +3,7 @@
 		<div class="panel-heading">
 			<h4 class="panel-title">
 				<i id="collapseGeneralToggler" class="o_icon o_icon-fw #if($inGeneral) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
-				<a data-toggle="collapse" data-parent="#accordion" href="#general">
-					$r.translate("general")
-				</a>
+				<a data-toggle="collapse" data-parent="#accordion" href="#general">$r.translate("general")</a>
 			</h4>
 		</div>
 		<div id="general" class="panel-collapse collapse $!inGeneral">
@@ -23,13 +21,11 @@
 		})
 		</script>
 	</div>
-	<div class="panel panel-default">
+	<div class="panel panel-default o_sel_qpool_metadata_item_analyse">
 		<div class="panel-heading">
 			<h4 class="panel-title">
 				<i id="collapseQuestionToggler" class="o_icon o_icon-fw #if($inQuestion) o_icon_close_togglebox #else o_icon_open_togglebox #end"> </i>
-				<a data-toggle="collapse" data-parent="#accordion" href="#question">
-					$r.translate("question")
-				</a>
+				<a data-toggle="collapse" data-parent="#accordion" href="#question">$r.translate("question")</a>
 			</h4>
 		</div>
 		<div id="question" class="panel-collapse collapse $!inQuestion">
@@ -38,15 +34,13 @@
 			</div>
 		</div>
 		<script>
-			/* <![CDATA[ */
-				jQuery('#question').on('hide.bs.collapse', function () {
-					jQuery('#collapseQuestionToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
-				})
-				jQuery('#question').on('show.bs.collapse', function () {
-					jQuery('#collapseQuestionToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
-					$r.backgroundCommand("show","panel","question")
-				})
-			/* ]]> */
+		jQuery('#question').on('hide.bs.collapse', function () {
+			jQuery('#collapseQuestionToggler').removeClass('o_icon_close_togglebox').addClass('o_icon_open_togglebox');
+		})
+		jQuery('#question').on('show.bs.collapse', function () {
+			jQuery('#collapseQuestionToggler').removeClass('o_icon_open_togglebox').addClass('o_icon_close_togglebox');
+			$r.backgroundCommand("show","panel","question")
+		})
 		</script>
 	</div>
 	<div class="panel panel-default">

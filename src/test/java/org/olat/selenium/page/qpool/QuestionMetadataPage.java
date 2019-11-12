@@ -22,6 +22,7 @@ package org.olat.selenium.page.qpool;
 import org.olat.selenium.page.graphene.OOGraphene;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
 
 /**
@@ -43,14 +44,21 @@ public class QuestionMetadataPage {
 	}
 	
 	public QuestionMetadataPage openGeneral() {
-		By hrefBy = By.cssSelector("div.o_sel_qpool_metadata_general>div>h4>a");
+		return openMetadata("o_sel_qpool_metadata_general");
+	}
+	
+	public QuestionMetadataPage openItemAnalyse() {
+		return openMetadata("o_sel_qpool_metadata_item_analyse");
+	}
+	
+	private QuestionMetadataPage openMetadata(String panelClass) {
+		By hrefBy = By.cssSelector("div." + panelClass + ">div>h4>a");
 		OOGraphene.waitElement(hrefBy, browser);
 		browser.findElement(hrefBy).click();
 		OOGraphene.waitingALittleLonger();// wait the accordion opens up
 		
-		By generalMetadata = By.cssSelector("div.o_sel_qpool_metadata_general div.panel-body fieldset.o_form");
+		By generalMetadata = By.cssSelector("div." + panelClass + " div.panel-body fieldset.o_form");
 		OOGraphene.waitElement(generalMetadata, browser);
-		
 		return this;
 	}
 	
@@ -89,6 +97,74 @@ public class QuestionMetadataPage {
 		if(assessmentType != null) {
 			By assessmentTypeBy = By.cssSelector("div.o_sel_qpool_metadata_assessment_type select");
 			new Select(browser.findElement(assessmentTypeBy)).selectByValue(assessmentType);
+		}
+		return this;
+	}
+	
+	public QuestionMetadataPage setLearningTime(Integer days, Integer hours, Integer minutes, Integer seconds) {
+		
+		if(days != null) {
+			By dayBy = By.cssSelector("div.o_sel_qpool_metadata_item_analyse input.o_sel_learning_time_d[type='text']");
+			WebElement dayEl = browser.findElement(dayBy);
+			dayEl.clear();
+			dayEl.sendKeys(days.toString());
+		}
+		if(hours != null) {
+			By hourBy = By.cssSelector("div.o_sel_qpool_metadata_item_analyse input.o_sel_learning_time_H[type='text']");
+			WebElement hourEl = browser.findElement(hourBy);
+			hourEl.clear();
+			hourEl.sendKeys(hours.toString());
+		}
+		if(minutes != null) {
+			By minuteBy = By.cssSelector("div.o_sel_qpool_metadata_item_analyse input.o_sel_learning_time_m[type='text']");
+			WebElement minuteEl = browser.findElement(minuteBy);
+			minuteEl.clear();
+			minuteEl.sendKeys(minutes.toString());
+		}
+		if(seconds != null) {
+			By secondBy = By.cssSelector("div.o_sel_qpool_metadata_item_analyse input.o_sel_learning_time_s[type='text']");
+			WebElement secondEl = browser.findElement(secondBy);
+			secondEl.clear();
+			secondEl.sendKeys(seconds.toString());
+		}
+		return this;
+	}
+	
+	/**
+	 * 
+	 * @param difficulty Value between 0.0 and 1.0
+	 * @param standardDeviation Value between 0.0 and 1.0
+	 * @param discriminationIndex Value between -1.0 and 1.0
+	 * @param distractors The number of distractors
+	 * @param usage
+	 * @return Itself
+	 */
+	public QuestionMetadataPage setItemAnalyse(Double difficulty, Double standardDeviation,
+			Double discriminationIndex, Integer distractors, Integer usage) {
+		
+		if(difficulty != null) {
+			By difficultyBy = By.cssSelector(".o_sel_qpool_metadata_item_analyse .o_sel_difficulty input[type='text']");
+			browser.findElement(difficultyBy).sendKeys(difficulty.toString());
+		}
+		if(standardDeviation != null) {
+			By deviationBy = By.cssSelector(".o_sel_qpool_metadata_item_analyse .o_sel_std_dev_difficulty input[type='text']");
+			browser.findElement(deviationBy).sendKeys(standardDeviation.toString());
+		}
+		if(discriminationIndex != null) {
+			By discriminationBy = By.cssSelector(".o_sel_qpool_metadata_item_analyse .o_sel_std_differentation input[type='text']");
+			browser.findElement(discriminationBy).sendKeys(discriminationIndex.toString());
+		}
+		if(distractors != null) {
+			By distractorsBy = By.cssSelector(".o_sel_qpool_metadata_item_analyse .o_sel_distractors input[type='text']");
+			WebElement distractorsEl = browser.findElement(distractorsBy);
+			distractorsEl.clear();
+			distractorsEl.sendKeys(distractors.toString());
+		}
+		if(usage != null) {
+			By usageBy = By.cssSelector(".o_sel_qpool_metadata_item_analyse .o_sel_usage input[type='text']");
+			WebElement usageEl = browser.findElement(usageBy);
+			usageEl.clear();
+			usageEl.sendKeys(usage.toString());
 		}
 		return this;
 	}
@@ -135,11 +211,69 @@ public class QuestionMetadataPage {
 		return this;
 	}
 	
+	public QuestionMetadataPage assertLearningTime(Integer days, Integer hours, Integer minutes, Integer seconds) {
+		if(days != null) {
+			By dayBy = By.xpath("//div[contains(@class,'o_sel_qpool_metadata_item_analyse')]//input[@value='" + days + "'][contains(@class,'o_sel_learning_time_d')]");
+			OOGraphene.waitElement(dayBy, browser);
+		}
+		if(hours != null) {
+			By hourBy = By.xpath("//div[contains(@class,'o_sel_qpool_metadata_item_analyse')]//input[@value='" + hours + "'][contains(@class,'o_sel_learning_time_H')]");
+			OOGraphene.waitElement(hourBy, browser);
+		}
+		if(minutes != null) {
+			By minuteBy = By.xpath("//div[contains(@class,'o_sel_qpool_metadata_item_analyse')]//input[@value='" + minutes + "'][contains(@class,'o_sel_learning_time_m')]");
+			OOGraphene.waitElement(minuteBy, browser);
+		}
+		if(seconds != null) {
+			By secondBy = By.xpath("//div[contains(@class,'o_sel_qpool_metadata_item_analyse')]//input[@value='" + seconds + "'][contains(@class,'o_sel_learning_time_s')]");
+			OOGraphene.waitElement(secondBy, browser);
+		}
+		return this;
+	}
+	
+	public QuestionMetadataPage assertDifficulty(Double diffculty) {
+		By difficultyBy = By.xpath("//div[contains(@class,'o_sel_difficulty')]//input[@value='" + diffculty + "']");
+		OOGraphene.waitElement(difficultyBy, browser);
+		return this;
+	}
+	
+	public QuestionMetadataPage assertDiscriminationIndex(Double discriminationIndex) {
+		By discriminationIndexBy = By.xpath("//div[contains(@class,'o_sel_std_differentation')]//input[@value='" + discriminationIndex + "']");
+		OOGraphene.waitElement(discriminationIndexBy, browser);
+		return this;
+	}
+	
+	public QuestionMetadataPage assertStandardDeviation(Double stdDeviation) {
+		By deviationBy = By.xpath("//div[contains(@class,'o_sel_std_dev_difficulty')]//input[@value='" + stdDeviation + "']");
+		OOGraphene.waitElement(deviationBy, browser);
+		return this;
+	}
+	
+	public QuestionMetadataPage assertDistractors(Integer distractors) {
+		By distractorsBy = By.xpath("//div[contains(@class,'o_sel_distractors')]//input[@value='" + distractors + "']");
+		OOGraphene.waitElement(distractorsBy, browser);
+		return this;
+	}
+	
+	public QuestionMetadataPage assertUsage(Integer usage) {
+		By usageBy = By.xpath("//div[contains(@class,'o_sel_usage')]//input[@value='" + usage + "']");
+		OOGraphene.waitElement(usageBy, browser);
+		return this;
+	}
+	
 	public QuestionMetadataPage saveGeneralMetadata() {
-		By buttonsBy = By.cssSelector("div.o_sel_qpool_metadata_general div.panel-body div.o_sel_qpool_metadata_buttons");
+		return saveMetadata("o_sel_qpool_metadata_general");
+	}
+	
+	public QuestionMetadataPage saveItemAnalyse() {
+		return saveMetadata("o_sel_qpool_metadata_item_analyse");
+	}
+	
+	private QuestionMetadataPage saveMetadata(String panelClass) {
+		By buttonsBy = By.cssSelector("div." + panelClass + " div.panel-body div.o_sel_qpool_metadata_buttons");
 		OOGraphene.moveTo(buttonsBy, browser);
 		
-		By saveBy = By.cssSelector("div.o_sel_qpool_metadata_general div.panel-body div.o_sel_qpool_metadata_buttons button.btn.btn-primary");
+		By saveBy = By.cssSelector("div." + panelClass + " div.panel-body div.o_sel_qpool_metadata_buttons button.btn.btn-primary");
 		browser.findElement(saveBy).click();
 		OOGraphene.waitBusy(browser);
 		OOGraphene.moveTop(browser);

@@ -60,7 +60,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class QuestionMetadataEditController extends FormBasicController {
 
-	private StaticTextElement typeEl;
 	private IntegerElement learningTimeDayElement;
 	private IntegerElement learningTimeHourElement;
 	private IntegerElement learningTimeMinuteElement;
@@ -91,7 +90,7 @@ public class QuestionMetadataEditController extends FormBasicController {
 
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
-		typeEl = uifactory.addStaticTextElement("question.type", "", formLayout);
+		StaticTextElement typeEl = uifactory.addStaticTextElement("question.type", "", formLayout);
 		QItemType type = item.getType();
 		if(type == null || type.getType() == null) {
 			typeEl.setValue("");
@@ -112,49 +111,59 @@ public class QuestionMetadataEditController extends FormBasicController {
 		
 		LOMDuration duration = MetadataConverterHelper.convertDuration(item.getEducationalLearningTime());
 		learningTimeDayElement = uifactory.addIntegerElement("learningTime.day", "", duration.getDay(), learningTimeContainer);
+		learningTimeDayElement.setElementCssClass("o_sel_learning_time_d");
 		((AbstractComponent)learningTimeDayElement.getComponent()).setDomReplacementWrapperRequired(false);
 		learningTimeDayElement.setDisplaySize(3);
 		learningTimeDayElement.setMandatory(true);
 		
 		learningTimeHourElement = uifactory.addIntegerElement("learningTime.hour", "", duration.getHour(), learningTimeContainer);
 		((AbstractComponent)learningTimeHourElement.getComponent()).setDomReplacementWrapperRequired(false);
+		learningTimeHourElement.setElementCssClass("o_sel_learning_time_H");
 		learningTimeHourElement.setDisplaySize(3);
 		learningTimeHourElement.setMandatory(true);
 		
 		learningTimeMinuteElement = uifactory.addIntegerElement("learningTime.minute", "", duration.getMinute(), learningTimeContainer);
 		((AbstractComponent)learningTimeMinuteElement.getComponent()).setDomReplacementWrapperRequired(false);
+		learningTimeMinuteElement.setElementCssClass("o_sel_learning_time_m");
 		learningTimeMinuteElement.setDisplaySize(3);
 		learningTimeMinuteElement.setMandatory(true);
 		
 		learningTimeSecondElement = uifactory.addIntegerElement("learningTime.second", "", duration.getSeconds(), learningTimeContainer);
 		((AbstractComponent)learningTimeSecondElement.getComponent()).setDomReplacementWrapperRequired(false);
+		learningTimeSecondElement.setElementCssClass("o_sel_learning_time_s");
 		learningTimeSecondElement.setDisplaySize(3);
 		learningTimeSecondElement.setMandatory(true);
 		
 		String difficulty = bigDToString(item.getDifficulty());
 		difficultyEl = uifactory.addTextElement("question.difficulty", "question.difficulty", 24, difficulty, formLayout);
+		difficultyEl.setElementCssClass("o_sel_difficulty");
 		difficultyEl.setExampleKey("question.difficulty.example", null);
 		difficultyEl.setDisplaySize(4);
 
 		String stdevDifficulty = bigDToString(item.getStdevDifficulty());
 		stdevDifficultyEl = uifactory.addTextElement("question.stdevDifficulty", "question.stdevDifficulty", 24, stdevDifficulty, formLayout);
+		stdevDifficultyEl.setElementCssClass("o_sel_std_dev_difficulty");
 		stdevDifficultyEl.setExampleKey("question.stdevDifficulty.example", null);
 		stdevDifficultyEl.setDisplaySize(4);
 		
 		String differentiation = bigDToString(item.getDifferentiation());
 		differentiationEl = uifactory.addTextElement("question.differentiation", "question.differentiation", 24, differentiation, formLayout);
 		differentiationEl.setExampleKey("question.differentiation.example", null);
+		differentiationEl.setElementCssClass("o_sel_std_differentation");
 		differentiationEl.setDisplaySize(4);
 		
 		String numAnswerAlt = item.getNumOfAnswerAlternatives() < 0 ? "" : Integer.toString(item.getNumOfAnswerAlternatives());
 		numAnswerAltEl = uifactory.addTextElement("question.numOfAnswerAlternatives", "question.numOfAnswerAlternatives", 24, numAnswerAlt, formLayout);
+		numAnswerAltEl.setElementCssClass("o_sel_distractors");
 		numAnswerAltEl.setDisplaySize(4);
 		
 		String numUsage = item.getUsage() < 0 ? "" : Integer.toString(item.getUsage());
 		usageEl = uifactory.addTextElement("question.usage", "question.usage", 24, numUsage, formLayout);
+		usageEl.setElementCssClass("o_sel_usage");
 		usageEl.setDisplaySize(4);
 
 		buttonsCont = FormLayoutContainer.createButtonLayout("buttons", getTranslator());
+		buttonsCont.setElementCssClass("o_sel_qpool_metadata_buttons");
 		buttonsCont.setRootForm(mainForm);
 		formLayout.add(buttonsCont);
 		uifactory.addFormSubmitButton("ok", "ok", buttonsCont);
