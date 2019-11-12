@@ -22,7 +22,8 @@ package org.olat.admin.user.bulkChange;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 
 /**
  * Description:<br>
@@ -33,18 +34,11 @@ import org.olat.core.gui.components.table.DefaultTableDataModel;
  * 
  * @author rhaag
  */
-public class OverviewModel extends DefaultTableDataModel<List<String>> {
+public class OverviewModel extends DefaultFlexiTableDataModel<List<String>> {
 
-	private int columnCount = 0;
-
-	public OverviewModel(List<List<String>> objects, int columnCount) {
-		super(objects);
-		this.columnCount = columnCount;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return columnCount;
+	public OverviewModel(List<List<String>> objects, FlexiTableColumnModel columnModel) {
+		super(columnModel);
+		setObjects(objects);
 	}
 
 	@Override
@@ -55,7 +49,7 @@ public class OverviewModel extends DefaultTableDataModel<List<String>> {
 	}
 
 	@Override
-	public Object createCopyWithEmptyList() {
-		return new OverviewModel(new ArrayList<List<String>>(), columnCount);
+	public OverviewModel createCopyWithEmptyList() {
+		return new OverviewModel(new ArrayList<List<String>>(), getTableColumnModel());
 	}
 }

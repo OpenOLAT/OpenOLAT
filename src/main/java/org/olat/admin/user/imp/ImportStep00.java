@@ -99,10 +99,8 @@ class ImportStep00 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new ImportStepForm00(ureq, windowControl, form, stepsRunContext);
-		return stepI;
+		return new ImportStepForm00(ureq, windowControl, form, stepsRunContext);
 	}
-
 
 	private final class ImportStepForm00 extends StepFormBasicController {
 

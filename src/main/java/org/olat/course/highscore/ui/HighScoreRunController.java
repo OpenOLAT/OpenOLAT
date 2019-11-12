@@ -38,9 +38,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBasicController;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableCssDelegate;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableRendererType;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
@@ -71,7 +69,8 @@ public class HighScoreRunController extends FormBasicController{
 	
 	private static final String GUIPREF_KEY_HIGHSCORE = "highscore";
 	
-	private FlexiTableDataModel<HighScoreTableEntry> tableDataModel, tableDataModel2;
+	private HighScoreFlexiTableModel tableDataModel;
+	private HighScoreFlexiTableModel tableDataModel2;
 	private List<HighScoreTableEntry> allMembers, ownIdMembers;
 	private List<List<HighScoreTableEntry>> allPodium;
 	private List<Integer> ownIdIndices;
@@ -326,8 +325,8 @@ public class HighScoreRunController extends FormBasicController{
 				allMembers.subList(tableSize, allMembers.size()).clear();
 			}
 
-			tableDataModel = new FlexiTableDataModelImpl<>(new HighScoreFlexiTableModel(allMembers, anonymous, 
-					translate("highscore.anonymous"),ownIdentity), tableColumnModel);
+			tableDataModel = new HighScoreFlexiTableModel(allMembers, anonymous, 
+					translate("highscore.anonymous"),ownIdentity, tableColumnModel);
 			FlexiTableElement topTenTable = uifactory.addTableElement(getWindowControl(), "table", tableDataModel, 
 					getTranslator(), formLayout);
 			topTenTable.setNumOfRowsEnabled(false);
@@ -336,10 +335,8 @@ public class HighScoreRunController extends FormBasicController{
 
 			//establish a 2nd table if ownID position is greater than first table's size setting
 			if (!ownIdMembers.isEmpty()) {
-				tableDataModel2 = new FlexiTableDataModelImpl<>(
-						new HighScoreFlexiTableModel(ownIdMembers, anonymous, 
-								translate("highscore.anonymous"), ownIdentity),
-						tableColumnModel);
+				tableDataModel2 = new HighScoreFlexiTableModel(ownIdMembers, anonymous, 
+								translate("highscore.anonymous"), ownIdentity, tableColumnModel);
 				FlexiTableElement tableElement = uifactory.addTableElement(
 						getWindowControl(), "table2", tableDataModel2, getTranslator(), formLayout);
 				tableElement.setNumOfRowsEnabled(false);
@@ -347,7 +344,7 @@ public class HighScoreRunController extends FormBasicController{
 				tableElement.setCssDelegate(new MarkedMemberCssDelegate(true));
 			}
 		}			
-		if (viewPosition && ownIdIndices.size() > 0) {
+		if (viewPosition && !ownIdIndices.isEmpty()) {
 			int amountWorse = allScores.length - ownIdIndices.get(0) - 1;
 			if (amountWorse > 0) {
 				mainVC.contextPut("relposition", translate("highscore.position.inrelation",

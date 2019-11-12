@@ -25,9 +25,12 @@
 
 package org.olat.admin.user.imp;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-import org.olat.core.gui.components.table.DefaultTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.id.Identity;
 import org.olat.user.UserManager;
 import org.olat.user.propertyhandlers.UserPropertyHandler;
@@ -39,21 +42,17 @@ import org.olat.user.propertyhandlers.UserPropertyHandler;
  * 
  * Description: Table model for user mass import.
  */
-public class Model extends DefaultTableDataModel<Identity> {
+public class Model extends DefaultFlexiTableDataModel<Identity> {
 
-	private List<UserPropertyHandler> userPropertyHandlers;
+	private final Locale locale;
+	private final List<UserPropertyHandler> userPropertyHandlers;
 	private static final String usageIdentifyer = UserImportController.class.getCanonicalName();
-	private int columnCount = 0;
 
-	public Model(List<Identity> objects, int columnCount) {
-		super(objects);
+	public Model(List<Identity> objects, FlexiTableColumnModel columnModel, Locale locale) {
+		super(columnModel);
+		this.locale = locale;
 		userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
-		this.columnCount = columnCount;
-	}
-
-	@Override
-	public int getColumnCount() {
-		return columnCount;
+		setObjects(objects);
 	}
 
 	@Override
@@ -83,9 +82,14 @@ public class Model extends DefaultTableDataModel<Identity> {
 		} else if (col > 3 && col < getColumnCount()) {
 			// get user property for this column for an already existing user
 			UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(col - 4);
-			String value = userPropertyHandler.getUserProperty(ident.getUser(), getLocale());
+			String value = userPropertyHandler.getUserProperty(ident.getUser(), locale);
 			return (value == null ? "n/a" : value);
 		}
 		return "ERROR";
+	}
+
+	@Override
+	public DefaultFlexiTableDataModel<Identity> createCopyWithEmptyList() {
+		return new Model(new ArrayList<>(), getTableColumnModel(), locale);
 	}
 }

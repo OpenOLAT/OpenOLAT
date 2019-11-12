@@ -35,9 +35,7 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.AbstractCS
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelImpl;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.gui.control.generic.wizard.BasicStep;
@@ -74,16 +72,13 @@ class ImportStep01 extends BasicStep {
 
 	@Override
 	public StepFormController getStepController(UserRequest ureq, WindowControl windowControl, StepsRunContext stepsRunContext, Form form) {
-		StepFormController stepI = new ImportStepForm01(ureq, windowControl, form, stepsRunContext);
-		return stepI;
+		return new ImportStepForm01(ureq, windowControl, form, stepsRunContext);
 	}
 
 	private final class ImportStepForm01 extends StepFormBasicController {
 		
-		
-		private FormLayoutContainer textContainer;
-		private SingleSelection updateEl, updatePasswordEl;
-		private List<UserPropertyHandler> userPropertyHandlers;
+		private SingleSelection updateEl;
+		private SingleSelection updatePasswordEl;
 
 		@Autowired
 		private UserManager userManager;
@@ -119,7 +114,7 @@ class ImportStep01 extends BasicStep {
 
 		@Override
 		protected boolean validateFormLogic(UserRequest ureq) {
-			boolean allOk = true;
+			boolean allOk = super.validateFormLogic(ureq);
 			if(updateEl != null && (!updateEl.isOneSelected() || updateEl.isSelected(0))) {
 				updateEl.setErrorKey("form.mandatory.hover", null);
 				allOk &= false;
@@ -129,7 +124,7 @@ class ImportStep01 extends BasicStep {
 				updatePasswordEl.setErrorKey("form.mandatory.hover", null);
 				allOk &= false;
 			}
-			return allOk & super.validateFormLogic(ureq);
+			return allOk;
 		}
 
 		@Override
@@ -145,7 +140,7 @@ class ImportStep01 extends BasicStep {
 			List<UpdateIdentity> updateIdents = (List<UpdateIdentity>) getFromRunContext("updateIdents");
 			@SuppressWarnings("unchecked")
 			List<TransientIdentity> newIdents = (List<TransientIdentity>) getFromRunContext("newIdents");
-			textContainer = FormLayoutContainer.createCustomFormLayout("step1", getTranslator(), velocity_root + "/step1.html");
+			FormLayoutContainer textContainer = FormLayoutContainer.createCustomFormLayout("step1", getTranslator(), velocity_root + "/step1.html");
 			formLayoutVertical.add(textContainer);
 
 			int cntall = idents.size();
@@ -183,14 +178,13 @@ class ImportStep01 extends BasicStep {
 			tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.user.lang", colPos++));
 
 			// followed by all properties configured
-			// if only mandatory required: check for um.isMandatoryUserProperty(usageIdentifyer, userPropertyHandler);
-			userPropertyHandlers = UserManager.getInstance().getUserPropertyHandlersFor(usageIdentifyer, true);
+			List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(usageIdentifyer, true);
 			for (int i = 0; i < userPropertyHandlers.size(); i++) {
 				UserPropertyHandler userPropertyHandler = userPropertyHandlers.get(i);
-					tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
+				tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(userPropertyHandler.i18nColumnDescriptorLabelKey(), colPos++));
 			}
 
-			FlexiTableDataModel<Identity> tableDataModel = new FlexiTableDataModelImpl<>(new Model(idents, colPos), tableColumnModel);
+			Model tableDataModel = new Model(idents, tableColumnModel, getLocale());
 			uifactory.addTableElement(getWindowControl(), "newUsers", tableDataModel, getTranslator(), formLayoutVertical);
 		}
 	}

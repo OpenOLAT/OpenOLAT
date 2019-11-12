@@ -21,41 +21,31 @@ package org.olat.course.highscore.ui;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.olat.core.gui.components.table.TableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.id.Identity;
 /**
  * Initial Date:  5.08.2016 <br>
  * @author fkiefer
  */
-public class HighScoreFlexiTableModel implements TableDataModel<HighScoreTableEntry> {
+public class HighScoreFlexiTableModel extends DefaultFlexiTableDataModel<HighScoreTableEntry> {
 	
-	private final int COLUMN_COUNT = 3;
 	private final String placeholder;
-	private List<HighScoreTableEntry> entries;
 	private final boolean anonymous;
 	private Identity ownId;
 
 	public HighScoreFlexiTableModel(List<HighScoreTableEntry> entries, boolean anonymous, String placeholder,
-			Identity ownId) {
-		this.entries = entries;
+			Identity ownId, FlexiTableColumnModel columnModel) {
+		super(columnModel);
+		this.setObjects(entries);
 		this.anonymous = anonymous;
 		this.placeholder = placeholder;
 		this.ownId = ownId;
 	}
 
 	@Override
-	public int getColumnCount() {
-		return COLUMN_COUNT;
-	}
-
-	@Override
-	public int getRowCount() {
-		return entries == null ? 0 : entries.size();
-	}
-
-	@Override
 	public Object getValueAt(int row, int col) {
-		HighScoreTableEntry entry = entries.get(row);
+		HighScoreTableEntry entry = getObject(row);
 		switch(col) {
 			case 0: return entry.getRank();
 			case 1: return entry.getScore();
@@ -65,19 +55,7 @@ public class HighScoreFlexiTableModel implements TableDataModel<HighScoreTableEn
 	}
 
 	@Override
-	public HighScoreTableEntry getObject(int row) {
-		return null;
+	public HighScoreFlexiTableModel createCopyWithEmptyList() {
+		return new HighScoreFlexiTableModel(new ArrayList<>(), anonymous, placeholder, ownId, getTableColumnModel());
 	}
-
-	@Override
-	public void setObjects(List<HighScoreTableEntry> entries) {
-		this.entries = entries;
-	}
-
-	@Override
-	public Object createCopyWithEmptyList() {
-		return new HighScoreFlexiTableModel(new ArrayList<>(), anonymous,placeholder,ownId);
-	}
-	
-
 }
