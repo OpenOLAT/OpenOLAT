@@ -21,7 +21,6 @@ package org.olat.course.learningpath.ui;
 
 import java.util.Date;
 
-import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTreeTableNode;
 import org.olat.course.assessment.IndentedNodeRenderer.IndentedCourseNode;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
@@ -36,13 +35,11 @@ import org.olat.modules.assessment.model.AssessmentObligation;
 public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	
 	private final LearningPathTreeNode learningPathNode;
-	private final Component progressBar;
 	private LearningPathRow parent;
 	private boolean hasChildren;
 	
-	public LearningPathRow(LearningPathTreeNode learningPathNode, Component progressBar) {
+	public LearningPathRow(LearningPathTreeNode learningPathNode) {
 		this.learningPathNode = learningPathNode;
-		this.progressBar = progressBar;
 	}
 
 	@Override
@@ -96,9 +93,9 @@ public class LearningPathRow implements FlexiTreeTableNode, IndentedCourseNode {
 	public Date getLastVisit() {
 		return learningPathNode.getLastVisit();
 	}
-
-	public Component getProgressBar() {
-		return progressBar;
+	
+	public LearningPathTreeNode getLearningPathNode() {
+		return learningPathNode;
 	}
 
 	@Override

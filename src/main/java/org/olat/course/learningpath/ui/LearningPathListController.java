@@ -31,22 +31,15 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellR
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataModelFactory;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.TreeNodeFlexiCellRenderer;
-import org.olat.core.gui.components.progressbar.ProgressBar;
-import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.tree.GenericTreeModel;
 import org.olat.core.gui.components.tree.TreeNode;
 import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.nodes.INode;
-import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.IndentedNodeRenderer;
-import org.olat.course.assessment.handler.AssessmentConfig;
-import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
-import org.olat.course.run.scoring.StatusCompletionEvaluator;
 import org.olat.course.run.userview.UserCourseEnvironment;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * 
@@ -55,8 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class LearningPathListController extends FormBasicController {
-	
-	private static final StatusCompletionEvaluator STATUS_COMPLETION_EVALUATOR = new StatusCompletionEvaluator();
 
 	private FlexiTableElement tableEl;
 	private LearningPathDataModel dataModel;
@@ -69,9 +60,6 @@ public class LearningPathListController extends FormBasicController {
 		initForm(ureq);
 	}
 	
-	@Autowired
-	private CourseAssessmentService courseAssessmentService;
-
 	@Override
 	protected void initForm(FormItemContainer formLayout, Controller listener, UserRequest ureq) {
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
@@ -91,7 +79,8 @@ public class LearningPathListController extends FormBasicController {
 		columnsModel.addFlexiColumnModel(lastVisitColumnModel);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.status));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.fullyAssessedDate));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.progress));
+		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer();
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.progress, progressRenderer));
 
 		dataModel = new LearningPathDataModel(columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", dataModel, 250, false, getTranslator(), formLayout);
@@ -137,31 +126,9 @@ public class LearningPathListController extends FormBasicController {
 	}
 
 	private LearningPathRow forgeRow(LearningPathTreeNode treeNode, LearningPathRow parent) {
-		ProgressBar progressBar = new ProgressBar("progress-" + treeNode.getIdent());
-		progressBar.setMax(1.0f);
-		progressBar.setWidthInPercent(true);
-		progressBar.setPercentagesEnabled(true);
-		progressBar.setLabelAlignment(LabelAlignment.none);
-		float actual = getActual(treeNode);
-		progressBar.setActual(actual);
-		LearningPathRow row = new LearningPathRow(treeNode, progressBar);
+		LearningPathRow row = new LearningPathRow(treeNode);
 		row.setParent(parent);
 		return row;
-	}
-
-	private float getActual(LearningPathTreeNode treeNode) {
-		float actual = 0;
-		AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(treeNode.getCourseNode());
-		boolean hasCompletion = !Mode.none.equals(assessmentConfig.getCompletionMode());
-		if (hasCompletion) {
-			actual = treeNode.getCompletion() != null ? treeNode.getCompletion().floatValue() : 0.0f;
-		} else {
-			Double statusCompletion = STATUS_COMPLETION_EVALUATOR.getCompletion(treeNode.getFullyAssessed(),
-					treeNode.getAssessmentStatus());
-			actual = statusCompletion != null? statusCompletion.floatValue(): 0;
-			
-		}
-		return actual;
 	}
 
 	@Override

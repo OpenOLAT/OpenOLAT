@@ -66,7 +66,7 @@ public class LearningPathDataModel extends DefaultFlexiTreeTableDataModel<Learni
 			case lastVisit: return row.getLastVisit();
 			case status: return row.getStatus();
 			case fullyAssessedDate: return row.getFullyAssessedDate();
-			case progress: return row.getProgressBar();
+			case progress: return row.getLearningPathNode();
 			default: return null;
 		}
 	}
