@@ -20,6 +20,7 @@
 package org.olat.modules.quality.generator.provider.course;
 
 import static org.olat.modules.quality.generator.ProviderHelper.addDays;
+import static org.olat.modules.quality.generator.ProviderHelper.subtractDays;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -141,6 +142,7 @@ public class CourseProvider implements QualityGeneratorProvider {
 		if (CONFIG_KEY_TRIGGER_BEGIN.equals(trigger) || CONFIG_KEY_TRIGGER_END.equals(trigger)) {
 			appendForDueDate(searchParams, generator, configs, fromDate, toDate);
 			List<RepositoryEntry> courses = loadCourses(generator, searchParams);
+			courses.removeIf(new PlusDurationIsInPast(configs, toDate));
 			numberDataCollections = courses.size();
 		} else if (CONFIG_KEY_TRIGGER_DAILY.equals(trigger)) {
 			List<Date> dcStarts = getDailyStarts(configs, fromDate, toDate);
@@ -189,6 +191,7 @@ public class CourseProvider implements QualityGeneratorProvider {
 			Date fromDate, Date toDate, List<Organisation> organisations, SearchParameters searchParams) {
 		appendForDueDate(searchParams, generator, configs, fromDate, toDate);
 		List<RepositoryEntry> courses = loadCourses(generator, searchParams);
+		courses.removeIf(new PlusDurationIsInPast(configs, toDate));
 
 		String trigger = configs.getValue(CONFIG_KEY_TRIGGER);
 		List<QualityDataCollection> dataCollections = new ArrayList<>();
@@ -354,15 +357,15 @@ public class CourseProvider implements QualityGeneratorProvider {
 		switch (trigger) {
 		case CONFIG_KEY_TRIGGER_BEGIN:
 			String beginDays = configs.getValue(CONFIG_KEY_DUE_DATE_DAYS);
-			Date beginFrom = addDays(fromDate, beginDays);
-			Date beginTo = addDays(toDate, beginDays);
+			Date beginFrom = subtractDays(fromDate, beginDays);
+			Date beginTo = subtractDays(toDate, beginDays);
 			searchParams.setBeginFrom(beginFrom);
 			searchParams.setBeginTo(beginTo);
 			break;
 		case CONFIG_KEY_TRIGGER_END:
 			String endDays = configs.getValue(CONFIG_KEY_DUE_DATE_DAYS);
-			Date endFrom = addDays(fromDate, endDays);
-			Date endTo = addDays(toDate, endDays);
+			Date endFrom = subtractDays(fromDate, endDays);
+			Date endTo = subtractDays(toDate, endDays);
 			searchParams.setEndFrom(endFrom);
 			searchParams.setEndTo(endTo);
 			break;

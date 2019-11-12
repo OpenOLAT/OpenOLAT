@@ -203,6 +203,27 @@ public class RepositoryEntryWhiteListController extends FormBasicController
 		return elementRefs;
 	}
 	
+	public static void setRepositoryEntryRefs(QualityGeneratorConfigs generatorConfigs, List<? extends RepositoryEntryRef> entries) {
+		for (RepositoryEntryRef entry : entries) {
+			doAddRepositoryEntry(generatorConfigs, entry.getKey().toString());
+		}
+	}
+
+	private static void doAddRepositoryEntry(QualityGeneratorConfigs generatorConfigs, String entryKey) {
+		if (StringHelper.containsNonWhitespace(entryKey)) {
+			String whiteListConfig = generatorConfigs.getValue(COURSE_WHITE_LIST);
+			if (StringHelper.containsNonWhitespace(whiteListConfig)) {
+				String[] keys = whiteListConfig.split(KEY_DELIMITER);
+				if (!Arrays.asList(keys).contains(entryKey)) {
+					whiteListConfig += KEY_DELIMITER + entryKey;
+				}
+			} else {
+				whiteListConfig = entryKey;
+			}
+			generatorConfigs.setValue(COURSE_WHITE_LIST, whiteListConfig);
+		}
+	}
+	
 	private void doSelectRepositoryEntry(UserRequest ureq) {
 		selectCtrl = new ReferencableEntriesSearchController(getWindowControl(), ureq,
 				new String[] { CourseModule.getCourseTypeName() }, translate("repository.entry.select.title"),
@@ -216,25 +237,8 @@ public class RepositoryEntryWhiteListController extends FormBasicController
 	}
 
 	private void doAddRepositoryEntries(List<RepositoryEntry> selectedEntries) {
-		for (RepositoryEntry repositoryEntry : selectedEntries) {
-			doAddRepositoryEntry(repositoryEntry.getKey().toString());
-		}
+		setRepositoryEntryRefs(configs, selectedEntries);
 		loadModel();
-	}
-
-	private void doAddRepositoryEntry(String entryKey) {
-		if (StringHelper.containsNonWhitespace(entryKey)) {
-			String whiteListConfig = configs.getValue(COURSE_WHITE_LIST);
-			if (StringHelper.containsNonWhitespace(whiteListConfig)) {
-				String[] keys = whiteListConfig.split(KEY_DELIMITER);
-				if (!Arrays.asList(keys).contains(entryKey)) {
-					whiteListConfig += KEY_DELIMITER + entryKey;
-				}
-			} else {
-				whiteListConfig = entryKey;
-			}
-			configs.setValue(COURSE_WHITE_LIST, whiteListConfig);
-		}
 	}
 
 	private void doConfirmRemove(UserRequest ureq, List<RepositoryEntry> entries) {
