@@ -45,6 +45,10 @@ public class AssessmentStatusCellRenderer implements FlexiCellRenderer, CustomCe
 		trans = Util.createPackageTranslator(AssessmentStatusCellRenderer.class, locale);
 	}
 	
+	public AssessmentStatusCellRenderer(Translator trans) {
+		this.trans = trans;
+	}
+	
 	@Override
 	public void render(StringOutput sb, Renderer renderer, Object val, Locale locale, int alignment, String action) {
 		render(renderer, sb, val, -1, null, null, renderer.getTranslator());
@@ -56,6 +60,7 @@ public class AssessmentStatusCellRenderer implements FlexiCellRenderer, CustomCe
 		if(cellValue instanceof AssessmentEntryStatus) {
 			AssessmentEntryStatus status = (AssessmentEntryStatus)cellValue;
 			switch(status) {
+				case notReady: target.append("<i class='o_icon o_icon_status_not_ready o_icon-fw'> </i> ").append(trans.translate("assessment.status.notReady")); break;
 				case notStarted: target.append("<i class='o_icon o_icon_status_not_started o_icon-fw'> </i> ").append(trans.translate("assessment.status.notStart")); break;
 				case inProgress: target.append("<i class='o_icon o_icon_status_in_progress o_icon-fw'> </i> ").append(trans.translate("assessment.status.inProgress")); break;
 				case inReview: target.append("<i class='o_icon o_icon_status_in_review o_icon-fw'> </i> ").append(trans.translate("assessment.status.inReview")); break;

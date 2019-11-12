@@ -37,6 +37,7 @@ import org.olat.core.gui.control.Controller;
 import org.olat.core.gui.control.WindowControl;
 import org.olat.core.util.nodes.INode;
 import org.olat.course.assessment.IndentedNodeRenderer;
+import org.olat.course.assessment.ui.tool.AssessmentStatusCellRenderer;
 import org.olat.course.learningpath.manager.LearningPathCourseTreeModelBuilder;
 import org.olat.course.learningpath.ui.LearningPathDataModel.LearningPathCols;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -77,7 +78,8 @@ public class LearningPathListController extends FormBasicController {
 		DefaultFlexiColumnModel lastVisitColumnModel = new DefaultFlexiColumnModel(LearningPathCols.lastVisit);
 		lastVisitColumnModel.setDefaultVisible(false);
 		columnsModel.addFlexiColumnModel(lastVisitColumnModel);
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.status));
+		FlexiCellRenderer statusRenderer = new AssessmentStatusCellRenderer(getTranslator());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.status, statusRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.fullyAssessedDate));
 		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.progress, progressRenderer));

@@ -56,7 +56,7 @@ public class LearningPathProgressRenderer implements FlexiCellRenderer {
 		if (cellValue instanceof LearningPathTreeNode) {
 			LearningPathTreeNode treeNode = (LearningPathTreeNode)cellValue;
 			if (Boolean.TRUE.equals(treeNode.getFullyAssessed())) {
-				target.append("<i class=\"o_icon o_icon-fw o_lp_done\"></i>");
+				target.append("<i class='o_icon o_icon-fw o_lp_done'> </i> ").append(translator.translate("fully.assessed"));
 			} else if (AssessmentEntryStatus.notReady.equals(treeNode.getAssessmentStatus())) {
 				// render nothing
 			} else {

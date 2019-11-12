@@ -310,6 +310,7 @@ $fa-css-prefix: "o_icon" !default;
 .o_icon_status_chat:before { content: $fa-var-comment; }
 .o_icon_status_dnd:before { content: $fa-var-dot-circle-o; color: $o-im-status-dnd-color; }
 .o_icon_status_unavailable:before { content: $fa-var-times-circle-o; color: $o-im-status-unavailable-color; }
+.o_icon_status_not_ready:before { content: $fa-var-times; }
 .o_icon_status_not_started:before { content: $fa-var-circle-o; }
 .o_icon_status_in_progress:before { content: $fa-var-play; }
 .o_icon_status_in_review:before { content: $fa-var-hand-o-up; }
