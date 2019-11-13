@@ -175,7 +175,7 @@ public class AssessedBusinessGroupCourseNodeListController extends FormBasicCont
 
 			for(BusinessGroup group:groups) {
 				if(!keys.contains(group.getKey())) {
-					rows.add(new AssessedBusinessGroup(group.getKey(), group.getName(), 0.0d, 0, 0, 0, 0));
+					rows.add(new AssessedBusinessGroup(group.getKey(), group.getName(), 0.0d, false, 0, 0, 0));
 				}
 			}
 			
