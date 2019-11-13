@@ -26,6 +26,7 @@
 package org.olat.course.certificate.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,7 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
@@ -68,9 +70,11 @@ import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
+import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
+import org.olat.modules.assessment.ui.component.LearningProgressComponent;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
@@ -128,6 +132,8 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private BusinessGroupService businessGroupService;
+	@Autowired
+	private CourseAssessmentService courseAssessmentService;
 	
 	/**
 	 * The constructor shows the efficiency statement given as parameter for the current user
@@ -250,7 +256,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			mainVC.put("course.link", courseLink);
 		}
 		
-		mainVC.contextPut("user", statementOwner.getUser());			
+		mainVC.contextPut("user", statementOwner.getUser());
 		mainVC.contextPut("username", statementOwner.getName());
 		
 		Roles roles = ureq.getUserSession().getRoles();
@@ -274,6 +280,19 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 				groupLink = LinkFactory.createButtonXSmall("group.link", mainVC, this);
 				groupLink.setIconLeftCSS("o_icon o_icon_group");
 				mainVC.put("group.link", groupLink);
+			}
+		}
+		
+		Map<Long, AssessmentEvaluation> evaluations = courseAssessmentService.getRootAssessmentEvaluations(
+				statementOwner, Collections.singletonList(courseRepoEntry.getKey()), true);
+		if (!evaluations.isEmpty()) {
+			AssessmentEvaluation assessmentEvaluation = evaluations.get(courseRepoEntry.getKey());
+			if (assessmentEvaluation != null) {
+				LearningProgressComponent learningProgressComponent = new LearningProgressComponent("learning.progress", getLocale());
+				learningProgressComponent.setFullyAssessed(assessmentEvaluation.getFullyAssessed());
+				learningProgressComponent.setStatus(assessmentEvaluation.getAssessmentStatus());
+				learningProgressComponent.setCompletion(assessmentEvaluation.getCompletion());
+				mainVC.put("learning.progress", learningProgressComponent);
 			}
 		}
 	}

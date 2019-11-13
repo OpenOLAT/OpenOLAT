@@ -29,9 +29,9 @@ import org.olat.course.run.scoring.AssessmentEvaluation;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningProgressRenderer extends AbstractLearningProgressRenderer {
+public class LearningProgressCellRenderer extends AbstractLearningProgressCellRenderer {
 	
-	public LearningProgressRenderer(Locale locale) {
+	public LearningProgressCellRenderer(Locale locale) {
 		super(locale);
 	}
 

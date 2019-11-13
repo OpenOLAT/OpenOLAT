@@ -86,6 +86,14 @@ jQuery(function(){
 					</td>
 				</tr>
 			#end
+			#if($r.available("learning.progress"))
+				<tr>
+					<th style="width: 30%;">$r.translate("learning.progress")</th>
+					<td>
+						$r.render("learning.progress")
+					</td>
+				</tr>
+			#end
 			</tbody>
 			</table>
 		</div>

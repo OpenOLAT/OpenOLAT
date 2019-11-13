@@ -17,21 +17,18 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.assessment.ui;
+package org.olat.modules.assessment.ui.component;
 
-import java.util.Locale;
-
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiCellRenderer;
-import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableComponent;
+import org.olat.core.gui.components.Component;
+import org.olat.core.gui.components.DefaultComponentRenderer;
 import org.olat.core.gui.components.progressbar.ProgressBar;
 import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
+import org.olat.core.gui.render.RenderResult;
 import org.olat.core.gui.render.Renderer;
 import org.olat.core.gui.render.StringOutput;
 import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
-import org.olat.core.util.Util;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 
 /**
@@ -40,31 +37,24 @@ import org.olat.modules.assessment.model.AssessmentEntryStatus;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public abstract class AbstractLearningProgressRenderer implements FlexiCellRenderer {
-	
-	private Translator trans;
-	
-	public AbstractLearningProgressRenderer(Locale locale) {
-		trans = Util.createPackageTranslator(AbstractLearningProgressRenderer.class, locale);
-	}
-	
+public class LearningProgressRenderer extends DefaultComponentRenderer {
+
 	@Override
-	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
-			URLBuilder ubu, Translator translator) {
-		AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(cellValue);
-		if (assessmentEvaluation != null) {
-			if (Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed())) {
-				target.append("<i class='o_icon o_icon-fw o_lp_done'> </i> ").append(trans.translate("fully.assessed"));
-			} else if (AssessmentEntryStatus.notReady.equals(assessmentEvaluation.getAssessmentStatus())) {
-				// render nothing
-			} else {
-				float actual = getActual(cellValue);
-				renderProgressBar(renderer, target, ubu, translator, actual);
-			}
+	public void render(Renderer renderer, StringOutput sb, Component source, URLBuilder ubu, Translator translator,
+			RenderResult renderResult, String[] args) {
+		
+		LearningProgressComponent lpc = (LearningProgressComponent) source;
+		
+		if (Boolean.TRUE.equals(lpc.getFullyAssessed())) {
+			sb.append("<i class='o_icon o_icon-fw o_lp_done'> </i> ").append(lpc.getTranslator().translate("fully.assessed"));
+		} else if (AssessmentEntryStatus.notReady.equals(lpc.getStatus())) {
+			// render nothing
+		} else {
+			renderProgressBar(renderer, sb, ubu, translator, lpc.getCompletion());
 		}
 	}
 
-	private void renderProgressBar(Renderer renderer, StringOutput target, URLBuilder ubu, Translator translator,
+	private void renderProgressBar(Renderer renderer, StringOutput sb, URLBuilder ubu, Translator translator,
 			float actual) {
 		ProgressBar progressBar = new ProgressBar("progress-" + CodeHelper.getRAMUniqueID());
 		progressBar.setMax(1.0f);
@@ -72,11 +62,7 @@ public abstract class AbstractLearningProgressRenderer implements FlexiCellRende
 		progressBar.setPercentagesEnabled(true);
 		progressBar.setLabelAlignment(LabelAlignment.none);
 		progressBar.setActual(actual);
-		progressBar.getHTMLRendererSingleton().render(renderer, target, progressBar, ubu, translator, null, null);
+		progressBar.getHTMLRendererSingleton().render(renderer, sb, progressBar, ubu, translator, null, null);
 	}
-	
-	protected abstract AssessmentEvaluation getAssessmentEvaluation(Object cellValue);
-	
-	protected abstract float getActual(Object cellValue);
 
 }

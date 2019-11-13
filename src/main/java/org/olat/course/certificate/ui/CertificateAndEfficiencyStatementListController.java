@@ -77,7 +77,7 @@ import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.Cols;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.modules.assessment.ui.LearningProgressRenderer;
+import org.olat.modules.assessment.ui.LearningProgressCellRenderer;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 import org.olat.portfolio.EPArtefactHandler;
@@ -196,7 +196,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new PassedCellRenderer()));
-		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.learningProgress, new LearningProgressRenderer(getLocale())));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.learningProgress, new LearningProgressCellRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified));

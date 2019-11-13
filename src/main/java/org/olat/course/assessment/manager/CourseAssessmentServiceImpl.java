@@ -381,15 +381,17 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		List<RepositoryEntry> courseEntries = repositoryService.loadByKeys(courseEntryKeys);
 		Map<Long, AssessmentEvaluation> evalations = new HashMap<>();
 		for (RepositoryEntry courseEntry : courseEntries) {
-			ICourse course = CourseFactory.loadCourse(courseEntry);
-			if (course != null && filterLearningProgress(course, courseWithLearningProgressOnly)) {
-				IdentityEnvironment identityEnv = new IdentityEnvironment();
-				identityEnv.setIdentity(identity);
-				ScoreAccounting scoreAccounting = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment())
-						.getScoreAccounting();
-				scoreAccounting.evaluateAll(true);
-				AssessmentEvaluation evaluation = scoreAccounting.evalCourseNode(course.getRunStructure().getRootNode());
-				evalations.put(courseEntry.getKey(), evaluation);
+			if (!courseEntry.getEntryStatus().decommissioned()) {
+				ICourse course = CourseFactory.loadCourse(courseEntry);
+				if (course != null && filterLearningProgress(course, courseWithLearningProgressOnly)) {
+					IdentityEnvironment identityEnv = new IdentityEnvironment();
+					identityEnv.setIdentity(identity);
+					ScoreAccounting scoreAccounting = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment())
+							.getScoreAccounting();
+					scoreAccounting.evaluateAll(true);
+					AssessmentEvaluation evaluation = scoreAccounting.evalCourseNode(course.getRunStructure().getRootNode());
+					evalations.put(courseEntry.getKey(), evaluation);
+				}
 			}
 		}
 		return evalations;

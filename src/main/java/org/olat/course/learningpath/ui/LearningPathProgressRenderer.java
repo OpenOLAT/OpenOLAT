@@ -27,7 +27,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.StatusCompletionEvaluator;
-import org.olat.modules.assessment.ui.AbstractLearningProgressRenderer;
+import org.olat.modules.assessment.ui.AbstractLearningProgressCellRenderer;
 
 /**
  * 
@@ -35,7 +35,7 @@ import org.olat.modules.assessment.ui.AbstractLearningProgressRenderer;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class LearningPathProgressRenderer extends AbstractLearningProgressRenderer {
+public class LearningPathProgressRenderer extends AbstractLearningProgressCellRenderer {
 	
 	private static final StatusCompletionEvaluator STATUS_COMPLETION_EVALUATOR = new StatusCompletionEvaluator();
 	
