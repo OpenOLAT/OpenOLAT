@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.core.gui.UserRequest;
@@ -63,6 +64,7 @@ import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.CorruptedCourseException;
 import org.olat.course.assessment.AssessmentModule;
+import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
@@ -74,6 +76,8 @@ import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.Cols;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.modules.assessment.ui.LearningProgressRenderer;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.wizard.CollectArtefactController;
 import org.olat.portfolio.EPArtefactHandler;
@@ -128,6 +132,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	private CertificatesManager certificatesManager;
 	@Autowired
 	private EfficiencyStatementMediaHandler mediaHandler;
+	@Autowired
+	private CourseAssessmentService courseAssesmentService;
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true);
@@ -190,6 +196,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.displayName));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.score));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.passed, new PassedCellRenderer()));
+		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.learningProgress, new LearningProgressRenderer(getLocale())));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.show",
 				translate("table.header.show"), CMD_SHOW));
 		tableColumnModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.lastModified));
@@ -231,6 +238,14 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		Map<Long, CertificateAndEfficiencyStatement> resourceKeyToStatments = new HashMap<>();
 		List<CertificateAndEfficiencyStatement> statments = new ArrayList<>();
 		List<UserEfficiencyStatementLight> efficiencyStatementsList = esm.findEfficiencyStatementsLight(assessedIdentity);
+		
+		List<Long> courseEntryKeys = efficiencyStatementsList.stream()
+				.map(UserEfficiencyStatementLight::getCourseRepoKey)
+				.filter(key -> key != null)
+				.collect(Collectors.toList());
+		Map<Long, AssessmentEvaluation> courseRepoKeyToEvaluation = courseAssesmentService
+				.getRootAssessmentEvaluations(assessedIdentity, courseEntryKeys, true);
+		
 		for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {
 			CertificateAndEfficiencyStatement wrapper = new CertificateAndEfficiencyStatement();
 			wrapper.setDisplayName(efficiencyStatement.getShortTitle());
@@ -240,6 +255,8 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 			wrapper.setResourceKey(efficiencyStatement.getArchivedResourceKey());
 			wrapper.setLastModified(efficiencyStatement.getLastModified());
 			wrapper.setLastUserModified(efficiencyStatement.getLastUserModified());
+			AssessmentEvaluation courseEvaluation = courseRepoKeyToEvaluation.get(efficiencyStatement.getCourseRepoKey());
+			wrapper.setCourseEvaluation(courseEvaluation);
 			statments.add(wrapper);
 			resourceKeyToStatments.put(efficiencyStatement.getArchivedResourceKey(), wrapper);
 		}

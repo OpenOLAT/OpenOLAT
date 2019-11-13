@@ -48,6 +48,8 @@ public interface NodeAccessService {
 	public boolean isSupported(NodeAccessType type, String courseNodeType);
 
 	public boolean isSupported(NodeAccessType type, CourseNode courseNode);
+	
+	public boolean isCourseLearningProgressSupported(NodeAccessType type);
 
 	/**
 	 * Creates the controller to edit the access configurations of the node.

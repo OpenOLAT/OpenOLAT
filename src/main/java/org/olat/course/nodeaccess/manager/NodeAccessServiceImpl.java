@@ -87,6 +87,11 @@ public class NodeAccessServiceImpl implements NodeAccessService, NodeVisitedList
 	}
 
 	@Override
+	public boolean isCourseLearningProgressSupported(NodeAccessType type) {
+		return getNodeAccessProvider(type).isCourseLearningProgressSupported();
+	}
+
+	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, NodeAccessType type,
 			CourseNode courseNode, UserCourseEnvironment userCourseEnv, CourseEditorTreeModel editorModel) {
 		return getNodeAccessProvider(type).createEditController(ureq, wControl, courseNode, userCourseEnv, editorModel);

@@ -81,7 +81,7 @@ public class LearningPathListController extends FormBasicController {
 		FlexiCellRenderer statusRenderer = new AssessmentStatusCellRenderer(getTranslator());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.status, statusRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.fullyAssessedDate));
-		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer();
+		FlexiCellRenderer progressRenderer = new LearningPathProgressRenderer(getLocale());
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.progress, progressRenderer));
 
 		dataModel = new LearningPathDataModel(columnsModel);

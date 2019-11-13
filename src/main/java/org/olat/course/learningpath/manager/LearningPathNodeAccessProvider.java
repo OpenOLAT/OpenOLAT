@@ -79,6 +79,11 @@ public class LearningPathNodeAccessProvider implements NodeAccessProvider {
 	public boolean isSupported(String courseNodeType) {
 		return registry.getLearningPathNodeHandler(courseNodeType).isSupported();
 	}
+
+	@Override
+	public boolean isCourseLearningProgressSupported() {
+		return true;
+	}
 	
 	@Override
 	public TabbableController createEditController(UserRequest ureq, WindowControl wControl, CourseNode courseNode,

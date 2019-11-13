@@ -83,5 +83,9 @@ public class LearningPathTreeNode extends CourseTreeNode {
 	public Double getCompletion() {
 		return assessmentEvaluation != null? assessmentEvaluation.getCompletion(): null;
 	}
+
+	public AssessmentEvaluation getAssessmentEvaluation() {
+		return assessmentEvaluation;
+	}
 	
 }
