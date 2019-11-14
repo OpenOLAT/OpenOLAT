@@ -22,7 +22,9 @@ package org.olat.course.nodes;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.zip.ZipOutputStream;
 
@@ -164,9 +166,9 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public boolean isInDropboxTimeFrame () {
 		ModuleConfiguration config = getModuleConfiguration();
 		Date start = config.getBooleanEntry(CONFIG_KEY_DATESTART) != null ? 
-				(Date) config.getDateValue(CONFIG_KEY_DATESTART) : new Date();
+				config.getDateValue(CONFIG_KEY_DATESTART) : new Date();
 		Date end = config.getBooleanEntry(CONFIG_KEY_DATEEND) != null ? 
-				(Date) config.getDateValue(CONFIG_KEY_DATEEND) : new Date();
+				config.getDateValue(CONFIG_KEY_DATEEND) : new Date();
 		Date current = new Date();
 		
 		return start.before(current) && end.after(current);		
@@ -182,13 +184,13 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	public Date getDateStart() {
 		ModuleConfiguration config = getModuleConfiguration();
 		return config.getBooleanEntry(CONFIG_KEY_DATESTART) != null ? 
-				(Date) config.getDateValue(CONFIG_KEY_DATESTART) : new Date();
+				config.getDateValue(CONFIG_KEY_DATESTART) : new Date();
 	}
 	
 	public Date getDateEnd() {
 		ModuleConfiguration config = getModuleConfiguration();
 		return config.getBooleanEntry(CONFIG_KEY_DATEEND) != null ? 
-				(Date) config.getDateValue(CONFIG_KEY_DATEEND) : new Date();
+				config.getDateValue(CONFIG_KEY_DATEEND) : new Date();
 	}
 	
 
@@ -228,28 +230,31 @@ public class PFCourseNode extends AbstractAccessableCourseNode {
 	@Override
 	public Controller createPeekViewRunController(UserRequest ureq, WindowControl wControl,
 			UserCourseEnvironment userCourseEnv, NodeEvaluation ne) {
-		VFSContainer rootFolder = null;
 		CourseEnvironment courseEnv = userCourseEnv.getCourseEnvironment();
 		Identity identity = userCourseEnv.getIdentityEnvironment().getIdentity();
-		Path folderRelPath = null;
+		
+		List<VFSContainer> rootFolder = new ArrayList<>();
 		LocalFolderImpl baseContainer = courseEnv.getCourseBaseContainer();
 		PFManager pfManager = CoreSpringFactory.getImpl(PFManager.class);
 		if (userCourseEnv.isCoach() || userCourseEnv.isAdmin()) {
-			folderRelPath = Paths.get(baseContainer.getBasefile().toPath().toString(), 
-					PFManager.FILENAME_PARTICIPANTFOLDER, getIdent());
-			rootFolder = new LocalFolderImpl(folderRelPath.toFile());
+			List<Identity> participants = pfManager.getParticipants(identity, courseEnv, userCourseEnv.isAdmin());
+			for(Identity participant:participants) {
+				Path folderRelPath = Paths.get(baseContainer.getBasefile().toPath().toString(), 
+						PFManager.FILENAME_PARTICIPANTFOLDER, getIdent(),
+						pfManager.getIdFolderName(participant));
+				rootFolder.add(new LocalFolderImpl(folderRelPath.toFile()));
+			}
 		} else if (userCourseEnv.isParticipant()) {
-			folderRelPath = Paths.get(baseContainer.getBasefile().toPath().toString(), 
+			Path folderRelPath = Paths.get(baseContainer.getBasefile().toPath().toString(), 
 					PFManager.FILENAME_PARTICIPANTFOLDER, getIdent(), 
 					pfManager.getIdFolderName(identity));
-			rootFolder = new LocalFolderImpl(folderRelPath.toFile());
+			rootFolder.add(new LocalFolderImpl(folderRelPath.toFile()));
 		}
 		
-		if (rootFolder == null) {
+		if (rootFolder.isEmpty()) {
 			return super.createPeekViewRunController(ureq, wControl, userCourseEnv, ne);
-		} else {
-			return new PFPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
 		}
+		return new PFPeekviewController(ureq, wControl, rootFolder, getIdent(), 4);
 	}
 	
 	@Override
