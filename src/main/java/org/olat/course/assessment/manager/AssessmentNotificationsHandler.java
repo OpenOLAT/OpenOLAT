@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
@@ -72,8 +73,11 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.modules.assessment.AssessmentEntry;
 import org.olat.modules.assessment.manager.AssessmentEntryDAO;
+import org.olat.modules.curriculum.CurriculumElement;
 import org.olat.modules.scorm.assessment.ScormAssessmentManager;
+import org.olat.repository.RepositoryEntryRelationType;
 import org.olat.repository.RepositoryManager;
+import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -92,6 +96,8 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 	
 	private static final String CSS_CLASS_USER_ICON = "o_icon_user";
 
+	@Autowired
+	private RepositoryService repositoryService;
 	@Autowired
 	private OrganisationService organisationService;
 	@Autowired
@@ -318,8 +324,21 @@ public class AssessmentNotificationsHandler implements NotificationsHandler {
 					if (!hasFullAccess) {
 						// initialize list of users, only when user has not full access
 						List<BusinessGroup> coachedGroups = cgm.getOwnedBusinessGroups(identity);
-						List<Identity> coachedIdentites = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
-						coachedUsers.addAll(coachedIdentites);
+						List<Identity> coachedIdentities = businessGroupService.getMembers(coachedGroups, GroupRoles.participant.name());
+						coachedUsers.addAll(coachedIdentities);
+						
+						List<CurriculumElement> coachedCurriculumElements = cgm.getCoachedCurriculumElements(identity);
+						List<Long> coachedCurriculumElementKeys = coachedCurriculumElements.stream()
+								.map(CurriculumElement::getKey).collect(Collectors.toList());
+						List<Identity> coachedCurriculumElementIdentities = cgm.getCoachesFromCurriculumElements(coachedCurriculumElementKeys);
+						coachedUsers.addAll(coachedCurriculumElementIdentities);
+	
+						// course coaches
+						boolean repoTutor = repositoryService.hasRole(identity, cgm.getCourseEntry(), GroupRoles.coach.name());
+						if(repoTutor) {
+							List<Identity> courseParticipants = repositoryService.getMembers(cgm.getCourseEntry(), RepositoryEntryRelationType.entryAndCurriculums, GroupRoles.participant.name());
+							coachedUsers.addAll(courseParticipants);
+						}	
 					}
 
 					List<AssessableCourseNode> testNodes = getCourseTestNodes(course);
