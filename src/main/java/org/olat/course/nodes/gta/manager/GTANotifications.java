@@ -708,16 +708,26 @@ class GTANotifications {
 									solution.getName(),
 									author
 								};
-							appendSubscriptionItemForFile("notifications.solution.task", params, assessedIdentity,
-									"[solution:0]" , solution, date, false);
+							if(group != null) {
+								appendSubscriptionItemForFile("notifications.solution.task", params, group,
+										"[solution:0]", solution, date, false);
+							} else {
+								appendSubscriptionItemForFile("notifications.solution.task", params, assessedIdentity,
+										"[solution:0]" , solution, date, false);
+							}
 						} else {
 							String[] params = new String[] {
 									displayName,
 									solution.getName(),
 									author
 								};
-							appendSubscriptionItemForFile("notifications.solution", params, assessedIdentity,
-									"[solution:0]" , solution, date, false);
+							if(group != null) {
+								appendSubscriptionItemForFile("notifications.solution", params, group,
+										"[solution:0]" , solution, date, false);
+							} else {
+								appendSubscriptionItemForFile("notifications.solution", params, assessedIdentity,
+										"[solution:0]" , solution, date, false);
+							}
 						}
 					}
 				}
