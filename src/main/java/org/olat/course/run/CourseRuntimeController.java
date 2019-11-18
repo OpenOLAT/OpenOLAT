@@ -85,7 +85,6 @@ import org.olat.course.ICourse;
 import org.olat.course.archiver.ArchiverMainController;
 import org.olat.course.archiver.FullAccessArchiverCallback;
 import org.olat.course.area.CourseAreasController;
-import org.olat.course.assessment.AssessmentChangedEvent;
 import org.olat.course.assessment.AssessmentModule;
 import org.olat.course.assessment.ui.mode.AssessmentModeListController;
 import org.olat.course.assessment.ui.mode.AssessmentModeSecurityCallback;
@@ -684,25 +683,11 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 
 		// Personal tools on right side
 		CourseConfig cc = course.getCourseConfig();
-		if ((course.hasAssessableNodes() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock && userCourseEnv != null) {
-			// link to efficiency statements should
-			// - not appear when not configured in course configuration
-			// - not appear when configured in course configuration but no assessable
-			// node exist
-			// - appear but dimmed when configured, assessable node exist but no
-			// assessment data exists for user
-			// - appear as link when configured, assessable node exist and assessment
-			// data exists for user
-			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",translate("command.efficiencystatement"), this, "o_icon_certificate");
-			efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled());
+		if ((cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) && !isGuestOnly && !assessmentLock
+				&& userCourseEnv != null && userCourseEnv.isParticipant()) {
+			efficiencyStatementsLink = LinkFactory.createToolLink("efficiencystatement",
+					translate("command.efficiencystatement"), this, "o_icon_certificate");
 			myCourse.addComponent(efficiencyStatementsLink);
-			if(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) {
-				boolean certification = userCourseEnv.hasEfficiencyStatementOrCertificate(false);
-				efficiencyStatementsLink.setVisible(certification);
-			}
-		}
-		if (efficiencyStatementsLink != null && userCourseEnv != null && !userCourseEnv.isParticipant()) {
-			efficiencyStatementsLink.setVisible(false);
 		}
 		
 		if (!isGuestOnly && !assessmentLock) {
@@ -941,16 +926,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 	public void event(Event event) {
 		if(event instanceof CourseConfigEvent) {				
 			processCourseConfigEvent((CourseConfigEvent)event);
-		} else if (event instanceof AssessmentChangedEvent) {
-			String assessmentChangeType = event.getCommand();
-			AssessmentChangedEvent ace = (AssessmentChangedEvent) event;
-			if(!isGuestOnly && efficiencyStatementsLink != null && ace.getIdentityKey().equals(getIdentity().getKey())
-					&& assessmentChangeType.equals(AssessmentChangedEvent.TYPE_EFFICIENCY_STATEMENT_CHANGED)) {
-				// update tools, maybe efficiency statement link has changed
-				UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
-				boolean certification = uce.hasEfficiencyStatementOrCertificate(true);
-				efficiencyStatementsLink.setEnabled(certification);
-			}
 		} else if (event instanceof EntryChangedEvent ) {
 			EntryChangedEvent repoEvent = (EntryChangedEvent) event;
 			if (repoEvent.isMe(getRepositoryEntry())) {
@@ -1735,7 +1710,7 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 			listenTo(identityOverviewCtrl);
 			pushController(ureq, translate("command.learning.path"), identityOverviewCtrl);
 			currentToolCtr = identityOverviewCtrl;
-			setActiveTool(efficiencyStatementsLink);
+			setActiveTool(learninPathLink);
 		} else {
 			delayedClose = Delayed.learningPath;
 		}
@@ -2067,11 +2042,6 @@ public class CourseRuntimeController extends RepositoryEntryRuntimeController im
 					ICourse course = CourseFactory.loadCourse(getRepositoryEntry());
 					CourseConfig cc = course.getCourseEnvironment().getCourseConfig();
 					efficiencyStatementsLink.setVisible(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled());
-					if(cc.isEfficencyStatementEnabled() || cc.isCertificateEnabled()) {
-						UserCourseEnvironmentImpl uce = getUserCourseEnvironment();
-						boolean certification = uce.hasEfficiencyStatementOrCertificate(false);
-						efficiencyStatementsLink.setEnabled(certification);
-					}
 					toolbarPanel.setDirty(true);
 				}
 				break;
