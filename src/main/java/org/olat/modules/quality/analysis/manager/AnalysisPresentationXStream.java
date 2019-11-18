@@ -25,7 +25,9 @@ import org.olat.basesecurity.model.OrganisationRefImpl;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.xml.XStreamHelper;
+import org.olat.modules.curriculum.CurriculumElementTypeRef;
 import org.olat.modules.curriculum.model.CurriculumElementRefImpl;
+import org.olat.modules.curriculum.model.CurriculumElementTypeRefImpl;
 import org.olat.modules.curriculum.model.CurriculumRefImpl;
 import org.olat.modules.quality.analysis.AnalysisSearchParameter;
 import org.olat.modules.quality.analysis.GroupBy;
@@ -53,7 +55,7 @@ public class AnalysisPresentationXStream {
 		Class<?>[] types = new Class[] {
 				MultiGroupBy.class, GroupBy.class, AnalysisSearchParameter.class, QualityDataCollectionRefImpl.class,
 				RepositoryEntryRefImpl.class, IdentityRefImpl.class, OrganisationRefImpl.class, CurriculumRefImpl.class,
-				CurriculumElementRefImpl.class, TaxonomyLevelRefImpl.class };
+				CurriculumElementRefImpl.class, CurriculumElementTypeRef.class, TaxonomyLevelRefImpl.class };
 		xstream.addPermission(new ExplicitTypePermission(types));
 		xstream.alias("multiGroupBy", MultiGroupBy.class);
 		xstream.alias("groupBy", GroupBy.class);
@@ -64,6 +66,7 @@ public class AnalysisPresentationXStream {
 		xstream.alias("OrganisationRef", OrganisationRefImpl.class);
 		xstream.alias("CurriculumRef", CurriculumRefImpl.class);
 		xstream.alias("CurriculumElementRef", CurriculumElementRefImpl.class);
+		xstream.alias("CurriculumElementTypeRef", CurriculumElementTypeRefImpl.class);
 		xstream.alias("TaxonomyLevelRef", TaxonomyLevelRefImpl.class);
 	}
 	
