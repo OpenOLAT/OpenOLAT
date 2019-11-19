@@ -17,33 +17,107 @@
 	}
 }
 
+/* learning path tree rendering */
 .o_lp_tree.o_tree {
-	border: none;
-	
+
+	/* RESET default tree style */
 	ul li div {
 		border-bottom: none;
 	}
-	
-	span.o_tree_link {
-		border-left: 2px solid;
+	/* No hover effects  */
+	.o_tree_link:last-child:hover, 
+	.o_tree_link:last-child:focus {
+		background-color: transparent;
 	}	
-	li.o_lp_not_accessible > div > span.o_tree_link {
-		border-color: $o-lp-not-accessible;
+	/* Opener more right than default to make room for path */	
+	@for $i from 0 through 11 {
+		li div a.o_tree_oc_l#{$i}  { 
+			left: $o-tree-padding-opener-left-px + $o-tree-padding-horizontal_root_visible + (( $i - 1) * $o-tree-padding-steps-px) + $o-lp-step-size; 
+		}
+		li div span.o_tree_l#{$i}  {
+			padding: $o-tree-padding-vertical 2px $o-tree-padding-vertical $o-tree-padding-left-steps-px;
+			margin-left: $o-tree-padding-horizontal_root_visible + ($i * $o-tree-padding-steps-px) + $o-lp-step-size;
+			z-index:9; 
+		}
 	}
-	li.o_lp_ready > div > span.o_tree_link {
-		border-color: $o-lp-ready;
+		
+	/* No icons 	*/
+	// TOOD: should not be in the model depending on the course config
+	.o_tree_link > a > i.o_icon {
+	 	display: none;
 	}
-	li.o_lp_in_progress > div > span.o_tree_link {
-		border-color: $o-lp-in-progress;
+	
+	/* Add box and alpha transparent backgrounds to visualize menu level */
+	border: $o-lp-border;	
+	ul {
+		background: $o-lp-bg;	
 	}
-	li.o_lp_done > div > span.o_tree_link {
-		border-color: $o-lp-done;
+	
+	/* Path is rendered for each list element. It consists of a path indicator and the step indicator.
+	 * The step indicator is an icon that represents the status of the step */
+	li {
+		position: relative;
+		/* path indicator */
+		&:before {
+			content: ' ';
+			position: absolute;
+			top: $o-lp-step-top + $o-lp-step-size - 1px;
+			left: $o-lp-left + (($o-lp-step-size - $o-lp-path-width) / 2);
+			height: (($o-lp-step-top - $o-lp-path-width) * 2);
+			width: $o-lp-path-width;
+		}	
+		/* step indicator */
+		&:after {
+			position: absolute;
+			top: ($o-lp-step-top - 1px); 
+			left: $o-lp-left;
+			height: $o-lp-step-size;
+			width: $o-lp-step-size;
+			@include o-make-icon(); 
+		}
+	}	
+	/* Path stops on last element */
+	ul.o_tree_l1 > li:last-child:before {
+		border: none;
 	}
 
+	/* Create the path renderings for each status with this mixin */
+	@mixin alert-tree-path-variant($iconcolor, $icon, $strokecolor, $stroke) {
+		&:before {
+			border-left: $o-lp-path-width $stroke $strokecolor;
+		}	
+		&:after {
+			content: $icon;
+			color: $iconcolor;		
+		}
+	}
+	
+	/* Learning path status default */
+	li {
+		@include alert-tree-path-variant($o-lp-default, $fa-var-circle-o, $o-lp-default, solid);
+	}
+	/* learning path status specific coloring */
+	li.o_lp_not_accessible {
+		@include alert-tree-path-variant($o-lp-not-accessible, $fa-var-ban, $o-lp-not-accessible, dotted);
+	}
+	li.o_lp_ready {
+		@include alert-tree-path-variant($o-lp-ready, $fa-var-circle-o, $o-lp-not-accessible, dotted);
+	}
+	li.o_lp_in_progress {
+		@include alert-tree-path-variant($o-lp-in-progress, $fa-var-play-circle-o, $o-lp-in-progress, solid);
+	}
+	li.o_lp_done {
+		@include alert-tree-path-variant($o-lp-done, $fa-var-check-circle, $o-lp-done, solid);
+	}
+	
+
+	/* Status icons as menu decorators 
 	i.o_lp_not_accessible { color: $o-lp-not-accessible; }
 	i.o_lp_ready          { color: $o-lp-ready; }
 	i.o_lp_in_progress    { color: $o-lp-in-progress; }
 	i.o_lp_done           { color: $o-lp-done; }
+	*/	
+
 }
 
 

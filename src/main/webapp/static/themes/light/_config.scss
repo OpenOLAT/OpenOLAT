@@ -362,10 +362,19 @@ $o-course-node-warning			: $state-warning-text !default;
 $o-course-node-locked			: $state-info-text !default;
 $o-course-node-error			: $state-danger-text !default;
 $o-course-node-deleted			: $badge-bg !default;
-$o-lp-not-accessible			: $state-danger-text !default;
+/* Learning path */
+$o-lp-not-accessible			: lighten($text-muted,10%) !default;
 $o-lp-ready						: #FCCA46 !default; /* yellow */
 $o-lp-in-progress				: $o-lp-ready !default;
 $o-lp-done						: $state-success-text !default;
+$o-lp-default					: #888 !default;
+$o-lp-border					: 1px solid $navbar-default-border;
+$o-lp-bg						: rgba(0,0,0,0.02);	
+$o-lp-step-top					: floor($o-tree-font-size / 2) + 10px; // + padding from span
+$o-lp-step-size					: 12px;
+$o-lp-path-width				: 2px;
+$o-lp-left						: 3px;
+
 
 /* Curriculum */
 /* Basic rendering configuration */
