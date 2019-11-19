@@ -59,6 +59,11 @@
 		#end
 
 		#if($row)
+			#if($row.learningProgressName)
+			<div class="o_learning_progress row">
+				$r.render($row.getLearningProgressName())
+			</div>
+			#end
 			#if($row.passed || $row.failed)
 			<div class="row">
 				#if($row.passed)

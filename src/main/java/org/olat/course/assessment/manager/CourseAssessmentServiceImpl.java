@@ -38,6 +38,7 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
+import org.olat.course.CorruptedCourseException;
 import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
@@ -382,7 +383,7 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		Map<Long, AssessmentEvaluation> evalations = new HashMap<>();
 		for (RepositoryEntry courseEntry : courseEntries) {
 			if (!courseEntry.getEntryStatus().decommissioned()) {
-				ICourse course = CourseFactory.loadCourse(courseEntry);
+				ICourse course = loadCourse(courseEntry);
 				if (course != null && filterLearningProgress(course, courseWithLearningProgressOnly)) {
 					IdentityEnvironment identityEnv = new IdentityEnvironment();
 					identityEnv.setIdentity(identity);
@@ -395,6 +396,15 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 			}
 		}
 		return evalations;
+	}
+
+	private ICourse loadCourse(RepositoryEntry courseEntry) {
+		try {
+			return CourseFactory.loadCourse(courseEntry);
+		} catch (CorruptedCourseException e) {
+			// just ignore it
+		}
+		return null;
 	}
 
 	private boolean filterLearningProgress(ICourse course, boolean courseWithLearningProgressOnly) {

@@ -29,6 +29,8 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.modules.assessment.ui.component.LearningProgressItem;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -77,6 +79,9 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private Date lifecycleEnd;
 	
 	private List<PriceMethod> accessTypes;
+	
+	private AssessmentEvaluation assessmentEvaluation;
+	private LearningProgressItem learningProgressItem;
 	
 	private FormLink markLink;
 	private FormLink selectLink;
@@ -262,6 +267,26 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 
 	public void setAccessTypes(List<PriceMethod> accessTypes) {
 		this.accessTypes = accessTypes;
+	}
+
+	public String getLearningProgressName() {
+		return learningProgressItem != null? learningProgressItem.getComponent().getComponentName(): null;
+	}
+
+	public LearningProgressItem getLearningProgressItem() {
+		return learningProgressItem;
+	}
+
+	public void setLearningProgress(LearningProgressItem learningProgress) {
+		this.learningProgressItem = learningProgress;
+	}
+
+	public AssessmentEvaluation getAssessmentEvaluation() {
+		return assessmentEvaluation;
+	}
+
+	public void setAssessmentEvaluation(AssessmentEvaluation assessmentEvaluation) {
+		this.assessmentEvaluation = assessmentEvaluation;
 	}
 
 	public String getSelectLinkName() {

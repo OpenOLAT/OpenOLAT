@@ -60,7 +60,10 @@
 				border-left: 1px solid $o-coursesite-rowelem-border;
 				padding-top: 0.25em;
 				
-				
+				.o_learning_progress {
+					padding: 0 1em;
+				}
+					
 				.o_state, .o_score {
 					@extend %o_small;
 					padding: 0 1em;		

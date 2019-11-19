@@ -74,6 +74,9 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
+import org.olat.course.run.scoring.AssessmentEvaluation;
+import org.olat.modules.assessment.ui.LearningProgressCellRenderer;
+import org.olat.modules.assessment.ui.component.LearningProgressItem;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;
@@ -198,6 +201,12 @@ public class RepositoryEntryListController extends FormBasicController
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.location.i18nKey(), Cols.location.ordinal(),
 				true, OrderBy.location.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.details.i18nKey(), Cols.details.ordinal(), false, null));
+		if(!guestOnly) {
+			DefaultFlexiColumnModel learningProgressColumnModel = new DefaultFlexiColumnModel(
+					Cols.learningProgress.i18nKey(), Cols.learningProgress.ordinal(), true, null);
+			learningProgressColumnModel.setCellRenderer(new LearningProgressCellRenderer(getLocale()));
+			columnsModel.addFlexiColumnModel(learningProgressColumnModel);
+		}
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.start.i18nKey(), Cols.start.ordinal()));
 		if(repositoryModule.isRatingEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.ratings.i18nKey(), Cols.ratings.ordinal(),
@@ -206,6 +215,7 @@ public class RepositoryEntryListController extends FormBasicController
 		if(repositoryModule.isCommentEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.comments.i18nKey(), Cols.comments.ordinal()));
 		}
+		
 
 		model = new RepositoryEntryDataModel(dataSource, columnsModel);
 		tableEl = uifactory.addTableElement(getWindowControl(), "table", model, 20, false, getTranslator(), formLayout);
@@ -596,6 +606,19 @@ public class RepositoryEntryListController extends FormBasicController
 			markLink.setTitle(translate(row.isMarked() ? "details.bookmark.remove" : "details.bookmark"));
 			markLink.setUserObject(row);
 			row.setMarkLink(markLink);
+		}
+	}
+	
+	@Override
+	public void forgeLearningProgress(RepositoryEntryRow row) {
+		if(!guestOnly && row.getAssessmentEvaluation() != null) {
+			AssessmentEvaluation assessmentEvaluation = row.getAssessmentEvaluation();
+			String learningProgressName = "learning_progress_" + row.getKey();
+			LearningProgressItem learningProgressItem = new LearningProgressItem(learningProgressName, getLocale());
+			learningProgressItem.setFullyAssessed(assessmentEvaluation.getFullyAssessed());
+			learningProgressItem.setStatus(assessmentEvaluation.getAssessmentStatus());
+			learningProgressItem.setCompletion(assessmentEvaluation.getCompletion());
+			row.setLearningProgress(learningProgressItem);
 		}
 	}
 	
