@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Set;
 
 import org.olat.basesecurity.IdentityRef;
 import org.olat.basesecurity.IdentityShort;
@@ -68,7 +69,6 @@ import org.olat.modules.quality.ui.QualityUIFactory;
 import org.olat.modules.quality.ui.QualityUIFactory.KeysValues;
 import org.olat.modules.taxonomy.TaxonomyLevel;
 import org.olat.modules.taxonomy.TaxonomyLevelRef;
-import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.user.ui.organisation.OrganisationTreeModel;
@@ -121,6 +121,7 @@ public class FilterController extends FormBasicController {
 		this.availableAttributes = availableAttributes;
 		this.sessionInformationsAvailable = getSessionInformationAvailable(form);
 		initForm(ureq);
+		initSelection();
 	}
 
 	private boolean getSessionInformationAvailable(Form evaluationForm) {
@@ -234,6 +235,34 @@ public class FilterController extends FormBasicController {
 		setSeriesIndexValues();
 		setContextRoleValues();
 	}
+	
+	private void initSelection() {
+		initDateRangeSelection();
+		initTopicIdentitySelection();
+		initTopicOrganisationSelection();
+		initTopicCurriculumSelection();
+		initTopicCurriculumElementSelection();
+		initTopicRepositorySelection();
+		initContextExecutorOrganisationSelection();
+		initContextCurriculumSelection();
+		initContextCurriculumElementSelection();
+		initContextCurriculumElementTypeSelection();
+		initContextCurriculumOrganisationSelection();
+		initContextTaxonomyLevelSelection();
+		initContextLocationSelection();
+		initSeriesIndexSelection();
+		initContextRoleSelection();
+		initWithUserInfosOnlySelection();
+	}
+
+	private void initDateRangeSelection() {
+		if (dateRangeFromEl.isVisible() && searchParams.getDateRangeFrom() != null) {
+			dateRangeFromEl.setDate(searchParams.getDateRangeFrom());
+		}
+		if (dateRangeToEl.isVisible() && searchParams.getDateRangeTo() != null) {
+			dateRangeToEl.setDate(searchParams.getDateRangeTo());
+		}
+	}
 
 	private void setTopicIdentityValues() {
 		if (!availableAttributes.isTopicIdentity()) {
@@ -250,6 +279,21 @@ public class FilterController extends FormBasicController {
 		topicIdentityEl.setKeysAndValues(keysValues.getKeys(), keysValues.getValues());
 		for (String key : selectedKeys) {
 			topicIdentityEl.select(key, true);
+		}
+	}
+	
+	private void initTopicIdentitySelection() {
+		if (!topicIdentityEl.isVisible()) return;
+		
+		Collection<? extends IdentityRef> topicIdentityRefs = searchParams.getTopicIdentityRefs();
+		if (topicIdentityRefs != null && !topicIdentityRefs.isEmpty()) {
+			Set<String> keys = topicIdentityEl.getKeys();
+			for (IdentityRef identityRef : topicIdentityRefs) {
+				String key = QualityUIFactory.getIdentityKey(identityRef);
+				if (keys.contains(key)) {
+					topicIdentityEl.select(key, true);
+				}
+			}
 		}
 	}
 
@@ -272,6 +316,21 @@ public class FilterController extends FormBasicController {
 		}
 	}
 
+	private void initTopicOrganisationSelection() {
+		if (!topicOrganisationEl.isVisible()) return;
+		
+		Collection<? extends OrganisationRef> topicOrganisationRefs = searchParams.getTopicOrganisationRefs();
+		if (topicOrganisationRefs != null && !topicOrganisationRefs.isEmpty()) {
+			Set<String> keys = topicOrganisationEl.getKeys();
+			for (OrganisationRef organisationRef : topicOrganisationRefs) {
+				String key = QualityUIFactory.getOrganisationKey(organisationRef);
+				if (keys.contains(key)) {
+					topicOrganisationEl.select(key, true);
+				}
+			}
+		}
+	}
+
 	private void setTopicCurriculumValues() {
 		if (!availableAttributes.isTopicCurriculum() || !curriculumModule.isEnabled()) {
 			topicCurriculumEl.setVisible(false);
@@ -287,6 +346,21 @@ public class FilterController extends FormBasicController {
 		topicCurriculumEl.setKeysAndValues(keysValues.getKeys(), keysValues.getValues());
 		for (String key : selectedKeys) {
 			topicCurriculumEl.select(key, true);
+		}
+	}
+	
+	private void initTopicCurriculumSelection() {
+		if (!topicCurriculumEl.isVisible()) return;
+		
+		Collection<? extends CurriculumRef> topicCurriculumRefs = searchParams.getTopicCurriculumRefs();
+		if (topicCurriculumRefs != null && !topicCurriculumRefs.isEmpty()) {
+			Set<String> keys = topicCurriculumEl.getKeys();
+			for (CurriculumRef curriculumRef : topicCurriculumRefs) {
+				String key = QualityUIFactory.getCurriculumKey(curriculumRef);
+				if (keys.contains(key)) {
+					topicCurriculumEl.select(key, true);
+				}
+			}
 		}
 	}
 
@@ -309,6 +383,21 @@ public class FilterController extends FormBasicController {
 			topicCurriculumElementEl.select(key, true);
 		}
 	}
+	
+	private void initTopicCurriculumElementSelection() {
+		if (!topicCurriculumElementEl.isVisible()) return;
+		
+		Collection<? extends CurriculumElementRef> topicCurriculumElementRefs = searchParams.getTopicCurriculumElementRefs();
+		if (topicCurriculumElementRefs != null && !topicCurriculumElementRefs.isEmpty()) {
+			Set<String> keys = topicCurriculumElementEl.getKeys();
+			for (CurriculumElementRef curriculumElementRef : topicCurriculumElementRefs) {
+				String key = QualityUIFactory.getCurriculumElementKey(curriculumElementRef);
+				if (keys.contains(key)) {
+					topicCurriculumElementEl.select(key, true);
+				}
+			}
+		}
+	}
 
 	private void setTopicRepositoryValues() {
 		if (!availableAttributes.isTopicRepository()) {
@@ -325,6 +414,21 @@ public class FilterController extends FormBasicController {
 		topicRepositoryEl.setKeysAndValues(keysValues.getKeys(), keysValues.getValues());
 		for (String key : selectedKeys) {
 			topicRepositoryEl.select(key, true);
+		}
+	}
+	
+	private void initTopicRepositorySelection() {
+		if (!topicRepositoryEl.isVisible()) return;
+		
+		Collection<? extends RepositoryEntryRef> topicRepositoryRefs = searchParams.getTopicRepositoryRefs();
+		if (topicRepositoryRefs != null && !topicRepositoryRefs.isEmpty()) {
+			Set<String> keys = topicRepositoryEl.getKeys();
+			for (RepositoryEntryRef repositoryRef : topicRepositoryRefs) {
+				String key = QualityUIFactory.getRepositoryEntryKey(repositoryRef);
+				if (keys.contains(key)) {
+					topicRepositoryEl.select(key, true);
+				}
+			}
 		}
 	}
 
@@ -348,6 +452,21 @@ public class FilterController extends FormBasicController {
 			contextExecutorOrganisationEl.select(key, true);
 		}
 	}
+	
+	private void initContextExecutorOrganisationSelection() {
+		if (!contextExecutorOrganisationEl.isVisible()) return;
+		
+		Collection<? extends OrganisationRef> contextExecutorOrganisationRefs = searchParams.getContextOrganisationRefs();
+		if (contextExecutorOrganisationRefs != null && !contextExecutorOrganisationRefs.isEmpty()) {
+			Set<String> keys = contextExecutorOrganisationEl.getKeys();
+			for (OrganisationRef executorOrganisationRef : contextExecutorOrganisationRefs) {
+				String key = QualityUIFactory.getOrganisationKey(executorOrganisationRef);
+				if (keys.contains(key)) {
+					contextExecutorOrganisationEl.select(key, true);
+				}
+			}
+		}
+	}
 
 	private void setContextCurriculumValues() {
 		if (!availableAttributes.isContextCurriculum() || !curriculumModule.isEnabled()) {
@@ -366,7 +485,22 @@ public class FilterController extends FormBasicController {
 			contextCurriculumEl.select(key, true);
 		}
 	}
-
+	
+	private void initContextCurriculumSelection() {
+		if (!contextCurriculumEl.isVisible()) return;
+		
+		Collection<? extends CurriculumRef> contextCurriculumRefs = searchParams.getContextCurriculumRefs();
+		if (contextCurriculumRefs != null && !contextCurriculumRefs.isEmpty()) {
+			Set<String> keys = contextCurriculumEl.getKeys();
+			for (CurriculumRef curriculumRef : contextCurriculumRefs) {
+				String key = QualityUIFactory.getCurriculumKey(curriculumRef);
+				if (keys.contains(key)) {
+					contextCurriculumEl.select(key, true);
+				}
+			}
+		}
+	}
+	
 	private void setContextCurriculumElementValues() {
 		if (!availableAttributes.isContextCurriculumElement() || !curriculumModule.isEnabled()) {
 			contextCurriculumElementEl.setVisible(false);
@@ -392,6 +526,21 @@ public class FilterController extends FormBasicController {
 		contextCurriculumElementEl.setKeysAndValues(keysValues.getKeys(), keysValues.getValues());
 		for (String key : selectedKeys) {
 			contextCurriculumElementEl.select(key, true);
+		}
+	}
+	
+	private void initContextCurriculumElementSelection() {
+		if (!contextCurriculumElementEl.isVisible()) return;
+		
+		Collection<? extends CurriculumElementRef> contextCurriculumElementRefs = searchParams.getContextCurriculumElementRefs();
+		if (contextCurriculumElementRefs != null && !contextCurriculumElementRefs.isEmpty()) {
+			Set<String> keys = contextCurriculumElementEl.getKeys();
+			for (CurriculumElementRef curriculumElementRef : contextCurriculumElementRefs) {
+				String key = QualityUIFactory.getCurriculumElementKey(curriculumElementRef);
+				if (keys.contains(key)) {
+					contextCurriculumElementEl.select(key, true);
+				}
+			}
 		}
 	}
 
@@ -420,6 +569,21 @@ public class FilterController extends FormBasicController {
 			contextCurriculumElementEl.select(key, true);
 		}
 	}
+	
+	private void initContextCurriculumElementTypeSelection() {
+		if (!contextCurriculumElementTypeEl.isVisible()) return;
+		
+		Collection<? extends CurriculumElementTypeRef> contextCurriculumElementTypeRefs = searchParams.getContextCurriculumElementTypeRefs();
+		if (contextCurriculumElementTypeRefs != null && !contextCurriculumElementTypeRefs.isEmpty()) {
+			Set<String> keys = contextCurriculumElementTypeEl.getKeys();
+			for (CurriculumElementTypeRef curriculumElementTypeRef : contextCurriculumElementTypeRefs) {
+				String key = QualityUIFactory.getCurriculumElementTypeKey(curriculumElementTypeRef);
+				if (keys.contains(key)) {
+					contextCurriculumElementTypeEl.select(key, true);
+				}
+			}
+		}
+	}
 
 	private void setContextCurriculumOrganisationValues() {
 		if (!availableAttributes.isContextCurriculumOrganisation() || !organisationModule.isEnabled()
@@ -443,6 +607,21 @@ public class FilterController extends FormBasicController {
 		contextCurriculumOrganisationEl.setKeysAndValues(keysValues.getKeys(), keysValues.getValues());
 		for (String key : selectedKeys) {
 			contextCurriculumOrganisationEl.select(key, true);
+		}
+	}
+	
+	private void initContextCurriculumOrganisationSelection() {
+		if (!contextCurriculumOrganisationEl.isVisible()) return;
+		
+		Collection<? extends OrganisationRef> contextCurriculumOrganisationRefs = searchParams.getContextCurriculumOrganisationRefs();
+		if (contextCurriculumOrganisationRefs != null && !contextCurriculumOrganisationRefs.isEmpty()) {
+			Set<String> keys = contextCurriculumOrganisationEl.getKeys();
+			for (OrganisationRef curriculumOrganisationRef : contextCurriculumOrganisationRefs) {
+				String key = QualityUIFactory.getOrganisationKey(curriculumOrganisationRef);
+				if (keys.contains(key)) {
+					contextCurriculumOrganisationEl.select(key, true);
+				}
+			}
 		}
 	}
 	
@@ -473,7 +652,7 @@ public class FilterController extends FormBasicController {
 
 		// Replace with the intended value (but keep the sort order).
 		for (TaxonomyLevel level : levels) {
-			String key = Long.toString(level.getKey());
+			String key = QualityUIFactory.getTaxonomyLevelKey(level);
 			String intendedLevel = QualityUIFactory.getIntendedTaxonomyLevel(level);
 			keyValues.replaceOrPut(entry(key, intendedLevel));
 		}
@@ -481,6 +660,21 @@ public class FilterController extends FormBasicController {
 		contextTaxonomyLevelEl.setKeysAndValues(keyValues.keys(), keyValues.values());
 		for (String key : selectedKeys) {
 			contextTaxonomyLevelEl.select(key, true);
+		}
+	}
+	
+	private void initContextTaxonomyLevelSelection() {
+		if (!contextTaxonomyLevelEl.isVisible()) return;
+		
+		Collection<? extends TaxonomyLevelRef> contextTaxonomyLevelRefs = searchParams.getContextTaxonomyLevelRefs();
+		if (contextTaxonomyLevelRefs != null && !contextTaxonomyLevelRefs.isEmpty()) {
+			Set<String> keys = contextTaxonomyLevelEl.getKeys();
+			for (TaxonomyLevelRef taxonomyLevelRef : contextTaxonomyLevelRefs) {
+				String key = QualityUIFactory.getTaxonomyLevelKey(taxonomyLevelRef);
+				if (keys.contains(key)) {
+					contextTaxonomyLevelEl.select(key, true);
+				}
+			}
 		}
 	}
 
@@ -500,6 +694,20 @@ public class FilterController extends FormBasicController {
 		contextLocationEl.setKeysAndValues(locs, locs);
 		for (String key : selectedKeys) {
 			contextLocationEl.select(key, true);
+		}
+	}
+	
+	private void initContextLocationSelection() {
+		if (!contextLocationEl.isVisible()) return;
+		
+		Collection<String> contextLocations = searchParams.getContextLocations();
+		if (contextLocations != null && !contextLocations.isEmpty()) {
+			Set<String> keys = contextLocationEl.getKeys();
+			for (String key : contextLocations) {
+				if (keys.contains(key)) {
+					contextLocationEl.select(key, true);
+				}
+			}
 		}
 	}
 
@@ -526,6 +734,21 @@ public class FilterController extends FormBasicController {
 			seriesIndexEl.select(key, true);
 		}
 	}
+	
+	private void initSeriesIndexSelection() {
+		if (!seriesIndexEl.isVisible()) return;
+		
+		Collection<Integer> seriesIndexes = searchParams.getSeriesIndexes();
+		if (seriesIndexes != null && !seriesIndexes.isEmpty()) {
+			Set<String> keys = seriesIndexEl.getKeys();
+			for (Integer seriesIndex : seriesIndexes) {
+				String key = String.valueOf(seriesIndex);
+				if (keys.contains(key)) {
+					seriesIndexEl.select(key, true);
+				}
+			}
+		}
+	}
 
 	private void setContextRoleValues() {
 		Collection<String> selectedKeys = contextRoleEl.getSelectedKeys();
@@ -542,6 +765,27 @@ public class FilterController extends FormBasicController {
 		contextRoleEl.setKeysAndValues(kv.keys(), kv.values());
 		for (String key : selectedKeys) {
 			contextRoleEl.select(key, true);
+		}
+	}
+
+	private void initContextRoleSelection() {
+		if (!contextRoleEl.isVisible()) return;
+		
+		Collection<QualityContextRole> contextRoles = searchParams.getContextRoles();
+		if (contextRoles != null && !contextRoles.isEmpty()) {
+			Set<String> keys = contextRoleEl.getKeys();
+			for (QualityContextRole contextRole : contextRoles) {
+				String key = contextRole.name();
+				if (keys.contains(key)) {
+					contextRoleEl.select(key, true);
+				}
+			}
+		}
+	}
+
+	private void initWithUserInfosOnlySelection() {
+		if (withUserInformationsEl.isVisible() && searchParams.isWithUserInfosOnly()) {
+			withUserInformationsEl.select(withUserInformationsEl.getKey(0), true);
 		}
 	}
 
@@ -737,7 +981,7 @@ public class FilterController extends FormBasicController {
 	private void getSearchParamContextTaxonomyLevels() {
 		if (contextTaxonomyLevelEl.isVisible() && contextTaxonomyLevelEl.isAtLeastSelected(1)) {
 			List<TaxonomyLevelRef> curriculumElementRefs = contextTaxonomyLevelEl.getSelectedKeys().stream()
-					.map(Long::parseLong).map(TaxonomyLevelRefImpl::new).collect(toList());
+					.map(key -> QualityUIFactory.getTaxonomyLevelRef(key)).collect(toList());
 			searchParams.setContextTaxonomyLevelRefs(curriculumElementRefs);
 		} else {
 			searchParams.setContextTaxonomyLevelRefs(null);

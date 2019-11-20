@@ -66,6 +66,8 @@ import org.olat.modules.quality.QualityDataCollectionTopicType;
 import org.olat.modules.quality.QualityDataCollectionView;
 import org.olat.modules.quality.QualityExecutorParticipation;
 import org.olat.modules.taxonomy.TaxonomyLevel;
+import org.olat.modules.taxonomy.TaxonomyLevelRef;
+import org.olat.modules.taxonomy.model.TaxonomyLevelRefImpl;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.model.RepositoryEntryRefImpl;
@@ -156,8 +158,7 @@ public class QualityUIFactory {
 		}
 		String[] keys = curriculumsCopy.stream()
 				.sorted(DISPLAY_NAME_COMPARATOR)
-				.map(Curriculum::getKey)
-				.map(String::valueOf)
+				.map(QualityUIFactory::getCurriculumKey)
 				.toArray(String[]::new);
 		String[] values = curriculumsCopy.stream()
 				.sorted(DISPLAY_NAME_COMPARATOR)
@@ -166,8 +167,8 @@ public class QualityUIFactory {
 		return new KeysValues(keys, values);
 	}
 
-	public static String getCurriculumKey(Curriculum curriculum) {
-		return String.valueOf(curriculum.getKey());
+	public static String getCurriculumKey(CurriculumRef curriculumRef) {
+		return String.valueOf(curriculumRef.getKey());
 	}
 
 	public static CurriculumRef getCurriculumRef(String curriculumKey) {
@@ -191,7 +192,7 @@ public class QualityUIFactory {
 		String[] values = new String[elements.size()];
 		for (int i = elements.size(); i-->0; ) {
 			CurriculumElement element = elements.get(i);
-			keys[i] = Long.toString(element.getKey());
+			keys[i] = getCurriculumElementKey(element);
 			ArrayList<String> names = new ArrayList<>();
 			addParentCurriculumElementNames(names, element);
 			values[i] = String.join(FLAT_DELIMITER, names);
@@ -217,7 +218,7 @@ public class QualityUIFactory {
 		String[] values = new String[elements.size()];
 		for (int i = elements.size(); i-->0; ) {
 			CurriculumElement element = elements.get(i);
-			keys[i] = Long.toString(element.getKey());
+			keys[i] = getCurriculumElementKey(element);
 			values[i] = getCurriculumElementValue(element);
 		}
 		return new KeysValues(keys, values);
@@ -255,8 +256,8 @@ public class QualityUIFactory {
 		return intendation;
 	}
 
-	public static String getCurriculumElementKey(CurriculumElement curriculumElement) {
-		return String.valueOf(curriculumElement.getKey());
+	public static String getCurriculumElementKey(CurriculumElementRef curriculumElementRef) {
+		return String.valueOf(curriculumElementRef.getKey());
 	}
 
 	public static CurriculumElementRef getCurriculumElementRef(String curriculumElementKey) {
@@ -276,10 +277,14 @@ public class QualityUIFactory {
 		String[] values = new String[types.size()];
 		for (int i = types.size(); i-->0; ) {
 			CurriculumElementType type = types.get(i);
-			keys[i] = Long.toString(type.getKey());
+			keys[i] = getCurriculumElementTypeKey(type);
 			values[i] = type.getDisplayName();
 		}
 		return new KeysValues(keys, values);
+	}
+	
+	public static String getCurriculumElementTypeKey(CurriculumElementTypeRef typeRef) {
+		return Long.toString(typeRef.getKey());
 	}
 	
 	public static CurriculumElementTypeRef getCurriculumElementTypeRef(String typeKey) {
@@ -303,7 +308,7 @@ public class QualityUIFactory {
 		String[] values = new String[orgs.size()];
 		for (int i = orgs.size(); i-->0; ) {
 			Organisation organisation = orgs.get(i);
-			keys[i] = Long.toString(organisation.getKey());
+			keys[i] = getOrganisationKey(organisation);
 			ArrayList<String> names = new ArrayList<>();
 			addParentOrganisationNames(names, organisation);
 			values[i] = String.join(FLAT_DELIMITER, names);
@@ -329,7 +334,7 @@ public class QualityUIFactory {
 		String[] values = new String[organisations.size()];
 		for (int i = organisations.size(); i-->0; ) {
 			Organisation organisation = organisations.get(i);
-			keys[i] = Long.toString(organisation.getKey());
+			keys[i] = getOrganisationKey(organisation);
 			values[i] = computeIntendentionForOrganisation(organisation, new StringBuilder()).append(organisation.getDisplayName()).toString();
 		}
 		return new KeysValues(keys, values);
@@ -358,8 +363,8 @@ public class QualityUIFactory {
 		return intendation;
 	}
 	
-	static String getOrganisationKey(Organisation organisation) {
-		return String.valueOf(organisation.getKey());
+	public static String getOrganisationKey(OrganisationRef organisationRef) {
+		return String.valueOf(organisationRef.getKey());
 	}
 
 	public static OrganisationRef getOrganisationRef(String organisationKey) {
@@ -397,7 +402,7 @@ public class QualityUIFactory {
 		List<String> keyList = new ArrayList<>();
 		List<String> valueList = new ArrayList<>();
 		for(Organisation elOrganisation:allOrganisations) {
-			keyList.add(elOrganisation.getKey().toString());
+			keyList.add(getOrganisationKey(elOrganisation));
 			valueList.add(elOrganisation.getDisplayName());
 		}
 		
@@ -405,8 +410,9 @@ public class QualityUIFactory {
 		organisationsEl.setKeysAndValues(keyList.toArray(new String[keyList.size()]),
 				valueList.toArray(new String[valueList.size()]));
 		for(Organisation reOrganisation:currentOrganisations) {
-			if(keyList.contains(reOrganisation.getKey().toString())) {
-				organisationsEl.select(reOrganisation.getKey().toString(), true);
+			String organisationKey = getOrganisationKey(reOrganisation);
+			if(keyList.contains(organisationKey)) {
+				organisationsEl.select(organisationKey, true);
 			}
 		}
 	}
@@ -426,16 +432,15 @@ public class QualityUIFactory {
 		Collection<String> selectedOrganisationKeys = organisationsEl.getSelectedKeys();
 		
 		// Remove unselected organisations
-		organisations.removeIf(organisation -> !selectedOrganisationKeys.contains(organisation.getKey().toString()));
+		organisations.removeIf(organisation -> !selectedOrganisationKeys.contains(getOrganisationKey(organisation)));
 
 		// Add newly selected organisations
 		Collection<String> organisationKeys = organisations.stream()
-				.map(Organisation::getKey)
-				.map(String::valueOf)
+				.map(QualityUIFactory::getOrganisationKey)
 				.collect(Collectors.toList());
 		for (String selectedOrganisationKey: selectedOrganisationKeys) {
 			if (!organisationKeys.contains(selectedOrganisationKey)) {
-				Organisation organisation = organisationService.getOrganisation(new OrganisationRefImpl(Long.valueOf(selectedOrganisationKey)));
+				Organisation organisation = organisationService.getOrganisation(getOrganisationRef(selectedOrganisationKey));
 				if (organisation != null) {
 					organisations.add(organisation);
 				}
@@ -451,10 +456,14 @@ public class QualityUIFactory {
 		String[] values = new String[idents.size()];
 		for (int i = idents.size(); i-->0; ) {
 			IdentityShort identity = idents.get(i);
-			keys[i] = Long.toString(identity.getKey());
+			keys[i] = getIdentityKey(identity);
 			values[i] = new StringBuilder().append(identity.getLastName()).append(" ").append(identity.getFirstName()).toString();
 		}
 		return new KeysValues(keys, values);
+	}
+
+	public static String getIdentityKey(IdentityRef identityRef) {
+		return Long.toString(identityRef.getKey());
 	}
 
 	public static IdentityRef getIdentityRef(String identityKey) {
@@ -476,10 +485,14 @@ public class QualityUIFactory {
 		String[] values = new String[repoEntries.size()];
 		for (int i = repoEntries.size(); i-->0; ) {
 			RepositoryEntry entry = repoEntries.get(i);
-			keys[i] = Long.toString(entry.getKey());
+			keys[i] = getRepositoryEntryKey(entry);
 			values[i] = entry.getDisplayname();
 		}
 		return new KeysValues(keys, values);
+	}
+
+	public static String getRepositoryEntryKey(RepositoryEntryRef entryRef) {
+		return Long.toString(entryRef.getKey());
 	}
 
 	public static RepositoryEntryRef getRepositoryEntryRef(String entryKey) {
@@ -515,6 +528,22 @@ public class QualityUIFactory {
 			computeIntendentionForTaxonomyLevel(intendation, parent);
 		}
 		return intendation;
+	}
+	
+	public static String getTaxonomyLevelKey(TaxonomyLevelRef taxonomyLevelRef) {
+		return Long.toString(taxonomyLevelRef.getKey());
+	}
+
+	public static TaxonomyLevelRef getTaxonomyLevelRef(String taxonomyLevelKey) {
+		if (StringHelper.containsNonWhitespace(taxonomyLevelKey)) {
+			try {
+				Long key = Long.valueOf(taxonomyLevelKey);
+				return new TaxonomyLevelRefImpl(key);
+			} catch (Exception e) {
+				//
+			}
+		}
+		return null;
 	}
 	
 	public static boolean validateInteger(TextElement el, int min, int max) {
