@@ -169,6 +169,7 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 		calendarCache = CoordinatorManager.getInstance().getCoordinator().getCacher().getCache(CalendarManager.class.getSimpleName(), "calendar");
 	}
 	
+	@Override
 	public URLConnection getURLConnection(String url) {
 		try {
 			URLConnection conn = new URL(url).openConnection();
@@ -1343,8 +1344,8 @@ public class ICalFileCalendarManager implements CalendarManager, InitializingBea
 	}
 	
 	private final boolean isInRange(Date from, Date to, KalendarEvent event) {
-		Date end = event.getEnd();
 		Date begin = event.getBegin();
+		Date end = CalendarUtils.endOf(event);
 
 		if(begin != null && end != null) {
 			if(from.compareTo(begin) <= 0 && to.compareTo(end) >= 0) {
