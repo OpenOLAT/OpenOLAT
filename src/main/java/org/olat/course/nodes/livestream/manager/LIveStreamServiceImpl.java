@@ -19,9 +19,6 @@
  */
 package org.olat.course.nodes.livestream.manager;
 
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -30,6 +27,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.olat.commons.calendar.CalendarManager;
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.commons.calendar.model.KalendarEvent;
 import org.olat.commons.calendar.ui.components.KalendarRenderWrapper;
 import org.olat.course.nodes.cal.CourseCalendars;
@@ -55,14 +53,6 @@ public class LIveStreamServiceImpl implements LiveStreamService {
 	public List<? extends LiveStreamEvent> getRunningEvents(CourseCalendars calendars, int bufferBeforeMin,
 			int bufferAfterMin) {
 		Date now = new Date();
-
-		Calendar cFromStartOfDay = Calendar.getInstance();
-		cFromStartOfDay.setTime(now);
-		int year = cFromStartOfDay.get(Calendar.YEAR);
-		int month = cFromStartOfDay.get(Calendar.MONTH);
-		int day = cFromStartOfDay.get(Calendar.DATE);
-		cFromStartOfDay.set(year, month, day - 1, 0, 0, 0);
-		Date fromStartOfDay = cFromStartOfDay.getTime();
 		
 		Calendar cFrom = Calendar.getInstance();
 		cFrom.setTime(now);
@@ -74,10 +64,7 @@ public class LIveStreamServiceImpl implements LiveStreamService {
 		cTo.add(Calendar.MINUTE, bufferBeforeMin);
 		Date to = cTo.getTime();
 		
-		// Use start of day to get all day events as well.
-		return getLiveStreamEvents(calendars, fromStartOfDay, to).stream()
-				.filter(startedFilter(from))
-				.collect(Collectors.toList());
+		return getLiveStreamEvents(calendars, from, to);
 	}
 	
 	@Override
@@ -95,12 +82,6 @@ public class LIveStreamServiceImpl implements LiveStreamService {
 		return getLiveStreamEvents(calendars, from, to).stream()
 				.filter(notStartedFilter(from))
 				.collect(Collectors.toList());
-	}
-	
-	private Predicate<LiveStreamEvent> startedFilter(Date from) {
-		return (LiveStreamEvent e) -> {
-			return e.getBegin().before(from);
-			};
 	}
 
 	private Predicate<LiveStreamEvent> notStartedFilter(Date from) {
@@ -141,9 +122,7 @@ public class LIveStreamServiceImpl implements LiveStreamService {
 		liveStreamEvent.setId(event.getID());
 		liveStreamEvent.setAllDayEvent(event.isAllDayEvent());
 		liveStreamEvent.setBegin(event.getBegin());
-		Date end = event.isAllDayEvent()
-				? getEndOfDay(event.getEnd())
-				: event.getEnd();
+		Date end = CalendarUtils.endOf(event);
 		liveStreamEvent.setEnd(end);
 		liveStreamEvent.setLiveStreamUrl(event.getLiveStreamUrl());
 		if (!timeOnly) {
@@ -152,20 +131,6 @@ public class LIveStreamServiceImpl implements LiveStreamService {
 			liveStreamEvent.setLocation(event.getLocation());
 		}
 		return liveStreamEvent;
-	}
-
-	private Date getEndOfDay(Date date) {
-		LocalDateTime localDateTime = dateToLocalDateTime(date);
-		LocalDateTime endOfDay = localDateTime.with(LocalTime.MAX);
-		return localDateTimeToDate(endOfDay);
-	}
-
-	private LocalDateTime dateToLocalDateTime(Date date) {
-		return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-	}
-
-	private Date localDateTimeToDate(LocalDateTime localDateTime) {
-		return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
 	}
 
 }

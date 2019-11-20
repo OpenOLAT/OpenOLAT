@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -107,6 +108,35 @@ public class CalendarUtils {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(date);
 		return getEndOfDay(cal).getTime();
+	}
+	
+	/**
+	 * Get the end of a KalendarEvent. If the event is all day, this method adjusts
+	 * the end under some circumstances. If the event has no end, the returned end
+	 * is the end of day of the begin date. If the end is at midnight (assumed as
+	 * first second of a day), the end is changed to the end of that day.
+	 *
+	 * @param event
+	 * @return
+	 */
+	public static Date endOf(KalendarEvent event) {
+		Date end = event.getEnd();
+		if (event.isAllDayEvent()) {
+			if (end == null) {
+				if (event.getBegin() != null) {
+					end = endOfDay(event.getBegin());
+				}
+			} else if (isMidnight(end)) {
+				end = endOfDay(end);
+			}
+		}
+		return end;
+	}
+	
+	public static boolean isMidnight(Date date) {
+		Calendar c = new GregorianCalendar();
+		c.setTime(date);
+		return c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE) + c.get(Calendar.SECOND) == 0;
 	}
 	
 	public static Calendar getEndOfDay(Calendar cal) {
