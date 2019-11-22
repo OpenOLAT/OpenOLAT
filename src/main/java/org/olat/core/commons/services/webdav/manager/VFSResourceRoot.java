@@ -302,11 +302,27 @@ public class VFSResourceRoot implements WebResourceRoot  {
 			VFSResource vfsResource = (VFSResource)resource;
 			VFSItem item = vfsResource.getItem();
 			if (item != null && VFSConstants.YES.equals(item.canDelete())) {
-				VFSStatus status = item.delete();
+				VFSStatus status;
+				boolean helpFile = isClientHelpFile(item);
+				if(helpFile) {
+					status = item.deleteSilently();
+				} else {
+					status = item.delete();
+				}
 				deleted = (status == VFSConstants.YES || status == VFSConstants.SUCCESS);
 			}
 		}
 		return deleted;
+	}
+	
+	private boolean isClientHelpFile(VFSItem item) {
+		if(item instanceof VFSLeaf) {
+			String name = item.getName();
+			if(name != null && name.startsWith("._") && !name.startsWith("._oo_")) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
