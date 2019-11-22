@@ -212,8 +212,7 @@ public class ZipUtil {
 							// create subdirs
 							createIn = getAllSubdirs(targetDir, name.substring(0, dirSepIndex), identity, true);
 							if (createIn == null) {
-								if (log.isDebugEnabled()) log.debug("Error creating directory structure for zip entry: "
-										+ oEntr.getName());
+								log.debug("Error creating directory structure for zip entry: {}", oEntr.getName());
 								return false;
 							}
 							name = name.substring(dirSepIndex + 1);
@@ -339,8 +338,7 @@ public class ZipUtil {
 							// create subdirs
 							createIn = getAllSubdirs(targetDir, name.substring(0, dirSepIndex), identity, true);
 							if (createIn == null) {
-								if (log.isDebugEnabled()) log.debug("Error creating directory structure for zip entry: "
-										+ oEntr.getName());
+								log.debug("Error creating directory structure for zip entry: {}", oEntr.getName());
 								return false;
 							}
 							name = name.substring(dirSepIndex + 1);
@@ -762,7 +760,7 @@ public class ZipUtil {
 						try(InputStream in=Files.newInputStream(file)) {
 							FileUtils.copy(in, zout);
 						} catch (Exception e) {
-							log.error("", e);
+							handleIOException("", e);
 						}
 						
 						zout.closeEntry();
@@ -860,7 +858,7 @@ public class ZipUtil {
 						try(InputStream in=Files.newInputStream(file)) {
 							FileUtils.cpio(in, exportStream, "");
 						} catch (Exception e) {
-							log.error("", e);
+							handleIOException("", e);
 						}
 						
 						exportStream.closeEntry();
@@ -869,7 +867,7 @@ public class ZipUtil {
 				}
 			});
 		} catch (IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 		}
 	}
 	
