@@ -40,14 +40,15 @@ import org.olat.core.logging.AssertException;
  * @author Felix Jost
  */
 public class MediaResourceMapper implements Mapper {
-	MediaResource mediaResource;
+	
+	private MediaResource mediaResource;
 
 	public MediaResourceMapper() {
-	//
+		//
 	}
 
+	@Override
 	public MediaResource handle(String relPath, HttpServletRequest request) {
-		if (mediaResource == null) throw new AssertException("mr already served, relPath =" + relPath + ",");
 		MediaResource r = mediaResource;
 		mediaResource = null;
 		return r;
@@ -60,5 +61,4 @@ public class MediaResourceMapper implements Mapper {
 		if (this.mediaResource != null) throw new AssertException("mediaresource not yet served!");
 		this.mediaResource = mediaResource;
 	}
-
 }
