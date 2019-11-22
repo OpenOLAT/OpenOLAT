@@ -81,14 +81,14 @@ public class ErrorFeedbackMailer implements Dispatcher {
 	public void sendMail(HttpServletRequest request) {
 		String feedback = request.getParameter("textarea");
 		String errorNr = request.getParameter("fx_errnum");
-		String username = request.getParameter("username");
+		String identityKey = request.getParameter("username");
 		try {
-			if(StringHelper.containsNonWhitespace(username)) {
-				Identity ident = securityManager.findIdentityByName(username);
+			if(StringHelper.isLong(identityKey)) {
+				Identity ident = securityManager.loadIdentityByKey(Long.valueOf(identityKey));
 				Collection<String> logFileEntries = LogFileParser.getErrorToday(errorNr, false);
 				StringBuilder out = new StringBuilder(2048);
 				out.append(feedback)
-				   .append("\n------------------------------------------\n\n --- from user: ").append(username).append(" ---");
+				   .append("\n------------------------------------------\n\n --- from user: ").append(identityKey).append(" ---");
 				if (logFileEntries != null) {
 					for (Iterator<String> iter = logFileEntries.iterator(); iter.hasNext();) {
 						out.append(iter.next());
@@ -111,8 +111,7 @@ public class ErrorFeedbackMailer implements Dispatcher {
 	private void handleException(HttpServletRequest request, Exception e) {
 		String feedback = request.getParameter("textarea");
 		String username = request.getParameter("username");
-		log.error("Error sending error feedback mail to OpenOLAT error support (" + WebappHelper.getMailConfig("mailError") + ") from: "
-				+ username + " with content: " + feedback, e);
+		log.error("Error sending error feedback mail to OpenOLAT error support ({}) from: {} with content: {}", WebappHelper.getMailConfig("mailError"), username, feedback, e);
 	}
 
 	@Override

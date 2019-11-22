@@ -109,7 +109,7 @@ public class ZipUtil {
 			xxunzip(in, targetDir.getAbsolutePath());
 			return true;
 		} catch (IOException e) {
-			log.error("I/O failure while unzipping "+zipFile.getAbsolutePath()+" to "+targetDir.getAbsolutePath());
+			handleIOException("I/O failure while unzipping " + zipFile.getAbsolutePath() + " to " + targetDir.getAbsolutePath(), e);
 			return false;
 		}
 	}
@@ -128,7 +128,7 @@ public class ZipUtil {
 				xxunzip(in, outdir);
 				return true;
 			} catch (IOException e) {
-				log.error("I/O failure while unzipping "+zipLeaf.getName()+" to "+outdir);
+				handleIOException("I/O failure while unzipping " + zipLeaf.getName() + " to " + outdir, e);
 				return false;
 			}
 		}
@@ -150,7 +150,7 @@ public class ZipUtil {
 				xxunzip (in, outdir);
 				return true;
 			} catch (IOException e) {
-				log.error("I/O failure while unzipping "+zipFile.getName()+" to "+outdir);
+				handleIOException("I/O failure while unzipping " + zipFile.getName() + " to " + outdir, e);
 				return false;
 			}
 		}
@@ -171,7 +171,7 @@ public class ZipUtil {
 		try(InputStream in = zipLeaf.getInputStream()) {
 			unzipped = unzip(in, targetDir, identity, versioning);
 		} catch(Exception e) {
-			log.error("", e);
+			handleIOException("", e);
 		}
 		return unzipped;
 	}	
@@ -212,8 +212,7 @@ public class ZipUtil {
 							// create subdirs
 							createIn = getAllSubdirs(targetDir, name.substring(0, dirSepIndex), identity, true);
 							if (createIn == null) {
-								if (log.isDebugEnabled()) log.debug("Error creating directory structure for zip entry: "
-										+ oEntr.getName());
+								log.debug("Error creating directory structure for zip entry: {}", oEntr.getName());
 								return false;
 							}
 							name = name.substring(dirSepIndex + 1);
@@ -268,7 +267,7 @@ public class ZipUtil {
 		try(OutputStream out = newEntry.getOutputStream(false)) {
 			return FileUtils.copy(oZip, out);
 		} catch(Exception e) {
-			log.error("", e);
+			handleIOException("", e);
 			return false;
 		}
 	}
@@ -288,7 +287,7 @@ public class ZipUtil {
 		try(InputStream in = zipLeaf.getInputStream()) {
 			unzipped = unzipNonStrict(in, targetDir, identity, versioning);
 		} catch(IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 		}
 		return unzipped;
 	}
@@ -299,7 +298,7 @@ public class ZipUtil {
 				InputStream bin = new BufferedInputStream(in, FileUtils.BSIZE)) {
 			unzipped = unzipNonStrict(bin, targetDir, identity, versioning);
 		} catch(IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 		}
 		return unzipped;
 	}
@@ -339,8 +338,7 @@ public class ZipUtil {
 							// create subdirs
 							createIn = getAllSubdirs(targetDir, name.substring(0, dirSepIndex), identity, true);
 							if (createIn == null) {
-								if (log.isDebugEnabled()) log.debug("Error creating directory structure for zip entry: "
-										+ oEntr.getName());
+								log.debug("Error creating directory structure for zip entry: {}", oEntr.getName());
 								return false;
 							}
 							name = name.substring(dirSepIndex + 1);
@@ -382,7 +380,7 @@ public class ZipUtil {
 		try(InputStream in = new ShieldInputStream(oZip)) {
 			return VFSManager.copyContent(in, newEntry);
 		} catch(Exception e) {
-			log.error("", e);
+			handleIOException("", e);
 			return false;
 		}
 	}
@@ -391,7 +389,7 @@ public class ZipUtil {
 		try(OutputStream sout = new ShieldOutputStream(out)) {
 			return VFSManager.copyContent(leaf, sout);
 		} catch(Exception e) {
-			log.error("", e);
+			handleIOException("", e);
 			return false;
 		}
 	}
@@ -635,7 +633,7 @@ public class ZipUtil {
 			zip(container, out);
 			return true;
 		} catch(IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 			return false;
 		}
 	}
@@ -656,7 +654,7 @@ public class ZipUtil {
 			}
 			return true;
 		} catch(IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 			return false;
 		}
 	}
@@ -718,7 +716,7 @@ public class ZipUtil {
 			if (vfsItem instanceof LocalImpl) {
 				name = ((LocalImpl)vfsItem).getBasefile().getAbsolutePath();
 			}
-			log.error("I/O error while adding "+name+" to zip:"+ioe);
+			handleIOException("I/O error while adding " + name + " to zip:", ioe);
 			return false;
 		}
 		return success;
@@ -762,7 +760,7 @@ public class ZipUtil {
 						try(InputStream in=Files.newInputStream(file)) {
 							FileUtils.copy(in, zout);
 						} catch (Exception e) {
-							log.error("", e);
+							handleIOException("", e);
 						}
 						
 						zout.closeEntry();
@@ -771,7 +769,7 @@ public class ZipUtil {
 				}
 			});
 		} catch (IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 		}
 	}
 	
@@ -787,7 +785,7 @@ public class ZipUtil {
 			FileUtils.copy(source, exportStream);
 			exportStream.closeEntry();
 		} catch(IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 		}
 	}
 	
@@ -797,7 +795,7 @@ public class ZipUtil {
 			FileUtils.copy(source, exportStream);
 			exportStream.closeEntry();
 		} catch(IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 		}
 	}
 	
@@ -822,7 +820,7 @@ public class ZipUtil {
 						try(InputStream in=Files.newInputStream(file)) {
 							FileUtils.copy(in, exportStream);
 						} catch (Exception e) {
-							log.error("", e);
+							handleIOException("", e);
 						}
 						
 						exportStream.closeEntry();
@@ -831,7 +829,7 @@ public class ZipUtil {
 				}
 			});
 		} catch (IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 		}
 	}
 	
@@ -860,7 +858,7 @@ public class ZipUtil {
 						try(InputStream in=Files.newInputStream(file)) {
 							FileUtils.cpio(in, exportStream, "");
 						} catch (Exception e) {
-							log.error("", e);
+							handleIOException("", e);
 						}
 						
 						exportStream.closeEntry();
@@ -869,7 +867,7 @@ public class ZipUtil {
 				}
 			});
 		} catch (IOException e) {
-			log.error("", e);
+			handleIOException("", e);
 		}
 	}
 	
@@ -916,7 +914,20 @@ public class ZipUtil {
 			FileUtils.cpio(new BufferedInputStream(zis), bos, "unzip:" + of.getName());
 			bos.flush();
 		} catch(IOException e) {
-			log.error("", e);
+			handleIOException("", e);
+		}
+	}
+	
+	private static final void handleIOException(String msg, Exception e) {
+		try {
+			String className = e.getClass().getSimpleName();
+			if("ClientAbortException".equals(className)) {
+				log.debug("client browser probably abort during operaation", e);
+			} else {
+				log.error(msg, e);
+			}
+		} catch (Exception e1) {
+			log.error("", e1);
 		}
 	}
 }

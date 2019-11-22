@@ -1,4 +1,4 @@
-<div class="o_assessment_mode_row #if($r.isTrue(${row.isToday()})) o_assessment_today #end clearfix">
+<div class="o_assessment_mode_row #if($r.isTrue(${row.isEndSoon()})) o_assessment_end_soon #end #if($r.isTrue(${row.isToday()})) o_assessment_today #end clearfix">
 	<h4>$r.escapeHtml($row.name) <small>${helper.getBeginEndDate($row.assessmentMode)}</small></h4>
 	<p>$r.translate("table.header.assessmentStatus"): <span><i class="o_icon o_icon-fw $helper.getCssClass($row.assessmentMode)"> </i> ${helper.getStatusLabel($row.assessmentMode)}</span> #if($r.isNotNull($row.actionButtonName)) $r.render($row.actionButton) #end</p>
 	#set($elementLinks = ${row.getElementLinkNames()})

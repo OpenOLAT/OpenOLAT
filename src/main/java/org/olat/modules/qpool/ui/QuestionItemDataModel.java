@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.elements.FlexiTableElement;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataSourceModel;
+import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.gui.translator.Translator;
@@ -121,7 +122,7 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 		return THREE_DIGITS_FORMAT.format(value.doubleValue());
 	}
 
-	public enum Cols {
+	public enum Cols implements FlexiSortableColumnDef {
 		key("general.key"),
 		identifier("general.identifier"),
 		masterIdentifier("general.master.identifier"),
@@ -156,8 +157,19 @@ public class QuestionItemDataModel extends DefaultFlexiTableDataSourceModel<Item
 			this.i18nKey = i18nKey;
 		}
 		
-		public String i18nKey() {
+		@Override
+		public String i18nHeaderKey() {
 			return i18nKey;
+		}
+
+		@Override
+		public boolean sortable() {
+			return true;
+		}
+
+		@Override
+		public String sortKey() {
+			return name();
 		}
 	}
 }

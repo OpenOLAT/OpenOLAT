@@ -314,6 +314,9 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 		Status currentStatus = mode.getStatus();
 		if(currentStatus == null || currentStatus != status) {
 			mode.setStatus(status);
+			if(status == Status.assessment && mode.isManualBeginEnd()) {
+				syncBeginEndDate(mode);
+			}
 			mode = dbInstance.getCurrentEntityManager().merge(mode);
 			if(status == Status.leadtime || status == Status.assessment) {
 				warmUpAssessment(mode);
@@ -321,6 +324,32 @@ public class AssessmentModeCoordinationServiceImpl implements AssessmentModeCoor
 			dbInstance.commit();
 		}
 		return mode;
+	}
+	
+	private void syncBeginEndDate(AssessmentMode mode) {
+		Date programmedBegin = mode.getBegin();
+		
+		Date now = new Date();
+		((AssessmentModeImpl)mode).setBegin(now);
+		Date beginWithLeadTime = assessmentModeManager.evaluateLeadTime(now, mode.getLeadTime());
+		((AssessmentModeImpl)mode).setBeginWithLeadTime(beginWithLeadTime);
+		
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(programmedBegin);
+		long programmedBeginInMillis = cal.getTimeInMillis();
+		cal.setTime(now);
+		long nowInMillis = cal.getTimeInMillis();
+		
+		if(nowInMillis > programmedBeginInMillis) {
+			Date end = mode.getEnd();
+			cal.setTime(end);
+			cal.add(Calendar.MILLISECOND, (int)(nowInMillis - programmedBeginInMillis));
+			
+			Date movedEnd = cal.getTime();
+			((AssessmentModeImpl)mode).setEnd(movedEnd);
+			Date endWithFollowupTime = assessmentModeManager.evaluateFollowupTime(movedEnd, mode.getFollowupTime());
+			((AssessmentModeImpl)mode).setEndWithFollowupTime(endWithFollowupTime);
+		}	
 	}
 	
 	private void sendEvent(String cmd, AssessmentMode mode, Set<Long> assessedIdentityKeys) {
