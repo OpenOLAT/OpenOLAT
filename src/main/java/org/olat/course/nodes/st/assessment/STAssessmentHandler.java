@@ -77,12 +77,6 @@ public class STAssessmentHandler implements AssessmentHandler {
 	private static final StatusEvaluator LEARNING_PATH_STATUS_EVALUATOR = new STLinearStatusEvaluator();
 	private static final FullyAssessedEvaluator FULLY_ASSESSED_EVALUATOR = new STFullyAssessedEvaluator();
 	private static final LastModificationsEvaluator LAST_MODIFICATION_EVALUATOR = new STLastModificationsEvaluator();
-	private static final AccountingEvaluators CONVENTIONAL_EVALUATORS = AccountingEvaluatorsBuilder.builder()
-			.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
-			.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
-			.withStatusEvaluator(SCORE_STATUS_EVALUATOR)
-			.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
-			.build();
 	
 	@Override
 	public String acceptCourseNodeType() {
@@ -122,7 +116,13 @@ public class STAssessmentHandler implements AssessmentHandler {
 			builder.withCompletionEvaluator(completionEvaluator);
 			return builder.build();
 		}
-		return CONVENTIONAL_EVALUATORS;
+		return AccountingEvaluatorsBuilder.builder()
+				.withScoreEvaluator(CONDITION_SCORE_EVALUATOR)
+				.withPassedEvaluator(CONDITION_PASSED_EVALUATOR)
+				.withCompletionEvaluator(new ConventionalSTCompletionEvaluator())
+				.withStatusEvaluator(SCORE_STATUS_EVALUATOR)
+				.withLastModificationsEvaluator(LAST_MODIFICATION_EVALUATOR)
+				.build();
 	}
 
 	@Override

@@ -39,7 +39,7 @@ public class ScoreStatusEvaluator implements StatusEvaluator {
 			Blocker blocker) {
 		if (currentEvaluation.getPassed() != null && currentEvaluation.getPassed().booleanValue()) {
 			return AssessmentEntryStatus.done;
-		} else if (currentEvaluation.getScore() != null) {
+		} else if (currentEvaluation.getScore() != null || currentEvaluation.getCompletion() != null) {
 			return AssessmentEntryStatus.inProgress;
 		}
 		return AssessmentEntryStatus.notStarted;

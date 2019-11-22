@@ -233,6 +233,7 @@ public class AssessmentAccounting implements ScoreAccounting {
 		BigDecimal score = result.getScore() != null? new BigDecimal(result.getScore()): null;
 		entry.setScore(score);
 		entry.setPassed(result.getPassed());
+		entry.setCompletion(result.getCompletion());
 		entry.setDuration(result.getDuration());
 		entry.setLastUserModified(result.getLastUserModified());
 		entry.setLastCoachModified(result.getLastCoachModified());

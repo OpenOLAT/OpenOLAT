@@ -461,6 +461,7 @@ import org.junit.runners.Suite;
 	org.olat.course.learningpath.evaluation.LinearAccessEvaluatorTest.class,
 	org.olat.course.learningpath.manager.LearningPathNodeAccessProviderTest.class,
 	org.olat.course.nodes.st.assessment.CumulatingDurationEvaluatorTest.class,
+	org.olat.course.nodes.st.assessment.ConventionalSTCompletionEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.MandatoryObligationEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.STFullyAssessedEvaluatorTest.class,
 	org.olat.course.nodes.st.assessment.STLastModificationsEvaluatorTest.class,

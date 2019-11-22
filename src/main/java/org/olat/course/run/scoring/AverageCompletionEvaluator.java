@@ -61,7 +61,8 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 	public Double getCompletion(AssessmentEvaluation currentEvaluation, CourseNode courseNode,
 			ScoreAccounting scoreAccounting) {
 		
-		CollectingVisitor visitor = CollectingVisitor.testing(cn -> true);
+		// get all children
+		CollectingVisitor visitor = CollectingVisitor.testing(cn -> !cn.getIdent().equals(courseNode.getIdent()));
 		TreeVisitor tv = new TreeVisitor(visitor, courseNode, true);
 		tv.visitAll();
 		
