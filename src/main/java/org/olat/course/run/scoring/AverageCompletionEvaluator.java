@@ -73,7 +73,10 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 				AssessmentConfig assessmentConfig = courseAssessmentService.getAssessmentConfig(child);
 				int nodeCount = 0;
 				double nodeCompletion = 0.0;
-				if (Mode.setByNode.equals(assessmentConfig.getCompletionMode())) {
+				if (isFullyAssessed(assessmentEvaluation)) {
+					nodeCount = 1;
+					nodeCompletion = 1.0;
+				} else if (Mode.setByNode.equals(assessmentConfig.getCompletionMode())) {
 					nodeCount = 1;
 					nodeCompletion = assessmentEvaluation.getCompletion() != null
 							? assessmentEvaluation.getCompletion().doubleValue()
@@ -89,6 +92,10 @@ public class AverageCompletionEvaluator implements CompletionEvaluator {
 		}
 		
 		return count > 0? completion / count: null;
+	}
+
+	private boolean isFullyAssessed(AssessmentEvaluation assessmentEvaluation) {
+		return Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
 	}
 
 	private boolean isMandatory(AssessmentEvaluation evaluation) {

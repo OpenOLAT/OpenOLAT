@@ -207,16 +207,16 @@ public class AssessmentAccounting implements ScoreAccounting {
 		obligation = obligationEvaluator.getObligation(result, children);
 		result.setObligation(obligation);
 		
+		FullyAssessedEvaluator fullyAssessedEvaluator = evaluators.getFullyAssessedEvaluator();
+		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, children);
+		result.setFullyAssessed(fullyAssessed);
+		
 		CompletionEvaluator completionEvaluator = evaluators.getCompletionEvaluator();
 		Double completion = completionEvaluator.getCompletion(result, courseNode, this);
 		result.setCompletion(completion);
 		
 		status = statusEvaluator.getStatus(result, children);
 		result.setStatus(status);
-		
-		FullyAssessedEvaluator fullyAssessedEvaluator = evaluators.getFullyAssessedEvaluator();
-		Boolean fullyAssessed = fullyAssessedEvaluator.getFullyAssessed(result, children);
-		result.setFullyAssessed(fullyAssessed);
 		
 		if (result.hasChanges()) {
 			update(courseNode, result);
