@@ -197,6 +197,13 @@ public class CmdDownloadZip implements FolderCommand {
 					ZipUtil.addToZip(item, "", zout);
 				}
 				zout.flush();
+			} catch (IOException e) {
+				String className = e.getClass().getSimpleName();
+				if("ClientAbortException".equals(className)) {
+					log.debug("client browser probably abort when downloading zipped files", e);
+				} else {
+					log.error("client browser probably abort when downloading zipped files", e);
+				}
 			} catch (Exception e) {
 				log.error("", e);
 			}
