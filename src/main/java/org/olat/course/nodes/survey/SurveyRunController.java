@@ -23,6 +23,7 @@ import static org.olat.modules.forms.EvaluationFormSurveyIdentifier.of;
 
 import java.util.UUID;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
@@ -37,12 +38,14 @@ import org.olat.core.gui.control.generic.messages.MessageUIFactory;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.id.Identity;
 import org.olat.core.id.OLATResourceable;
+import org.olat.core.logging.Tracing;
 import org.olat.core.util.UserSession;
 import org.olat.core.util.Util;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.nodes.SurveyCourseNode;
 import org.olat.course.run.userview.UserCourseEnvironment;
 import org.olat.modules.assessment.Role;
+import org.olat.modules.card2brain.manager.Card2BrainManagerImpl;
 import org.olat.modules.forms.EvaluationFormManager;
 import org.olat.modules.forms.EvaluationFormParticipation;
 import org.olat.modules.forms.EvaluationFormParticipationIdentifier;
@@ -58,6 +61,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  */
 public class SurveyRunController extends BasicController {
+
+	private static final Logger log = Tracing.createLoggerFor(Card2BrainManagerImpl.class);
 	
 	private VelocityContainer mainVC;
 	private Link resetLink;
@@ -102,6 +107,14 @@ public class SurveyRunController extends BasicController {
 		}
 		
 		survey = evaluationFormManager.loadSurvey(of(ores, subIdent));
+		if (survey == null) {
+			String title = getTranslator().translate("run.no.survey.title");
+			String message = getTranslator().translate("run.no.survey.message");
+			doShowMessage(ureq, title, message);
+			log.warn("Published survey course node has no survey in the database!");
+			return;
+		}
+		
 		doShowView(ureq);
 	}
 
