@@ -51,7 +51,7 @@ public class AssessmentEntryDAO {
 	private DB dbInstance;
 	
 	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry) {
+			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry) {
 		
 		AssessmentEntryImpl data = new AssessmentEntryImpl();
 		data.setCreationDate(new Date());
@@ -60,6 +60,7 @@ public class AssessmentEntryDAO {
 		data.setAnonymousIdentifier(anonymousIdentifier);
 		data.setRepositoryEntry(entry);
 		data.setSubIdent(subIdent);
+		data.setEntryRoot(entryRoot);
 		data.setReferenceEntry(referenceEntry);
 		data.setUserVisibility(Boolean.TRUE);
 		dbInstance.getCurrentEntityManager().persist(data);
@@ -67,7 +68,7 @@ public class AssessmentEntryDAO {
 	}
 	
 	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry,
+			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry,
 			Float score, Boolean passed, Date lastUserModified, Date lastCoachModified) {
 		
 		AssessmentEntryImpl data = new AssessmentEntryImpl();
@@ -79,6 +80,7 @@ public class AssessmentEntryDAO {
 		data.setAnonymousIdentifier(anonymousIdentifier);
 		data.setRepositoryEntry(entry);
 		data.setSubIdent(subIdent);
+		data.setEntryRoot(entryRoot);
 		data.setReferenceEntry(referenceEntry);
 		data.setUserVisibility(Boolean.TRUE);
 		if(score != null) {

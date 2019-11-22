@@ -134,10 +134,10 @@ public class AssessmentAccounting implements ScoreAccounting {
 	private AssessmentEntry getOrCreateAssessmentEntry(CourseNode courseNode) {
 		AssessmentEntry entry = identToEntry.get(courseNode.getIdent());
 		if (entry == null) {
-			entry = getAssessmentManager().getAssessmentEntry(courseNode, getIdentity());
-			if (entry == null) {
-				entry = getAssessmentManager().createAssessmentEntry(courseNode, getIdentity(), null);
-			}
+			Boolean entryRoot = userCourseEnvironment.getCourseEnvironment().getRunStructure().getRootNode().getIdent().equals(courseNode.getIdent())
+					? Boolean.TRUE
+					: Boolean.FALSE;
+			entry = getAssessmentManager().getOrCreateAssessmentEntry(courseNode, getIdentity(), entryRoot);
 			identToEntry.put(entry.getSubIdent(), entry);
 			AssessmentEvaluation assessmentEvaluation = getAssessmentEvaluation(courseNode);
 			courseNodeToEval.put(courseNode, assessmentEvaluation);

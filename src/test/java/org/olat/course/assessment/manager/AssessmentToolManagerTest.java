@@ -99,11 +99,11 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// some datas
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, refEntry, 3.0f, Boolean.FALSE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, refEntry, 5.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, refEntry, 8.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, refEntry, 9.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, refEntry);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 5.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, refEntry, 8.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, refEntry, 9.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		// coach of group 1 with id 1 and id2
@@ -197,14 +197,14 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// some datas
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, refEntry, 3.0f, Boolean.FALSE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, refEntry, 5.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, refEntry, 8.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, refEntry, 9.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity5, null, entry, subIdent, refEntry, 3.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity6, null, entry, subIdent, refEntry, 4.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity7, null, entry, subIdent, refEntry, 5.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, refEntry);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 5.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, refEntry, 8.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, refEntry, 9.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity5, null, entry, subIdent, null, refEntry, 3.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity6, null, entry, subIdent, null, refEntry, 4.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity7, null, entry, subIdent, null, refEntry, 5.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		// administrator with full access
@@ -268,14 +268,14 @@ public class AssessmentToolManagerTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		// some datas
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, refEntry, 3.0f, Boolean.FALSE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, refEntry, 5.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, refEntry, 8.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, refEntry, 9.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity5, null, entry, subIdent, refEntry, 3.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity6, null, entry, subIdent, refEntry, 4.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity7, null, entry, subIdent, refEntry, 5.0f, Boolean.TRUE, null, null);
-		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, refEntry);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 5.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, refEntry, 8.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, refEntry, 9.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity5, null, entry, subIdent, null, refEntry, 3.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity6, null, entry, subIdent, null, refEntry, 4.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedExtIdentity7, null, entry, subIdent, null, refEntry, 5.0f, Boolean.TRUE, null, null);
+		assessmentEntryDao.createAssessmentEntry(null, UUID.randomUUID().toString(), entry, subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		// the course infos need to calculate the number of participants

@@ -39,27 +39,15 @@ public interface AssessmentService {
 	/**
 	 * 
 	 * @param assessedIdentity
-	 * @param entry
-	 * @param subIdent
-	 * @param referenceEntry
-	 * @param score
-	 * @param passed
-	 * @return
-	 */
-	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, Float score, Boolean passed, Date lastUserModified, Date lastCoachModified);
-	
-	/**
-	 * 
-	 * @param assessedIdentity
 	 * @param entry The repository entry where the assessment happens (the course if the test is in a course or
 	 * 		same as the reference entry if the test is launched as a standalone test).
 	 * @param subIdent An additional reference for the course element
+	 * @param entryRoot 
 	 * @param referenceEntry The test repository entry 
 	 * @return
 	 */
 	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry);
+			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry);
 	
 	/**
 	 * 
@@ -96,19 +84,23 @@ public interface AssessmentService {
 	/**
 	 * Update the status for a user, create the assessment entries if it doesn't exist.
 	 * exist.
-	 * @param group
+	 * @param entryRoot
 	 * @param status
+	 * @param group
 	 * @return
 	 */
-	public AssessmentEntry updateAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, AssessmentEntryStatus status);
+	public AssessmentEntry updateAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
+			Boolean entryRoot, RepositoryEntry referenceEntry, AssessmentEntryStatus status);
 	
 	/**
 	 * Update the status for a whole group of users, create the assessment entries if they don't
 	 * exist.
 	 * @param group
+	 * @param entryRoot 
 	 * @param status
 	 * @return
 	 */
-	public List<AssessmentEntry> updateAssessmentEntries(BusinessGroup group, RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry, AssessmentEntryStatus status);
+	public List<AssessmentEntry> updateAssessmentEntries(BusinessGroup group, RepositoryEntry entry, String subIdent,
+			Boolean entryRoot, RepositoryEntry referenceEntry, AssessmentEntryStatus status);
 
 }

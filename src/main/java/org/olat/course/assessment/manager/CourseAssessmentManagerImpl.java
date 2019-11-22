@@ -64,7 +64,6 @@ import org.olat.course.groupsandrights.CourseGroupManager;
 import org.olat.course.nodeaccess.NodeAccessService;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.run.environment.CourseEnvironment;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -114,12 +113,13 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		CoreSpringFactory.autowireObject(this);
 	}
 
-	private AssessmentEntry getOrCreate(Identity assessedIdentity, CourseNode courseNode) {
-		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), courseNode.getReferencedRepositoryEntry());
+	@Override
+	public AssessmentEntry getOrCreateAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, Boolean entryRoot) {
+		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), entryRoot, courseNode.getReferencedRepositoryEntry());
 	}
 	
-	private AssessmentEntry getOrCreate(Identity assessedIdentity, String subIdent, RepositoryEntry referenceEntry) {
-		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), subIdent, referenceEntry);
+	private AssessmentEntry getOrCreate(Identity assessedIdentity, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry) {
+		return assessmentService.getOrCreateAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), subIdent, entryRoot, referenceEntry);
 	}
 
 	@Override
@@ -149,32 +149,6 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	}
 
 	@Override
-	public AssessmentEntry createAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, ScoreEvaluation scoreEvaluation) {
-		RepositoryEntry referenceEntry = null;
-		if(courseNode.needsReferenceToARepositoryEntry()) {
-			referenceEntry = courseNode.getReferencedRepositoryEntry();
-		}
-		Float score = null;
-		Boolean passed = null;
-		Date lastUserModified = null;
-		Date lastCoachModified = null;
-		if(scoreEvaluation != null) {
-			score = scoreEvaluation.getScore();
-			passed = scoreEvaluation.getPassed();
-		}
-		if(scoreEvaluation instanceof AssessmentEvaluation) {
-			AssessmentEvaluation eval = (AssessmentEvaluation)scoreEvaluation;
-			lastCoachModified = eval.getLastCoachModified();
-			lastUserModified = eval.getLastUserModified();
-		}
-		AssessmentEntry createAssessmentEntry = assessmentService
-				.createAssessmentEntry(assessedIdentity, null, cgm.getCourseEntry(), courseNode.getIdent(), referenceEntry,
-						score, passed, lastUserModified, lastCoachModified);
-		DBFactory.getInstance().commit();
-		return createAssessmentEntry;
-	}
-
-	@Override
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry assessmentEntry) {
 		AssessmentEntry updateAssessmentEntry = assessmentService.updateAssessmentEntry(assessmentEntry);
 		DBFactory.getInstance().commit();
@@ -185,7 +159,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public void saveNodeAttempts(CourseNode courseNode, Identity identity, Identity assessedIdentity, Integer attempts, Role by) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		if(by == Role.coach) {
 			nodeAssessment.setLastCoachModified(new Date());
 		} else if(by == Role.user) {
@@ -213,7 +188,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public void saveNodeComment(CourseNode courseNode, Identity identity, Identity assessedIdentity, String comment) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		nodeAssessment.setComment(comment);
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		
@@ -249,14 +225,15 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			Files.copy(document.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			
 			//update counter
-			AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+			Boolean entryRoot = isEntryRoot(course, courseNode);
+			AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 			File[] docs = directory.listFiles(SystemFileFilter.FILES_ONLY);
 			int numOfDocs = docs == null ? 0 : docs.length;
 			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
 			assessmentService.updateAssessmentEntry(nodeAssessment);
 			
 			// node log
-			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 			UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
 			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "assessment document added: " + filename, null);
 			
@@ -276,15 +253,16 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 			document.delete();
 			
 			//update counter
+			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+			Boolean entryRoot = isEntryRoot(course, courseNode);
+			AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 			File directory = getAssessmentDocumentsDirectory(courseNode, assessedIdentity);
-			AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
 			File[] docs = directory.listFiles(SystemFileFilter.FILES_ONLY);
 			int numOfDocs = docs == null ? 0 : docs.length;
 			nodeAssessment.setNumberOfAssessmentDocuments(numOfDocs);
 			assessmentService.updateAssessmentEntry(nodeAssessment);
 
 			// node log
-			ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 			UserNodeAuditManager am = course.getCourseEnvironment().getAuditManager();
 			am.appendToUserNodeLog(courseNode, identity, assessedIdentity, "assessment document removed: " + document.getName(), null);
 			
@@ -322,7 +300,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public void saveNodeCoachComment(CourseNode courseNode, Identity assessedIdentity, String comment) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		nodeAssessment.setCoachComment(comment);
 		assessmentService.updateAssessmentEntry(nodeAssessment);
 		
@@ -341,7 +320,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public void incrementNodeAttempts(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv, Role by) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
 		nodeAssessment.setAttempts(attempts);
 		if(by == Role.coach) {
@@ -374,7 +354,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public void incrementNodeAttemptsInBackground(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv) {
 		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
 		
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		int attempts = nodeAssessment.getAttempts() == null ? 1 :nodeAssessment.getAttempts().intValue() + 1;
 		nodeAssessment.setAttempts(attempts);
 		assessmentService.updateAssessmentEntry(nodeAssessment);
@@ -391,7 +372,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	
 	@Override
 	public void updateLastModifications(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnv, Role by) {
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		if(by == Role.coach) {
 			nodeAssessment.setLastCoachModified(new Date());
 		} else if(by == Role.user) {
@@ -409,7 +393,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 
 	@Override
 	public void updateLastVisited(CourseNode courseNode, Identity assessedIdentity, Date lastVisit) {
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		assessmentService.setLastVisit(nodeAssessment, lastVisit);
 		DBFactory.getInstance().commit();
 	}
@@ -417,7 +404,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public void updateCurrentCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
 			Double currentCompletion, AssessmentRunStatus runStatus, Role by) {
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		nodeAssessment.setCurrentRunCompletion(currentCompletion);
 		nodeAssessment.setCurrentRunStatus(runStatus);
 		if(by == Role.coach) {
@@ -432,7 +422,10 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public void updateCompletion(CourseNode courseNode, Identity assessedIdentity, UserCourseEnvironment userCourseEnvironment,
 			Double completion, AssessmentEntryStatus status, Role by) {
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity, courseNode);
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		nodeAssessment.setCompletion(completion);
 		nodeAssessment.setAssessmentStatus(status);
 		if(by == Role.coach) {
@@ -455,7 +448,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	public void updateFullyAssessed(CourseNode courseNode, UserCourseEnvironment userCourseEnvironment, Boolean fullyAssessed,
 			AssessmentEntryStatus status, Role by) {
 		Identity assessedIdentity = userCourseEnvironment.getIdentityEnvironment().getIdentity();
-		AssessmentEntry nodeAssessment = getOrCreate(assessedIdentity , courseNode);
+		ICourse course = CourseFactory.loadCourse(cgm.getCourseEntry());
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry nodeAssessment = getOrCreateAssessmentEntry(courseNode, assessedIdentity, entryRoot);
 		if (Objects.equal(fullyAssessed, nodeAssessment.getFullyAssessed())) {
 			// Fully assess can only set once
 			return;
@@ -490,7 +485,8 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 		
 		String subIdent = courseNode.getIdent();
 		RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
-		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, referenceEntry);
+		Boolean entryRoot = isEntryRoot(course, courseNode);
+		AssessmentEntry assessmentEntry = getOrCreate(assessedIdentity, subIdent, entryRoot, referenceEntry);
 		if(referenceEntry != null && !referenceEntry.equals(assessmentEntry.getReferenceEntry())) {
 			assessmentEntry.setReferenceEntry(referenceEntry);
 		}
@@ -729,5 +725,9 @@ public class CourseAssessmentManagerImpl implements AssessmentManager {
 	@Override
 	public void deregisterFromAssessmentChangeEvents(GenericEventListener gel) {
 		CoordinatorManager.getInstance().getCoordinator().getEventBus().deregisterFor(gel, cgm.getCourseEntry().getOlatResource());
+	}
+
+	private Boolean isEntryRoot(ICourse course, CourseNode courseNode) {
+		return course.getCourseEnvironment().getRunStructure().getRootNode().getIdent().equals(courseNode.getIdent());
 	}
 }

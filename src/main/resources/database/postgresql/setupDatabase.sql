@@ -1312,6 +1312,7 @@ create table o_as_entry (
    a_num_visits int8,
    fk_entry int8 not null,
    a_subident varchar(64),
+   a_entry_root bool,
    fk_reference_entry int8,
    fk_identity int8 default null,
    a_anon_identifier varchar(128) default null,

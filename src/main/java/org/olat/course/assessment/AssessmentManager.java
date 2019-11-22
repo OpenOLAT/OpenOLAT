@@ -294,7 +294,7 @@ public interface AssessmentManager {
 	
 	public AssessmentEntry getAssessmentEntry(CourseNode courseNode, Identity assessedIdentity);
 	
-	public AssessmentEntry createAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, ScoreEvaluation scoreEvaluation);
+	public AssessmentEntry getOrCreateAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, Boolean entryRoot);
 	
 	public AssessmentEntry updateAssessmentEntry(AssessmentEntry assessmentEntry);
 

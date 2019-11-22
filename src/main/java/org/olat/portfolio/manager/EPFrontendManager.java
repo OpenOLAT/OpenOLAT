@@ -636,6 +636,7 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 		
 		final EPStructuredMap userMap = (EPStructuredMap)map;
 		Boolean synched = coordinator.getSyncer().doInSync(map.getOlatResource(), new SyncerCallback<Boolean>() {
+			@Override
 			public Boolean execute() {
 				if (userMap.getStructuredMapSource() == null) { return Boolean.FALSE; }
 				// need to reload it, I don't know why
@@ -677,7 +678,7 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 				structureManager.copyStructureRecursively(template, copy, true);
 				
 				RepositoryEntry referenceEntry = repositoryEntryDao.loadByResourceKey(template.getOlatResource().getKey());
-				assessmentService.updateAssessmentEntry(identity, courseEntry, targetSubPath, referenceEntry, AssessmentEntryStatus.inProgress);
+				assessmentService.updateAssessmentEntry(identity, courseEntry, targetSubPath, Boolean.FALSE, referenceEntry, AssessmentEntryStatus.inProgress);
 				return copy;
 			}
 		});
@@ -1178,7 +1179,7 @@ public class EPFrontendManager implements UserDataDeletable, DeletableGroupData 
 				
 				RepositoryEntry referenceEntry = courseNode.getReferencedRepositoryEntry();
 				RepositoryEntry courseEntry = course.getCourseEnvironment().getCourseGroupManager().getCourseEntry();
-				assessmentService.updateAssessmentEntry(owner, courseEntry, courseNode.getIdent(), referenceEntry, AssessmentEntryStatus.inReview);
+				assessmentService.updateAssessmentEntry(owner, courseEntry, courseNode.getIdent(), Boolean.FALSE, referenceEntry, AssessmentEntryStatus.inReview);
 			}
 			assessmentNotificationsHandler.markPublisherNews(owner, course.getResourceableId());
 			log.info(Tracing.M_AUDIT, "Map " + map + " from " + owner.getKey() + " has been submitted.");

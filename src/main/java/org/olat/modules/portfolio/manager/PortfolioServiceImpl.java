@@ -1340,7 +1340,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
 			for(Identity assessedIdentity:assessedIdentities) {
 				AssessmentEntry assessmentEntry = assessmentService
-						.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), referenceEntry);
+						.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry);
 				if(by == Role.coach) {
 					assessmentEntry.setLastCoachModified(new Date());
 				} else if(by == Role.user) {
@@ -1449,7 +1449,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
 			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
 			AssessmentEntry assessmentEntry = assessmentService
-					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), referenceEntry);
+					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry);
 			assessmentEntry.setScore(totalScore);
 			assessmentEntry.setPassed(totalPassed);
 			assessmentEntry.setAssessmentStatus(binderStatus);
@@ -1473,7 +1473,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
 			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
 			AssessmentEntry assessmentEntry = assessmentService
-					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), referenceEntry);
+					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry);
 			status = assessmentEntry.getAssessmentStatus();
 		}
 		return status;
@@ -1502,7 +1502,7 @@ public class PortfolioServiceImpl implements PortfolioService {
 			OLATResource resource = ((BinderImpl)binder.getTemplate()).getOlatResource();
 			RepositoryEntry referenceEntry = repositoryService.loadByResourceKey(resource.getKey());
 			AssessmentEntry assessmentEntry = assessmentService
-					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), referenceEntry);
+					.getOrCreateAssessmentEntry(assessedIdentity, null, binder.getEntry(), binder.getSubIdent(), Boolean.TRUE, referenceEntry);
 			assessmentEntry.setFullyAssessed(fullyAssessed);
 			assessmentEntry.setAssessmentStatus(status);
 			assessmentService.updateAssessmentEntry(assessmentEntry);

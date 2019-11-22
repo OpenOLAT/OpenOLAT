@@ -141,6 +141,8 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 	
     @Column(name="a_subident", nullable=true, insertable=true, updatable=false)
 	private String subIdent;
+	@Column(name="a_entry_root", nullable=true, insertable=true, updatable=true)
+	private Boolean entryRoot;
 	
 	@ManyToOne(targetEntity=RepositoryEntry.class,fetch=FetchType.LAZY,optional=true)
 	@JoinColumn(name="fk_reference_entry", nullable=true, insertable=true, updatable=true)
@@ -460,6 +462,15 @@ public class AssessmentEntryImpl implements Persistable, ModifiedInfo, CreateInf
 
 	public void setSubIdent(String subIdent) {
 		this.subIdent = subIdent;
+	}
+
+	@Override
+	public Boolean getEntryRoot() {
+		return entryRoot;
+	}
+
+	public void setEntryRoot(Boolean entryRoot) {
+		this.entryRoot = entryRoot;
 	}
 
 	@Override

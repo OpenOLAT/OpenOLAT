@@ -71,7 +71,7 @@ public class HighScoreManagerTest extends OlatTestCase {
 			RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 			String subIdent = UUID.randomUUID().toString();
 			AssessmentEntry nodeAssessment = courseNodeAssessmentDao
-					.createAssessmentEntry(assessedIdentity, subIdent, entry, subIdent, entry);
+					.createAssessmentEntry(assessedIdentity, subIdent, entry, subIdent, null, entry);
 			nodeAssessment.setScore(new BigDecimal(scores[i]));
 			dbInstance.commitAndCloseSession();
 			AssessmentEntry reloadedAssessment = courseNodeAssessmentDao.loadAssessmentEntryById(nodeAssessment.getKey());

@@ -1349,6 +1349,7 @@ create table o_as_entry (
    a_num_visits number(20),
    fk_entry number(20) not null,
    a_subident varchar2(64 char),
+   a_entry_root number default null,
    fk_reference_entry number(20),
    fk_identity number(20) default null,
    a_anon_identifier varchar2(128 char) default null,

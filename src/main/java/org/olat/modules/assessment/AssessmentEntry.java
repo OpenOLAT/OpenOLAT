@@ -131,6 +131,11 @@ public interface AssessmentEntry extends AssessmentEntryLight {
 	public String getSubIdent();
 	
 	/**
+	 * @return is it the root (course node) of the learn resource.
+	 */
+	public Boolean getEntryRoot();
+	
+	/**
 	 * @return The reference to the test
 	 */
 	public RepositoryEntry getReferenceEntry();

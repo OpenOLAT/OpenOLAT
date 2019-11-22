@@ -1286,6 +1286,7 @@ create table o_as_entry (
    a_num_visits int8,
    fk_entry bigint not null,
    a_subident varchar(64),
+   a_entry_root bit default null,
    fk_reference_entry bigint,
    fk_identity bigint default null,
    a_anon_identifier varchar(128) default null,

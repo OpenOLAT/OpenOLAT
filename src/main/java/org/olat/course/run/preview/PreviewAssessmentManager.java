@@ -87,7 +87,7 @@ final class PreviewAssessmentManager implements AssessmentManager {
 	}
 
 	@Override
-	public AssessmentEntry createAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, ScoreEvaluation scoreEvaluation) {
+	public AssessmentEntry getOrCreateAssessmentEntry(CourseNode courseNode, Identity assessedIdentity, Boolean entryRoot) {
 		return null;
 	}
 

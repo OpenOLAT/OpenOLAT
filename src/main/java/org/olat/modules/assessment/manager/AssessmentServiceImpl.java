@@ -53,21 +53,20 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
 	
-	@Override
 	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
 			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry,
 			Float score, Boolean passed, Date lastUserModified, Date lastCoachModified) {
-		return assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry,
-				score, passed, lastUserModified, lastCoachModified);
+		return assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, null,
+				referenceEntry, score, passed, lastUserModified, lastCoachModified);
 	}
 
 	@Override
 	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry) {
+			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry) {
 		
 		AssessmentEntry assessmentEntry = assessmentEntryDao.loadAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent);
 		if(assessmentEntry == null) {
-			assessmentEntry = assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, referenceEntry);
+			assessmentEntry = assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, entryRoot, referenceEntry);
 			dbInstance.commit();
 		}
 		return assessmentEntry;
@@ -118,19 +117,19 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 
 	@Override
 	public AssessmentEntry updateAssessmentEntry(Identity assessedIdentity, RepositoryEntry entry, String subIdent,
-			RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
-		AssessmentEntry assessmentEntry = getOrCreateAssessmentEntry(assessedIdentity, null, entry, subIdent, referenceEntry);
+			Boolean entryRoot, RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
+		AssessmentEntry assessmentEntry = getOrCreateAssessmentEntry(assessedIdentity, null, entry, subIdent, entryRoot, referenceEntry);
 		assessmentEntry.setAssessmentStatus(status);
 		return assessmentEntryDao.updateAssessmentEntry(assessmentEntry);
 	}
 
 	@Override
 	public List<AssessmentEntry> updateAssessmentEntries(BusinessGroup group, RepositoryEntry entry, String subIdent,
-			RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
+			Boolean entryRoot, RepositoryEntry referenceEntry, AssessmentEntryStatus status) {
 		List<AssessmentEntry> assessmentEntries = new ArrayList<>();
 		List<Identity> groupParticipants = businessGroupRelationDao.getMembers(group, GroupRoles.participant.name());
 		for(Identity groupParticipant:groupParticipants) {
-			AssessmentEntry assessmentEntry = getOrCreateAssessmentEntry(groupParticipant, null, entry, subIdent, referenceEntry);
+			AssessmentEntry assessmentEntry = getOrCreateAssessmentEntry(groupParticipant, null, entry, subIdent, entryRoot, referenceEntry);
 			assessmentEntry.setAssessmentStatus(status);
 			assessmentEntry = assessmentEntryDao.updateAssessmentEntry(assessmentEntry);
 			assessmentEntries.add(assessmentEntry);
