@@ -333,7 +333,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		Attributes attrs = bindUser(username, pwd, ldapError);
 		long takes = System.nanoTime() - start;
 		if(takes > LDAPLoginModule.WARNING_LIMIT) {
-			log.warn("LDAP Authentication takes (ms): " + (takes / 1000000));
+			log.warn("LDAP Authentication takes (ms): ({})", (takes / 1000000));
 		}
 		
 		if (ldapError.isEmpty() && attrs != null) { 

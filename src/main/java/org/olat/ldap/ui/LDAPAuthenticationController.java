@@ -163,7 +163,7 @@ public class LDAPAuthenticationController extends AuthenticationController imple
 			if (loginModule.isLoginBlocked(login)) {
 				// do not proceed when already blocked
 				showError("login.blocked", loginModule.getAttackPreventionTimeoutMin().toString());
-				getLogger().info(Tracing.M_AUDIT, "Login attempt on already blocked login for " + login + ". IP::" + ureq.getHttpReq().getRemoteAddr());
+				getLogger().info(Tracing.M_AUDIT, "Login attempt on already blocked login for {}. IP::{}", login, ureq.getHttpReq().getRemoteAddr());
 				return;
 			}
 			authenticatedIdentity = ldapLoginManager.authenticate(login, pass, ldapError);
