@@ -173,40 +173,40 @@ public abstract class AbstractItemListController extends FormBasicController
 		//add the table
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("quickview", "<i class='o_icon o_icon_quickview'> </i>", "quick-view"));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark.i18nKey(), Cols.mark.ordinal(), true, OrderBy.marks.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.editable.i18nKey(), Cols.editable.ordinal(),
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.mark));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(true, Cols.editable.i18nHeaderKey(), Cols.editable.ordinal(),
 				false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 				new BooleanCellRenderer(
 						new CSSIconFlexiCellRenderer(CSS_ICON_READWRITE),
 						new CSSIconFlexiCellRenderer(CSS_ICON_READONLY))
 		));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key.i18nKey(), Cols.key.ordinal(), true, OrderBy.key.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identifier.i18nKey(), Cols.identifier.ordinal(), true, OrderBy.identifier.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title.i18nKey(), Cols.title.ordinal(), true, OrderBy.title.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.topic.i18nKey(), Cols.topic.ordinal(), true, OrderBy.topic.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.creationDate.i18nKey(), Cols.creationDate.ordinal(), true, OrderBy.creationDate.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified.i18nKey(), Cols.lastModified.ordinal(), true, OrderBy.lastModified.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.keywords.i18nKey(), Cols.keywords.ordinal(), true, OrderBy.keywords.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.coverage.i18nKey(), Cols.coverage.ordinal(), true, OrderBy.coverage.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.additionalInfos.i18nKey(), Cols.additionalInfos.ordinal(), true,  OrderBy.additionalInformations.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.key));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.identifier, "select-item"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.title, "select-item"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.topic, "select-item"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.creationDate));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.lastModified));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.keywords));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.coverage));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.additionalInfos));
 		if (getSecurityCallback().canUseTaxonomy()) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyLevel.i18nKey(), Cols.taxnonomyLevel.ordinal(), true, OrderBy.taxonomyLevel.name()));
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyPath.i18nKey(), Cols.taxnonomyPath.ordinal(), true, OrderBy.taxonomyPath.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyLevel));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.taxnonomyPath));
 		}
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.difficulty.i18nKey(), Cols.difficulty.ordinal(), true, OrderBy.difficulty.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.stdevDifficulty.i18nKey(), Cols.stdevDifficulty.ordinal(), true, OrderBy.stdevDifficulty.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.differentiation.i18nKey(), Cols.differentiation.ordinal(), true, OrderBy.differentiation.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.numOfAnswerAlternatives.i18nKey(), Cols.numOfAnswerAlternatives.ordinal(), true, OrderBy.numOfAnswerAlternatives.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.usage.i18nKey(), Cols.usage.ordinal(), true, OrderBy.usage.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type.i18nKey(), Cols.type.ordinal(), true, OrderBy.itemType.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format.i18nKey(), Cols.format.ordinal(), true, OrderBy.format.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.rating.i18nKey(), Cols.rating.ordinal(), true, OrderBy.rating.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.numberOfRatings.i18nKey(), Cols.numberOfRatings.ordinal(), true, OrderBy.numberOfRatings.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.itemVersion.i18nKey(), Cols.itemVersion.ordinal(), true, OrderBy.itemVersion.name()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status.i18nKey(), Cols.status.ordinal(), true, OrderBy.status.name(), new QuestionStatusCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified.i18nKey(), Cols.statusLastModified.ordinal(), true, OrderBy.statusLastModified.name()));	
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.difficulty));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.stdevDifficulty));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.differentiation));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.numOfAnswerAlternatives));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.usage));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.type));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.format));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.rating));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.numberOfRatings));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.itemVersion));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.status, new QuestionStatusCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Cols.statusLastModified));	
 		if (licenseModule.isEnabled(licenseHandler)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nKey(), null, Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, false, Cols.license.i18nHeaderKey(), null, Cols.license.ordinal(), "license", false, null, FlexiColumnModel.ALIGNMENT_LEFT,
 					 new StaticFlexiCellRenderer("license", new LicenseRenderer(getLocale()))));
 		}
 		initActionColumns(columnsModel);
@@ -519,8 +519,8 @@ public abstract class AbstractItemListController extends FormBasicController
 
 	protected ItemRow wrapNewItem(QuestionItem item) {
 		ItemWrapper itemWrapper = ItemWrapper.builder(item).setAuthor(true).create();
-		QuestionItemSecurityCallback securityCallback = qpoolSecurityCallbackFactory
+		QuestionItemSecurityCallback secCallback = qpoolSecurityCallbackFactory
 				.createQuestionItemSecurityCallback(itemWrapper, getSource(), roles);
-		return new ItemRow(itemWrapper, securityCallback);
+		return new ItemRow(itemWrapper, secCallback);
 	}
 }
