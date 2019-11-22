@@ -182,12 +182,12 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		super.initForm(formLayout, listener, ureq);
 
 		FlexiTableColumnModel columnsModel = FlexiTableDataModelFactory.createFlexiTableColumnModel();
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.mark.i18nKey(), CGCols.mark.ordinal(),
-				true, CGCols.mark.name()));
+		DefaultFlexiColumnModel markCol = new DefaultFlexiColumnModel(CGCols.mark);
+		markCol.setExportable(false);
+		columnsModel.addFlexiColumnModel(markCol);
 		
 		if(isAdministrativeUser) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.username.i18nKey(), CGCols.username.ordinal(),
-					true, CGCols.username.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.username));
 		}
 		
 		int i=0;
@@ -211,22 +211,19 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 		}
 
 		if(gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_ASSIGNMENT)) {
-			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskName.i18nKey(), CGCols.taskName.ordinal(),
-					true, CGCols.taskName.name()));
+			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskName));
 		}
 		
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus.i18nKey(), CGCols.taskStatus.ordinal(),
-				true, CGCols.taskStatus.name(), new TaskStatusCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate.i18nKey(), CGCols.submissionDate.ordinal(),
-				true, CGCols.submissionDate.name(), new SubmissionDateCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.userVisibility.i18nKey(), CGCols.userVisibility.ordinal(),
-				true, CGCols.userVisibility.name(), new UserVisibilityCellRenderer(getTranslator())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.score.i18nKey(), CGCols.score.ordinal(),
-				true, CGCols.score.name(), new ScoreCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.passed.i18nKey(), CGCols.passed.ordinal(),
-				true, CGCols.passed.name(), new PassedCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.numOfSubmissionDocs.i18nKey(), CGCols.numOfSubmissionDocs.ordinal(),
-				true, CGCols.numOfSubmissionDocs.name()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.taskStatus, new TaskStatusCellRenderer(getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.submissionDate, new SubmissionDateCellRenderer(getTranslator())));
+		
+		DefaultFlexiColumnModel userVisibilityCol = new DefaultFlexiColumnModel(CGCols.userVisibility, new UserVisibilityCellRenderer(getTranslator()));
+		userVisibilityCol.setIconHeader("o_icon o_icon-fw o_icon_results_hidden");
+
+		columnsModel.addFlexiColumnModel(userVisibilityCol);
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.score, new ScoreCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.passed, new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(CGCols.numOfSubmissionDocs));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("select", translate("select"), "select"));
 		if(gtaManager.isDueDateEnabled(gtaNode) && !coachCourseEnv.isCourseReadOnly()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel("table.header.duedates", translate("duedates"), "duedates"));
@@ -235,6 +232,7 @@ public class GTACoachedParticipantListController extends GTACoachedListControlle
 
 		tableEl = uifactory.addTableElement(getWindowControl(), "entries", tableModel, 10, false, getTranslator(), formLayout);
 		tableEl.setShowAllRowsEnabled(true);
+		tableEl.setExportEnabled(true);
 		tableEl.setAndLoadPersistedPreferences(ureq, "gta-coached-participants-" + markedOnly);
 		if(gtaManager.isDueDateEnabled(gtaNode) && !gtaNode.getModuleConfiguration().getBooleanSafe(GTACourseNode.GTASK_RELATIVE_DATES)) {
 			tableEl.setMultiSelect(true);
