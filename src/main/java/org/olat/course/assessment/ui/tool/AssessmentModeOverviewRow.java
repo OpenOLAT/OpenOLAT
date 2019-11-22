@@ -37,10 +37,12 @@ public class AssessmentModeOverviewRow {
 	private final List<FormLink> elementLinks = new ArrayList<>();
 	
 	private final boolean today;
+	private final boolean endSoon;
 	private final AssessmentMode assessmentMode;
 	
-	public AssessmentModeOverviewRow(AssessmentMode assessmentMode, boolean today) {
+	public AssessmentModeOverviewRow(AssessmentMode assessmentMode, boolean today, boolean endSoon) {
 		this.today = today;
+		this.endSoon = endSoon;
 		this.assessmentMode = assessmentMode;
 	}
 	
@@ -50,6 +52,10 @@ public class AssessmentModeOverviewRow {
 	
 	public boolean isToday() {
 		return today;
+	}
+	
+	public boolean isEndSoon() {
+		return endSoon;
 	}
 	
 	public AssessmentMode getAssessmentMode() {

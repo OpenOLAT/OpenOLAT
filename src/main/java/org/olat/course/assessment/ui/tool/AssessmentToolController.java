@@ -22,6 +22,7 @@ package org.olat.course.assessment.ui.tool;
 import java.util.Date;
 import java.util.List;
 
+import org.olat.commons.calendar.CalendarUtils;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
@@ -45,6 +46,7 @@ import org.olat.core.id.OLATResourceable;
 import org.olat.core.id.context.BusinessControlFactory;
 import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
+import org.olat.core.util.Formatter;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
@@ -127,7 +129,7 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 			VelocityContainer warn = createVelocityContainer("assessment_mode_warn");
 			if(modes.size() == 1) {
 				AssessmentMode mode = modes.get(0);
-				warn.contextPut("message", translate("assessment.mode.now"));
+				assessmemntModeMessageFormatting("assessment.mode.now",  modes, warn);
 				if(canStopAssessmentMode(mode)) {
 					String modeName = mode.getName();
 					String label = translate("assessment.tool.stop", new String[] { StringHelper.escapeHtml(modeName) });
@@ -136,12 +138,51 @@ public class AssessmentToolController extends MainLayoutBasicController implemen
 					stopAssessmentMode.setUserObject(mode);
 				}
 			} else {
-				warn.contextPut("message", translate("assessment.mode.several.now"));
+				assessmemntModeMessageFormatting("assessment.mode.several.now",  modes, warn);
 			}
 			stackPanel.setMessageComponent(warn);
 		} else {
 			stackPanel.setMessageComponent(null);
 		}
+	}
+	
+	private void assessmemntModeMessageFormatting(String i18nMessage, List<AssessmentMode> modes, VelocityContainer warn) {
+		Date begin = getBeginOfModes(modes);
+		Date end = getEndOfModes(modes);
+		
+		String start;
+		String stop;
+		Formatter formatter = Formatter.getInstance(getLocale());
+		if(CalendarUtils.isSameDay(begin, end)) {
+			start = formatter.formatTimeShort(begin);
+			stop = formatter.formatTimeShort(end);
+		} else {
+			start = formatter.formatDateAndTime(begin);
+			stop = formatter.formatDateAndTime(end);
+		}
+		warn.contextPut("message", translate(i18nMessage, new String[] { start, stop }));
+	}
+	
+	private Date getBeginOfModes(List<AssessmentMode> modes) {
+		Date start = null;
+		for(AssessmentMode mode:modes) {
+			Date begin = mode.getBegin();
+			if(start == null || (begin != null && begin.before(start))) {
+				start = begin;
+			}
+		}
+		return start;
+	}
+	
+	private Date getEndOfModes(List<AssessmentMode> modes) {
+		Date stop = null;
+		for(AssessmentMode mode:modes) {
+			Date end = mode.getEnd();
+			if(stop == null || (end != null && end.after(stop))) {
+				stop = end;
+			}
+		}
+		return stop;
 	}
 	
 	private boolean canStopAssessmentMode(AssessmentMode mode) {
