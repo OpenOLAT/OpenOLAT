@@ -1,18 +1,22 @@
 <Configuration status="WARN">
 	<Appenders>
 		<Console name="Console" target="SYSTEM_OUT">
+			<!-- This pattern is mean for development purpose only -->
 			<PatternLayout
 				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+
+			<!-- This pattern is used on OpenOLAT cloud AND the OpenOlat code to send feedback per email
+			<PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %marker %c{1} ^%%^ I%X{ref}-J%sn ^%%^ %logger{36} ^%%^ %X{identityKey} ^%%^ %X{ip} ^%%^ %X{referer} ^%%^ %X{userAgent} ^%%^ %msg%ex{full,separator( )}%n" />  
+			-->
 			
 			<!-- This pattern mimic the previous OLog formatting (but not exactly)
 			<PatternLayout
 				pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %marker %c{1} ^%%^ N${sys:nodeId}-R%X{ref}-M%sn ^%%^ %logger{36} ^%%^ %X{identityKey} ^%%^ %X{ip} ^%%^ %X{referer} ^%%^ %X{userAgent} ^%%^ %msg%ex{full,separator( )}%n" />
 			-->
-			<!-- This pattern is used on OpenOLAT cloud
-			<PatternLayout
-                    pattern="%d{dd MMM yyyy HH:mm:ss.SSS} [%t] %-5level %marker %c{1} ^%%^ I%X{ref}-J%sn ^%%^ %logger{36} ^%%^ %X{identityKey} ^%%^ %X{ip} ^%%^ %X{referer} ^%%^ %X{userAgent} ^%%^ %msg%ex{full,separator( )}%n" />
-			-->
 		</Console>
+		
+		<!-- File append with the pattern optimized to send feedback per email, don't forget to update the AppenderRef below -->
 		<!--
 		<RollingFile name="RollingFile" fileName="/path_to_logs/logs/olat.log"
 			filePattern="/path_to_logs/logs/olat.log.%d{yyyy-MM-dd}">
