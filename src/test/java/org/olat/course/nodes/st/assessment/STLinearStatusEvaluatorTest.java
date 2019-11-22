@@ -112,7 +112,7 @@ public class STLinearStatusEvaluatorTest {
 	
 	private void assertStatus(AssessmentEntryStatus currentStatus, AssessmentEntryStatus childStatus, AssessmentEntryStatus expectedtStatus) {
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(null, currentStatus, null);
-		AssessmentEvaluation child = getAssessmentEvaluation(Boolean.TRUE, childStatus, AssessmentObligation.mandatory);
+		AssessmentEvaluation child = getAssessmentEvaluation(Boolean.FALSE, childStatus, AssessmentObligation.mandatory);
 		List<AssessmentEvaluation> children = Arrays.asList(child);
 		
 		AssessmentEntryStatus status = sut.getStatus(currentEvaluation, children);
@@ -121,7 +121,7 @@ public class STLinearStatusEvaluatorTest {
 	}
 	
 	@Test
-	public void shouldReturnDoneIfAllMandatoryChildrenAreDone() {
+	public void shouldReturnDoneIfAllMandatoryChildrenAreFullyAssessed() {
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.inProgress, null);
 		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.done,
 				AssessmentObligation.mandatory);
@@ -135,9 +135,9 @@ public class STLinearStatusEvaluatorTest {
 	}
 	
 	@Test
-	public void shouldNotReturnDoneIfNotAllMandatoryChildrenAreDone() {
+	public void shouldNotReturnDoneIfNotAllMandatoryChildrenAreFullyAssessed() {
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.done, null);
-		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.inProgress,
+		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.done,
 				AssessmentObligation.mandatory);
 		AssessmentEvaluation child2 = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.done,
 				AssessmentObligation.optional);
@@ -149,7 +149,7 @@ public class STLinearStatusEvaluatorTest {
 	}
 	
 	@Test
-	public void shouldReturnDoneIfItHAsOnlyOptionalChildren() {
+	public void shouldReturnDoneIfItHasOnlyOptionalChildren() {
 		AssessmentEvaluation currentEvaluation = getAssessmentEvaluation(Boolean.TRUE, AssessmentEntryStatus.notStarted, null);
 		AssessmentEvaluation child1 = getAssessmentEvaluation(Boolean.FALSE, AssessmentEntryStatus.inProgress,
 				AssessmentObligation.optional);

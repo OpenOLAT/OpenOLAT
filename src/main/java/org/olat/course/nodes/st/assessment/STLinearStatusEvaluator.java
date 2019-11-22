@@ -77,7 +77,7 @@ public class STLinearStatusEvaluator implements StatusEvaluator {
 			if (isInProgess(child)) {
 				inProgress = true;
 			}
-			if (isMandatory(child) && isNotDone(child)) {
+			if (isMandatory(child) && isNotFullyAssessed(child)) {
 				done = false;
 			}
 		}
@@ -102,8 +102,8 @@ public class STLinearStatusEvaluator implements StatusEvaluator {
 	private boolean isMandatory(AssessmentEvaluation evaluation) {
 		return evaluation.getObligation() != null && AssessmentObligation.mandatory.equals(evaluation.getObligation());
 	}
-	private boolean isNotDone(AssessmentEvaluation assessmentEvaluation) {
-		return !AssessmentEntryStatus.done.equals(assessmentEvaluation.getAssessmentStatus());
+	private boolean isNotFullyAssessed(AssessmentEvaluation assessmentEvaluation) {
+		return !Boolean.TRUE.equals(assessmentEvaluation.getFullyAssessed());
 	}
 
 }
