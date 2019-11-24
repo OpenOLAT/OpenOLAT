@@ -344,6 +344,31 @@ Example:
 mvn clean test -Dwith-postgresql -Dtest.env.db.postgresql.pass=serial -Dtest=org.olat.test.AllTestsJunit4 -Ptomcat
 ```
 
+
+**For Oracle**
+
+Setup manually the user and the database schema. Start with a clean setup, drop the user before create a clean new one.
+
+
+```sql
+drop user OLATTEST cascade;
+```
+
+Create the user.
+
+```sql
+create user OLATTEST identified by "olat00002" temporary tablespace temp default tablespace users;
+grant connect to OLATTEST;
+grant all privileges to OLATTEST;
+```
+
+Setup the schema with setupDatabase.sql for Oracle and run the tests:
+
+```bash
+mvn clean test -Dwith-oracle -Dtest.env.db.oracle.pass=olat00002 -Dtest=org.olat.test.AllTestsJunit4 -Ptomcat
+```
+
+
 #### Execute selenium functional tests
 
 The selenium integration tests start the whole web application in Tomcat 8.0. They run with

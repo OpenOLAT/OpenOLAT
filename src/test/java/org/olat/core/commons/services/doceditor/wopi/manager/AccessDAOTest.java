@@ -63,7 +63,7 @@ public class AccessDAOTest extends OlatTestCase {
 	@Test
 	public void shouldCreateAccess() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
-		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
 		String app = random();
 		String token = random();
 		boolean canEdit = false;
@@ -90,7 +90,7 @@ public class AccessDAOTest extends OlatTestCase {
 	@Test
 	public void shouldUpdateExpiresAt() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
-		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
 		Access access = sut.createAccess(vfsMetadata, identity, random(), random(), true, true, true, null);
 		dbInstance.commitAndCloseSession();
 		
@@ -124,7 +124,7 @@ public class AccessDAOTest extends OlatTestCase {
 	public void shouldLoadAccessByMetadataAndIdentity() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
 		Identity identity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi2");
-		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
 		String app = random();
 		boolean canEdit = true;
 		Access access = sut.createAccess(vfsMetadata, identity, app, random(), canEdit, true, true, null);
@@ -151,7 +151,7 @@ public class AccessDAOTest extends OlatTestCase {
 	@Test
 	public void shouldDeleteExpired() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
-		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
 		Date twoDaysAgo = Date.from(Instant.now().minus(Duration.ofDays(2)));;
 		Access expiredTwoDaysAgo = sut.createAccess(vfsMetadata, identity, random(), random(), true, true, true, twoDaysAgo);
 		Date oneDayAgo = Date.from(Instant.now().minus(Duration.ofDays(1)));;
@@ -179,7 +179,7 @@ public class AccessDAOTest extends OlatTestCase {
 	
 	private Access createRandomAccess() {
 		Identity identity = JunitTestHelper.createAndPersistIdentityAsRndUser("wopi");
-		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "", "file", null);
+		VFSMetadata vfsMetadata = vfsMetadataDAO.createMetadata(random(), "relPath", "file.name", new Date(), 1000l, false, "file://" + random(), "file", null);
 		String app = random();
 		String token = random();
 		boolean canEdit = false;

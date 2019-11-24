@@ -79,7 +79,7 @@ public class RevisionRow {
 		return revision instanceof Persistable ? ((Persistable)revision).getKey() : null;
 	}
 	
-	public int getRevisionNr() {
+	public long getRevisionNr() {
 		return current ? metadata.getRevisionNr() : revisionNr;
 	}
 	

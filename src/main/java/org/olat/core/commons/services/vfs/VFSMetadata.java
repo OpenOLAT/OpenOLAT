@@ -165,9 +165,9 @@ public interface VFSMetadata extends VFSMetadataRef, ModifiedInfo, CreateInfo {
 	public void setLockedDate(Date date);
 	
 	
-	public int getRevisionNr();
+	public long getRevisionNr();
 	
-	public void setRevisionNr(int nr);
+	public void setRevisionNr(long nr);
 	
 	public String getRevisionComment();
 	
