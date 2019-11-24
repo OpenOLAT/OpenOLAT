@@ -31,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFl
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.ui.CertificateAndEfficiencyStatementListModel.CertificateAndEfficiencyStatement;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 
 /**
  * 
@@ -76,7 +75,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 				Float score = statement.getScore();
 				return AssessmentHelper.getRoundedScore(score);
 			case passed: return statement.getPassed();
-			case learningProgress: return statement.getCourseEvaluation();
+			case completion: return statement.getCompletion();
 			case lastModified: return statement.getLastModified();
 			case lastUserUpdate: return statement.getLastUserModified();
 			case certificate: return statement.getCertificate();
@@ -98,7 +97,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		displayName("table.header.course", true),
 		score("table.header.score", true),
 		passed("table.header.passed", true),
-		learningProgress("table.header.learning.progress", false),
+		completion("table.header.learning.progress", false),
 		lastModified("table.header.lastScoreDate", true),
 		lastUserUpdate("table.header.lastUserModificationDate", true),
 		efficiencyStatement("table.header.certificate", true),
@@ -144,7 +143,7 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 		private Long resourceKey;
 		private Long efficiencyStatementKey;
 		private CertificateLight certificate;
-		private AssessmentEvaluation courseEvaluation;
+		private Double completion;
 
 		public String getDisplayName() {
 			return displayName;
@@ -210,12 +209,13 @@ public class CertificateAndEfficiencyStatementListModel extends DefaultFlexiTabl
 			this.efficiencyStatementKey = efficiencyStatementKey;
 		}
 
-		public AssessmentEvaluation getCourseEvaluation() {
-			return courseEvaluation;
+		public Double getCompletion() {
+			return completion;
 		}
 
-		public void setCourseEvaluation(AssessmentEvaluation courseEvaluation) {
-			this.courseEvaluation = courseEvaluation;
+		public void setCompletion(Double completion) {
+			this.completion = completion;
 		}
+		
 	}
 }

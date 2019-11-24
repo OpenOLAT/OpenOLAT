@@ -19,6 +19,7 @@
  */
 package org.olat.modules.assessment;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -78,6 +79,8 @@ public interface AssessmentService {
 	public List<AssessmentEntry> loadAssessmentEntriesByAssessedIdentity(Identity assessedIdentity, RepositoryEntry entry);
 	
 	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent);
+
+	public List<AssessmentEntryCompletion> loadEntryRootCompletions(Identity assessedIdentity, Collection<Long> entryKeys);
 	
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
 

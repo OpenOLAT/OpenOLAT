@@ -20,6 +20,7 @@
 package org.olat.modules.assessment.manager;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import org.olat.core.id.Identity;
 import org.olat.group.BusinessGroup;
 import org.olat.group.manager.BusinessGroupRelationDAO;
 import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentEntryCompletion;
 import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
 import org.olat.repository.RepositoryEntry;
@@ -108,6 +110,11 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	@Override
 	public List<AssessmentEntry> loadAssessmentEntries(BusinessGroup assessedGroup, RepositoryEntry entry, String subIdent) {
 		return assessmentEntryDao.loadAssessmentEntryByGroup(assessedGroup.getBaseGroup(), entry, subIdent);
+	}
+
+	@Override
+	public List<AssessmentEntryCompletion> loadEntryRootCompletions(Identity assessedIdentity, Collection<Long> entryKeys) {
+		return assessmentEntryDao.loadEntryRootCompletions(assessedIdentity, entryKeys);
 	}
 
 	@Override
