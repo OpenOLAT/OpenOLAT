@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import javax.persistence.FlushModeType;
 import javax.persistence.TypedQuery;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.GroupRoles;
 import org.olat.basesecurity.IdentityImpl;
 import org.olat.basesecurity.OrganisationRoles;
@@ -39,7 +40,6 @@ import org.olat.core.commons.persistence.QueryBuilder;
 import org.olat.core.commons.services.mark.impl.MarkImpl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.Roles;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
@@ -127,6 +127,7 @@ public class RepositoryEntryMyCourseQueries {
 			Number numOffers = (Number)object[2];
 			long offers = numOffers == null ? 0l : numOffers.longValue();
 			Integer myRating = (Integer)object[3];
+			Double completion = (Double)object[4];
 			
 			RepositoryEntryStatistics stats;
 			if (needStats) {
@@ -134,11 +135,11 @@ public class RepositoryEntryMyCourseQueries {
 			} else {
 				stats = null;
 			}
-			RepositoryEntryMyCourseImpl view = new RepositoryEntryMyCourseImpl(re, stats, hasMarks, offers, myRating);
+			RepositoryEntryMyCourseImpl view = new RepositoryEntryMyCourseImpl(re, stats, hasMarks, offers, myRating, completion);
 			views.add(view);
 			viewsMap.put(re.getOlatResource(), view);
 
-			Long effKey = (Long)object[4];
+			Long effKey = (Long)object[5];
 			if(effKey != null) {
 				effKeys.add(effKey);
 			}
@@ -196,6 +197,12 @@ public class RepositoryEntryMyCourseQueries {
 				sb.append(" 0 as myrating");
 			}
 			needIdentityKey = true;
+			sb.append(" ,(select ae.completion")
+			  .append("     from assessmententry as ae")
+			  .append("    where ae.repositoryEntry.key = v.key")
+			  .append("      and ae.entryRoot = true")
+			  .append("      and ae.identity.key=:identityKey")
+			  .append("  )");
 			sb.append(" ,(select eff.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff")
 			  .append("    where eff.resource=res and eff.identity.key=:identityKey")
 			  .append(" ) as effKey");

@@ -74,6 +74,11 @@ public interface RepositoryEntryMyView extends OLATResourceable {
 	public Float getScore();
 	
 	/**
+	 * @return The completion of the root assessment entry
+	 */
+	public Double getCompletion();
+	
+	/**
 	 * @return True if the user as bookmarked this entry
 	 */
 	public boolean isMarked();

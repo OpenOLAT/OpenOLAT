@@ -22,7 +22,6 @@ package org.olat.repository.ui.list;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.CoreSpringFactory;
 import org.olat.core.commons.persistence.DefaultResultInfos;
@@ -33,7 +32,6 @@ import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTable
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
 import org.olat.course.assessment.CourseAssessmentService;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -155,9 +153,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		List<OLATResourceAccess> resourcesWithOffer = acService.filterResourceWithAC(resourcesWithAC);
 		repositoryService.filterMembership(searchParams.getIdentity(), repoKeys);
 		
-		Map<Long, AssessmentEvaluation> courseRepoKeyToEvaluation = courseAssessmentService
-				.getRootAssessmentEvaluations(searchParams.getIdentity(), repoKeys, true);
-		
 		List<RepositoryEntryRow> items = new ArrayList<>();
 		for(RepositoryEntryMyView entry:repoEntries) {
 			RepositoryEntryRow row = new RepositoryEntryRow(entry);
@@ -193,11 +188,8 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 				row.setAccessTypes(types);
 			}
 			
-			AssessmentEvaluation assessmentEvaluation = courseRepoKeyToEvaluation.get(entry.getKey());
-			row.setAssessmentEvaluation(assessmentEvaluation);
-			
 			uifactory.forgeMarkLink(row);
-			uifactory.forgeLearningProgress(row);
+			uifactory.forgeCompletion(row);
 			uifactory.forgeSelectLink(row);
 			uifactory.forgeStartLink(row);
 			uifactory.forgeDetails(row);

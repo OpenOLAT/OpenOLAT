@@ -60,6 +60,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	
 	private Float score;
 	private Boolean passed;
+	private Double completion;
 
 	private final boolean marked;
 	
@@ -73,7 +74,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	private final long offersAvailable;
 	
 	public RepositoryEntryMyCourseImpl(RepositoryEntry re, RepositoryEntryStatistics stats,
-			boolean marked, long offersAvailable, Integer myRating) {
+			boolean marked, long offersAvailable, Integer myRating, Double completion) {
 		key = re.getKey();
 		externalId = re.getExternalId();
 		externalRef = re.getExternalRef();
@@ -95,6 +96,7 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 
 		this.marked = marked;
 		this.myRating = myRating;
+		this.completion = completion;
 
 		if(stats != null) {
 			averageRating = stats.getRating();
@@ -227,6 +229,11 @@ public class RepositoryEntryMyCourseImpl implements RepositoryEntryMyView, Creat
 	@Override
 	public Boolean getPassed() {
 		return passed;
+	}
+	
+	@Override
+	public Double getCompletion() {
+		return completion;
 	}
 
 	@Override

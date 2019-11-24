@@ -24,13 +24,12 @@ import java.util.List;
 
 import org.olat.core.gui.components.form.flexible.FormItem;
 import org.olat.core.gui.components.form.flexible.elements.FormLink;
+import org.olat.core.gui.components.progressbar.ProgressBarItem;
 import org.olat.core.id.OLATResourceable;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.filter.FilterFactory;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.assessment.AssessmentHelper;
-import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.modules.assessment.ui.component.LearningProgressItem;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryEntryRef;
 import org.olat.repository.RepositoryEntryStatusEnum;
@@ -64,6 +63,8 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	private final String score;
 	private final Boolean passed;
+	private final Double completion;
+	private ProgressBarItem completionItem;
 	
 	private boolean member;
 	
@@ -79,9 +80,6 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	private Date lifecycleEnd;
 	
 	private List<PriceMethod> accessTypes;
-	
-	private AssessmentEvaluation assessmentEvaluation;
-	private LearningProgressItem learningProgressItem;
 	
 	private FormLink markLink;
 	private FormLink selectLink;
@@ -124,6 +122,9 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		//efficiency statement
 		passed = entry.getPassed();
 		score = AssessmentHelper.getRoundedScore(entry.getScore());
+		
+		// Assessment entry
+		completion = entry.getCompletion();
 		
 		//rating
 		myRating = entry.getMyRating();
@@ -269,24 +270,16 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 		this.accessTypes = accessTypes;
 	}
 
-	public String getLearningProgressName() {
-		return learningProgressItem != null? learningProgressItem.getComponent().getComponentName(): null;
+	public String getCompletionItemName() {
+		return completionItem != null? completionItem.getComponent().getComponentName(): null;
 	}
 
-	public LearningProgressItem getLearningProgressItem() {
-		return learningProgressItem;
+	public ProgressBarItem getCompletionItem() {
+		return completionItem;
 	}
 
-	public void setLearningProgress(LearningProgressItem learningProgress) {
-		this.learningProgressItem = learningProgress;
-	}
-
-	public AssessmentEvaluation getAssessmentEvaluation() {
-		return assessmentEvaluation;
-	}
-
-	public void setAssessmentEvaluation(AssessmentEvaluation assessmentEvaluation) {
-		this.assessmentEvaluation = assessmentEvaluation;
+	public void setCompletionItem(ProgressBarItem completionItem) {
+		this.completionItem = completionItem;
 	}
 
 	public String getSelectLinkName() {
@@ -434,6 +427,10 @@ public class RepositoryEntryRow implements RepositoryEntryRef {
 	
 	public boolean isFailed() {
 		return passed != null && !passed.booleanValue();
+	}
+
+	public Double getCompletion() {
+		return completion;
 	}
 
 	@Override

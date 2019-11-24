@@ -121,13 +121,13 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 		
 		CurriculumElementWithViewsRow row1 = new CurriculumElementWithViewsRow(element, null,
-				new RepositoryEntryMyCourseImpl(entry1, null, false, 0, 0), false);
+				new RepositoryEntryMyCourseImpl(entry1, null, false, 0, 0, null), false);
 		CurriculumElementWithViewsRow row2 = new CurriculumElementWithViewsRow(element, null,
-				new RepositoryEntryMyCourseImpl(entry2, null, false, 0, 0), false);
+				new RepositoryEntryMyCourseImpl(entry2, null, false, 0, 0, null), false);
 		CurriculumElementWithViewsRow row3 = new CurriculumElementWithViewsRow(element, null,
-				new RepositoryEntryMyCourseImpl(entry3, null, false, 0, 0), false);
+				new RepositoryEntryMyCourseImpl(entry3, null, false, 0, 0, null), false);
 		CurriculumElementWithViewsRow row4 = new CurriculumElementWithViewsRow(element, null,
-				new RepositoryEntryMyCourseImpl(entry4, null, false, 0, 0), false);
+				new RepositoryEntryMyCourseImpl(entry4, null, false, 0, 0, null), false);
 
 		List<CurriculumElementWithViewsRow> rows = new ArrayList<>();
 		rows.add(row1);
@@ -167,16 +167,16 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 		CurriculumElementWithViewsRow parent = new CurriculumElementWithViewsRow(element, null, 4);
 		
 		CurriculumElementWithViewsRow row1 = new CurriculumElementWithViewsRow(element, null,
-				new RepositoryEntryMyCourseImpl(entry1, null, false, 0, 0), false);
+				new RepositoryEntryMyCourseImpl(entry1, null, false, 0, 0, null), false);
 		row1.setParent(parent);
 		CurriculumElementWithViewsRow row2 = new CurriculumElementWithViewsRow(element, null,
-				new RepositoryEntryMyCourseImpl(entry2, null, false, 0, 0), false);
+				new RepositoryEntryMyCourseImpl(entry2, null, false, 0, 0, null), false);
 		row2.setParent(parent);
 		CurriculumElementWithViewsRow row3 = new CurriculumElementWithViewsRow(element, null,
-				new RepositoryEntryMyCourseImpl(entry3, null, false, 0, 0), false);
+				new RepositoryEntryMyCourseImpl(entry3, null, false, 0, 0, null), false);
 		row3.setParent(parent);
 		CurriculumElementWithViewsRow row4 = new CurriculumElementWithViewsRow(element, null,
-				new RepositoryEntryMyCourseImpl(entry4, null, false, 0, 0), false);
+				new RepositoryEntryMyCourseImpl(entry4, null, false, 0, 0, null), false);
 		row4.setParent(parent);
 
 		List<CurriculumElementWithViewsRow> rows = new ArrayList<>();
@@ -225,13 +225,13 @@ public class CurriculumElementViewsRowComparatorTest extends OlatTestCase {
 		dbInstance.commitAndCloseSession();
 
 		CurriculumElementWithViewsRow row1 = new CurriculumElementWithViewsRow(element1, null,
-				new RepositoryEntryMyCourseImpl(entry1, null, false, 0, 0), true);
+				new RepositoryEntryMyCourseImpl(entry1, null, false, 0, 0, null), true);
 		CurriculumElementWithViewsRow row2 = new CurriculumElementWithViewsRow(element2, null,
-				new RepositoryEntryMyCourseImpl(entry2, null, false, 0, 0), true);
+				new RepositoryEntryMyCourseImpl(entry2, null, false, 0, 0, null), true);
 		CurriculumElementWithViewsRow row3 = new CurriculumElementWithViewsRow(element3, null,
-				new RepositoryEntryMyCourseImpl(entry3, null, false, 0, 0), true);
+				new RepositoryEntryMyCourseImpl(entry3, null, false, 0, 0, null), true);
 		CurriculumElementWithViewsRow row4 = new CurriculumElementWithViewsRow(element4, null,
-				new RepositoryEntryMyCourseImpl(entry4, null, false, 0, 0), true);
+				new RepositoryEntryMyCourseImpl(entry4, null, false, 0, 0, null), true);
 
 		List<CurriculumElementWithViewsRow> rows = new ArrayList<>();
 		rows.add(row1);

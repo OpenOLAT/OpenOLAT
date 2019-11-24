@@ -36,7 +36,7 @@ public interface RepositoryEntryDataSourceUIFactory {
 	
 	public void forgeMarkLink(RepositoryEntryRow row);
 	
-	public void forgeLearningProgress(RepositoryEntryRow row);
+	public void forgeCompletion(RepositoryEntryRow row);
 	
 	public void forgeSelectLink(RepositoryEntryRow row);
 	

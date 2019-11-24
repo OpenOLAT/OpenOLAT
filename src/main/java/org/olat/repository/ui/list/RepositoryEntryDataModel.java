@@ -70,7 +70,7 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 			case select: return item.getSelectLink();
 			case start: return item.getStartLink();
 			case location: return item.getLocation();
-			case learningProgress: return item.getLearningProgressItem();
+			case completion: return item.getCompletionItem();
 			case details: return item.getDetailsLink();
 			case ratings: return item.getRatingFormItem();
 			case comments: return item.getCommentsLink();
@@ -89,7 +89,7 @@ class RepositoryEntryDataModel extends DefaultFlexiTableDataSourceModel<Reposito
 		lifecycleStart("table.header.lifecycle.start"),
 		lifecycleEnd("table.header.lifecycle.end"),
 		location("table.header.location"),
-		learningProgress("table.header.learning.progress"),
+		completion("table.header.completion"),
 		details("table.header.details"),
 		select("table.header.details"),
 		start("table.header.start"),

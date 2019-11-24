@@ -59,9 +59,9 @@
 		#end
 
 		#if($row)
-			#if($row.learningProgressName)
-			<div class="o_learning_progress row">
-				$r.render($row.getLearningProgressName())
+			#if($row.completionItemName)
+			<div class="o_completion row">
+				$r.render($row.getCompletionItemName())
 			</div>
 			#end
 			#if($row.passed || $row.failed)
