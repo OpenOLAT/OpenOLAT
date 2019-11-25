@@ -81,7 +81,7 @@ public class QuestionPoolPage {
 	 * @return Itself
 	 */
 	public QuestionPoolPage selectQuestionInList(String title) {
-		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + title + "')]]]/td/a[contains(@href,'select-item')]");
+		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td/a[text()[contains(.,'" + title + "')]]]/td/a[contains(@href,'select-item')]");
 		OOGraphene.waitElement(rowBy, browser);
 		browser.findElement(rowBy).click();
 		OOGraphene.waitBusy(browser);
@@ -158,13 +158,13 @@ public class QuestionPoolPage {
 	}
 	
 	public QuestionPoolPage assertQuestionInList(String title, String type) {
-		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()='" + type + "']]/td[text()[contains(.,'" + title + "')]]");
+		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()='" + type + "']]/td/a[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(rowBy, browser);
 		return this;
 	}
 	
 	public QuestionPoolPage openQuickView(String title) {
-		By quickViewBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td[text()[contains(.,'" + title + "')]]]/td/a[contains(@href,'quick-view')]");
+		By quickViewBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td/a[text()[contains(.,'" + title + "')]]]/td/a[contains(@href,'quick-view')]");
 		OOGraphene.waitElement(quickViewBy, browser);
 		browser.findElement(quickViewBy).click();
 		
@@ -185,7 +185,7 @@ public class QuestionPoolPage {
 	}
 	
 	public QuestionPoolPage assertFinalQuestionInList(String title) {
-		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td/div/span[contains(@class,'o_qpool_status_finalVersion_light')]]/td[text()[contains(.,'" + title + "')]]");
+		By rowBy = By.xpath("//div[contains(@class,'o_table_flexi')]//tr[td/div/span[contains(@class,'o_qpool_status_finalVersion_light')]]/td/a[text()[contains(.,'" + title + "')]]");
 		OOGraphene.waitElement(rowBy, browser);
 		return this;
 	}
