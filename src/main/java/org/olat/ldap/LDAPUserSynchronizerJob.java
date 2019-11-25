@@ -52,7 +52,7 @@ public class LDAPUserSynchronizerJob extends JobWithDB {
 			if(allOk) {
 				log.info("LDAP user synchronize job finished successfully");				
 			} else {
-				log.info("LDAP user synchronize job finished with errors::" + errors.get());				
+				log.info("LDAP user synchronize job finished with errors::{}", errors.get());				
 			}
 		} catch (Exception e) {
 			// ups, something went completely wrong! We log this but continue next time
