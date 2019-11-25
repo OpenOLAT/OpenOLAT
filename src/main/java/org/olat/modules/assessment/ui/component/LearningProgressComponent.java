@@ -26,6 +26,7 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
+import org.olat.modules.assessment.ui.AssessedIdentityListController;
 
 /**
  * 
@@ -46,7 +47,7 @@ public class LearningProgressComponent extends FormBaseComponentImpl {
 	public LearningProgressComponent(String name, Locale locale) {
 		super(name);
 		setDomReplacementWrapperRequired(false);
-		translator = Util.createPackageTranslator(AbstractLearningProgressCellRenderer.class, locale);
+		translator = Util.createPackageTranslator(AssessedIdentityListController.class, locale);
 		setTranslator(translator);
 	}
 	

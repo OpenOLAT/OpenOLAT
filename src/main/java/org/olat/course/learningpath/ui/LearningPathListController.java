@@ -70,7 +70,8 @@ public class LearningPathListController extends FormBasicController {
 		FlexiCellRenderer nodeRenderer = new TreeNodeFlexiCellRenderer(intendedNodeRenderer);
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.node, nodeRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.start));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.obligation));
+		FlexiCellRenderer obligationRenderer = new ObligationCellRenderer(getLocale());
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.obligation, obligationRenderer));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(LearningPathCols.duration));
 		DefaultFlexiColumnModel firstVisitColumnModel = new DefaultFlexiColumnModel(LearningPathCols.firstVisit);
 		firstVisitColumnModel.setDefaultVisible(false);
