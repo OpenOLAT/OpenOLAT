@@ -38,6 +38,8 @@ import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.Component;
 import org.olat.core.gui.components.link.Link;
 import org.olat.core.gui.components.link.LinkFactory;
+import org.olat.core.gui.components.progressbar.ProgressBar;
+import org.olat.core.gui.components.progressbar.ProgressBar.LabelAlignment;
 import org.olat.core.gui.components.segmentedview.SegmentViewComponent;
 import org.olat.core.gui.components.segmentedview.SegmentViewEvent;
 import org.olat.core.gui.components.segmentedview.SegmentViewFactory;
@@ -61,7 +63,6 @@ import org.olat.core.util.resource.OresHelper;
 import org.olat.core.util.vfs.VFSContainer;
 import org.olat.course.assessment.AssessmentHelper;
 import org.olat.course.assessment.AssessmentModule;
-import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.course.assessment.EfficiencyStatement;
 import org.olat.course.assessment.manager.EfficiencyStatementManager;
 import org.olat.course.assessment.model.AssessmentNodeData;
@@ -70,11 +71,11 @@ import org.olat.course.assessment.portfolio.EfficiencyStatementMediaHandler;
 import org.olat.course.assessment.ui.tool.IdentityAssessmentOverviewController;
 import org.olat.course.certificate.Certificate;
 import org.olat.course.certificate.CertificatesManager;
-import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.model.SearchBusinessGroupParams;
-import org.olat.modules.assessment.ui.component.LearningProgressComponent;
+import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.portfolio.PortfolioV2Module;
 import org.olat.modules.portfolio.ui.component.MediaCollectorComponent;
@@ -133,7 +134,7 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 	@Autowired
 	private BusinessGroupService businessGroupService;
 	@Autowired
-	private CourseAssessmentService courseAssessmentService;
+	private AssessmentService assessmentService;
 	
 	/**
 	 * The constructor shows the efficiency statement given as parameter for the current user
@@ -283,16 +284,16 @@ public class CertificateAndEfficiencyStatementController extends BasicController
 			}
 		}
 		
-		Map<Long, AssessmentEvaluation> evaluations = courseAssessmentService.getRootAssessmentEvaluations(
-				statementOwner, Collections.singletonList(courseRepoEntry.getKey()), true);
-		if (!evaluations.isEmpty()) {
-			AssessmentEvaluation assessmentEvaluation = evaluations.get(courseRepoEntry.getKey());
-			if (assessmentEvaluation != null) {
-				LearningProgressComponent learningProgressComponent = new LearningProgressComponent("learning.progress", getLocale());
-				learningProgressComponent.setFullyAssessed(assessmentEvaluation.getFullyAssessed());
-				learningProgressComponent.setStatus(assessmentEvaluation.getAssessmentStatus());
-				learningProgressComponent.setCompletion(assessmentEvaluation.getCompletion());
-				mainVC.put("learning.progress", learningProgressComponent);
+		List<AssessmentEntryCompletion> completions = assessmentService.loadEntryRootCompletions(statementOwner,
+				Collections.singletonList(courseRepoEntry.getKey()));
+		if (!completions.isEmpty()) {
+			Double completion = completions.get(0).getCompletion();
+			if (completion != null) {
+				ProgressBar completionItem = new ProgressBar("completion", 100, completion.floatValue(),
+						Float.valueOf(1), null);
+				completionItem.setWidthInPercent(true);
+				completionItem.setLabelAlignment(LabelAlignment.none);
+				mainVC.put("completion", completionItem);
 			}
 		}
 	}

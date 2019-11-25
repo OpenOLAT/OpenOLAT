@@ -86,11 +86,11 @@ jQuery(function(){
 					</td>
 				</tr>
 			#end
-			#if($r.available("learning.progress"))
+			#if($r.available("completion"))
 				<tr>
-					<th style="width: 30%;">$r.translate("learning.progress")</th>
+					<th style="width: 30%;">$r.translate("completion")</th>
 					<td>
-						$r.render("learning.progress")
+						$r.render("completion")
 					</td>
 				</tr>
 			#end
