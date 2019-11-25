@@ -133,7 +133,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 	@Autowired
 	private EfficiencyStatementMediaHandler mediaHandler;
 	@Autowired
-	private AssessmentService assesmentService;
+	private AssessmentService assessmentService;
 	
 	public CertificateAndEfficiencyStatementListController(UserRequest ureq, WindowControl wControl) {
 		this(ureq, wControl, ureq.getUserSession().getIdentity(), false, true);
@@ -243,7 +243,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 				.map(UserEfficiencyStatementLight::getCourseRepoKey)
 				.filter(key -> key != null)
 				.collect(Collectors.toList());
-		Map<Long, Double> courseEntryKeysToCompletion = assesmentService
+		Map<Long, Double> courseEntryKeysToCompletion = assessmentService
 				.loadEntryRootCompletions(assessedIdentity, courseEntryKeys).stream()
 				.collect(Collectors.toMap(
 						AssessmentEntryCompletion::getRepositoryEntryKey,

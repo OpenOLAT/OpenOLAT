@@ -54,13 +54,6 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	private AssessmentEntryDAO assessmentEntryDao;
 	@Autowired
 	private BusinessGroupRelationDAO businessGroupRelationDao;
-	
-	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, RepositoryEntry referenceEntry,
-			Float score, Boolean passed, Date lastUserModified, Date lastCoachModified) {
-		return assessmentEntryDao.createAssessmentEntry(assessedIdentity, anonymousIdentifier, entry, subIdent, null,
-				referenceEntry, score, passed, lastUserModified, lastCoachModified);
-	}
 
 	@Override
 	public AssessmentEntry getOrCreateAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,

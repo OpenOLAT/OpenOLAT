@@ -17,7 +17,7 @@
  * frentix GmbH, http://www.frentix.com
  * <p>
  */
-package org.olat.modules.assessment.ui;
+package org.olat.modules.assessment.ui.component;
 
 import java.util.Locale;
 
@@ -29,7 +29,6 @@ import org.olat.core.gui.render.URLBuilder;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.CodeHelper;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.modules.assessment.ui.component.LearningProgressComponent;
 
 /**
  * 

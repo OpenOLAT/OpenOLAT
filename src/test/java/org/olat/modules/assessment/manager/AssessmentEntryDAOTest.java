@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.olat.test.JunitTestHelper.random;
 
+import java.math.BigDecimal;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Date;
@@ -197,15 +198,18 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessmentRef = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, refEntry, 2.0f, Boolean.TRUE, null, null);
+		AssessmentEntry ae = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null,
+				refEntry);
+		ae.setScore(BigDecimal.valueOf(2.0));
+		ae.setPassed(Boolean.TRUE);
+		assessmentEntryDao.updateAssessmentEntry(ae);
 		dbInstance.commitAndCloseSession();
 		
 		AssessmentEntry resetedAssessmentRef = assessmentEntryDao
-				.resetAssessmentEntry(nodeAssessmentRef);
+				.resetAssessmentEntry(ae);
 		dbInstance.commitAndCloseSession();
 		
-		Assert.assertEquals(nodeAssessmentRef, resetedAssessmentRef);
+		Assert.assertEquals(ae, resetedAssessmentRef);
 		Assert.assertEquals(assessedIdentity, resetedAssessmentRef.getIdentity());
 		Assert.assertNull(resetedAssessmentRef.getScore());
 		Assert.assertNull(resetedAssessmentRef.getPassed());
@@ -217,7 +221,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 				.loadAssessmentEntryById(resetedAssessmentRef.getKey());
 		dbInstance.commitAndCloseSession();
 
-		Assert.assertEquals(nodeAssessmentRef, reloadedAssessmentRef);
+		Assert.assertEquals(ae, reloadedAssessmentRef);
 		Assert.assertNull(reloadedAssessmentRef.getScore());
 		Assert.assertNull(reloadedAssessmentRef.getPassed());
 		Assert.assertEquals(new Integer(0), reloadedAssessmentRef.getAttempts());
@@ -230,8 +234,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessment = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, refEntry, 2.0f, Boolean.TRUE, null, null);
+		AssessmentEntry nodeAssessment = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry,
+				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		Date firstDate = new GregorianCalendar(2013,1,28,13,24,56).getTime();
@@ -258,8 +262,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessment = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, refEntry, 2.0f, Boolean.TRUE, null, null);
+		AssessmentEntry nodeAssessment = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry,
+				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		Date startDate = new GregorianCalendar(2014,1,1,1,1,2).getTime();
@@ -284,8 +288,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessment = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, refEntry, 2.0f, Boolean.TRUE, null, null);
+		AssessmentEntry nodeAssessment = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry,
+				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNull(nodeAssessment.getAssessmentDone());
@@ -327,8 +331,8 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessment = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity, null, entry, subIdent, null, refEntry, 2.0f, Boolean.TRUE, null, null);
+		AssessmentEntry nodeAssessment = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry,
+				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		Assert.assertNull(nodeAssessment.getFullyAssessedDate());
@@ -364,14 +368,14 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
-		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, null, null, entry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, refEntry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
+		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				null, null, entry);
+		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, refEntry,
+				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		// load with our subIdent above
@@ -396,9 +400,9 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		
 		String subIdent = UUID.randomUUID().toString();
 		assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, null, null, entry, 3.0f, Boolean.FALSE, null, null);
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, refEntry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry, null, null, entry);
+		assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, refEntry, subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 
 		// id 1,2,3 are in the entry, but 4 is in an other entry and must not appears in the list
@@ -419,14 +423,14 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry entry = JunitTestHelper.createAndPersistRepositoryEntry();
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
-		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, null, null, entry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, refEntry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
+		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				null, null, entry);
+		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, refEntry,
+				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		// load for identity 1
@@ -475,14 +479,14 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		
 		// some assessment entries
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
-		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, null, null, entry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, refEntry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
+		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				null, null, entry);
+		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, refEntry,
+				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		//load the assessment entries of entry
@@ -538,14 +542,14 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessment1 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
-		AssessmentEntry nodeAssessment2 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessment3 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, null, null, entry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessment4 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, refEntry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
+		AssessmentEntry nodeAssessment1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessment2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessment3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, null,
+				null, entry);
+		AssessmentEntry nodeAssessment4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, refEntry,
+				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		// delete by reference
@@ -577,14 +581,14 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		RepositoryEntry refEntry = JunitTestHelper.createAndPersistRepositoryEntry();
 		
 		String subIdent = UUID.randomUUID().toString();
-		AssessmentEntry nodeAssessment1 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
-		AssessmentEntry nodeAssessment2 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessment3 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, null, null, entry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessment4 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, refEntry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
+		AssessmentEntry nodeAssessment1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessment2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				subIdent, null, refEntry);
+		AssessmentEntry nodeAssessment3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry, null,
+				null, entry);
+		AssessmentEntry nodeAssessment4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, refEntry,
+				subIdent, null, refEntry);
 		dbInstance.commitAndCloseSession();
 		
 		// delete by reference
@@ -621,20 +625,34 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		businessGroupRelationDao.addRole(assessedIdentity4, group, GroupRoles.participant.name());
 		businessGroupRelationDao.addRole(assessedIdentity5, group, GroupRoles.coach.name());
 		
-		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity1, null, entry, subIdent, null, refEntry);
-		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, subIdent, null, refEntry, 0.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, entry, null, null, entry, 12.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity2, null, refEntry, subIdent, null, refEntry, 3.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId5 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity3, null, entry, subIdent, null, refEntry, 6.0f, Boolean.TRUE, null, null);
-		AssessmentEntry nodeAssessmentId6 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity4, null, entry, subIdent, null, refEntry, 1.0f, Boolean.FALSE, null, null);
-		AssessmentEntry nodeAssessmentId7 = assessmentEntryDao
-				.createAssessmentEntry(assessedIdentity5, null, entry, subIdent, null, refEntry, 10.0f, Boolean.TRUE, null, null);
+		AssessmentEntry nodeAssessmentId1 = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry,
+				subIdent, null, refEntry);
+		nodeAssessmentId1.setScore(null);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId1);
+		AssessmentEntry nodeAssessmentId2 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				subIdent, null, refEntry);
+		nodeAssessmentId2.setScore(BigDecimal.valueOf(0));
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId2);
+		AssessmentEntry nodeAssessmentId3 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry,
+				null, null, entry);
+		nodeAssessmentId3.setScore(BigDecimal.valueOf(2));
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId3);
+		AssessmentEntry nodeAssessmentId4 = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, refEntry,
+				subIdent, null, refEntry);
+		nodeAssessmentId4.setScore(BigDecimal.valueOf(5));
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId4);
+		AssessmentEntry nodeAssessmentId5 = assessmentEntryDao.createAssessmentEntry(assessedIdentity3, null, entry,
+				subIdent, null, refEntry);
+		nodeAssessmentId5.setScore(BigDecimal.valueOf(1));
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId5);
+		AssessmentEntry nodeAssessmentId6 = assessmentEntryDao.createAssessmentEntry(assessedIdentity4, null, entry,
+				subIdent, null, refEntry);
+		nodeAssessmentId6.setScore(BigDecimal.valueOf(3.2));
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId6);
+		AssessmentEntry nodeAssessmentId7 = assessmentEntryDao.createAssessmentEntry(assessedIdentity5, null, entry,
+				subIdent, null, refEntry);
+		nodeAssessmentId7.setScore(BigDecimal.valueOf(99));
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessmentId7);
 		dbInstance.commitAndCloseSession();
 		// load with our subIdent above
 		List<AssessmentEntry> assessmentEntries = assessmentEntryDao

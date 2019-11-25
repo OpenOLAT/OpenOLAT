@@ -20,7 +20,6 @@
 package org.olat.course.assessment.manager;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -38,8 +37,6 @@ import org.olat.core.gui.control.WindowControl;
 import org.olat.core.id.Identity;
 import org.olat.core.id.IdentityEnvironment;
 import org.olat.core.logging.Tracing;
-import org.olat.course.CorruptedCourseException;
-import org.olat.course.CourseFactory;
 import org.olat.course.ICourse;
 import org.olat.course.assessment.AssessmentManager;
 import org.olat.course.assessment.CourseAssessmentService;
@@ -50,14 +47,12 @@ import org.olat.course.assessment.ui.tool.AssessmentCourseNodeController;
 import org.olat.course.auditing.UserNodeAuditManager;
 import org.olat.course.config.CourseConfig;
 import org.olat.course.nodeaccess.NodeAccessService;
-import org.olat.course.nodeaccess.NodeAccessType;
 import org.olat.course.nodes.CourseNode;
 import org.olat.course.properties.CoursePropertyManager;
 import org.olat.course.run.environment.CourseEnvironment;
 import org.olat.course.run.navigation.NodeVisitedListener;
 import org.olat.course.run.scoring.AccountingEvaluators;
 import org.olat.course.run.scoring.AssessmentEvaluation;
-import org.olat.course.run.scoring.ScoreAccounting;
 import org.olat.course.run.scoring.ScoreCalculator;
 import org.olat.course.run.scoring.ScoreEvaluation;
 import org.olat.course.run.userview.UserCourseEnvironment;
@@ -374,41 +369,6 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 		identityEnv.setIdentity(assessedIdentity);
 		UserCourseEnvironment userCourseEnv = new UserCourseEnvironmentImpl(identityEnv, courseEnv);
 		userCourseEnv.getScoreAccounting().evaluateAll(true);
-	}
-
-	@Override
-	public Map<Long, AssessmentEvaluation> getRootAssessmentEvaluations(Identity identity,
-			Collection<Long> courseEntryKeys, boolean courseWithLearningProgressOnly) {
-		List<RepositoryEntry> courseEntries = repositoryService.loadByKeys(courseEntryKeys);
-		Map<Long, AssessmentEvaluation> evalations = new HashMap<>();
-		for (RepositoryEntry courseEntry : courseEntries) {
-			if (!courseEntry.getEntryStatus().decommissioned()) {
-				ICourse course = loadCourse(courseEntry);
-				if (course != null && filterLearningProgress(course, courseWithLearningProgressOnly)) {
-					IdentityEnvironment identityEnv = new IdentityEnvironment();
-					identityEnv.setIdentity(identity);
-					ScoreAccounting scoreAccounting = new UserCourseEnvironmentImpl(identityEnv, course.getCourseEnvironment())
-							.getScoreAccounting();
-					scoreAccounting.evaluateAll(true);
-					AssessmentEvaluation evaluation = scoreAccounting.evalCourseNode(course.getRunStructure().getRootNode());
-					evalations.put(courseEntry.getKey(), evaluation);
-				}
-			}
-		}
-		return evalations;
-	}
-
-	private ICourse loadCourse(RepositoryEntry courseEntry) {
-		try {
-			return CourseFactory.loadCourse(courseEntry);
-		} catch (CorruptedCourseException e) {
-			// just ignore it
-		}
-		return null;
-	}
-
-	private boolean filterLearningProgress(ICourse course, boolean courseWithLearningProgressOnly) {
-		return !courseWithLearningProgressOnly || nodeAccsessService.isCourseLearningProgressSupported(NodeAccessType.of(course));
 	}
 
 }

@@ -20,9 +20,7 @@
 package org.olat.course.assessment;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import org.olat.core.gui.UserRequest;
 import org.olat.core.gui.components.stack.BreadcrumbPanel;
@@ -327,16 +325,5 @@ public interface CourseAssessmentService {
 	 * @param course
 	 */
 	public void evaluateAll(ICourse course);
-
-	/**
-	 * Get the AssessmentEvaluations of the root node (course).
-	 *
-	 * @param identity 
-	 * @param courseEntryKeys 
-	 * @param courseWithLearningProgressOnly do not return AssessmentEvaluations for courses without learning progress.
-	 * @return
-	 */
-	public Map<Long, AssessmentEvaluation> getRootAssessmentEvaluations(Identity identity,
-			Collection<Long> courseEntryKeys, boolean courseWithLearningProgressOnly);
 
 }

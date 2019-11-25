@@ -76,7 +76,7 @@ import org.olat.core.util.StringHelper;
 import org.olat.core.util.Util;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CorruptedCourseException;
-import org.olat.modules.assessment.ui.LearningProgressCellRenderer;
+import org.olat.modules.assessment.ui.component.LearningProgressCellRenderer;
 import org.olat.repository.RepositoryEntry;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryModule;

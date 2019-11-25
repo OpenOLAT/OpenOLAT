@@ -26,7 +26,6 @@ import org.olat.core.gui.components.form.flexible.impl.FormBaseComponentImpl;
 import org.olat.core.gui.translator.Translator;
 import org.olat.core.util.Util;
 import org.olat.modules.assessment.model.AssessmentEntryStatus;
-import org.olat.modules.assessment.ui.AbstractLearningProgressCellRenderer;
 
 /**
  * 

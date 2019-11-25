@@ -31,7 +31,6 @@ import org.olat.core.gui.components.form.flexible.elements.FlexiTableFilter;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableDataSourceDelegate;
 import org.olat.core.util.StringHelper;
 import org.olat.core.util.vfs.VFSLeaf;
-import org.olat.course.assessment.CourseAssessmentService;
 import org.olat.repository.RepositoryEntryMyView;
 import org.olat.repository.RepositoryManager;
 import org.olat.repository.RepositoryService;
@@ -63,7 +62,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 	private final AccessControlModule acModule;
 	private final RepositoryService repositoryService;
 	private final RepositoryManager repositoryManager;
-	private final CourseAssessmentService courseAssessmentService;
 	
 	private Integer count;
 	
@@ -76,7 +74,6 @@ public class DefaultRepositoryEntryDataSource implements FlexiTableDataSourceDel
 		acModule = CoreSpringFactory.getImpl(AccessControlModule.class);
 		repositoryService = CoreSpringFactory.getImpl(RepositoryService.class);
 		repositoryManager = CoreSpringFactory.getImpl(RepositoryManager.class);
-		courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
 	}
 	
 	public void setFilters(List<Filter> filters) {

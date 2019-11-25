@@ -27,7 +27,7 @@ import org.olat.course.assessment.handler.AssessmentConfig;
 import org.olat.course.assessment.handler.AssessmentConfig.Mode;
 import org.olat.course.run.scoring.AssessmentEvaluation;
 import org.olat.course.run.scoring.StatusCompletionEvaluator;
-import org.olat.modules.assessment.ui.AbstractLearningProgressCellRenderer;
+import org.olat.modules.assessment.ui.component.AbstractLearningProgressCellRenderer;
 
 /**
  * 

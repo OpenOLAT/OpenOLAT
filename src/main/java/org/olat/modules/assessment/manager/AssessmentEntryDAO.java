@@ -19,7 +19,6 @@
  */
 package org.olat.modules.assessment.manager;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -67,30 +66,6 @@ public class AssessmentEntryDAO {
 		data.setEntryRoot(entryRoot);
 		data.setReferenceEntry(referenceEntry);
 		data.setUserVisibility(Boolean.TRUE);
-		dbInstance.getCurrentEntityManager().persist(data);
-		return data;
-	}
-	
-	public AssessmentEntry createAssessmentEntry(Identity assessedIdentity, String anonymousIdentifier,
-			RepositoryEntry entry, String subIdent, Boolean entryRoot, RepositoryEntry referenceEntry,
-			Float score, Boolean passed, Date lastUserModified, Date lastCoachModified) {
-		
-		AssessmentEntryImpl data = new AssessmentEntryImpl();
-		data.setCreationDate(new Date());
-		data.setLastModified(data.getCreationDate());
-		data.setLastUserModified(lastUserModified);
-		data.setLastCoachModified(lastCoachModified);
-		data.setIdentity(assessedIdentity);
-		data.setAnonymousIdentifier(anonymousIdentifier);
-		data.setRepositoryEntry(entry);
-		data.setSubIdent(subIdent);
-		data.setEntryRoot(entryRoot);
-		data.setReferenceEntry(referenceEntry);
-		data.setUserVisibility(Boolean.TRUE);
-		if(score != null) {
-			data.setScore(new BigDecimal(score));
-		}
-		data.setPassed(passed);
 		dbInstance.getCurrentEntityManager().persist(data);
 		return data;
 	}
