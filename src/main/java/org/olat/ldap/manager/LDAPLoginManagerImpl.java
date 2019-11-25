@@ -100,11 +100,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
- * Description: This manager handles  communication between LDAP and OLAT. LDAP access is done by JNDI.
+ * Description: This manager handles  communication between LDAP and OLAT.
  * The synching is done only on node 1 of a cluster.
- * <p>
- * LDAPLoginMangerImpl
- * <p>
  * 
  * @author Maurus Rohrer
  */
@@ -276,7 +273,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 		String[] userAttr = syncConfiguration.getUserAttributes();
 
 		if (login == null || pwd == null) {
-			if (log.isDebugEnabled()) log.debug("Error when trying to bind user, missing username or password. Username::" + login + " pwd::" + pwd);
+			log.debug("Error when trying to bind user, missing username or password. Username::{} pwd::{}", login, pwd);
 			errors.insert("Username and password must be selected");
 			return null;
 		}
@@ -316,11 +313,11 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			userBind.close();
 			return attributes;
 		} catch (AuthenticationException e) {
-			log.info("Error when trying to bind user with username::" + login + " - invalid LDAP password");
+			log.info("Error when trying to bind user with username::{} - invalid LDAP password", login);
 			errors.insert("Username or password incorrect");
 			return null;
 		} catch (NamingException e) {
-			log.error("NamingException when trying to get attributes after binding user with username::" + login, e);
+			log.error("NamingException when trying to get attributes after binding user with username::{}", login, e);
 			errors.insert("Username or password incorrect");
 			return null;
 		}
@@ -479,7 +476,7 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			String value = keyValuePair.getValue();
 			if(value == null) {
 				if(user.getProperty(propName, null) != null) {
-					log.debug("removed property " + propName + " for identity " + identity);
+					log.debug("removed property {} for identity {}", propName, identity);
 					user.setProperty(propName, value);
 				}
 			} else {
@@ -495,6 +492,10 @@ public class LDAPLoginManagerImpl implements LDAPLoginManager, GenericEventListe
 			}
 		}
 		userManager.updateUser(user);
+		dbInstance.commit();
+		
+		// check WebDAV authentication
+		CoreSpringFactory.getImpl(OLATAuthManager.class).synchronizeCredentials(identity, identity);
 		return identity;
 	}
 

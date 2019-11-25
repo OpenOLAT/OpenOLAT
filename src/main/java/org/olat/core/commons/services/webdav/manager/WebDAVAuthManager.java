@@ -22,15 +22,17 @@ package org.olat.core.commons.services.webdav.manager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.Authentication;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.persistence.DB;
 import org.olat.core.commons.services.webdav.WebDAVModule;
 import org.olat.core.id.Identity;
+import org.olat.core.id.UserConstants;
 import org.olat.core.logging.AssertException;
 import org.olat.core.logging.DBRuntimeException;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.Encoder;
 import org.olat.core.util.Encoder.Algorithm;
@@ -67,6 +69,8 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	@Autowired
 	private DB dbInstance;
 	@Autowired
+	private UserModule userModule;
+	@Autowired
 	private LoginModule loginModule;
 	@Autowired
 	private WebDAVModule webDAVModule;
@@ -74,9 +78,8 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 	private BaseSecurity securityManager;
 	@Autowired
 	private OLATAuthManager olatAuthenticationSpi;
-	@Autowired
-	private UserModule userModule;
-	
+
+
 	public Identity digestAuthentication(String httpMethod, DigestAuthentication digestAuth) {
 		String username = digestAuth.getUsername();
 		
@@ -227,6 +230,47 @@ public class WebDAVAuthManager implements AuthenticationSPI {
 				log.error("Cannot update webdav password with provider {} for identity: {}", provider, identity, e);
 				dbInstance.commitAndCloseSession();
 			}
+		}
+	}
+	
+	/**
+	 * Check if the email of the specified identity match the
+	 * email used by authentication HA1-E and HA1-I.
+	 * 
+	 * @param doer The doer (mandatory)
+	 * @param identity The identity (mandatory)
+	 * @return true if successful
+	 */
+	public boolean checkDigestEmails(Identity doer, Identity identity) {
+		//For Digest
+		if(webDAVModule.isDigestAuthenticationEnabled()) {
+			List<Authentication> authentications = securityManager.getAuthentications(identity);
+			for(Authentication authentication:authentications) {
+				String provider = authentication.getProvider();
+				if(PROVIDER_HA1_EMAIL.equals(provider)) {
+					String email = identity.getUser().getProperty(UserConstants.EMAIL, Locale.ENGLISH);
+					checkAndDelete(doer, identity, email, authentication);
+				} else if(PROVIDER_HA1_INSTITUTIONAL_EMAIL.equals(provider)) {
+					String email = identity.getUser().getProperty(UserConstants.INSTITUTIONALEMAIL, Locale.ENGLISH);
+					checkAndDelete(doer, identity, email, authentication);
+				}
+			}
+		}
+		return true;
+	}
+	
+	private void checkAndDelete(Identity doer, Identity identity, String email, Authentication authentication) {
+		try {
+			String authUsername = authentication.getAuthusername();
+			if(email == null || !email.equals(authUsername)) {
+				securityManager.deleteAuthentication(authentication);
+				log.info(Tracing.M_AUDIT, "{} remove WebDAV {} authentication because of email not matching for identity: {} ({} / {})",
+						doer, authentication.getProvider(), identity.getKey(), email, authUsername);
+				dbInstance.commit();
+			}
+		} catch (Exception e) {
+			log.error("Cannot check HA1 email credentials with provider {} for identity: {}", authentication.getProvider(), identity, e);
+			dbInstance.commitAndCloseSession();
 		}
 	}
 	

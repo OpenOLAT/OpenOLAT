@@ -307,7 +307,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 			log.info(Tracing.M_AUDIT, doer.getKey() + " set new password for identity: " + identity.getKey());
 		}
 		
-		if(identity != null && StringHelper.containsNonWhitespace(username) && webDAVAuthManager != null) {
+		if(StringHelper.containsNonWhitespace(username) && webDAVAuthManager != null) {
 			webDAVAuthManager.changeDigestPassword(doer, identity, newPwd);
 		}
 		return true;
@@ -317,7 +317,7 @@ public class OLATAuthManager implements AuthenticationSPI {
 		Authentication auth = securityManager.findAuthentication(identity, "OLAT");
 		if (auth == null) { // create new authentication for provider OLAT
 			securityManager.createAndPersistAuthentication(identity, "OLAT", username, newPwd, loginModule.getDefaultHashAlgorithm());
-			log.info(Tracing.M_AUDIT, doer.getKey() + " created new authenticatin for identity: " + identity.getKey());
+			log.info(Tracing.M_AUDIT, "{} created new authenticatin for identity: {}", doer.getKey(), identity.getKey());
 		} else {
 			//update credentials
 			if(!securityManager.checkCredentials(auth, newPwd)) {
@@ -329,11 +329,18 @@ public class OLATAuthManager implements AuthenticationSPI {
 				securityManager.updateAuthentication(auth);
 			}
 
-			log.info(Tracing.M_AUDIT, doer.getKey() + " set new password for identity: " + identity.getKey());
+			log.info(Tracing.M_AUDIT, "{} set new password for identity: {}", doer.getKey(), identity.getKey());
 		}
 		
-		if(identity != null && StringHelper.containsNonWhitespace(username) && webDAVAuthManager != null) {
+		if(StringHelper.containsNonWhitespace(username) && webDAVAuthManager != null) {
 			webDAVAuthManager.changeDigestPassword(doer, identity, newPwd);
+		}
+		return true;
+	}
+	
+	public boolean synchronizeCredentials(Identity doer, Identity identity) {
+		if(webDAVAuthManager != null) {
+			webDAVAuthManager.checkDigestEmails(doer, identity);
 		}
 		return true;
 	}
