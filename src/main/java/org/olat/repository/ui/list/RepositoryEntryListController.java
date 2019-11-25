@@ -202,8 +202,8 @@ public class RepositoryEntryListController extends FormBasicController
 				true, OrderBy.location.name()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(false, Cols.details.i18nKey(), Cols.details.ordinal(), false, null));
 		if(!guestOnly) {
-			DefaultFlexiColumnModel learningProgressColumnModel = new DefaultFlexiColumnModel(
-					Cols.completion.i18nKey(), Cols.completion.ordinal(), true, null);
+			DefaultFlexiColumnModel learningProgressColumnModel = new DefaultFlexiColumnModel(Cols.completion.i18nKey(),
+					Cols.completion.ordinal(), true, OrderBy.completion.name());
 			learningProgressColumnModel.setCellRenderer(new LearningProgressCellRenderer(getLocale()));
 			columnsModel.addFlexiColumnModel(learningProgressColumnModel);
 		}
@@ -266,6 +266,7 @@ public class RepositoryEntryListController extends FormBasicController
 		sorters.add(new FlexiTableSort(translate("orderby.lastVisited"), OrderBy.lastVisited.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.score"), OrderBy.score.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.passed"), OrderBy.passed.name()));
+		sorters.add(new FlexiTableSort(translate("orderby.completion"), OrderBy.completion.name()));
 		sorters.add(FlexiTableSort.SPACER);
 		sorters.add(new FlexiTableSort(translate("orderby.title"), OrderBy.title.name()));
 		sorters.add(new FlexiTableSort(translate("orderby.lifecycle"), OrderBy.lifecycle.name()));

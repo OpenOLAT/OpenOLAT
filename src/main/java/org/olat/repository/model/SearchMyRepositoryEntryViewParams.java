@@ -204,6 +204,7 @@ public class SearchMyRepositoryEntryViewParams {
 		lastVisited,
 		passed,
 		score,
+		completion,
 		title,
 		lifecycle,
 		author,

@@ -202,7 +202,7 @@ public class RepositoryEntryMyCourseQueries {
 			  .append("    where ae.repositoryEntry.key = v.key")
 			  .append("      and ae.entryRoot = true")
 			  .append("      and ae.identity.key=:identityKey")
-			  .append("  )");
+			  .append("  ) as completion");
 			sb.append(" ,(select eff.key from ").append(UserEfficiencyStatementImpl.class.getName()).append(" as eff")
 			  .append("    where eff.resource=res and eff.identity.key=:identityKey")
 			  .append(" ) as effKey");
@@ -547,6 +547,10 @@ public class RepositoryEntryMyCourseQueries {
 					break;
 				case score:
 					sb.append(" order by score ");
+					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
+					break;
+				case completion:
+					sb.append(" order by completion ");
 					appendAsc(sb, asc).append(" nulls last, lower(v.displayname) asc");
 					break;
 				case title:
