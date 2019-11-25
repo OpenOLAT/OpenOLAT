@@ -57,13 +57,12 @@ public class LearningPathNodeConfigController extends FormBasicController {
 	public static final String CONFIG_DEFAULT_OBLIGATION = AssessmentObligation.mandatory.name();
 	public static final String CONFIG_KEY_START = "start.date";
 	public static final String CONFIG_KEY_TRIGGER = "fully.assessed.trigger";
-	public static final String CONFIG_VALUE_TRIGGER_NONE = "none";
 	public static final String CONFIG_VALUE_TRIGGER_NODE_VISITED = "nodeVisited";
 	public static final String CONFIG_VALUE_TRIGGER_CONFIRMED = "confirmed";
 	public static final String CONFIG_VALUE_TRIGGER_STATUS_DONE = "statusDone";
 	public static final String CONFIG_VALUE_TRIGGER_SCORE = "score";
 	public static final String CONFIG_VALUE_TRIGGER_PASSED = "passed";
-	public static final String CONFIG_DEFAULT_TRIGGER = CONFIG_VALUE_TRIGGER_NONE;
+	public static final String CONFIG_DEFAULT_TRIGGER = CONFIG_VALUE_TRIGGER_CONFIRMED;
 	public static final String CONFIG_KEY_SCORE_CUT_VALUE = "scoreCutValue";
 	
 	private TextElement durationEl;
@@ -125,7 +124,6 @@ public class LearningPathNodeConfigController extends FormBasicController {
 
 	private KeyValues getTriggerKV() {
 		KeyValues triggerKV = new KeyValues();
-		triggerKV.add(entry(CONFIG_VALUE_TRIGGER_NONE, translate("config.trigger.none")));
 		if (ctrlConfig.isTriggerNodeVisited()) {
 			triggerKV.add(entry(CONFIG_VALUE_TRIGGER_NODE_VISITED, translate("config.trigger.visited")));
 		}
