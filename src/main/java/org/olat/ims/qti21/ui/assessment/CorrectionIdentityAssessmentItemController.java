@@ -253,8 +253,8 @@ public class CorrectionIdentityAssessmentItemController extends FormBasicControl
 		}
 		
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-				scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
-				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
+				scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getCurrentRunCompletion(),
+				scoreEval.getCurrentRunStatus(), testSession.getKey());
 		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}

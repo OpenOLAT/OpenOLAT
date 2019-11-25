@@ -367,7 +367,7 @@ public class CourseAssessmentWebService {
 			importTestItems(course, nodeKey, requestIdentity, resultsVO);
 		} else {
 			CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-			ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Boolean.TRUE, Long.valueOf(nodeKey));//not directly pass this key
+			ScoreEvaluation scoreEval = new ScoreEvaluation(resultsVO.getScore(), Boolean.TRUE, Long.valueOf(nodeKey));//not directly pass this key
 			courseAssessmentService.updateScoreEvaluation(node, scoreEval, userCourseEnvironment, requestIdentity, true, Role.coach);
 		}
 
@@ -455,7 +455,7 @@ public class CourseAssessmentWebService {
 				// update scoring overview for the user in the current course
 				Float score = ac.getScore();
 				Boolean passed = ac.isPassed();
-				ScoreEvaluation sceval = new ScoreEvaluation(score, passed, passed, Long.valueOf(nodeKey));//perhaps don't pass this key directly
+				ScoreEvaluation sceval = new ScoreEvaluation(score, passed, Long.valueOf(nodeKey));//perhaps don't pass this key directly
 				// assessment nodes are assessable
 				boolean incrementUserAttempts = true;
 				CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);

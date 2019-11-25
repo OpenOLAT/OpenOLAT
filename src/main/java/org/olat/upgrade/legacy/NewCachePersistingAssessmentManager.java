@@ -973,14 +973,14 @@ public class NewCachePersistingAssessmentManager {
 		log.debug("successfully saved node passed : " + scoreEvaluation.getPassed());
 		saveAssessmentID(courseNode, assessedIdentity, scoreEvaluation.getAssessmentID(), cpm);
 		log.debug("successfully saved node asssessmentId : " + scoreEvaluation.getPassed());
-		saveNodeFullyAssessed(courseNode, identity, assessedIdentity, scoreEvaluation.getFullyAssessed(), cpm);
+//		saveNodeFullyAssessed(courseNode, identity, assessedIdentity, scoreEvaluation.getFullyAssessed(), cpm);
 		log.debug("successfully saved node marked completely : " + scoreEvaluation.getPassed());
 		if (incrementUserAttempts) {
 			attempts = incrementNodeAttemptsProperty(courseNode, assessedIdentity, cpm);
 			log.debug("successfully saved user attemps : " + attempts);
 		}
-		saveNodeFullyAssessed(courseNode, identity, assessedIdentity, scoreEvaluation.getFullyAssessed(), cpm);
-		log.debug("successfully saved node fullyAssessed : " + scoreEvaluation.getFullyAssessed());
+//		saveNodeFullyAssessed(courseNode, identity, assessedIdentity, scoreEvaluation.getFullyAssessed(), cpm);
+//		log.debug("successfully saved node fullyAssessed : " + scoreEvaluation.getFullyAssessed());
 		DBFactory.getInstance().commitAndCloseSession();
 
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);

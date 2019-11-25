@@ -557,8 +557,8 @@ public class IQTESTCourseNode extends AbstractAccessableCourseNode implements QT
 			visibility = Boolean.TRUE;
 		}
 		CourseAssessmentService courseAssessmentService = CoreSpringFactory.getImpl(CourseAssessmentService.class);
-		ScoreEvaluation sceval = new ScoreEvaluation(session.getScore().floatValue(), session.getPassed(), assessmentStatus, visibility, Boolean.TRUE,
-				1.0d, AssessmentRunStatus.done, session.getKey());
+		ScoreEvaluation sceval = new ScoreEvaluation(session.getScore().floatValue(), session.getPassed(), assessmentStatus, visibility, 1.0d,
+				AssessmentRunStatus.done, session.getKey());
 		courseAssessmentService.updateScoreEvaluation(this, sceval, assessedUserCourseenv, coachingIdentity, true, by);
 	}
 

@@ -51,6 +51,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 	private final Date lastUserModified;
 	private final Date lastCoachModified;
 	private final Date assessmentDone;
+	private final Boolean fullyAssessed;
 	private final Date fullyAssessedDate;
 	private final Date firstVisit;
 	private final Date lastVisit;
@@ -79,8 +80,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 			String comment, String coachComment, int numOfAssessmentDocs, Date lastModified, Date lastUserModified,
 			Date lastCoachModified, Date assessmentDone, Date startDate, AssessmentObligation obligation,
 			Integer duration, Date firstVisit, Date lastVisit) {
-		super(score, passed, assessmentStatus, userVisibility, fullyAssessed, currentRunCompletion, runStatus,
-				assessmentID);
+		super(score, passed, assessmentStatus, userVisibility, currentRunCompletion, runStatus, assessmentID);
 		this.attempts = attempts;
 		this.completion = completion;
 		this.comment = comment;
@@ -90,6 +90,7 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		this.lastUserModified = lastUserModified;
 		this.lastCoachModified = lastCoachModified;
 		this.assessmentDone = assessmentDone;
+		this.fullyAssessed = fullyAssessed;
 		this.fullyAssessedDate = fullyAssessedDate;
 		this.startDate = startDate;
 		this.obligation = obligation;
@@ -156,6 +157,10 @@ public class AssessmentEvaluation extends ScoreEvaluation {
 		return lastCoachModified;
 	}
 	
+	public Boolean getFullyAssessed() {
+		return fullyAssessed;
+	}
+
 	public Date getFullyAssessedDate() {
 		return fullyAssessedDate;
 	}

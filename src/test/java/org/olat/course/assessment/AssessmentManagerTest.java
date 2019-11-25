@@ -159,7 +159,7 @@ public class AssessmentManagerTest extends OlatTestCase  {
 		String userComment = "UselessUserComment";
 		
 		//store ScoreEvaluation for the assessableCourseNode and student
-		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score,passed, fullyAssessed, assessmentID);
+		ScoreEvaluation scoreEvaluation = new ScoreEvaluation(score,passed, assessmentID);
     
 		IdentityEnvironment ienv = new IdentityEnvironment(); 
 		ienv.setIdentity(student);

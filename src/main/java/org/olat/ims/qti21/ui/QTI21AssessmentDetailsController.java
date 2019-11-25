@@ -442,8 +442,8 @@ public class QTI21AssessmentDetailsController extends FormBasicController {
 		}
 		AssessmentEntryStatus finalStatus = entryStatus == null ? scoreEval.getAssessmentStatus() : entryStatus;
 		ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-				finalStatus, null, scoreEval.getFullyAssessed(), 
-				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), session.getKey());
+				finalStatus, null, scoreEval.getCurrentRunCompletion(), 
+				scoreEval.getCurrentRunStatus(), session.getKey());
 		courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 				getIdentity(), false, Role.coach);
 	}

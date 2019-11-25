@@ -185,7 +185,7 @@ public class QTI12PullTestsToolController extends FormBasicController {
 		AssessmentContext ac = ai.getAssessmentContext();
 		Float score = new Float(ac.getScore());
 		Boolean passed = new Boolean(ac.isPassed());
-		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, Boolean.FALSE, new Long(ai.getAssessID()));
+		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, new Long(ai.getAssessID()));
 		UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 		courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, assessedIdentity, true,
 				Role.coach);

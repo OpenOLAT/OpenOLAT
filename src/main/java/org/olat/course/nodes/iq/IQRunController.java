@@ -526,7 +526,7 @@ public class IQRunController extends BasicController implements GenericEventList
 				userVisibility = Boolean.TRUE;
 			}
 			
-			ScoreEvaluation sceval = new ScoreEvaluation(ac.getScore(), ac.isPassed(), assessmentStatus, userVisibility, fullyAssed, null, null, ai.getAssessID());
+			ScoreEvaluation sceval = new ScoreEvaluation(ac.getScore(), ac.isPassed(), assessmentStatus, userVisibility, null, null, ai.getAssessID());
 			courseAssessmentService.updateScoreEvaluation(courseNode, sceval, userCourseEnv, getIdentity(), true, Role.user);
 				
 			// Mark publisher for notifications

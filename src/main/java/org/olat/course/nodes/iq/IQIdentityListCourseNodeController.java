@@ -451,8 +451,8 @@ public class IQIdentityListCourseNodeController extends IdentityListCourseNodeCo
 			}
 			AssessmentEntryStatus finalStatus = status == null ? scoreEval.getAssessmentStatus() : status;
 			ScoreEvaluation manualScoreEval = new ScoreEvaluation(score, passed,
-					finalStatus, scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
-					scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), testSession.getKey());
+					finalStatus, scoreEval.getUserVisible(), scoreEval.getCurrentRunCompletion(),
+					scoreEval.getCurrentRunStatus(), testSession.getKey());
 			courseAssessmentService.updateScoreEvaluation(courseNode, manualScoreEval, assessedUserCourseEnv,
 					getIdentity(), false, Role.coach);
 		}

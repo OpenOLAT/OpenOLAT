@@ -39,7 +39,6 @@ public class ScoreEvaluation {
 	private final Float score;
 	private final Boolean passed; //could be Boolean.TRUE, Boolean.FALSE or null if "passed" info is not defined
 	private final Long assessmentID;
-	private final Boolean fullyAssessed;
 	private final Boolean userVisible;
 	private final AssessmentEntryStatus assessmentStatus;
 	
@@ -56,50 +55,33 @@ public class ScoreEvaluation {
 	 * @param scoreEval
 	 */
 	public ScoreEvaluation(ScoreEvaluation scoreEval) {
-		this(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(), scoreEval.getFullyAssessed(),
+		this(scoreEval.getScore(), scoreEval.getPassed(), scoreEval.getAssessmentStatus(), scoreEval.getUserVisible(),
 				scoreEval.getCurrentRunCompletion(), scoreEval.getCurrentRunStatus(), scoreEval.getAssessmentID());
 	}
-	
-	/**
-	 * @param score
-	 * @param passed
-	 */
+
 	public ScoreEvaluation(Float score, Boolean passed) {
-		this(score, passed, null, null, null, null, null, null);
+		this(score, passed, null, null, null, null, null);
 	}
 
-	/**
-	 * Constructor for passing the assessmentID.
-	 * @param score
-	 * @param passed
-	 * @param assessmentID
-	 */
-	public ScoreEvaluation(Float score, Boolean passed, Boolean fullyAssessed, Long assessmentID) {
-		this(score, passed, null, null, fullyAssessed, null, null, assessmentID);
+	public ScoreEvaluation(Float score, Boolean passed, Long assessmentID) {
+		this(score, passed, null, null, null, null, assessmentID);
 	}
 	
 	public ScoreEvaluation(Float score, Boolean passed, AssessmentEntryStatus assessmentStatus,
-			Boolean userVisible, Boolean fullyAssessed, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID) {
+			Boolean userVisible, Double currentRunCompletion, AssessmentRunStatus runStatus, Long assessmentID) {
 		this.score = score;
 		this.passed = passed;
 		this.assessmentID = assessmentID;
-		this.fullyAssessed = fullyAssessed;
 		this.userVisible = userVisible;
 		this.assessmentStatus = assessmentStatus;
 		this.currentRunCompletion = currentRunCompletion;
 		this.runStatus = runStatus;
 	}
 
-	/**
-	 * @return Returns the passed.
-	 */
 	public Boolean getPassed() {
 		return passed;
 	}
 
-	/**
-	 * @return Returns the score.
-	 */
 	public Float getScore() {
 		return score;
 	}
@@ -112,16 +94,8 @@ public class ScoreEvaluation {
 		return userVisible;
 	}
 
-	/**
-	 * 
-	 * @return Returns the assessmentID.
-	 */
 	public Long getAssessmentID() {
 		return assessmentID;
-	}
-
-	public Boolean getFullyAssessed() {
-		return fullyAssessed;
 	}
 	
 	public Double getCurrentRunCompletion() {
@@ -134,6 +108,6 @@ public class ScoreEvaluation {
 	
 	@Override
 	public String toString() {
-		return "score:" + score + ", passed:" + passed + ", fullyAssessed " + fullyAssessed + ", S" + hashCode();
+		return "score:" + score + ", passed:" + passed + ", S" + hashCode();
 	}
 }

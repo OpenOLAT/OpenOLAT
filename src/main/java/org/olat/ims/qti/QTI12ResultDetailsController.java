@@ -266,7 +266,7 @@ public class QTI12ResultDetailsController extends BasicController {
 		AssessmentContext ac = ai.getAssessmentContext();
 		Float score = Float.valueOf(ac.getScore());
 		Boolean passed = Boolean.valueOf(ac.isPassed());
-		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, Boolean.FALSE, new Long(ai.getAssessID()));
+		ScoreEvaluation sceval = new ScoreEvaluation(score, passed, new Long(ai.getAssessID()));
 		UserCourseEnvironment userCourseEnv = AssessmentHelper.createAndInitUserCourseEnvironment(assessedIdentity, course);
 		courseAssessmentService.updateScoreEvaluation(testNode, sceval, userCourseEnv, assessedIdentity, true, Role.coach);
 		

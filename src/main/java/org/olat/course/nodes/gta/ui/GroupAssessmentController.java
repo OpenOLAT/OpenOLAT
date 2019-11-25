@@ -556,9 +556,9 @@ public class GroupAssessmentController extends FormBasicController {
 			
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, true,null, null, null);
+				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, null,null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 			
@@ -595,9 +595,9 @@ public class GroupAssessmentController extends FormBasicController {
 			UserCourseEnvironment userCourseEnv = row.getUserCourseEnvironment(course);
 			ScoreEvaluation newScoreEval;
 			if(setAsDone) {
-				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, true, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, passed, AssessmentEntryStatus.done, userVisible, null, null, null);
 			} else {
-				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null, null);
+				newScoreEval = new ScoreEvaluation(score, passed, null, userVisible, null, null, null);
 			}
 			courseAssessmentService.updateScoreEvaluation(gtaNode, newScoreEval, userCourseEnv, getIdentity(), false, Role.coach);
 		}

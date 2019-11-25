@@ -121,7 +121,7 @@ public class MSResetDataController extends FormBasicController {
 	protected void formOK(UserRequest ureq) {
 		UserNodeAuditManager auditManager = courseEnv.getAuditManager();
 		RepositoryEntry courseEntry = courseEnv.getCourseGroupManager().getCourseEntry();
-		ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, null, Boolean.FALSE, 0.0d, AssessmentRunStatus.notStarted, null);
+		ScoreEvaluation scoreEval = new ScoreEvaluation(null, null, AssessmentEntryStatus.notStarted, null, 0.0d, AssessmentRunStatus.notStarted, null);
 		for(Identity identity:identities) {
 			IdentityEnvironment ienv = new IdentityEnvironment(identity, Roles.userRoles());
 			UserCourseEnvironment uce = new UserCourseEnvironmentImpl(ienv, courseEnv);
