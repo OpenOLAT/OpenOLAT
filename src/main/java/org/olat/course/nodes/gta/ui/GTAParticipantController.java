@@ -302,9 +302,10 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		
 		DueDate dueDate = getSubmissionDueDate(task);
 		Date deadline = dueDate == null ? null : dueDate.getDueDate();
+		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
-		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer, maxDocs,
-				gtaNode, courseEnv, userCourseEnv.isCourseReadOnly(), deadline, "document");
+		submitDocCtrl = new SubmitDocumentsController(ureq, getWindowControl(), task, documentsDir, documentsContainer,
+				minDocs, maxDocs, gtaNode, courseEnv, userCourseEnv.isCourseReadOnly(), deadline, "document");
 		listenTo(submitDocCtrl);
 		mainVC.put("submitDocs", submitDocCtrl.getInitialComponent());
 		
@@ -341,11 +342,16 @@ public class GTAParticipantController extends GTAAbstractController implements A
 		String text;
 		File[] submittedDocuments;
 		VFSContainer documentsContainer;
+		
+		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
 		if(GTAType.group.name().equals(config.getStringValue(GTACourseNode.GTASK_TYPE))) {
 			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, assessedGroup);
 			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, assessedGroup);
 			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
-			if(submittedDocuments.length == 0) {
+			if(minDocs > 0 && submittedDocuments.length < minDocs) {
+				showWarning("error.min.documents", new String[]{ Integer.toString(minDocs), Integer.toString(submittedDocuments.length) });
+				return;
+			} else if(submittedDocuments.length == 0) {
 				text = "<div class='o_warning'>" + translate("run.submit.confirm.warning.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) }) + "</div>";
 			} else {
 				text = translate("run.submit.confirm.group", new String[]{ StringHelper.escapeHtml(assessedGroup.getName()) });
@@ -354,7 +360,10 @@ public class GTAParticipantController extends GTAAbstractController implements A
 			documentsContainer = gtaManager.getSubmitContainer(courseEnv, gtaNode, getIdentity());
 			File documentsDir = gtaManager.getSubmitDirectory(courseEnv, gtaNode, getIdentity());
 			submittedDocuments = documentsDir.listFiles(new SystemFilenameFilter(true, false));
-			if(submittedDocuments.length == 0) {
+			if(minDocs > 0 && submittedDocuments.length < minDocs) {
+				showWarning("error.min.documents", new String[]{ Integer.toString(minDocs), Integer.toString(submittedDocuments.length) });
+				return;
+			} else if(submittedDocuments.length == 0) {
 				text = "<div class='o_warning'>" + translate("run.submit.confirm.warning") + "</div>";
 			} else {
 				text = translate("run.submit.confirm");

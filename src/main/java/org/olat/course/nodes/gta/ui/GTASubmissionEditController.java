@@ -44,8 +44,11 @@ public class GTASubmissionEditController extends FormBasicController {
 	private static final String[] enableKeys = new String[] { "on" };
 	
 	private RichTextElement textEl;
+	private TextElement minNumberOfDocsEl;
 	private TextElement maxNumberOfDocsEl;
-	private MultipleSelectionElement externalEditorEl, embeddedEditorEl, emailConfirmationEl;
+	private MultipleSelectionElement externalEditorEl;
+	private MultipleSelectionElement embeddedEditorEl;
+	private MultipleSelectionElement  emailConfirmationEl;
 	
 	private final ModuleConfiguration config;
 	
@@ -75,13 +78,20 @@ public class GTASubmissionEditController extends FormBasicController {
 		boolean embbeded = config.getBooleanSafe(GTACourseNode.GTASK_EMBBEDED_EDITOR);
 		embeddedEditorEl.select(enableKeys[0], embbeded);
 		
+		int minDocs = config.getIntegerSafe(GTACourseNode.GTASK_MIN_SUBMITTED_DOCS, -1);
+		String minVal = "";
+		if(minDocs > 0) {
+			minVal = Integer.toString(minDocs);
+		}
+		minNumberOfDocsEl = uifactory.addTextElement("min.documents", "min.documents", 5, minVal, configCont);
+		
 		int maxDocs = config.getIntegerSafe(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, -1);
 		String maxVal = "";
 		if(maxDocs > 0) {
 			maxVal = Integer.toString(maxDocs);
 		}
 		maxNumberOfDocsEl = uifactory.addTextElement("max.documents", "max.documents", 5, maxVal, configCont);
-		
+
 		//confirmation
 		FormLayoutContainer confirmationCont = FormLayoutContainer.createDefaultFormLayout("confirmation", getTranslator());
 		confirmationCont.setFormTitle(translate("confirmation.title"));
@@ -114,7 +124,7 @@ public class GTASubmissionEditController extends FormBasicController {
 
 	@Override
 	protected boolean validateFormLogic(UserRequest ureq) {
-		boolean allOk = true;
+		boolean allOk = super.validateFormLogic(ureq);
 		
 		embeddedEditorEl.clearError();
 		externalEditorEl.clearError();
@@ -123,24 +133,38 @@ public class GTASubmissionEditController extends FormBasicController {
 			embeddedEditorEl.setErrorKey("error.editor.atLeastOne", null);
 			allOk &= false;
 		}
+
+		allOk &= validateNumberOfDocuments(minNumberOfDocsEl);
+		allOk &= validateNumberOfDocuments(maxNumberOfDocsEl);
 		
-		maxNumberOfDocsEl.clearError();
-		String maxVal = maxNumberOfDocsEl.getValue();
+		if(allOk && StringHelper.isLong(minNumberOfDocsEl.getValue()) && StringHelper.isLong(maxNumberOfDocsEl.getValue())
+				&& Long.parseLong(minNumberOfDocsEl.getValue()) > Long.parseLong(maxNumberOfDocsEl.getValue())) {
+			maxNumberOfDocsEl.setErrorKey("error.max.smaller.than.min.documents", null);
+			allOk &= false;	
+		}
+		return allOk;
+	}
+	
+	private boolean validateNumberOfDocuments(TextElement numberEl) {
+		boolean allOk = true;
+		
+		numberEl.clearError();
+		String maxVal = numberEl.getValue();
 		if(StringHelper.containsNonWhitespace(maxVal)) {
 			try {
 				int val = Integer.parseInt(maxVal);
 				if(val <= 0 || val > 12) {
-					maxNumberOfDocsEl.setErrorKey("error.number.format", null);
+					numberEl.setErrorKey("error.number.format", null);
 					allOk &= false;
 				}
 			} catch (NumberFormatException e) {
 				//can happen
 				allOk &= false;
-				maxNumberOfDocsEl.setErrorKey("error.number.format", null);
+				numberEl.setErrorKey("error.number.format", null);
 			}
 		}
 		
-		return allOk & super.validateFormLogic(ureq);
+		return allOk;
 	}
 
 	@Override
@@ -149,18 +173,9 @@ public class GTASubmissionEditController extends FormBasicController {
 		config.setBooleanEntry(GTACourseNode.GTASK_EXTERNAL_EDITOR, externalEditor);
 		boolean embeddedEditor = embeddedEditorEl.isAtLeastSelected(1);
 		config.setBooleanEntry(GTACourseNode.GTASK_EMBBEDED_EDITOR, embeddedEditor);
-		
-		String maxVal = maxNumberOfDocsEl.getValue();
-		if(StringHelper.isLong(maxVal)) {
-			try {
-				int val = Integer.parseInt(maxVal);
-				config.setIntValue(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS, val);
-			} catch (NumberFormatException e) {
-				//can happen
-			}
-		} else {
-			config.remove(GTACourseNode.GTASK_MAX_SUBMITTED_DOCS);
-		}
+
+		setNumberOfdocuments(minNumberOfDocsEl, GTACourseNode.GTASK_MIN_SUBMITTED_DOCS);
+		setNumberOfdocuments(maxNumberOfDocsEl, GTACourseNode.GTASK_MAX_SUBMITTED_DOCS);
 		
 		String text = textEl.getValue();
 		config.setStringValue(GTACourseNode.GTASK_SUBMISSION_TEXT, text);
@@ -168,5 +183,19 @@ public class GTASubmissionEditController extends FormBasicController {
 		config.setBooleanEntry(GTACourseNode.GTASK_SUBMISSION_MAIL_CONFIRMATION, emailConfirmation);
 		
 		fireEvent(ureq, Event.DONE_EVENT);
+	}
+	
+	private void setNumberOfdocuments(TextElement numberEl, String configKey) {
+		String maxVal = numberEl.getValue();
+		if(StringHelper.isLong(maxVal)) {
+			try {
+				int val = Integer.parseInt(maxVal);
+				config.setIntValue(configKey, val);
+			} catch (NumberFormatException e) {
+				//can happen
+			}
+		} else {
+			config.remove(configKey);
+		}
 	}
 }

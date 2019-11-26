@@ -193,7 +193,7 @@ public class GTAEditController extends ActivateableTabbableDefaultController {
 			if(event == Event.DONE_EVENT) {
 				fireEvent(ureq, NodeEditController.NODECONFIG_CHANGED_EVENT);
 				if(revisionCtrl != null) {
-					revisionCtrl.updateDefaultMaximumNumberOfDocuments();
+					revisionCtrl.updateDefaultNumbersOfDocuments();
 				}
 			} else if(event == Event.CANCELLED_EVENT) {
 				removeAsListenerAndDispose(submissionCtrl);
