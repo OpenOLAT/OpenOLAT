@@ -251,7 +251,7 @@ public class SurveyCourseNode extends AbstractAccessableCourseNode {
 		RepositoryEntry ores = RepositoryManager.getInstance().lookupRepositoryEntry(course, true);
 		EvaluationFormManager evaluationFormManager = CoreSpringFactory.getImpl(EvaluationFormManager.class);
 		RepositoryEntry formEntry = getEvaluationForm(getModuleConfiguration());
-		EvaluationFormSurveyIdentifier surveyIdent = of(ores, getIdent());
+		EvaluationFormSurveyIdentifier surveyIdent = of(ores, nodeIdent);
 		EvaluationFormSurvey survey = evaluationFormManager.loadSurvey(surveyIdent);
 		if (survey == null) {
 			survey = evaluationFormManager.createSurvey(surveyIdent, formEntry);
