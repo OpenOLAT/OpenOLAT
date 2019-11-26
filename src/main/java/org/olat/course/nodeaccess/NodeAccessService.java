@@ -141,5 +141,5 @@ public interface NodeAccessService {
 	 * @param course
 	 */
 	public void onCoursePublished(ICourse course);
-
+	
 }

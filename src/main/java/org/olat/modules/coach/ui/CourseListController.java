@@ -43,6 +43,7 @@ import org.olat.core.id.context.ContextEntry;
 import org.olat.core.id.context.StateEntry;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.ui.CoursesTableDataModel.Columns;
@@ -92,6 +93,7 @@ public class CourseListController extends FormBasicController implements Activat
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.access, new AccessRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countStudents));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.initialLaunch, new LightIconRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.learningProgress, new LearningProgressCompletionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new ProgressRenderer(false, getTranslator())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.averageScore, new ScoreCellRenderer()));
 		

@@ -129,5 +129,5 @@ public class ConditionNodeAccessProvider implements NodeAccessProvider {
 	public void onCoursePublished(ICourse course) {
 		// nothing to do
 	}
-
+	
 }

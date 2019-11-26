@@ -80,6 +80,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 				}
 				return new LightedValue(launch, light);
 			}
+			case learningProgress: return null;
 			case countPassed: {
 				int numOfStudents = row.getCountStudents();
 				if(numOfStudents == 0) {
@@ -121,6 +122,7 @@ public class CoursesTableDataModel extends DefaultFlexiTableDataModel<CourseStat
 		access("table.header.course.access"),
 		countStudents("table.header.countStudents"),
 		initialLaunch("table.header.login"),
+		learningProgress("table.header.learning.progress"),
 		countPassed("table.header.passed"),
 		countPassedLight("table.header.passed"),
 		averageScore("table.header.averageScore");

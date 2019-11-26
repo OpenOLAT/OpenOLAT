@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurityModule;
@@ -66,7 +67,10 @@ import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
+import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.co.ContactFormController;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
@@ -129,6 +133,8 @@ public class StudentCoursesController extends FormBasicController implements Act
 	private BaseSecurityModule securityModule;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public StudentCoursesController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			StudentStatEntry statEntry, Identity student, int index, int numOfStudents, boolean fullAccess) {
@@ -203,11 +209,12 @@ public class StudentCoursesController extends FormBasicController implements Act
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName, "select"));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.certificate, new DownloadCertificateCellRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.recertification, new DateFlexiCellRenderer(getLocale())));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.progress, new ProgressRenderer(true, getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.numberAssessments, new NumberAssessmentsCellRenderer()));
 		if(lectureModule.isEnabled()) {
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.plannedLectures));
 			columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.attendedLectures));
@@ -260,13 +267,22 @@ public class StudentCoursesController extends FormBasicController implements Act
 				: coachingService.getStudentsCourses(getIdentity(), student);
 		List<EfficiencyStatementEntry> statements = coachingService.getEfficencyStatements(student, courses, userPropertyHandlers, getLocale());
 		
+		
 		List<CertificateLight> certificates = certificatesManager.getLastCertificates(student);
 		ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap = new ConcurrentHashMap<>();
 		for(CertificateLight certificate:certificates) {
 			IdentityResourceKey key = new IdentityResourceKey(student.getKey(), certificate.getOlatResourceKey());
 			certificateMap.put(key, certificate);
 		}
-
+		
+		ConcurrentMap<IdentityRepositoryEntryKey, Double> completionsMap = new ConcurrentHashMap<>();
+		List<Long> courseEntryKeys = courses.stream().map(RepositoryEntry::getKey).collect(Collectors.toList());
+		List<AssessmentEntryCompletion> completions = assessmentService.loadEntryRootCompletions(student, courseEntryKeys);
+		for (AssessmentEntryCompletion completion : completions) {
+			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(student.getKey(), completion.getRepositoryEntryKey());
+			completionsMap.put(key, completion.getCompletion());
+		}
+		
 		ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesMap = new ConcurrentHashMap<>();
 		if(lectureModule.isEnabled()) {
 			List<LectureBlockStatistics> lectureStats = lectureService.getParticipantLecturesStatistics(student);
@@ -276,7 +292,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 			}
 		}
 
-		model.setObjects(statements, certificateMap, lecturesMap);
+		model.setObjects(statements, certificateMap, completionsMap, lecturesMap);
 		tableEl.reset();
 		tableEl.reloadData();
 		return statements;

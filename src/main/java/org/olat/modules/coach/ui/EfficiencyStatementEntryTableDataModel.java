@@ -46,6 +46,7 @@ import org.olat.repository.RepositoryEntry;
  */
 public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDataModel<EfficiencyStatementEntry> implements SortableFlexiTableDataModel<EfficiencyStatementEntry> {
 	
+	private ConcurrentMap<IdentityRepositoryEntryKey, Double> completionsMap;
 	private ConcurrentMap<IdentityResourceKey, CertificateLight> certificateMap;
 	private ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesStatisticsMap;
 	
@@ -84,12 +85,24 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 					RepositoryEntry re = entry.getCourse();
 					return re.getDisplayname();
 				}
+				case completion: return getCompletion(entry);
 				case score: return entry.getScore();
 				case passed: return entry.getPassed();
 				case certificate: return getCertificate(entry);
 				case recertification: {
 					CertificateLight certificate = getCertificate(entry);
 					return certificate == null ? null : certificate.getNextRecertificationDate();
+				}
+				case numberAssessments: {
+					ProgressValue val = null;
+					Integer totalNodes = entry.getTotalNodes();
+					if (totalNodes != null && totalNodes.intValue() > 0) {
+						val = new ProgressValue();
+						val.setTotal(totalNodes.intValue());
+						Integer attemptedNodes = entry.getAttemptedNodes();
+						val.setGreen(attemptedNodes == null ? 0 : attemptedNodes.intValue());
+					}
+					return val;
 				}
 				case progress: {
 					Integer totalNodes = entry.getTotalNodes();
@@ -141,6 +154,14 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 		return null;
 	}
 	
+	private Double getCompletion(EfficiencyStatementEntry entry) {
+		if(completionsMap != null) {
+			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(entry);
+			return completionsMap.get(key);
+		}
+		return null;
+	}
+
 	private LectureBlockStatistics getLectureBlockStatistics(EfficiencyStatementEntry entry) {
 		if(lecturesStatisticsMap != null) {
 			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(entry);
@@ -150,14 +171,16 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 	}
 
 	public void setObjects(List<EfficiencyStatementEntry> objects, ConcurrentMap<IdentityResourceKey, CertificateLight> certificates) {
-		setObjects(objects, certificates, null);
+		setObjects(objects, certificates, null, null);
 	}
 	
 	public void setObjects(List<EfficiencyStatementEntry> objects,
 			ConcurrentMap<IdentityResourceKey, CertificateLight> certificates,
+			ConcurrentMap<IdentityRepositoryEntryKey, Double> completionsMap,
 			ConcurrentMap<IdentityRepositoryEntryKey, LectureBlockStatistics> lecturesStatisticsMap) {
 		setObjects(objects);
 		this.certificateMap = certificates;
+		this.completionsMap = completionsMap;
 		this.lecturesStatisticsMap = lecturesStatisticsMap;
 	}
 
@@ -169,10 +192,12 @@ public class EfficiencyStatementEntryTableDataModel extends DefaultFlexiTableDat
 	public enum Columns implements FlexiSortableColumnDef {
 		name("student.name"), 
 		repoName("table.header.course.name"),
+		completion("table.header.completion"),
 		score("table.header.score"),
 		passed("table.header.passed"),
 		certificate("table.header.certificate"),
 		recertification("table.header.recertification"),
+		numberAssessments("table.header.number.assessments"),
 		progress("table.header.progress"),
 		lastModification("table.header.lastScoreDate"),
 		lastUserModified("table.header.lastUserModificationDate"),

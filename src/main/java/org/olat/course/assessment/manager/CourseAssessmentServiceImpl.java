@@ -65,7 +65,6 @@ import org.olat.modules.assessment.model.AssessmentRunStatus;
 import org.olat.modules.assessment.ui.AssessmentToolContainer;
 import org.olat.modules.assessment.ui.AssessmentToolSecurityCallback;
 import org.olat.repository.RepositoryEntry;
-import org.olat.repository.RepositoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -84,8 +83,6 @@ public class CourseAssessmentServiceImpl implements CourseAssessmentService, Nod
 	
 	@Autowired
 	private NodeAccessService nodeAccsessService;
-	@Autowired
-	private RepositoryService repositoryService;
 	
 	@Autowired
 	private List<AssessmentHandler> loadedAssessmentHandlers;
