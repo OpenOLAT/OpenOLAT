@@ -1511,11 +1511,12 @@ public class AssessmentTest extends Deployments {
 			.openMyCourses()
 			.select(courseTitle);
 		
-		//go to the group task
+		//go to the task which is automatically assigned
 		CoursePageFragment ryomouTestCourse = new CoursePageFragment(ryomouBrowser);
 		ryomouTestCourse
 			.clickTree()
 			.selectWithTitle(gtaNodeTitle);
+		OOGraphene.waitAndCloseBlueMessageWindow(ryomouBrowser);
 		
 		GroupTaskPage ryomouTask = new GroupTaskPage(ryomouBrowser);
 		ryomouTask
