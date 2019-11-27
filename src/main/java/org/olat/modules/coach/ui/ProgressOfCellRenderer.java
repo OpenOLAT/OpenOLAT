@@ -32,14 +32,14 @@ import org.olat.core.gui.translator.Translator;
  * @author uhensler, urs.hensler@frentix.com, http://www.frentix.com
  *
  */
-public class NumberAssessmentsCellRenderer implements FlexiCellRenderer {
+public class ProgressOfCellRenderer implements FlexiCellRenderer {
 
 	@Override
 	public void render(Renderer renderer, StringOutput target, Object cellValue, int row, FlexiTableComponent source,
 			URLBuilder ubu, Translator translator) {
 		if (cellValue instanceof ProgressValue) {
 			ProgressValue progress = (ProgressValue) cellValue;
-			String assessments = translator.translate("number.assessments", new String[] {
+			String assessments = translator.translate("progress.of", new String[] {
 					String.valueOf(progress.getGreen()),
 					String.valueOf(progress.getTotal())} );
 			target.append(assessments);

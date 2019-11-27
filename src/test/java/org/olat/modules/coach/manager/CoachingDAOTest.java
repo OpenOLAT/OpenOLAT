@@ -19,6 +19,8 @@
  */
 package org.olat.modules.coach.manager;
 
+import static org.olat.test.JunitTestHelper.random;
+
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
@@ -44,6 +46,8 @@ import org.olat.group.BusinessGroup;
 import org.olat.group.BusinessGroupRef;
 import org.olat.group.BusinessGroupService;
 import org.olat.group.manager.BusinessGroupRelationDAO;
+import org.olat.modules.assessment.AssessmentEntry;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.coach.CoachingLargeTest;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.GroupStatEntry;
@@ -84,6 +88,8 @@ public class CoachingDAOTest extends OlatTestCase {
 	private UserCourseInformationsManager userCourseInformationsManager;
 	@Autowired
 	private EfficiencyStatementManager effManager;
+	@Autowired
+	private AssessmentService assessmnetService;
 	
 	/**
 	 * 
@@ -760,6 +766,83 @@ public class CoachingDAOTest extends OlatTestCase {
 		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
 		Assert.assertNotNull(nativeUserStats);
 		Assert.assertEquals(0, nativeUserStats.size());
+	}
+	
+	@Test
+	public void getStatistics_completion()
+	throws URISyntaxException {
+		URL courseUrl = CoachingLargeTest.class.getResource("CoachingCourse.zip");
+		RepositoryEntry re1 = JunitTestHelper.deployCourse(null, "Coaching course 1", courseUrl); 
+		RepositoryEntry re2 = JunitTestHelper.deployCourse(null, "Coaching course 2", courseUrl); 
+		RepositoryEntry re3 = JunitTestHelper.deployCourse(null, "Coaching course 3", courseUrl);
+		RepositoryEntry re4 = JunitTestHelper.deployCourse(null, "Coaching course 4", courseUrl);
+		dbInstance.commitAndCloseSession();
+		
+		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
+		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1");
+		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2");
+
+		//members of courses
+		repositoryService.addRole(coach, re1, GroupRoles.coach.name());
+		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
+		repositoryService.addRole(participant2, re1, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//members of group of re 2
+		BusinessGroup group2 = businessGroupService.createBusinessGroup(null, "Coaching-grp-1", "tg", null, null, false, false, re2);
+		businessGroupRelationDao.addRole(coach, group2, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(participant1, group2, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(participant2, group2, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//members of group of re 3
+		BusinessGroup group3 = businessGroupService.createBusinessGroup(null, "Coaching-grp-2", "tg", null, null, false, false, re3);
+		businessGroupRelationDao.addRole(coach, group3, GroupRoles.coach.name());
+		businessGroupRelationDao.addRole(participant1, group3, GroupRoles.participant.name());
+		businessGroupRelationDao.addRole(participant2, group3, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//members of course 4
+		repositoryService.addRole(coach, re4, GroupRoles.coach.name());
+		repositoryService.addRole(participant1, re4, GroupRoles.participant.name());
+		repositoryService.addRole(participant2, re4, GroupRoles.participant.name());
+		dbInstance.commitAndCloseSession();
+		
+		//make assessments participant 1
+		AssessmentEntry aeParticipant1Course1 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.TRUE, null);
+		aeParticipant1Course1.setCompletion(Double.valueOf(1));
+		assessmnetService.updateAssessmentEntry(aeParticipant1Course1);
+		AssessmentEntry aeParticipant1Course1a = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re1, random(), Boolean.FALSE, null);
+		aeParticipant1Course1a.setCompletion(Double.valueOf(1));
+		assessmnetService.updateAssessmentEntry(aeParticipant1Course1a);
+		AssessmentEntry aeParticipant1Course2 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re2, random(), Boolean.TRUE, null);
+		aeParticipant1Course2.setCompletion(Double.valueOf(0.2));
+		assessmnetService.updateAssessmentEntry(aeParticipant1Course2);
+		AssessmentEntry aeParticipant1Course3 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null);
+		aeParticipant1Course3.setCompletion(null);
+		assessmnetService.updateAssessmentEntry(aeParticipant1Course3);
+		AssessmentEntry aeParticipant1Course4 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re4, random(), Boolean.TRUE, null);
+		aeParticipant1Course4.setCompletion(Double.valueOf(0.6));
+		assessmnetService.updateAssessmentEntry(aeParticipant1Course4);
+		dbInstance.commitAndCloseSession();
+		
+		//make assessments participant 1
+		AssessmentEntry aeParticipant2Course3 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null);
+		aeParticipant2Course3.setCompletion(null);
+		assessmnetService.updateAssessmentEntry(aeParticipant2Course3);
+		dbInstance.commitAndCloseSession();
+		
+		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
+		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
+		
+		// Assert average completions
+		StudentStatEntry statsParticipant1 = getStudentStatEntry(participant1, nativeUserStats);
+		Assert.assertNotNull(statsParticipant1);
+		Assert.assertEquals(0.6, statsParticipant1.getAverageCompletion(), 0.0001f);
+		
+		StudentStatEntry statsParticipant2 = getStudentStatEntry(participant2, nativeUserStats);
+		Assert.assertNotNull(statsParticipant2);
+		Assert.assertNull(statsParticipant2.getAverageCompletion());
 	}
 	
 	@Test

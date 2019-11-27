@@ -22,13 +22,13 @@ package org.olat.modules.coach.ui;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.core.commons.persistence.SortKey;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.DefaultFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiSortableColumnDef;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.FlexiTableColumnModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableDataModel;
 import org.olat.core.gui.components.form.flexible.impl.elements.table.SortableFlexiTableModelDelegate;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.StringHelper;
 import org.olat.modules.coach.model.StudentStatEntry;
@@ -110,6 +110,7 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 					}
 					return new LightedValue(launched, light);
 				}
+				case completion: return student.getAverageCompletion();
 				case countPassed: {
 					if(countRepo == 0) {
 						return null;
@@ -155,6 +156,7 @@ public class StudentsTableDataModel extends DefaultFlexiTableDataModel<StudentSt
 		name("student.name"),
 		countCourse("table.header.countCourses"),
 		initialLaunch("table.header.login"),
+		completion("table.header.completion"),
 		countPassed("table.header.passed"),
 		countPassedLight("table.header.passed");
 		

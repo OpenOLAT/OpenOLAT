@@ -41,6 +41,7 @@ public class StudentStatEntry extends UserPropertiesRow {
 	private int countFailed = 0;
 	private int countNotAttempted = 0;
 	private int initialLaunch = 0;
+	private Double AverageCompletion;
 	
 	private Set<String> repoIds = new HashSet<>();
 	private Set<String> launchIds = new HashSet<>();
@@ -103,5 +104,13 @@ public class StudentStatEntry extends UserPropertiesRow {
 
 	public void setInitialLaunch(int initialLaunch) {
 		this.initialLaunch = initialLaunch;
+	}
+
+	public Double getAverageCompletion() {
+		return AverageCompletion;
+	}
+
+	public void setAverageCompletion(Double averageCompletion) {
+		this.AverageCompletion = averageCompletion;
 	}
 }
