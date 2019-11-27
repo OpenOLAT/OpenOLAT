@@ -23,8 +23,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.TypedQuery;
-
 import org.olat.basesecurity.GroupRoles;
 import org.olat.core.commons.persistence.DB;
 import org.olat.ims.qti21.AssessmentItemSession;
@@ -66,11 +64,23 @@ public class AssessmentResponseDAO {
 	
 	public List<AssessmentResponse> getResponses(AssessmentItemSession assessmentItemSession) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("select response from qtiassessmentresponse response where")
-		  .append(" response.assessmentItemSession.key=:assessmentItemSessionKey");
+		sb.append("select response from qtiassessmentresponse response")
+		  .append(" where response.assessmentItemSession.key=:assessmentItemSessionKey");
 		return dbInstance.getCurrentEntityManager()
 				.createQuery(sb.toString(), AssessmentResponse.class)
 				.setParameter("assessmentItemSessionKey", assessmentItemSession.getKey())
+				.getResultList();
+	}
+	
+	public List<AssessmentResponse> getResponses(AssessmentTestSession assessmentTestSession) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select response from qtiassessmentresponse response")
+		  .append(" inner join response.assessmentItemSession itemSession")
+		  .append(" inner join itemSession.assessmentTestSession testSession")
+		  .append(" where testSession.key=:assessmentTestSessionKey");
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentResponse.class)
+				.setParameter("assessmentTestSessionKey", assessmentTestSession.getKey())
 				.getResultList();
 	}
 	
@@ -136,30 +146,6 @@ public class AssessmentResponseDAO {
 				.setFirstResult(0)
 				.setMaxResults(1)
 				.getResultList();
-		return responses.size() > 0 && responses.get(0) != null;
-	}
-	
-	/**
-	 * @param searchParams
-	 * @return The returned list is order by user name, test session key and item session key
-	 */
-	public List<AssessmentResponse> getResponse(QTI21StatisticSearchParams searchParams) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("select response from qtiassessmentresponse response ")
-		  .append(" inner join fetch response.assessmentItemSession itemSession")
-		  .append(" inner join fetch itemSession.assessmentTestSession testSession")
-		  .append(" inner join fetch testSession.assessmentEntry assessmentEntry")
-		  .append(" left join assessmentEntry.identity as ident")
-		  .append(" left join ident.user as usr");
-		
-		AssessmentTestSessionDAO.decorateTestSessionPermission(sb, searchParams);
-
-		//need to be anonymized
-		sb.append(" order by usr.lastName, testSession.key, itemSession.key");
-		
-		TypedQuery<AssessmentResponse> query = dbInstance.getCurrentEntityManager()
-				.createQuery(sb.toString(), AssessmentResponse.class);
-		AssessmentTestSessionDAO.decorateTestSessionPermission(query, searchParams);
-		return query.getResultList();
+		return !responses.isEmpty() && responses.get(0) != null;
 	}
 }

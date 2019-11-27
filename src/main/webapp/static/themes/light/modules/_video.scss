@@ -127,6 +127,20 @@
 	}
 }
 
+.o_video_marker_editor .o_video_question.mejs__overlay {
+	overflow: scroll;
+}
+
+.o_video_question.mejs__overlay.o_video_large_question {
+	align-items: flex-start;
+	padding: 1em 1em 0 1em;
+	z-index: 5;
+	
+	#o_qti_container {
+		border: 1px solid $gray-lighter;
+	}
+}
+
 .o_video_marker {
 	position: absolute;
 	background-color: $o-video-marker-bg-color;
@@ -195,11 +209,6 @@
 			color: $brand-danger;
 		}
 	}
-}
-
-.o_video_question.o_zoomed_question #o_qti_container {
-    zoom: 0.5;
-    -moz-transform: scale(0.5);
 }
 
 .mejs__time-rail {

@@ -52,6 +52,16 @@
             },
             #end
 			
+            ## Set JS callback to retreive user selected video url or fixed url for external services that can not be changed. 
+            ## Triggers error for Vimeo private URLs otherwise
+            #if($r.isNotEmpty($externalUrlOriginal))
+            	#set($mediaSrc = "'$externalUrlOriginal'")
+            #else
+            	#set($mediaSrc = "mediaElement.src")            	
+            #end
+            	
+            	
+            
 			## Callback to communicate with the server
 			success: function (mediaElement, domObject, player) {
 		        jQuery('#$r.getId("o_vid")').data('player', player);
@@ -60,19 +70,19 @@
 				## listen to play events, fired when movie is finished
 		        mediaElement.addEventListener('play', function(e) {
 		        	if (!o_info.linkbusy) {
-		        		$r.openNoResponseJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
+  		        		$r.openNoResponseJavaScriptCommand("play"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
 					}
 		        }, false);
 		        ## listen to pause events, fired when movie is paused by user
 		        mediaElement.addEventListener('pause', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openNoResponseJavaScriptCommand("pause"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
+						$r.openNoResponseJavaScriptCommand("pause"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
 					}
 		        }, false);
 		        ## listen to seeked events, fired when user uses the slider in the movie
 		        mediaElement.addEventListener('seeked', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openNoResponseJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
+						$r.openNoResponseJavaScriptCommand("seeked"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
 					}
 		        }, false);
 		        
@@ -80,7 +90,7 @@
 		        mediaElement.addEventListener('timeupdate', function(e) {
 		        	#if($r.isTrue($listenTimeUpdate))
 		        	if (!o_info.linkbusy) {
-						$r.openNoResponseJavaScriptCommand("timeupdate"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
+						$r.openNoResponseJavaScriptCommand("timeupdate"), 'currentTime', mediaElement.currentTime, 'src', $mediaSrc, 'duration', mediaElement.duration);
 					}
 		        	#end
 		        	if(jQuery('#$r.getId("o_vid")').length == 0) {
@@ -96,7 +106,7 @@
 		        ## listen to end events, fired when movie is finished
 		        mediaElement.addEventListener('ended', function(e) {
 		        	if (!o_info.linkbusy) {
-						$r.openNoResponseJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', mediaElement.src, 'duration', mediaElement.duration);
+						$r.openNoResponseJavaScriptCommand("ended"), 'currentTime', mediaElement.currentTime, 'src', $sourcesSrc, 'duration', mediaElement.duration);
 					}
 		        }, false);
 
