@@ -38,7 +38,7 @@ public class CourseStatEntry {
 	private int countNotAttempted;
 	private Float averageScore;
 	private int initialLaunch;
-	private Float completion;
+	private Double averageCompletion;
 	
 	private double totalScore;
 	private int totalScoredStudents;
@@ -131,11 +131,11 @@ public class CourseStatEntry {
 		this.initialLaunch = initialLaunch;
 	}
 
-	public Float getCompletion() {
-		return completion;
+	public Double getAverageCompletion() {
+		return averageCompletion;
 	}
 
-	public void setCompletion(Float completion) {
-		this.completion = completion;
+	public void setAverageCompletion(Double averageCompletion) {
+		this.averageCompletion = averageCompletion;
 	}
 }

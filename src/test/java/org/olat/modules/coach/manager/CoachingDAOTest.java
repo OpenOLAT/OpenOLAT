@@ -781,11 +781,13 @@ public class CoachingDAOTest extends OlatTestCase {
 		Identity coach = JunitTestHelper.createAndPersistIdentityAsAuthor("Coach-1-" + UUID.randomUUID());
 		Identity participant1 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-1");
 		Identity participant2 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-2");
+		Identity participant3 = JunitTestHelper.createAndPersistIdentityAsRndUser("Coaching-Part-3");
 
 		//members of courses
 		repositoryService.addRole(coach, re1, GroupRoles.coach.name());
 		repositoryService.addRole(participant1, re1, GroupRoles.participant.name());
 		repositoryService.addRole(participant2, re1, GroupRoles.participant.name());
+		repositoryService.addRole(participant3, re1, GroupRoles.participant.name());
 		dbInstance.commitAndCloseSession();
 		
 		//members of group of re 2
@@ -826,16 +828,23 @@ public class CoachingDAOTest extends OlatTestCase {
 		assessmnetService.updateAssessmentEntry(aeParticipant1Course4);
 		dbInstance.commitAndCloseSession();
 		
-		//make assessments participant 1
+		//make assessments participant 2
 		AssessmentEntry aeParticipant2Course3 = assessmnetService.getOrCreateAssessmentEntry(participant1, null, re3, random(), Boolean.TRUE, null);
 		aeParticipant2Course3.setCompletion(null);
 		assessmnetService.updateAssessmentEntry(aeParticipant2Course3);
 		dbInstance.commitAndCloseSession();
 		
+		//make assessments participant 3
+		AssessmentEntry aeParticipant3Course1 = assessmnetService.getOrCreateAssessmentEntry(participant3, null, re1, random(), Boolean.TRUE, null);
+		aeParticipant3Course1.setCompletion(Double.valueOf(0.4));
+		assessmnetService.updateAssessmentEntry(aeParticipant3Course1);
+		dbInstance.commitAndCloseSession();
+		
+		
 		List<UserPropertyHandler> userPropertyHandlers = userManager.getUserPropertyHandlersFor(UserListController.usageIdentifyer, false);
 		List<StudentStatEntry> nativeUserStats = coachingDAO.getStudentsStatisticsNative(coach, userPropertyHandlers, Locale.ENGLISH);
 		
-		// Assert average completions
+		// Assert average completions of members
 		StudentStatEntry statsParticipant1 = getStudentStatEntry(participant1, nativeUserStats);
 		Assert.assertNotNull(statsParticipant1);
 		Assert.assertEquals(0.6, statsParticipant1.getAverageCompletion(), 0.0001f);
@@ -843,6 +852,24 @@ public class CoachingDAOTest extends OlatTestCase {
 		StudentStatEntry statsParticipant2 = getStudentStatEntry(participant2, nativeUserStats);
 		Assert.assertNotNull(statsParticipant2);
 		Assert.assertNull(statsParticipant2.getAverageCompletion());
+		
+		// Assert average completions of courses
+		List<CourseStatEntry> courseCoachCourseStats = coachingDAO.getCoursesStatisticsNative(coach);
+		CourseStatEntry statsCourse1 = getCourseStatEntry(re1, courseCoachCourseStats);
+		Assert.assertNotNull(statsCourse1);
+		Assert.assertEquals(0.7, statsCourse1.getAverageCompletion(), 0.0001f);
+
+		CourseStatEntry statsCourse2 = getCourseStatEntry(re2, courseCoachCourseStats);
+		Assert.assertNotNull(statsCourse2);
+		Assert.assertEquals(0.2, statsCourse2.getAverageCompletion(), 0.0001f);
+		
+		CourseStatEntry statsCourse3 = getCourseStatEntry(re3, courseCoachCourseStats);
+		Assert.assertNotNull(statsCourse3);
+		Assert.assertNull(statsCourse3.getAverageCompletion());
+		
+		CourseStatEntry statsCourse4 = getCourseStatEntry(re4, courseCoachCourseStats);
+		Assert.assertNotNull(statsCourse4);
+		Assert.assertEquals(0.6, statsCourse4.getAverageCompletion(), 0.0001f);
 	}
 	
 	@Test

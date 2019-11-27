@@ -93,8 +93,8 @@ public class CourseListController extends FormBasicController implements Activat
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.access, new AccessRenderer(getLocale())));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countStudents));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.initialLaunch, new LightIconRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.learningProgress, new LearningProgressCompletionCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new ProgressRenderer(false, getTranslator())));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.countPassed, new ProgressOfCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.averageScore, new ScoreCellRenderer()));
 		
 		tableModel = new CoursesTableDataModel(columnsModel);
