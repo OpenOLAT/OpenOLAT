@@ -351,11 +351,10 @@ public class VideoDisplayController extends BasicController {
 	
 	private void loadVideo(UserRequest ureq, String url, VideoFormat format) {
 		mainVC.contextPut("externalUrlOriginal", url);
-		URIBuilder uriBuilder;
-		try {
-			uriBuilder = new URIBuilder(url);
-			// Check if this is a vimeo video
-			if (uriBuilder.getHost().indexOf("vimeo") != -1) {
+		if (VideoFormat.vimeo.equals(format)) {
+			URIBuilder uriBuilder;
+			try {
+				uriBuilder = new URIBuilder(url);
 				// Vimeo allows removing the controls when using the payed service. It ignores the parameter
 				// for the free service, so it is save to use it. We use the URIBuilder method in case the
 				// user already added that parameter or if he uses some other parameters
@@ -367,9 +366,9 @@ public class VideoDisplayController extends BasicController {
 					uriBuilder.setPath(uriBuilder.getPathSegments().get(0));
 				}
 				url = uriBuilder.build().toString();
-			}
-		} catch (URISyntaxException e) {
-			logWarn("Error while parsing URL from external video source URL::" + url, e);
+			} catch (URISyntaxException e) {
+				logWarn("Error while parsing URL from external video source URL::" + url, e);
+			}			
 		}
 	    
 		mainVC.contextPut("externalUrl", url);
