@@ -61,6 +61,7 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
+import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
@@ -198,7 +199,7 @@ public class CourseController extends FormBasicController implements Activateabl
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new ProgressOfCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		CourseConfig courseConfig = CourseFactory.loadCourse(course).getCourseConfig();
 		if(courseConfig.isCertificateEnabled()) {
