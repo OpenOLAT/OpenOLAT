@@ -27,7 +27,7 @@ package org.olat.modules.assessment;
  */
 public interface AssessmentEntryCompletion {
 
-	public Long getRepositoryEntryKey();
+	public Long getKey();
 	
 	public Double getCompletion();
 }

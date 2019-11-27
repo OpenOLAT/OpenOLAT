@@ -246,7 +246,7 @@ public class CertificateAndEfficiencyStatementListController extends FormBasicCo
 		Map<Long, Double> courseEntryKeysToCompletion = assessmentService
 				.loadEntryRootCompletions(assessedIdentity, courseEntryKeys).stream()
 				.collect(Collectors.toMap(
-						AssessmentEntryCompletion::getRepositoryEntryKey,
+						AssessmentEntryCompletion::getKey,
 						AssessmentEntryCompletion::getCompletion));
 		
 		for(UserEfficiencyStatementLight efficiencyStatement:efficiencyStatementsList) {

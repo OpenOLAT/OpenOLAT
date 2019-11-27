@@ -29,17 +29,17 @@ import org.olat.modules.assessment.AssessmentEntryCompletion;
  */
 public class AssessmentEntryCompletionImpl implements AssessmentEntryCompletion {
 	
-	private final Long repositoryEntryKey;
+	private final Long key;
 	private final Double completion;
 	
-	public AssessmentEntryCompletionImpl(Long repositoryEntryKey, Double completion) {
-		this.repositoryEntryKey = repositoryEntryKey;
+	public AssessmentEntryCompletionImpl(Long key, Double completion) {
+		this.key = key;
 		this.completion = completion;
 	}
 	
 	@Override
-	public Long getRepositoryEntryKey() {
-		return repositoryEntryKey;
+	public Long getKey() {
+		return key;
 	}
 	
 	@Override

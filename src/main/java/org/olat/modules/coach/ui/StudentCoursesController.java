@@ -279,7 +279,7 @@ public class StudentCoursesController extends FormBasicController implements Act
 		List<Long> courseEntryKeys = courses.stream().map(RepositoryEntry::getKey).collect(Collectors.toList());
 		List<AssessmentEntryCompletion> completions = assessmentService.loadEntryRootCompletions(student, courseEntryKeys);
 		for (AssessmentEntryCompletion completion : completions) {
-			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(student.getKey(), completion.getRepositoryEntryKey());
+			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(student.getKey(), completion.getKey());
 			completionsMap.put(key, completion.getCompletion());
 		}
 		

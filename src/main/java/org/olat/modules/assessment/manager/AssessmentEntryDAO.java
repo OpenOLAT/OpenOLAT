@@ -337,6 +337,25 @@ public class AssessmentEntryDAO {
 				.setParameter("entryKeys", entryKeys)
 				.getResultList();
 	}
+
+	public List<AssessmentEntryCompletion> loadEntryRootCompletions(RepositoryEntry entry, List<Long> identityKeys) {
+		if (entry == null || identityKeys == null || identityKeys.isEmpty()) return Collections.emptyList();
+		
+		QueryBuilder sb = new QueryBuilder();
+		sb.append("select new org.olat.modules.assessment.model.AssessmentEntryCompletionImpl(");
+		sb.append("       ae.identity.key");
+		sb.append("     , ae.completion)");
+		sb.append("  from assessmententry ae");
+		sb.and().append(" ae.entryRoot = true");
+		sb.and().append(" ae.repositoryEntry.key = :entryKey");
+		sb.and().append(" ae.identity.key in (:identityKeys)");
+		
+		return dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), AssessmentEntryCompletion.class)
+				.setParameter("entryKey", entry.getKey())
+				.setParameter("identityKeys", identityKeys)
+				.getResultList();
+	}
 	
 	/**
 	 * Delete all the entry where the specified repository entry is

@@ -22,6 +22,7 @@ package org.olat.modules.coach.ui;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import org.olat.NewControllerFactory;
 import org.olat.basesecurity.BaseSecurity;
@@ -60,16 +61,19 @@ import org.olat.core.util.coordinate.CoordinatorManager;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.course.CourseFactory;
-import org.olat.course.assessment.bulk.PassedCellRenderer;
 import org.olat.course.certificate.CertificateEvent;
 import org.olat.course.certificate.CertificateLight;
 import org.olat.course.certificate.CertificatesManager;
 import org.olat.course.certificate.ui.DownloadCertificateCellRenderer;
 import org.olat.course.config.CourseConfig;
+import org.olat.modules.assessment.AssessmentEntryCompletion;
+import org.olat.modules.assessment.AssessmentService;
 import org.olat.modules.assessment.ui.ScoreCellRenderer;
+import org.olat.modules.assessment.ui.component.LearningProgressCompletionCellRenderer;
 import org.olat.modules.coach.CoachingService;
 import org.olat.modules.coach.model.CourseStatEntry;
 import org.olat.modules.coach.model.EfficiencyStatementEntry;
+import org.olat.modules.coach.model.IdentityRepositoryEntryKey;
 import org.olat.modules.coach.model.IdentityResourceKey;
 import org.olat.modules.coach.ui.EfficiencyStatementEntryTableDataModel.Columns;
 import org.olat.modules.coach.ui.UserDetailsController.Segment;
@@ -121,6 +125,8 @@ public class CourseController extends FormBasicController implements Activateabl
 	private CoachingService coachingService;
 	@Autowired
 	private CertificatesManager certificatesManager;
+	@Autowired
+	private AssessmentService assessmentService;
 	
 	public CourseController(UserRequest ureq, WindowControl wControl, TooledStackedPanel stackPanel,
 			RepositoryEntry course, CourseStatEntry courseStat, int index, int numOfCourses) {
@@ -191,7 +197,8 @@ public class CourseController extends FormBasicController implements Activateabl
 		}
 		
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.repoName));
-		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new PassedCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.completion, new LearningProgressCompletionCellRenderer()));
+		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.passed, new ProgressOfCellRenderer()));
 		columnsModel.addFlexiColumnModel(new DefaultFlexiColumnModel(Columns.score, new ScoreCellRenderer()));
 		CourseConfig courseConfig = CourseFactory.loadCourse(course).getCourseConfig();
 		if(courseConfig.isCertificateEnabled()) {
@@ -248,7 +255,15 @@ public class CourseController extends FormBasicController implements Activateabl
 			certificateMap.put(key, certificate);
 		}
 		
-		model.setObjects(entries, certificateMap);
+		ConcurrentMap<IdentityRepositoryEntryKey, Double> completionsMap = new ConcurrentHashMap<>();
+		List<Long> identityKeys = entries.stream().map(EfficiencyStatementEntry::getIdentityKey).collect(Collectors.toList());
+		List<AssessmentEntryCompletion> completions = assessmentService.loadEntryRootCompletions(course, identityKeys);
+		for (AssessmentEntryCompletion completion : completions) {
+			IdentityRepositoryEntryKey key = new IdentityRepositoryEntryKey(completion.getKey(), course.getKey());
+			completionsMap.put(key, completion.getCompletion());
+		}
+		
+		model.setObjects(entries, certificateMap, completionsMap, null);
 		tableEl.reloadData();
 		tableEl.reset();
 		return entries;

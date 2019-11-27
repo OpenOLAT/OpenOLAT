@@ -501,7 +501,7 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 	}
 	
 	@Test
-	public void getEntryRootCompleions() {
+	public void getEntryRootCompleionsByIdentity() {
 		Identity assessedIdentity = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18a");
 		Identity assessedIdentityOther = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-18b");
 		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
@@ -517,11 +517,20 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		nodeAssessment2Root.setCompletion(0.0);
 		assessmentEntryDao.updateAssessmentEntry(nodeAssessment2Root);
 		// not entry root
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry2, random(), Boolean.FALSE, null);
+		AssessmentEntry nodeAssessment1Child = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entry2,
+				random(), Boolean.FALSE, null);
+		nodeAssessment1Child.setCompletion(1.1);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1Child);
 		// other identity
-		assessmentEntryDao.createAssessmentEntry(assessedIdentityOther, null, entry2, random(), Boolean.TRUE, null);
+		AssessmentEntry nodeAssessment1OtherIdent = assessmentEntryDao.createAssessmentEntry(assessedIdentityOther, null,
+				entry2, random(), Boolean.TRUE, null);
+		nodeAssessment1OtherIdent.setCompletion(1.2);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1OtherIdent);
 		// other repository entry
-		assessmentEntryDao.createAssessmentEntry(assessedIdentity, null, entryOther, random(), Boolean.TRUE, null);
+		AssessmentEntry nodeAssessment1OtherRepo = assessmentEntryDao.createAssessmentEntry(assessedIdentity, null,
+				entryOther, random(), Boolean.TRUE, null);
+		nodeAssessment1OtherRepo.setCompletion(1.3);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1OtherRepo);
 		dbInstance.commitAndCloseSession();
 		
 		List<Long> entryKeys = Arrays.asList(entry1.getKey(), entry2.getKey());
@@ -529,9 +538,52 @@ public class AssessmentEntryDAOTest extends OlatTestCase {
 		
 		Assert.assertEquals(2, completions.size());
 		Map<Long, Double> keysToCompletion = completions.stream()
-				.collect(Collectors.toMap(AssessmentEntryCompletion::getRepositoryEntryKey, AssessmentEntryCompletion::getCompletion));
+				.collect(Collectors.toMap(AssessmentEntryCompletion::getKey, AssessmentEntryCompletion::getCompletion));
 		Assert.assertEquals(1, keysToCompletion.get(entry1.getKey()).intValue());
 		Assert.assertEquals(0, keysToCompletion.get(entry2.getKey()).intValue());
+	}
+	
+	@Test
+	public void getEntryRootCompleionsByRepositoryEntry() {
+		Identity assessedIdentity1 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-19a");
+		Identity assessedIdentity2 = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-19b");
+		Identity assessedIdentityOther = JunitTestHelper.createAndPersistIdentityAsRndUser("as-node-19o");
+		RepositoryEntry entry1 = JunitTestHelper.createAndPersistRepositoryEntry();
+		RepositoryEntry entryOther = JunitTestHelper.createAndPersistRepositoryEntry();
+		
+		AssessmentEntry nodeAssessment1Root = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry1,
+				random(), Boolean.TRUE, null);
+		nodeAssessment1Root.setCompletion(1.0);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1Root);
+		AssessmentEntry nodeAssessment2Root = assessmentEntryDao.createAssessmentEntry(assessedIdentity2, null, entry1,
+				random(), Boolean.TRUE, null);
+		nodeAssessment2Root.setCompletion(0.0);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment2Root);
+		// not entry root
+		AssessmentEntry nodeAssessment1Child = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null, entry1,
+				random(), Boolean.FALSE, null);
+		nodeAssessment1Child.setCompletion(1.1);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1Child);
+		// other identity
+		AssessmentEntry nodeAssessment1OtherIdent = assessmentEntryDao.createAssessmentEntry(assessedIdentityOther, null,
+				entry1, random(), Boolean.TRUE, null);
+		nodeAssessment1OtherIdent.setCompletion(1.2);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1OtherIdent);
+		// other repository entry
+		AssessmentEntry nodeAssessment1OtherRepo = assessmentEntryDao.createAssessmentEntry(assessedIdentity1, null,
+				entryOther, random(), Boolean.TRUE, null);
+		nodeAssessment1OtherRepo.setCompletion(1.3);
+		assessmentEntryDao.updateAssessmentEntry(nodeAssessment1OtherRepo);
+		dbInstance.commitAndCloseSession();
+		
+		List<Long> identityKeys = Arrays.asList(assessedIdentity1.getKey(), assessedIdentity2.getKey());
+		List<AssessmentEntryCompletion> completions = assessmentEntryDao.loadEntryRootCompletions(entry1, identityKeys);
+		
+		Assert.assertEquals(2, completions.size());
+		Map<Long, Double> keysToCompletion = completions.stream()
+				.collect(Collectors.toMap(AssessmentEntryCompletion::getKey, AssessmentEntryCompletion::getCompletion));
+		Assert.assertEquals(1, keysToCompletion.get(assessedIdentity1.getKey()).intValue());
+		Assert.assertEquals(0, keysToCompletion.get(assessedIdentity2.getKey()).intValue());
 	}
 	
 	@Test

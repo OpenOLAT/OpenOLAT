@@ -109,6 +109,10 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	public List<AssessmentEntryCompletion> loadEntryRootCompletions(Identity assessedIdentity, Collection<Long> entryKeys) {
 		return assessmentEntryDao.loadEntryRootCompletions(assessedIdentity, entryKeys);
 	}
+	@Override
+	public List<AssessmentEntryCompletion> loadEntryRootCompletions(RepositoryEntry entry, List<Long> identityKeys) {
+		return assessmentEntryDao.loadEntryRootCompletions(entry, identityKeys);
+	}
 
 	@Override
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit) {
@@ -142,4 +146,5 @@ public class AssessmentServiceImpl implements AssessmentService, UserDataDeletab
 	public void deleteUserData(Identity identity, String newDeletedUserName) {
 		assessmentEntryDao.deleteEntryForIdentity(identity);
 	}
+
 }

@@ -82,6 +82,8 @@ public interface AssessmentService {
 
 	public List<AssessmentEntryCompletion> loadEntryRootCompletions(Identity assessedIdentity, Collection<Long> entryKeys);
 	
+	public List<AssessmentEntryCompletion> loadEntryRootCompletions(RepositoryEntry entry, List<Long> identityKeys);
+
 	public void setLastVisit(AssessmentEntry nodeAssessment, Date lastVisit);
 
 	/**
