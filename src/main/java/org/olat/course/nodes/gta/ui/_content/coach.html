@@ -20,23 +20,23 @@
 		#elseif($assignmentDueDateMsg)
 			<div class="o_meta">$r.escapeHtml($assignmentDueDateMsg)</div>
 		#end
-		<div id="o_step_assignement_content" class="o_content collapse #if($collapse_assignement) in #end" aria-expanded="$collapse_assignement">
+		<div id="o_step_assignement_content" class="o_content collapse #if($collapse_assignement) in #end" aria-expanded="$collapse_assignement" role="region">
 		#if($r.available("assignedTask"))
 			$r.render("assignedTask")
 		#else
-			<b>$r.translate("coach.waiting.assignment")</b>
-			<br />
+			<strong>$r.translate("coach.waiting.assignment")</strong>
+			<br>
 			$r.translate("coach.waiting.assignment.description")
 		#end
 		</div>
 	</div>
-	<script>/* <![CDATA[ */
-		jQuery('#o_step_assignement_content').on('hide.bs.collapse', function () {
-	  		$r.backgroundCommand("hide","step","assignment")
-		}).on('show.bs.collapse', function () {
-			$r.backgroundCommand("show","step","assignment")
-		})
-	/* ]]> */</script>
+	<script>
+	jQuery('#o_step_assignement_content').on('hide.bs.collapse', function () {
+  		$r.backgroundCommand("hide","step","assignment")
+	}).on('show.bs.collapse', function () {
+		$r.backgroundCommand("show","step","assignment")
+	})
+	</script>
 #end
 
 #if($submitEnabled)
@@ -48,12 +48,12 @@
 		#elseif($submitDueDateMsg)
 			<div class="o_meta">$r.escapeHtml($submitDueDateMsg)</div>
 		#end
-		<div id="o_step_submit_content" class="o_content collapse #if($collapse_submit) in #end" aria-expanded="$collapse_submit">
+		<div id="o_step_submit_content" class="o_content collapse #if($collapse_submit) in #end" aria-expanded="$collapse_submit" role="region">
 		#if($r.available("submittedDocs"))
 			$r.render("submittedDocs")
 		#else
-			<b>$r.translate("coach.waiting.submitted.documents")</b>
-			<br />
+			<strong>$r.translate("coach.waiting.submitted.documents")</strong>
+			<br>
 			#if($hasUploadedDocs)
 				$r.translate("coach.waiting.submitted.documents.ready.description")
 			#else 
@@ -76,20 +76,20 @@
 		#end
 		</div>
 	</div>
-	<script>/* <![CDATA[ */
-		jQuery('#o_step_submit_content').on('hide.bs.collapse', function () {
-	  		$r.backgroundCommand("hide","step","submit")
-		}).on('show.bs.collapse', function () {
-			$r.backgroundCommand("show","step","submit")
-		})
-	/* ]]> */</script>
+	<script>
+	jQuery('#o_step_submit_content').on('hide.bs.collapse', function () {
+  		$r.backgroundCommand("hide","step","submit")
+	}).on('show.bs.collapse', function () {
+		$r.backgroundCommand("show","step","submit")
+	})
+	</script>
 #end
 
 #if($reviewAndCorrectionEnabled)
 	<div class="o_step $reviewCssClass">
 		<div class="o_bar"></div>
 		<h4 class="o_title"> <a href="#o_step_review_content" data-toggle="collapse" aria-expanded="$collapse_reviewAndCorrection" #if(!$collapse_reviewAndCorrection) class="collapsed" #end>$r.translate("run.review")</a></h4>
-		<div id="o_step_review_content" class="o_content collapse #if($collapse_reviewAndCorrection) in #end" aria-expanded="$collapse_reviewAndCorrection">
+		<div id="o_step_review_content" class="o_content collapse #if($collapse_reviewAndCorrection) in #end" aria-expanded="$collapse_reviewAndCorrection" role="region">
 		#if($r.available("corrections"))
 			<h5>$r.translate("coach.feedback.documents.title")</h5>
 			<p>$r.translate("coach.feedback.documents.desc")</p>
@@ -111,13 +111,13 @@
 		#end
 		</div>
 	</div>
-	<script>/* <![CDATA[ */
-		jQuery('#o_step_review_content').on('hide.bs.collapse', function () {
-	  		$r.backgroundCommand("hide","step","reviewAndCorrection")
-		}).on('show.bs.collapse', function () {
-			$r.backgroundCommand("show","step","reviewAndCorrection")
-		})
-	/* ]]> */</script>
+	<script>
+	jQuery('#o_step_review_content').on('hide.bs.collapse', function () {
+  		$r.backgroundCommand("hide","step","reviewAndCorrection")
+	}).on('show.bs.collapse', function () {
+		$r.backgroundCommand("show","step","reviewAndCorrection")
+	})
+	</script>
 #end
 
 #if($revisionEnabled  && !$skipRevisions)
@@ -127,19 +127,19 @@
 		#if($revisionDueDate)
 			<div class="o_meta">$r.translate("run.revision.due.date", $revisionDueDate)</div>
 		#end
-		<div id="o_step_revision_content" class="o_content collapse #if($collapse_revision) in #end" aria-expanded="$collapse_revision">
+		<div id="o_step_revision_content" class="o_content collapse #if($collapse_revision) in #end" aria-expanded="$collapse_revision" role="region">
 		#if($r.available("revisionDocs"))
 			$r.render("revisionDocs")
 		#end
 		</div>
 	</div>
-	<script>/* <![CDATA[ */
-		jQuery('#o_step_revision_content').on('hide.bs.collapse', function () {
-	  		$r.backgroundCommand("hide","step","revision")
-		}).on('show.bs.collapse', function () {
-			$r.backgroundCommand("show","step","revision")
-		})
-	/* ]]> */</script>
+	<script>
+	jQuery('#o_step_revision_content').on('hide.bs.collapse', function () {
+  		$r.backgroundCommand("hide","step","revision")
+	}).on('show.bs.collapse', function () {
+		$r.backgroundCommand("show","step","revision")
+	})
+	</script>
 #end
 
 #if($solutionEnabled)
@@ -151,38 +151,38 @@
 		#elseif($solutionAvailableDateMsg)
 			<div class="o_meta">$r.escapeHtml($solutionAvailableDateMsg)</div>
 		#end
-		<div id="o_step_solution_content" class="o_content collapse #if($collapse_solution) in #end" aria-expanded="$collapse_solution">
+		<div id="o_step_solution_content" class="o_content collapse #if($collapse_solution) in #end" aria-expanded="$collapse_solution" role="region">
 		#if($r.available("solutions"))
 			$r.render("solutions")
 		#end
 		</div>
 	</div>
-	<script>/* <![CDATA[ */
-		jQuery('#o_step_solution_content').on('hide.bs.collapse', function () {
-	  		$r.backgroundCommand("hide","step","solution")
-		}).on('show.bs.collapse', function () {
-			$r.backgroundCommand("show","step","solution")
-		})
-	/* ]]> */</script>
+	<script>
+	jQuery('#o_step_solution_content').on('hide.bs.collapse', function () {
+  		$r.backgroundCommand("hide","step","solution")
+	}).on('show.bs.collapse', function () {
+		$r.backgroundCommand("show","step","solution")
+	})
+	</script>
 #end
 	
 #if($gradingEnabled)
 	<div class="o_step $gradingCssClass">
 		<div class="o_bar"></div>
 		<h4 class="o_title"> <a href="#o_step_grading_content" data-toggle="collapse" aria-expanded="$collapse_grading" #if(!$collapse_grading) class="collapsed" #end>$r.translate("run.grading")</a></h4>
-		<div id="o_step_grading_content" class="o_content collapse #if($collapse_grading) in #end" aria-expanded="$collapse_grading">
+		<div id="o_step_grading_content" class="o_content collapse #if($collapse_grading) in #end" aria-expanded="$collapse_grading" role="region">
 		#if($r.available("grading"))
 			$r.render("grading")
 		#end
 		</div>
 	</div>
-	<script>/* <![CDATA[ */
-		jQuery('#o_step_grading_content').on('hide.bs.collapse', function () {
-	  		$r.backgroundCommand("hide","step","grading")
-		}).on('show.bs.collapse', function () {
-			$r.backgroundCommand("show","step","grading")
-		})
-	/* ]]> */</script>
+	<script>
+	jQuery('#o_step_grading_content').on('hide.bs.collapse', function () {
+  		$r.backgroundCommand("hide","step","grading")
+	}).on('show.bs.collapse', function () {
+		$r.backgroundCommand("show","step","grading")
+	})
+	</script>
 #end
 </div>
 #if($r.visible("coach.reset.button"))
