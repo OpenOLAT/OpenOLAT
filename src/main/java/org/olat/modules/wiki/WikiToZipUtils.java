@@ -25,6 +25,7 @@
 package org.olat.modules.wiki;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -65,7 +66,6 @@ public class WikiToZipUtils {
 		sb.append("</head><body><ul>");
 		for (Iterator<VFSItem> iter = vfsLeaves.iterator(); iter.hasNext();) {
 			VFSLeaf element = (VFSLeaf) iter.next();
-			// destination.copyFrom(element);
 			if (element.getName().endsWith(WikiManager.WIKI_PROPERTIES_SUFFIX)) {
 				hasProperties = true;
 				Properties p = new Properties();
@@ -77,7 +77,7 @@ public class WikiToZipUtils {
 				sb.append("<li>");
 				sb.append(p.getProperty(WikiManager.PAGENAME));
 				sb.append(" ----> ");
-				sb.append(element.getName().substring(0, element.getName().indexOf(".")));
+				sb.append(element.getName().substring(0, element.getName().indexOf('.')));
 				sb.append("</li>");
 			}
 		}
@@ -126,7 +126,7 @@ public class WikiToZipUtils {
 				String overviewPage = WikiToZipUtils.createIndexPageForExport(items);
 				if(overviewPage != null){
 					exportStream.putNextEntry(new ZipEntry(currentPath + "/index.html"));
-					IOUtils.write(overviewPage, exportStream, "UTF-8");
+					IOUtils.write(overviewPage, exportStream, StandardCharsets.UTF_8);
 					exportStream.closeEntry();
 				}
 				for(VFSItem wikiItem:items) {

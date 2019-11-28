@@ -426,11 +426,11 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 	}
 
 	@Override
-	public void copyBinaries(VFSMetadata metadata, byte[] binaries) {
-		if(binaries == null || binaries.length == 0) return;
+	public void copyBinaries(VFSMetadata metadata, InputStream in) {
+		if(in == null) return;
 		
 		MetaInfoReader reader = new MetaInfoReader((VFSMetadataImpl)metadata, licenseService, securityManager);
-		reader.fromBinaries(binaries);
+		reader.fromBinaries(in);
 	}
 
 	@Override
@@ -782,7 +782,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 			}
 			allOk = VFSManager.copyContent(newFile, currentFile);
 		} else {
-			log.error("Cannot create a version of this file: " + currentFile);
+			log.error("Cannot create a version of this file: {}", currentFile);
 		}
 		dbInstance.commit();
 		return allOk;
@@ -1149,7 +1149,7 @@ public class VFSRepositoryServiceImpl implements VFSRepositoryService, GenericEv
 						dbInstance.commit();
 					}
 					if(migrationCounter.get() % 100 == 0) {
-						log.info("Metadata: num. of files migrated: " + migrationCounter);
+						log.info("Metadata: num. of files migrated: {}", migrationCounter);
 					}
 				}
 				return FileVisitResult.CONTINUE;

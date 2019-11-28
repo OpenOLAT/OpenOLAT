@@ -131,7 +131,7 @@ public interface VFSRepositoryService {
 	 * @param metadata The metadata
 	 * @param binaries The binaries
 	 */
-	public void copyBinaries(VFSMetadata metadata, byte[] binaries);
+	public void copyBinaries(VFSMetadata metadata, InputStream in);
 	
 	
 	public boolean isThumbnailAvailable(VFSItem item);
