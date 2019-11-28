@@ -471,7 +471,7 @@ public class CollaborationTools implements Serializable {
 		calendars.add(calRenderWrapper);
 		
 		return new WeeklyCalendarController(ureq, wControl, calendars,
-				WeeklyCalendarController.CALLER_COLLAB, businessGroup, false);
+				CalendarController.CALLER_COLLAB, businessGroup, false);
 	}
 
 	/**
@@ -1044,7 +1044,7 @@ public class CollaborationTools implements Serializable {
 		try {
 			FileUtils.bcopy(wikiZip.getInputStream(), new File(fullFilePath), "archive wiki");
 		} catch (IOException ioe) {
-			log.warn("Can not archive wiki repoEntry=" + ores.getResourceableId());
+			log.warn("Can not archive wiki repoEntry={}", ores.getResourceableId());
 		}		
 	}
 

@@ -84,6 +84,8 @@ public interface CurriculumService {
 	 */
 	public List<Curriculum> getMyCurriculums(Identity identity);
 	
+	public boolean hasCurriculums(IdentityRef identity);
+	
 	/**
 	 * The list of curriculums the identity participates.
 	 * 

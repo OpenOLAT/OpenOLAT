@@ -137,6 +137,24 @@ public class CurriculumDAO {
 				.getResultList();
 	}
 	
+	public boolean hasMyCurriculums(IdentityRef identity) {
+		QueryBuilder sb = new QueryBuilder(256);
+		sb.append("select curElement.key from curriculumelement curElement")
+		  .append(" inner join curElement.curriculum as cur")
+		  .append(" inner join curElement.group as bGroup")
+		  .append(" inner join bGroup.members membership")
+		  .append(" where membership.identity.key=:memberKey and membership.role ").in(CurriculumRoles.participant, CurriculumRoles.coach, CurriculumRoles.owner)
+		  .append(" and (cur.status is null or cur.status ").in(CurriculumStatus.active.name()).append(")");
+
+		List<Long> curriculumKeys = dbInstance.getCurrentEntityManager()
+				.createQuery(sb.toString(), Long.class)
+				.setParameter("memberKey", identity.getKey())
+				.setFirstResult(0)
+				.setMaxResults(1)
+				.getResultList();
+		return curriculumKeys != null && !curriculumKeys.isEmpty() && curriculumKeys.get(0) != null;
+	}
+	
 	public List<Long> getMyActiveCurriculumKeys(IdentityRef identity) {
 		QueryBuilder sb = new QueryBuilder(256);
 		sb.append("select curElement.curriculum.key from curriculumelement curElement")

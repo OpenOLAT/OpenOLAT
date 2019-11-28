@@ -21,11 +21,13 @@ package org.olat.core.commons.services.vfs.manager;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +38,6 @@ import org.olat.core.commons.services.license.LicenseType;
 import org.olat.core.commons.services.license.manager.LicenseCleaner;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.VFSRepositoryService;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.vfs.VFSConstants;
 import org.olat.core.util.vfs.VFSContainer;
@@ -155,8 +156,13 @@ public class VFSRepositoryServiceTest extends OlatTestCase {
 		copyTestTxt(secondLeaf);
 
 		VFSMetadata secondMetaInfo = leaf.getMetaInfo();
-		vfsRepositoryService.copyBinaries(secondMetaInfo, binaryData);
-		String comment = secondMetaInfo.getComment();
+		String comment = null;
+		try(InputStream in = new ByteArrayInputStream(binaryData)) {
+			vfsRepositoryService.copyBinaries(secondMetaInfo, in);
+			comment = secondMetaInfo.getComment();
+		} catch(Exception e) {
+			log.error("", e);
+		}
 		Assert.assertEquals("A little comment", comment);
 	}
 	

@@ -20,7 +20,6 @@
 package org.olat.core.commons.services.vfs.manager;
 
 import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,7 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,11 +36,11 @@ import javax.xml.XMLConstants;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
+import org.apache.logging.log4j.Logger;
 import org.olat.basesecurity.BaseSecurity;
 import org.olat.core.commons.services.license.LicenseService;
 import org.olat.core.commons.services.vfs.VFSMetadata;
 import org.olat.core.commons.services.vfs.model.VFSMetadataImpl;
-import org.apache.logging.log4j.Logger;
 import org.olat.core.logging.Tracing;
 import org.olat.core.util.FileUtils;
 import org.olat.core.util.StringHelper;
@@ -93,10 +92,10 @@ public class MetaInfoReader {
 		return thumbnails;
 	}
 	
-	public void fromBinaries(byte[] binaries) {
-		try(InputStream in = new ByteArrayInputStream(binaries)) {
+	public void fromBinaries(InputStream in) {
+		try(InputStream bin = new BufferedInputStream(in)) {
 			synchronized(saxParser) {
-				saxParser.parse(in, new MetaHandler(null));
+				saxParser.parse(bin, new MetaHandler(null));
 			}
 		} catch(Exception ex) {
 			log.error("Error while parsing binaries", ex);
@@ -154,7 +153,7 @@ public class MetaInfoReader {
 		if (metadata == null) return new byte[0];
 		
 		try(ByteArrayOutputStream out = new ByteArrayOutputStream();
-				OutputStreamWriter sw = new OutputStreamWriter(out, Charset.forName("UTF-8"))) {
+				OutputStreamWriter sw = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
 			
 			sw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			sw.write("<meta");
