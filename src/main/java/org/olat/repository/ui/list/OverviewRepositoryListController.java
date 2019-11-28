@@ -46,6 +46,7 @@ import org.olat.core.util.event.EventBus;
 import org.olat.core.util.event.GenericEventListener;
 import org.olat.core.util.resource.OresHelper;
 import org.olat.modules.curriculum.CurriculumModule;
+import org.olat.modules.curriculum.CurriculumService;
 import org.olat.modules.curriculum.ui.CurriculumListController;
 import org.olat.repository.CatalogEntry;
 import org.olat.repository.RepositoryManager;
@@ -90,7 +91,9 @@ public class OverviewRepositoryListController extends BasicController implements
 	private BreadcrumbedStackedPanel searchCoursesStackPanel;
 	
 	private final boolean isGuestOnly;
-	private boolean favoritDirty, myDirty;
+	private boolean myDirty;
+	private boolean favoritDirty;
+	private final boolean withCurriculums;
 	
 	private final EventBus eventBus;
 	
@@ -100,6 +103,8 @@ public class OverviewRepositoryListController extends BasicController implements
 	private RepositoryModule repositoryModule;
 	@Autowired
 	private CurriculumModule curriculumModule;
+	@Autowired
+	private CurriculumService curriculumService;
 	
 	public OverviewRepositoryListController(UserRequest ureq, WindowControl wControl) {
 		super(ureq, wControl);
@@ -123,7 +128,8 @@ public class OverviewRepositoryListController extends BasicController implements
 		myCourseLink.setElementCssClass("o_sel_mycourses_my");
 		segmentView.addSegment(myCourseLink, false);
 		
-		if(curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()) {
+		withCurriculums = withCurriculumTab();
+		if(withCurriculums) {
 			curriculumLink = LinkFactory.createLink("search.curriculums", mainVC, this);
 			curriculumLink.setElementCssClass("o_sel_mycurriculums");
 			segmentView.addSegment(curriculumLink, false);
@@ -148,6 +154,11 @@ public class OverviewRepositoryListController extends BasicController implements
 		eventBus.registerFor(this, getIdentity(), RepositoryService.REPOSITORY_EVENT_ORES);
 		
 		putInitialPanel(mainPanel);
+	}
+	
+	private boolean withCurriculumTab() {
+		return curriculumModule.isEnabled() && curriculumModule.isCurriculumInMyCourses()
+				&& curriculumService.hasCurriculums(getIdentity());
 	}
 	
 	@Override
@@ -347,7 +358,7 @@ public class OverviewRepositoryListController extends BasicController implements
 	}
 	
 	private CurriculumListController doOpenCurriculum(UserRequest ureq) {
-		if(!curriculumModule.isEnabled() || !curriculumModule.isCurriculumInMyCourses()) {
+		if(!withCurriculums) {
 			return null;
 		}
 		cleanUp();

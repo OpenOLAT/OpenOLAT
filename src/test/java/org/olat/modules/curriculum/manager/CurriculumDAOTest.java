@@ -314,6 +314,25 @@ public class CurriculumDAOTest extends OlatTestCase {
 	}
 	
 	@Test
+	public void hasMyCurriculums() {
+		// add a curriculum with a coach in an element
+		Identity idWithCurriculum = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-for-fun-1");
+		Identity idWithout = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-for-fun-2");
+		Curriculum curriculum = curriculumService.createCurriculum("CUR-FUN-1", "My funny curriculum 1", "Short desc.", null);
+		CurriculumElement element = curriculumService.createCurriculumElement("Element-1", "1. Element",  CurriculumElementStatus.active,
+				new Date(), new Date(), null, null, CurriculumCalendars.disabled, CurriculumLectures.disabled, curriculum);
+		dbInstance.commitAndCloseSession();
+		curriculumService.addMember(element, idWithCurriculum, CurriculumRoles.participant);
+		dbInstance.commitAndCloseSession();
+		
+		// has curriculums?
+		boolean hasCurriculums = curriculumDao.hasMyCurriculums(idWithCurriculum);
+		Assert.assertTrue(hasCurriculums);
+		boolean hasNotCurriculums = curriculumDao.hasMyCurriculums(idWithout);
+		Assert.assertFalse(hasNotCurriculums);
+	}
+	
+	@Test
 	public void hasCurriculumRole() {
 		// add a curriculum manager
 		Identity manager = JunitTestHelper.createAndPersistIdentityAsRndUser("cur-manager-1");
