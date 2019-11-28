@@ -130,7 +130,7 @@ public class OlatFooterController extends BasicController implements LockableCon
 		olatFootervc.contextPut("footerInfos", new FooterInformations(layoutModule));
 
 		// about link
-		aboutLink = AboutController.aboutLinkFactory(getLocale(), this, false, true);
+		aboutLink = AboutController.aboutLinkFactory("menu.about", getLocale(), this, false, true);
 		aboutLink.setCustomDisplayText(Settings.getApplicationName() + "&nbsp;" + Settings.getVersion());		
 		olatFootervc.put("aboutLink", aboutLink);
 		

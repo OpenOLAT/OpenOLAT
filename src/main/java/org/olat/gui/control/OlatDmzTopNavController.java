@@ -85,7 +85,7 @@ public class OlatDmzTopNavController extends BasicController implements Lockable
 			vc.put("topnav.browsercheck", browsercheckLink);
 		}
 		// about link
-		aboutLink = AboutController.aboutLinkFactory(getLocale(), this, true, false);
+		aboutLink = AboutController.aboutLinkFactory("top.menu.about", getLocale(), this, true, false);
 		aboutLink.setSuppressDirtyFormWarning(true);
 		vc.put("topnav.about", aboutLink);
 
